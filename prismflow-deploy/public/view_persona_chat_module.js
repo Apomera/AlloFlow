@@ -83,6 +83,8 @@
   var personaDefinitionReturnFocusRef = React.useRef(null);
   var personaReflectionDialogRef = React.useRef(null);
   var personaReflectionReturnFocusRef = React.useRef(null);
+  var personaSummaryDialogRef = React.useRef(null);
+  var personaSummaryReturnFocusRef = React.useRef(null);
   // Setters
   var setPersonaState = props.setPersonaState;
   var setPersonaInput = props.setPersonaInput;
@@ -97,8 +99,10 @@
   var handleGenerateReflectionPrompt = props.handleGenerateReflectionPrompt;
   var handlePanelChatSubmit = props.handlePanelChatSubmit;
   var generatePanelFollowUps = props.generatePanelFollowUps;
+  var generatePersonaFollowUps = props.generatePersonaFollowUps;
   var handlePersonaChatSubmit = props.handlePersonaChatSubmit;
   var handlePersonaTopicSpark = props.handlePersonaTopicSpark;
+  var handleGeneratePersonaSummary = props.handleGeneratePersonaSummary;
   var handleRetryPortraitGeneration = props.handleRetryPortraitGeneration;
   var handleSavePersonaChat = props.handleSavePersonaChat;
   var handleSaveReflection = props.handleSaveReflection;
@@ -111,20 +115,29 @@
   var _panelChoicePendingState = React.useState(false);
   var panelChoicePending = _panelChoicePendingState[0];
   var setPanelChoicePending = _panelChoicePendingState[1];
+  var _personaSummaryOpenState = React.useState(false);
+  var isPersonaSummaryOpen = _personaSummaryOpenState[0];
+  var setIsPersonaSummaryOpen = _personaSummaryOpenState[1];
   var _handlePanelChoice = function (option) {
     if (panelChoicePending || personaState.isLoading || !option) return;
     setPanelChoicePending(true);
-    setPersonaState(function (prev) {
-      return {
-        ...prev,
-        panelSuggestions: []
-      };
-    });
     Promise.resolve().then(function () {
-      return handlePanelChatSubmit(option.text);
+      return handlePanelChatSubmit(option.text, true);
     }).catch(function () {}).finally(function () {
       setPanelChoicePending(false);
     });
+  };
+  var _openPersonaSummary = function () {
+    setIsPersonaSummaryOpen(true);
+    if (!personaState.personaSummary && !personaState.isGeneratingSummary && typeof handleGeneratePersonaSummary === 'function') {
+      Promise.resolve(handleGeneratePersonaSummary()).catch(function () {});
+    }
+  };
+  var _retryPersonaSummary = function () {
+    if (personaState.isGeneratingSummary || typeof handleGeneratePersonaSummary !== 'function') return;
+    Promise.resolve(handleGeneratePersonaSummary({
+      force: Boolean(personaState.personaSummary)
+    })).catch(function () {});
   };
   var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
   personaCloseHandlerRef.current = handleClosePersonaChat;
@@ -142,12 +155,15 @@
     var focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
     var handleDialogKeyDown = function (event) {
       if (event.key === 'Escape') {
+        if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-reflection-dialog], [data-persona-summary-dialog]')) {
+          return;
+        }
         event.preventDefault();
         personaCloseHandlerRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
-      var scope = dialog.querySelector('[data-persona-reflection-dialog]') || dialog;
+      var scope = dialog.querySelector('[data-persona-reflection-dialog], [data-persona-summary-dialog]') || dialog;
       var focusable = Array.prototype.filter.call(scope.querySelectorAll(focusableSelector), function (element) {
         return element.getAttribute('aria-hidden') !== 'true' && (element.offsetParent !== null || element === document.activeElement);
       });
@@ -204,6 +220,21 @@
       if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
     };
   }, [isPersonaReflectionOpen]);
+  React.useEffect(function () {
+    if (!isPersonaSummaryOpen) return undefined;
+    var dialog = personaSummaryDialogRef.current;
+    if (!dialog) return undefined;
+    personaSummaryReturnFocusRef.current = document.activeElement;
+    var focusTimer = window.setTimeout(function () {
+      var initial = dialog.querySelector('[data-persona-summary-initial-focus]');
+      if (initial && typeof initial.focus === 'function') initial.focus();else dialog.focus();
+    }, 0);
+    return function () {
+      window.clearTimeout(focusTimer);
+      var previous = personaSummaryReturnFocusRef.current;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    };
+  }, [isPersonaSummaryOpen]);
 
   // Pure helpers
   var splitTextToSentences = props.splitTextToSentences;
@@ -216,8 +247,23 @@
   // Scope every snapshot to an app, Persona resource, and student so a shared
   // browser cannot offer another project or learner's interview.
   var _personaSnapshotResourceId = generatedContent && generatedContent.type === 'persona' ? generatedContent.id : null;
-  var _personaSnapshotStudentId = typeof studentNickname === 'string' && studentNickname.trim() ? studentNickname.trim() : isTeacherMode ? 'teacher' : null;
-  var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId);
+  var _hashPersonaScope = function (value) {
+    var hash = 2166136261;
+    String(value || '').split('').forEach(function (ch) {
+      hash ^= ch.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    });
+    return 'u' + (hash >>> 0).toString(36);
+  };
+  var _personaSnapshotRawStudentId = typeof studentNickname === 'string' && studentNickname.trim() ? studentNickname.trim() : isTeacherMode ? 'teacher' : null;
+  var _personaSnapshotStudentId = _personaSnapshotRawStudentId ? _hashPersonaScope(_personaSnapshotRawStudentId) : null;
+  var _personaRetentionDays = 14;
+  try {
+    var _storedPersonaRetentionRaw = localStorage.getItem('allo_persona_resume_days');
+    var _storedPersonaRetention = _storedPersonaRetentionRaw == null || String(_storedPersonaRetentionRaw).trim() === '' ? 14 : Number(_storedPersonaRetentionRaw);
+    _personaRetentionDays = Number.isFinite(_storedPersonaRetention) && [0, 7, 14, 30].includes(_storedPersonaRetention) ? _storedPersonaRetention : 14;
+  } catch (_) {}
+  var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId && _personaRetentionDays > 0);
   var _personaSnapshotScope = [appId || 'app', _personaSnapshotResourceId || 'no-resource', _personaSnapshotStudentId || 'disabled'].map(function (value) {
     return String(value).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
   }).join(':');
@@ -272,8 +318,18 @@
     _dsCheckedKeyRef.current = _personaSnapshotKey;
     var mountMsgs = _dsChatLen;
     _ensureDeviceStorage().then(function (ds) {
-      return ds.get('persona_sessions', _personaSnapshotKey);
+      // v1 used one global key for every resource/student. Remove that unsafe
+      // legacy record before looking up the scoped v2 snapshot.
+      return Promise.resolve(ds.remove('persona_sessions', 'active')).catch(function () {}).then(function () {
+        return ds.get('persona_sessions', _personaSnapshotKey);
+      });
     }).then(function (snap) {
+      var savedTime = snap && Date.parse(snap.savedAt);
+      var isExpired = !Number.isFinite(savedTime) || Date.now() - savedTime > _personaRetentionDays * 86400000;
+      if (isExpired) {
+        _clearPersonaSnapshot();
+        return;
+      }
       if (!snap || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId || !snap.state || !(snap.state.chatHistory || []).length) return;
       if ((snap.state.chatHistory || []).length > mountMsgs) setPersonaResumeOffer(snap);
     }).catch(function () {});
@@ -297,7 +353,7 @@
             mode: st.mode,
             selectedCharacter: _sanitizeSnapshotCharacter(st.selectedCharacter),
             selectedCharacters: (st.selectedCharacters || []).map(_sanitizeSnapshotCharacter).filter(Boolean),
-            chatHistory: st.chatHistory || [],
+            chatHistory: (st.chatHistory || []).slice(-80),
             harmonyScore: st.harmonyScore,
             earnedBadges: st.earnedBadges || [],
             topicSparkCount: st.topicSparkCount || 0,
@@ -307,6 +363,16 @@
           }
         }));
       } catch (_) {
+        return;
+      }
+      var serializedSnapshot = '';
+      try {
+        serializedSnapshot = JSON.stringify(snap);
+      } catch (_) {
+        return;
+      }
+      if (serializedSnapshot.length > 750000) {
+        _clearPersonaSnapshot();
         return;
       }
       _ensureDeviceStorage().then(function (ds) {
@@ -381,8 +447,45 @@
   var singleXp = personaState.selectedCharacter?.accumulatedXP || 0;
   var singleConcludeReady = singleRapport >= 50 || singleXp >= 100;
   var singleUnlockPct = Math.min(100, Math.round(Math.max(singleRapport / 50 * 100, singleXp / 100 * 100)));
+  var canGeneratePersonaSummary = Array.isArray(personaState.chatHistory) && personaState.chatHistory.some(function (message) {
+    return message && message.role === 'user';
+  }) && personaState.chatHistory.some(function (message) {
+    return message && message.role === 'model';
+  });
+  var personaSummary = personaState.personaSummary && typeof personaState.personaSummary === 'object' ? personaState.personaSummary : null;
+  var _summaryItemText = function (item) {
+    if (typeof item === 'string') return item;
+    if (!item || typeof item !== 'object') return '';
+    return item.text || item.question || item.step || item.strength || item.insight || item.name || '';
+  };
+  var _summaryList = function (value) {
+    return Array.isArray(value) ? value.map(_summaryItemText).filter(Boolean) : [];
+  };
+  var summarySections = personaSummary ? [{
+    key: 'agreements',
+    title: t('persona.summary.agreements'),
+    items: _summaryList(personaSummary.areasOfAgreement)
+  }, {
+    key: 'disagreements',
+    title: t('persona.summary.disagreements'),
+    items: _summaryList(personaSummary.areasOfDisagreement)
+  }, {
+    key: 'questions',
+    title: t('persona.summary.unanswered_questions'),
+    items: _summaryList(personaSummary.unansweredQuestions)
+  }, {
+    key: 'strengths',
+    title: t('persona.summary.student_strengths'),
+    items: _summaryList(personaSummary.studentStrengths)
+  }, {
+    key: 'next',
+    title: t('persona.summary.next_steps'),
+    items: _summaryList(personaSummary.nextSteps)
+  }].filter(function (section) {
+    return section.items.length > 0;
+  }) : [];
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Interview Interface encountered an error. Please close and reopen."
+    fallbackMessage: t('persona.interface_error')
   }, /*#__PURE__*/React.createElement("div", {
     className: `allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300 theme-${theme}`,
     ref: personaDialogRef,
@@ -410,7 +513,9 @@
     className: "text-sm font-medium"
   }, "💾 ", (t('persona.resume_prompt') || 'Pick up your earlier interview with {name}?').replace('{name}', _resumeSnapshotName), /*#__PURE__*/React.createElement("span", {
     className: "opacity-70 ml-1 text-xs"
-  }, "(", (personaResumeOffer.state.chatHistory || []).length, " ", t('persona.resume_messages') || 'messages', personaResumeOffer.savedAt ? ', ' + new Date(personaResumeOffer.savedAt).toLocaleString() : '', " — ", t('persona.resume_device_note') || 'saved on this device only', ")")), /*#__PURE__*/React.createElement("span", {
+  }, "(", (personaResumeOffer.state.chatHistory || []).length, " ", t('persona.resume_messages'), personaResumeOffer.savedAt ? ', ' + new Date(personaResumeOffer.savedAt).toLocaleString() : '', " — ", t('persona.resume_device_note'), "; ", t('persona.resume_recent_limit', {
+    count: 80
+  }), ")")), /*#__PURE__*/React.createElement("span", {
     className: "flex items-center gap-2 ml-auto"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -524,12 +629,17 @@
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: handlePersonaTopicSpark,
-    disabled: personaState.isLoading || (personaState.topicSparkCount || 0) >= 2,
+    disabled: personaState.isLoading || personaState.isGeneratingTopicSpark || (personaState.topicSparkCount || 0) >= 2,
     className: `p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${(personaState.topicSparkCount || 0) >= 2 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'}`,
-    title: `Get a topic suggestion (${2 - (personaState.topicSparkCount || 0)} remaining)`
+    title: t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
+      remaining: 2 - (personaState.topicSparkCount || 0)
+    }),
+    "aria-label": t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
+      remaining: 2 - (personaState.topicSparkCount || 0)
+    })
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 16,
-    className: personaState.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
+    className: personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-6 bg-slate-300 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
@@ -542,6 +652,17 @@
     title: t('persona.save_tooltip')
   }, /*#__PURE__*/React.createElement(Save, {
     size: 16
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _openPersonaSummary,
+    disabled: !canGeneratePersonaSummary || personaState.isGeneratingSummary,
+    className: "p-2 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 hover:bg-violet-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2",
+    title: personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
+    "aria-label": personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
+    "aria-busy": personaState.isGeneratingSummary ? 'true' : 'false'
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16,
+    className: personaState.isGeneratingSummary ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.check'),
@@ -568,26 +689,133 @@
     style: {
       width: `${panelUnlockPct}%`
     }
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "shrink-0 md:hidden px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-2 overflow-x-auto"
+  })))), (personaState.isGeneratingTopicSpark || personaState.topicSparkError) && /*#__PURE__*/React.createElement("div", {
+    className: `shrink-0 border-b px-4 py-2 text-center text-xs ${personaState.topicSparkError ? 'border-red-200 bg-red-50 text-red-800' : 'border-indigo-100 bg-indigo-50 text-indigo-700'}`,
+    role: personaState.topicSparkError ? 'alert' : 'status',
+    "aria-live": "polite"
+  }, personaState.isGeneratingTopicSpark ? /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 13,
+    className: "animate-spin motion-reduce:animate-none"
+  }), " ", t('persona.topic_spark_generating')) : /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex flex-wrap items-center justify-center gap-2"
+  }, t('persona.topic_spark_error'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handlePersonaTopicSpark,
+    disabled: (personaState.topicSparkCount || 0) >= 2,
+    className: "rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50"
+  }, t('persona.topic_spark_retry')))), /*#__PURE__*/React.createElement("div", {
+    className: "shrink-0 md:hidden px-3 py-2 bg-white border-b border-slate-200 flex items-start gap-2 overflow-x-auto"
   }, (personaState.selectedCharacters || []).map((char, cIdx) => {
     const isActivePanelist = activeSpeakerName && activeSpeakerName === char?.name;
-    return /*#__PURE__*/React.createElement("div", {
+    const rapport = char?.rapport ?? char?.initialRapport ?? 30;
+    const xp = char?.accumulatedXP || 0;
+    const quests = [...(char?.quests || [])].sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted));
+    return /*#__PURE__*/React.createElement("details", {
       key: char?.name || cIdx,
-      className: `flex items-center gap-2 px-2.5 py-1.5 rounded-full border text-xs font-bold whitespace-nowrap transition-all motion-reduce:transition-none ${isActivePanelist ? 'bg-yellow-50 border-yellow-300 text-yellow-900 shadow-sm ring-2 ring-yellow-200' : 'bg-slate-50 border-slate-200 text-slate-600'}`
+      className: `group w-[min(82vw,20rem)] shrink-0 rounded-xl border text-xs transition-all motion-reduce:transition-none ${isActivePanelist ? 'bg-yellow-50 border-yellow-300 text-yellow-900 shadow-sm ring-2 ring-yellow-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "cursor-pointer list-none flex items-center gap-2 px-2.5 py-2 font-bold",
+      "aria-label": t('persona.expand_panelist', {
+        name: char?.name || t('persona.character_fallback')
+      })
     }, /*#__PURE__*/React.createElement("div", {
-      className: `w-6 h-6 rounded-full overflow-hidden bg-white border ${isActivePanelist ? 'border-yellow-400' : 'border-slate-300'}`
+      className: `w-8 h-8 rounded-full overflow-hidden bg-white border shrink-0 ${isActivePanelist ? 'border-yellow-400' : 'border-slate-300'}`
     }, char?.avatarUrl ? /*#__PURE__*/React.createElement("img", {
       loading: "lazy",
       src: char.avatarUrl,
       alt: char.name,
       className: "w-full h-full object-cover"
     }) : /*#__PURE__*/React.createElement("span", {
-      className: "w-full h-full flex items-center justify-center text-[10px]"
-    }, (char?.name || '?').slice(0, 1))), /*#__PURE__*/React.createElement("span", null, char?.name || t('common.character')), isActivePanelist && /*#__PURE__*/React.createElement(Volume2, {
+      className: "w-full h-full flex items-center justify-center text-sm"
+    }, (char?.name || '?').slice(0, 1))), /*#__PURE__*/React.createElement("span", {
+      className: "min-w-0 flex-1 truncate"
+    }, char?.name || t('persona.character_fallback')), /*#__PURE__*/React.createElement("span", {
+      className: "font-black tabular-nums"
+    }, rapport, "%"), isActivePanelist && /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center gap-1 text-[10px] text-yellow-700"
+    }, /*#__PURE__*/React.createElement(Volume2, {
       size: 12,
-      className: "text-yellow-600 animate-pulse motion-reduce:animate-none"
-    }));
+      className: "animate-pulse motion-reduce:animate-none"
+    }), " ", t('persona.active_speaker')), /*#__PURE__*/React.createElement("span", {
+      className: "shrink-0 text-base transition-transform motion-reduce:transition-none group-open:rotate-180",
+      "aria-hidden": "true"
+    }, "▾")), /*#__PURE__*/React.createElement("div", {
+      className: "border-t border-current/10 px-3 py-3 space-y-3 text-left",
+      "aria-label": t('persona.panelist_details', {
+        name: char?.name || t('persona.character_fallback')
+      })
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "mb-1 flex justify-between font-bold"
+    }, /*#__PURE__*/React.createElement("span", null, t('persona.rapport_label')), /*#__PURE__*/React.createElement("span", null, rapport, "%")), /*#__PURE__*/React.createElement("div", {
+      role: "progressbar",
+      "aria-label": t('persona.rapport_label'),
+      "aria-valuemin": 0,
+      "aria-valuemax": 100,
+      "aria-valuenow": rapport,
+      className: "h-2 overflow-hidden rounded-full border border-slate-300 bg-white"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `h-full ${cIdx === 0 ? 'bg-indigo-500' : 'bg-rose-500'}`,
+      style: {
+        width: `${Math.max(0, Math.min(100, rapport))}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "mb-1 flex justify-between font-bold"
+    }, /*#__PURE__*/React.createElement("span", null, t('common.xp')), /*#__PURE__*/React.createElement("span", null, xp, "/300")), /*#__PURE__*/React.createElement("div", {
+      role: "progressbar",
+      "aria-label": t('persona.xp_progress', {
+        name: char?.name,
+        xp
+      }),
+      "aria-valuemin": 0,
+      "aria-valuemax": 300,
+      "aria-valuenow": xp,
+      className: "h-2 overflow-hidden rounded-full border border-slate-300 bg-white"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "h-full bg-amber-500",
+      style: {
+        width: `${Math.max(0, Math.min(100, xp / 300 * 100))}%`
+      }
+    }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "mb-2 flex items-center gap-1 font-black uppercase tracking-wide"
+    }, /*#__PURE__*/React.createElement(Search, {
+      size: 12
+    }), " ", t('persona.objectives_label')), quests.length ? /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-1.5"
+    }, quests.map((quest, qIdx) => {
+      const isLocked = rapport < Number(quest.difficulty || 0);
+      return /*#__PURE__*/React.createElement("li", {
+        key: qIdx,
+        className: `rounded-lg border px-2 py-1.5 ${quest.isCompleted ? 'border-green-200 bg-green-50 text-green-800' : isLocked ? 'border-slate-200 bg-slate-100 text-slate-600' : 'border-indigo-200 bg-white text-slate-800'}`
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "flex items-start gap-1.5"
+      }, quest.isCompleted ? /*#__PURE__*/React.createElement(CheckCircle2, {
+        size: 12,
+        className: "mt-0.5 shrink-0"
+      }) : isLocked ? /*#__PURE__*/React.createElement(Lock, {
+        size: 12,
+        className: "mt-0.5 shrink-0"
+      }) : /*#__PURE__*/React.createElement("span", {
+        className: "mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-indigo-400",
+        "aria-hidden": "true"
+      }), /*#__PURE__*/React.createElement("span", null, quest.text)), !quest.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
+        className: "mt-1 block pl-4 text-[10px] font-bold opacity-70"
+      }, t('persona.rapport_requirement', {
+        difficulty: quest.difficulty
+      })));
+    })) : /*#__PURE__*/React.createElement("p", {
+      className: "text-slate-500"
+    }, t('persona.no_objectives'))), !char?.avatarUrl && typeof handleRetryPortraitGeneration === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => handleRetryPortraitGeneration(char),
+      disabled: Boolean(char?.isUpdating),
+      "aria-busy": char?.isUpdating ? 'true' : 'false',
+      className: "inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-bold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 13,
+      className: char?.isUpdating ? 'animate-spin motion-reduce:animate-none' : ''
+    }), t('persona.generate_portrait'))));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 flex overflow-hidden"
   }, /*#__PURE__*/React.createElement("div", {
@@ -601,20 +829,26 @@
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar",
     ref: personaScrollRef,
+    onScroll: e => {
+      const el = e.currentTarget;
+      personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    },
     role: "log",
     "aria-live": "polite",
     "aria-atomic": "false",
     "aria-relevant": "additions text",
     "aria-label": t("a11y.interview_conversation")
-  }, personaState.chatHistory.map((msg, idx) => {
+  }, /*#__PURE__*/React.createElement("div", {
+    role: "note",
+    className: "mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900"
+  }, t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'), personaState.chatHistory.map((msg, idx) => {
     const isUser = msg.role === 'user';
     const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
-    const speakerLabel = isUser ? 'You' : msg.speakerName;
+    const speakerLabel = isUser ? t('common.you') : msg.speakerName;
     const isMessagePlayingNow = playingContentId === `persona-message-${idx}`;
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
-      className: `flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`,
-      "aria-label": speakerLabel + ' said: ' + msg.text.substring(0, 100)
+      className: `flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: `relative overflow-hidden max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border transition-all motion-reduce:transition-none ${isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' : isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' : 'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'} ${isMessagePlayingNow ? 'ring-2 ring-yellow-200 border-yellow-300 shadow-md' : ''}`,
       "aria-label": !isUser ? t('a11y.message_speaker_read_aloud', {
@@ -683,11 +917,17 @@
       size: 12
     }))), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 leading-relaxed italic"
-    }, msg.translation)), !isUser && /*#__PURE__*/React.createElement("span", {
+    }, msg.translation)), !isUser && msg.evidenceNote && /*#__PURE__*/React.createElement("details", {
+      className: "mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"
+    }, /*#__PURE__*/React.createElement("summary", {
+      className: "cursor-pointer font-bold"
+    }, t('persona.evidence_note') || 'Evidence & simulation note'), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 leading-relaxed"
+    }, msg.evidenceNote)), !isUser && /*#__PURE__*/React.createElement("span", {
       className: "mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 11
-    }), " Click any sentence to listen")), /*#__PURE__*/React.createElement("span", {
+    }), " ", t('persona.click_sentence') || 'Click any sentence to listen')), /*#__PURE__*/React.createElement("span", {
       className: `text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`
     }, speakerLabel, isMessagePlayingNow && /*#__PURE__*/React.createElement(Volume2, {
       size: 11,
@@ -726,7 +966,7 @@
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12,
     className: "animate-bounce motion-reduce:animate-none"
-  }), " Waiting to speak...")), personaDefinitionData && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.waiting_to_speak'))), personaDefinitionData && /*#__PURE__*/React.createElement("div", {
     className: "fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in motion-reduce:animate-none zoom-in-95 duration-150",
     style: {
       left: Math.min(personaDefinitionData.x + 10, window.innerWidth - 320),
@@ -761,7 +1001,7 @@
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none"
-  }), "Looking up definition...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }), t('persona.looking_up_definition')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700 leading-relaxed mb-3"
   }, personaDefinitionData.text), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -770,7 +1010,7 @@
     className: "flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12
-  }), " Speak Definition")))), (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.speak_definition'))))), (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 text-center mb-3 font-medium"
@@ -784,12 +1024,24 @@
     className: "text-left px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all motion-reduce:transition-none duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300"
   }, /*#__PURE__*/React.createElement("span", {
     className: "opacity-50 mr-2"
-  }, String.fromCharCode(65 + i), "."), opt.text)))) : isPersonaFreeResponse ? /*#__PURE__*/React.createElement("div", {
+  }, String.fromCharCode(65 + i), "."), opt.text))), (personaState.panelSuggestions || []).length < 6 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600",
+    role: "status",
+    "aria-live": "polite"
+  }, personaState.isGeneratingPanelSuggestions ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 14,
+    className: "animate-spin motion-reduce:animate-none text-indigo-600"
+  }), " ", t('persona.choices_partial')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, personaState.panelSuggestionsError ? t('persona.choices_generation_failed') : t('persona.choices_partial')), typeof generatePanelFollowUps === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1]),
+    className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+  }, t('persona.retry_choices'))))) : isPersonaFreeResponse ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_persona_input'),
+    maxLength: 2000,
     value: personaInput,
     onChange: e => setPersonaInput(e.target.value),
     onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(personaInput),
@@ -798,7 +1050,7 @@
     disabled: personaState.isLoading
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": personaState.isLoading ? 'Waiting for response...' : 'Send message to interview subject',
+    "aria-label": personaState.isLoading ? t('persona.waiting_for_response') : t('persona.send_panel_message'),
     "aria-busy": personaState.isLoading ? 'true' : 'false',
     onClick: () => handlePanelChatSubmit(personaInput),
     disabled: !personaInput.trim() || personaState.isLoading,
@@ -809,19 +1061,19 @@
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 20
   })))) : /*#__PURE__*/React.createElement("div", {
-    className: "p-4 bg-white border-t border-slate-200 flex items-center justify-center gap-3",
+    className: "p-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-center gap-3",
     role: "status",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
-    className: personaState.isLoading ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'
+    className: personaState.isLoading || personaState.isGeneratingPanelSuggestions ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-medium text-slate-700"
-  }, t('persona.generating_choices') || 'Preparing response choices...'), !personaState.isLoading && typeof generatePanelFollowUps === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, personaState.panelSuggestionsError ? t('persona.choices_generation_failed') : personaState.isLoading || personaState.isGeneratingPanelSuggestions ? t('persona.generating_choices') : t('persona.choices_unavailable')), !personaState.isLoading && !personaState.isGeneratingPanelSuggestions && typeof generatePanelFollowUps === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1]),
     className: "text-xs font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
-  }, t('common.retry') || 'Retry'))), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.retry_choices')))), /*#__PURE__*/React.createElement("div", {
     className: `w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all motion-reduce:transition-none ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[1]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`
   }, /*#__PURE__*/React.createElement(CharacterColumn, {
     character: personaState.selectedCharacters[1],
@@ -864,7 +1116,7 @@
     className: "text-2xl text-indigo-400"
   }, "/100")), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-indigo-500 uppercase tracking-wider"
-  }, t('persona.quality_score') || 'Quality Score')), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.ai_quality_score') || 'AI Reflection Estimate')), /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"
@@ -881,7 +1133,9 @@
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 12
-  }), " ", t('persona.teacher_feedback') || 'Teacher Feedback'), /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.ai_feedback') || 'AI Reflection Feedback'), /*#__PURE__*/React.createElement("p", {
+    className: "mb-2 text-[11px] text-slate-500"
+  }, t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'), /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
       __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
@@ -925,6 +1179,7 @@
     className: "text-slate-700 text-sm leading-relaxed"
   }, dynamicReflectionQuestion || t('persona.default_reflection_prompt'))), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('persona.reflection_input') || 'Write your reflection',
+    maxLength: 4000,
     value: personaReflectionInput,
     onChange: e => setPersonaReflectionInput(e.target.value),
     placeholder: t('persona.reflection_placeholder'),
@@ -997,11 +1252,11 @@
     className: "flex justify-between items-end mb-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest"
-  }, "Trust / Rapport"), /*#__PURE__*/React.createElement("span", {
+  }, t('persona.trust_rapport_label')), /*#__PURE__*/React.createElement("span", {
     className: `text-xs font-bold ${(personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'text-green-600' : (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'text-yellow-600' : 'text-red-500'}`
   }, personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport, "%")), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
-    "aria-label": "Trust / Rapport",
+    "aria-label": t('persona.trust_rapport_label'),
     "aria-valuemin": 0,
     "aria-valuemax": 100,
     "aria-valuenow": personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport ?? 0,
@@ -1017,7 +1272,7 @@
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 12
-  }), " Secrets to Uncover"), /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.secrets_to_uncover')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, personaState.selectedCharacter.quests.map((quest, qIdx) => /*#__PURE__*/React.createElement("div", {
     key: qIdx,
@@ -1034,7 +1289,9 @@
     className: `font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-70' : ''}`
   }, quest.text), !quest.isCompleted && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] uppercase tracking-wider font-bold opacity-60"
-  }, "Requires ", quest.difficulty, "% Trust")))))))), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.trust_requirement', {
+    difficulty: quest.difficulty
+  }))))))))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 flex flex-col h-full bg-white relative min-w-0"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1144,17 +1401,17 @@
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: handlePersonaTopicSpark,
-    disabled: personaState.isLoading || (personaState.topicSparkCount || 0) >= 2,
+    disabled: personaState.isLoading || personaState.isGeneratingTopicSpark || (personaState.topicSparkCount || 0) >= 2,
     className: `p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${(personaState.topicSparkCount || 0) >= 2 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'}`,
-    title: t('persona.topic_spark_tooltip', {
+    title: t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
       remaining: 2 - (personaState.topicSparkCount || 0)
     }),
-    "aria-label": t('persona.topic_spark_tooltip', {
+    "aria-label": t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', {
       remaining: 2 - (personaState.topicSparkCount || 0)
     })
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 16,
-    className: personaState.isLoading ? "animate-pulse motion-reduce:animate-none" : ""
+    className: personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_save_chat",
@@ -1165,6 +1422,17 @@
     "aria-label": t('persona.chat_save')
   }, /*#__PURE__*/React.createElement(Save, {
     size: 16
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _openPersonaSummary,
+    disabled: !canGeneratePersonaSummary || personaState.isGeneratingSummary,
+    className: "p-2 rounded-lg bg-violet-50 text-violet-700 border border-violet-200 shadow-sm hover:bg-violet-100 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
+    title: personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
+    "aria-label": personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn'),
+    "aria-busy": personaState.isGeneratingSummary ? 'true' : 'false'
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 16,
+    className: personaState.isGeneratingSummary ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.check'),
@@ -1191,15 +1459,38 @@
     style: {
       width: `${singleUnlockPct}%`
     }
-  }))))), /*#__PURE__*/React.createElement("div", {
+  }))))), (personaState.isGeneratingTopicSpark || personaState.topicSparkError) && /*#__PURE__*/React.createElement("div", {
+    className: `shrink-0 border-b px-4 py-2 text-center text-xs ${personaState.topicSparkError ? 'border-red-200 bg-red-50 text-red-800' : 'border-indigo-100 bg-indigo-50 text-indigo-700'}`,
+    role: personaState.topicSparkError ? 'alert' : 'status',
+    "aria-live": "polite"
+  }, personaState.isGeneratingTopicSpark ? /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 13,
+    className: "animate-spin motion-reduce:animate-none"
+  }), " ", t('persona.topic_spark_generating')) : /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex flex-wrap items-center justify-center gap-2"
+  }, t('persona.topic_spark_error'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handlePersonaTopicSpark,
+    disabled: (personaState.topicSparkCount || 0) >= 2,
+    className: "rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50"
+  }, t('persona.topic_spark_retry')))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar",
     ref: personaScrollRef,
+    onScroll: e => {
+      const el = e.currentTarget;
+      personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    },
     role: "log",
     "aria-live": "polite",
     "aria-atomic": "false",
     "aria-relevant": "additions text",
-    "aria-label": "Interview conversation with character"
-  }, (!personaState.chatHistory || personaState.chatHistory.length === 0) && /*#__PURE__*/React.createElement("div", {
+    "aria-label": t('a11y.interview_conversation') || 'Interview conversation with character'
+  }, /*#__PURE__*/React.createElement("div", {
+    role: "note",
+    className: "mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900"
+  }, t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'), (!personaState.chatHistory || personaState.chatHistory.length === 0) && /*#__PURE__*/React.createElement("div", {
     className: "mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200"
@@ -1293,7 +1584,13 @@
             title: t('common.click_to_read')
           }, formatInteractiveText(cleanText), " ");
         }));
-      }), translationText && /*#__PURE__*/React.createElement("div", {
+      }), !isUser && msg.evidenceNote && /*#__PURE__*/React.createElement("details", {
+        className: "mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"
+      }, /*#__PURE__*/React.createElement("summary", {
+        className: "cursor-pointer font-bold"
+      }, t('persona.evidence_note') || 'Evidence & simulation note'), /*#__PURE__*/React.createElement("p", {
+        className: "mt-1 leading-relaxed"
+      }, msg.evidenceNote)), translationText && /*#__PURE__*/React.createElement("div", {
         className: "mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2 mb-1"
@@ -1365,15 +1662,27 @@
   }, personaState.suggestions.map((q, i) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: i,
-    onClick: () => handlePersonaChatSubmit(q),
+    onClick: () => handlePersonaChatSubmit(q, true),
     className: `whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors motion-reduce:transition-none shadow-sm ${isPersonaFreeResponse ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0' : 'bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 w-full sm:w-[48%] py-3 text-sm'}`
   }, !isPersonaFreeResponse && /*#__PURE__*/React.createElement("span", {
     className: "mr-2 opacity-50"
-  }, String.fromCharCode(65 + i), "."), q))), isPersonaFreeResponse && /*#__PURE__*/React.createElement("div", {
+  }, String.fromCharCode(65 + i), "."), q))), !isPersonaFreeResponse && (personaState.suggestions || []).length > 0 && (personaState.suggestions || []).length < 6 && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
+    className: "px-4 pb-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600",
+    role: "status",
+    "aria-live": "polite"
+  }, personaState.isGeneratingSuggestions ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 14,
+    className: "animate-spin motion-reduce:animate-none text-indigo-600"
+  }), " ", t('persona.choices_partial')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, personaState.suggestionsError ? t('persona.choices_generation_failed') : t('persona.choices_partial')), typeof generatePersonaFollowUps === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => generatePersonaFollowUps(personaState.chatHistory, personaState.selectedCharacter, 6),
+    className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+  }, t('persona.retry_choices')))), isPersonaFreeResponse && /*#__PURE__*/React.createElement("div", {
     className: "p-4 flex gap-2"
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_persona_input'),
     type: "text",
+    maxLength: 2000,
     value: personaInput,
     onChange: e => setPersonaInput(e.target.value),
     onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePersonaChatSubmit(),
@@ -1385,7 +1694,9 @@
     disabled: personaState.isLoading
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": personaState.isLoading ? 'Waiting for response...' : 'Send question to ' + (personaState.selectedCharacter?.name || 'character'),
+    "aria-label": personaState.isLoading ? t('persona.waiting_for_response') : t('persona.send_character_question', {
+      name: personaState.selectedCharacter?.name || t('persona.character_fallback')
+    }),
     "aria-busy": personaState.isLoading ? 'true' : 'false',
     onClick: () => handlePersonaChatSubmit(),
     disabled: !personaInput.trim() || personaState.isLoading,
@@ -1395,14 +1706,18 @@
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 20
-  }))), !isPersonaFreeResponse && personaState.isLoading && /*#__PURE__*/React.createElement("div", {
+  }))), !isPersonaFreeResponse && (personaState.suggestions || []).length === 0 && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
-    className: "p-8 text-center text-slate-600 italic text-xs flex items-center justify-center gap-2"
+    className: "p-5 text-center text-slate-600 text-xs flex flex-wrap items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
-    className: "animate-spin motion-reduce:animate-none"
-  }), " ", t('persona.status_generating_options'))), isPersonaReflectionOpen && /*#__PURE__*/React.createElement("div", {
+    className: personaState.isLoading || personaState.isGeneratingSuggestions ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'
+  }), /*#__PURE__*/React.createElement("span", null, personaState.suggestionsError ? t('persona.choices_generation_failed') : personaState.isLoading || personaState.isGeneratingSuggestions ? t('persona.generating_choices') : t('persona.choices_unavailable')), !personaState.isLoading && !personaState.isGeneratingSuggestions && typeof generatePersonaFollowUps === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => generatePersonaFollowUps(personaState.chatHistory, personaState.selectedCharacter, 6),
+    className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+  }, t('persona.retry_choices')))), isPersonaReflectionOpen && /*#__PURE__*/React.createElement("div", {
     ref: personaReflectionDialogRef,
     "data-persona-reflection-dialog": true,
     role: "dialog",
@@ -1439,7 +1754,7 @@
     className: "text-2xl text-indigo-400"
   }, "/100")), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-indigo-500 uppercase tracking-wider"
-  }, t('persona.quality_score') || 'Quality Score')), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.ai_quality_score') || 'AI Reflection Estimate')), /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"
@@ -1456,7 +1771,9 @@
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 12
-  }), " ", t('persona.teacher_feedback') || 'Teacher Feedback'), /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.ai_feedback') || 'AI Reflection Feedback'), /*#__PURE__*/React.createElement("p", {
+    className: "mb-2 text-[11px] text-slate-500"
+  }, t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'), /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
       __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
@@ -1498,7 +1815,9 @@
     className: "animate-spin motion-reduce:animate-none"
   }), " ", t('persona.generating_question')) : /*#__PURE__*/React.createElement("p", {
     className: "text-slate-700 font-medium"
-  }, dynamicReflectionQuestion || `What is one surprising thing you learned from ${personaState.selectedCharacter?.name}, and how does it connect to what you already knew?`)), /*#__PURE__*/React.createElement("textarea", {
+  }, dynamicReflectionQuestion || t('persona.default_reflection_prompt_named', {
+    name: personaState.selectedCharacter?.name || t('persona.character_fallback')
+  }))), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('persona.reflection_input') || 'Write your reflection',
     value: personaReflectionInput,
     "data-help-key": "persona_reflection_input",
@@ -1528,7 +1847,158 @@
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
     className: "text-yellow-700 fill-current"
-  }), isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp'))))))))));
+  }), isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp'))))))), isPersonaSummaryOpen && /*#__PURE__*/React.createElement("div", {
+    ref: personaSummaryDialogRef,
+    "data-persona-summary-dialog": true,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "persona-summary-title",
+    tabIndex: -1,
+    onKeyDown: e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsPersonaSummaryOpen(false);
+      }
+    },
+    className: "absolute inset-0 z-[80] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border-2 border-violet-200 bg-white shadow-2xl"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "flex items-start gap-3 border-b border-slate-200 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "rounded-full bg-violet-100 p-2 text-violet-700"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 20
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 flex-1"
+  }, /*#__PURE__*/React.createElement("h2", {
+    id: "persona-summary-title",
+    className: "text-xl font-black text-slate-900"
+  }, personaSummary?.title || t(personaState.mode === 'panel' ? 'persona.summary.title_panel' : 'persona.summary.title_single')), personaSummary?.participants?.length > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 truncate text-xs font-medium text-slate-600"
+  }, personaSummary.participants.map(_summaryItemText).filter(Boolean).join(' • '))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-persona-summary-initial-focus": true,
+    autoFocus: true,
+    onClick: () => setIsPersonaSummaryOpen(false),
+    className: "rounded-full p-2 text-slate-600 hover:bg-white hover:text-slate-900 disabled:opacity-50",
+    "aria-label": t('common.close')
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 20
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-y-auto p-5 sm:p-6"
+  }, personaState.isGeneratingSummary ? /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    className: "flex min-h-[16rem] flex-col items-center justify-center gap-3 text-center text-violet-700"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 32,
+    className: "animate-spin motion-reduce:animate-none"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, t('persona.summary.generating'))) : personaState.personaSummaryError && !personaSummary ? /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    className: "mx-auto flex min-h-[16rem] max-w-xl flex-col items-center justify-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-red-800"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, t('persona.summary.error')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _retryPersonaSummary,
+    className: "inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-800"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16
+  }), " ", t('persona.summary.retry'))) : personaSummary ? /*#__PURE__*/React.createElement("div", {
+    className: "space-y-5"
+  }, personaState.personaSummaryError && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+  }, /*#__PURE__*/React.createElement("span", null, t('persona.summary.refresh_failed')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _retryPersonaSummary,
+    className: "rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-amber-100"
+  }, t('persona.summary.retry'))), personaSummary.overview && /*#__PURE__*/React.createElement("section", {
+    "aria-labelledby": "persona-summary-overview",
+    className: "rounded-xl border border-violet-100 bg-violet-50 p-4"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: "persona-summary-overview",
+    className: "mb-2 text-xs font-black uppercase tracking-wider text-violet-700"
+  }, t('persona.summary.overview')), /*#__PURE__*/React.createElement("p", {
+    className: "leading-relaxed text-slate-700"
+  }, personaSummary.overview)), Array.isArray(personaSummary.keyInsights) && personaSummary.keyInsights.length > 0 && /*#__PURE__*/React.createElement("section", {
+    "aria-labelledby": "persona-summary-insights"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: "persona-summary-insights",
+    className: "mb-3 text-sm font-black uppercase tracking-wider text-slate-700"
+  }, t('persona.summary.key_insights')), /*#__PURE__*/React.createElement("ol", {
+    className: "grid gap-3 md:grid-cols-2"
+  }, personaSummary.keyInsights.map((item, idx) => {
+    const insight = _summaryItemText(item);
+    if (!insight) return null;
+    return /*#__PURE__*/React.createElement("li", {
+      key: idx,
+      className: "rounded-xl border border-indigo-100 bg-white p-4 shadow-sm"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold leading-relaxed text-slate-800"
+    }, insight), item && typeof item === 'object' && item.evidence && /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 border-l-2 border-indigo-200 pl-3 text-xs leading-relaxed text-slate-600"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, t('persona.summary.evidence'), ":"), " ", item.evidence), item && typeof item === 'object' && item.confidence != null && /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-[11px] font-bold uppercase tracking-wide text-indigo-600"
+    }, t('persona.summary.confidence', {
+      value: item.confidence
+    })));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "grid gap-4 md:grid-cols-2"
+  }, summarySections.map(section => /*#__PURE__*/React.createElement("section", {
+    key: section.key,
+    className: "rounded-xl border border-slate-200 bg-slate-50 p-4"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "mb-2 text-xs font-black uppercase tracking-wider text-slate-700"
+  }, section.title), /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-slate-700"
+  }, section.items.map((item, idx) => /*#__PURE__*/React.createElement("li", {
+    key: idx
+  }, item)))))), personaSummary.verificationNote && /*#__PURE__*/React.createElement("aside", {
+    className: "rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "mb-1 text-xs font-black uppercase tracking-wider"
+  }, t('persona.summary.verification_note')), /*#__PURE__*/React.createElement("p", null, personaSummary.verificationNote)), personaSummary.generatedAt && /*#__PURE__*/React.createElement("p", {
+    className: "text-right text-[11px] text-slate-500"
+  }, t('persona.summary.generated_at', {
+    date: new Date(personaSummary.generatedAt).toLocaleString()
+  }))) : /*#__PURE__*/React.createElement("div", {
+    className: "flex min-h-[16rem] flex-col items-center justify-center gap-4 text-center text-slate-600"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 36,
+    className: "text-violet-400"
+  }), /*#__PURE__*/React.createElement("p", null, t('persona.summary.empty')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _retryPersonaSummary,
+    disabled: !canGeneratePersonaSummary,
+    className: "rounded-lg bg-violet-700 px-4 py-2 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
+  }, t('persona.summary.generate_btn')))), /*#__PURE__*/React.createElement("footer", {
+    className: "flex flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setIsPersonaSummaryOpen(false),
+    className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100"
+  }, t('persona.summary.back_to_chat')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleSavePersonaChat,
+    disabled: (personaState.chatHistory || []).length === 0,
+    className: "inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(Save, {
+    size: 15
+  }), " ", t('persona.chat_save')), personaSummary && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: _retryPersonaSummary,
+    disabled: personaState.isGeneratingSummary,
+    className: "inline-flex items-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 15
+  }), " ", t('persona.summary.regenerate'))))))));
 }
 
   window.AlloModules = window.AlloModules || {};

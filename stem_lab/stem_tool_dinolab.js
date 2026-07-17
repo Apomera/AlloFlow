@@ -5573,6 +5573,7 @@ window.StemLab = window.StemLab || {
       function DinoFieldStation3D(props) {
         var canvasRef = React.useRef(null);
         var statusRef = React.useRef(null);
+        var canvasFocusState = React.useState(false), canvasFocused = canvasFocusState[0], setCanvasFocused = canvasFocusState[1];
 
         React.useEffect(function () {
           var canvas = canvasRef.current;
@@ -5697,10 +5698,28 @@ window.StemLab = window.StemLab || {
             var evidencePathMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.24, depthWrite: false, depthTest: false });
             var activePathMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.32, depthWrite: false, depthTest: false });
             var loggedPathMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.46, depthWrite: false, depthTest: false });
+            var assemblySocketMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+            var assemblyFocusRingMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.38, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+            var assemblyPlacedRingMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+            var assemblyPlacedMat = new THREE.MeshPhongMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.88, shininess: 38 });
+            var assemblyFocusMat = new THREE.MeshPhongMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.94, shininess: 44 });
+            var assemblyLooseMat = new THREE.MeshPhongMaterial({ color: 0xf5e6c8, transparent: true, opacity: 0.78, shininess: 18 });
+            var assemblyLockedMat = new THREE.MeshPhongMaterial({ color: 0x8b7358, transparent: true, opacity: 0.34, shininess: 8 });
+            var claimEvidenceMat = new THREE.MeshPhongMaterial({ color: 0x5eead4, transparent: true, opacity: 0.96, shininess: 58 });
+            var claimEvidenceRingMat = new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+            var claimEvidenceBeamMat = new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.30, depthWrite: false, depthTest: false });
+            var claimEvidenceTrailMat = new THREE.MeshBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.46, depthWrite: false, depthTest: false });
             var scanPulse = null;
+            var assemblyPulse = null;
+            var claimEvidencePulse = null;
             var loggedRings = [];
             var scanTargetId = props.scanTarget || 'skull';
             var loggedAnchors = props.loggedAnchors || {};
+            var assemblyPlaced = props.assemblyPlaced || {};
+            var assemblyFocusId = props.assemblyFocus || 'skull';
+            var claimEvidenceId = props.claimEvidenceFocus || null;
+            var claimEvidenceAnchorId = props.claimEvidenceAnchor || null;
+            var assemblyUnlocked = props.assemblyUnlocked !== false;
 
             function vec(x, y, z) { return new THREE.Vector3(x, y, z); }
             function addBone(a, b, radius) {
@@ -5754,6 +5773,27 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
+            function addAssemblyCylinder(parent, a, b, radius, mat, order) {
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dist, 12), mat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              mesh.renderOrder = order || 16;
+              parent.add(mesh);
+              return mesh;
+            }
+            function addAssemblyEllipsoid(parent, pos, scale, mat, order) {
+              var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 12), mat);
+              mesh.position.copy(pos);
+              mesh.scale.copy(scale);
+              mesh.castShadow = true;
+              mesh.renderOrder = order || 16;
+              parent.add(mesh);
+              return mesh;
+            }
             function addGroundOval(x, z, sx, sz, mat, rot) {
               var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 8), mat);
               mesh.position.set(x, 0.045, z);
@@ -5801,6 +5841,7 @@ window.StemLab = window.StemLab || {
             var bodyLen = Math.max(0.45, Math.abs(hip.x - shoulder.x) * 0.72);
             var bodyHeight = Math.max(0.22, ht * (isSauropod ? 0.22 : 0.27));
             var bodyDepth = Math.max(0.16, bodyHeight * (isTheropod ? 0.92 : 1.08));
+            var evidenceAnchorPoints = { skull: head, shoulder: shoulder, hip: hip };
 
             var footprintMat = new THREE.MeshPhongMaterial({ color: 0x2b3a4f, transparent: true, opacity: 0.78, shininess: 4 });
             for (var fp = 0; fp < 7; fp++) {
@@ -5851,6 +5892,124 @@ window.StemLab = window.StemLab || {
               var armEndR = vec(shoulder.x - len * 0.050, shoulder.y * 0.55, -stance * 0.55);
               addBone(vec(shoulder.x, shoulder.y * 0.93, stance * 0.42), armEndL, Math.max(0.018, ht * 0.006));
               addBone(vec(shoulder.x, shoulder.y * 0.93, -stance * 0.42), armEndR, Math.max(0.018, ht * 0.006));
+            }
+
+            function addAssemblySocket(piece, active, placed) {
+              var point = piece.point.clone();
+              point.y += Math.max(0.09, ht * 0.028);
+              var ring = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.18, ht * 0.056), Math.max(0.010, ht * 0.0045), 10, 42), placed ? assemblyPlacedRingMat : (active ? assemblyFocusRingMat : assemblySocketMat));
+              ring.position.copy(point);
+              ring.rotation.x = Math.PI / 2;
+              ring.renderOrder = active ? 29 : (placed ? 24 : 12);
+              model.add(ring);
+              if (active) assemblyPulse = ring;
+            }
+            function addLooseAssemblyPiece(piece, idx, active) {
+              var group = new THREE.Group();
+              var spacing = Math.max(0.58, Math.min(1.12, len * 0.09));
+              var trayZ = -Math.max(2.0, bodyDepth * 2.8);
+              group.position.set(-spacing * 2.5 + idx * spacing, 0.13, trayZ + (idx % 2 ? 0.26 : -0.02));
+              group.rotation.y = -0.35 + idx * 0.18;
+              var mat = assemblyUnlocked ? (active ? assemblyFocusMat : assemblyLooseMat) : assemblyLockedMat;
+              var order = active ? 28 : 14;
+              if (piece.id === 'skull') {
+                addAssemblyEllipsoid(group, vec(0, 0.05, 0), vec(0.18, 0.11, 0.12), mat, order);
+              } else if (piece.id === 'ribs') {
+                var looseRib = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.018, 8, 28), mat);
+                looseRib.rotation.y = Math.PI / 2;
+                looseRib.renderOrder = order;
+                group.add(looseRib);
+              } else if (piece.id === 'pelvis') {
+                addAssemblyEllipsoid(group, vec(-0.08, 0.03, 0), vec(0.13, 0.07, 0.11), mat, order);
+                addAssemblyEllipsoid(group, vec(0.10, 0.03, 0), vec(0.11, 0.06, 0.10), mat, order);
+              } else if (piece.id === 'hindlimb') {
+                addAssemblyCylinder(group, vec(-0.22, 0.02, -0.03), vec(0.02, 0.07, 0.03), 0.024, mat, order);
+                addAssemblyCylinder(group, vec(0.02, 0.07, 0.03), vec(0.24, 0.02, -0.02), 0.021, mat, order);
+              } else {
+                addAssemblyCylinder(group, vec(-0.24, 0.04, 0), vec(0.24, 0.04, 0), piece.id === 'tail' ? 0.028 : 0.024, mat, order);
+              }
+              scene.add(group);
+            }
+            function addPlacedAssemblyPiece(id, active, claimEvidence) {
+              var mat = claimEvidence ? claimEvidenceMat : (active ? assemblyFocusMat : assemblyPlacedMat);
+              var order = claimEvidence ? 32 : (active ? 30 : 24);
+              if (id === 'skull') {
+                addAssemblyEllipsoid(model, head.clone(), vec(Math.max(0.16, len * 0.042), Math.max(0.10, ht * 0.048), Math.max(0.09, ht * 0.042)), mat, order);
+              } else if (id === 'spine') {
+                addAssemblyCylinder(model, shoulder, hip, Math.max(0.052, ht * 0.018), mat, order);
+              } else if (id === 'ribs') {
+                for (var ri = 0; ri < 3; ri++) {
+                  var rib = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.15, bodyDepth * (0.76 - ri * 0.08)), Math.max(0.010, ht * 0.004), 8, 32), mat);
+                  rib.position.set(bodyCenter.x + (ri - 1) * Math.max(0.10, len * 0.030), bodyCenter.y, 0);
+                  rib.rotation.y = Math.PI / 2;
+                  rib.scale.y = Math.max(0.52, bodyHeight / Math.max(0.18, bodyDepth));
+                  rib.renderOrder = order;
+                  model.add(rib);
+                }
+              } else if (id === 'pelvis') {
+                addAssemblyEllipsoid(model, hip.clone(), vec(Math.max(0.16, ht * 0.070), Math.max(0.09, ht * 0.038), Math.max(0.14, bodyDepth * 0.70)), mat, order);
+              } else if (id === 'hindlimb') {
+                var kneeA = vec(hip.x + len * 0.025, Math.max(0.18, hip.y * 0.48), stance);
+                var footA = vec(hip.x + len * 0.085, 0.06, stance + 0.10);
+                var kneeB = vec(hip.x + len * 0.025, Math.max(0.18, hip.y * 0.48), -stance);
+                var footB = vec(hip.x + len * 0.085, 0.06, -stance - 0.10);
+                addAssemblyCylinder(model, vec(hip.x, hip.y, stance), kneeA, Math.max(0.040, ht * 0.014), mat, order);
+                addAssemblyCylinder(model, kneeA, footA, Math.max(0.034, ht * 0.012), mat, order);
+                addAssemblyCylinder(model, vec(hip.x, hip.y, -stance), kneeB, Math.max(0.040, ht * 0.014), mat, order);
+                addAssemblyCylinder(model, kneeB, footB, Math.max(0.034, ht * 0.012), mat, order);
+              } else if (id === 'tail') {
+                addAssemblyCylinder(model, hip, tail, Math.max(0.048, ht * 0.016), mat, order);
+              }
+            }
+            function addClaimEvidenceBeacon(piece) {
+              var point = piece.point.clone();
+              point.y += Math.max(0.14, ht * 0.040);
+              var anchorPoint = claimEvidenceAnchorId && evidenceAnchorPoints[claimEvidenceAnchorId] ? evidenceAnchorPoints[claimEvidenceAnchorId].clone() : null;
+              if (anchorPoint) {
+                anchorPoint.y += Math.max(0.16, ht * 0.052);
+                if (point.distanceTo(anchorPoint) > Math.max(0.10, ht * 0.030)) addModelCylinder(point, anchorPoint, Math.max(0.014, ht * 0.005), claimEvidenceTrailMat, 31);
+              }
+              var ring = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.24, ht * 0.074), Math.max(0.014, ht * 0.0055), 10, 52), claimEvidenceRingMat);
+              ring.position.copy(point);
+              ring.rotation.x = Math.PI / 2;
+              ring.renderOrder = 34;
+              model.add(ring);
+              claimEvidencePulse = ring;
+              var beamHeight = Math.max(0.82, ht * 0.28);
+              var beam = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.010, ht * 0.0035), Math.max(0.010, ht * 0.0035), beamHeight, 10), claimEvidenceBeamMat);
+              beam.position.copy(point);
+              beam.position.y += beamHeight * 0.5;
+              beam.renderOrder = 33;
+              model.add(beam);
+              var labelPos = piece.point.clone();
+              labelPos.y += Math.max(0.88, ht * 0.26);
+              labelPos.z += Math.max(0.20, bodyDepth * 0.55);
+              addTextLabel('Claim: ' + piece.label, labelPos, '#14b8a6');
+            }
+            if (props.assemblyTotal != null) {
+              var assemblyPieces3d = [
+                { id: 'skull', label: 'Skull', point: head },
+                { id: 'spine', label: 'Spine', point: bodyCenter },
+                { id: 'ribs', label: 'Ribs', point: bodyCenter.clone().add(vec(-len * 0.035, 0, 0)) },
+                { id: 'pelvis', label: 'Pelvis', point: hip },
+                { id: 'hindlimb', label: 'Hindlimb', point: vec(hip.x, Math.max(0.20, hip.y * 0.50), stance) },
+                { id: 'tail', label: 'Tail', point: new THREE.Vector3().copy(hip).add(tail).multiplyScalar(0.5) }
+              ];
+              assemblyPieces3d.forEach(function (piece, idx) {
+                var placed = !!assemblyPlaced[piece.id];
+                var active = piece.id === assemblyFocusId;
+                var claimEvidence = placed && piece.id === claimEvidenceId;
+                addAssemblySocket(piece, active, placed);
+                if (placed) addPlacedAssemblyPiece(piece.id, active, claimEvidence);
+                else addLooseAssemblyPiece(piece, idx, active);
+                if (claimEvidence) addClaimEvidenceBeacon(piece);
+                if (active && !claimEvidence) {
+                  var assemblyLabel = piece.point.clone();
+                  assemblyLabel.y += Math.max(0.68, ht * 0.20);
+                  assemblyLabel.z -= Math.max(0.18, bodyDepth * 0.50);
+                  addTextLabel((placed ? 'Placed ' : 'Assemble ') + piece.label, assemblyLabel, placed ? '#22c55e' : '#a78bfa');
+                }
+              });
             }
 
             if (props.showEvidence) {
@@ -5949,33 +6108,55 @@ window.StemLab = window.StemLab || {
               cleanupFns.push(function () { window.removeEventListener('resize', resize); });
             }
 
-            function pointerDown(ev) { dragging = true; lastX = ev.clientX || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
+            function pointerDown(ev) { try { canvas.focus(); } catch (e) {} dragging = true; lastX = ev.clientX || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
             function pointerMove(ev) { if (!dragging) return; var x = ev.clientX || 0; yaw += (x - lastX) * 0.009; lastX = x; }
             function pointerUp(ev) { dragging = false; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
+            function keyDown(ev) {
+              var key = ev.key;
+              if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
+                ev.preventDefault(); yaw -= Math.PI / 12; setStatus('Reconstruction rotated left.');
+              } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
+                ev.preventDefault(); yaw += Math.PI / 12; setStatus('Reconstruction rotated right.');
+              } else if (key === 'Home') {
+                ev.preventDefault(); yaw = -0.35; setStatus('Reconstruction returned to its starting view.');
+              }
+            }
             canvas.addEventListener('pointerdown', pointerDown);
             canvas.addEventListener('pointermove', pointerMove);
             canvas.addEventListener('pointerup', pointerUp);
             canvas.addEventListener('pointerleave', pointerUp);
+            canvas.addEventListener('keydown', keyDown);
             cleanupFns.push(function () {
               canvas.removeEventListener('pointerdown', pointerDown);
               canvas.removeEventListener('pointermove', pointerMove);
               canvas.removeEventListener('pointerup', pointerUp);
               canvas.removeEventListener('pointerleave', pointerUp);
+              canvas.removeEventListener('keydown', keyDown);
             });
 
-            setStatus('3D reconstruction loaded. Drag the model to rotate it.');
+            setStatus('3D reconstruction loaded. Drag, or use the left and right arrow keys, to rotate it.');
             function animate() {
               if (!alive) return;
               frame = window.requestAnimationFrame(animate);
               if (model) {
                 if (!dragging && !reducedMotion && props.autoRotate !== false) yaw += 0.0035;
                 model.rotation.y = yaw;
-                if (scanPulse) {
+                if (!reducedMotion && scanPulse) {
                   var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
                   scanPulse.scale.set(pulse, pulse, pulse);
                   if (scanPulse.material) scanPulse.material.opacity = 0.30 + Math.sin(performance.now() * 0.006) * 0.08;
                 }
-                loggedRings.forEach(function (ring, idx) {
+                if (!reducedMotion && assemblyPulse) {
+                  var assemblyGlow = 1 + Math.sin(performance.now() * 0.005) * 0.08;
+                  assemblyPulse.scale.set(assemblyGlow, assemblyGlow, assemblyGlow);
+                  if (assemblyPulse.material) assemblyPulse.material.opacity = 0.32 + Math.sin(performance.now() * 0.005) * 0.08;
+                }
+                if (!reducedMotion && claimEvidencePulse) {
+                  var claimGlow = 1 + Math.sin(performance.now() * 0.006 + 1.7) * 0.11;
+                  claimEvidencePulse.scale.set(claimGlow, claimGlow, claimGlow);
+                  if (claimEvidencePulse.material) claimEvidencePulse.material.opacity = 0.36 + Math.sin(performance.now() * 0.006 + 1.7) * 0.10;
+                }
+                if (!reducedMotion) loggedRings.forEach(function (ring, idx) {
                   var glow = 1 + Math.sin(performance.now() * 0.003 + idx) * 0.035;
                   ring.scale.set(glow, glow, glow);
                 });
@@ -5993,23 +6174,32 @@ window.StemLab = window.StemLab || {
             disposeObject(scene);
             if (renderer && renderer.dispose) renderer.dispose();
           };
-        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.autoRotate, props.scanTarget, props.loggedAnchorKey]);
+        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.autoRotate, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
 
         function readoutChip(text, color) {
           return el('span', { key: text, style: { padding: '5px 8px', borderRadius: 999, background: 'rgba(15,23,42,0.82)', border: '1px solid ' + color, color: '#e2e8f0', fontSize: 11, fontWeight: 800, boxShadow: '0 2px 8px rgba(0,0,0,0.22)' } }, text);
         }
+        var viewerDescId = 'dino3d-viewer-desc-' + props.species.id;
+        var statusId = 'dino3d-status-' + props.species.id;
+        var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 };
+        var layerSummary = [props.showSkeleton ? 'skeleton proxy' : null, props.showBody ? 'body outline' : null, props.showHuman ? 'human scale' : null, props.showEvidence ? 'evidence markers' : null].filter(Boolean).join(', ') || 'no visual layers enabled';
+        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate the reconstruction; Home returns to the starting view.';
 
         return el('div', { style: { position: 'relative', minHeight: 420, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
-          el('canvas', { ref: canvasRef, role: 'img', 'aria-label': props.species.common + ' procedural 3D reconstruction viewer', style: { width: '100%', height: 420, display: 'block' } }),
+          el('div', { id: viewerDescId, style: srOnlyStyle }, viewerSummary),
+          el('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag to rotate, or use left and right arrow keys. Home returns to the starting view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: 420, display: 'block', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
           el('div', { style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM), 'rgba(56,189,248,0.55)'),
             readoutChip('Height ' + fmtLength(props.species.heightM), 'rgba(250,204,21,0.55)'),
             props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.loggedCount != null ? readoutChip('Logged ' + props.loggedCount + '/' + (props.scanTotal || 3), 'rgba(34,197,94,0.65)') : null,
             props.pathLoggedCount != null ? readoutChip('Path ' + props.pathLoggedCount + '/' + (props.pathTotal || 2), 'rgba(20,184,166,0.65)') : null,
+            props.assemblyPlacedCount != null ? readoutChip('Assembly ' + props.assemblyPlacedCount + '/' + (props.assemblyTotal || 6), 'rgba(167,139,250,0.65)') : null,
+            props.claimEvidenceLabel ? readoutChip('Claim ' + props.claimEvidenceLabel, 'rgba(20,184,166,0.75)') : null,
+            props.claimEvidenceTrailLabel ? readoutChip('Trail ' + props.claimEvidenceTrailLabel, 'rgba(94,234,212,0.75)') : null,
             readoutChip('Mass ' + fmtWeight(props.species.weightKg), 'rgba(167,139,250,0.55)')
           ),
-          el('div', { ref: statusRef, 'aria-live': 'polite', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
+          el('div', { id: statusId, ref: statusRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         );
       }
 
@@ -6041,6 +6231,33 @@ window.StemLab = window.StemLab || {
         var claimReadinessPct = Math.round((claimReadinessScore / 5) * 100);
         var claimReadinessLabel = scanComplete ? 'CER ready' : (scanPathCount > 0 ? 'Connected evidence' : (scanLoggedCount > 0 ? 'Anchor evidence' : 'Start scanning'));
         var claimReadinessHint = scanComplete ? 'All anchors and path links are logged. Build a claim with evidence and reasoning.' : (scanPathCount > 0 ? 'A linked path connects anchors. Finish the scan for the strongest claim.' : (scanLoggedCount > 0 ? 'One or more anchors are logged. Link neighboring anchors for stronger reasoning.' : 'Log at least one anchor before writing a claim.'));
+        var assemblyPieces = [
+          { id: 'skull', label: 'Skull', role: 'feeding and senses', scan: 'skull', insight: 'diet and sensory evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Skull evidence is strongest for function claims about feeding, bite style, and sensory placement.', detail: 'Teeth, jaw joints, and eye sockets help scientists infer diet, bite style, and how the head was carried.' },
+          { id: 'spine', label: 'Spine', role: 'posture and balance', scan: 'shoulder', insight: 'posture chain evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Spine evidence links shoulder to hip, so it is strongest for posture and balance claims.', detail: 'Backbones connect the shoulder and hip, setting the body line used for posture and balance claims.' },
+          { id: 'ribs', label: 'Ribs', role: 'breathing and body volume', scan: 'shoulder', insight: 'body-volume evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Rib evidence supports function claims about breathing space, organs, and cautious body-volume reconstruction.', detail: 'The rib cage protects organs and gives a cautious boundary for soft-tissue reconstruction.' },
+          { id: 'pelvis', label: 'Pelvis', role: 'hip socket and muscle attachment', scan: 'hip', insight: 'stance and muscle evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Pelvis evidence is strongest for posture claims about stance, hip sockets, and muscle attachment.', detail: 'The pelvis links the spine to the hindlimbs and preserves clues about stance and powerful muscles.' },
+          { id: 'hindlimb', label: 'Hindlimb', role: 'movement and weight support', scan: 'hip', insight: 'movement evidence', claimId: 'function', claimLabel: 'Function', claimHint: 'Hindlimb evidence supports function claims about movement, stride, speed, and weight support.', detail: 'Femur, shin, and foot proportions help learners connect anatomy to speed, stride, and body mass.' },
+          { id: 'tail', label: 'Tail', role: 'counterbalance', scan: 'hip', insight: 'balance evidence', claimId: 'posture', claimLabel: 'Posture', claimHint: 'Tail evidence is strongest for posture claims because it counterbalances the hips, body, and head.', detail: 'Tail vertebrae counterbalance the body, especially when the hips and shoulders sit at different heights.' }
+        ];
+        var rawAssemblyPlaced = (d.field3dAssemblyPlaced && typeof d.field3dAssemblyPlaced === 'object') ? d.field3dAssemblyPlaced : {};
+        var assemblySpecies = d.field3dAssemblySpecies || null;
+        var assemblyPlaced = assemblySpecies === dn.id ? rawAssemblyPlaced : {};
+        var assemblyFocusIdx = modIndex(d.field3dAssemblyFocusIdx, assemblyPieces.length);
+        var assemblyFocus = assemblyPieces[assemblyFocusIdx] || assemblyPieces[0];
+        var assemblyPlacedCount = assemblyPieces.reduce(function (n, piece) { return n + (assemblyPlaced[piece.id] ? 1 : 0); }, 0);
+        var assemblyPlacedKey = assemblyPieces.map(function (piece) { return assemblyPlaced[piece.id] ? piece.id : ''; }).join('|');
+        var assemblyUnlocked = scanComplete;
+        var assemblyComplete = assemblyPlacedCount >= assemblyPieces.length;
+        var assemblyStatus = assemblyComplete ? 'Skeleton assembled' : (assemblyUnlocked ? 'Place fossils into sockets' : 'Complete field scan to unlock');
+        var assemblyFocusPlaced = !!assemblyPlaced[assemblyFocus.id];
+        var assemblyScanCue = assemblyUnlocked ? 'Field scan complete: all fossil pieces are cataloged for assembly.' : 'Finish the Skull -> Shoulder -> Hip scan to catalog the fossil tray.';
+        var assemblyInsightPieces = assemblyPieces.filter(function (piece) { return !!assemblyPlaced[piece.id]; });
+        var assemblyInsightCount = assemblyInsightPieces.length;
+        var assemblyInsightText = assemblyInsightCount ? assemblyInsightPieces.map(function (piece) { return piece.label + ' - ' + piece.role; }).join('; ') : 'Place fossils to turn anatomy into reasoning evidence.';
+        var assemblySupportReady = assemblyInsightCount > 0;
+        var assemblyClaimMode = assemblyFocus.claimId || 'function';
+        var assemblyClaimLabel = assemblyFocus.claimLabel || cap(assemblyClaimMode);
+        var assemblyClaimCoach = assemblyFocus.claimHint || (assemblyFocus.label + ' evidence can support a claim when it is connected to a logged fossil anchor.');
         function findNextOpenIdx(loggedMap, startIdx) {
           for (var offset = 1; offset <= scanTargets.length; offset++) {
             var idx = modIndex(startIdx + offset, scanTargets.length);
@@ -6066,6 +6283,38 @@ window.StemLab = window.StemLab || {
           var nextTarget = scanTargets[nextIdx];
           upd({ field3dScanLogged: nextLog, field3dScanSpecies: dn.id, field3dShowEvidence: true, field3dScanTargetIdx: nextIdx });
           announceToSR(scanTarget.label + ' observation logged' + (nextTarget && !nextLog[nextTarget.id] ? '. Next focus: ' + nextTarget.label : '. Field scan complete'));
+        }
+        function findNextOpenAssemblyIdx(placedMap, startIdx) {
+          for (var offset = 1; offset <= assemblyPieces.length; offset++) {
+            var idx = modIndex(startIdx + offset, assemblyPieces.length);
+            if (!placedMap[assemblyPieces[idx].id]) return idx;
+          }
+          return startIdx;
+        }
+        function setAssemblyFocus(idx) {
+          var nextIdx = modIndex(idx, assemblyPieces.length);
+          upd({ field3dAssemblyFocusIdx: nextIdx, field3dShowSkeleton: true });
+          announceToSR('3D fossil assembly focus: ' + assemblyPieces[nextIdx].label);
+        }
+        function nextAssemblyFocus() { setAssemblyFocus(assemblyFocusIdx + 1); }
+        function useAssemblyClaim() {
+          if (!assemblyFocusPlaced) return;
+          upd({ field3dClaimFocus: assemblyClaimMode, field3dClaimBone: assemblyFocus.id, field3dClaimBoneSpecies: dn.id });
+          announceToSR(assemblyFocus.label + ' evidence sent to the ' + assemblyClaimLabel + ' claim builder');
+        }
+        function placeAssemblyPiece() {
+          if (!assemblyUnlocked || assemblyFocusPlaced) return;
+          var nextPlaced = {};
+          for (var key in assemblyPlaced) { if (Object.prototype.hasOwnProperty.call(assemblyPlaced, key)) nextPlaced[key] = !!assemblyPlaced[key]; }
+          nextPlaced[assemblyFocus.id] = true;
+          var nextIdx = findNextOpenAssemblyIdx(nextPlaced, assemblyFocusIdx);
+          var done = assemblyPieces.reduce(function (n, piece) { return n + (nextPlaced[piece.id] ? 1 : 0); }, 0) >= assemblyPieces.length;
+          upd({ field3dAssemblyPlaced: nextPlaced, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: nextIdx, field3dShowSkeleton: true, field3dShowEvidence: true });
+          announceToSR(assemblyFocus.label + ' fossil placed' + (done ? '. Skeleton assembly complete' : '. Next fossil: ' + assemblyPieces[nextIdx].label));
+        }
+        function resetAssembly() {
+          upd({ field3dAssemblyPlaced: {}, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: 0, field3dShowSkeleton: true, field3dClaimBone: null, field3dClaimBoneSpecies: dn.id });
+          announceToSR('3D fossil assembly reset');
         }
         var options = DINOS.slice().sort(function (a, b) { return a.common < b.common ? -1 : 1; }).map(function (sp) {
           return el('option', { key: sp.id, value: sp.id }, sp.common);
@@ -6165,6 +6414,51 @@ window.StemLab = window.StemLab || {
           ]),
           scanComplete ? el('div', { key: 'done', style: { marginTop: 8, fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, 'Field scan complete: use the logged anchors to support a claim below.') : null
         ], { marginBottom: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.28)' });
+        var assemblyPanel = panel([
+          el('div', { key: 'h', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+            el('div', { style: { fontSize: 13, fontWeight: 900 } }, '3D fossil assembly puzzle'),
+            el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, 'Assembly ' + assemblyPlacedCount + '/' + assemblyPieces.length)
+          ),
+          el('div', { key: 'status', style: { fontSize: 11.5, color: T.soft, fontWeight: 800, marginBottom: 7 } }, assemblyStatus),
+          el('div', { key: 'meter', style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 7 } },
+            el('div', { style: { height: '100%', width: Math.round((assemblyPlacedCount / assemblyPieces.length) * 100) + '%', background: 'linear-gradient(90deg, #a78bfa, #f59e0b, #22c55e)' } })
+          ),
+          el('div', { key: 'cue', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, assemblyScanCue),
+          el('div', { key: 'pieces', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: 6, marginBottom: 8 } }, assemblyPieces.map(function (piece, idx) {
+            var active = idx === assemblyFocusIdx;
+            var placed = !!assemblyPlaced[piece.id];
+            return el('button', {
+              key: piece.id,
+              onClick: function () { setAssemblyFocus(idx); },
+              'aria-pressed': active ? 'true' : 'false',
+              style: {
+                textAlign: 'left',
+                padding: '7px 8px',
+                borderRadius: 8,
+                border: '1px solid ' + (active ? 'rgba(167,139,250,0.74)' : T.border),
+                background: active ? 'rgba(167,139,250,0.17)' : (placed ? 'rgba(34,197,94,0.12)' : T.deeper),
+                color: T.text,
+                cursor: 'pointer',
+                fontSize: 11.5,
+                fontWeight: 900
+              }
+            }, (placed ? 'Placed ' : (assemblyUnlocked ? 'Place ' : 'Find ')) + piece.label);
+          })),
+          el('div', { key: 'focus', style: { fontSize: 12.5, color: T.text, lineHeight: 1.48, marginBottom: 5 } }, 'Focus: ' + assemblyFocus.label + ' - ' + assemblyFocus.role),
+          el('div', { key: 'detail', style: { fontSize: 12, color: T.soft, lineHeight: 1.48, marginBottom: 8 } }, assemblyFocus.detail),
+          el('div', { key: 'insightTitle', style: { paddingTop: 7, borderTop: '1px solid ' + T.border, fontSize: 11.5, color: T.soft, fontWeight: 900, marginBottom: 6 } }, 'Anatomy insights ' + assemblyInsightCount + '/' + assemblyPieces.length),
+          assemblyInsightCount ? el('div', { key: 'insights', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 5, marginBottom: 8 } }, assemblyInsightPieces.map(function (piece) {
+            return el('span', { key: piece.id, style: { fontSize: 11, fontWeight: 900, color: '#ddd6fe', padding: '4px 6px', borderRadius: 7, border: '1px solid rgba(167,139,250,0.34)', background: 'rgba(167,139,250,0.12)' } }, piece.label + ': ' + piece.role);
+          })) : el('div', { key: 'insightsEmpty', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, assemblyInsightText),
+          el('div', { key: 'claimCoach', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, 'Claim coach: ' + assemblyFocus.label + ' supports ' + assemblyClaimLabel + ' claims. ' + assemblyClaimCoach),
+          el('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
+            el('button', { key: 'place', onClick: placeAssemblyPiece, disabled: !assemblyUnlocked || assemblyFocusPlaced, style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(167,139,250,0.55)', background: (!assemblyUnlocked || assemblyFocusPlaced) ? 'rgba(167,139,250,0.09)' : 'rgba(167,139,250,0.20)', color: T.text, cursor: (!assemblyUnlocked || assemblyFocusPlaced) ? 'default' : 'pointer', opacity: (!assemblyUnlocked || assemblyFocusPlaced) ? 0.72 : 1 } }, assemblyFocusPlaced ? 'Fossil placed' : (assemblyUnlocked ? 'Place fossil' : 'Finish scan first')),
+            el('button', { key: 'claim', onClick: useAssemblyClaim, disabled: !assemblyFocusPlaced, style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(20,184,166,0.55)', background: assemblyFocusPlaced ? 'rgba(20,184,166,0.17)' : 'rgba(20,184,166,0.08)', color: T.text, cursor: assemblyFocusPlaced ? 'pointer' : 'default', opacity: assemblyFocusPlaced ? 1 : 0.72 } }, assemblyFocusPlaced ? 'Use in claim' : 'Place before claim'),
+            el('button', { key: 'next', onClick: nextAssemblyFocus, style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.55)', background: 'rgba(245,158,11,0.16)', color: T.text, cursor: 'pointer' } }, 'Next fossil'),
+            el('button', { key: 'reset', onClick: resetAssembly, style: { fontSize: 12, fontWeight: 900, padding: '7px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', color: T.text, cursor: 'pointer' } }, 'Reset puzzle')
+          ]),
+          assemblyComplete ? el('div', { key: 'done', style: { marginTop: 8, fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, 'Anatomy puzzle complete: skull, spine, ribs, pelvis, hindlimb, and tail now support a stronger reconstruction claim.') : null
+        ], { marginBottom: 12, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.30)' });
         var claimOptions = [
           {
             id: 'scale',
@@ -6181,6 +6475,13 @@ window.StemLab = window.StemLab || {
             reasoning: 'Posture is an inference: bones constrain it, but soft tissue and motion are reconstructed.'
           },
           {
+            id: 'function',
+            label: 'Function',
+            claim: dn.common + ' anatomy can support a function claim about feeding, breathing, movement, or balance.',
+            evidence: assemblySupportReady ? 'Use assembled fossils as body-system evidence: ' + assemblyInsightText + '.' : 'Place fossils in the assembly puzzle before making a function claim.',
+            reasoning: 'Function claims are strongest when bone shape is tied to a body job such as sensing, breathing, moving, or balancing.'
+          },
+          {
             id: 'uncertainty',
             label: 'Uncertainty',
             claim: 'One part of the reconstruction should stay tentative: ' + dn.uncertain,
@@ -6190,8 +6491,41 @@ window.StemLab = window.StemLab || {
         ];
         var claimFocusId = d.field3dClaimFocus || 'scale';
         var claimFocus = claimOptions.filter(function (option) { return option.id === claimFocusId; })[0] || claimOptions[0];
+        var claimBoneSpecies = d.field3dClaimBoneSpecies || null;
+        var claimBoneId = d.field3dClaimBone || null;
+        var claimEvidencePiece = claimBoneSpecies === dn.id ? assemblyPieces.filter(function (piece) { return piece.id === claimBoneId && !!assemblyPlaced[piece.id]; })[0] || null : null;
+        var claimEvidenceText = claimEvidencePiece ? (claimEvidencePiece.label + ' - ' + claimEvidencePiece.role) : null;
+        var claimEvidenceClaimLabel = claimEvidencePiece ? (claimEvidencePiece.claimLabel || claimFocus.label) : null;
+        var claimEvidenceAnchor = claimEvidencePiece ? scanTargets.filter(function (target) { return target.id === claimEvidencePiece.scan; })[0] || null : null;
+        var claimEvidenceTrailLabel = claimEvidencePiece && claimEvidenceAnchor ? (claimEvidencePiece.label + ' -> ' + claimEvidenceAnchor.label) : null;
+        var claimEvidenceTrailText = claimEvidencePiece && claimEvidenceAnchor ? (claimEvidenceAnchor.label + ' scan -> ' + claimEvidencePiece.label + ' fossil -> ' + claimEvidenceClaimLabel + ' claim') : null;
+        var loggedAnchorLabels = scanTargets.filter(function (target) { return !!scanLogged[target.id]; }).map(function (target) { return target.label; });
+        var loggedAnchorText = loggedAnchorLabels.length ? loggedAnchorLabels.join(', ') : 'no scan anchors yet';
+        var cerChecklist = [
+          { label: 'Claim selected', done: true },
+          { label: 'Anchor logged', done: scanLoggedCount > 0 },
+          { label: 'Path linked', done: scanPathCount > 0 },
+          { label: 'Anatomy support', done: assemblySupportReady },
+          { label: 'Reasoning backed', done: scanComplete }
+        ];
+        var cerChecklistCount = cerChecklist.reduce(function (n, item) { return n + (item.done ? 1 : 0); }, 0);
+        var cerDraftEvidence = scanLoggedCount ? 'Logged anchors: ' + loggedAnchorText + '; evidence path ' + scanPathCount + '/' + scanPathLinks.length + ' linked.' : 'Log skull, shoulder, or hip anchors before citing evidence.';
+        if (assemblySupportReady) cerDraftEvidence += ' Anatomy insights: ' + assemblyInsightText + '.';
+        else if (scanComplete) cerDraftEvidence += ' Assemble at least one fossil to add anatomy support.';
+        if (claimEvidencePiece) cerDraftEvidence += ' Focused fossil: ' + claimEvidenceText + '.';
+        if (claimEvidenceTrailText) cerDraftEvidence += ' Evidence trail: ' + claimEvidenceTrailText + '.';
+        var cerDraftReasoning = scanComplete ? claimFocus.reasoning : (scanPathCount > 0 ? 'Use the linked path to explain how neighboring bones constrain the reconstruction.' : 'Connect observations before explaining the reconstruction.');
+        if (assemblySupportReady) cerDraftReasoning += ' The assembled anatomy turns isolated bones into a connected body-system explanation.';
+        if (claimEvidencePiece) cerDraftReasoning += ' The focused fossil keeps the claim tied to a named anatomy clue before broadening to the whole model.';
+        if (claimEvidenceTrailText) cerDraftReasoning += ' The trail shows how an observed scan anchor supports the named fossil evidence.';
+        var cerDraft = 'Claim: ' + claimFocus.claim + ' Evidence: ' + cerDraftEvidence + ' Reasoning: ' + cerDraftReasoning;
         function setClaimFocus(id) {
-          upd('field3dClaimFocus', id);
+          var patch = { field3dClaimFocus: id };
+          if (claimEvidencePiece && claimEvidencePiece.claimId !== id) {
+            patch.field3dClaimBone = null;
+            patch.field3dClaimBoneSpecies = dn.id;
+          }
+          upd(patch);
           announceToSR('3D claim builder: ' + id);
         }
         var claimBuilderPanel = panel([
@@ -6200,6 +6534,13 @@ window.StemLab = window.StemLab || {
           el('div', { key: 'readiness', style: { fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 5 } }, 'Claim strength ' + claimReadinessScore + '/5 | ' + claimReadinessLabel),
           el('div', { key: 'readinessMeter', style: { height: 7, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 6 } }, el('div', { style: { height: '100%', width: claimReadinessPct + '%', background: 'linear-gradient(90deg, #f59e0b, #14b8a6, #22c55e)' } })),
           el('div', { key: 'readinessHint', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, claimReadinessHint),
+          el('div', { key: 'cerTitle', style: { paddingTop: 8, borderTop: '1px solid ' + T.border, fontSize: 12, color: T.text, fontWeight: 900, marginBottom: 6 } }, 'CER rehearsal | Checklist ' + cerChecklistCount + '/' + cerChecklist.length),
+          el('div', { key: 'cerChecks', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 5, marginBottom: 7 } }, cerChecklist.map(function (item) {
+            return el('span', { key: item.label, style: { fontSize: 11, fontWeight: 900, color: item.done ? '#bbf7d0' : T.soft, padding: '4px 6px', borderRadius: 7, border: '1px solid ' + (item.done ? 'rgba(34,197,94,0.42)' : T.border), background: item.done ? 'rgba(34,197,94,0.12)' : 'rgba(15,23,42,0.24)' } }, (item.done ? 'Done ' : 'Need ') + item.label);
+          })),
+          el('div', { key: 'cerDraft', style: { fontSize: 11.5, color: T.soft, lineHeight: 1.48, marginBottom: 8 } }, cerDraft),
+          claimEvidencePiece ? el('div', { key: 'evidenceFocus', style: { fontSize: 11.5, color: T.text, lineHeight: 1.45, padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(20,184,166,0.35)', background: 'rgba(20,184,166,0.10)', marginBottom: 6 } }, 'Evidence focus: ' + claimEvidenceText + ' | ' + claimEvidenceClaimLabel + ' claim') : null,
+          claimEvidenceTrailText ? el('div', { key: 'evidenceTrail', style: { fontSize: 11.5, color: T.text, lineHeight: 1.45, padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(94,234,212,0.32)', background: 'rgba(94,234,212,0.08)', marginBottom: 8 } }, 'Evidence trail: ' + claimEvidenceTrailText) : null,
           el('div', { key: 'modes', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: 6, marginBottom: 8 } }, claimOptions.map(function (option) {
             var active = option.id === claimFocus.id;
             return el('button', {
@@ -6263,6 +6604,8 @@ window.StemLab = window.StemLab || {
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
           keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),
           keyItem('#22c55e', 'Logged anchor', 'Green rings show evidence points already recorded in the observation log.'),
+          keyItem('#a78bfa', 'Assembly piece', 'Purple sockets and loose fossils show the anatomy puzzle; amber marks the piece in focus.'),
+          keyItem('#14b8a6', 'Claim evidence', 'Teal halo and connector line mark the assembled fossil currently attached to the CER claim.'),
           keyItem('#f59e0b', 'Scan focus', 'Amber ring pulses around the current evidence target.'),
           keyItem('#0f172a', 'Anchor label', 'Floating labels identify skull, shoulder, and hip evidence points.'),
           keyItem('#94a3b8', 'Human scale', 'Gray figure keeps size estimates concrete.'),
@@ -6308,12 +6651,12 @@ window.StemLab = window.StemLab || {
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, alignItems: 'start' } },
             el('div', { key: 'viewer' },
               el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
-                el('select', { value: dn.id, 'aria-label': 'Choose species for 3D field station', onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
+                el('select', { value: dn.id, 'aria-label': 'Choose species for 3D field station', onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
                 el('button', { onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + T.border, background: 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, 'Open species file'),
                 el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin')
               ),
               presetStrip,
-              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
               el('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } }, taskCards)
             ),
             el('div', { key: 'side' },
@@ -6324,6 +6667,7 @@ window.StemLab = window.StemLab || {
                 el('div', { key: 'rows' }, evidenceRows)
               ], { marginBottom: 12 }),
               scanCoachPanel,
+              assemblyPanel,
               claimBuilderPanel,
               challengePanel,
               visualKeyPanel,
@@ -6623,7 +6967,7 @@ window.StemLab = window.StemLab || {
         content = el('div', { style: { padding: 20, color: T.text } },
           el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
           el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
-          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dClaimFocus: 'scale', compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
         );
       }
 

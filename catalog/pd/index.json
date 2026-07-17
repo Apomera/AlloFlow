@@ -1,10 +1,13 @@
 {
   "schema_version": "pd-1.0",
   "kind": "pd_catalog",
-  "generated_at": "2026-06-19T00:00:00.000Z",
+  "generated_at": "2026-07-16T00:00:00.000Z",
   "entries": [
     {
       "slug": "udl-representation-quickstart",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:c757c1e29e05e044f1ac73367ce3bd0eacff30090d14414a6e474cb07746d76e",
       "title": "UDL Quick Start: Multiple Means of Representation",
       "topic": "UDL",
       "summary": "A ~15-minute primer on the UDL principle of Multiple Means of Representation, with a knowledge check and a classroom-application reflection.",
@@ -16,6 +19,9 @@
     },
     {
       "slug": "retrieval-practice-quickstart",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:3037070d691efe93ad0cfb12d4d31130740bd7ce668373b774d21c7c8345326d",
       "title": "Retrieval Practice: Quizzing that Builds Memory",
       "topic": "Learning Science",
       "summary": "A ~12-minute primer on retrieval practice (the 'testing effect') — why recalling beats re-reading — with a knowledge check and a classroom action plan.",
@@ -27,6 +33,9 @@
     },
     {
       "slug": "actionable-feedback-quickstart",
+      "version": "1.0.0",
+      "language": "en-US",
+      "contentDigest": "sha256:6ff14915d7e7d1884c6338b037d9c3305205cffebdacf0951f90162e3dfc15e0",
       "title": "Giving Actionable Feedback to Students",
       "topic": "Feedback",
       "summary": "A ~12-minute module on specific, actionable feedback — read the principles, then practice rewriting feedback in a scenario with formative AI coaching.",

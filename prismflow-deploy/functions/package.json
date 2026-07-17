@@ -1,6 +1,6 @@
 {
   "name": "alloflow-functions",
-  "description": "Firebase Cloud Functions for AlloFlow (Serper.dev search proxy)",
+  "description": "Firebase Cloud Functions for authenticated AlloFlow web search and safe public-page import",
   "engines": {
     "node": "22"
   },

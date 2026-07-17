@@ -6,7 +6,7 @@ const path = require('path');
 const asar = require('@electron/asar');
 
 const desktopRoot = path.resolve(__dirname, '..');
-const distDir = path.join(desktopRoot, 'dist');
+const distDir = path.resolve(process.env.ALLOFLOW_DESKTOP_DIST_DIR || path.join(desktopRoot, 'dist'));
 const sourcePackage = JSON.parse(fs.readFileSync(path.join(desktopRoot, 'package.json'), 'utf8'));
 const platformArg = process.argv.find((arg) => arg.startsWith('--platform='))
   || (process.argv.includes('--platform') ? '--platform=' + process.argv[process.argv.indexOf('--platform') + 1] : '');
@@ -85,6 +85,7 @@ function verifyLayout(layout) {
     '/electron/preload.cjs',
     '/electron/security.cjs',
     '/runtime/alloflow-desktop-runtime.cjs',
+    '/runtime/web-source-fetch.cjs',
     '/command-center/index.html',
     '/contracts/runtime-contract.json',
   ];

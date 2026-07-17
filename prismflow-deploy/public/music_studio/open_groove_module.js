@@ -165,6 +165,9 @@
     var synthFamilyPair = React.useState('All');
     var selectedSynthFamily = synthFamilyPair[0];
     var setSelectedSynthFamily = synthFamilyPair[1];
+    var instrumentRolePair = React.useState('All');
+    var selectedInstrumentRole = instrumentRolePair[0];
+    var setSelectedInstrumentRole = instrumentRolePair[1];
     var loopPair = React.useState(false);
     var loopEnabled = loopPair[0];
     var setLoopEnabled = loopPair[1];
@@ -316,12 +319,16 @@
     var staffPitchPair = React.useState('C5');
     var staffPitch = staffPitchPair[0];
     var setStaffPitch = staffPitchPair[1];
+    var activeStaffPitch = staffPitch;
     var staffDurationPair = React.useState('q');
     var staffDuration = staffDurationPair[0];
     var setStaffDuration = staffDurationPair[1];
     var staffToolPair = React.useState('note');
     var staffTool = staffToolPair[0];
     var setStaffTool = staffToolPair[1];
+    var staffClefPair = React.useState('auto');
+    var staffClef = staffClefPair[0];
+    var setStaffClef = staffClefPair[1];
     var selectedPatternPair = React.useState(initialProjectRef.current.patterns[0] && initialProjectRef.current.patterns[0].id);
     var selectedPatternId = selectedPatternPair[0];
     var setSelectedPatternId = selectedPatternPair[1];
@@ -341,6 +348,7 @@
     var recorderRef = React.useRef(null);
     var recorderChunksRef = React.useRef([]);
     var fileInputRef = React.useRef(null);
+    var musicXmlInputRef = React.useRef(null);
     var midiAccessRef = React.useRef(null);
     var midiHandlerRef = React.useRef(null);
     var pattern = C.ogFindPattern && C.ogFindPattern(project, selectedPatternId) || project.patterns[0];
@@ -349,6 +357,8 @@
     var selectedPad = drumTrack && drumTrack.pads.find(function (pad) { return pad.id === selectedPadId; });
     var selectedAsset = selectedPad && selectedPad.assetId && C.ogFindAsset ? C.ogFindAsset(project, selectedPad.assetId) : null;
     var selectedPadVoice = selectedPad && selectedPad.proceduralVoice || selectedAsset && selectedAsset.proceduralVoice || null;
+    var selectedPadVoiceDescription = selectedPadVoice && C.ogDescribeProceduralVoice ? C.ogDescribeProceduralVoice(selectedPadVoice) : null;
+    var selectedPadVoiceComparison = selectedPad && drumTrack && C.ogComparePadProceduralVoice ? C.ogComparePadProceduralVoice(project, drumTrack.id, selectedPadId) : null;
     var stepsPerBar = 16;
     var synthPitches = ['C4', 'Bb3', 'G3', 'Eb3', 'C3', 'Bb2', 'G2', 'C2'];
     var keyboardLayout = C.ogBuildKeyboardLayout ? C.ogBuildKeyboardLayout(project, { octave: keyboardOctave, octaves: 2 }) : { keys: [] };
@@ -384,7 +394,7 @@
     var panelJumpValue = visibleWorkspaceSections.some(function (section) { return section.id === panelJumpTarget; })
       ? panelJumpTarget
       : (visibleWorkspaceSections[0] && visibleWorkspaceSections[0].id || '');
-    var staffPitches = ['C6', 'B5', 'Bb5', 'A5', 'G5', 'F5', 'E5', 'Eb5', 'D5', 'C5', 'B4', 'Bb4', 'A4', 'G4', 'F4', 'E4', 'Eb4', 'D4', 'C4'];
+    var defaultStaffPitches = ['C6', 'B5', 'Bb5', 'A5', 'G5', 'F5', 'E5', 'Eb5', 'D5', 'C5', 'B4', 'Bb4', 'A4', 'G4', 'F4', 'E4', 'Eb4', 'D4', 'C4'];
     var visibleSteps = [];
     for (var i = 0; i < stepsPerBar; i++) visibleSteps.push(selectedBar * stepsPerBar + i);
     var barIndexes = [];
@@ -797,15 +807,16 @@
     }
 
     function triggerPad(pad) {
-      if (!A) return;
+      if (!A || !pad) return false;
       var engine = ensureAudioEngine(true);
-      if (!engine) return;
+      if (!engine) return false;
       if (pad.assetId && A.ogPlaySample && A.ogPlaySample(engine, pad.assetId, engine.ctx.currentTime + 0.01, 0.85, pad.sampleRegion)) {
         ogAnnounce(pad.name);
-        return;
+        return true;
       }
-      A.ogPlayDrum(engine, pad.engine, engine.ctx.currentTime + 0.01, 0.85, null, pad.proceduralVoice);
-      ogAnnounce(pad.name);
+      var played = A.ogPlayDrum(engine, pad.engine, engine.ctx.currentTime + 0.01, 0.85, null, pad.proceduralVoice);
+      if (played) ogAnnounce(pad.name);
+      return !!played;
     }
 
     function toggleStep(step) {
@@ -1139,6 +1150,24 @@
       ogAnnounce('Instrument preview');
     }
 
+    function normalizeInstrumentRole(role) {
+      return C.ogNormalizeInstrumentRole ? C.ogNormalizeInstrumentRole(role) : String(role || 'instrument').toLowerCase();
+    }
+
+    function instrumentRoleGuideFor(role) {
+      var normalized = normalizeInstrumentRole(role);
+      for (var i = 0; i < instrumentRoleGuides.length; i++) {
+        if (instrumentRoleGuides[i].role === normalized) return instrumentRoleGuides[i];
+      }
+      return C.ogBuildInstrumentRoleGuide ? C.ogBuildInstrumentRoleGuide(normalized) : null;
+    }
+
+    function instrumentRoleLabel(role) {
+      if (role === 'All') return 'All Roles';
+      var guide = instrumentRoleGuideFor(role);
+      return guide && guide.label || String(role || 'Role');
+    }
+
     function clearSelectedPad() {
       if (!pattern || !drumTrack || !C.ogClearPadEvents) return;
       var removed = 0;
@@ -1377,8 +1406,9 @@
           replace: true
         });
       });
-      addToast((summary.noteCount || 0) + ' ' + (summary.styleName || 'melody') + ' notes written.', 'success');
-      ogAnnounce('Melody phrase written');
+      var fitted = summary.rangeFitCount ? ' ' + summary.rangeFitCount + ' fitted to range.' : '';
+      addToast((summary.noteCount || 0) + ' ' + (summary.styleName || 'melody') + ' notes written.' + fitted, 'success');
+      ogAnnounce('Melody phrase written' + fitted);
     }
 
     function writeNotationEntry() {
@@ -1399,6 +1429,18 @@
       ogAnnounce('Notation input written');
     }
 
+    function fitNotesToInstrumentRange() {
+      if (!pattern || !synthTrack || !C.ogFitTrackNotesToInstrumentRange) return;
+      var result = { changedCount: 0, summary: 'No notes needed range fitting.' };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (nextPattern && nextSynth) result = C.ogFitTrackNotesToInstrumentRange(next, nextPattern.id, nextSynth.id);
+      });
+      addToast(result.summary, result.changedCount ? 'success' : 'info');
+      ogAnnounce(result.summary);
+    }
+
     function writeStaffSlot(barIndex, startBeat) {
       if (!pattern || !synthTrack || !C.ogSetStaffNote) return;
       var result = null;
@@ -1408,7 +1450,7 @@
         result = C.ogSetStaffNote(next, nextPattern.id, nextSynth.id, {
           startBar: barIndex,
           startBeat: startBeat,
-          pitch: staffPitch,
+          pitch: activeStaffPitch,
           duration: staffDuration,
           tool: staffTool,
           rest: staffTool === 'rest',
@@ -1419,9 +1461,9 @@
         addToast('Staff slot cleared.', 'success');
         ogAnnounce('Staff slot cleared');
       } else {
-        triggerNote(staffPitch, 0.72);
-        addToast(staffPitch + ' written on the staff.', 'success');
-        ogAnnounce(staffPitch + ' written');
+        triggerNote(activeStaffPitch, 0.72);
+        addToast(activeStaffPitch + ' written on the staff.', 'success');
+        ogAnnounce(activeStaffPitch + ' written');
       }
       return result;
     }
@@ -1442,11 +1484,16 @@
       var paper = themeMode === 'contrast' ? '#000000' : themeMode === 'dark' ? '#020617' : '#ffffff';
       var accent = themeMode === 'contrast' ? '#ffff00' : themeMode === 'dark' ? '#5eead4' : '#0f766e';
       var muted = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#94a3b8' : '#94a3b8';
+      var isBassClef = staffEngraving.clef === 'bass';
+      var clefGlyph = isBassClef ? 'F' : 'G';
+      var clefY = isBassClef ? g.staffTop + g.lineSpacing * 3.05 : g.staffTop + g.lineSpacing * 3.1;
       var children = [
         h('rect', { key: 'paper', x: 0, y: 0, width: staffEngraving.width, height: staffEngraving.height, fill: paper }),
-        h('text', { key: 'clef', x: 14, y: g.staffTop + g.lineSpacing * 3.1, fill: ink, fontSize: 34, fontFamily: 'Georgia, serif', fontWeight: 700 }, 'G'),
-        h('text', { key: 'time', x: 32, y: g.staffTop + g.lineSpacing * 1.1, fill: ink, fontSize: 12, fontWeight: 900 }, String(staffEngraving.timeSignature[0])),
-        h('text', { key: 'time2', x: 32, y: g.staffTop + g.lineSpacing * 3.1, fill: ink, fontSize: 12, fontWeight: 900 }, String(staffEngraving.timeSignature[1]))
+        h('text', { key: 'clef', x: 14, y: clefY, fill: ink, fontSize: isBassClef ? 31 : 34, fontFamily: 'Georgia, serif', fontWeight: 700 }, clefGlyph),
+        isBassClef ? h('circle', { key: 'clef-dot-1', cx: 36, cy: g.staffTop + g.lineSpacing * 1.55, r: 1.7, fill: ink }) : null,
+        isBassClef ? h('circle', { key: 'clef-dot-2', cx: 36, cy: g.staffTop + g.lineSpacing * 2.45, r: 1.7, fill: ink }) : null,
+        h('text', { key: 'time', x: 42, y: g.staffTop + g.lineSpacing * 1.1, fill: ink, fontSize: 12, fontWeight: 900 }, String(staffEngraving.timeSignature[0])),
+        h('text', { key: 'time2', x: 42, y: g.staffTop + g.lineSpacing * 3.1, fill: ink, fontSize: 12, fontWeight: 900 }, String(staffEngraving.timeSignature[1]))
       ];
       for (var line = 0; line < 5; line++) {
         var y = g.staffTop + line * g.lineSpacing;
@@ -1473,7 +1520,7 @@
             role: 'button',
             tabIndex: 0,
             focusable: 'true',
-            'aria-label': 'Write ' + (staffTool === 'rest' ? 'rest' : staffPitch) + ' in bar ' + measure.bar + ' beat ' + slot.startBeat,
+            'aria-label': 'Write ' + (staffTool === 'rest' ? 'rest' : activeStaffPitch) + ' in bar ' + measure.bar + ' beat ' + slot.startBeat,
             onClick: function () { writeStaffSlot(measure.bar - 1, slot.startBeat); },
             onKeyDown: function (ev) { staffSlotKey(ev, measure.bar - 1, slot.startBeat); }
           }));
@@ -1525,7 +1572,7 @@
         style: styles.staffSvg,
         viewBox: '0 0 ' + staffEngraving.width + ' ' + staffEngraving.height,
         role: 'img',
-        'aria-label': 'Editable engraved treble staff'
+        'aria-label': 'Editable engraved ' + (staffEngraving.clefLabel || staffEngraving.clef || 'treble') + ' staff'
       }, children);
     }
 
@@ -1625,6 +1672,15 @@
       });
     }
 
+    function previewSelectedPadVoice() {
+      if (!selectedPad) {
+        addToast('Select a pad before previewing voice.', 'info');
+        return;
+      }
+      var played = triggerPad(selectedPad);
+      if (played && selectedPadVoiceDescription) ogAnnounce('Preview ' + selectedPad.name + ': ' + selectedPadVoiceDescription.summary);
+    }
+
     function resetSelectedPadVoice() {
       if (!selectedPad || !drumTrack || !C.ogResetPadProceduralVoice) {
         addToast('Select a procedural pad before resetting voice.', 'info');
@@ -1650,6 +1706,20 @@
       });
       addToast('Pad voice randomized.', 'success');
       ogAnnounce('Pad voice randomized');
+    }
+
+    function applySelectedPadVoicePreset(presetId) {
+      if (!selectedPad || !drumTrack || !C.ogApplyPadProceduralVoicePreset) {
+        addToast('Select a procedural pad before applying a voice preset.', 'info');
+        return;
+      }
+      var preset = voicePresets.filter(function (item) { return item.id === presetId; })[0] || null;
+      mutate(function (next) {
+        var nextDrums = next.tracks.find(function (track) { return track.type === 'drumRack'; });
+        if (nextDrums) C.ogApplyPadProceduralVoicePreset(next, nextDrums.id, selectedPadId, presetId);
+      });
+      addToast((preset && preset.label || 'Voice') + ' preset applied.', 'success');
+      ogAnnounce('Voice preset applied');
     }
 
     function renderVoiceSlider(label, key, min, max, step, fallback) {
@@ -2011,9 +2081,57 @@
       downloadText(safeTitle + '.ogroove.json', C.ogSerializeProject(project), 'application/json');
     }
 
+    function importMusicXmlText(text, sourceLabel) {
+      try {
+        if (!C.ogImportMusicXmlSketch) throw new Error('MusicXML import is unavailable');
+        if (!synthTrack) throw new Error('Choose a synth track before importing MusicXML');
+        var next = clone(project);
+        var nextPattern = C.ogFindPattern(next, pattern && pattern.id) || next.patterns[0];
+        var nextTrack = C.ogFindTrack(next, synthTrack && synthTrack.id) || (next.tracks || []).filter(function (track) { return track.type === 'synth'; })[0];
+        if (!nextPattern || !nextTrack) throw new Error('MusicXML import needs a pattern and synth track');
+        var result = C.ogImportMusicXmlSketch(next, nextPattern.id, nextTrack.id, text, { replace: true, resize: true });
+        commitProject(next);
+        choosePattern(nextPattern.id);
+        if (jsonRef.current) jsonRef.current.value = text;
+        var meter = result.timeSignature && result.timeSignature.length >= 2 ? ' Meter set to ' + result.timeSignature[0] + '/' + result.timeSignature[1] + '.' : '';
+        var ties = result.tieMergeCount ? ' Preserved ' + result.tieMergeCount + ' tie' + (result.tieMergeCount === 1 ? '' : 's') + '.' : '';
+        var warning = result.warnings && result.warnings.length ? ' ' + result.warnings.slice(0, 2).join(' ') : '';
+        addToast('Imported ' + (result.noteCount || 0) + ' MusicXML note' + (result.noteCount === 1 ? '' : 's') + ' across ' + (result.measureCount || 0) + ' measure' + (result.measureCount === 1 ? '' : 's') + '.' + meter + ties + warning, result.noteCount ? 'success' : 'info');
+      } catch (err) {
+        addToast('MusicXML import failed: ' + (err && err.message || 'unknown error'), 'error');
+      }
+    }
+
+    function importMusicXmlFile(file) {
+      if (!file) return;
+      if (/\.mxl$/i.test(file.name || '')) {
+        addToast('Compressed .mxl files are not supported yet. Export as .musicxml or .xml first.', 'info');
+        if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        importMusicXmlText(String(reader.result || ''), file.name || 'MusicXML file');
+        if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
+      };
+      reader.onerror = function () {
+        addToast('Could not read MusicXML file.', 'error');
+        if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function openMusicXmlPicker() {
+      if (musicXmlInputRef.current) musicXmlInputRef.current.click();
+    }
+
     function loadProjectFromText() {
       try {
         var text = jsonRef.current ? jsonRef.current.value : '';
+        if (/^\s*</.test(text) || /<score-(partwise|timewise)\b/i.test(text)) {
+          importMusicXmlText(text, 'Text area');
+          return;
+        }
         var next = C.ogParseProject(text);
         commitProject(next);
         if (next.patterns && next.patterns[0]) choosePattern(next.patterns[0].id);
@@ -2026,7 +2144,7 @@
 
     function prepareMusicXml() {
       try {
-        var xml = C.ogBuildMusicXmlSketch(project, pattern.id, synthTrack && synthTrack.id);
+        var xml = C.ogBuildMusicXmlSketch(project, pattern.id, synthTrack && synthTrack.id, { clef: staffClef });
         if (jsonRef.current) jsonRef.current.value = xml;
         addToast('MusicXML sketch prepared.', 'success');
       } catch (err) {
@@ -2088,7 +2206,8 @@
       selectedBar: selectedBar,
       width: 680,
       height: 158,
-      slotsPerMeasure: 8
+      slotsPerMeasure: 8,
+      clef: staffClef
     }) : null;
     var notationBridge = C.ogBuildNotationGridBridge ? C.ogBuildNotationGridBridge(project, pattern && pattern.id, {
       trackId: synthTrack && synthTrack.id,
@@ -2101,6 +2220,7 @@
       : C.ogBuildScale ? C.ogBuildScale(project.key && project.key.tonic || 'C', project.key && project.key.mode || 'minor') : [];
     var sampleAssets = (project.assets || []).filter(function (asset) { return asset.type === 'recording' || asset.type === 'sample' || asset.type === 'loop'; });
     var factoryKits = C.ogListFactorySampleKits ? C.ogListFactorySampleKits() : [];
+    var voicePresets = C.ogListProceduralVoicePresets ? C.ogListProceduralVoicePresets() : [];
     var selectedFactoryKit = factoryKits.filter(function (kit) { return kit.id === selectedFactoryKitId; })[0] || factoryKits[0] || null;
     var selectedFactoryKitValue = selectedFactoryKit && selectedFactoryKit.id || selectedFactoryKitId;
     var nav = root.navigator || {};
@@ -2219,11 +2339,19 @@
     var synthPatchSummary = C.ogBuildSynthPatchSummary ? C.ogBuildSynthPatchSummary(project, synthTrack && synthTrack.id) : { label: synthPatch.oscillator };
     var synthPatchPresets = C.ogListSynthPatchPresets ? C.ogListSynthPatchPresets() : [];
     var synthPatchFamilies = C.ogListSynthPatchFamilies ? C.ogListSynthPatchFamilies() : [];
+    var instrumentRoleGuides = C.ogListInstrumentRoleGuides ? C.ogListInstrumentRoleGuides() : [];
     var synthFamilyNames = ['All'].concat(synthPatchFamilies.map(function (group) { return group.family; }));
+    var instrumentRoleNames = ['All'].concat(instrumentRoleGuides.map(function (guide) { return guide.role; }));
     var selectedSynthFamilyValue = synthFamilyNames.indexOf(selectedSynthFamily) >= 0 ? selectedSynthFamily : 'All';
-    var visibleSynthPatchPresets = selectedSynthFamilyValue === 'All'
-      ? synthPatchPresets.slice()
-      : synthPatchPresets.filter(function (preset) { return (preset.family || 'Synth') === selectedSynthFamilyValue; });
+    var selectedInstrumentRoleValue = instrumentRoleNames.indexOf(selectedInstrumentRole) >= 0 ? selectedInstrumentRole : 'All';
+    var visibleSynthPatchPresets = synthPatchPresets.filter(function (preset) {
+      var familyOk = selectedSynthFamilyValue === 'All' || (preset.family || 'Synth') === selectedSynthFamilyValue;
+      var roleOk = selectedInstrumentRoleValue === 'All' || normalizeInstrumentRole(preset.role) === selectedInstrumentRoleValue;
+      return familyOk && roleOk;
+    });
+    if (!visibleSynthPatchPresets.length && selectedSynthFamilyValue !== 'All' && selectedInstrumentRoleValue !== 'All') {
+      visibleSynthPatchPresets = synthPatchPresets.filter(function (preset) { return (preset.family || 'Synth') === selectedSynthFamilyValue; });
+    }
     if (!visibleSynthPatchPresets.length) visibleSynthPatchPresets = synthPatchPresets.slice();
     var currentPresetVisible = visibleSynthPatchPresets.some(function (preset) { return preset.id === synthPatch.presetId; });
     if (synthPatch.presetId && synthPatch.presetId !== 'generated' && !currentPresetVisible) {
@@ -2233,6 +2361,29 @@
     var selectedInstrumentProfile = synthPatch.presetId && synthPatch.presetId !== 'generated' && C.ogBuildInstrumentProfile
       ? C.ogBuildInstrumentProfile(synthPatch.presetId)
       : null;
+    var selectedInstrumentRoleGuide = selectedInstrumentRoleValue !== 'All'
+      ? instrumentRoleGuideFor(selectedInstrumentRoleValue)
+      : selectedInstrumentProfile && selectedInstrumentProfile.role ? instrumentRoleGuideFor(selectedInstrumentProfile.role) : null;
+    var instrumentRangeReport = selectedInstrumentProfile && C.ogBuildInstrumentRangeReport
+      ? C.ogBuildInstrumentRangeReport(project, pattern && pattern.id, synthTrack && synthTrack.id)
+      : null;
+    var instrumentRangePreview = instrumentRangeReport && instrumentRangeReport.outOfRangeNotes
+      ? instrumentRangeReport.outOfRangeNotes.slice(0, 4).map(function (note) {
+        return note.pitch + ' ' + (note.status === 'below-range' ? 'low' : 'high');
+      }).join(', ')
+      : '';
+    var staffPitchPalette = C.ogBuildPlayablePitchPalette
+      ? C.ogBuildPlayablePitchPalette(project, synthPatch && synthPatch.presetId, { centerPitch: staffPitch, maxCount: 24, direction: 'descending' })
+      : { available: false, instrumentName: 'Default staff', rangeLabel: 'C4-C6', pitchNames: defaultStaffPitches, pitches: defaultStaffPitches.map(function (pitch) { return { pitch: pitch }; }) };
+    var staffPitches = staffPitchPalette.pitchNames && staffPitchPalette.pitchNames.length ? staffPitchPalette.pitchNames : defaultStaffPitches;
+    activeStaffPitch = staffPitches.indexOf(staffPitch) >= 0 ? staffPitch : staffPitches[0] || staffPitch;
+    var instrumentRoleStarterPresets = [];
+    if (selectedInstrumentRoleGuide && selectedInstrumentRoleGuide.starterPresetIds) {
+      selectedInstrumentRoleGuide.starterPresetIds.forEach(function (presetId) {
+        var starterPreset = synthPatchPresets.filter(function (preset) { return preset.id === presetId; })[0];
+        if (starterPreset && instrumentRoleStarterPresets.length < 4) instrumentRoleStarterPresets.push(starterPreset);
+      });
+    }
     var instrumentSampleNotes = selectedInstrumentProfile && selectedInstrumentProfile.samplePlan && selectedInstrumentProfile.samplePlan.recommendedNotes || [];
     var instrumentArticulations = selectedInstrumentProfile && selectedInstrumentProfile.samplePlan && selectedInstrumentProfile.samplePlan.articulations || [];
     var starterGuidanceAction = function () {
@@ -2700,6 +2851,16 @@
                   synthFamilyNames.map(function (family) {
                     return h('option', { key: family, value: family }, family);
                   }))),
+              h('label', { style: styles.fieldLabel }, 'Role',
+                h('select', {
+                  style: styles.select,
+                  value: selectedInstrumentRoleValue,
+                  onChange: function (ev) { setSelectedInstrumentRole(ev.target.value); },
+                  'aria-label': 'Instrument role'
+                },
+                  instrumentRoleNames.map(function (role) {
+                    return h('option', { key: role, value: role }, instrumentRoleLabel(role));
+                  }))),
               h('label', { style: styles.fieldLabel }, 'Preset',
                 h('select', {
                   style: styles.select,
@@ -2793,10 +2954,29 @@
                   h('span', { style: styles.meta }, selectedInstrumentProfile.family + ' - ' + selectedInstrumentProfile.register)),
                 h('div', { style: styles.instrumentProfileGrid },
                   h('span', { style: styles.instrumentProfileChip }, 'Range ' + selectedInstrumentProfile.rangeLabel),
+                  h('span', { style: styles.instrumentProfileChip }, selectedInstrumentProfile.roleLabel + ' role'),
                   h('span', { style: styles.instrumentProfileChip }, selectedInstrumentProfile.sourceLabel),
                   h('span', { style: styles.instrumentProfileChip }, 'Notes ' + instrumentSampleNotes.join(' '))),
                 h('p', { style: styles.instrumentProfileText }, selectedInstrumentProfile.classroomUse),
+                selectedInstrumentRoleGuide ? h('p', { style: styles.instrumentProfileText }, 'Role: ' + selectedInstrumentRoleGuide.summary) : null,
                 h('p', { style: styles.instrumentProfileText }, 'Capture: ' + selectedInstrumentProfile.samplePlan.captureHint),
+                instrumentRangeReport && instrumentRangeReport.available ? h('div', {
+                  style: Object.assign({}, styles.instrumentRangeBox, instrumentRangeReport.outOfRangeCount ? styles.instrumentRangeWarning : styles.instrumentRangeReady),
+                  role: 'group',
+                  'aria-label': 'Instrument range check'
+                },
+                  h('div', { style: styles.instrumentRangeHeader },
+                    h('strong', null, instrumentRangeReport.outOfRangeCount ? 'Range Check' : 'Range OK'),
+                    h('span', { style: styles.meta, role: 'status', 'aria-live': 'polite' }, instrumentRangeReport.inRangeCount + ' / ' + instrumentRangeReport.noteCount + ' fit')),
+                  h('p', { style: styles.instrumentProfileText }, instrumentRangeReport.summary),
+                  instrumentRangePreview ? h('p', { style: styles.instrumentProfileText }, 'Review: ' + instrumentRangePreview) : null,
+                  h('div', { style: styles.instrumentRangeActions, role: 'toolbar', 'aria-label': 'Instrument range actions' },
+                    h('button', {
+                      style: Object.assign({}, styles.smallButton, (!instrumentRangeReport.outOfRangeCount || !C.ogFitTrackNotesToInstrumentRange) ? styles.disabledButton : null),
+                      onClick: fitNotesToInstrumentRange,
+                      disabled: !instrumentRangeReport.outOfRangeCount || !C.ogFitTrackNotesToInstrumentRange,
+                      'aria-label': 'Move out-of-range notes by octave into ' + instrumentRangeReport.instrumentName + ' range'
+                    }, 'Fit Range'))) : null,
                 h('div', { style: styles.instrumentProfileFooter },
                   h('span', { style: styles.instrumentProfileText }, 'Articulation: ' + instrumentArticulations.join(', ')),
                   h('button', {
@@ -2813,6 +2993,20 @@
                   h('strong', null, synthPatch.name || 'Custom Instrument'),
                   h('span', { style: styles.meta }, 'Custom patch')),
                 h('p', { style: styles.instrumentProfileText }, synthPatch.oscillator + ' / ' + synthPatch.filter.type + ' / ' + Math.round(synthPatch.filter.cutoff) + ' Hz')),
+            selectedInstrumentRoleGuide ? h('div', { style: styles.instrumentRoleBox, role: 'note', 'aria-label': 'Instrument role guidance' },
+              h('div', { style: styles.instrumentRoleHeader },
+                h('strong', null, selectedInstrumentRoleGuide.label + ' Role'),
+                h('span', { style: styles.meta }, selectedInstrumentRoleGuide.presetCount + ' patches')),
+              h('p', { style: styles.instrumentProfileText }, selectedInstrumentRoleGuide.compositionTip),
+              instrumentRoleStarterPresets.length ? h('div', { style: styles.instrumentRolePresetRow, role: 'toolbar', 'aria-label': selectedInstrumentRoleGuide.label + ' starter patches' },
+                instrumentRoleStarterPresets.map(function (preset) {
+                  return h('button', {
+                    key: preset.id,
+                    style: styles.smallButton,
+                    onClick: function () { applySynthPreset(preset.id); },
+                    'aria-label': 'Load ' + preset.name + ' starter patch'
+                  }, preset.name);
+                })) : null) : null,
             h('div', { style: styles.patchActions, role: 'toolbar', 'aria-label': 'Instrument patch actions' },
               h('button', {
                 style: Object.assign({}, styles.smallButton, !C.ogRandomizeSynthInstrument ? styles.disabledButton : null),
@@ -2894,17 +3088,28 @@
                   },
                     h('option', { value: 'note' }, 'Note'),
                     h('option', { value: 'rest' }, 'Rest'))),
+                h('label', { style: styles.fieldLabel }, 'Clef',
+                  h('select', {
+                    style: styles.select,
+                    value: staffClef,
+                    onChange: function (ev) { setStaffClef(ev.target.value === 'bass' || ev.target.value === 'treble' ? ev.target.value : 'auto'); },
+                    'aria-label': 'Staff clef mode'
+                  },
+                    h('option', { value: 'auto' }, 'Auto'),
+                    h('option', { value: 'treble' }, 'Treble'),
+                    h('option', { value: 'bass' }, 'Bass'))),
                 h('label', { style: styles.fieldLabel }, 'Pitch',
                   h('select', {
                     style: styles.select,
-                    value: staffPitch,
+                    value: activeStaffPitch,
                     disabled: staffTool === 'rest',
                     onChange: function (ev) { setStaffPitch(ev.target.value); },
-                    'aria-label': 'Staff note pitch'
+                    'aria-label': 'Staff note pitch, ' + (staffPitchPalette.available ? staffPitchPalette.instrumentName + ' playable range ' + staffPitchPalette.rangeLabel : 'default staff range')
                   },
                     staffPitches.map(function (pitch) {
                       return h('option', { key: pitch, value: pitch }, pitch);
                     }))),
+                h('span', { style: styles.staffRangeHint, role: 'note' }, staffPitchPalette.available ? staffPitchPalette.instrumentName + ' ' + staffPitchPalette.rangeLabel : 'Default staff range'),
                 h('label', { style: styles.fieldLabel }, 'Value',
                   h('select', {
                     style: styles.select,
@@ -3268,6 +3473,15 @@
               h('div', { style: styles.voiceHeader },
                 h('strong', null, 'Voice ' + (selectedPadVoice.character || 'Custom')),
                 h('span', { style: styles.meta }, selectedPadVoice.kitName || 'Custom')),
+              selectedPadVoiceDescription ? h('div', { style: styles.voiceDescriptorRow, 'aria-label': 'Selected pad voice tone' },
+                selectedPadVoiceDescription.fields.map(function (field) {
+                  return h('span', { key: field.id, style: styles.voiceDescriptorChip },
+                    h('span', { style: styles.voiceDescriptorLabel }, field.label),
+                    h('strong', null, field.value));
+                })) : null,
+              selectedPadVoiceComparison ? h('div', { style: styles.voiceCompareBox, 'aria-label': 'Pad voice changes from factory' },
+                h('span', { style: styles.voiceDescriptorLabel }, selectedPadVoiceComparison.changedCount ? 'From Factory' : 'Factory'),
+                h('strong', null, selectedPadVoiceComparison.summary)) : null,
               h('div', { style: styles.voiceGrid },
                 renderVoiceSlider('Pitch', 'pitch', 0.5, 2, 0.01, 1),
                 renderVoiceSlider('Bright', 'brightness', 0.35, 2.4, 0.01, 1),
@@ -3275,7 +3489,24 @@
                 renderVoiceSlider('Noise', 'noise', 0, 2, 0.01, 1),
                 renderVoiceSlider('Click', 'click', 0, 2, 0.01, 1),
                 renderVoiceSlider('Body', 'body', 0, 2, 0.01, 1)),
+              voicePresets.length ? h('div', { style: styles.voicePresetRow, role: 'toolbar', 'aria-label': 'Pad voice presets' },
+                voicePresets.map(function (preset) {
+                  return h('button', {
+                    key: preset.id,
+                    style: Object.assign({}, styles.smallButton, styles.voicePresetButton, !C.ogApplyPadProceduralVoicePreset ? styles.disabledButton : null),
+                    onClick: function () { applySelectedPadVoicePreset(preset.id); },
+                    disabled: !C.ogApplyPadProceduralVoicePreset,
+                    title: preset.summary,
+                    'aria-label': 'Apply ' + preset.label + ' voice preset'
+                  }, preset.label);
+                })) : null,
               h('div', { style: styles.voiceActions, role: 'toolbar', 'aria-label': 'Pad voice actions' },
+                h('button', {
+                  style: Object.assign({}, styles.smallButton, (!A || !selectedPad) ? styles.disabledButton : null),
+                  onClick: previewSelectedPadVoice,
+                  disabled: !A || !selectedPad,
+                  'aria-label': 'Preview selected pad voice'
+                }, 'Preview Voice'),
                 h('button', {
                   style: Object.assign({}, styles.smallButton, !C.ogRandomizePadProceduralVoice ? styles.disabledButton : null),
                   onClick: randomizeSelectedPadVoice,
@@ -3373,6 +3604,17 @@
               }, 'Clear Draft'),
               h('button', { style: styles.smallButton, onClick: downloadProject }, 'Download'),
               h('button', { style: styles.smallButton, onClick: prepareMusicXml }, 'MusicXML'),
+              h('button', { style: styles.smallButton, onClick: openMusicXmlPicker, 'aria-label': 'Import MusicXML notation file' }, 'Import XML'),
+              h('input', {
+                ref: musicXmlInputRef,
+                type: 'file',
+                accept: '.musicxml,.xml,application/vnd.recordare.musicxml+xml,application/xml,text/xml',
+                style: styles.hiddenInput,
+                tabIndex: -1,
+                'aria-hidden': true,
+                onChange: function (ev) { importMusicXmlFile(ev.target.files && ev.target.files[0]); },
+                'aria-label': 'Import MusicXML notation file'
+              }),
               h('button', { style: styles.smallButton, onClick: downloadMidi }, 'Pattern MIDI'),
               h('button', { style: styles.smallButton, onClick: downloadSongMidi }, 'Song MIDI')),
             h('div', { style: styles.sampleRegion, role: 'status', 'aria-live': 'polite' }, draftStatusLabel()),
@@ -3478,6 +3720,7 @@
     melodyControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 128px), 1fr))', gap: '8px', alignItems: 'end', marginBottom: '10px' },
     staffEditor: { display: 'grid', gap: '8px', marginBottom: '10px' },
     staffToolbar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px', alignItems: 'end' },
+    staffRangeHint: { minHeight: '34px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
     bridgePanel: { display: 'grid', gap: '8px', marginBottom: '10px' },
     bridgeHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', color: '#0f172a', fontSize: '13px' },
@@ -3539,6 +3782,14 @@
     instrumentProfileChip: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', padding: '4px 6px', fontWeight: 900 },
     instrumentProfileText: { margin: 0, color: 'inherit', fontSize: '12px', fontWeight: 800 },
     instrumentProfileFooter: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 104px), 1fr))', gap: '8px', alignItems: 'center' },
+    instrumentRangeBox: { border: '1px solid #94a3b8', background: '#ffffff', color: '#0f172a', padding: '7px', display: 'grid', gap: '5px' },
+    instrumentRangeReady: { border: '1px solid #0f766e', background: '#ecfdf5', color: '#064e3b' },
+    instrumentRangeWarning: { border: '1px solid #a16207', background: '#fffbeb', color: '#78350f' },
+    instrumentRangeHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' },
+    instrumentRangeActions: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 104px), 1fr))', gap: '6px' },
+    instrumentRoleBox: { marginTop: '8px', border: '1px solid #7dd3fc', background: '#eff6ff', color: '#0f172a', padding: '8px', display: 'grid', gap: '7px', fontSize: '12px', lineHeight: 1.35, overflowWrap: 'anywhere' },
+    instrumentRoleHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' },
+    instrumentRolePresetRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 96px), 1fr))', gap: '6px' },
     timeline: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px' },
     songControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', marginBottom: '10px' },
     patternLauncher: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: '8px', marginBottom: '10px' },
@@ -3592,6 +3843,12 @@
     voiceHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', minWidth: 0, overflowWrap: 'anywhere' },
     voiceGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(116px, 1fr))', gap: '8px', alignItems: 'end' },
     voiceActions: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', alignItems: 'stretch' },
+    voiceDescriptorRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))', gap: '6px', alignItems: 'stretch' },
+    voiceDescriptorChip: { minHeight: '34px', border: '1px solid currentColor', background: 'transparent', color: 'inherit', padding: '4px 6px', display: 'grid', gap: '2px', alignContent: 'center', fontSize: '12px', fontWeight: 900, minWidth: 0, overflowWrap: 'anywhere' },
+    voiceDescriptorLabel: { fontSize: '10px', fontWeight: 800, opacity: 0.72, textTransform: 'uppercase', letterSpacing: 0 },
+    voiceCompareBox: { minHeight: '36px', border: '1px dashed currentColor', background: 'transparent', color: 'inherit', padding: '5px 7px', display: 'grid', gap: '2px', alignContent: 'center', fontSize: '12px', fontWeight: 900, minWidth: 0, overflowWrap: 'anywhere' },
+    voicePresetRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(62px, 1fr))', gap: '6px', alignItems: 'stretch' },
+    voicePresetButton: { minHeight: '30px', padding: '0 8px', fontSize: '12px' },
     voiceField: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 850, minWidth: 0 },
     sampleRegion: { minHeight: '30px', display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', background: '#eef2ff', color: '#1e293b', padding: '6px 8px', fontSize: '12px', fontWeight: 800, marginBottom: '8px', overflowWrap: 'anywhere' },
     assetList: { display: 'grid', gap: '6px', minHeight: '54px' },
@@ -3660,6 +3917,11 @@
       theoryCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
       instrumentProfile: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       instrumentProfileChip: { border: '1px solid #94a3b8', background: '#1e293b', color: '#f8fafc' },
+      instrumentRangeBox: { border: '1px solid #64748b', background: '#020617', color: '#f8fafc' },
+      instrumentRangeReady: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff' },
+      instrumentRangeWarning: { border: '1px solid #facc15', background: '#422006', color: '#fef3c7' },
+      instrumentRoleBox: { border: '1px solid #38bdf8', background: '#0f172a', color: '#e0f2fe' },
+      staffRangeHint: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       staffSvg: { border: '1px solid #64748b', background: '#020617' },
       bridgeHeader: { color: '#f8fafc' },
       bridgeStepCell: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
@@ -3773,6 +4035,11 @@
       theoryCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       instrumentProfile: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       instrumentProfileChip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      instrumentRangeBox: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      instrumentRangeReady: { border: '2px solid #00ffff', background: '#000000', color: '#ffffff' },
+      instrumentRangeWarning: { border: '2px solid #ffff00', background: '#000000', color: '#ffff00' },
+      instrumentRoleBox: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      staffRangeHint: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffSvg: { border: '2px solid #ffffff', background: '#000000' },
       bridgeHeader: { color: '#ffffff' },
       bridgeStepCell: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },

@@ -180,6 +180,7 @@
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var aiOn = !!(ctx.aiHintsEnabled && typeof callGemini === 'function');
 
       var _prefersReducedMotion = false;
@@ -218,8 +219,19 @@
 
       function card(title, children, accent) {
         return h('div', { role: 'region', 'aria-label': typeof title === 'string' ? title : undefined, style: { padding: 14, borderRadius: 12, background: PANEL, border: '1px solid #334155', borderLeft: '3px solid ' + (accent || '#38bdf8'), marginBottom: 12 } },
-          title ? h('div', { style: { fontSize: 14, fontWeight: 800, color: TEXT, marginBottom: 8 } }, title) : null,
+          title ? h('h3', { style: { fontSize: 14, fontWeight: 800, color: TEXT, margin: '0 0 8px' } }, title) : null,
           children);
+      }
+
+      // WCAG style block: one rule set covers every interactive element in the
+      // tool (2.4.7 focus visible), plus a prefers-reduced-motion guard (2.3.3)
+      // and an sr-only utility. Scoped under .iss-root so nothing leaks.
+      function wcagStyles() {
+        return h('style', { dangerouslySetInnerHTML: { __html:
+          '.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
+          '.iss-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
+          '@media (prefers-reduced-motion: reduce){.iss-root *{animation:none!important;transition:none!important}}'
+        } });
       }
 
       // ── 3-D station map (Three.js, self-cleaning, reduced-motion aware) ──
@@ -340,8 +352,11 @@
             var hits = raycaster.intersectObjects(clickable, false);
             if (hits.length) {
               var id = hits[0].object._issId;
+              var mm = null;
+              for (var mi2 = 0; mi2 < MODULES.length; mi2++) { if (MODULES[mi2].id === id) { mm = MODULES[mi2]; break; } }
               upd({ selModule: id });
               markSeen('seenModules', id);
+              if (mm) announceToSR(mm.name + ' ' + 'selected. Details shown below the map.');
               if (typeof awardXP === 'function') { try { awardXP(1); } catch (e) {} }
             }
           }
@@ -538,11 +553,29 @@
           }
         }
         var rafId = 0, frame = 0;
+        var milestones = { m100: false, m40: false };
+        function updateHudMirror() {
+          // Text mirror of the canvas HUD (WCAG 1.1.1) — imperative textContent
+          // update, so no per-frame React state churn. aria-live stays "off":
+          // continuous telemetry would swamp a screen reader; milestone
+          // announcements below carry the key moments instead.
+          if (!cv._issHud) cv._issHud = (cv.parentElement && cv.parentElement.parentElement) ? cv.parentElement.parentElement.querySelector('[data-dock-hud]') : null;
+          var el = cv._issHud;
+          if (!el) return;
+          var range = Math.sqrt(st.x * st.x + st.y * st.y), speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+          el.textContent = 'Range ' + range.toFixed(0) + ' m · closing speed ' + speed.toFixed(2) + ' m/s · fuel ' + st.fuel.toFixed(0) + '%' + (st.over ? ' · run over' : '');
+          if (!st.over) {
+            if (!milestones.m100 && range < 100) { milestones.m100 = true; announceToSR('100 meters to the port. Speed ' + speed.toFixed(2) + ' meters per second.'); }
+            if (!milestones.m40 && range < 40) { milestones.m40 = true; announceToSR('Final approach, 40 meters. Dock slower than 0.6 meters per second.'); }
+          }
+        }
+        cv._dockResetMilestones = function () { milestones.m100 = false; milestones.m40 = false; };
         function loop() {
           if (!cv.isConnected) { cleanup(); return; }
           frame++;
           if (!st.over) step();
           if (!_prefersReducedMotion || frame % 4 === 0) draw();
+          if (frame % 30 === 0) updateHudMirror();
           rafId = requestAnimationFrame(loop);
         }
         function setThrust(dir, on) { st.thrust[dir] = on; }
@@ -551,6 +584,8 @@
           realMode = mode !== false; cv._dockRealMode = realMode;
           st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = '';
           st.thrust = { up: false, down: false, fwd: false, back: false };
+          if (cv._dockResetMilestones) cv._dockResetMilestones();
+          announceToSR(__alloT('stem.spacestation.dock_start_sr', 'New approach started: 190 meters from the docking port, closing at 1 meter per second.'));
         };
         function onKey(e, on) {
           var k = e.key;
@@ -774,7 +809,7 @@
               var on = m.id === d.selModule;
               return h('button', {
                 key: m.id, type: 'button', 'aria-pressed': on,
-                onClick: function () { upd({ selModule: m.id }); markSeen('seenModules', m.id); },
+                onClick: function () { upd({ selModule: m.id }); markSeen('seenModules', m.id); announceToSR(m.name + ' selected. Details shown below the map.'); },
                 style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(56,189,248,0.2)' : PANEL, color: on ? '#7dd3fc' : TEXT, border: '1px solid ' + (on ? '#38bdf8' : '#334155') }
               }, m.name.split(' (')[0]);
             })),
@@ -976,25 +1011,52 @@
         );
       }
 
-      return h('div', { style: { maxWidth: 980 } },
+      function selectTab(index, moveFocus) {
+        var next = TABS[((index % TABS.length) + TABS.length) % TABS.length];
+        upd({ tab: next.id });
+        announceToSR(next.label + ' ' + __alloT('stem.spacestation.tab_selected', 'section opened.'));
+        if (moveFocus && typeof document !== 'undefined') {
+          setTimeout(function () {
+            var el = document.getElementById('iss-tab-' + next.id);
+            if (el) el.focus();
+          }, 0);
+        }
+      }
+      function onTabKeyDown(e, index) {
+        var next = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = index + 1;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = index - 1;
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = TABS.length - 1;
+        if (next == null) return;
+        e.preventDefault();
+        selectTab(next, true);
+      }
+
+      return h('div', { className: 'iss-root', style: { maxWidth: 980 } },
+        wcagStyles(),
         h('h2', { style: { fontSize: 18, fontWeight: 900, color: TEXT, margin: '0 0 2px' } }, '🛰️ ' + __alloT('stem.spacestation.title', 'Space Station — a permanent home off Earth')),
         h('p', { style: { fontSize: 12, color: SOFT, margin: '0 0 12px' } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.')),
-        h('div', { role: 'tablist', 'aria-label': 'Space Station sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-          TABS.map(function (t2) {
+        h('div', { role: 'tablist', 'aria-label': __alloT('stem.spacestation.sections', 'Space Station sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+          TABS.map(function (t2, ti) {
             var on = tab === t2.id;
             return h('button', {
-              key: t2.id, type: 'button', role: 'tab', 'aria-selected': on,
-              onClick: function () { upd({ tab: t2.id }); },
+              key: t2.id, id: 'iss-tab-' + t2.id, type: 'button', role: 'tab',
+              'aria-selected': on ? 'true' : 'false', 'aria-controls': 'iss-panel',
+              tabIndex: on ? 0 : -1,
+              onClick: function () { selectTab(ti, false); },
+              onKeyDown: function (e) { onTabKeyDown(e, ti); },
               style: { padding: '7px 12px', borderRadius: 9, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: on ? '#0ea5e9' : PANEL, color: on ? '#04121f' : TEXT, border: on ? '2px solid #7dd3fc' : '1px solid #334155' }
-            }, t2.icon + ' ' + t2.label);
+            }, h('span', { 'aria-hidden': 'true' }, t2.icon + ' '), t2.label);
           })),
-        tab === 'map' ? renderMap() :
-        tab === 'day' ? renderDay() :
-        tab === 'systems' ? renderSystems() :
-        tab === 'orbit' ? renderOrbit() :
-        tab === 'missions' ? renderMissions() :
-        tab === 'history' ? renderHistory() :
-        renderQuiz()
+        h('div', { id: 'iss-panel', role: 'tabpanel', 'aria-labelledby': 'iss-tab-' + tab, tabIndex: 0 },
+          tab === 'map' ? renderMap() :
+          tab === 'day' ? renderDay() :
+          tab === 'systems' ? renderSystems() :
+          tab === 'orbit' ? renderOrbit() :
+          tab === 'missions' ? renderMissions() :
+          tab === 'history' ? renderHistory() :
+          renderQuiz())
       );
     }
   });

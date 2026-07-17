@@ -1,6 +1,6 @@
 # Praxis PLT K–6 (5622) learning-library QA
 
-Generated: 2026-07-16T23:53:15.926Z
+Generated: 2026-07-17T00:10:39.746Z
 
 - Status: **PASS**
 - Chapters: 12

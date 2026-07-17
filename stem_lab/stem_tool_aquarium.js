@@ -10838,6 +10838,11 @@ window.StemLab = window.StemLab || {
       // ── Tool body (aquarium) ──
       return (function() {
 var d = (labToolData && labToolData._aquarium) || {};
+          var runtimeRef = React.useRef(null);
+          if (!runtimeRef.current) {
+            runtimeRef.current = { simInterval: null, ambient: null, ambientStopTimeout: null, audioContext: null };
+          }
+          var restoreRunningRef = React.useRef(d.simRunning === true);
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -10869,6 +10874,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var aq = Object.assign({}, (prev && prev._aquarium) || {});
 
               Object.keys(obj).forEach(function (k) { aq[k] = obj[k]; });
+              if (Array.isArray(aq.eventLog) && aq.eventLog.length > 25) aq.eventLog = aq.eventLog.slice(-25);
 
               return Object.assign({}, prev, { _aquarium: aq });
 
@@ -10907,6 +10913,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               '.aqua-fish-svg svg { width: 100%; height: 100%; overflow: visible; }',
 
               '.aqua-fish-svg:hover { transform: scale(1.4) !important; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35)) !important; }',
+              '.aqua-fish:focus-visible, .aqua-fish-svg:focus-visible { outline: 3px solid #fef08a; outline-offset: 4px; border-radius: 10px; }',
 
               '@keyframes aiEventSlideIn { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
 
@@ -10967,11 +10974,16 @@ var d = (labToolData && labToolData._aquarium) || {};
           }
 
           // ═══ AQUARIUM SOUND SYSTEM ═══
-          var _aquaAC = null;
+          function aquaGain(baseGain) {
+            var normalizedVolume = typeof soundVolume === 'number' ? Math.max(0, Math.min(100, soundVolume)) : 60;
+            return baseGain * normalizedVolume / 100;
+          }
           function getAquaAC() {
-            if (!_aquaAC) { try { _aquaAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
-            if (_aquaAC && _aquaAC.state === 'suspended') { try { _aquaAC.resume(); } catch(e) {} }
-            return _aquaAC;
+            if (soundEnabled === false) return null;
+            var runtime = runtimeRef.current;
+            if (!runtime.audioContext) { try { runtime.audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (runtime.audioContext && runtime.audioContext.state === 'suspended') { try { runtime.audioContext.resume(); } catch(e) {} }
+            return runtime.audioContext;
           }
 
           // Individual bubble pop — filtered noise burst
@@ -10984,7 +10996,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
               var src = ac.createBufferSource(); src.buffer = buf;
               var filt = ac.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1200 + Math.random() * 800; filt.Q.value = 2;
-              var g = ac.createGain(); g.gain.setValueAtTime(0.03 + Math.random() * 0.02, ac.currentTime);
+              var g = ac.createGain(); g.gain.setValueAtTime(aquaGain(0.03 + Math.random() * 0.02), ac.currentTime);
               g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.03);
               src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
             } catch(e) {}
@@ -11000,7 +11012,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.3));
               var src = ac.createBufferSource(); src.buffer = buf;
               var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 800;
-              var g = ac.createGain(); g.gain.setValueAtTime(0.06, ac.currentTime);
+              var g = ac.createGain(); g.gain.setValueAtTime(aquaGain(0.06), ac.currentTime);
               g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.08);
               src.connect(filt); filt.connect(g); g.connect(ac.destination); src.start();
             } catch(e) {}
@@ -11015,7 +11027,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   try {
                     var o = ac.createOscillator(); var g = ac.createGain();
                     o.type = 'sine'; o.frequency.value = 2000 + Math.random() * 1000;
-                    g.gain.setValueAtTime(0.02, ac.currentTime);
+                    g.gain.setValueAtTime(aquaGain(0.02), ac.currentTime);
                     g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.02);
                     o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.02);
                   } catch(e) {}
@@ -11032,7 +11044,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 setTimeout(function() {
                   var o = ac.createOscillator(); var g = ac.createGain();
                   o.type = 'sine'; o.frequency.value = freq;
-                  g.gain.setValueAtTime(0.04, ac.currentTime);
+                  g.gain.setValueAtTime(aquaGain(0.04), ac.currentTime);
                   g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.1);
                   o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.1);
                 }, i * 100);
@@ -11048,7 +11060,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 setTimeout(function() {
                   var o = ac.createOscillator(); var g = ac.createGain();
                   o.type = 'sine'; o.frequency.value = freq;
-                  g.gain.setValueAtTime(0.05, ac.currentTime);
+                  g.gain.setValueAtTime(aquaGain(0.05), ac.currentTime);
                   g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.12);
                   o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.12);
                 }, i * 80);
@@ -11061,16 +11073,17 @@ var d = (labToolData && labToolData._aquarium) || {};
             var ac = getAquaAC(); if (!ac) return;
             try {
               var o = ac.createOscillator(); var g = ac.createGain();
-              o.type = 'sine'; o.frequency.value = 600; g.gain.setValueAtTime(0.03, ac.currentTime);
+              o.type = 'sine'; o.frequency.value = 600; g.gain.setValueAtTime(aquaGain(0.03), ac.currentTime);
               g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.04);
               o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.04);
             } catch(e) {}
           }
 
           // ── Ambient underwater loop — continuous filtered noise with bubble pops ──
-          var _aquaAmbient = null;
+          var _aquaRuntime = runtimeRef.current;
           function startAquaAmbient() {
-            if (_aquaAmbient) return;
+            if (soundEnabled === false) return;
+            if (_aquaRuntime.ambient) return;
             var ac = getAquaAC(); if (!ac) return;
             try {
               var bufSize = ac.sampleRate * 2;
@@ -11084,27 +11097,75 @@ var d = (labToolData && labToolData._aquarium) || {};
               var lfoG = ac.createGain(); lfoG.gain.value = 50;
               lfo.connect(lfoG); lfoG.connect(filt.frequency);
               var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
-              master.gain.linearRampToValueAtTime(0.012, ac.currentTime + 2);
+              master.gain.linearRampToValueAtTime(aquaGain(0.012), ac.currentTime + 2);
               src.connect(filt); filt.connect(master); master.connect(ac.destination);
               src.start(); lfo.start();
-              _aquaAmbient = { src: src, lfo: lfo, master: master };
+              _aquaRuntime.ambient = { src: src, lfo: lfo, master: master };
               // Random bubble pops every 2-6 seconds
-              _aquaAmbient._bubbleInterval = setInterval(function() {
+              _aquaRuntime.ambient._bubbleInterval = setInterval(function() {
                 if (Math.random() > 0.4) sfxBubble();
               }, 2000 + Math.random() * 4000);
             } catch(e) {}
           }
-          function stopAquaAmbient() {
-            if (_aquaAmbient) {
+          function stopAquaAmbient(immediate) {
+            if (_aquaRuntime.ambient) {
               try {
-                _aquaAmbient.master.gain.linearRampToValueAtTime(0, (getAquaAC() ? getAquaAC().currentTime : 0) + 0.5);
-                var nodes = _aquaAmbient;
+                _aquaRuntime.ambient.master.gain.linearRampToValueAtTime(0, (getAquaAC() ? getAquaAC().currentTime : 0) + 0.5);
+                var nodes = _aquaRuntime.ambient;
                 if (nodes._bubbleInterval) clearInterval(nodes._bubbleInterval);
-                setTimeout(function() { try { nodes.src.stop(); nodes.lfo.stop(); } catch(e) {} }, 600);
+                if (immediate) {
+                  try { nodes.src.stop(); nodes.lfo.stop(); } catch(e) {}
+                } else {
+                  setTimeout(function() { try { nodes.src.stop(); nodes.lfo.stop(); } catch(e) {} }, 600);
+                }
               } catch(e) {}
-              _aquaAmbient = null;
+              _aquaRuntime.ambient = null;
             }
           }
+          function clearAquaSimInterval() {
+            var runtime = runtimeRef.current;
+            if (runtime.simInterval) clearInterval(runtime.simInterval);
+            runtime.simInterval = null;
+          }
+          function startAquaSimInterval(speed) {
+            clearAquaSimInterval();
+            if (!speed || speed <= 0) return;
+            var intervalMs = speed === 1 ? 2000 : speed === 2 ? 1000 : 400;
+            runtimeRef.current.simInterval = setInterval(function() { simStep(); }, intervalMs);
+          }
+          function stopAquariumRuntime(immediateAudio) {
+            clearAquaSimInterval();
+            stopAquaAmbient(!!immediateAudio);
+          }
+          function navigateAquariumMode(nextMode) {
+            if (nextMode !== 'tank') {
+              stopAquariumRuntime(false);
+              updMulti({ mode: nextMode, simRunning: false });
+              return;
+            }
+            upd('mode', nextMode);
+          }
+
+          React.useEffect(function() {
+            function onVisibilityChange() {
+              if (!document.hidden) return;
+              stopAquariumRuntime(true);
+              setLabToolData(function(prev) {
+                var aq = Object.assign({}, (prev && prev._aquarium) || {});
+                if (!aq.simRunning) return prev;
+                aq.simRunning = false;
+                return Object.assign({}, prev, { _aquarium: aq });
+              });
+            }
+            document.addEventListener('visibilitychange', onVisibilityChange);
+            return function() {
+              document.removeEventListener('visibilitychange', onVisibilityChange);
+              stopAquariumRuntime(true);
+              var ac = runtimeRef.current.audioContext;
+              if (ac && ac.close) { try { ac.close(); } catch(e) {} }
+              runtimeRef.current.audioContext = null;
+            };
+          }, []);
 
           // ═══ ANATOMY VIEWER SYSTEM ═══
 
@@ -13616,24 +13677,80 @@ var d = (labToolData && labToolData._aquarium) || {};
           var selectedTank = d.selectedTank || null;
 
           var tankFish = d.tankFish || [];
+          var savedFishInstanceIds = Array.isArray(d.fishInstanceIds) ? d.fishInstanceIds : [];
+          var nextFishInstanceId = typeof d.nextFishInstanceId === 'number' && d.nextFishInstanceId > 0 ? Math.floor(d.nextFishInstanceId) : 1;
+          var usedFishInstanceIds = {};
+          var fishInstanceIds = tankFish.map(function (speciesId, index) {
+            var savedId = savedFishInstanceIds[index];
+            if (typeof savedId === 'string' && savedId && !usedFishInstanceIds[savedId]) {
+              usedFishInstanceIds[savedId] = true;
+              return savedId;
+            }
+            var generatedId;
+            do { generatedId = 'fish-' + nextFishInstanceId++; } while (usedFishInstanceIds[generatedId]);
+            usedFishInstanceIds[generatedId] = true;
+            return generatedId;
+          });
+          var fishIdentityNeedsMigration = d.fishIdentityVersion !== 3 || d.nextFishInstanceId !== nextFishInstanceId || savedFishInstanceIds.length !== tankFish.length || fishInstanceIds.some(function (id, index) { return id !== savedFishInstanceIds[index]; });
 
-          var waterChem = d.waterChem || null;
+          var soundEnabled = d.soundEnabled !== undefined ? d.soundEnabled : true;
+          var soundVolume = typeof d.soundVolume === 'number' ? Math.max(0, Math.min(100, d.soundVolume)) : 60;
+          fishInstanceIds.forEach(function (instanceId) {
+            var match = /^fish-(\d+)$/.exec(instanceId);
+            if (match) nextFishInstanceId = Math.max(nextFishInstanceId, Number(match[1]) + 1);
+          });
+          fishIdentityNeedsMigration = fishIdentityNeedsMigration || d.nextFishInstanceId !== nextFishInstanceId;
+          function migrateFishState(source, defaultValue, includeDefault) {
+            var original = source || {};
+            var migrated = {};
+            tankFish.forEach(function (speciesId, index) {
+              var instanceId = fishInstanceIds[index];
+              if (Object.prototype.hasOwnProperty.call(original, instanceId)) migrated[instanceId] = original[instanceId];
+              else if (Object.prototype.hasOwnProperty.call(original, speciesId)) migrated[instanceId] = original[speciesId];
+              else if (includeDefault) migrated[instanceId] = defaultValue;
+            });
+            return migrated;
+          }
+
+          var currentTankDefinition = TANK_TYPES.find(function (tank) { return tank.id === selectedTank; });
+          var chemDefaults = {
+            pH: currentTankDefinition ? currentTankDefinition.pH : 7,
+            temp: currentTankDefinition ? currentTankDefinition.temp : 76,
+            ammonia: 0, nitrite: 0, nitrate: 5,
+            salinity: currentTankDefinition ? currentTankDefinition.salinity : 0,
+            dissolvedO2: 7, co2: 3
+          };
+          var waterChem = d.waterChem ? Object.assign({}, chemDefaults, d.waterChem) : null;
+          var waterChemNeedsMigration = false;
+          if (waterChem) {
+            Object.keys(chemDefaults).forEach(function (key) {
+              if (typeof waterChem[key] !== 'number' || !isFinite(waterChem[key])) {
+                waterChem[key] = chemDefaults[key];
+                waterChemNeedsMigration = true;
+              }
+            });
+            if (Object.keys(chemDefaults).some(function (key) { return d.waterChem[key] !== waterChem[key]; })) waterChemNeedsMigration = true;
+          }
+
+          var chemHistory = d.chemHistory || [];
 
           var simTick = d.simTick || 0;
 
-          var simRunning = d.simRunning || false;
+          var simRunning = restoreRunningRef.current ? false : (d.simRunning || false);
 
           var fishHealth = d.fishHealth || {};
 
-          var eventLog = d.eventLog || [];
+          var eventLog = (d.eventLog || []).slice(-25);
+          var appendTankEvent = function (message) { return eventLog.concat([{ tick: simTick, msg: message }]).slice(-25); };
 
 
 
           // ── Enhanced sim state ──
 
-          var hungerLevels = d.hungerLevels || {};
+          var hungerLevels = migrateFishState(d.hungerLevels, 50, true);
 
           var simSpeed = d.simSpeed || 1;
+          var waterChangePercent = d.waterChangePercent || 25;
 
           var simDay = d.simDay || 0;
 
@@ -13643,19 +13760,66 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var chemTooltip = d.chemTooltip || null;
 
-          var fishStress = d.fishStress || {};
+          var fishStress = migrateFishState(d.fishStress);
 
 
 
           // ── New gameplay state ──
 
           var lightsOn = d.lightsOn !== undefined ? d.lightsOn : true;
+          var fishNames = migrateFishState(d.fishNames);
+          var fishBirthTicks = migrateFishState(d.fishBirthTicks, 0, true);
+          var fishCareLog = migrateFishState(d.fishCareLog);
 
-          var fishSickness = d.fishSickness || {}; // { speciesId: { disease: 'ich', severity: 1-3, tick: when } }
+          var fishSickness = migrateFishState(d.fishSickness); // { fishInstanceId: { disease: 'ich', severity: 1-3, tick: when } }
+
+          React.useEffect(function () {
+            var restoreWasRunning = restoreRunningRef.current;
+            restoreRunningRef.current = false;
+            var eventLogNeedsMigration = (d.eventLog || []).length > 25;
+            if (!restoreWasRunning && !fishIdentityNeedsMigration && !waterChemNeedsMigration && !eventLogNeedsMigration) return;
+            setLabToolData(function (prev) {
+              var aq = Object.assign({}, (prev && prev._aquarium) || {});
+              if (restoreWasRunning) aq.simRunning = false;
+              if (fishIdentityNeedsMigration) {
+                aq.fishIdentityVersion = 3;
+                aq.fishInstanceIds = fishInstanceIds;
+                aq.fishBirthTicks = fishBirthTicks;
+                aq.fishCareLog = fishCareLog;
+                aq.nextFishInstanceId = nextFishInstanceId;
+                aq.fishNames = fishNames;
+                aq.hungerLevels = hungerLevels;
+                aq.fishStress = fishStress;
+                aq.fishSickness = fishSickness;
+              }
+              if (waterChemNeedsMigration) aq.waterChem = waterChem;
+              if (eventLogNeedsMigration) aq.eventLog = eventLog;
+              return Object.assign({}, prev, { _aquarium: aq });
+            });
+          }, []);
 
           var algaeLevel = d.algaeLevel || 0; // 0-100
+          React.useEffect(function () {
+            if (!soundEnabled) { stopAquaAmbient(true); return; }
+            if (simRunning) startAquaAmbient();
+            if (_aquaRuntime.ambient) {
+              var ambientContext = getAquaAC();
+              if (ambientContext) _aquaRuntime.ambient.master.gain.setTargetAtTime(aquaGain(0.012), ambientContext.currentTime, 0.1);
+            }
+          }, [soundEnabled, simRunning, soundVolume]);
 
 
+          function averageCurrentFishState(store, speciesId, fallback) {
+            var total = 0;
+            var count = 0;
+            tankFish.forEach(function (candidateSpeciesId, index) {
+              if (candidateSpeciesId !== speciesId) return;
+              var value = store[fishInstanceIds[index]];
+              total += value !== undefined ? value : fallback;
+              count++;
+            });
+            return count > 0 ? total / count : fallback;
+          }
 
 
           // ═══ ECONOMY & PROGRESSION STATE ═══
@@ -13663,6 +13827,13 @@ var d = (labToolData && labToolData._aquarium) || {};
           var totalCoinsEarned = d.totalCoinsEarned || 0;
           var equipment = d.equipment || { filter: 0, heater: 0, light: 0, airPump: 0 };
           var unlockedAchievements = d.unlockedAchievements || {};
+
+          function appendFishCare(fishId, message) {
+            if (!fishId || !message) return;
+            var updatedCareLog = Object.assign({}, fishCareLog);
+            updatedCareLog[fishId] = (updatedCareLog[fishId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: message }]).slice(-8);
+            upd('fishCareLog', updatedCareLog);
+          }
           var perfectWaterTicks = d.perfectWaterTicks || 0;
           var anatomiesStudied = d.anatomiesStudied || {};
           var tutorialStep = d.tutorialStep || 0;
@@ -14084,11 +14255,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               upd('aiEventLoading', true);
 
-              var fishNames = tankFish.map(function (fId) {
+              var tankFishNames = tankFish.map(function (fId, idx) {
 
                 var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
 
-                return sp ? sp.name : fId;
+                return fishNames[fishInstanceIds[idx]] || (sp ? sp.name : fId);
 
               }).join(', ');
 
@@ -14098,7 +14269,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 '- Tank type: ' + (tankInfo ? tankInfo.name : selectedTank) + '\n' +
 
-                '- Fish: ' + fishNames + ' (' + tankFish.length + ' total)\n' +
+                '- Fish: ' + tankFishNames + ' (' + tankFish.length + ' total)\n' +
 
                 '- Water: pH ' + (waterChem ? waterChem.pH.toFixed(1) : '?') + ', Temp ' + (waterChem ? waterChem.temp.toFixed(0) : '?') + 'F, NH3 ' + (waterChem ? waterChem.ammonia.toFixed(2) : '?') + ', NO2 ' + (waterChem ? waterChem.nitrite.toFixed(2) : '?') + ', NO3 ' + (waterChem ? waterChem.nitrate.toFixed(0) : '?') + '\n' +
 
@@ -14636,14 +14807,18 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               selectedTank: tankId,
 
+              fishBirthTicks: {}, fishCareLog: {},
+              fishInstanceIds: [], nextFishInstanceId: 1, fishIdentityVersion: 3,
               tankFish: [],
 
               waterChem: { pH: tank.pH, temp: tank.temp, ammonia: 0, nitrite: 0, nitrate: 5, salinity: tank.salinity, dissolvedO2: 7.0, co2: 3.0 },
+              chemHistory: [{ tick: 0, day: 0, hour: 8, ammonia: 0, nitrite: 0, nitrate: 5, dissolvedO2: 7.0, pH: tank.pH }],
 
               simTick: 0, simRunning: false, fishHealth: {}, eventLog: [{ tick: 0, msg: '🐠 ' + tank.name + ' tank initialized!' }],
 
               tankPlants: [], plantHealth: {}, plantBiomass: {},
 
+              fishNames: {},
               breedingState: {}, breedingCooldowns: {}, totalFryBorn: 0,
               equipment: equipment.filter !== undefined ? equipment : { filter: 0, heater: 0, light: 0, airPump: 0 },
               perfectWaterTicks: 0, algaeLevel: 0, fishSickness: {}, fishStress: {},
@@ -14682,14 +14857,24 @@ var d = (labToolData && labToolData._aquarium) || {};
             }
 
             var newFish = tankFish.concat([speciesId]);
+            var newInstanceId = 'fish-' + nextFishInstanceId;
+            var newFishInstanceIds = fishInstanceIds.concat([newInstanceId]);
+            var newNextFishInstanceId = nextFishInstanceId + 1;
 
             var newHealth = Object.assign({}, fishHealth);
+            var newNames = Object.assign({}, fishNames);
+            newNames[newInstanceId] = species.name + ' ' + (tankFish.filter(function (id) { return id === speciesId; }).length + 1);
+            var newBirthTicks = Object.assign({}, fishBirthTicks);
+            var newCareLog = Object.assign({}, fishCareLog);
+            newBirthTicks[newInstanceId] = simTick;
+            newCareLog[newInstanceId] = [{ tick: simTick, day: simDay, hour: simHour, msg: 'Added to the tank' }];
 
             newHealth[speciesId] = (newHealth[speciesId] || 0) + 1;
 
             var newHunger = Object.assign({}, hungerLevels);
 
-            if (newHunger[speciesId] === undefined) newHunger[speciesId] = 50;
+            newHunger[newInstanceId] = 50;
+            updMulti({ fishInstanceIds: newFishInstanceIds, nextFishInstanceId: newNextFishInstanceId, fishIdentityVersion: 3, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog });
 
             updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, eventLog: eventLog.concat([{ tick: simTick, msg: '🐟 Added ' + species.name + ' to tank' }]) });
 
@@ -14702,12 +14887,37 @@ var d = (labToolData && labToolData._aquarium) || {};
           var removeFish = function (idx) {
 
             var newFish = tankFish.slice();
+            var newBirthTicks = Object.assign({}, fishBirthTicks);
+            var newCareLog = Object.assign({}, fishCareLog);
+            var newFishInstanceIds = fishInstanceIds.slice();
+            var removedInstanceId = newFishInstanceIds.splice(idx, 1)[0];
 
+            var newNames = Object.assign({}, fishNames);
             var removed = newFish.splice(idx, 1)[0];
 
             var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === removed; });
+            var speciesStillPresent = newFish.indexOf(removed) !== -1;
+            var newHealth = Object.assign({}, fishHealth);
+            delete newBirthTicks[removedInstanceId];
+            delete newCareLog[removedInstanceId];
+            var newHunger = Object.assign({}, hungerLevels);
+            var newSickness = Object.assign({}, fishSickness);
+            var newStress = Object.assign({}, fishStress);
+            delete newNames[removedInstanceId];
+            var newBreeding = Object.assign({}, breedingState);
+            var newCooldowns = Object.assign({}, breedingCooldowns);
+            newHealth[removed] = Math.max(0, (newHealth[removed] || 1) - 1);
+            updMulti({ fishInstanceIds: newFishInstanceIds, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog });
+            if (newHealth[removed] === 0) delete newHealth[removed];
+            delete newHunger[removedInstanceId];
+            delete newSickness[removedInstanceId];
+            delete newStress[removedInstanceId];
+            if (!speciesStillPresent) {
+              delete newBreeding[removed];
+              delete newCooldowns[removed];
+            }
 
-            updMulti({ tankFish: newFish, eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (sp ? sp.name : removed) }]) });
+            updMulti({ tankFish: newFish, fishHealth: newHealth, hungerLevels: newHunger, fishSickness: newSickness, fishStress: newStress, breedingState: newBreeding, breedingCooldowns: newCooldowns, eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (sp ? sp.name : removed) }]) });
 
           };
 
@@ -14769,9 +14979,20 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var plantCatalog = getPlantsForTank(selectedTank);
 
+            var plantStillPresent = newPlants.indexOf(removed) !== -1;
+            var newPH = Object.assign({}, plantHealth);
+            var newPB = Object.assign({}, plantBiomass);
+            if (!plantStillPresent) {
+              delete newPH[removed];
+              delete newPB[removed];
+            }
             var plant = plantCatalog.find(function (p) { return p.id === removed; });
 
             updMulti({
+
+              plantHealth: newPH,
+
+              plantBiomass: newPB,
 
               tankPlants: newPlants,
 
@@ -14829,27 +15050,32 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
-          var doWaterChange = function () {
+          var doWaterChange = function (requestedPercent) {
 
+            var percent = [10, 25, 50].indexOf(Number(requestedPercent)) >= 0 ? Number(requestedPercent) : waterChangePercent;
+            var fraction = percent / 100;
+            var remaining = 1 - fraction;
             if (!waterChem) return;
 
             var tank = TANK_TYPES.find(function (t) { return t.id === selectedTank; });
 
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: Math.max(0, waterChem.ammonia * 0.5),
+              ammonia: Math.max(0, waterChem.ammonia * remaining),
 
-              nitrite: Math.max(0, waterChem.nitrite * 0.5),
+              nitrite: Math.max(0, waterChem.nitrite * remaining),
 
-              nitrate: Math.max(0, waterChem.nitrate * 0.6),
+              nitrate: Math.max(0, waterChem.nitrate * remaining),
 
-              pH: waterChem.pH + (tank.pH - waterChem.pH) * 0.3
+              pH: waterChem.pH + (tank.pH - waterChem.pH) * fraction,
+              dissolvedO2: waterChem.dissolvedO2 + (7 - waterChem.dissolvedO2) * fraction,
+              co2: waterChem.co2 + (3 - waterChem.co2) * fraction
 
             });
 
-            updMulti({ waterChem: newChem, eventLog: eventLog.concat([{ tick: simTick, msg: '💧 25% water change performed' }]) });
+            updMulti({ waterChem: newChem, chemHistory: chemHistory.concat([{ tick: simTick, day: simDay, hour: simHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48), eventLog: eventLog.concat([{ tick: simTick, msg: percent + '% water change performed' }]) });
 
-            if (addToast) addToast('💧 Water change complete!', 'success');
+            if (addToast) addToast(percent + '% water change complete. Dissolved compounds reduced by ' + percent + '%.', 'success');
 
             sfxSplash(); setTimeout(sfxSplash, 150); setTimeout(sfxBubble, 300);
 
@@ -14860,6 +15086,7 @@ var d = (labToolData && labToolData._aquarium) || {};
           var feedFish = function () {
 
             if (!waterChem) return;
+            if (tankFish.length === 0) { if (addToast) addToast('Add fish before feeding. Empty-tank food would only decay into ammonia.', 'warning'); return; }
 
             var newChem = Object.assign({}, waterChem, {
 
@@ -14870,14 +15097,16 @@ var d = (labToolData && labToolData._aquarium) || {};
             // Reduce hunger for all fish and track feeding impact
 
             var newHunger = Object.assign({}, hungerLevels);
+            var newCareLog = Object.assign({}, fishCareLog);
 
             var totalDrop = 0;
 
             var overfedCount = 0;
 
-            tankFish.forEach(function (fId) {
+            tankFish.forEach(function (fId, idx) {
+              var fishKey = fishInstanceIds[idx];
 
-              var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+              var cur = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
               if (cur < 15) { overfedCount++; }
 
@@ -14885,7 +15114,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               totalDrop += drop;
 
-              newHunger[fId] = Math.max(0, cur - drop);
+              newHunger[fishKey] = Math.max(0, cur - drop);
+              newCareLog[fishKey] = (newCareLog[fishKey] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: 'Fed flakes; hunger reduced by ' + drop }]).slice(-8);
 
             });
 
@@ -14910,6 +15140,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               waterChem: newChem,
 
               hungerLevels: newHunger,
+              fishCareLog: newCareLog,
 
               feedingLog: { fishCount: tankFish.length, avgHungerDrop: avgDrop, ammoniaAdded: 0.15 * (tankFish.length || 1), overfedCount: overfedCount, tip: tips[Math.floor(Math.random() * tips.length)] },
 
@@ -14928,6 +15159,7 @@ var d = (labToolData && labToolData._aquarium) || {};
           var feedLive = function () {
 
             if (!waterChem) return;
+            if (tankFish.length === 0) { if (addToast) addToast('Add fish before feeding live food.', 'warning'); return; }
 
             var newChem = Object.assign({}, waterChem, {
 
@@ -14936,32 +15168,35 @@ var d = (labToolData && labToolData._aquarium) || {};
             });
 
             var newHunger = Object.assign({}, hungerLevels);
+            var newCareLog = Object.assign({}, fishCareLog);
 
             var fedCarnivores = 0;
 
             var ignoredHerbivores = 0;
 
-            tankFish.forEach(function (fId) {
+            tankFish.forEach(function (fId, idx) {
 
+              var fishKey = fishInstanceIds[idx];
               var diet = SPECIES_DIET[fId] || 'omnivore';
 
-              var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+              var cur = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
               if (diet === 'carnivore') {
 
-                newHunger[fId] = Math.max(0, cur - 45);
+                newHunger[fishKey] = Math.max(0, cur - 45);
 
                 fedCarnivores++;
 
               } else if (diet === 'omnivore') {
 
-                newHunger[fId] = Math.max(0, cur - 20);
+                newHunger[fishKey] = Math.max(0, cur - 20);
 
               } else {
 
                 ignoredHerbivores++;
 
               }
+              if (diet !== 'herbivore') newCareLog[fishKey] = (newCareLog[fishKey] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: diet === 'carnivore' ? 'Fed live food' : 'Sampled live food' }]).slice(-8);
 
             });
 
@@ -14976,6 +15211,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               waterChem: newChem,
 
               hungerLevels: newHunger,
+              fishCareLog: newCareLog,
 
               feedingLog: { fishCount: tankFish.length, avgHungerDrop: fedCarnivores > 0 ? 45 : 0, ammoniaAdded: 0.22 * (tankFish.length || 1), overfedCount: 0, tip: tipText },
 
@@ -15013,11 +15249,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           // ── Medicate Fish ──
 
-          var medicateFish = function () {
+          var medicateFish = function (targetFishId) {
 
             if (!waterChem) return;
 
-            var sickCount = Object.keys(fishSickness).length;
+            var targetId = typeof targetFishId === 'string' && fishSickness[targetFishId] ? targetFishId : null;
+            var sickCount = targetId ? 1 : Object.keys(fishSickness).length;
 
             if (sickCount === 0) {
 
@@ -15030,30 +15267,32 @@ var d = (labToolData && labToolData._aquarium) || {};
             // Medication clears mild/moderate, reduces severe to moderate
 
             var newSickness = Object.assign({}, fishSickness);
+            var newCareLog = Object.assign({}, fishCareLog);
 
             var cured = 0;
 
             Object.keys(newSickness).forEach(function (fId) {
+              if (targetId && fId !== targetId) return;
+              var illness = newSickness[fId];
+              var treatmentMessage;
 
-              if (newSickness[fId].severity <= 2) {
-
+              if (illness.severity <= 2) {
                 delete newSickness[fId];
-
                 cured++;
-
+                treatmentMessage = 'Medication cured ' + illness.disease;
               } else {
-
-                newSickness[fId] = Object.assign({}, newSickness[fId], { severity: 2 });
-
+                newSickness[fId] = Object.assign({}, illness, { severity: 2 });
+                treatmentMessage = 'Medication reduced ' + illness.disease + ' to moderate severity';
               }
 
+              newCareLog[fId] = (newCareLog[fId] || []).concat([{ tick: simTick, day: simDay, hour: simHour, msg: treatmentMessage }]).slice(-8);
             });
 
             // Medication kills some beneficial bacteria — ammonia spike
 
             var newChem = Object.assign({}, waterChem, {
 
-              ammonia: waterChem.ammonia + 0.25
+              ammonia: waterChem.ammonia + (targetId ? 0.1 : 0.25)
 
             });
 
@@ -15061,6 +15300,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               fishSickness: newSickness,
 
+              fishCareLog: newCareLog,
               waterChem: newChem,
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '\uD83D\uDC8A Medication applied — ' + cured + ' fish cured. Beneficial bacteria reduced.' }])
@@ -15110,8 +15350,37 @@ var d = (labToolData && labToolData._aquarium) || {};
               if (!aq.waterChem || !aq.selectedTank) return prev;
 
               var _tankFish = aq.tankFish || [];
+              var _savedFishInstanceIds = Array.isArray(aq.fishInstanceIds) ? aq.fishInstanceIds : [];
+              var _nextFishInstanceId = typeof aq.nextFishInstanceId === 'number' && aq.nextFishInstanceId > 0 ? Math.floor(aq.nextFishInstanceId) : 1;
+              var _usedFishInstanceIds = {};
+              var _fishInstanceIds = _tankFish.map(function (speciesId, index) {
+                var savedId = _savedFishInstanceIds[index];
+                if (typeof savedId === 'string' && savedId && !_usedFishInstanceIds[savedId]) {
+                  _usedFishInstanceIds[savedId] = true;
+                  return savedId;
+                }
+                var generatedId;
+                do { generatedId = 'fish-' + _nextFishInstanceId++; } while (_usedFishInstanceIds[generatedId]);
+                _usedFishInstanceIds[generatedId] = true;
+                return generatedId;
+              });
+              _fishInstanceIds.forEach(function (instanceId) {
+                var match = /^fish-(\d+)$/.exec(instanceId);
+                if (match) _nextFishInstanceId = Math.max(_nextFishInstanceId, Number(match[1]) + 1);
+              });
+              function migrateTickFishState(source, defaultValue, includeDefault) {
+                var original = source || {};
+                var migrated = {};
+                _tankFish.forEach(function (speciesId, index) {
+                  var instanceId = _fishInstanceIds[index];
+                  if (Object.prototype.hasOwnProperty.call(original, instanceId)) migrated[instanceId] = original[instanceId];
+                  else if (Object.prototype.hasOwnProperty.call(original, speciesId)) migrated[instanceId] = original[speciesId];
+                  else if (includeDefault) migrated[instanceId] = defaultValue;
+                });
+                return migrated;
+              }
 
-              var _hungerLevels = aq.hungerLevels || {};
+              var _hungerLevels = migrateTickFishState(aq.hungerLevels, 50, true);
 
               var _eventLog = aq.eventLog || [];
 
@@ -15121,9 +15390,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var _simHour = aq.simHour || 8;
 
-              var _fishSickness = aq.fishSickness || {};
+              var _fishSickness = migrateTickFishState(aq.fishSickness);
 
-              var _fishStress = aq.fishStress || {};
+              var _fishStress = migrateTickFishState(aq.fishStress);
 
               var _lightsOn = aq.lightsOn !== undefined ? aq.lightsOn : true;
 
@@ -15132,6 +15401,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               var _selectedTank = aq.selectedTank;
 
               var _waterChem = aq.waterChem;
+              var _chemHistory = aq.chemHistory || [];
 
               // ── Plant state ──
 
@@ -15423,12 +15693,16 @@ var d = (labToolData && labToolData._aquarium) || {};
               // Increase hunger each simulation tick
 
               var newHunger = Object.assign({}, _hungerLevels);
+              var newFishNames = Object.assign({}, aq.fishNames || {});
+              var newFishBirthTicks = Object.assign({}, aq.fishBirthTicks || {});
+              var newFishCareLog = Object.assign({}, aq.fishCareLog || {});
 
-              _tankFish.forEach(function (fId) {
+              _tankFish.forEach(function (fId, idx) {
+                var fishKey = _fishInstanceIds[idx];
 
-                var cur = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+                var cur = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
-                newHunger[fId] = Math.min(100, cur + 2);
+                newHunger[fishKey] = Math.min(100, cur + 2);
 
               });
 
@@ -15440,7 +15714,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               if (_waterChem.ammonia > 0.8 && Math.random() < 0.15 && _tankFish.length > 0) {
 
-                var victim = _tankFish[Math.floor(Math.random() * _tankFish.length)];
+                var victimIndex = Math.floor(Math.random() * _tankFish.length);
+                var victim = _fishInstanceIds[victimIndex];
 
                 if (!newSickness[victim]) {
 
@@ -15450,7 +15725,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   sickChanged = true;
 
-                  newLog.push({ tick: newTick, msg: '\u26A0\uFE0F A fish is showing signs of illness!' });
+                  var victimName = newFishNames[victim] || 'A fish';
+                  newFishCareLog[victim] = (newFishCareLog[victim] || []).concat([{ tick: newTick, day: newDay, hour: newHour, msg: 'Diagnosed with ' + newSickness[victim].disease }]).slice(-8);
+                  newLog.push({ tick: newTick, msg: '\u26A0\uFE0F ' + victimName + ' is showing signs of ' + newSickness[victim].disease + '!' });
 
                 }
 
@@ -15473,12 +15750,23 @@ var d = (labToolData && labToolData._aquarium) || {};
               var species = SPECIES_BY_TANK[_selectedTank] || [];
 
               var fishToRemove = [];
+              function averageFishStateForSpecies(store, speciesId, fallback) {
+                var total = 0;
+                var count = 0;
+                _tankFish.forEach(function (candidateSpeciesId, index) {
+                  if (candidateSpeciesId !== speciesId || fishToRemove.indexOf(index) !== -1) return;
+                  var value = store[_fishInstanceIds[index]];
+                  total += value !== undefined ? value : fallback;
+                  count++;
+                });
+                return count > 0 ? total / count : fallback;
+              }
 
               var newStress = Object.assign({}, _fishStress);
 
               _tankFish.forEach(function (fId, idx) {
 
-                var hunger = newHunger[fId] !== undefined ? newHunger[fId] : 50;
+                var fishKey = _fishInstanceIds[idx]; var hunger = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
 
                 if (hunger >= 100 && Math.random() < 0.25) {
 
@@ -15486,7 +15774,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   fishToRemove.push(idx);
 
-                  newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + (sp ? sp.name : fId) + ' has died from starvation!' });
+                  newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + (newFishNames[fishKey] || (sp ? sp.name : fId)) + ' has died from starvation!' });
 
                 }
 
@@ -15520,9 +15808,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       fishToRemove.push(preyIdx);
 
-                      newHunger[fId] = Math.max(0, hunger - 40);
+                      newHunger[fishKey] = Math.max(0, hunger - 40);
 
-                      newLog.push({ tick: newTick, msg: '\uD83D\uDE31 ' + predSp.name + ' has eaten a ' + (preySp2 ? preySp2.name : 'tankmate') + '!' });
+                      var preyKey = _fishInstanceIds[preyIdx];
+                      var predatorName = newFishNames[fishKey] || predSp.name; var preyName = newFishNames[preyKey] || (preySp2 ? preySp2.name : 'tankmate');
+                      newLog.push({ tick: newTick, msg: '\uD83D\uDE31 ' + predatorName + ' has eaten ' + preyName + '!' });
 
                     }
 
@@ -15564,7 +15854,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var aggressionChance = overcrowded ? 0.08 : 0.03;
 
-                    var avgH = ((newHunger[sp1.id] || 50) + (newHunger[sp2.id] || 50)) / 2;
+                    var sp1Idx = _tankFish.indexOf(sp1.id);
+                    var sp2Idx = _tankFish.indexOf(sp2.id);
+                    var sp1Key = sp1Idx >= 0 ? _fishInstanceIds[sp1Idx] : null;
+                    var sp2Key = sp2Idx >= 0 ? _fishInstanceIds[sp2Idx] : null;
+                    var avgH = (averageFishStateForSpecies(newHunger, sp1.id, 50) + averageFishStateForSpecies(newHunger, sp2.id, 50)) / 2;
 
                     if (avgH > 70) aggressionChance += 0.05;
 
@@ -15574,21 +15868,25 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var defender = sp1.load >= sp2.load ? sp2 : sp1;
 
-                      newStress[defender.id] = Math.min(100, (newStress[defender.id] || 0) + 15);
+                      var attackerKey = attacker.id === sp1.id ? sp1Key : sp2Key;
+                      var defenderKey = defender.id === sp1.id ? sp1Key : sp2Key;
+                      if (defenderKey) newStress[defenderKey] = Math.min(100, (newStress[defenderKey] || 0) + 15);
 
-                      newStress[attacker.id] = Math.min(100, (newStress[attacker.id] || 0) + 5);
+                      if (attackerKey) newStress[attackerKey] = Math.min(100, (newStress[attackerKey] || 0) + 5);
 
-                      newLog.push({ tick: newTick, msg: '\u2694\uFE0F ' + attacker.name + ' is fighting with ' + defender.name + '!' });
+                      var attackerName = newFishNames[attackerKey] || attacker.name;
+                      var defenderName = newFishNames[defenderKey] || defender.name;
+                      newLog.push({ tick: newTick, msg: '\u2694\uFE0F ' + attackerName + ' is fighting with ' + defenderName + '!' });
 
-                      if ((newStress[defender.id] || 0) >= 90) {
+                      if ((newStress[defenderKey] || 0) >= 90) {
 
-                        var defIdx = _tankFish.indexOf(defender.id);
+                        var defIdx = defender.id === sp1.id ? sp1Idx : sp2Idx;
 
                         if (defIdx !== -1 && fishToRemove.indexOf(defIdx) === -1) {
 
                           fishToRemove.push(defIdx);
 
-                          newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + defender.name + ' has died from aggression injuries!' });
+                          newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + defenderName + ' has died from aggression injuries!' });
 
                         }
 
@@ -15605,6 +15903,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               // Apply fish removals
 
               var finalTankFish = _tankFish;
+              var finalFishInstanceIds = _fishInstanceIds.slice();
 
               if (fishToRemove.length > 0) {
 
@@ -15612,7 +15911,18 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 finalTankFish = _tankFish.slice();
 
-                fishToRemove.forEach(function (ri) { if (ri >= 0 && ri < finalTankFish.length) finalTankFish.splice(ri, 1); });
+                fishToRemove.forEach(function (ri) {
+                  if (ri < 0 || ri >= finalTankFish.length) return;
+                  var removedKey = finalFishInstanceIds[ri];
+                  delete newHunger[removedKey];
+                  delete newFishNames[removedKey];
+                  delete newFishBirthTicks[removedKey];
+                  delete newFishCareLog[removedKey];
+                  delete newStress[removedKey];
+                  if (newSickness[removedKey]) { delete newSickness[removedKey]; sickChanged = true; }
+                  finalTankFish.splice(ri, 1);
+                  finalFishInstanceIds.splice(ri, 1);
+                });
 
               }
 
@@ -15726,7 +16036,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   if (newChem.nitrite > 0.8) abortChance += 0.06;
 
-                  if ((newStress[sId] || 0) > 70) abortChance += 0.05;
+                  if (averageFishStateForSpecies(newStress, sId, 0) > 70) abortChance += 0.05;
 
                   if (newO2 < 3) abortChance += 0.04;
 
@@ -15878,11 +16188,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Condition 3: low stress
 
-                if ((newStress[sId] || 0) > 50) return;
+                if (averageFishStateForSpecies(newStress, sId, 0) > 50) return;
 
                 // Condition 4: well-fed
 
-                if ((newHunger[sId] || 50) > 70) return;
+                if (averageFishStateForSpecies(newHunger, sId, 50) > 70) return;
 
                 // Condition 5: bioload has room for at least 1 fry
 
@@ -15936,24 +16246,37 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Initialize hunger for new fry
 
-                fryToAdd.forEach(function (fId) {
-
-                  if (newHunger[fId] === undefined) newHunger[fId] = 40;
+                fryToAdd.forEach(function (frySpeciesId, fryIndex) {
+                  var fryInstanceId = 'fish-' + _nextFishInstanceId++;
+                  finalFishInstanceIds.push(fryInstanceId);
+                  newHunger[fryInstanceId] = 40;
+                  var frySpecies = speciesList.find(function (candidate) { return candidate.id === frySpeciesId; });
+                  newFishNames[fryInstanceId] = (frySpecies ? frySpecies.name : 'Fish') + ' Fry ' + (fryIndex + 1);
+                  newFishBirthTicks[fryInstanceId] = newTick;
+                  newFishCareLog[fryInstanceId] = [{ tick: newTick, day: newDay, hour: newHour, msg: 'Born in this tank' }];
 
                 });
 
               }
 
 
+              var finalFishHealth = {};
+              finalTankFish.forEach(function (speciesId) { finalFishHealth[speciesId] = (finalFishHealth[speciesId] || 0) + 1; });
 
               // Build final update
 
               var tickUpdate = {
 
                 waterChem: newChem, simTick: newTick, simDay: newDay, simHour: newHour,
+                chemHistory: _chemHistory.concat([{ tick: newTick, day: newDay, hour: newHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48),
+                fishInstanceIds: finalFishInstanceIds, nextFishInstanceId: _nextFishInstanceId, fishIdentityVersion: 3, fishSickness: newSickness,
 
                 hungerLevels: newHunger, eventLog: newLog.slice(-25),
+                fishNames: newFishNames,
 
+                fishHealth: finalFishHealth,
+                fishBirthTicks: newFishBirthTicks,
+                fishCareLog: newFishCareLog,
                 algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress
 
               };
@@ -16054,7 +16377,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             var hungerCount = 0;
 
-            tankFish.forEach(function (fId) { var h = hungerLevels[fId]; if (h !== undefined) { avgHunger += h; hungerCount++; } });
+            tankFish.forEach(function (fId, idx) { var h = hungerLevels[fishInstanceIds[idx]]; if (h !== undefined) { avgHunger += h; hungerCount++; } });
 
             if (hungerCount > 0) avgHunger = avgHunger / hungerCount;
 
@@ -16349,7 +16672,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("button", {
 
-                    onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
+                    onClick: function () { stopAquariumRuntime(true); updMulti({ simRunning: false }); setStemLabTool(null); },
 
                     className: "mt-0.5 p-2 hover:bg-white/80 rounded-xl transition-colors border border-transparent hover:border-cyan-200", 'aria-label': __alloT('stem.aquarium.back_to_tools', 'Back to tools')
 
@@ -16399,7 +16722,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     var selectedRoute = mode === route.mode;
                     return React.createElement("button", {
                       key: route.id,
-                      onClick: function () { upd('mode', route.mode); },
+                      onClick: function () { navigateAquariumMode(route.mode); },
                       className: "text-left rounded-xl border p-3 bg-gradient-to-br " + route.tone + " transition-all hover:-translate-y-0.5 hover:shadow-md " + (selectedRoute ? "ring-2 ring-cyan-400" : "")
                     },
                       React.createElement("div", { className: "flex items-center gap-2" },
@@ -16438,7 +16761,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 return React.createElement("button", { key: tab.id,
 
-                  onClick: function () { upd('mode', tab.id); },
+                  onClick: function () { navigateAquariumMode(tab.id); },
                   role: "tab",
                   'aria-selected': mode === tab.id,
 
@@ -16994,7 +17317,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("button", { "aria-label": __alloT('stem.aquarium.back', "Back"),
 
-                      onClick: function () { updMulti({ selectedTank: null, simRunning: false }); },
+                      onClick: function () { stopAquariumRuntime(false); updMulti({ selectedTank: null, simRunning: false }); },
 
                       className: "text-xs text-cyan-600 hover:text-cyan-800 font-bold"
 
@@ -17034,19 +17357,13 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         onClick: function () {
 
-                          upd('simSpeed', s.spd);
-
-                          // If sim is running, restart interval at new speed
-
-                          if (simRunning && window._aquaSimInterval) {
-
-                            clearInterval(window._aquaSimInterval);
-
-                            var newInterval = s.spd === 0 ? 99999 : s.spd === 1 ? 2000 : s.spd === 2 ? 1000 : 400;
-
-                            window._aquaSimInterval = setInterval(function () { simStep(); }, newInterval);
-
+                          if (s.spd === 0) {
+                            updMulti({ simSpeed: 0, simRunning: false });
+                            stopAquariumRuntime(false);
+                            return;
                           }
+                          upd('simSpeed', s.spd);
+                          if (simRunning) startAquaSimInterval(s.spd);
 
                         },
 
@@ -17130,13 +17447,16 @@ var d = (labToolData && labToolData._aquarium) || {};
                                    : st === 'warn' ? 'bg-amber-100 ring-2 ring-amber-400 shadow-lg'
                                    :                 'bg-white ring-2 ring-cyan-400 shadow-lg';
 
-                      return React.createElement("div", {
+                      return React.createElement("button", {
 
                         key: p.key,
+                        type: "button",
+                        'aria-pressed': isActive,
+                        'aria-label': p.label + ' ' + p.val + ', status ' + st + '. Show chemistry details.',
 
                         onClick: function () { upd('chemTooltip', isActive ? null : p.key); },
 
-                        className: "rounded-lg p-2 text-center cursor-pointer transition-all hover:scale-105 border " + (isActive ? activeBg : cardBg)
+                        className: "rounded-lg p-2 text-center cursor-pointer transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-cyan-600 border " + (isActive ? activeBg : cardBg)
 
                       },
 
@@ -17148,6 +17468,32 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     })
 
+                  ),
+                  chemHistory.length > 1 && React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-200 bg-white/80 p-3", role: "group", 'aria-label': "Nitrogen cycle trends" },
+                    React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+                      React.createElement("h5", { className: "text-[11px] font-black text-cyan-800" }, "Nitrogen cycle - recent 48 hours"),
+                      React.createElement("span", { className: "text-[10px] text-slate-500" }, chemHistory.length + " readings")
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
+                      [
+                        { key: "ammonia", label: "Ammonia NH3", max: 4, threshold: 0.25, color: "#e11d48", unit: "ppm" },
+                        { key: "nitrite", label: "Nitrite NO2", max: 4, threshold: 0.25, color: "#d97706", unit: "ppm" },
+                        { key: "nitrate", label: "Nitrate NO3", max: 80, threshold: 40, color: "#0891b2", unit: "ppm" }
+                      ].map(function(series) {
+                        var values = chemHistory.map(function(point) { return Number(point[series.key]) || 0; });
+                        var W = 120, H = 38, pad = 2;
+                        var pts = values.map(function(value, index) { var x = values.length === 1 ? pad : pad + index / (values.length - 1) * (W - pad * 2); var y = H - pad - Math.min(1, value / series.max) * (H - pad * 2); return x.toFixed(1) + "," + y.toFixed(1); }).join(" ");
+                        var thresholdY = H - pad - series.threshold / series.max * (H - pad * 2);
+                        var latest = values[values.length - 1];
+                        return React.createElement("div", { key: series.key, className: "rounded-lg bg-slate-50 border border-slate-200 p-2" },
+                          React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, series.label + ": " + latest.toFixed(series.key === "nitrate" ? 1 : 2) + " " + series.unit),
+                          React.createElement("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: 42, role: "img", 'aria-label': series.label + " trend across " + values.length + " readings; latest " + latest.toFixed(2) + " " + series.unit },
+                            React.createElement("line", { x1: 0, y1: thresholdY, x2: W, y2: thresholdY, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "3 2" }),
+                            React.createElement("polyline", { points: pts, fill: "none", stroke: series.color, strokeWidth: 2, vectorEffect: "non-scaling-stroke" })
+                          )
+                        );
+                      })
+                    )
                   ),
 
                   // ── Chemistry Tooltip Overlay ──
@@ -17168,7 +17514,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
 
-                        React.createElement("button", { onClick: function () { upd('chemTooltip', null); }, className: "text-[11px] text-slate-600 hover:text-slate-600" }, "\u2715")
+                        React.createElement("button", { type: "button", 'aria-label': "Close chemistry explanation", onClick: function () { upd('chemTooltip', null); }, className: "text-[11px] text-slate-600 hover:text-slate-600" }, "\u2715")
 
                       ),
 
@@ -17484,9 +17830,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         var popOk = pop >= bData.minPop;
 
-                        var stressOk = (fishStress[sId] || 0) <= 50;
+                        var stressOk = averageCurrentFishState(fishStress, sId, 0) <= 50;
 
-                        var hungerOk = (hungerLevels[sId] || 50) <= 70;
+                        var hungerOk = averageCurrentFishState(hungerLevels, sId, 50) <= 70;
 
                         return React.createElement("div", { key: sId, className: "bg-white/80 rounded-xl p-2.5 border " + (isGestating ? "border-pink-300 shadow-pink-100 shadow-sm" : "border-pink-100") },
 
@@ -17592,6 +17938,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 React.createElement("div", {
 
                   className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
+                  role: "region",
+                  'aria-label': tank.name + " interactive tank. " + tankFish.length + " fish and " + tankPlants.length + " plants. Ammonia " + waterChem.ammonia.toFixed(2) + " ppm, nitrite " + waterChem.nitrite.toFixed(2) + " ppm, nitrate " + waterChem.nitrate.toFixed(1) + " ppm. Activate a fish to open anatomy details.",
 
                   style: { height: '240px', transition: 'filter 0.8s ease', filter: (d.tankLight === 'blue') ? 'saturate(0.5) hue-rotate(20deg) brightness(0.55)' : (d.tankLight === 'night') ? 'saturate(0.2) brightness(0.2)' : 'none', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
 
@@ -17915,7 +18263,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   tankFish.map(function (fId, idx) {
 
+                    var fishKey = fishInstanceIds[idx];
                     var sp = species.find(function (s) { return s.id === fId; });
+                    var displayName = fishNames[fishKey] || ((sp ? sp.name : "Fish") + " " + (idx + 1));
 
                     var animInfo = SPECIES_ANIM[fId] || null;
 
@@ -17973,11 +18323,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     if (!lightsOn) { swimDuration *= 2; swayDuration *= 2; }
 
-                    var isSick = fishSickness[fId] ? true : false;
+                    var isSick = fishSickness[fishKey] ? true : false;
 
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } }, 
+                    return React.createElement("button", { type: "button", 'aria-label': displayName + (isSick ? ", sick with " + fishSickness[fishKey].disease : ", no disease detected") + ", hunger level " + (hungerLevels[fishKey] !== undefined ? hungerLevels[fishKey] : 50) + " percent. Open anatomy details.",
 
-                      key: idx,
+                      key: fishKey,
 
                       className: svgHtml ? 'aqua-fish-svg' : 'aqua-fish',
 
@@ -17985,7 +18335,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         position: 'absolute', top: yPos + 'px', left: xPos + '%',
 
-                        cursor: 'pointer', zIndex: 6, userSelect: 'none',
+                        cursor: 'pointer', zIndex: 6, userSelect: 'none', padding: 0, border: 'none', background: 'transparent',
 
                         width: svgHtml ? (ds.w + 'px') : 'auto', height: svgHtml ? (ds.h + 'px') : 'auto',
 
@@ -18003,7 +18353,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       },
 
-                      title: sp ? sp.name + (isSick ? ' \u26A0\uFE0F SICK: ' + fishSickness[fId].disease : '') + ': ' + sp.fact : fId,
+                      title: displayName + (isSick ? ' \u26A0\uFE0F SICK: ' + fishSickness[fishKey].disease : '') + (sp ? ': ' + sp.fact : ''),
 
                       onClick: function () {
 
@@ -18025,7 +18375,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       isSick && React.createElement("div", { className: 'aqua-sick-overlay' },
 
-                        fishSickness[fId].severity >= 3 ? '\uD83D\uDCA9' : fishSickness[fId].severity >= 2 ? '\uD83E\uDE78' : '\u26A0\uFE0F'
+                        fishSickness[fishKey].severity >= 3 ? '\uD83D\uDCA9' : fishSickness[fishKey].severity >= 2 ? '\uD83E\uDE78' : '\u26A0\uFE0F'
 
                       ),
 
@@ -18033,7 +18383,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       (() => {
 
-                        var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
+                        var hunger = hungerLevels[fishKey] !== undefined ? hungerLevels[fishKey] : 50;
 
                         var barColor = hunger >= 80 ? '#ef4444' : hunger >= 50 ? '#f59e0b' : '#22c55e';
 
@@ -18205,11 +18555,15 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     tankFish.map(function (fId, idx) {
 
+                      var fishKey = fishInstanceIds[idx];
                       var sp = species.find(function (s) { return s.id === fId; });
 
-                      return React.createElement("span", { 
+                      var displayName = fishNames[fishKey] || ((sp ? sp.name : "Fish") + " " + (idx + 1));
+                      return React.createElement("button", {
 
-                        key: idx,
+                        key: fishInstanceIds[idx],
+                        type: "button",
+                        'aria-label': "Remove " + displayName + " from tank",
 
                         onClick: function () { removeFish(idx); },
 
@@ -18230,6 +18584,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // Action buttons
 
                 React.createElement("div", { className: "space-y-2" },
+                  waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
+                    React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[11px] font-bold text-blue-800" }, "Water change:"),
+                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-300 bg-white px-2 py-1 text-[11px] font-bold text-blue-900", 'aria-label': "Water change percentage" },
+                      [10, 25, 50].map(function(percentOption) {
+                        return React.createElement("option", { key: percentOption, value: percentOption }, percentOption + "%");
+                      })
+                    ),
+                    React.createElement("span", { className: "text-[10px] text-blue-900", 'aria-live': "polite" }, "Preview - NH3 " + (waterChem.ammonia * (1 - waterChangePercent / 100)).toFixed(2) + ", NO2 " + (waterChem.nitrite * (1 - waterChangePercent / 100)).toFixed(2) + ", NO3 " + (waterChem.nitrate * (1 - waterChangePercent / 100)).toFixed(1) + " ppm")
+                  ),
 
                   React.createElement("div", { className: "flex gap-2" },
 
@@ -18238,43 +18601,47 @@ var d = (labToolData && labToolData._aquarium) || {};
                       onClick: function () {
 
                         if (simRunning) {
-
-                          upd('simRunning', false); stopAquaAmbient();
-
-                          if (window._aquaSimInterval) { clearInterval(window._aquaSimInterval); window._aquaSimInterval = null; }
-
+                          upd('simRunning', false);
+                          stopAquariumRuntime(false);
                         } else {
-
-                          upd('simRunning', true); startAquaAmbient();
-
                           var speed = simSpeed || 1;
-
-                          var interval = speed === 0 ? 99999 : speed === 1 ? 2000 : speed === 2 ? 1000 : 400;
-
-                          if (window._aquaSimInterval) clearInterval(window._aquaSimInterval);
-
-                          window._aquaSimInterval = setInterval(function () { simStep(); }, interval);
-
+                          updMulti({ simRunning: true, simSpeed: speed });
+                          startAquaAmbient();
+                          startAquaSimInterval(speed);
                         }
 
                       },
-
                       className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-700 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")
 
                     }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
 
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.water', "Water"),
+                    React.createElement("button", { "aria-label": "Perform " + waterChangePercent + " percent water change",
 
-                      onClick: doWaterChange,
+                      onClick: function() { doWaterChange(waterChangePercent); },
 
                       className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-600"
 
                     }, __alloT('stem.aquarium.water_2', "\uD83D\uDCA7 Water")),
 
+                    React.createElement("button", {
+                      type: "button",
+                      'aria-label': soundEnabled ? "Mute aquarium sounds" : "Enable aquarium sounds",
+                      'aria-pressed': soundEnabled,
+                      onClick: function () {
+                        if (soundEnabled) stopAquaAmbient(true);
+                        upd('soundEnabled', !soundEnabled);
+                      },
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (soundEnabled ? "bg-cyan-50 text-cyan-800 border-cyan-600" : "bg-slate-100 text-slate-700 border-slate-500")
+                    }, soundEnabled ? "\uD83D\uDD0A Sound" : "\uD83D\uDD07 Muted"),
+
+                    React.createElement("label", { className: "flex items-center gap-1 rounded-xl border border-cyan-300 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-900", title: "Aquarium sound volume" },
+                      React.createElement("span", { 'aria-hidden': "true" }, soundVolume + "%"),
+                      React.createElement("input", { type: "range", min: 0, max: 100, step: 5, value: soundVolume, onChange: function (event) { upd('soundVolume', Number(event.target.value)); }, 'aria-label': "Aquarium sound volume", className: "w-16 accent-cyan-600" })
+                    ),
+
                     React.createElement("button", { "aria-label": __alloT('stem.aquarium.flake', "Flake"),
 
                       onClick: feedFish,
-
                       disabled: tankFish.length === 0,
 
                       className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-600")
@@ -18307,7 +18674,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("button", { "aria-label": __alloT('stem.aquarium.medicate_fish', "Medicate Fish"),
 
-                      onClick: medicateFish,
+                      onClick: function () { medicateFish(); },
 
                       className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
 
@@ -18335,7 +18702,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-800" }, __alloT('stem.aquarium.feeding_report', "Feeding Report")),
 
-                      React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
+                      React.createElement("button", { type: "button", 'aria-label': "Close feeding report", onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
 
                     ),
 
@@ -18441,11 +18808,18 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       return tankFish.map(function (fId, idx) {
 
+                        var fishKey = fishInstanceIds[idx];
                         var sp = (SPECIES_BY_TANK[selectedTank] || []).find(function (s) { return s.id === fId; });
 
-                        var hunger = hungerLevels[fId] !== undefined ? hungerLevels[fId] : 50;
+                        var displayName = fishNames[fishKey] || ((sp ? sp.name : "Fish") + " " + (idx + 1));
+                        var birthTick = fishBirthTicks[fishKey] !== undefined ? fishBirthTicks[fishKey] : 0;
+                        var ageHours = Math.max(0, simTick - birthTick);
+                        var ageLabel = ageHours < 24 ? ageHours + 'h' : Math.floor(ageHours / 24) + 'd ' + (ageHours % 24) + 'h';
+                        var careEntries = fishCareLog[fishKey] || [];
+                        var lastCare = careEntries.length > 0 ? careEntries[careEntries.length - 1] : null;
+                        var hunger = hungerLevels[fishKey] !== undefined ? hungerLevels[fishKey] : 50;
 
-                        var stress = fishStress[fId] || 0;
+                        var stress = fishStress[fishKey] || 0;
 
                         var hungerColor = hunger >= 80 ? 'bg-red-500' : hunger >= 50 ? 'bg-amber-400' : 'bg-green-500';
 
@@ -18453,26 +18827,40 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         var hungerTextColor = hunger >= 80 ? 'text-red-600' : hunger >= 50 ? 'text-amber-600' : 'text-green-600';
 
-                        return React.createElement("div", { key: idx, className: "flex items-center gap-2 bg-slate-50 rounded-lg p-1.5" },
+                        return React.createElement("div", { key: fishKey, className: "flex items-center gap-2 bg-slate-50 rounded-lg p-1.5" },
 
                           React.createElement("span", { className: "text-sm" }, sp ? sp.icon : '\uD83D\uDC1F'),
 
                           React.createElement("div", { className: "flex-1 min-w-0" },
-
-                            React.createElement("div", { className: "flex items-center justify-between mb-0.5" },
-
-                              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, sp ? sp.name : fId),
-
+                            React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, displayName),
                               React.createElement("span", { className: "text-[11px] font-bold " + hungerTextColor }, hungerText)
-
                             ),
-
-                            React.createElement("div", { className: "h-1.5 bg-slate-200 rounded-full overflow-hidden" },
-
-                              React.createElement("div", { style: { width: (100 - hunger) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hungerColor })
-
+                            React.createElement("input", {
+                              type: "text",
+                              value: fishNames[fishKey] || '',
+                              placeholder: "Name this fish",
+                              maxLength: 24,
+                              'aria-label': "Name for " + (sp ? sp.name : "fish") + " " + (idx + 1),
+                              onChange: function (event) { var updatedNames = Object.assign({}, fishNames); var nextName = event.target.value.slice(0, 24); if (nextName) updatedNames[fishKey] = nextName; else delete updatedNames[fishKey]; upd('fishNames', updatedNames); },
+                              onBlur: function (event) { var completedName = event.target.value.trim(); if (completedName && (!lastCare || lastCare.msg !== 'Named ' + completedName)) appendFishCare(fishKey, 'Named ' + completedName); },
+                              className: "mb-1 w-full rounded border border-slate-300 bg-white px-1 py-0.5 text-[10px] text-slate-700"
+                            }),
+                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " age " + ageLabel + (lastCare ? ". Latest care: " + lastCare.msg : "") },
+                              React.createElement("span", { className: "font-bold whitespace-nowrap" }, "Age " + ageLabel),
+                              lastCare && React.createElement("span", { className: "truncate", title: lastCare.msg }, "\u2022 " + lastCare.msg)
+                            ),
+                            React.createElement("div", { className: "flex items-center gap-1" },
+                              React.createElement("div", { className: "h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden" },
+                                React.createElement("div", { style: { width: (100 - hunger) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hungerColor })
+                              ),
+                              fishSickness[fishKey] && React.createElement("button", {
+                                type: "button",
+                                'aria-label': "Treat " + displayName + " for " + fishSickness[fishKey].disease,
+                                onClick: function () { medicateFish(fishKey); },
+                                className: "rounded-md border border-rose-500 bg-rose-50 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100"
+                              }, "Treat")
                             )
-
                           ),
 
                           stress > 30 && React.createElement("span", { className: "text-[11px] text-red-500", title: 'Stress: ' + Math.round(stress) + '%' }, '\u26A0\uFE0F')
@@ -18503,7 +18891,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     aiEvent.category && React.createElement("span", { className: "text-[11px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
 
-                    React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+                    React.createElement("button", { type: "button", 'aria-label': "Dismiss aquarium event", onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
 
                   ),
 
@@ -18577,7 +18965,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
 
-                    React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+                    React.createElement("button", { type: "button", 'aria-label': "Dismiss aquarium event outcome", onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
 
                   ),
 
@@ -18651,7 +19039,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Event log
 
-                eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
+                eventLog.length > 0 && React.createElement("div", { role: "log", 'aria-live': "polite", 'aria-relevant': "additions text", 'aria-label': "Aquarium event log", className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
 
                   React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
 

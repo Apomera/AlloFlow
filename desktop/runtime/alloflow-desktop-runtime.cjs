@@ -6,6 +6,7 @@ const fs = require('fs');
 const http = require('http');
 const net = require('net');
 const os = require('os');
+const { SourceFetchError, fetchPublicPage } = require('./web-source-fetch.cjs');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 
@@ -808,6 +809,7 @@ function isEmbeddedAppApiRoute(req, url) {
   const method = String((req && req.method) || 'GET').toUpperCase();
   const pathname = String(url && url.pathname || '');
   if (method === 'OPTIONS') return true;
+  if (method === 'POST' && pathname === '/api/sourceFetchProxy') return true;
   if (/^\/api\/lan-sessions(?:\/|$)/.test(pathname)) return true;
   if (/^\/api\/lan-docs(?:\/|$)/.test(pathname)) return true;
   if (method !== 'GET' && method !== 'HEAD') return false;
@@ -4268,6 +4270,23 @@ async function handleApi(req, res, url) {
       updates: config.updates,
       secretStorage: getSecretStorageStatus(),
     });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/sourceFetchProxy') {
+    let body;
+    try {
+      body = await readRequestJson(req, 4096);
+      const source = await fetchPublicPage(body && body.url);
+      jsonResponse(res, 200, { ...source, fetchedAt: new Date().toISOString() });
+    } catch (error) {
+      if (error instanceof SourceFetchError) {
+        jsonResponse(res, error.status || 422, { error: error.code || 'source-fetch-failed' });
+      } else {
+        console.warn('[AlloFlow Desktop] Source import failed:', error && error.message || error);
+        jsonResponse(res, 502, { error: 'source-fetch-failed' });
+      }
+    }
     return;
   }
 

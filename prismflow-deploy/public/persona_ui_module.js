@@ -576,13 +576,23 @@ const CharacterColumn = React.memo(({
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-3xl text-slate-600 font-bold"
   }, "?"), onRetryPortrait && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.refresh'),
+    type: "button",
+    "aria-label": t('persona.generate_portrait_for', {
+      name: character.name
+    }),
     onClick: () => onRetryPortrait(character),
-    className: `px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer z-20 relative ${side === 'left' ? 'bg-indigo-500 hover:bg-indigo-600 text-white' : 'bg-rose-500 hover:bg-rose-600 text-white'}`
+    disabled: Boolean(character.isUpdating),
+    "aria-busy": character.isUpdating ? 'true' : 'false',
+    className: `px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${side === 'left' ? 'bg-indigo-500 hover:bg-indigo-600 text-white' : 'bg-rose-500 hover:bg-rose-600 text-white'}`
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
   }), t('persona.generate_portrait'))), character.isUpdating && /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-10"
+    className: "absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-30 pointer-events-auto",
+    role: "status",
+    "aria-live": "polite",
+    "aria-label": t('persona.status_generating_portrait', {
+      name: character.name
+    })
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 32,
     className: "text-white animate-spin"

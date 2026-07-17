@@ -35,6 +35,8 @@ function PersonaChatView(props) {
   var personaDefinitionReturnFocusRef = React.useRef(null);
   var personaReflectionDialogRef = React.useRef(null);
   var personaReflectionReturnFocusRef = React.useRef(null);
+  var personaSummaryDialogRef = React.useRef(null);
+  var personaSummaryReturnFocusRef = React.useRef(null);
   // Setters
   var setPersonaState = props.setPersonaState;
   var setPersonaInput = props.setPersonaInput;
@@ -49,8 +51,10 @@ function PersonaChatView(props) {
   var handleGenerateReflectionPrompt = props.handleGenerateReflectionPrompt;
   var handlePanelChatSubmit = props.handlePanelChatSubmit;
   var generatePanelFollowUps = props.generatePanelFollowUps;
+  var generatePersonaFollowUps = props.generatePersonaFollowUps;
   var handlePersonaChatSubmit = props.handlePersonaChatSubmit;
   var handlePersonaTopicSpark = props.handlePersonaTopicSpark;
+  var handleGeneratePersonaSummary = props.handleGeneratePersonaSummary;
   var handleRetryPortraitGeneration = props.handleRetryPortraitGeneration;
   var handleSavePersonaChat = props.handleSavePersonaChat;
   var handleSaveReflection = props.handleSaveReflection;
@@ -63,13 +67,25 @@ function PersonaChatView(props) {
   var _panelChoicePendingState = React.useState(false);
   var panelChoicePending = _panelChoicePendingState[0];
   var setPanelChoicePending = _panelChoicePendingState[1];
+  var _personaSummaryOpenState = React.useState(false);
+  var isPersonaSummaryOpen = _personaSummaryOpenState[0];
+  var setIsPersonaSummaryOpen = _personaSummaryOpenState[1];
   var _handlePanelChoice = function (option) {
     if (panelChoicePending || personaState.isLoading || !option) return;
     setPanelChoicePending(true);
-    setPersonaState(function (prev) { return { ...prev, panelSuggestions: [] }; });
-    Promise.resolve().then(function () { return handlePanelChatSubmit(option.text); })
+    Promise.resolve().then(function () { return handlePanelChatSubmit(option.text, true); })
       .catch(function () {})
       .finally(function () { setPanelChoicePending(false); });
+  };
+  var _openPersonaSummary = function () {
+    setIsPersonaSummaryOpen(true);
+    if (!personaState.personaSummary && !personaState.isGeneratingSummary && typeof handleGeneratePersonaSummary === 'function') {
+      Promise.resolve(handleGeneratePersonaSummary()).catch(function () {});
+    }
+  };
+  var _retryPersonaSummary = function () {
+    if (personaState.isGeneratingSummary || typeof handleGeneratePersonaSummary !== 'function') return;
+    Promise.resolve(handleGeneratePersonaSummary({ force: Boolean(personaState.personaSummary) })).catch(function () {});
   };
   var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
   personaCloseHandlerRef.current = handleClosePersonaChat;
@@ -88,12 +104,15 @@ function PersonaChatView(props) {
     var focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
     var handleDialogKeyDown = function (event) {
       if (event.key === 'Escape') {
+        if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-reflection-dialog], [data-persona-summary-dialog]')) {
+          return;
+        }
         event.preventDefault();
         personaCloseHandlerRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
-      var scope = dialog.querySelector('[data-persona-reflection-dialog]') || dialog;
+      var scope = dialog.querySelector('[data-persona-reflection-dialog], [data-persona-summary-dialog]') || dialog;
       var focusable = Array.prototype.filter.call(scope.querySelectorAll(focusableSelector), function (element) {
         return element.getAttribute('aria-hidden') !== 'true' && (element.offsetParent !== null || element === document.activeElement);
       });
@@ -154,6 +173,23 @@ function PersonaChatView(props) {
     };
   }, [isPersonaReflectionOpen]);
 
+  React.useEffect(function () {
+    if (!isPersonaSummaryOpen) return undefined;
+    var dialog = personaSummaryDialogRef.current;
+    if (!dialog) return undefined;
+    personaSummaryReturnFocusRef.current = document.activeElement;
+    var focusTimer = window.setTimeout(function () {
+      var initial = dialog.querySelector('[data-persona-summary-initial-focus]');
+      if (initial && typeof initial.focus === 'function') initial.focus();
+      else dialog.focus();
+    }, 0);
+    return function () {
+      window.clearTimeout(focusTimer);
+      var previous = personaSummaryReturnFocusRef.current;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    };
+  }, [isPersonaSummaryOpen]);
+
   // Pure helpers
   var splitTextToSentences = props.splitTextToSentences;
   var formatInteractiveText = props.formatInteractiveText;
@@ -167,10 +203,20 @@ function PersonaChatView(props) {
   var _personaSnapshotResourceId = generatedContent && generatedContent.type === 'persona'
     ? generatedContent.id
     : null;
-  var _personaSnapshotStudentId = typeof studentNickname === 'string' && studentNickname.trim()
-    ? studentNickname.trim()
-    : (isTeacherMode ? 'teacher' : null);
-  var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId);
+  var _hashPersonaScope = function (value) { var hash = 2166136261; String(value || '').split('').forEach(function (ch) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619); }); return 'u' + (hash >>> 0).toString(36); };
+  var _personaSnapshotRawStudentId = typeof studentNickname === 'string' && studentNickname.trim() ? studentNickname.trim() : (isTeacherMode ? 'teacher' : null);
+  var _personaSnapshotStudentId = _personaSnapshotRawStudentId ? _hashPersonaScope(_personaSnapshotRawStudentId) : null;
+  var _personaRetentionDays = 14;
+  try {
+    var _storedPersonaRetentionRaw = localStorage.getItem('allo_persona_resume_days');
+    var _storedPersonaRetention = _storedPersonaRetentionRaw == null || String(_storedPersonaRetentionRaw).trim() === ''
+      ? 14
+      : Number(_storedPersonaRetentionRaw);
+    _personaRetentionDays = Number.isFinite(_storedPersonaRetention) && [0, 7, 14, 30].includes(_storedPersonaRetention)
+      ? _storedPersonaRetention
+      : 14;
+  } catch (_) {}
+  var _personaSnapshotEnabled = Boolean(_personaSnapshotResourceId && _personaSnapshotStudentId && _personaRetentionDays > 0);
   var _personaSnapshotScope = [appId || 'app', _personaSnapshotResourceId || 'no-resource', _personaSnapshotStudentId || 'disabled']
     .map(function (value) { return String(value).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120); })
     .join(':');
@@ -222,8 +268,15 @@ function PersonaChatView(props) {
     _dsCheckedKeyRef.current = _personaSnapshotKey;
     var mountMsgs = _dsChatLen;
     _ensureDeviceStorage().then(function (ds) {
-      return ds.get('persona_sessions', _personaSnapshotKey);
+      // v1 used one global key for every resource/student. Remove that unsafe
+      // legacy record before looking up the scoped v2 snapshot.
+      return Promise.resolve(ds.remove('persona_sessions', 'active'))
+        .catch(function () {})
+        .then(function () { return ds.get('persona_sessions', _personaSnapshotKey); });
     }).then(function (snap) {
+      var savedTime = snap && Date.parse(snap.savedAt);
+      var isExpired = !Number.isFinite(savedTime) || Date.now() - savedTime > _personaRetentionDays * 86400000;
+      if (isExpired) { _clearPersonaSnapshot(); return; }
       if (!snap || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId || !snap.state || !(snap.state.chatHistory || []).length) return;
       if ((snap.state.chatHistory || []).length > mountMsgs) setPersonaResumeOffer(snap);
     }).catch(function () {});
@@ -247,7 +300,7 @@ function PersonaChatView(props) {
             mode: st.mode,
             selectedCharacter: _sanitizeSnapshotCharacter(st.selectedCharacter),
             selectedCharacters: (st.selectedCharacters || []).map(_sanitizeSnapshotCharacter).filter(Boolean),
-            chatHistory: st.chatHistory || [],
+            chatHistory: (st.chatHistory || []).slice(-80),
             harmonyScore: st.harmonyScore,
             earnedBadges: st.earnedBadges || [],
             topicSparkCount: st.topicSparkCount || 0,
@@ -257,6 +310,9 @@ function PersonaChatView(props) {
           }
         }));
       } catch (_) { return; }
+      var serializedSnapshot = '';
+      try { serializedSnapshot = JSON.stringify(snap); } catch (_) { return; }
+      if (serializedSnapshot.length > 750000) { _clearPersonaSnapshot(); return; }
       _ensureDeviceStorage().then(function (ds) {
         return ds.set('persona_sessions', _personaSnapshotKey, snap);
       }).catch(function () {});
@@ -331,8 +387,29 @@ function PersonaChatView(props) {
   var singleXp = personaState.selectedCharacter?.accumulatedXP || 0;
   var singleConcludeReady = singleRapport >= 50 || singleXp >= 100;
   var singleUnlockPct = Math.min(100, Math.round(Math.max((singleRapport / 50) * 100, (singleXp / 100) * 100)));
+  var canGeneratePersonaSummary = Array.isArray(personaState.chatHistory)
+    && personaState.chatHistory.some(function (message) { return message && message.role === 'user'; })
+    && personaState.chatHistory.some(function (message) { return message && message.role === 'model'; });
+  var personaSummary = personaState.personaSummary && typeof personaState.personaSummary === 'object'
+    ? personaState.personaSummary
+    : null;
+  var _summaryItemText = function (item) {
+    if (typeof item === 'string') return item;
+    if (!item || typeof item !== 'object') return '';
+    return item.text || item.question || item.step || item.strength || item.insight || item.name || '';
+  };
+  var _summaryList = function (value) {
+    return Array.isArray(value) ? value.map(_summaryItemText).filter(Boolean) : [];
+  };
+  var summarySections = personaSummary ? [
+    { key: 'agreements', title: t('persona.summary.agreements'), items: _summaryList(personaSummary.areasOfAgreement) },
+    { key: 'disagreements', title: t('persona.summary.disagreements'), items: _summaryList(personaSummary.areasOfDisagreement) },
+    { key: 'questions', title: t('persona.summary.unanswered_questions'), items: _summaryList(personaSummary.unansweredQuestions) },
+    { key: 'strengths', title: t('persona.summary.student_strengths'), items: _summaryList(personaSummary.studentStrengths) },
+    { key: 'next', title: t('persona.summary.next_steps'), items: _summaryList(personaSummary.nextSteps) }
+  ].filter(function (section) { return section.items.length > 0; }) : [];
   return (
-        <ErrorBoundary fallbackMessage="Interview Interface encountered an error. Please close and reopen.">
+        <ErrorBoundary fallbackMessage={t('persona.interface_error')}>
         {/* allo-docsuite: portal outside the main content wrapper — opts its pastel accents
             (from-yellow-50 / from-indigo-50 chips + info boxes) into the theme-dark remap so they
             stop reading light-pastel in dark mode. No-op in light mode. */}
@@ -353,7 +430,7 @@ function PersonaChatView(props) {
                     <span className="text-sm font-medium">
                         💾 {(t('persona.resume_prompt') || 'Pick up your earlier interview with {name}?').replace('{name}', _resumeSnapshotName)}
                         <span className="opacity-70 ml-1 text-xs">
-                            ({(personaResumeOffer.state.chatHistory || []).length} {t('persona.resume_messages') || 'messages'}{personaResumeOffer.savedAt ? ', ' + new Date(personaResumeOffer.savedAt).toLocaleString() : ''} — {t('persona.resume_device_note') || 'saved on this device only'})
+                            ({(personaResumeOffer.state.chatHistory || []).length} {t('persona.resume_messages')}{personaResumeOffer.savedAt ? ', ' + new Date(personaResumeOffer.savedAt).toLocaleString() : ''} — {t('persona.resume_device_note')}; {t('persona.resume_recent_limit', { count: 80 })})
                         </span>
                     </span>
                     <span className="flex items-center gap-2 ml-auto">
@@ -475,15 +552,16 @@ function PersonaChatView(props) {
                             <button type="button"
                                 data-help-key="persona_topic_spark"
                                 onClick={handlePersonaTopicSpark}
-                                disabled={personaState.isLoading || (personaState.topicSparkCount || 0) >= 2}
+                                disabled={personaState.isLoading || personaState.isGeneratingTopicSpark || (personaState.topicSparkCount || 0) >= 2}
                                 className={`p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${
                                     (personaState.topicSparkCount || 0) >= 2
                                     ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
                                     : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
                                 }`}
-                                title={`Get a topic suggestion (${2 - (personaState.topicSparkCount || 0)} remaining)`}
+                                title={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
+                                aria-label={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
                             >
-                                <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse motion-reduce:animate-none" : ""}/>
+                                <Lightbulb size={16} className={personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                             </button>
                             <div className="w-px h-6 bg-slate-300 mx-1"></div>
                             <button type="button"
@@ -495,6 +573,16 @@ function PersonaChatView(props) {
                                 title={t('persona.save_tooltip')}
                             >
                                 <Save size={16}/>
+                            </button>
+                            <button type="button"
+                                onClick={_openPersonaSummary}
+                                disabled={!canGeneratePersonaSummary || personaState.isGeneratingSummary}
+                                className="p-2 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 hover:bg-violet-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                title={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
+                                aria-label={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
+                                aria-busy={personaState.isGeneratingSummary ? 'true' : 'false'}
+                            >
+                                <Sparkles size={16} className={personaState.isGeneratingSummary ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                             </button>
                             <button type="button"
                                 aria-label={t('common.check')}
@@ -523,17 +611,84 @@ function PersonaChatView(props) {
                                 )}
                             </button>
                         </div>
-                        <div className="shrink-0 md:hidden px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-2 overflow-x-auto">
+                        {(personaState.isGeneratingTopicSpark || personaState.topicSparkError) && (
+                            <div className={`shrink-0 border-b px-4 py-2 text-center text-xs ${personaState.topicSparkError ? 'border-red-200 bg-red-50 text-red-800' : 'border-indigo-100 bg-indigo-50 text-indigo-700'}`} role={personaState.topicSparkError ? 'alert' : 'status'} aria-live="polite">
+                                {personaState.isGeneratingTopicSpark ? (
+                                    <span className="inline-flex items-center gap-2"><RefreshCw size={13} className="animate-spin motion-reduce:animate-none" /> {t('persona.topic_spark_generating')}</span>
+                                ) : (
+                                    <span className="inline-flex flex-wrap items-center justify-center gap-2">
+                                        {t('persona.topic_spark_error')}
+                                        <button type="button" onClick={handlePersonaTopicSpark} disabled={(personaState.topicSparkCount || 0) >= 2} className="rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50">{t('persona.topic_spark_retry')}</button>
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                        <div className="shrink-0 md:hidden px-3 py-2 bg-white border-b border-slate-200 flex items-start gap-2 overflow-x-auto">
                             {(personaState.selectedCharacters || []).map((char, cIdx) => {
                                 const isActivePanelist = activeSpeakerName && activeSpeakerName === char?.name;
+                                const rapport = char?.rapport ?? char?.initialRapport ?? 30;
+                                const xp = char?.accumulatedXP || 0;
+                                const quests = [...(char?.quests || [])].sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted));
                                 return (
-                                    <div key={char?.name || cIdx} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full border text-xs font-bold whitespace-nowrap transition-all motion-reduce:transition-none ${isActivePanelist ? 'bg-yellow-50 border-yellow-300 text-yellow-900 shadow-sm ring-2 ring-yellow-200' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                                        <div className={`w-6 h-6 rounded-full overflow-hidden bg-white border ${isActivePanelist ? 'border-yellow-400' : 'border-slate-300'}`}>
-                                            {char?.avatarUrl ? <img loading="lazy" src={char.avatarUrl} alt={char.name} className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-[10px]">{(char?.name || '?').slice(0, 1)}</span>}
+                                    <details key={char?.name || cIdx} className={`group w-[min(82vw,20rem)] shrink-0 rounded-xl border text-xs transition-all motion-reduce:transition-none ${isActivePanelist ? 'bg-yellow-50 border-yellow-300 text-yellow-900 shadow-sm ring-2 ring-yellow-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                                        <summary className="cursor-pointer list-none flex items-center gap-2 px-2.5 py-2 font-bold" aria-label={t('persona.expand_panelist', { name: char?.name || t('persona.character_fallback') })}>
+                                            <div className={`w-8 h-8 rounded-full overflow-hidden bg-white border shrink-0 ${isActivePanelist ? 'border-yellow-400' : 'border-slate-300'}`}>
+                                                {char?.avatarUrl ? <img loading="lazy" src={char.avatarUrl} alt={char.name} className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center text-sm">{(char?.name || '?').slice(0, 1)}</span>}
+                                            </div>
+                                            <span className="min-w-0 flex-1 truncate">{char?.name || t('persona.character_fallback')}</span>
+                                            <span className="font-black tabular-nums">{rapport}%</span>
+                                            {isActivePanelist && <span className="inline-flex items-center gap-1 text-[10px] text-yellow-700"><Volume2 size={12} className="animate-pulse motion-reduce:animate-none" /> {t('persona.active_speaker')}</span>}
+                                            <span className="shrink-0 text-base transition-transform motion-reduce:transition-none group-open:rotate-180" aria-hidden="true">▾</span>
+                                        </summary>
+                                        <div className="border-t border-current/10 px-3 py-3 space-y-3 text-left" aria-label={t('persona.panelist_details', { name: char?.name || t('persona.character_fallback') })}>
+                                            <div>
+                                                <div className="mb-1 flex justify-between font-bold"><span>{t('persona.rapport_label')}</span><span>{rapport}%</span></div>
+                                                <div role="progressbar" aria-label={t('persona.rapport_label')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
+                                                    <div className={`h-full ${cIdx === 0 ? 'bg-indigo-500' : 'bg-rose-500'}`} style={{ width: `${Math.max(0, Math.min(100, rapport))}%` }} />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="mb-1 flex justify-between font-bold"><span>{t('common.xp')}</span><span>{xp}/300</span></div>
+                                                <div role="progressbar" aria-label={t('persona.xp_progress', { name: char?.name, xp })} aria-valuemin={0} aria-valuemax={300} aria-valuenow={xp} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
+                                                    <div className="h-full bg-amber-500" style={{ width: `${Math.max(0, Math.min(100, (xp / 300) * 100))}%` }} />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="mb-2 flex items-center gap-1 font-black uppercase tracking-wide"><Search size={12} /> {t('persona.objectives_label')}</h3>
+                                                {quests.length ? (
+                                                    <ul className="space-y-1.5">
+                                                        {quests.map((quest, qIdx) => {
+                                                            const isLocked = rapport < Number(quest.difficulty || 0);
+                                                            return (
+                                                                <li key={qIdx} className={`rounded-lg border px-2 py-1.5 ${quest.isCompleted ? 'border-green-200 bg-green-50 text-green-800' : isLocked ? 'border-slate-200 bg-slate-100 text-slate-600' : 'border-indigo-200 bg-white text-slate-800'}`}>
+                                                                    <span className="flex items-start gap-1.5">
+                                                                        {quest.isCompleted
+                                                                            ? <CheckCircle2 size={12} className="mt-0.5 shrink-0" />
+                                                                            : isLocked
+                                                                                ? <Lock size={12} className="mt-0.5 shrink-0" />
+                                                                                : <span className="mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-indigo-400" aria-hidden="true" />}
+                                                                        <span>{quest.text}</span>
+                                                                    </span>
+                                                                    {!quest.isCompleted && isLocked && <span className="mt-1 block pl-4 text-[10px] font-bold opacity-70">{t('persona.rapport_requirement', { difficulty: quest.difficulty })}</span>}
+                                                                </li>
+                                                            );
+                                                        })}
+                                                    </ul>
+                                                ) : <p className="text-slate-500">{t('persona.no_objectives')}</p>}
+                                            </div>
+                                            {!char?.avatarUrl && typeof handleRetryPortraitGeneration === 'function' && (
+                                                <button type="button"
+                                                    onClick={() => handleRetryPortraitGeneration(char)}
+                                                    disabled={Boolean(char?.isUpdating)}
+                                                    aria-busy={char?.isUpdating ? 'true' : 'false'}
+                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-bold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    <RefreshCw size={13} className={char?.isUpdating ? 'animate-spin motion-reduce:animate-none' : ''} />
+                                                    {t('persona.generate_portrait')}
+                                                </button>
+                                            )}
                                         </div>
-                                        <span>{char?.name || t('common.character')}</span>
-                                        {isActivePanelist && <Volume2 size={12} className="text-yellow-600 animate-pulse motion-reduce:animate-none" />}
-                                    </div>
+                                    </details>
                                 );
                             })}
                         </div>
@@ -542,14 +697,15 @@ function PersonaChatView(props) {
                                 <CharacterColumn character={personaState.selectedCharacters[0]} side="left" onRetryPortrait={handleRetryPortraitGeneration} />
                             </div>
                             <div className="flex-1 flex flex-col bg-slate-50/50 relative min-w-[320px]">
-                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label={t("a11y.interview_conversation")}>
+                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} onScroll={(e) => { const el = e.currentTarget; personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120; }} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label={t("a11y.interview_conversation")}>
+                                    <div role="note" className="mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">{t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'}</div>
                                     {personaState.chatHistory.map((msg, idx) => {
                                         const isUser = msg.role === 'user';
                                         const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
-                                        const speakerLabel = isUser ? 'You' : msg.speakerName;
+                                        const speakerLabel = isUser ? t('common.you') : msg.speakerName;
                                         const isMessagePlayingNow = playingContentId === `persona-message-${idx}`;
                                         return (
-                                            <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`} aria-label={speakerLabel + ' said: ' + msg.text.substring(0, 100)}>
+                                            <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`}>
                                                  <div
                                                     className={`relative overflow-hidden max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border transition-all motion-reduce:transition-none ${
                                                     isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
@@ -631,7 +787,8 @@ function PersonaChatView(props) {
                                                             <p className="text-xs text-slate-500 leading-relaxed italic">{msg.translation}</p>
                                                         </div>
                                                     )}
-                                                    {!isUser && <span className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"><Volume2 size={11}/> Click any sentence to listen</span>}
+                                                    {!isUser && msg.evidenceNote && (<details className="mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"><summary className="cursor-pointer font-bold">{t('persona.evidence_note') || 'Evidence & simulation note'}</summary><p className="mt-1 leading-relaxed">{msg.evidenceNote}</p></details>)}
+                                                    {!isUser && <span className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"><Volume2 size={11}/> {t('persona.click_sentence') || 'Click any sentence to listen'}</span>}
                                                  </div>
                                                  <span className={`text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
                                                     {speakerLabel}
@@ -655,7 +812,7 @@ function PersonaChatView(props) {
                                     {panelTtsPending.length > 0 && (
                                         <div role="status" aria-live="polite" className="flex justify-center p-2">
                                             <div className="bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 flex items-center gap-2 text-xs font-medium text-violet-600 animate-pulse motion-reduce:animate-none">
-                                                <Volume2 size={12} className="animate-bounce motion-reduce:animate-none"/> Waiting to speak...
+                                                <Volume2 size={12} className="animate-bounce motion-reduce:animate-none"/> {t('persona.waiting_to_speak')}
                                             </div>
                                         </div>
                                     )}
@@ -692,7 +849,7 @@ function PersonaChatView(props) {
                                             {isPersonaDefining ? (
                                                 <div className="flex items-center gap-2 text-slate-600 text-sm">
                                                     <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/>
-                                                    Looking up definition...
+                                                    {t('persona.looking_up_definition')}
                                                 </div>
                                             ) : (
                                                 <>
@@ -704,7 +861,7 @@ function PersonaChatView(props) {
                                                         onClick={() => handleSpeak(personaDefinitionData.text, 'persona-definition', 0)}
                                                         className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
                                                     >
-                                                        <Volume2 size={12}/> Speak Definition
+                                                        <Volume2 size={12}/> {t('persona.speak_definition')}
                                                     </button>
                                                 </>
                                             )}
@@ -727,11 +884,31 @@ function PersonaChatView(props) {
                                                 </button>
                                             ))}
                                         </div>
+                                        {(personaState.panelSuggestions || []).length < 6 && (
+                                            <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600" role="status" aria-live="polite">
+                                                {personaState.isGeneratingPanelSuggestions ? (
+                                                    <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none text-indigo-600" /> {t('persona.choices_partial')}</>
+                                                ) : (
+                                                    <>
+                                                        <span>{personaState.panelSuggestionsError ? t('persona.choices_generation_failed') : t('persona.choices_partial')}</span>
+                                                        {typeof generatePanelFollowUps === 'function' && (
+                                                            <button type="button"
+                                                                onClick={() => generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1])}
+                                                                className="font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+                                                            >
+                                                                {t('persona.retry_choices')}
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : isPersonaFreeResponse ? (
                                     <div className="p-4 bg-white border-t border-slate-200">
                                         <div className="flex gap-2">
                                             <input aria-label={t('common.enter_persona_input')}
+                                                maxLength={2000}
                                                 value={personaInput}
                                                 onChange={(e) => setPersonaInput(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(personaInput)}
@@ -740,7 +917,7 @@ function PersonaChatView(props) {
                                                 disabled={personaState.isLoading}
                                             />
                                             <button type="button"
-                                                aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send message to interview subject'}
+                                                aria-label={personaState.isLoading ? t('persona.waiting_for_response') : t('persona.send_panel_message')}
                                                 aria-busy={personaState.isLoading ? 'true' : 'false'}
                                                 onClick={() => handlePanelChatSubmit(personaInput)}
                                                 disabled={!personaInput.trim() || personaState.isLoading}
@@ -751,17 +928,21 @@ function PersonaChatView(props) {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="p-4 bg-white border-t border-slate-200 flex items-center justify-center gap-3" role="status" aria-live="polite">
-                                        <RefreshCw size={18} className={personaState.isLoading ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'} />
+                                    <div className="p-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-center gap-3" role="status" aria-live="polite">
+                                        <RefreshCw size={18} className={(personaState.isLoading || personaState.isGeneratingPanelSuggestions) ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'} />
                                         <span className="text-sm font-medium text-slate-700">
-                                            {t('persona.generating_choices') || 'Preparing response choices...'}
+                                            {personaState.panelSuggestionsError
+                                                ? t('persona.choices_generation_failed')
+                                                : (personaState.isLoading || personaState.isGeneratingPanelSuggestions)
+                                                    ? t('persona.generating_choices')
+                                                    : t('persona.choices_unavailable')}
                                         </span>
-                                        {!personaState.isLoading && typeof generatePanelFollowUps === 'function' && (
+                                        {!personaState.isLoading && !personaState.isGeneratingPanelSuggestions && typeof generatePanelFollowUps === 'function' && (
                                             <button type="button"
                                                 onClick={() => generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1])}
                                                 className="text-xs font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
                                             >
-                                                {t('common.retry') || 'Retry'}
+                                                {t('persona.retry_choices')}
                                             </button>
                                         )}
                                     </div>
@@ -801,7 +982,7 @@ function PersonaChatView(props) {
                                             {typeof reflectionFeedback.score === 'number' && (
                                             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
                                                 <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedback.score}<span className="text-2xl text-indigo-400">/100</span></div>
-                                                <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.quality_score') || 'Quality Score'}</div>
+                                                <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.ai_quality_score') || 'AI Reflection Estimate'}</div>
                                             </div>
                                             )}
                                             <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
@@ -812,7 +993,8 @@ function PersonaChatView(props) {
                                                 </div>
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
-                                                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}</h4>
+                                                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.ai_feedback') || 'AI Reflection Feedback'}</h4>
+                                                <p className="mb-2 text-[11px] text-slate-500">{t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'}</p>
                                                 <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                             </div>
                                         </div>
@@ -839,7 +1021,7 @@ function PersonaChatView(props) {
                                                         <p className="text-slate-700 text-sm leading-relaxed">{dynamicReflectionQuestion || t('persona.default_reflection_prompt')}</p>
                                                     )}
                                                 </div>
-                                                <textarea aria-label={t('persona.reflection_input') || 'Write your reflection'} value={personaReflectionInput} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('persona.reflection_placeholder')} className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600" disabled={isGradingReflection} />
+                                                <textarea aria-label={t('persona.reflection_input') || 'Write your reflection'} maxLength={4000} value={personaReflectionInput} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('persona.reflection_placeholder')} className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600" disabled={isGradingReflection} />
                                             </div>
                                         </div>
                                         <div className="mt-6 flex gap-3">
@@ -902,7 +1084,7 @@ function PersonaChatView(props) {
                      </div>
                      <div className="w-full mt-6">
                          <div className="flex justify-between items-end mb-1">
-                             <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Trust / Rapport</span>
+                             <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">{t('persona.trust_rapport_label')}</span>
                              <span className={`text-xs font-bold ${
                                  (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'text-green-600' :
                                  (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'text-yellow-600' : 'text-red-500'
@@ -910,7 +1092,7 @@ function PersonaChatView(props) {
                                  {personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport}%
                              </span>
                          </div>
-                         <div role="progressbar" aria-label="Trust / Rapport" aria-valuemin={0} aria-valuemax={100} aria-valuenow={personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport ?? 0} className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
+                         <div role="progressbar" aria-label={t('persona.trust_rapport_label')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport ?? 0} className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
                              <div
                                  className={`h-full transition-all motion-reduce:transition-none duration-500 ease-out ${
                                      (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'bg-green-500' :
@@ -923,7 +1105,7 @@ function PersonaChatView(props) {
                      {personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && (
                          <div className="w-full mt-6 text-left">
                              <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
-                                 <Search size={12}/> Secrets to Uncover
+                                 <Search size={12}/> {t('persona.secrets_to_uncover')}
                              </h4>
                              <div className="space-y-2">
                                  {personaState.selectedCharacter.quests.map((quest, qIdx) => (
@@ -938,7 +1120,7 @@ function PersonaChatView(props) {
                                                  </span>
                                                  {!quest.isCompleted && (
                                                      <span className="text-[11px] uppercase tracking-wider font-bold opacity-60">
-                                                         Requires {quest.difficulty}% Trust
+                                                         {t('persona.trust_requirement', { difficulty: quest.difficulty })}
                                                      </span>
                                                  )}
                                              </div>
@@ -1055,16 +1237,16 @@ function PersonaChatView(props) {
                         <button type="button"
                             data-help-key="persona_topic_spark"
                             onClick={handlePersonaTopicSpark}
-                            disabled={personaState.isLoading || (personaState.topicSparkCount || 0) >= 2}
+                            disabled={personaState.isLoading || personaState.isGeneratingTopicSpark || (personaState.topicSparkCount || 0) >= 2}
                             className={`p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${
                                 (personaState.topicSparkCount || 0) >= 2
                                 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
                                 : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
                             }`}
-                            title={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
-                            aria-label={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
+                            title={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
+                            aria-label={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
                         >
-                            <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse motion-reduce:animate-none" : ""}/>
+                            <Lightbulb size={16} className={personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                         </button>
                         <button type="button"
                             data-help-key="persona_save_chat"
@@ -1075,6 +1257,16 @@ function PersonaChatView(props) {
                             aria-label={t('persona.chat_save')}
                         >
                             <Save size={16}/>
+                        </button>
+                        <button type="button"
+                            onClick={_openPersonaSummary}
+                            disabled={!canGeneratePersonaSummary || personaState.isGeneratingSummary}
+                            className="p-2 rounded-lg bg-violet-50 text-violet-700 border border-violet-200 shadow-sm hover:bg-violet-100 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
+                            aria-label={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
+                            aria-busy={personaState.isGeneratingSummary ? 'true' : 'false'}
+                        >
+                            <Sparkles size={16} className={personaState.isGeneratingSummary ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                         </button>
                         <button type="button"
                             aria-label={t('common.check')}
@@ -1106,7 +1298,20 @@ function PersonaChatView(props) {
                         </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Interview conversation with character">
+                    {(personaState.isGeneratingTopicSpark || personaState.topicSparkError) && (
+                        <div className={`shrink-0 border-b px-4 py-2 text-center text-xs ${personaState.topicSparkError ? 'border-red-200 bg-red-50 text-red-800' : 'border-indigo-100 bg-indigo-50 text-indigo-700'}`} role={personaState.topicSparkError ? 'alert' : 'status'} aria-live="polite">
+                            {personaState.isGeneratingTopicSpark ? (
+                                <span className="inline-flex items-center gap-2"><RefreshCw size={13} className="animate-spin motion-reduce:animate-none" /> {t('persona.topic_spark_generating')}</span>
+                            ) : (
+                                <span className="inline-flex flex-wrap items-center justify-center gap-2">
+                                    {t('persona.topic_spark_error')}
+                                    <button type="button" onClick={handlePersonaTopicSpark} disabled={(personaState.topicSparkCount || 0) >= 2} className="rounded border border-red-300 bg-white px-2 py-1 font-bold hover:bg-red-100 disabled:opacity-50">{t('persona.topic_spark_retry')}</button>
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} onScroll={(e) => { const el = e.currentTarget; personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120; }} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label={t('a11y.interview_conversation') || 'Interview conversation with character'}>
+                        <div role="note" className="mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">{t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'}</div>
                         {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
                             <div className="mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm">
                                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200">
@@ -1207,6 +1412,7 @@ function PersonaChatView(props) {
                                                              </p>
                                                          );
                                                      })}
+                                                     {!isUser && msg.evidenceNote && (<details className="mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"><summary className="cursor-pointer font-bold">{t('persona.evidence_note') || 'Evidence & simulation note'}</summary><p className="mt-1 leading-relaxed">{msg.evidenceNote}</p></details>)}
                                                      {translationText && (
                                                          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                              <div className="flex items-center gap-2 mb-1">
@@ -1278,7 +1484,7 @@ function PersonaChatView(props) {
                                 {personaState.suggestions.map((q, i) => (
                                     <button type="button"
                                         key={i}
-                                        onClick={() => handlePersonaChatSubmit(q)}
+                                        onClick={() => handlePersonaChatSubmit(q, true)}
                                         className={`whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors motion-reduce:transition-none shadow-sm ${
                                             isPersonaFreeResponse
                                             ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0'
@@ -1291,10 +1497,30 @@ function PersonaChatView(props) {
                                 ))}
                             </div>
                         )}
+                        {!isPersonaFreeResponse && (personaState.suggestions || []).length > 0 && (personaState.suggestions || []).length < 6 && !personaState.isLoading && (
+                            <div className="px-4 pb-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600" role="status" aria-live="polite">
+                                {personaState.isGeneratingSuggestions ? (
+                                    <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none text-indigo-600" /> {t('persona.choices_partial')}</>
+                                ) : (
+                                    <>
+                                        <span>{personaState.suggestionsError ? t('persona.choices_generation_failed') : t('persona.choices_partial')}</span>
+                                        {typeof generatePersonaFollowUps === 'function' && (
+                                            <button type="button"
+                                                onClick={() => generatePersonaFollowUps(personaState.chatHistory, personaState.selectedCharacter, 6)}
+                                                className="font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+                                            >
+                                                {t('persona.retry_choices')}
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
                         {isPersonaFreeResponse && (
                             <div className="p-4 flex gap-2">
                                 <input aria-label={t('common.enter_persona_input')}
                                     type="text"
+                                    maxLength={2000}
                                     value={personaInput}
                                     onChange={(e) => setPersonaInput(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePersonaChatSubmit()}
@@ -1304,7 +1530,7 @@ function PersonaChatView(props) {
                                     disabled={personaState.isLoading}
                                 />
                                 <button type="button"
-                                    aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send question to ' + (personaState.selectedCharacter?.name || 'character')}
+                                    aria-label={personaState.isLoading ? t('persona.waiting_for_response') : t('persona.send_character_question', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') })}
                                     aria-busy={personaState.isLoading ? 'true' : 'false'}
                                     onClick={() => handlePersonaChatSubmit()}
                                     disabled={!personaInput.trim() || personaState.isLoading}
@@ -1314,9 +1540,24 @@ function PersonaChatView(props) {
                                 </button>
                             </div>
                         )}
-                        {!isPersonaFreeResponse && personaState.isLoading && (
-                            <div role="status" aria-live="polite" className="p-8 text-center text-slate-600 italic text-xs flex items-center justify-center gap-2">
-                                <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('persona.status_generating_options')}
+                        {!isPersonaFreeResponse && (personaState.suggestions || []).length === 0 && (
+                            <div role="status" aria-live="polite" className="p-5 text-center text-slate-600 text-xs flex flex-wrap items-center justify-center gap-2">
+                                <RefreshCw size={14} className={(personaState.isLoading || personaState.isGeneratingSuggestions) ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'}/>
+                                <span>
+                                    {personaState.suggestionsError
+                                        ? t('persona.choices_generation_failed')
+                                        : (personaState.isLoading || personaState.isGeneratingSuggestions)
+                                            ? t('persona.generating_choices')
+                                            : t('persona.choices_unavailable')}
+                                </span>
+                                {!personaState.isLoading && !personaState.isGeneratingSuggestions && typeof generatePersonaFollowUps === 'function' && (
+                                    <button type="button"
+                                        onClick={() => generatePersonaFollowUps(personaState.chatHistory, personaState.selectedCharacter, 6)}
+                                        className="font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
+                                    >
+                                        {t('persona.retry_choices')}
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -1350,7 +1591,7 @@ function PersonaChatView(props) {
                                         {typeof reflectionFeedback.score === 'number' && (
                                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
                                             <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedback.score}<span className="text-2xl text-indigo-400">/100</span></div>
-                                            <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.quality_score') || 'Quality Score'}</div>
+                                            <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.ai_quality_score') || 'AI Reflection Estimate'}</div>
                                         </div>
                                         )}
                                         <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
@@ -1364,8 +1605,9 @@ function PersonaChatView(props) {
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                                                <MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}
+                                                <MessageSquare size={12} /> {t('persona.ai_feedback') || 'AI Reflection Feedback'}
                                             </h4>
+                                            <p className="mb-2 text-[11px] text-slate-500">{t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'}</p>
                                             <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                         </div>
                                     </div>
@@ -1398,7 +1640,7 @@ function PersonaChatView(props) {
                                                     </div>
                                                 ) : (
                                                     <p className="text-slate-700 font-medium">
-                                                        {dynamicReflectionQuestion || `What is one surprising thing you learned from ${personaState.selectedCharacter?.name}, and how does it connect to what you already knew?`}
+                                                        {dynamicReflectionQuestion || t('persona.default_reflection_prompt_named', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') })}
                                                     </p>
                                                 )}
                                             </div>
@@ -1436,6 +1678,137 @@ function PersonaChatView(props) {
                     )}
                 </div>
                 </>
+                )}
+                {isPersonaSummaryOpen && (
+                    <div
+                        ref={personaSummaryDialogRef}
+                        data-persona-summary-dialog
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="persona-summary-title"
+                        tabIndex={-1}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsPersonaSummaryOpen(false);
+                            }
+                        }}
+                        className="absolute inset-0 z-[80] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-6"
+                    >
+                        <div className="flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border-2 border-violet-200 bg-white shadow-2xl">
+                            <header className="flex items-start gap-3 border-b border-slate-200 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-4">
+                                <div className="rounded-full bg-violet-100 p-2 text-violet-700"><Sparkles size={20} /></div>
+                                <div className="min-w-0 flex-1">
+                                    <h2 id="persona-summary-title" className="text-xl font-black text-slate-900">
+                                        {personaSummary?.title || t(personaState.mode === 'panel' ? 'persona.summary.title_panel' : 'persona.summary.title_single')}
+                                    </h2>
+                                    {personaSummary?.participants?.length > 0 && (
+                                        <p className="mt-1 truncate text-xs font-medium text-slate-600">{personaSummary.participants.map(_summaryItemText).filter(Boolean).join(' • ')}</p>
+                                    )}
+                                </div>
+                                <button type="button"
+                                    data-persona-summary-initial-focus
+                                    autoFocus
+                                    onClick={() => setIsPersonaSummaryOpen(false)}
+                                    className="rounded-full p-2 text-slate-600 hover:bg-white hover:text-slate-900 disabled:opacity-50"
+                                    aria-label={t('common.close')}
+                                >
+                                    <X size={20} />
+                                </button>
+                            </header>
+                            <div className="flex-1 overflow-y-auto p-5 sm:p-6">
+                                {personaState.isGeneratingSummary ? (
+                                    <div role="status" aria-live="polite" className="flex min-h-[16rem] flex-col items-center justify-center gap-3 text-center text-violet-700">
+                                        <RefreshCw size={32} className="animate-spin motion-reduce:animate-none" />
+                                        <p className="font-bold">{t('persona.summary.generating')}</p>
+                                    </div>
+                                ) : personaState.personaSummaryError && !personaSummary ? (
+                                    <div role="alert" className="mx-auto flex min-h-[16rem] max-w-xl flex-col items-center justify-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-red-800">
+                                        <p className="font-bold">{t('persona.summary.error')}</p>
+                                        <button type="button" onClick={_retryPersonaSummary} className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2 font-bold text-white hover:bg-red-800">
+                                            <RefreshCw size={16} /> {t('persona.summary.retry')}
+                                        </button>
+                                    </div>
+                                ) : personaSummary ? (
+                                    <div className="space-y-5">
+                                        {personaState.personaSummaryError && (
+                                            <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                                                <span>{t('persona.summary.refresh_failed')}</span>
+                                                <button type="button" onClick={_retryPersonaSummary} className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-amber-100">{t('persona.summary.retry')}</button>
+                                            </div>
+                                        )}
+                                        {personaSummary.overview && (
+                                            <section aria-labelledby="persona-summary-overview" className="rounded-xl border border-violet-100 bg-violet-50 p-4">
+                                                <h3 id="persona-summary-overview" className="mb-2 text-xs font-black uppercase tracking-wider text-violet-700">{t('persona.summary.overview')}</h3>
+                                                <p className="leading-relaxed text-slate-700">{personaSummary.overview}</p>
+                                            </section>
+                                        )}
+                                        {Array.isArray(personaSummary.keyInsights) && personaSummary.keyInsights.length > 0 && (
+                                            <section aria-labelledby="persona-summary-insights">
+                                                <h3 id="persona-summary-insights" className="mb-3 text-sm font-black uppercase tracking-wider text-slate-700">{t('persona.summary.key_insights')}</h3>
+                                                <ol className="grid gap-3 md:grid-cols-2">
+                                                    {personaSummary.keyInsights.map((item, idx) => {
+                                                        const insight = _summaryItemText(item);
+                                                        if (!insight) return null;
+                                                        return (
+                                                            <li key={idx} className="rounded-xl border border-indigo-100 bg-white p-4 shadow-sm">
+                                                                <p className="font-bold leading-relaxed text-slate-800">{insight}</p>
+                                                                {item && typeof item === 'object' && item.evidence && (
+                                                                    <p className="mt-2 border-l-2 border-indigo-200 pl-3 text-xs leading-relaxed text-slate-600"><span className="font-bold">{t('persona.summary.evidence')}:</span> {item.evidence}</p>
+                                                                )}
+                                                                {item && typeof item === 'object' && item.confidence != null && (
+                                                                    <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-indigo-600">{t('persona.summary.confidence', { value: item.confidence })}</p>
+                                                                )}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ol>
+                                            </section>
+                                        )}
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            {summarySections.map((section) => (
+                                                <section key={section.key} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                                    <h3 className="mb-2 text-xs font-black uppercase tracking-wider text-slate-700">{section.title}</h3>
+                                                    <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-slate-700">
+                                                        {section.items.map((item, idx) => <li key={idx}>{item}</li>)}
+                                                    </ul>
+                                                </section>
+                                            ))}
+                                        </div>
+                                        {personaSummary.verificationNote && (
+                                            <aside className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                                <h3 className="mb-1 text-xs font-black uppercase tracking-wider">{t('persona.summary.verification_note')}</h3>
+                                                <p>{personaSummary.verificationNote}</p>
+                                            </aside>
+                                        )}
+                                        {personaSummary.generatedAt && (
+                                            <p className="text-right text-[11px] text-slate-500">{t('persona.summary.generated_at', { date: new Date(personaSummary.generatedAt).toLocaleString() })}</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex min-h-[16rem] flex-col items-center justify-center gap-4 text-center text-slate-600">
+                                        <Sparkles size={36} className="text-violet-400" />
+                                        <p>{t('persona.summary.empty')}</p>
+                                        <button type="button" onClick={_retryPersonaSummary} disabled={!canGeneratePersonaSummary} className="rounded-lg bg-violet-700 px-4 py-2 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">{t('persona.summary.generate_btn')}</button>
+                                    </div>
+                                )}
+                            </div>
+                            <footer className="flex flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
+                                <button type="button" onClick={() => setIsPersonaSummaryOpen(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                                    {t('persona.summary.back_to_chat')}
+                                </button>
+                                <button type="button" onClick={handleSavePersonaChat} disabled={(personaState.chatHistory || []).length === 0} className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50">
+                                    <Save size={15} /> {t('persona.chat_save')}
+                                </button>
+                                {personaSummary && (
+                                    <button type="button" onClick={_retryPersonaSummary} disabled={personaState.isGeneratingSummary} className="inline-flex items-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-50">
+                                        <RefreshCw size={15} /> {t('persona.summary.regenerate')}
+                                    </button>
+                                )}
+                            </footer>
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

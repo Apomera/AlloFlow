@@ -454,6 +454,9 @@ function AIBackendModal(props) {
     GEMINI_MODELS
   } = props;
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
+  const isStudentAiSetup = Boolean(typeof window !== "undefined" && window.__alloStudentAiSetupAllowed && window.__alloQrStudentMode);
+  const configStorage = isStudentAiSetup ? window.sessionStorage : window.localStorage;
+  const configStorageKey = isStudentAiSetup ? "alloflow_qr_student_ai_config" : "alloflow_ai_config";
   const aiBackendDefaults = {
     gemini: "",
     "alloflow-local": "http://localhost:32173",
@@ -467,14 +470,24 @@ function AIBackendModal(props) {
   };
   const readAIBackendConfig = () => {
     try {
-      return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+      return JSON.parse(configStorage.getItem(configStorageKey) || "{}");
     } catch {
       return {};
     }
   };
-  const writeAIBackendConfig = (config) => {
+  const writeAIBackendConfig = (config, options = {}) => {
     try {
-      localStorage.setItem("alloflow_ai_config", JSON.stringify(config));
+      const next = { ...config || {} };
+      if (options.preserveValidation !== true) delete next.validation;
+      configStorage.setItem(configStorageKey, JSON.stringify(next));
+      if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
+    } catch (_) {
+    }
+  };
+  const clearAIBackendConfig = () => {
+    try {
+      configStorage.removeItem(configStorageKey);
+      if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
     } catch (_) {
     }
   };
@@ -675,7 +688,7 @@ function AIBackendModal(props) {
     const backend = cfg.backend || "gemini";
     const Provider = typeof window !== "undefined" && window.AIProvider || ai && ai.constructor;
     if (!Provider) return ai;
-    const canInheritActiveProvider = backend === "gemini" || backend === (ai && ai.backend);
+    const canInheritActiveProvider = !isStudentAiSetup && (backend === "gemini" || backend === (ai && ai.backend));
     const inheritedApiKey = canInheritActiveProvider ? ai && ai.apiKey : "";
     const inheritedModels = canInheritActiveProvider ? ai && ai.models : {};
     return new Provider({
@@ -690,19 +703,13 @@ function AIBackendModal(props) {
   };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
     if (e.key === "Escape") setShowAIBackendModal(false);
-  }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+  }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Use only your own provider account. Your credential stays in this browser tab, is sent only to the provider you select, and is never placed in the QR, Class Mailbox, or student submission. Avoid entering a key on a shared device.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "data-help-key": "ai_backend_provider_select",
       "aria-label": t("ai_backend.provider_aria") || "AI Backend Provider",
       id: "ai-backend-provider",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").backend || "gemini";
-        } catch {
-          return "gemini";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().backend || "gemini",
       onChange: (e) => {
         const current = readAIBackendConfig();
         const backend = e.target.value;
@@ -739,16 +746,10 @@ function AIBackendModal(props) {
       "aria-label": t("ai_backend.server_url_aria") || "Custom AI backend URL",
       type: "text",
       placeholder: "http://localhost:8080",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").baseUrl || "";
-        } catch {
-          return "";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().baseUrl || "",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, baseUrl: e.target.value }));
+        const current = readAIBackendConfig();
+        writeAIBackendConfig({ ...current, baseUrl: e.target.value });
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
@@ -771,16 +772,10 @@ function AIBackendModal(props) {
       type: "password",
       autoComplete: "off",
       placeholder: t("ai_backend.api_key_placeholder") || "Your API key...",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").apiKey || "";
-        } catch {
-          return "";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().apiKey || "",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, apiKey: e.target.value }));
+        const current = readAIBackendConfig();
+        writeAIBackendConfig({ ...current, apiKey: e.target.value });
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
@@ -792,16 +787,10 @@ function AIBackendModal(props) {
       "aria-label": t("ai_backend.wolfram_aria") || "Custom backend Wolfram App ID",
       type: "text",
       placeholder: t("ai_backend.wolfram_placeholder") || "XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").wolframAppId || "";
-        } catch {
-          return "";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().wolframAppId || "",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, wolframAppId: e.target.value }));
+        const current = readAIBackendConfig();
+        writeAIBackendConfig({ ...current, wolframAppId: e.target.value });
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
@@ -820,6 +809,7 @@ function AIBackendModal(props) {
           status.className = "";
         }
         try {
+          writeAIBackendConfig(readAIBackendConfig());
           const result = await createAIProviderFromSettings().testConnection();
           if (result.success) {
             const modelSelect = document.getElementById("ai-backend-model-default");
@@ -831,6 +821,17 @@ function AIBackendModal(props) {
               writeAIBackendConfig({ ...cfg, models });
             }
             const refreshedCfg = readAIBackendConfig();
+            writeAIBackendConfig({
+              ...refreshedCfg,
+              validation: {
+                ok: true,
+                backend: refreshedCfg.backend || "gemini",
+                text: true,
+                testedAt: (/* @__PURE__ */ new Date()).toISOString(),
+                modelCount: Number(result.modelCount || 0)
+              }
+            }, { preserveValidation: true });
+            if (isStudentAiSetup && typeof window.__alloSyncQrStudentAiAccess === "function") window.__alloSyncQrStudentAiAccess();
             if (status) {
               status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && !cfg.models?.default ? ". Default model selected." : "");
               status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
@@ -863,7 +864,7 @@ function AIBackendModal(props) {
     "button",
     {
       onClick: () => {
-        localStorage.removeItem("alloflow_ai_config");
+        clearAIBackendConfig();
         const p = document.getElementById("ai-backend-provider");
         const u = document.getElementById("ai-backend-url");
         const k = document.getElementById("ai-backend-apikey");
@@ -895,18 +896,12 @@ function AIBackendModal(props) {
       "data-help-key": "ai_backend_model_select",
       "aria-label": t("ai_backend.default_model_aria") || "Default AI model",
       id: "ai-backend-model-default",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").models?.default || "";
-        } catch {
-          return "";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().models?.default || "",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+        const current = readAIBackendConfig();
         const models = { ...current.models || {}, default: e.target.value || void 0 };
         if (!e.target.value) delete models.default;
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, models }));
+        writeAIBackendConfig({ ...current, models });
       },
       className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
     },
@@ -916,18 +911,12 @@ function AIBackendModal(props) {
     {
       "aria-label": t("ai_backend.fallback_model_aria") || "Fallback AI model",
       id: "ai-backend-model-fallback",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").models?.fallback || "";
-        } catch {
-          return "";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().models?.fallback || "",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+        const current = readAIBackendConfig();
         const models = { ...current.models || {}, fallback: e.target.value || void 0 };
         if (!e.target.value) delete models.fallback;
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, models }));
+        writeAIBackendConfig({ ...current, models });
       },
       className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
     },
@@ -938,16 +927,10 @@ function AIBackendModal(props) {
       "data-help-key": "ai_backend_tts_provider_select",
       "aria-label": t("ai_backend.tts_provider_aria") || "Text-to-speech provider",
       id: "ai-backend-tts-provider",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").ttsProvider || "auto";
-        } catch {
-          return "auto";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().ttsProvider || "auto",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, ttsProvider: e.target.value }));
+        const current = readAIBackendConfig();
+        writeAIBackendConfig({ ...current, ttsProvider: e.target.value });
       },
       className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
     },
@@ -961,16 +944,10 @@ function AIBackendModal(props) {
     {
       "aria-label": t("ai_backend.image_provider_aria") || "Image generation provider",
       id: "ai-backend-image-provider",
-      defaultValue: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").imageProvider || "auto";
-        } catch {
-          return "auto";
-        }
-      })(),
+      defaultValue: readAIBackendConfig().imageProvider || "auto",
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...current, imageProvider: e.target.value }));
+        const current = readAIBackendConfig();
+        writeAIBackendConfig({ ...current, imageProvider: e.target.value });
       },
       className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
     },
@@ -979,7 +956,7 @@ function AIBackendModal(props) {
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -991,7 +968,7 @@ function AIBackendModal(props) {
     t("canvas_settings.device_storage_btn") || "Manage device storage"
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
     try {
-      const c = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+      const c = readAIBackendConfig();
       return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
     } catch {
       return "Gemini (default)";

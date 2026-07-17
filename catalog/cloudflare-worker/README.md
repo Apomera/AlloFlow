@@ -115,7 +115,7 @@ Every 90 days when the token expires:
 
 - The Worker is rate-limited only by Cloudflare's default Worker limits. If abuse appears, add Cloudflare WAF rules or KV-based rate limiting in the handler.
 - The Worker writes to `catalog/pending/`. The PAT cannot push directly to a branch protection rule; consider adding branch protection on `main` for additional safety.
-- All submitted data ends up in a public GitHub commit, even pending ones. The Worker is NOT a private staging area. Reviewers must promptly delete rejected submissions to keep PII out of git history (and use `git filter-repo` if real PII slips through and needs to be erased).
+- Lesson and translation submissions enter public Git history, including pending records. Keep PII out of those routes. Bug, PD-module, and plugin submissions use their private KV namespaces and must follow the corresponding retention and access controls below.
 - The Worker does not implement spam protection beyond size + schema validation. If submission volume warrants, add Cloudflare Turnstile to the form and verify the token in the Worker.
 
 ## Additional submission types (same Worker)
@@ -166,28 +166,40 @@ Review submissions with `wrangler kv key list --binding PD_SUBMISSIONS` /
 to `catalog/pd/approved/<slug>.json`, add an entry to `catalog/pd/index.json`, and push. Smoke test for
 all routes: `npm test`.
 
-### Verified PD credentials (Tier-2, OPTIONAL) — `POST /issuePd`, `GET /pdIssuerKey`, `POST /verifyPd`
-Issues an **Ed25519-signed completion attestation** so a learner's downloaded record is
-tamper-evident and traceable to this issuer. **Honest scope:** the signature proves *issuance +
-integrity + timestamp + issuer identity* — it does **NOT** prove supervised/proctored completion (the
-learner generates the record client-side), and it is **not** accreditation or contact hours.
+### Reviewed PD credential adapter (OPTIONAL) — `POST /issuePd`, `GET /pdIssuerKey`, `POST /verifyPd`
 
-Disabled by default — the app degrades to the Tier-1 self-paced record. To enable, generate an
-Ed25519 keypair and configure the keys (see `wrangler.toml`):
+The secure lane accepts a bearer-authenticated `{ "decision": { ... } }` using
+`pd-reviewed-decision-1.0`. It binds the learner, authorized reviewer provenance,
+module version and digest, evidence digest/references, and manual plus automated
+accessibility verification into an Ed25519-signed `reviewed-evidence` credential.
+Configure the reviewed keypair, issuer ID/name/key ID, and server-only
+`PD_ISSUER_AUTH_TOKEN` described in `wrangler.toml`; issuance fails closed when
+that configuration is incomplete or the public/private keys do not match.
 
-```
-node -e "(async()=>{const k=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);\
-console.log('PUBLIC (PD_ISSUER_PUBLIC_KEY var):',Buffer.from(await crypto.subtle.exportKey('spki',k.publicKey)).toString('base64'));\
-console.log('PRIVATE (secret):',Buffer.from(await crypto.subtle.exportKey('pkcs8',k.privateKey)).toString('base64'));})()"
-# put PD_ISSUER_PUBLIC_KEY in [vars]; then:
-wrangler secret put PD_ISSUER_PRIVATE_KEY   # paste the PRIVATE base64
-wrangler deploy
-```
+**Trust boundary:** the Worker authenticates only the calling review service through
+the bearer token. It validates schema and cross-field bindings, then signs the
+claims supplied by that service. It does not authenticate the learner or reviewer,
+query an authorization registry, retrieve evidence by digest, perform WCAG testing,
+or prevent replay. Those controls belong to the upstream institutional review
+service. A valid signature proves integrity and issuance by the configured key—not
+independent completion, WCAG conformance, accreditation, or UMS approval.
 
-- `POST /issuePd` `{record}` → `{credential:{payload,signature,alg:'Ed25519',key_id,public_key_spki_b64}}`
-  (only for `record.complete===true`; 501 when no key configured).
-- `GET /pdIssuerKey` → the issuer's public key (clients verify with it).
-- `POST /verifyPd` `{credential}` → `{valid}` (verifies against the server's trusted key, never the
-  key embedded in the credential). The in-app verifier prefers client-side WebCrypto and falls back to
-  this route. Canonicalization (`pd_core_module.js` ↔ worker) is kept byte-identical and cross-checked
-  in `tests/pd_worker.test.js`. Smoke test: `npm test`.
+- `POST /issuePd` with `Authorization: Bearer ...` and `{decision}` returns the
+  reviewed credential; arbitrary browser `{record}` signing is rejected by default.
+- `GET /pdIssuerKey` exposes only the reviewed-profile public key for browser
+  verification.
+- `POST /verifyPd` selects a trusted server key by the signed `credential_profile`
+  and returns `{valid, credential_profile, assurance}`. It never trusts an embedded
+  credential key.
+
+The optional browser-requested self-paced lane is disabled by default. If a
+non-institutional deployment deliberately enables `PD_ALLOW_SELF_PACED_ISSUANCE`,
+it must configure a separate `PD_SELF_PACED_PRIVATE_KEY` /
+`PD_SELF_PACED_PUBLIC_KEY` and separate issuer metadata. It produces only
+`self-paced-non-institutional` attestations and must never reuse the reviewed key
+or identity. These attestations are verified through `/verifyPd`, not
+`/pdIssuerKey`.
+
+Canonicalization (`pd_core_module.js` ↔ Worker), key separation, binding checks, and
+profile assurance are cross-checked in `tests/pd_worker.test.js`. Smoke test:
+`npm test`.

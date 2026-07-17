@@ -9,18 +9,27 @@ GITHUB_OWNER = "Apomera"
 GITHUB_REPO  = "AlloFlow"
 GITHUB_BRANCH = "main"
 
-# OPTIONAL — Tier-2 verified PD credentials (POST /issuePd, /verifyPd, GET /pdIssuerKey).
-# Leave unset to keep credentials disabled (the app degrades to the Tier-1 self-paced
-# record). To enable, generate an Ed25519 keypair and set:
-#   PD_ISSUER_PUBLIC_KEY  = base64(SPKI) of the public key  (a [vars] entry — it is public)
-#   PD_ISSUER_PRIVATE_KEY = base64(PKCS8) of the private key (a SECRET: `wrangler secret put PD_ISSUER_PRIVATE_KEY`)
-# Generate with Node:
-#   const {publicKey,privateKey}=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);
-#   Buffer.from(await crypto.subtle.exportKey('pkcs8',privateKey)).toString('base64'); // -> secret
-#   Buffer.from(await crypto.subtle.exportKey('spki',publicKey)).toString('base64');   // -> PD_ISSUER_PUBLIC_KEY
-# PD_ISSUER_PUBLIC_KEY = "REPLACE_WITH_SPKI_BASE64"
-PD_ISSUER_NAME = "AlloFlow PD"
-PD_ISSUER_KEY_ID = "alloflow-pd-1"
+# OPTIONAL — reviewed PD credential adapter (POST /issuePd, /verifyPd, GET /pdIssuerKey).
+# Keep every setting below unset until an authorized issuer assigns the identity,
+# key custody, and trusted upstream review service. Reviewed issuance requires:
+# PD_ISSUER_PUBLIC_KEY = "REPLACE_WITH_REVIEWED_SPKI_BASE64"  # public [vars] value
+# PD_ISSUER_NAME = "REPLACE_WITH_AUTHORIZED_ISSUER_NAME"
+# PD_ISSUER_ID = "REPLACE_WITH_AUTHORIZED_ISSUER_ID"
+# PD_ISSUER_KEY_ID = "REPLACE_WITH_REVIEWED_KEY_ID"
+# secret: wrangler secret put PD_ISSUER_PRIVATE_KEY
+# secret: wrangler secret put PD_ISSUER_AUTH_TOKEN
+# Never ship either secret in browser code, module JSON, localStorage, or LMS URLs.
+# The Worker authenticates the review-service caller and validates internal bindings;
+# the upstream service remains responsible for identity, authorization, evidence,
+# accessibility review, and replay prevention.
+#
+# Browser-requested self-paced signing is OFF by default. If deliberately enabled,
+# it requires a separate keypair and identity and remains explicitly non-institutional:
+# PD_ALLOW_SELF_PACED_ISSUANCE = "true"
+# PD_SELF_PACED_PUBLIC_KEY = "REPLACE_WITH_SELF_PACED_SPKI_BASE64"
+# secret: wrangler secret put PD_SELF_PACED_PRIVATE_KEY
+# optional: PD_SELF_PACED_KEY_ID, PD_SELF_PACED_ISSUER_NAME, PD_SELF_PACED_ISSUER_ID
+# Never reuse reviewed signing keys or reviewed issuer identities for this profile.
 
 # Private KV store for bug reports (POST /submitBug). These carry error logs + free
 # text that can include student-identifiable data, so they go to PRIVATE KV — NOT the

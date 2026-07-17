@@ -593,7 +593,7 @@
         s.async = true;
         s.onload = function () { if (typeof addToast === 'function') addToast('\uD83E\uDDEE Math engine loaded', 'info'); setLabToolData(function (prev) { return Object.assign({}, prev, { graphCalc: Object.assign({}, prev.graphCalc || {}, { _mathReady: true }) }); }); };
         document.head.appendChild(s);
-      }, [stemLabTab, stemLabTool]);
+      }, [stemLabTab, stemLabTool, labToolData.weatherSystems && labToolData.weatherSystems.tab]);
       // ── Graphing Calculator: Render graph on Canvas (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'graphCalc') return;
@@ -779,7 +779,8 @@
       }, [stemLabTab, stemLabTool, labToolData]);
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio')) return;
+        var weatherNeedsThree = stemLabTool === 'weatherSystems' && labToolData.weatherSystems && labToolData.weatherSystems.tab === 'immersive';
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && !weatherNeedsThree)) return;
         if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
         var s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';

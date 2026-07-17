@@ -3,6 +3,8 @@
   "kind": "pd_module",
   "metadata": {
     "id": "retrieval-practice-quickstart",
+    "version": "1.0.0",
+    "language": "en-US",
     "title": "Retrieval Practice: Quizzing that Builds Memory",
     "topic": "Learning Science",
     "summary": "A ~12-minute primer on retrieval practice (the 'testing effect') — why recalling beats re-reading — with a knowledge check and a classroom action plan. General educator PD; no AlloFlow features required.",

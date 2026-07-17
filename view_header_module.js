@@ -193,6 +193,7 @@ function HeaderBar(props) {
     showVoiceSettings,
     sliderFontSize,
     startClassSession,
+    studentAiPolicyForShare,
     t,
     voiceSpeed,
     voiceVolume
@@ -554,7 +555,19 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 20 }),
     /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center" }, notebookEntryCount)
-  ))), /* @__PURE__ */ React.createElement("div", { id: "tour-header-utils", className: `relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, isTeacherMode && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { id: "tour-header-utils", className: `relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, !isTeacherMode && window.__alloStudentAiSetupAllowed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setShowAIBackendModal(true),
+      "data-help-key": "header_student_ai_setup",
+      className: `px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? "bg-emerald-600 text-white border-emerald-300" : "bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50"}`,
+      title: window.__alloStudentAiConfigured ? "Personal AI connected for this session" : "Connect your own AI provider for this session",
+      "aria-label": window.__alloStudentAiConfigured ? "Personal AI connected" : "Set up personal AI"
+    },
+    /* @__PURE__ */ React.createElement(Unplug, { size: 14, "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, window.__alloStudentAiConfigured ? "AI ready" : "Set up AI")
+  ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -899,7 +912,7 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600", htmlFor: "homework-qr-expiry" }, "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500" }, /* @__PURE__ */ React.createElement("option", { value: 1 }, "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 days")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     if (typeof openRecentQrShares === "function") openRecentQrShares();
     setShowExportMenu(false);
-  }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Recent homework links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Recent homework links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

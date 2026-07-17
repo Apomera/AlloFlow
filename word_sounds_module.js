@@ -8140,6 +8140,263 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [preloadedWords, handleAudio],
       );
+      // Re-run pronunciation analysis for one review word without regenerating
+      // its audio, image, distractors, difficulty, or other teacher edits.
+      const handleCheckPhonemes = React.useCallback(
+        async (index) => {
+          const existingWord = preloadedWords[index];
+          if (!existingWord) return;
+          const targetWord = String(
+            existingWord.targetWord || existingWord.word || "",
+          ).trim();
+          if (!targetWord) return;
+
+          setRegeneratingIndex(index);
+          addToast?.("Checking phonemes for " + targetWord + "...", "info");
+          try {
+            const language = wordSoundsLanguage || "English";
+            const priorPhonemes = Array.isArray(existingWord.phonemes)
+              ? existingWord.phonemes
+              : [];
+
+            const aiCheck = async () => {
+              if (!runtimeAiAllowed || typeof callGemini !== "function") return null;
+              try {
+                const response = await callGemini(
+                  'Check the spoken phoneme segmentation of the single word "' +
+                    targetWord +
+                    '" in ' +
+                    language +
+                    '. Return strict JSON only: {"phonemes":[{"ipa":"IPA symbol","grapheme":"letters from the word"}],"syllables":["written syllable"]}. Use one entry per spoken phoneme, preserve silent letters only inside the appropriate grapheme, distinguish voiced /\u00f0/ from unvoiced /\u03b8/, and do not include definitions, distractors, or activity content.',
+                  { temperature: 0.1 },
+                );
+                const match = String(response || "").match(/\{[\s\S]*\}/);
+                if (!match) return null;
+                const parsed = JSON.parse(match[0]);
+                return Array.isArray(parsed.phonemes) && parsed.phonemes.length
+                  ? parsed
+                  : null;
+              } catch (error) {
+                warnLog("Focused phoneme check failed:", error?.message || error);
+                return null;
+              }
+            };
+
+            const localCheck = async () => {
+              try {
+                if (
+                  !(window.AlloPhonics &&
+                    typeof window.AlloPhonics.toPhonemes === "function") &&
+                  window.__alloLoadPlugin
+                ) {
+                  await Promise.race([
+                    window.__alloLoadPlugin("phonics_g2p_loader.js"),
+                    new Promise((resolve) => setTimeout(resolve, 6000)),
+                  ]);
+                }
+                if (
+                  window.AlloPhonics &&
+                  typeof window.AlloPhonics.toPhonemes === "function"
+                ) {
+                  return await Promise.race([
+                    window.AlloPhonics.toPhonemes(targetWord, { lang: language }),
+                    new Promise((resolve) =>
+                      setTimeout(() => resolve(null), 5000),
+                    ),
+                  ]);
+                }
+              } catch (error) {
+                warnLog("Local phoneme check failed:", error?.message || error);
+              }
+              return null;
+            };
+
+            const dictionaryCheck = async () => {
+              const normalizedLanguage = String(language).toLowerCase();
+              if (
+                normalizedLanguage &&
+                !normalizedLanguage.startsWith("en") &&
+                normalizedLanguage !== "english"
+              ) {
+                return null;
+              }
+              try {
+                if (
+                  !(window.AlloDictionary &&
+                    typeof window.AlloDictionary.lookup === "function") &&
+                  window.__alloLoadPlugin
+                ) {
+                  await Promise.race([
+                    window.__alloLoadPlugin("dictionary_loader.js"),
+                    new Promise((resolve) => setTimeout(resolve, 6000)),
+                  ]);
+                }
+                if (
+                  window.AlloDictionary &&
+                  typeof window.AlloDictionary.lookup === "function"
+                ) {
+                  return await Promise.race([
+                    window.AlloDictionary.lookup(targetWord),
+                    new Promise((resolve) =>
+                      setTimeout(() => resolve(null), 5000),
+                    ),
+                  ]);
+                }
+              } catch (error) {
+                warnLog("Dictionary phoneme check failed:", error?.message || error);
+              }
+              return null;
+            };
+
+            const [aiData, espeakData, dictionaryData] = await Promise.all([
+              aiCheck(),
+              localCheck(),
+              dictionaryCheck(),
+            ]);
+
+            let checkedData =
+              aiData && Array.isArray(aiData.phonemes)
+                ? {
+                    phonemes: aiData.phonemes,
+                    phonemeCount: aiData.phonemes.length,
+                    syllables: Array.isArray(aiData.syllables)
+                      ? aiData.syllables
+                      : existingWord.syllables,
+                    _phonemeSource: "gemini",
+                    _phonemeAgreement: null,
+                  }
+                : null;
+
+            if (
+              espeakData &&
+              Array.isArray(espeakData.ipa) &&
+              espeakData.ipa.length &&
+              window.AlloPhonics &&
+              typeof window.AlloPhonics.buildPhonemes === "function"
+            ) {
+              checkedData = window.AlloPhonics.buildPhonemes(
+                targetWord,
+                espeakData,
+                aiData?.phonemes || priorPhonemes,
+              );
+              if (
+                checkedData &&
+                aiData &&
+                Array.isArray(aiData.syllables)
+              ) {
+                checkedData.syllables = aiData.syllables;
+              }
+            }
+
+            let usedFallback = false;
+            if (
+              !checkedData ||
+              !Array.isArray(checkedData.phonemes) ||
+              !checkedData.phonemes.length
+            ) {
+              const estimated = estimatePhonemesBasic
+                ? estimatePhonemesBasic(targetWord)
+                : targetWord.toLowerCase().split("");
+              if (!Array.isArray(estimated) || !estimated.length) {
+                throw new Error("No phoneme analysis was returned");
+              }
+              usedFallback = true;
+              const soundValue = (item) =>
+                typeof item === "string"
+                  ? item
+                  : (item && (item.ipa || item.grapheme)) || "";
+              checkedData = {
+                phonemes: estimated,
+                phonemeCount: estimated.length,
+                firstSound: soundValue(estimated[0]),
+                middleSound: soundValue(
+                  estimated[Math.floor((estimated.length - 1) / 2)],
+                ),
+                lastSound: soundValue(estimated[estimated.length - 1]),
+                syllables: existingWord.syllables,
+                _phonemeSource: "estimated",
+                _phonemeAgreement: null,
+              };
+            }
+
+            const checkedPhonemes = checkedData.phonemes;
+            const soundValue = (item) =>
+              typeof item === "string"
+                ? item
+                : (item && (item.ipa || item.grapheme)) || "";
+            const phonemePatch = {
+              phonemes: checkedPhonemes,
+              phonemeCount: checkedPhonemes.length,
+              firstSound:
+                checkedData.firstSound || soundValue(checkedPhonemes[0]),
+              middleSound:
+                checkedData.middleSound ||
+                soundValue(
+                  checkedPhonemes[
+                    Math.floor((checkedPhonemes.length - 1) / 2)
+                  ],
+                ),
+              lastSound:
+                checkedData.lastSound ||
+                soundValue(checkedPhonemes[checkedPhonemes.length - 1]),
+              syllables:
+                checkedData.syllables !== undefined
+                  ? checkedData.syllables
+                  : existingWord.syllables,
+              _phonemeSource: checkedData._phonemeSource || "checked",
+              _phonemeAgreement:
+                checkedData._phonemeAgreement !== undefined
+                  ? checkedData._phonemeAgreement
+                  : null,
+              _espeakCount: checkedData._espeakCount || null,
+              _geminiCount: checkedData._geminiCount || null,
+              _fallbackUsed: usedFallback,
+              _phonemeCheckedAt: Date.now(),
+              _packEdited: true,
+            };
+            if (
+              dictionaryData &&
+              (dictionaryData.phonetic || dictionaryData.audio)
+            ) {
+              phonemePatch.dictionaryIpa = dictionaryData.phonetic || "";
+              phonemePatch.dictionaryAudio = dictionaryData.audio || "";
+            }
+
+            // Passing the fully merged word lets the review cache receive the
+            // same preserved object as state; only fields in phonemePatch change.
+            handleUpdatePreloadedWord(index, {
+              ...existingWord,
+              ...phonemePatch,
+            });
+
+            if (usedFallback) {
+              addToast?.(
+                "Phonemes were estimated locally; please review them before use.",
+                "warning",
+              );
+            } else {
+              addToast?.("Phonemes checked for " + targetWord + ".", "success");
+            }
+          } catch (error) {
+            warnLog("Phoneme check failed:", error?.message || error);
+            addToast?.(
+              "Could not check phonemes for " + targetWord + ". Your edits were kept.",
+              "error",
+            );
+          } finally {
+            setRegeneratingIndex(null);
+          }
+        },
+        [
+          preloadedWords,
+          wordSoundsLanguage,
+          runtimeAiAllowed,
+          callGemini,
+          estimatePhonemesBasic,
+          handleUpdatePreloadedWord,
+          addToast,
+        ],
+      );
       // Regenerate only the Sound Swap task for a single word without touching
       // its phonemes/rhymes/etc. Used by the "Regenerate Task" button in the
       // Pre-Activity Review editor.
@@ -15548,6 +15805,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           onUpdateWord: handleUpdatePreloadedWord,
           onReorderWords: handleReorderPreloadedWords,
           onRegenerateWord: handleRegenerateWord,
+          onCheckPhonemes: handleCheckPhonemes,
           onRegenerateOption: handleRegenerateOption,
           onRegenerateManipulationTask: handleRegenerateManipulationTask,
           onRegenerateAll: handleRegenerateAll,

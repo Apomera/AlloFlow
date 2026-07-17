@@ -81,6 +81,16 @@ jobs:
       - name: Drill packaged Windows app layouts
         working-directory: desktop
         run: npm run verify:package-layout:win
+      - name: Write Windows installer checksums
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path dist -Filter 'AlloFlow-Desktop-*.exe' -File |
+            Sort-Object Name |
+            ForEach-Object {
+              $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
+              "$hash  $($_.Name)"
+            } | Set-Content -Encoding ascii dist/SHA256SUMS-windows.txt
       - name: Verify desktop artifacts
         working-directory: desktop
         run: npm run verify:artifacts:win
@@ -97,6 +107,10 @@ jobs:
               throw "$($installer.Name) is not validly signed: $($signature.Status) $($signature.StatusMessage)"
             }
           }
+      - name: Smoke-test Windows installer on clean runner
+        working-directory: desktop
+        shell: pwsh
+        run: npm run verify:installer:win
       - uses: actions/upload-artifact@v4
         with:
           name: alloflow-desktop-windows
@@ -105,6 +119,8 @@ jobs:
             desktop/dist/AlloFlow-Desktop-*.exe.blockmap
             desktop/dist/*.yml
             desktop/dist/builder-debug.yml
+            desktop/dist/SHA256SUMS-windows.txt
+            desktop/WINDOWS-INSTALL.md
           if-no-files-found: error
 
   mac:

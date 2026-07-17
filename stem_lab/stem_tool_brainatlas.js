@@ -1097,6 +1097,33 @@ var d = labToolData.brainAtlas || {};
               subtitleLines.forEach(function (line) { cursorY += subtitleLineHeight; ctx.fillText(line, W * 0.5, cursorY - 2); });
               ctx.restore();
             }
+            function brainAtlasDrawCompactCanvasHeading(title, subtitle, palette) {
+              var colors = palette || {};
+              var headerH = Math.max(48, Math.min(66, H * 0.11));
+              var maxTextWidth = Math.max(90, W - 48);
+              var titlePx = Math.max(13, Math.min(17, Math.round(13 * fontScale)));
+              var subtitlePx = Math.max(8, Math.min(10, Math.round(8.2 * fontScale)));
+              ctx.save();
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'alphabetic';
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+              var titleText = brainAtlasEllipsizeCanvasText(title, maxTextWidth);
+              ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif';
+              var subtitleLines = subtitle ? brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2) : [];
+              var titleLineHeight = titlePx + 2;
+              var subtitleLineHeight = subtitlePx + 3;
+              var textHeight = titleLineHeight + (subtitleLines.length ? 3 : 0) + subtitleLines.length * subtitleLineHeight;
+              var cursorY = Math.max(2, (headerH - textHeight) / 2);
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+              ctx.fillStyle = colors.title || colors.accent || '#7c3aed';
+              cursorY += titleLineHeight;
+              ctx.fillText(titleText, W * 0.5, cursorY - 2);
+              ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif';
+              ctx.fillStyle = colors.subtitle || '#64748b';
+              subtitleLines.forEach(function (line) { cursorY += subtitleLineHeight; ctx.fillText(line, W * 0.5, cursorY); });
+              ctx.restore();
+            }
+
 
             function brainAtlasDrawClinicalCaseCard(x, y, w, h, title, clue, answer, color) {
               var cardX = Math.max(8, Math.min(W - w - 8, x));
@@ -1130,18 +1157,18 @@ var d = labToolData.brainAtlas || {};
               answerLines.forEach(function (line) { cursorY += bodyLineHeight; ctx.fillText(line, textX, cursorY - 1); });
               ctx.restore();
             }
-            function brainAtlasDrawDecoderChip(x, y, w, h, title, body, color) {
+            function brainAtlasDrawDecoderChip(x, y, w, h, title, body, color, active) {
               var chipX = Math.max(8, Math.min(W - w - 8, x));
               var chipY = Math.max(8, Math.min(H - h - 8, y));
               var maxTextWidth = Math.max(44, w - 18);
               var titlePx = Math.max(8, Math.min(10, Math.round(6.8 * fontScale)));
               var bodyPx = Math.max(7, Math.min(9, Math.round(5.8 * fontScale)));
               ctx.save();
-              ctx.shadowColor = 'rgba(15,23,42,0.07)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+              ctx.shadowColor = active ? color + '55' : 'rgba(15,23,42,0.07)'; ctx.shadowBlur = active ? 10 : 6; ctx.shadowOffsetY = 2;
               ctx.beginPath(); ctx.roundRect(chipX, chipY, w, h, 8);
-              ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.fill();
+              ctx.fillStyle = active ? color + '14' : 'rgba(255,255,255,0.95)'; ctx.fill();
               ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-              ctx.strokeStyle = color + '99'; ctx.lineWidth = 1.15; ctx.stroke();
+              ctx.strokeStyle = color + (active ? 'cc' : '99'); ctx.lineWidth = active ? 1.8 : 1.15; ctx.stroke();
               ctx.fillStyle = color; ctx.fillRect(chipX + 9, chipY + 5, Math.max(18, w - 18), 2);
               ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
               ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
@@ -1156,6 +1183,201 @@ var d = labToolData.brainAtlas || {};
               cursorY += 3; ctx.font = bodyPx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#475569';
               bodyLines.forEach(function (line) { cursorY += bodyLineHeight; ctx.fillText(line, chipX + w / 2, cursorY - 1); });
               ctx.restore();
+            }
+            function brainAtlasDrawDecoderBannerText(x, y, w, h, title, subtitle, accent) {
+              var textX = x + 22;
+              var maxTextWidth = Math.max(80, w - 38);
+              var titlePx = Math.max(9, Math.min(12, Math.round(8 * fontScale)));
+              var subtitlePx = Math.max(8, Math.min(10, Math.round(6 * fontScale)));
+              ctx.save();
+              ctx.fillStyle = accent || '#818cf8';
+              ctx.fillRect(x + 10, y + Math.max(7, h * 0.20), 3, Math.max(18, h * 0.60));
+              ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+              var safeTitle = brainAtlasEllipsizeCanvasText(title, maxTextWidth);
+              var titleWidth = ctx.measureText(safeTitle).width;
+              ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif';
+              var subtitleWidth = ctx.measureText(String(subtitle || '')).width;
+              var sideBySide = titleWidth + subtitleWidth + 22 <= maxTextWidth;
+              if (sideBySide) {
+                var baseline = y + h / 2 + Math.max(titlePx, subtitlePx) * 0.34;
+                ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#e2e8f0';
+                ctx.fillText(safeTitle, textX, baseline);
+                ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8';
+                ctx.fillText(subtitle, textX + titleWidth + 18, baseline);
+              } else {
+                ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+                var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 1);
+                ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif';
+                var subtitleLines = brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2);
+                var titleLineHeight = titlePx + 1, subtitleLineHeight = subtitlePx + 1;
+                var textHeight = titleLines.length * titleLineHeight + subtitleLines.length * subtitleLineHeight + 3;
+                var cursorY = y + Math.max(1, (h - textHeight) / 2);
+                ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#e2e8f0';
+                titleLines.forEach(function (line) { cursorY += titleLineHeight; ctx.fillText(line, textX, cursorY - 1); });
+                cursorY += 3; ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8';
+                subtitleLines.forEach(function (line) { cursorY += subtitleLineHeight; ctx.fillText(line, textX, cursorY - 1); });
+              }
+              ctx.restore();
+            }
+            function brainAtlasDrawInfoStrip(x, y, w, h, text, accent) {
+              var stripX = Math.max(8, Math.min(W - w - 8, x));
+              var stripY = Math.max(8, Math.min(H - h - 8, y));
+              var maxTextWidth = Math.max(80, w - 44);
+              var textPx = Math.max(8, Math.min(11, Math.round(8.4 * fontScale)));
+              ctx.save();
+              ctx.shadowColor = 'rgba(15,23,42,0.10)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+              ctx.beginPath(); ctx.roundRect(stripX, stripY, w, h, 10);
+              ctx.fillStyle = 'rgba(15,23,42,0.87)'; ctx.fill();
+              ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+              ctx.strokeStyle = (accent || '#818cf8') + '88'; ctx.lineWidth = 1; ctx.stroke();
+              ctx.fillStyle = accent || '#818cf8';
+              ctx.fillRect(stripX + 10, stripY + Math.max(7, h * 0.22), 3, Math.max(16, h * 0.56));
+              ctx.font = 'bold ' + textPx + 'px Inter, system-ui, sans-serif';
+              ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+              var lines = brainAtlasWrapCanvasLabel(text, maxTextWidth, 2);
+              var lineHeight = textPx + 3;
+              var cursorY = stripY + Math.max(1, (h - lines.length * lineHeight) / 2);
+              ctx.fillStyle = '#e2e8f0';
+              lines.forEach(function (line) { cursorY += lineHeight; ctx.fillText(line, stripX + w / 2, cursorY - 2); });
+              ctx.restore();
+            }
+            function brainAtlasDrawAnnotationCard(x, y, w, h, title, body, color, active) {
+              var cardX = Math.max(8, Math.min(W - w - 8, x));
+              var cardY = Math.max(8, Math.min(H - h - 8, y));
+              var textX = cardX + 22;
+              var maxTextWidth = Math.max(54, w - 34);
+              var titlePx = Math.max(9, Math.min(11, Math.round(8.6 * fontScale)));
+              var bodyPx = Math.max(8, Math.min(10, Math.round(7.2 * fontScale)));
+              var bodyText = Array.isArray(body) ? body.join(' ') : String(body || '');
+              ctx.save();
+              ctx.shadowColor = active ? color + '77' : 'rgba(15,23,42,0.08)'; ctx.shadowBlur = active ? 13 : 6; ctx.shadowOffsetY = 2;
+              ctx.beginPath(); ctx.roundRect(cardX, cardY, w, h, 11);
+              ctx.fillStyle = active ? color : 'rgba(255,255,255,0.94)'; ctx.fill();
+              ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+              ctx.strokeStyle = color; ctx.lineWidth = active ? 2.4 : 1.2; ctx.stroke();
+              ctx.fillStyle = active ? 'rgba(255,255,255,0.78)' : color;
+              ctx.fillRect(cardX + 9, cardY + Math.max(8, h * 0.18), 3, Math.max(18, h * 0.64));
+              ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+              var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);
+              ctx.font = bodyPx + 'px Inter, system-ui, sans-serif';
+              var bodyLines = brainAtlasWrapCanvasLabel(bodyText, maxTextWidth, 2);
+              var titleLineHeight = titlePx + 2, bodyLineHeight = bodyPx + 2;
+              var textHeight = titleLines.length * titleLineHeight + bodyLines.length * bodyLineHeight + 4;
+              var cursorY = cardY + Math.max(2, (h - textHeight) / 2);
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = active ? '#ffffff' : color;
+              titleLines.forEach(function (line) { cursorY += titleLineHeight; ctx.fillText(line, textX, cursorY - 1); });
+              cursorY += 4; ctx.font = bodyPx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = active ? '#f8fafc' : '#475569';
+              bodyLines.forEach(function (line) { cursorY += bodyLineHeight; ctx.fillText(line, textX, cursorY - 1); });
+              ctx.restore();
+            }
+            function brainAtlasDrawBoundedNodeLabel(cx, cy, w, h, title, subtitle, titleColor, subtitleColor) {
+              var maxTextWidth = Math.max(32, w - 14);
+              var titlePx = Math.max(8, Math.min(10, Math.round(8 * fontScale)));
+              var subtitlePx = Math.max(7, Math.min(9, Math.round(6.8 * fontScale)));
+              ctx.save();
+              ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+              var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);
+              ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif';
+              var subtitleLines = subtitle ? brainAtlasWrapCanvasLabel(subtitle, maxTextWidth, 2) : [];
+              var titleLineHeight = titlePx + 1, subtitleLineHeight = subtitlePx + 1;
+              var textHeight = titleLines.length * titleLineHeight + subtitleLines.length * subtitleLineHeight + (subtitleLines.length ? 2 : 0);
+              var cursorY = cy - textHeight / 2;
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = titleColor || '#0f172a';
+              titleLines.forEach(function (line) { cursorY += titleLineHeight; ctx.fillText(line, cx, cursorY - 1); });
+              if (subtitleLines.length) cursorY += 2;
+              ctx.font = subtitlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = subtitleColor || '#64748b';
+              subtitleLines.forEach(function (line) { cursorY += subtitleLineHeight; ctx.fillText(line, cx, cursorY - 1); });
+              ctx.restore();
+            }
+            function brainAtlasDrawTeachingCard(x, y, w, h, title, body, color, tinted) {
+              var cardX = Math.max(8, Math.min(W - w - 8, x));
+              var cardY = Math.max(8, Math.min(H - h - 8, y));
+              var textX = cardX + 18;
+              var maxTextWidth = Math.max(48, w - 28);
+              var titlePx = Math.max(8, Math.min(10, Math.round(7.6 * fontScale)));
+              var bodyPx = Math.max(7, Math.min(9, Math.round(6.6 * fontScale)));
+              var bodyText = Array.isArray(body) ? body.join(' ') : String(body || '');
+              ctx.save();
+              ctx.shadowColor = 'rgba(15,23,42,0.08)'; ctx.shadowBlur = 7; ctx.shadowOffsetY = 2;
+              ctx.beginPath(); ctx.roundRect(cardX, cardY, w, h, 10);
+              ctx.fillStyle = tinted ? color + '12' : 'rgba(255,255,255,0.92)'; ctx.fill();
+              ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+              ctx.strokeStyle = color + '88'; ctx.lineWidth = 1.1; ctx.stroke();
+              ctx.fillStyle = color; ctx.fillRect(cardX + 8, cardY + Math.max(8, h * 0.16), 3, Math.max(18, h * 0.68));
+              ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif';
+              var titleLines = brainAtlasWrapCanvasLabel(title, maxTextWidth, 2);
+              var titleLineHeight = titlePx + 2, bodyLineHeight = bodyPx + 2;
+              var availableBodyHeight = Math.max(bodyLineHeight, h - titleLines.length * titleLineHeight - 9);
+              var maxBodyLines = Math.max(1, Math.min(5, Math.floor(availableBodyHeight / bodyLineHeight)));
+              ctx.font = bodyPx + 'px Inter, system-ui, sans-serif';
+              var bodyLines = brainAtlasWrapCanvasLabel(bodyText, maxTextWidth, maxBodyLines);
+              var textHeight = titleLines.length * titleLineHeight + bodyLines.length * bodyLineHeight + 3;
+              var cursorY = cardY + Math.max(2, (h - textHeight) / 2);
+              ctx.font = 'bold ' + titlePx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = color;
+              titleLines.forEach(function (line) { cursorY += titleLineHeight; ctx.fillText(line, textX, cursorY - 1); });
+              cursorY += 3; ctx.font = bodyPx + 'px Inter, system-ui, sans-serif'; ctx.fillStyle = '#334155';
+              bodyLines.forEach(function (line) { cursorY += bodyLineHeight; ctx.fillText(line, textX, cursorY - 1); });
+              ctx.restore();
+            }
+            function brainAtlasDrawPathLabel(cx, cy, text, color, maxWidth) {
+              var value = String(text || '').trim();
+              if (!value) return;
+              var fontPx = Math.max(8, Math.min(10, Math.round(7.2 * fontScale)));
+              var widthLimit = Math.max(48, maxWidth || W * 0.18);
+              ctx.save();
+              ctx.font = 'bold ' + fontPx + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              var safeText = brainAtlasEllipsizeCanvasText(value, widthLimit - 18);
+              var pillW = Math.min(widthLimit, Math.max(34, ctx.measureText(safeText).width + 18));
+              var pillH = fontPx + 10;
+              var pillX = Math.max(6, Math.min(W - pillW - 6, cx - pillW / 2));
+              var pillY = Math.max(6, Math.min(H - pillH - 6, cy - pillH / 2));
+              ctx.shadowColor = 'rgba(15,23,42,0.10)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 1;
+              ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+              ctx.fillStyle = 'rgba(255,255,255,0.94)'; ctx.fill();
+              ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+              ctx.strokeStyle = color + '66'; ctx.lineWidth = 1; ctx.stroke();
+              ctx.fillStyle = color;
+              ctx.fillText(safeText, pillX + pillW / 2, pillY + pillH / 2 + 0.5);
+              ctx.restore();
+            }
+            function brainAtlasDrawLegendGrid(x, y, w, items, textColor, maxItemWidth) {
+              var fontPx = Math.max(8, Math.min(10, Math.round(7.4 * fontScale)));
+              var rowHeight = fontPx + 9;
+              var widthLimit = Math.max(56, Math.min(maxItemWidth || w / 2, w));
+              ctx.save();
+              ctx.font = 'bold ' + fontPx + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+              var rows = [];
+              var row = { items: [], width: 0 };
+              (items || []).forEach(function (item) {
+                var label = String(item.label || item.name || '');
+                var color = item.color || item.c || '#64748b';
+                var itemLimit = Math.max(56, Math.min(widthLimit, w));
+                var safeLabel = brainAtlasEllipsizeCanvasText(label, itemLimit - 26);
+                var itemWidth = Math.min(itemLimit, ctx.measureText(safeLabel).width + 26);
+                var gap = row.items.length ? 8 : 0;
+                if (row.items.length && row.width + gap + itemWidth > w) { rows.push(row); row = { items: [], width: 0 }; gap = 0; }
+                row.items.push({ label: safeLabel, color: color, width: itemWidth });
+                row.width += gap + itemWidth;
+              });
+              if (row.items.length) rows.push(row);
+              rows.forEach(function (packedRow, rowIndex) {
+                var cursorX = x + Math.max(0, (w - packedRow.width) / 2);
+                var centerY = y + rowIndex * rowHeight + rowHeight / 2;
+                packedRow.items.forEach(function (item, itemIndex) {
+                  if (itemIndex) cursorX += 8;
+                  ctx.fillStyle = item.color;
+                  ctx.beginPath(); ctx.roundRect(cursorX + 3, centerY - 2, 12, 4, 2); ctx.fill();
+                  ctx.fillStyle = textColor || '#64748b';
+                  ctx.fillText(item.label, cursorX + 20, centerY + 0.5);
+                  cursorX += item.width;
+                });
+              });
+              ctx.restore();
+              return rows.length * rowHeight;
             }
             if (!canvas._neurons) {
 
@@ -2653,8 +2875,11 @@ var d = labToolData.brainAtlas || {};
                   var active = cwActive(id);
                   ctx.save();
                   ctx.font = 'bold ' + Math.round(8.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  var measured = ctx.measureText(label).width + 28;
-                  var pw = Math.max(wide ? W * 0.19 : W * 0.13, Math.min(W * 0.23, measured));
+                  var labelWidth = ctx.measureText(label).width;
+                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  var subtitleWidth = ctx.measureText(sub).width;
+                  var measured = Math.max(labelWidth, subtitleWidth) + 28;
+                  var pw = Math.max(wide ? W * 0.19 : W * 0.13, Math.min(W * 0.25, measured));
                   var ph = H * 0.061;
                   ctx.fillStyle = active ? color : 'rgba(255,255,255,0.94)';
                   ctx.strokeStyle = color;
@@ -2665,12 +2890,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.roundRect(x - pw / 2, y - ph / 2, pw, ph, 10);
                   ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.textAlign = 'center';
-                  ctx.fillText(label, x, y - H * 0.004);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
-                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(sub, x, y + H * 0.018);
+                  brainAtlasDrawBoundedNodeLabel(x, y, pw, ph, label, sub, active ? '#ffffff' : color, active ? '#e2e8f0' : '#64748b');
                   ctx.restore();
                 }
 
@@ -2730,19 +2950,7 @@ var d = labToolData.brainAtlas || {};
                 cwPill('basilar_vertebral_cw', 'Basilar / vertebral', 'brainstem supply', W * 0.50, H * 0.905, arteryColor, true);
 
                 function cwClueChip(x, y, w, title, sub, color) {
-                  ctx.save();
-                  ctx.fillStyle = 'rgba(255,255,255,0.94)';
-                  ctx.strokeStyle = color + '88';
-                  ctx.lineWidth = 1;
-                  ctx.beginPath(); ctx.roundRect(x, y, w, H * 0.045, 8); ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = color;
-                  ctx.font = 'bold ' + Math.round(5.9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x + w / 2, y + H * 0.017);
-                  ctx.fillStyle = '#475569';
-                  ctx.font = Math.round(5.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(sub, x + w / 2, y + H * 0.034);
-                  ctx.restore();
+                  brainAtlasDrawDecoderChip(x, y, w, H * 0.045, title, sub, color);
                 }
 
                 ctx.save();
@@ -2752,13 +2960,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.strokeStyle = clueActive ? '#dc2626' : 'rgba(15,23,42,0.20)';
                 ctx.lineWidth = clueActive ? 2 : 1;
                 ctx.beginPath(); ctx.roundRect(clueX, clueY, clueW, clueH, 11); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(7.8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('BEDSIDE CLUE DECODER', clueX + W * 0.014, clueY + H * 0.024);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = Math.round(5.9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillText('dangerous pattern -> likely anatomy', clueX + W * 0.220, clueY + H * 0.024);
+                brainAtlasDrawDecoderBannerText(clueX, clueY, clueW, clueH, 'BEDSIDE CLUE DECODER', 'dangerous pattern -> likely anatomy', arteryColor);
                 ctx.restore();
 
                 var clueChipY = H * 0.143;
@@ -2955,10 +3157,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.shadowBlur = active ? 14 : 5;
                   ctx.beginPath(); ctx.roundRect(x, y, w, H * 0.048, 8); ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(label, x + w / 2, y + H * 0.030);
+                  brainAtlasDrawBoundedNodeLabel(x + w / 2, y + H * 0.024, w, H * 0.048, label, '', active ? '#ffffff' : color, '#64748b');
                   ctx.restore();
                 }
                 arteryBand('pica_cerebellum', 'PICA: inferior + medulla', W * 0.19, H * 0.74, W * 0.22, '#dc2626');
@@ -3000,12 +3199,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.shadowBlur = active ? 16 : 6;
                   ctx.beginPath(); ctx.ellipse(x, y, w / 2, h / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x, y - h * 0.18);
-                  ctx.font = Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(cn, x, y + h * 0.20);
+                  brainAtlasDrawBoundedNodeLabel(x, y, w * 0.82, h * 0.72, title, cn, active ? '#ffffff' : color, active ? '#e2e8f0' : '#475569');
                   ctx.restore();
                 }
                 bsSection('midbrain_cross_section', W * 0.26, H * 0.34, W * 0.20, H * 0.18, '#7c3aed', 'MIDBRAIN', 'CN III/IV');
@@ -3031,10 +3225,7 @@ var d = labToolData.brainAtlas || {};
                     ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill();
                   }
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = color;
-                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'left';
-                  ctx.fillText(label, W * 0.08, y + 3);
+                  brainAtlasDrawPathLabel(W * 0.10, y, label, color, W * 0.15);
                   ctx.restore();
                 }
                 bsTract('corticospinal_brainstem', H * 0.64, '#ef4444', 'motor');
@@ -3104,11 +3295,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.lineTo(x2 - Math.cos(angle + 0.45) * 12, y2 - Math.sin(angle + 0.45) * 12);
                   ctx.closePath();
                   ctx.fill();
-                  if (label) {
-                    ctx.font = 'bold ' + Math.round(7.6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(label, (x1 + x2) / 2, (y1 + y2) / 2 - H * 0.012);
-                  }
+                  if (label) brainAtlasDrawPathLabel((x1 + x2) / 2, (y1 + y2) / 2 - H * 0.012, label, color, W * 0.16);
                   ctx.restore();
                 }
                 function csfParticle(x1, y1, x2, y2, offset, color) {
@@ -3138,15 +3325,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.fill();
                   ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#ffffff' : color;
-                  ctx.font = 'bold ' + Math.round(8.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(label, x, y - h * 0.06);
-                  if (sublabel) {
-                    ctx.fillStyle = active ? 'rgba(255,255,255,0.82)' : '#475569';
-                    ctx.font = Math.round(7 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.fillText(sublabel, x, y + h * 0.24);
-                  }
+                  brainAtlasDrawBoundedNodeLabel(x, y, w, h, label, sublabel, active ? '#ffffff' : color, active ? 'rgba(255,255,255,0.82)' : '#475569');
                   ctx.restore();
                 }
 
@@ -3205,10 +3384,10 @@ var d = labToolData.brainAtlas || {};
                 function csfCase(x, y, title, clue, answer, color) {
                   brainAtlasDrawClinicalCaseCard(x, y, W * 0.205, H * 0.082, title, clue, answer, color);
                 }
+                brainAtlasDrawInfoStrip(W * 0.055, H * 0.742, W * 0.89, H * 0.052, 'CSF FLOW ROUTE: choroid -> lateral -> third -> aqueduct -> fourth -> subarachnoid -> venous sinus', '#0ea5e9');
                 ctx.fillStyle = '#0f172a';
                 ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText('CSF FLOW ROUTE: choroid -> lateral -> third -> aqueduct -> fourth -> subarachnoid -> venous sinus', W * 0.07, H * 0.770);
                 ctx.fillText('HYDROCEPHALUS DECODER', W * 0.07, H * 0.812);
                 csfCase(W * 0.08, H * 0.835, 'Obstructive', 'blocked route', 'upstream ventricles', '#7c3aed');
                 csfCase(W * 0.305, H * 0.835, 'Communicating', 'absorption fails', 'all ventricles enlarge', '#0f766e');
@@ -3244,13 +3423,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.roundRect(x - W * 0.105, stripTop - H * 0.035, W * 0.21, stripH + H * 0.07, 18);
                   ctx.fill();
                   ctx.stroke();
-                  ctx.fillStyle = color;
-                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x, stripTop - H * 0.010);
-                  ctx.fillStyle = '#64748b';
-                  ctx.font = Math.round(8.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(subtitle, x, stripTop + H * 0.020);
+                  brainAtlasDrawBoundedNodeLabel(x, stripTop + H * 0.002, W * 0.19, H * 0.065, title, subtitle, color, '#64748b');
                   ctx.restore();
                 }
                 stripPanel(motorX, '#7c3aed', 'Primary motor cortex', 'precentral gyrus - BA 4');
@@ -3331,36 +3504,12 @@ var d = labToolData.brainAtlas || {};
 
                 function corticalTag(regionId, x, y, color, title, copy) {
                   var active = !!(sel && sel.id === regionId);
-                  ctx.save();
-                  ctx.fillStyle = active ? color : 'rgba(255,255,255,0.92)';
-                  ctx.strokeStyle = color;
-                  ctx.lineWidth = active ? 2.5 : 1.3;
-                  ctx.beginPath();
-                  ctx.roundRect(x - W * 0.13, y - H * 0.045, W * 0.26, H * 0.09, 10);
-                  ctx.fill();
-                  ctx.stroke();
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(9.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x, y - H * 0.006);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
-                  ctx.font = Math.round(7.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(copy, x, y + H * 0.018);
-                  ctx.restore();
+                  brainAtlasDrawAnnotationCard(x - W * 0.13, y - H * 0.045, W * 0.26, H * 0.09, title, copy, color, active);
                 }
                 corticalTag('motor_strip_hom', W * 0.22, H * 0.145, '#7c3aed', 'Motor strip', 'movement output');
                 corticalTag('sensory_strip_hom', W * 0.78, H * 0.145, '#0ea5e9', 'Sensory strip', 'touch input');
 
-                ctx.save();
-                ctx.fillStyle = 'rgba(15,23,42,0.86)';
-                ctx.beginPath();
-                ctx.roundRect(W * 0.13, H * 0.905, W * 0.74, H * 0.055, 12);
-                ctx.fill();
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Clinical shortcut: medial cortex = leg/foot; lateral cortex = hand, face, lips, tongue.', W * 0.5, H * 0.940);
-                ctx.restore();
+                brainAtlasDrawInfoStrip(W * 0.13, H * 0.900, W * 0.74, H * 0.065, 'Clinical shortcut: medial cortex = leg/foot; lateral cortex = hand, face, lips, tongue.', '#a78bfa');
 
               } else if (currentView.isVisualPathway) {
 
@@ -3447,13 +3596,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.roundRect(x - W * 0.060, y - H * 0.032, W * 0.120, H * 0.064, 10);
                   ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(8.3 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(label, x, y - H * 0.004);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
-                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(sub, x, y + H * 0.017);
+                  brainAtlasDrawBoundedNodeLabel(x, y, W * 0.120, H * 0.064, label, sub, active ? '#ffffff' : color, active ? '#e2e8f0' : '#64748b');
                   ctx.restore();
                 }
 
@@ -3548,10 +3691,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.strokeStyle = color + '88';
                   ctx.lineWidth = 1.2;
                   ctx.beginPath(); ctx.roundRect(x, y, W * 0.145, H * 0.115, 10); ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = color;
-                  ctx.font = 'bold ' + Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x + W * 0.0725, y + H * 0.026);
+                  brainAtlasDrawBoundedNodeLabel(x + W * 0.0725, y + H * 0.024, W * 0.135, H * 0.040, title, '', color, '#64748b');
                   fieldIcon(x + W * 0.052, y + H * 0.070, Math.min(W, H) * 0.020, leftMode);
                   fieldIcon(x + W * 0.094, y + H * 0.070, Math.min(W, H) * 0.020, rightMode);
                   ctx.fillStyle = '#64748b';
@@ -3571,13 +3711,7 @@ var d = labToolData.brainAtlas || {};
                 var decoderW = W * 0.89;
                 ctx.fillStyle = 'rgba(15,23,42,0.84)';
                 ctx.beginPath(); ctx.roundRect(decoderX, decoderY, decoderW, H * 0.050, 10); ctx.fill();
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(8.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('FIELD-CUT DECODER', decoderX + W * 0.014, decoderY + H * 0.032);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = Math.round(6.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillText('pattern -> lesion level', decoderX + W * 0.175, decoderY + H * 0.032);
+                brainAtlasDrawDecoderBannerText(decoderX, decoderY, decoderW, H * 0.050, 'FIELD-CUT DECODER', 'pattern -> lesion level', '#60a5fa');
                 ctx.restore();
 
                 var chipY = H * 0.155;
@@ -3704,13 +3838,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.roundRect(n.x - n.w / 2, n.y - n.h / 2, n.w, n.h, 11);
                   ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : n.color;
-                  ctx.font = 'bold ' + Math.round(8.7 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(n.label, n.x, n.y - n.h * 0.07);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
-                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(n.sub, n.x, n.y + n.h * 0.22);
+                  brainAtlasDrawBoundedNodeLabel(n.x, n.y, n.w, n.h, n.label, n.sub, active ? '#ffffff' : n.color, active ? '#e2e8f0' : '#64748b');
                   ctx.restore();
                 }
 
@@ -3728,35 +3856,10 @@ var d = labToolData.brainAtlas || {};
 
                 function langClueCard(regionId, x, y, w, title, line1, line2, color) {
                   var active = !!(sel && sel.id === regionId);
-                  ctx.save();
-                  ctx.fillStyle = active ? color : 'rgba(255,255,255,0.93)';
-                  ctx.strokeStyle = color;
-                  ctx.lineWidth = active ? 2.4 : 1.2;
-                  ctx.shadowColor = active ? color + '77' : 'rgba(15,23,42,0.08)';
-                  ctx.shadowBlur = active ? 13 : 6;
-                  ctx.beginPath();
-                  ctx.roundRect(x, y, w, H * 0.112, 11);
-                  ctx.fill(); ctx.stroke();
-                  ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'left';
-                  ctx.fillText(title, x + W * 0.014, y + H * 0.032);
-                  ctx.fillStyle = active ? '#f8fafc' : '#475569';
-                  ctx.font = Math.round(7.1 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(line1, x + W * 0.014, y + H * 0.063);
-                  ctx.fillText(line2, x + W * 0.014, y + H * 0.088);
-                  ctx.restore();
+                  brainAtlasDrawAnnotationCard(x, y, w, H * 0.112, title, [line1, line2], color, active);
                 }
 
-                ctx.save();
-                ctx.fillStyle = 'rgba(15,23,42,0.84)';
-                ctx.beginPath(); ctx.roundRect(W * 0.08, H * 0.725, W * 0.84, H * 0.035, 10); ctx.fill();
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('APHASIA CLUES: test fluency, comprehension, repetition, naming, reading, and writing together.', W * 0.5, H * 0.748);
-                ctx.restore();
+                brainAtlasDrawInfoStrip(W * 0.08, H * 0.710, W * 0.84, H * 0.055, 'APHASIA CLUES: test fluency, comprehension, repetition, naming, reading, and writing together.', warningColor);
 
                 langClueCard('aphasia_cards_language', W * 0.08, H * 0.785, W * 0.255, 'BROCA: nonfluent output', 'Comprehension often stronger', 'Repetition usually impaired', outputColor);
                 langClueCard('aphasia_cards_language', W * 0.372, H * 0.785, W * 0.275, 'WERNICKE: fluent but poor comprehension', 'Speech can sound effortless', 'Meaning breaks down', meaningColor);
@@ -3807,13 +3910,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.roundRect(n.x - n.w / 2, n.y - n.h / 2, n.w, n.h, 12);
                   ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : n.color;
-                  ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(n.label, n.x, n.y - 2);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
-                  ctx.font = Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(n.sub, n.x, n.y + 14);
+                  brainAtlasDrawBoundedNodeLabel(n.x, n.y, n.w, n.h, n.label, n.sub, active ? '#ffffff' : n.color, active ? '#e2e8f0' : '#64748b');
                   ctx.restore();
                 }
 
@@ -3879,12 +3976,7 @@ var d = labToolData.brainAtlas || {};
                     ctx.beginPath(); ctx.arc(qx, qy, 3, 0, Math.PI * 2); ctx.fill();
                   }
 
-                  if (label) {
-                    ctx.font = 'bold ' + Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = color;
-                    ctx.fillText(label, cx, cy - 5);
-                  }
+                  if (label) brainAtlasDrawPathLabel(cx, cy - 5, label, color, W * 0.15);
                   ctx.restore();
                 }
 
@@ -3903,22 +3995,7 @@ var d = labToolData.brainAtlas || {};
 
                 function pathBadge(regionId, x, y, color, title, lines) {
                   var active = !!(sel && sel.id === regionId);
-                  ctx.save();
-                  ctx.fillStyle = active ? color : 'rgba(255,255,255,0.94)';
-                  ctx.strokeStyle = color;
-                  ctx.lineWidth = active ? 2.5 : 1.3;
-                  ctx.beginPath();
-                  ctx.roundRect(x - W * 0.17, y - H * 0.050, W * 0.34, H * 0.10, 14);
-                  ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x, y - H * 0.012);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#475569';
-                  ctx.font = Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(lines[0], x, y + H * 0.014);
-                  ctx.fillText(lines[1], x, y + H * 0.034);
-                  ctx.restore();
+                  brainAtlasDrawAnnotationCard(x - W * 0.17, y - H * 0.050, W * 0.34, H * 0.10, title, lines, color, active);
                 }
                 pathBadge('direct_path_bg', W * 0.28, H * 0.90, goColor, 'DIRECT PATHWAY: GO', ['D1 inhibits the brake', 'thalamus can excite cortex']);
                 pathBadge('indirect_path_bg', W * 0.72, H * 0.90, stopColor, 'INDIRECT PATHWAY: NO-GO', ['D2 lets STN strengthen brake', 'competing actions are suppressed']);
@@ -3940,13 +4017,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.shadowBlur = disorderActive ? 16 : 8;
                 ctx.beginPath(); ctx.roundRect(disorderX, disorderY, disorderW, disorderH, 12); ctx.fill(); ctx.stroke();
                 ctx.shadowBlur = 0;
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('MOVEMENT DISORDER DECODER', disorderX + W * 0.018, disorderY + H * 0.024);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = Math.round(6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillText('movement pattern -> loop imbalance', disorderX + W * 0.302, disorderY + H * 0.024);
+                brainAtlasDrawDecoderBannerText(disorderX, disorderY, disorderW, disorderH, 'MOVEMENT DISORDER DECODER', 'movement pattern -> loop imbalance', dopamineColor);
                 ctx.restore();
 
                 var disorderChipY = H * 0.148;
@@ -4052,12 +4123,7 @@ var d = labToolData.brainAtlas || {};
                     ctx.fillStyle = color;
                     ctx.beginPath(); ctx.arc(qx, qy, 2.8, 0, Math.PI * 2); ctx.fill();
                   }
-                  if (label) {
-                    ctx.font = 'bold ' + Math.round(7.0 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = color;
-                    ctx.fillText(label, cx, cy - 6);
-                  }
+                  if (label) brainAtlasDrawPathLabel(cx, cy - 6, label, color, W * 0.18);
                   ctx.restore();
                 }
 
@@ -4074,13 +4140,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.roundRect(n.x - n.w / 2, n.y - n.h / 2, n.w, n.h, 12);
                   ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = active ? '#fff' : n.color;
-                  ctx.font = 'bold ' + Math.round(8.6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(n.label, n.x, n.y - H * 0.005);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
-                  ctx.font = Math.round(6.9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(n.sub, n.x, n.y + H * 0.017);
+                  brainAtlasDrawBoundedNodeLabel(n.x, n.y, n.w, n.h, n.label, n.sub, active ? '#ffffff' : n.color, active ? '#e2e8f0' : '#64748b');
                   ctx.restore();
                 }
 
@@ -4102,22 +4162,7 @@ var d = labToolData.brainAtlas || {};
 
                 function limbicBadge(regionId, x, y, color, title, lines) {
                   var active = limbicActive(regionId);
-                  ctx.save();
-                  ctx.fillStyle = active ? color : 'rgba(255,255,255,0.94)';
-                  ctx.strokeStyle = color;
-                  ctx.lineWidth = active ? 2.5 : 1.3;
-                  ctx.beginPath();
-                  ctx.roundRect(x - W * 0.18, y - H * 0.049, W * 0.36, H * 0.098, 14);
-                  ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = active ? '#fff' : color;
-                  ctx.font = 'bold ' + Math.round(9.5 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText(title, x, y - H * 0.012);
-                  ctx.fillStyle = active ? '#e2e8f0' : '#475569';
-                  ctx.font = Math.round(7.0 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText(lines[0], x, y + H * 0.014);
-                  ctx.fillText(lines[1], x, y + H * 0.034);
-                  ctx.restore();
+                  brainAtlasDrawAnnotationCard(x - W * 0.18, y - H * 0.049, W * 0.36, H * 0.098, title, lines, color, active);
                 }
                 limbicBadge('papez_path_limbic', W * 0.29, H * 0.925, memoryColor, 'PAPEZ MEMORY LOOP', ['hippocampus -> thalamus -> cingulate', 'returns through entorhinal cortex']);
                 limbicBadge('emotion_output_limbic', W * 0.71, H * 0.925, emotionColor, 'AMYGDALA OUTPUT', ['tags memory with emotion', 'drives hypothalamic body response']);
@@ -4139,13 +4184,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.shadowBlur = limbicDecoderActive ? 16 : 8;
                 ctx.beginPath(); ctx.roundRect(limbicDecoderX, limbicDecoderY, limbicDecoderW, limbicDecoderH, 12); ctx.fill(); ctx.stroke();
                 ctx.shadowBlur = 0;
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('MEMORY-EMOTION DECODER', limbicDecoderX + W * 0.018, limbicDecoderY + H * 0.024);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = Math.round(6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillText('symptom pattern -> weak circuit', limbicDecoderX + W * 0.285, limbicDecoderY + H * 0.024);
+                brainAtlasDrawDecoderBannerText(limbicDecoderX, limbicDecoderY, limbicDecoderW, limbicDecoderH, 'MEMORY-EMOTION DECODER', 'symptom pattern -> weak circuit', memoryColor);
                 ctx.restore();
 
                 var limbicChipY = H * 0.148;
@@ -4175,7 +4214,7 @@ var d = labToolData.brainAtlas || {};
 
                 function spikeCycleDecoder() {
                   var active = !!(sel && sel.id === 'spike_cycle_decoder_neuron');
-                  var boxX = W * 0.075, boxY = H * 0.075, boxW = W * 0.68, boxH = H * 0.118;
+                  var boxX = W * 0.075, boxY = H * 0.075, boxW = W * 0.68, boxH = Math.max(74, H * 0.118);
                   ctx.save();
                   ctx.fillStyle = active ? 'rgba(245,158,11,0.16)' : 'rgba(255,255,255,0.92)';
                   ctx.strokeStyle = active ? '#f59e0b' : 'rgba(203,213,225,0.9)';
@@ -4184,13 +4223,10 @@ var d = labToolData.brainAtlas || {};
                   ctx.shadowBlur = active ? 14 : 7;
                   ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 12); ctx.fill(); ctx.stroke();
                   ctx.shadowBlur = 0;
-                  ctx.fillStyle = '#92400e';
-                  ctx.font = 'bold ' + Math.round(8.3 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'left';
-                  ctx.fillText('SPIKE CYCLE DECODER', boxX + 12, boxY + H * 0.030);
-                  ctx.fillStyle = '#64748b';
-                  ctx.font = Math.round(6.6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText('threshold -> Na+ in -> K+ out -> refractory recovery', boxX + W * 0.185, boxY + H * 0.030);
+                  var decoderHeaderH = Math.max(30, Math.min(36, boxH * 0.44));
+                  ctx.fillStyle = 'rgba(15,23,42,0.90)';
+                  ctx.beginPath(); ctx.roundRect(boxX + 5, boxY + 5, boxW - 10, decoderHeaderH, 8); ctx.fill();
+                  brainAtlasDrawDecoderBannerText(boxX + 5, boxY + 5, boxW - 10, decoderHeaderH, 'SPIKE CYCLE DECODER', 'threshold -> Na+ in -> K+ out -> refractory recovery', '#f59e0b');
 
                   var chips = [
                     { label: 'Rest -70', sub: 'polarized', color: '#64748b' },
@@ -4199,23 +4235,16 @@ var d = labToolData.brainAtlas || {};
                     { label: 'K+ out', sub: 'repolarize', color: kColor },
                     { label: 'Refractory', sub: 'reset', color: '#f59e0b' }
                   ];
-                  var chipW = boxW * 0.175;
+                  var chipPadding = Math.max(8, boxW * 0.025);
+                  var chipGap = Math.max(3, boxW * 0.012);
+                  var chipW = (boxW - chipPadding * 2 - chipGap * 4) / 5;
                   for (var ci = 0; ci < chips.length; ci++) {
                     var ch = chips[ci];
-                    var cx = boxX + W * 0.020 + ci * (chipW + W * 0.012);
-                    var cy = boxY + H * 0.050;
                     var isPhase = Math.floor(phase) === ci || (ci === 4 && phase >= 5);
-                    ctx.fillStyle = isPhase ? ch.color + '24' : '#f8fafc';
-                    ctx.strokeStyle = isPhase ? ch.color : '#e2e8f0';
-                    ctx.lineWidth = isPhase ? 1.5 : 1;
-                    ctx.beginPath(); ctx.roundRect(cx, cy, chipW, H * 0.048, 8); ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = ch.color;
-                    ctx.font = 'bold ' + Math.round(6.6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(ch.label, cx + chipW / 2, cy + H * 0.018);
-                    ctx.fillStyle = '#64748b';
-                    ctx.font = Math.round(5.7 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.fillText(ch.sub, cx + chipW / 2, cy + H * 0.036);
+                    var cx = boxX + chipPadding + ci * (chipW + chipGap);
+                    var cy = boxY + decoderHeaderH + 8;
+                    var chipH = Math.max(28, boxH - decoderHeaderH - 12);
+                    brainAtlasDrawDecoderChip(cx, cy, chipW, chipH, ch.label, ch.sub, ch.color, isPhase);
                   }
                   ctx.restore();
                 }
@@ -4556,7 +4585,8 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.fillStyle='#334155'; ctx.textAlign='left'; ctx.fillText('Membrane Potential (mV)',gx2+10,gy2+18);
 
-                var px2=gx2+gw2*0.20,py2=gy2+32,pw2=gw2*0.68,ph2=gh2-48;
+                var px2=gx2+gw2*0.22,py2=gy2+32,pw2=gw2*0.58,ph2=gh2-48;
+                var voltageLabelX=px2+pw2+gw2*0.10,voltageLabelW=gw2*0.17;
 
                 ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
 
@@ -4572,16 +4602,14 @@ var d = labToolData.brainAtlas || {};
                 ctx.beginPath(); ctx.setLineDash([3,3]);
                 ctx.moveTo(px2,py2+ph2*0.70); ctx.lineTo(px2+pw2,py2+ph2*0.70);
                 ctx.strokeStyle='#3b82f650'; ctx.stroke();
-                ctx.font=(6*fontScale)+'px Inter,system-ui,sans-serif';
-                ctx.fillStyle='#3b82f6'; ctx.textAlign='left'; ctx.fillText('Resting',px2+pw2+8,py2+ph2*0.70);
+                brainAtlasDrawBoundedNodeLabel(voltageLabelX,py2+ph2*0.70,voltageLabelW,18,'Resting','','#3b82f6','#3b82f6');
                 ctx.setLineDash([]);
 
                 // Threshold line
                 ctx.beginPath(); ctx.setLineDash([3,3]);
                 ctx.moveTo(px2,py2+ph2*0.58); ctx.lineTo(px2+pw2,py2+ph2*0.58);
                 ctx.strokeStyle='#ef444460'; ctx.stroke(); ctx.setLineDash([]);
-                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif';
-                ctx.fillStyle='#ef4444'; ctx.textAlign='left'; ctx.fillText('Threshold',px2+pw2+8,py2+ph2*0.58);
+                brainAtlasDrawBoundedNodeLabel(voltageLabelX,py2+ph2*0.58,voltageLabelW,18,'Threshold','','#ef4444','#ef4444');
 
                 // Action potential curve labels
                 var apP=[[0,0.70],[0.15,0.70],[0.25,0.68],[0.35,0.58],[0.42,0.15],[0.48,0.10],[0.55,0.50],[0.65,0.82],[0.78,0.72],[1.0,0.70]];
@@ -4591,10 +4619,9 @@ var d = labToolData.brainAtlas || {};
                 apP.forEach(function(p,i){var ppx2=px2+p[0]*pw2,ppy2=py2+p[1]*ph2;if(i===0)ctx.moveTo(ppx2,ppy2);else ctx.lineTo(ppx2,ppy2);}); ctx.stroke();
 
                 // Phase labels on curve
-                ctx.font=(6*fontScale)+'px Inter,system-ui,sans-serif'; ctx.textAlign='center';
-                ctx.fillStyle='#7c3aed'; ctx.fillText('Depolarization',px2+0.38*pw2,py2+ph2*0.05);
-                ctx.fillStyle='#22c55e'; ctx.fillText('Repolarization',px2+0.58*pw2,py2+ph2*0.42);
-                ctx.fillStyle='#f59e0b'; ctx.fillText('Hyperpol.',px2+0.72*pw2,py2+ph2*0.90);
+                brainAtlasDrawPathLabel(px2+0.38*pw2,py2+ph2*0.05,'Depolarization','#7c3aed',gw2*0.27);
+                brainAtlasDrawPathLabel(px2+0.61*pw2,py2+ph2*0.42,'Repolarization','#22c55e',gw2*0.27);
+                brainAtlasDrawPathLabel(px2+0.75*pw2,py2+ph2*0.90,'Hyperpolarization','#f59e0b',gw2*0.31);
 
                 var df=phase/6,di2=Math.min(apP.length-2,Math.floor(df*(apP.length-1))),dt2=(df*(apP.length-1))-di2;
 
@@ -4613,35 +4640,17 @@ var d = labToolData.brainAtlas || {};
                 // Ion legend and key concept
 
                 ctx.save();
-
                 var lgX=W*0.035, lgY=H*0.635, lgW=W*0.32, lgH=H*0.285;
                 ctx.fillStyle='rgba(255,255,255,0.92)';
                 ctx.beginPath(); ctx.roundRect(lgX,lgY,lgW,lgH,8); ctx.fill();
                 ctx.strokeStyle='rgba(203,213,225,0.9)'; ctx.lineWidth=1; ctx.stroke();
-
-                ctx.font='bold '+(8.5*fontScale)+'px Inter,system-ui,sans-serif'; ctx.textAlign='left';
-
-                function ionRow(color, label, textColor, rowY) {
-                  ctx.beginPath(); ctx.arc(lgX+14,rowY,5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
-                  ctx.fillStyle=textColor; ctx.fillText(label,lgX+32,rowY+4);
-                }
-
-                ionRow(naColor,'Na\u207A ions (rush in)','#1e40af',lgY+26);
-                ionRow(kColor,'K\u207A ions (flow out)','#166534',lgY+52);
-                ionRow('#fbbf24','Signal propagation','#92400e',lgY+78);
-
-                ctx.strokeStyle='rgba(148,163,184,0.55)'; ctx.lineWidth=1;
-                ctx.beginPath(); ctx.moveTo(lgX+12,lgY+96); ctx.lineTo(lgX+lgW-12,lgY+96); ctx.stroke();
-
-                ctx.font='bold '+(8.5*fontScale)+'px Inter,system-ui,sans-serif';
-                ctx.fillStyle='#7c3aed';
-                ctx.fillText('\u26A1 All-or-Nothing:',lgX+12,lgY+118);
-                ctx.font=(7.2*fontScale)+'px Inter,system-ui,sans-serif';
-                ctx.fillStyle='#475569';
-                ctx.fillText('Once threshold (-55mV) is reached,',lgX+12,lgY+140);
-                ctx.fillText('the neuron fires at full strength.',lgX+12,lgY+160);
-                ctx.fillText('No partial signals!',lgX+12,lgY+180);
-
+                var ionLegendItems = [
+                  { color: naColor, label: 'Na\u207A ions (rush in)' },
+                  { color: kColor, label: 'K\u207A ions (flow out)' },
+                  { color: '#fbbf24', label: 'Signal propagation' }
+                ];
+                brainAtlasDrawLegendGrid(lgX + 10, lgY + 8, lgW - 20, ionLegendItems, '#475569', lgW - 20);
+                brainAtlasDrawTeachingCard(lgX + 10, lgY + 64, lgW - 20, lgH - 74, '\u26A1 ALL-OR-NOTHING', 'Once threshold (-55mV) is reached, the neuron fires at full strength. No partial signals!', '#7c3aed', true);
                 ctx.restore();
 
 
@@ -4677,24 +4686,14 @@ var d = labToolData.brainAtlas || {};
                 var scan = brainMotionReduced ? 0.62 : ((sT * 0.0024) % 1);
                 var glow = brainMotionReduced ? 0.45 : (0.45 + 0.35 * Math.sin(sT * 0.045));
 
-                ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 17px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('Synapse density across the lifespan', W / 2, 30);
-                ctx.fillStyle = '#94a3b8'; ctx.font = '11px Inter,system-ui,sans-serif';
-                ctx.fillText('Overproduction in early childhood, then experience-dependent pruning', W / 2, 50);
+                brainAtlasDrawCompactCanvasHeading('Synapse density across the lifespan', 'Overproduction in early childhood, then experience-dependent pruning', { title: '#e2e8f0', subtitle: '#94a3b8' });
 
-                function legendChip(x, y, color, text) {
-                  ctx.save();
-                  ctx.fillStyle = 'rgba(15,23,42,0.82)';
-                  ctx.strokeStyle = color + '88';
-                  ctx.lineWidth = 1;
-                  ctx.beginPath(); ctx.roundRect(x, y, 238, 24, 7); ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = color; ctx.fillRect(x + 10, y + 10, 18, 4);
-                  ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 10px Inter,system-ui,sans-serif'; ctx.textAlign = 'left';
-                  ctx.fillText(text, x + 36, y + 15);
-                  ctx.restore();
-                }
-                legendChip(x0 + 8, 66, '#22d3ee', 'Sensory cortex: early pruning');
-                legendChip(x0 + 266, 66, '#f59e0b', 'Prefrontal cortex: later pruning');
+                var lifespanLegendItems = [
+                  { color: '#22d3ee', label: 'Sensory cortex: early pruning' },
+                  { color: '#f59e0b', label: 'Prefrontal cortex: later pruning' }
+                ];
+                var lifespanLegendY = Math.max(66, Math.min(y0 - 36, H * 0.12));
+                brainAtlasDrawLegendGrid(x0 + 8, lifespanLegendY, pW - 16, lifespanLegendItems, '#cbd5e1', (pW - 24) / 2);
 
                 ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, yB); ctx.lineTo(x0 + pW, yB); ctx.stroke();
@@ -4732,15 +4731,7 @@ var d = labToolData.brainAtlas || {};
                 drawCurve(prefrontalPts, '#f59e0b');
 
                 function tag(x, y, text, color) {
-                  var padX = 7, h = 19;
-                  ctx.save();
-                  ctx.font = 'bold 10px Inter,system-ui,sans-serif';
-                  var w = ctx.measureText(text).width + padX * 2;
-                  ctx.fillStyle = 'rgba(15,23,42,0.88)';
-                  ctx.strokeStyle = color + '99';
-                  ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, 6); ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.fillText(text, x, y + 4);
-                  ctx.restore();
+                  brainAtlasDrawPathLabel(x, y, text, color, Math.max(72, W * 0.16));
                 }
                 tag(ageX(2), y0 - 16, 'synaptogenesis', '#22c55e');
                 tag(ageX(11.5), y0 + 22, 'pruning', '#fb7185');
@@ -4800,10 +4791,7 @@ var d = labToolData.brainAtlas || {};
                 var activeStimZone = stimZones.find(function (z) { return z.id === activeStimId; }) || stimZones[0];
 
                 ctx.fillStyle = '#fff7ed'; ctx.fillRect(0, 0, W, H);
-                ctx.fillStyle = '#7c2d12'; ctx.font = 'bold 18px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('Penfield stimulation response map', W / 2, 28);
-                ctx.fillStyle = '#9a3412'; ctx.font = '11px Inter,system-ui,sans-serif';
-                ctx.fillText('Tap a zone or use the scenario panel to predict the patient response.', W / 2, 48);
+                brainAtlasDrawCanvasHeading('Penfield stimulation response map', 'Tap a zone or use the scenario panel to predict the patient response.', { accent: '#ea580c', title: '#7c2d12', subtitle: '#9a3412' });
 
                 var skullX = W * 0.50, skullY = H * 0.43, skullW = W * 0.34, skullH = H * 0.27;
                 ctx.save();
@@ -4829,13 +4817,13 @@ var d = labToolData.brainAtlas || {};
                   }
                 });
 
-                var stimStartX = W * 0.52, stimStartY = 74;
+                var stimStartX = W * 0.52, stimCapY = Math.max(96, H * 0.145), stimStartY = stimCapY + 38;
                 ctx.strokeStyle = '#64748b'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(stimStartX, 44); ctx.lineTo(stimStartX, stimStartY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(stimStartX, stimCapY + 15); ctx.lineTo(stimStartX, stimStartY); ctx.stroke();
                 ctx.fillStyle = '#e2e8f0'; ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.roundRect(stimStartX - 14, 34, 28, 15, 5); ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.roundRect(stimStartX - 14, stimCapY, 28, 15, 5); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = '#475569'; ctx.font = 'bold 8px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('stim', stimStartX, 45);
+                ctx.fillText('stim', stimStartX, stimCapY + 11);
 
                 ctx.strokeStyle = 'rgba(245,158,11,0.72)'; ctx.lineWidth = 2.4;
                 ctx.setLineDash([6, 6]);
@@ -4864,16 +4852,22 @@ var d = labToolData.brainAtlas || {};
                   ctx.fillText(z.label.split(' ')[0], z.x, z.y + 3);
                   ctx.restore();
 
-                  var labelX = z.x + (z.x < W * 0.50 ? -44 : 46);
-                  var labelY = z.y + (z.y < H * 0.34 ? -28 : 30);
+                  ctx.save();
+                  ctx.font = 'bold 9px Inter,system-ui,sans-serif';
+                  var zoneTitleWidth = ctx.measureText(z.label).width;
+                  ctx.font = '8px Inter,system-ui,sans-serif';
+                  var zoneSubtitleWidth = ctx.measureText(z.sub).width;
+                  ctx.restore();
+                  var labelW = Math.max(80, Math.min(118, W * 0.24, Math.max(zoneTitleWidth, zoneSubtitleWidth) + 18));
+                  var labelH = 38;
+                  var labelSide = z.x < W * 0.50 ? -1 : 1;
+                  var labelX = Math.max(labelW / 2 + 6, Math.min(W - labelW / 2 - 6, z.x + labelSide * (labelW / 2 + 14)));
+                  var labelY = Math.max(110, Math.min(H - 128, z.y + (z.y < H * 0.34 ? -30 : 32)));
                   ctx.strokeStyle = z.color + '88'; ctx.lineWidth = 1.1;
                   ctx.beginPath(); ctx.moveTo(z.x, z.y); ctx.lineTo(labelX, labelY); ctx.stroke();
                   ctx.fillStyle = '#fffaf0'; ctx.strokeStyle = z.color + '88';
-                  ctx.beginPath(); ctx.roundRect(labelX - 42, labelY - 17, 84, 31, 7); ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = '#7c2d12'; ctx.font = 'bold 9px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
-                  ctx.fillText(z.label, labelX, labelY - 3);
-                  ctx.fillStyle = '#9a3412'; ctx.font = '8px Inter,system-ui,sans-serif';
-                  ctx.fillText(z.sub, labelX, labelY + 9);
+                  ctx.beginPath(); ctx.roundRect(labelX - labelW / 2, labelY - labelH / 2, labelW, labelH, 7); ctx.fill(); ctx.stroke();
+                  brainAtlasDrawBoundedNodeLabel(labelX, labelY, labelW, labelH, z.label, z.sub, '#7c2d12', '#9a3412');
                 });
 
                 ctx.fillStyle = 'rgba(245,158,11,' + (0.18 + stimPulse * 0.24) + ')';
@@ -4884,12 +4878,17 @@ var d = labToolData.brainAtlas || {};
                 var readoutX = 30, readoutY = H - 104, readoutW = W - 60, readoutH = 47;
                 ctx.fillStyle = '#431407'; ctx.strokeStyle = '#fdba74'; ctx.lineWidth = 1.5;
                 ctx.beginPath(); ctx.roundRect(readoutX, readoutY, readoutW, readoutH, 10); ctx.fill(); ctx.stroke();
+                var readoutLeftX = readoutX + 14;
+                var readoutRightX = readoutX + readoutW - 14;
+                var readoutSplitX = readoutX + readoutW * 0.58;
                 ctx.fillStyle = '#fed7aa'; ctx.font = 'bold 9px Inter,system-ui,sans-serif'; ctx.textAlign = 'left';
-                ctx.fillText('CURRENT ELECTRODE TARGET', readoutX + 14, readoutY + 17);
+                ctx.fillText('CURRENT ELECTRODE TARGET', readoutLeftX, readoutY + 17);
                 ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px Inter,system-ui,sans-serif';
-                ctx.fillText(activeStim.target.replace(/^the /, ''), readoutX + 14, readoutY + 35);
+                var targetReadout = brainAtlasEllipsizeCanvasText(activeStim.target.replace(/^the /, ''), Math.max(70, readoutSplitX - readoutLeftX - 10));
+                ctx.fillText(targetReadout, readoutLeftX, readoutY + 35);
                 ctx.fillStyle = activeStimZone.color; ctx.textAlign = 'right'; ctx.font = 'bold 11px Inter,system-ui,sans-serif';
-                ctx.fillText(activeStimZone.label + ' -> ' + activeStimZone.sub, readoutX + readoutW - 14, readoutY + 31);
+                var responseReadout = brainAtlasEllipsizeCanvasText(activeStimZone.label + ' -> ' + activeStimZone.sub, Math.max(70, readoutRightX - readoutSplitX - 10));
+                ctx.fillText(responseReadout, readoutRightX, readoutY + 31);
 
                 [
                   ['Motor / sensory', 'move vs feel', '#22c55e'],
@@ -4900,10 +4899,7 @@ var d = labToolData.brainAtlas || {};
                   var cw = (W - 78) / 4, cx = 30 + idx * (cw + 6), cy = H - 44;
                   ctx.fillStyle = '#ffffff'; ctx.strokeStyle = card[2] + '88'; ctx.lineWidth = 1.2;
                   ctx.beginPath(); ctx.roundRect(cx, cy, cw, 27, 7); ctx.fill(); ctx.stroke();
-                  ctx.fillStyle = card[2]; ctx.font = 'bold 8px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
-                  ctx.fillText(card[0], cx + cw / 2, cy + 11);
-                  ctx.fillStyle = '#78716c'; ctx.font = '8px Inter,system-ui,sans-serif';
-                  ctx.fillText(card[1], cx + cw / 2, cy + 22);
+                  brainAtlasDrawBoundedNodeLabel(cx + cw / 2, cy + 13.5, cw - 8, 27, card[0], card[1], card[2], '#78716c');
                 });
 
                 ctx.strokeStyle = 'rgba(234,88,12,0.28)'; ctx.lineWidth = 1;
@@ -4961,7 +4957,8 @@ var d = labToolData.brainAtlas || {};
                 // Title
                 ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#334155'; ctx.textAlign = 'center';
-                ctx.fillText('Sleep Hypnogram \u2014 One Night (8 Hours)', W * 0.5, gyS - 16);
+                var sleepHeading = brainAtlasEllipsizeCanvasText('Sleep Hypnogram \u2014 One Night (8 Hours)', Math.max(100, W - 48));
+                ctx.fillText(sleepHeading, W * 0.5, gyS - 16);
 
                 // Y-axis labels
                 ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
@@ -5042,11 +5039,7 @@ var d = labToolData.brainAtlas || {};
                 // Current stage label
                 ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
                 var curLabel = curCyc.s + ' \u2014 ' + (nightProg * 8).toFixed(1) + 'h';
-                var clW = ctx.measureText(curLabel).width + 16;
-                ctx.beginPath(); ctx.roundRect(dotX - clW/2, dotY - 24, clW, 16, 4);
-                ctx.fillStyle = curCyc.c; ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-                ctx.fillText(curLabel, dotX, dotY - 12);
+                brainAtlasDrawPathLabel(dotX, dotY - 16, curLabel, curCyc.c, Math.max(76, W * 0.18));
 
                 // Cycle markers
                 ctx.font = Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
@@ -5063,19 +5056,10 @@ var d = labToolData.brainAtlas || {};
                 ctx.fillText('Cycle 1', gxS + 0.095 * gwS, gyS + ghS + 28);
 
                 // Legend
-                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                var legendY = H * 0.792;
                 var legendItems = [
                   {name:t('stem.brainatlas.awake_2', 'Awake'),c:'#94a3b8'},{name:'REM',c:'#a855f7'},{name:'N1',c:'#38bdf8'},{name:'N2',c:'#3b82f6'},{name:'N3/SWS',c:'#4338ca'}
                 ];
-                var lx = W * 0.10;
-                legendItems.forEach(function(li) {
-                  ctx.beginPath(); ctx.arc(lx, legendY, 4, 0, Math.PI * 2);
-                  ctx.fillStyle = li.c; ctx.fill();
-                  ctx.fillStyle = li.c; ctx.textAlign = 'left';
-                  ctx.fillText(li.name, lx + 7, legendY + 3);
-                  lx += ctx.measureText(li.name).width + 22;
-                });
+                brainAtlasDrawLegendGrid(W * 0.08, H * 0.782, W * 0.84, legendItems, '#475569', W * 0.24);
 
                 function sleepDecoderChip(x, y, w, title, sub, color) {
                   brainAtlasDrawDecoderChip(x, y, w, H * 0.047, title, sub, color);
@@ -5094,13 +5078,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.shadowBlur = sleepDecoderActive ? 16 : 8;
                 ctx.beginPath(); ctx.roundRect(sleepDecoderX, sleepDecoderY, sleepDecoderW, sleepDecoderH, 12); ctx.fill(); ctx.stroke();
                 ctx.shadowBlur = 0;
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(8.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText('SLEEP ARCHITECTURE DECODER', sleepDecoderX + W * 0.018, sleepDecoderY + H * 0.027);
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = Math.round(6.1 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillText('early night N3 -> late night REM; fragmentation breaks the pattern', sleepDecoderX + W * 0.330, sleepDecoderY + H * 0.027);
+                brainAtlasDrawDecoderBannerText(sleepDecoderX, sleepDecoderY, sleepDecoderW, sleepDecoderH, 'SLEEP ARCHITECTURE DECODER', 'early night N3 -> late night REM; fragmentation breaks the pattern', '#818cf8');
                 ctx.restore();
 
                 var sleepChipY = H * 0.885;
@@ -5131,9 +5109,7 @@ var d = labToolData.brainAtlas || {};
                 ];
 
                 // Title with activity mode
-                ctx.font = 'bold ' + Math.round(14 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#334155'; ctx.textAlign = 'center';
-                ctx.fillText('EEG \u2014 ' + activeEegMode.label + ' Brain Activity', W * 0.5, H * 0.04);
+                brainAtlasDrawCompactCanvasHeading('EEG \u2014 ' + activeEegMode.label + ' Brain Activity', '', { title: '#334155' });
                 canvas._eegBtnRects = [];
 
                 // Draw each EEG channel
@@ -5152,12 +5128,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.strokeStyle = band.color + '20'; ctx.lineWidth = 0.5; ctx.stroke();
 
                   // Label
-                  ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = band.color; ctx.textAlign = 'right';
-                  ctx.fillText(band.name, eMarginL - 10, yBase - 4);
-                  ctx.font = Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillStyle = band.color + '99';
-                  ctx.fillText(band.desc, eMarginL - 10, yBase + 8);
+                  brainAtlasDrawBoundedNodeLabel(eMarginL * 0.5, yBase, eMarginL - 12, eChanH * 0.72, band.name, band.desc, band.color, band.color + 'aa');
 
                   // Baseline
                   ctx.beginPath(); ctx.moveTo(eMarginL, yBase); ctx.lineTo(eMarginL + eTraceW, yBase);
@@ -5243,15 +5214,10 @@ var d = labToolData.brainAtlas || {};
                 ctx.restore();
 
                 // Title
-                ctx.font = 'bold ' + Math.round(16 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-                ctx.fillText('CROSS-LATERALIZATION', W * 0.5, H * 0.045);
-                ctx.font = Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#94a3b8';
-                ctx.fillText('Each hemisphere controls the OPPOSITE side of the body', W * 0.5, H * 0.075);
+                brainAtlasDrawCompactCanvasHeading('CROSS-LATERALIZATION', 'Each hemisphere controls the OPPOSITE side of the body', { title: '#7c3aed', subtitle: '#64748b' });
 
                 // ── Coronal brain silhouette ──
-                var brCx = W * 0.5, brCy = H * 0.32, brRx = W * 0.30, brRy = H * 0.22;
+                var brCx = W * 0.5, brCy = H * 0.33, brRx = W * 0.30, brRy = H * 0.22;
 
                 // Left hemisphere
                 ctx.save();
@@ -5321,26 +5287,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.restore();
 
                 function callosalResearchCard(x, y, w, h, title, lines, color) {
-                  ctx.save();
-                  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-                  ctx.strokeStyle = color + '88';
-                  ctx.lineWidth = 1.1;
-                  ctx.shadowColor = 'rgba(15,23,42,0.08)';
-                  ctx.shadowBlur = 7;
-                  ctx.beginPath();
-                  ctx.roundRect(x, y, w, h, 10);
-                  ctx.fill(); ctx.stroke();
-                  ctx.shadowBlur = 0;
-                  ctx.fillStyle = color;
-                  ctx.font = 'bold ' + Math.round(6.9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'left';
-                  ctx.fillText(title, x + 9, y + 16);
-                  ctx.fillStyle = '#475569';
-                  ctx.font = Math.round(6.4 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  for (var li = 0; li < lines.length; li++) {
-                    ctx.fillText(lines[li], x + 9, y + 34 + li * 15);
-                  }
-                  ctx.restore();
+                  brainAtlasDrawTeachingCard(x, y, w, h, title, lines, color, false);
                 }
 
                 callosalResearchCard(W * 0.025, H * 0.155, W * 0.150, H * 0.220, 'SPLIT-BRAIN EVIDENCE', [
@@ -5485,7 +5432,8 @@ var d = labToolData.brainAtlas || {};
                   var bx = W * 0.195;
                   var by = H * 0.550;
                   var bw = W * 0.610;
-                  var bh = H * 0.170;
+                  var bh = Math.max(96, H * 0.190);
+                  var insetHeaderH = Math.max(36, Math.min(44, bh * 0.38));
                   ctx.save();
                   ctx.fillStyle = 'rgba(255,255,255,0.94)';
                   ctx.strokeStyle = 'rgba(124,58,237,0.35)';
@@ -5496,13 +5444,16 @@ var d = labToolData.brainAtlas || {};
                   ctx.shadowBlur = 0;
                   ctx.fillStyle = '#7c3aed';
                   ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'left';
-                  ctx.fillText('FIXATION TASK', bx + 12, by + 18);
+                  ctx.textAlign = 'center';
+                  ctx.fillText('FIXATION TASK', bx + bw * 0.5, by + 14);
                   ctx.fillStyle = '#64748b';
-                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText('Callosotomy blocks transfer; intact callosum shares the cue.', bx + 94, by + 18);
+                  var insetBodyPx = Math.max(7, Math.round(6.8 * fontScale));
+                  ctx.font = insetBodyPx + 'px Inter, system-ui, sans-serif';
+                  var insetBodyLines = brainAtlasWrapCanvasLabel('Callosotomy blocks transfer; intact callosum shares the cue.', bw - 24, 2);
+                  var insetBodyLineHeight = insetBodyPx + 2;
+                  insetBodyLines.forEach(function (line, lineIndex) { ctx.fillText(line, bx + bw * 0.5, by + 25 + lineIndex * insetBodyLineHeight); });
 
-                  var sx = bx + 14, sy = by + 34, sw = bw * 0.36, sh = bh * 0.46;
+                  var sx = bx + 14, sy = by + insetHeaderH + 2, sw = bw * 0.36, sh = bh - insetHeaderH - 18;
                   ctx.fillStyle = '#f8fafc';
                   ctx.strokeStyle = '#cbd5e1';
                   ctx.lineWidth = 1;
@@ -5535,54 +5486,27 @@ var d = labToolData.brainAtlas || {};
                   ctx.fillText('right visual field', sx + sw * 0.75, sy + sh + 12);
 
                   function conditionChip(x, y, title, body, color) {
-                    ctx.save();
-                    ctx.fillStyle = color + '12';
-                    ctx.strokeStyle = color + '88';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.roundRect(x, y, bw * 0.245, bh * 0.290, 8); ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = color;
-                    ctx.font = 'bold ' + Math.round(6.4 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(title, x + 8, y + 13);
-                    ctx.fillStyle = '#334155';
-                    ctx.font = Math.round(6.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.fillText(body, x + 8, y + 28);
-                    ctx.restore();
+                    brainAtlasDrawTeachingCard(x, y, bw * 0.245, bh * 0.270, title, body, color, true);
                   }
 
                   function outcomeBox(x, y, title, body, color) {
-                    ctx.save();
-                    ctx.fillStyle = color + '10';
-                    ctx.strokeStyle = color + '88';
-                    ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.roundRect(x, y, bw * 0.245, bh * 0.370, 9); ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = color;
-                    ctx.font = 'bold ' + Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(title, x + 9, y + 16);
-                    ctx.fillStyle = '#334155';
-                    ctx.font = Math.round(6.6 * fontScale) + 'px Inter, system-ui, sans-serif';
-                    ctx.fillText(body, x + 9, y + 34);
-                    ctx.restore();
+                    brainAtlasDrawTeachingCard(x, y, bw * 0.245, bh * 0.300, title, body, color, true);
                   }
                   var ox = bx + bw * 0.435;
-                  conditionChip(ox, by + 29, 'INTACT', 'speech can name KEY', '#16a34a');
-                  conditionChip(ox + bw * 0.285, by + 29, 'CALLOSOTOMY', 'speech blocked', '#dc2626');
-                  outcomeBox(ox, by + 67, 'Speech report', 'cannot name KEY', '#7c3aed');
-                  outcomeBox(ox + bw * 0.285, by + 67, 'Left hand', 'picks KEY', '#dc2626');
+                  conditionChip(ox, by + bh * 0.260, 'INTACT', 'speech can name KEY', '#16a34a');
+                  conditionChip(ox + bw * 0.285, by + bh * 0.260, 'CALLOSOTOMY', 'speech blocked', '#dc2626');
+                  outcomeBox(ox, by + bh * 0.610, 'Speech report', 'cannot name KEY', '#7c3aed');
+                  outcomeBox(ox + bw * 0.285, by + bh * 0.610, 'Left hand', 'picks KEY', '#dc2626');
 
                   ctx.strokeStyle = '#dc2626';
                   ctx.lineWidth = 1.4;
                   ctx.setLineDash([4, 3]);
                   ctx.beginPath();
                   ctx.moveTo(sx + sw * 0.25, sy + sh * 0.50);
-                  ctx.quadraticCurveTo(bx + bw * 0.42, by + bh * 0.30, ox + bw * 0.02, by + 84);
+                  ctx.quadraticCurveTo(bx + bw * 0.42, by + bh * 0.30, ox + bw * 0.02, by + bh * 0.82);
                   ctx.stroke();
                   ctx.setLineDash([]);
-                  ctx.fillStyle = '#dc2626';
-                  ctx.font = Math.round(6.4 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText('LVF -> right hemisphere', bx + bw * 0.43, by + 62);
+                  brainAtlasDrawPathLabel(bx + bw * 0.43, by + bh * 0.60, 'LVF -> right hemisphere', '#dc2626', bw * 0.32);
                   ctx.restore();
                 }
 
@@ -5607,33 +5531,7 @@ var d = labToolData.brainAtlas || {};
                   { color: '#22c55e', label: t('stem.brainatlas.visual_optic', 'Visual (optic)') },
                   { color: '#f59e0b', label: t('stem.brainatlas.language_left_dominant', 'Language (left-dominant)') }
                 ];
-                ctx.font = Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
-                // Row 1: Motor + Sensory
-                var legRow1 = legItems.slice(0, 2);
-                var legRow1W = 0;
-                legRow1.forEach(function(li) { legRow1W += ctx.measureText(li.label).width + 30; });
-                var legX1 = (W - legRow1W) / 2;
-                var legY1 = H * 0.82;
-                legRow1.forEach(function(li) {
-                  ctx.beginPath(); ctx.arc(legX1 + 5, legY1, 4, 0, Math.PI * 2);
-                  ctx.fillStyle = li.color; ctx.fill();
-                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
-                  ctx.fillText(li.label, legX1 + 13, legY1 + 4);
-                  legX1 += ctx.measureText(li.label).width + 30;
-                });
-                // Row 2: Visual + Language
-                var legRow2 = legItems.slice(2, 4);
-                var legRow2W = 0;
-                legRow2.forEach(function(li) { legRow2W += ctx.measureText(li.label).width + 30; });
-                var legX2 = (W - legRow2W) / 2;
-                var legY2 = H * 0.86;
-                legRow2.forEach(function(li) {
-                  ctx.beginPath(); ctx.arc(legX2 + 5, legY2, 4, 0, Math.PI * 2);
-                  ctx.fillStyle = li.color; ctx.fill();
-                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
-                  ctx.fillText(li.label, legX2 + 13, legY2 + 4);
-                  legX2 += ctx.measureText(li.label).width + 30;
-                });
+                brainAtlasDrawLegendGrid(W * 0.12, H * 0.805, W * 0.76, legItems, '#94a3b8', W * 0.34);
 
                 // Body silhouette labels at bottom — pushed below legend rows
                 ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';

@@ -61,7 +61,7 @@ In this mode:
 
 - Static and local-first features work.
 - Firestore stays at the production-mode deny policy.
-- Cloud live sessions and the optional Serper search proxy are unavailable.
+- Cloud live sessions, the optional Serper search proxy, and Lumen's first-party public-page importer are unavailable.
 - No cloud AI billing credential is compiled into the app.
 
 ## 4. Optional live sessions
@@ -84,9 +84,9 @@ firebase deploy -c firebase.live-sessions.json --only firestore:rules,firestore:
 
 The rules deny session listing, isolate host and participant writes, bind chunked assets to their owner and parent session, deny retired concept-mastery data, and expire asset/signaling records through Firestore TTL. A district that requires verified teacher identity should keep live sessions disabled until Workspace sign-in or teacher custom claims are implemented.
 
-## 5. Optional authenticated search Function
+## 5. Optional authenticated web Functions
 
-This is the only Cloud Function currently supported. Node.js 22 is required for deployment.
+Two narrowly scoped Cloud Functions are supported: `searchProxy` for Serper results and `sourceFetchProxy` for Lumen's public-page import. Node.js 22 is required for deployment.
 
 1. Complete the App Check setup above.
 2. Set the server-side Serper secret:
@@ -99,10 +99,10 @@ firebase functions:secrets:set SERPER_API_KEY
 4. Deploy through the explicit optional configuration:
 
 ```bash
-firebase deploy -c firebase.functions.json --only functions:searchProxy,hosting,firestore:indexes
+firebase deploy -c firebase.functions.json --only functions:searchProxy,functions:sourceFetchProxy,hosting,firestore:indexes
 ```
 
-The proxy accepts POST only and requires both a valid Firebase ID token and App Check token. It enforces strict origins, input limits, a Firestore-backed per-user quota, capped instances, no query logging, and no-store responses.
+Both routes accept POST only and require a valid Firebase ID token plus App Check. They enforce strict origins, input limits, separate Firestore-backed per-user quotas, capped instances, and no-store responses. The page importer additionally resolves and pins public DNS answers, revalidates every redirect, blocks private/reserved targets, accepts text content only, and applies strict time and byte limits. Only `searchProxy` needs the Serper secret.
 
 Gemini Canvas does not fall back to the maintainer's Firebase proxy. It keeps its own keyless environment path.
 

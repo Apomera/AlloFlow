@@ -20,6 +20,10 @@
         "function": "searchProxy"
       },
       {
+        "source": "/api/sourceFetchProxy",
+        "function": "sourceFetchProxy"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

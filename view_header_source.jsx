@@ -109,7 +109,7 @@ function HeaderBar(props) {
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
     showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
-    showVoiceSettings, sliderFontSize, startClassSession, t,
+    showVoiceSettings, sliderFontSize, startClassSession, studentAiPolicyForShare, t,
     voiceSpeed, voiceVolume,
   } = props;
 
@@ -633,6 +633,18 @@ function HeaderBar(props) {
                         )}
                     </div>
                     <div id="tour-header-utils" className={`relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                        {!isTeacherMode && window.__alloStudentAiSetupAllowed && (
+                        <button type='button'
+                          onClick={() => setShowAIBackendModal(true)}
+                          data-help-key='header_student_ai_setup'
+                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? 'bg-emerald-600 text-white border-emerald-300' : 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50'}`}
+                          title={window.__alloStudentAiConfigured ? 'Personal AI connected for this session' : 'Connect your own AI provider for this session'}
+                          aria-label={window.__alloStudentAiConfigured ? 'Personal AI connected' : 'Set up personal AI'}
+                        >
+                          <Unplug size={14} aria-hidden='true' />
+                          <span className='hidden lg:inline'>{window.__alloStudentAiConfigured ? 'AI ready' : 'Set up AI'}</span>
+                        </button>
+                        )}
                         {isTeacherMode && (
                             <button type="button"
                                 onClick={handleSetShowHintsModalToTrue}
@@ -985,7 +997,7 @@ function HeaderBar(props) {
                                         <History size={14}/> Recent homework links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
                                       </button>
                                     </div>
-                                    <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">Teacher-prepared resources open for students with AI generation off.</p>
+                                    <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">{studentAiPolicyForShare === 'student-byok' ? 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.' : 'Teacher-prepared resources open for students with AI generation off.'}</p>
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83c\udfeb"} LMS Integration</div>
                                     {activeView === 'quiz' && !isIndependentMode && (
                                         <button type="button" role="menuitem"

@@ -1779,7 +1779,8 @@
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
         var wcNeedsThree = stemLabTool === 'waterCycle' && labToolData.waterCycle && labToolData.waterCycle.journeyView === '3d';
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer' && !wcNeedsThree)) return;
+        var weatherNeedsThree = stemLabTool === 'weatherSystems' && labToolData.weatherSystems && labToolData.weatherSystems.tab === 'immersive';
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer' && !wcNeedsThree && !weatherNeedsThree)) return;
         // THREE already present — but make sure OrbitControls came with it. This
         // early-return used to skip OrbitControls whenever THREE was cached, so a
         // 3D tool opened after the first got _threeLoaded with controls=null → the
@@ -1816,12 +1817,12 @@
         s.onerror = function () {
           console.error('[StemLab] Three.js failed to load');
           setLabToolData(function (p) {
-            return Object.assign({}, p, { _threeLoadError: 'The 3D engine could not load. The 2D Water Cycle remains available.' });
+            return Object.assign({}, p, { _threeLoadError: 'The 3D engine could not load. The accessible 2D view remains available.' });
           });
           if (typeof addToast === 'function') addToast('\u274c 3D engine failed to load', 'error');
         };
         document.head.appendChild(s);
-      }, [stemLabTab, stemLabTool, labToolData.waterCycle && labToolData.waterCycle.journeyView]);
+      }, [stemLabTab, stemLabTool, labToolData.waterCycle && labToolData.waterCycle.journeyView, labToolData.weatherSystems && labToolData.weatherSystems.tab]);
       // ── Geometry Sandbox: Scene init, render loop, shape updates (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'geoSandbox') return;

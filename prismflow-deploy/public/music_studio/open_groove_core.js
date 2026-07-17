@@ -21,6 +21,64 @@
     'Keep performance timing separate from readable notation.',
     'Use license-aware samples and user-owned recordings responsibly.'
   ];
+  var OG_INSTRUMENT_ROLE_GUIDES = {
+    bass: {
+      label: 'Bass',
+      summary: 'Anchors harmony and groove with low register roots, fifths, and passing tones.',
+      compositionTip: 'Start with the chord root on strong beats, then add stepwise motion near phrase endings.',
+      notationTip: 'Use longer values and keep leaps intentional so the line stays readable for beginners.',
+      starterPresetIds: ['warmBass', 'roundSub', 'stringBass', 'tuba', 'bassoon']
+    },
+    harmony: {
+      label: 'Harmony',
+      summary: 'Supports chords, counterlines, pads, and accompaniment textures.',
+      compositionTip: 'Write chord tones in the middle register and leave space for the lead melody.',
+      notationTip: 'Use half notes, whole notes, or repeated quarter-note patterns to show harmonic rhythm.',
+      starterPresetIds: ['classicPiano', 'harp', 'choirAh', 'violaSection', 'celloSection']
+    },
+    keys: {
+      label: 'Keys',
+      summary: 'Works well for chord progressions, rhythm comping, and classroom-friendly sketching.',
+      compositionTip: 'Try blocked chords for clarity or broken chords when the part needs motion.',
+      notationTip: 'Keep left-hand bass and right-hand chords visually separated when exporting notation.',
+      starterPresetIds: ['classicPiano', 'electricPiano', 'tonewheelOrgan', 'tapeKeys', 'harpsichord']
+    },
+    melody: {
+      label: 'Melody',
+      summary: 'Carries the main tune, call-and-response ideas, and notated motifs.',
+      compositionTip: 'Shape phrases around scale degrees 1, 3, 5, and 7, then resolve to the key center.',
+      notationTip: 'Prefer singable ranges and repeated rhythmic cells so the staff view remains teachable.',
+      starterPresetIds: ['flute', 'clarinet', 'trumpet', 'soloViolin', 'celesta']
+    },
+    lead: {
+      label: 'Lead',
+      summary: 'Cuts through a mix for hooks, riffs, and expressive synth lines.',
+      compositionTip: 'Use fewer notes than a melody line and emphasize repeated hooks or bends.',
+      notationTip: 'Mark short motives clearly; dense lead runs can be rewritten as smaller phrases.',
+      starterPresetIds: ['brightLead', 'wideUnisonLead', 'altoSax', 'tenorSax']
+    },
+    pad: {
+      label: 'Pad',
+      summary: 'Creates sustained color behind rhythm and melody without crowding the arrangement.',
+      compositionTip: 'Hold chord tones across the bar and automate filter or volume for movement.',
+      notationTip: 'Use tied whole notes or simple sustained chords for readable ensemble parts.',
+      starterPresetIds: ['softPad', 'choirAh', 'frenchHorn']
+    },
+    pluck: {
+      label: 'Pluck',
+      summary: 'Adds rhythmic sparkle, arpeggios, ostinatos, and short pitched patterns.',
+      compositionTip: 'Repeat a compact pattern, then change one note at the chord change.',
+      notationTip: 'Group short notes by beat so students can see the pulse.',
+      starterPresetIds: ['glassPluck', 'harp', 'classicalGuitar', 'harpsichord']
+    },
+    mallet: {
+      label: 'Mallets',
+      summary: 'Gives clear attacks for classroom melodies, ostinatos, and pitched percussion.',
+      compositionTip: 'Use pentatonic or stepwise motion when students need quick success.',
+      notationTip: 'Keep rhythms simple and show repeated notes as intentional pattern work.',
+      starterPresetIds: ['marimba', 'xylophone', 'vibraphone', 'fmBell', 'timpani']
+    }
+  };
   var OG_STEM_TARGETS = {
     two: ['vocals', 'accompaniment'],
     four: ['vocals', 'drums', 'bass', 'other'],
@@ -765,6 +823,111 @@
         ],
         transient: { gain: 0.08, duration: 0.014, cutoff: 6400 }
       }
+    },
+    {
+      id: 'celesta',
+      name: 'Celesta',
+      role: 'melody',
+      family: 'Mallets & Percussion',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Celesta',
+        presetId: 'celesta',
+        oscillator: 'sine',
+        filter: { type: 'highpass', cutoff: 520, q: 0.9 },
+        envelope: { attack: 0.004, decay: 0.72, sustain: 0.08, release: 1.25 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.78 },
+          { ratio: 2, type: 'triangle', gain: 0.22, detune: 3 },
+          { ratio: 4.01, type: 'sine', gain: 0.1, detune: -4 },
+          { ratio: 6.02, type: 'sine', gain: 0.04 }
+        ],
+        transient: { gain: 0.1, duration: 0.012, cutoff: 7800 }
+      }
+    },
+    {
+      id: 'harpsichord',
+      name: 'Harpsichord',
+      role: 'keys',
+      family: 'Keys',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Harpsichord',
+        presetId: 'harpsichord',
+        oscillator: 'triangle',
+        filter: { type: 'highpass', cutoff: 360, q: 0.7 },
+        envelope: { attack: 0.002, decay: 0.28, sustain: 0.14, release: 0.38 },
+        partials: [
+          { ratio: 1, type: 'triangle', gain: 0.78 },
+          { ratio: 2, type: 'sawtooth', gain: 0.2 },
+          { ratio: 3, type: 'triangle', gain: 0.12 },
+          { ratio: 4, type: 'sine', gain: 0.05 }
+        ],
+        transient: { gain: 0.18, duration: 0.01, cutoff: 7200 }
+      }
+    },
+    {
+      id: 'harp',
+      name: 'Harp',
+      role: 'harmony',
+      family: 'Plucked Strings',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Harp',
+        presetId: 'harp',
+        oscillator: 'triangle',
+        filter: { type: 'lowpass', cutoff: 5600, q: 0.9 },
+        envelope: { attack: 0.006, decay: 1.05, sustain: 0.12, release: 1.55 },
+        partials: [
+          { ratio: 1, type: 'triangle', gain: 0.84 },
+          { ratio: 2, type: 'sine', gain: 0.22 },
+          { ratio: 3, type: 'triangle', gain: 0.1 },
+          { ratio: 5, type: 'sine', gain: 0.04 }
+        ],
+        transient: { gain: 0.11, duration: 0.016, cutoff: 6200 }
+      }
+    },
+    {
+      id: 'classicalGuitar',
+      name: 'Classical Guitar',
+      role: 'harmony',
+      family: 'Plucked Strings',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Classical Guitar',
+        presetId: 'classicalGuitar',
+        oscillator: 'triangle',
+        filter: { type: 'lowpass', cutoff: 3400, q: 1.2 },
+        envelope: { attack: 0.005, decay: 0.55, sustain: 0.18, release: 0.75 },
+        partials: [
+          { ratio: 1, type: 'triangle', gain: 0.82 },
+          { ratio: 2, type: 'sine', gain: 0.18 },
+          { ratio: 3, type: 'triangle', gain: 0.08 },
+          { ratio: 4, type: 'sine', gain: 0.04 }
+        ],
+        transient: { gain: 0.16, duration: 0.014, cutoff: 4600 }
+      }
+    },
+    {
+      id: 'choirAh',
+      name: 'Choir Ah',
+      role: 'harmony',
+      family: 'Voice',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Choir Ah',
+        presetId: 'choirAh',
+        oscillator: 'sine',
+        filter: { type: 'bandpass', cutoff: 1550, q: 1.4 },
+        envelope: { attack: 0.18, decay: 0.35, sustain: 0.86, release: 1.05 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.74 },
+          { ratio: 2, type: 'triangle', gain: 0.24, detune: -3 },
+          { ratio: 3, type: 'sine', gain: 0.13, detune: 4 },
+          { ratio: 4, type: 'triangle', gain: 0.06 }
+        ],
+        unison: { voices: 5, detune: 9, spread: 0.42 }
+      }
     }
   ];
   var OG_INSTRUMENT_FAMILY_GUIDES = {
@@ -816,6 +979,20 @@
       articulations: ['single hit', 'roll', 'accent'],
       sampleNotes: ['C3', 'G3', 'C4', 'G4', 'C5'],
       classroomUse: 'Ostinatos, melodic percussion, rhythm layers, and timbre comparison.'
+    },
+    'Plucked Strings': {
+      sourceLabel: 'Built-in plucked-string model',
+      captureHint: 'Record open strings, mid-register plucks, and a few ringing chords with natural decay.',
+      articulations: ['pluck', 'arpeggio', 'harmonic'],
+      sampleNotes: ['E2', 'A2', 'D3', 'G3', 'C4', 'E4'],
+      classroomUse: 'Arpeggios, accompaniment patterns, counterpoint, and texture comparisons.'
+    },
+    Voice: {
+      sourceLabel: 'Built-in choir-like synth',
+      captureHint: 'Record sustained vowels at comfortable pitches and avoid clipping breath consonants.',
+      articulations: ['sustain', 'soft attack', 'accent'],
+      sampleNotes: ['C3', 'G3', 'C4', 'G4', 'C5'],
+      classroomUse: 'Chorale writing, harmonic listening, phrase shape, and ensemble balance.'
     }
   };
   var OG_INSTRUMENT_RANGES = {
@@ -847,7 +1024,12 @@
     timpani: { low: 'D2', high: 'A3', register: 'pitched drum' },
     marimba: { low: 'C2', high: 'C7', register: 'wooden mallet' },
     xylophone: { low: 'F3', high: 'C7', register: 'bright mallet' },
-    vibraphone: { low: 'F3', high: 'F6', register: 'metal mallet' }
+    vibraphone: { low: 'F3', high: 'F6', register: 'metal mallet' },
+    celesta: { low: 'C4', high: 'C8', register: 'bell keyboard' },
+    harpsichord: { low: 'F1', high: 'F6', register: 'plucked keyboard' },
+    harp: { low: 'C1', high: 'G7', register: 'concert harp' },
+    classicalGuitar: { low: 'E2', high: 'C6', register: 'nylon-string guitar' },
+    choirAh: { low: 'C2', high: 'C6', register: 'mixed choir' }
   };
   var OG_MELODY_PHRASE_STYLES = [
     { id: 'balanced', name: 'Balanced', density: 0.62 },
@@ -1031,6 +1213,14 @@
         { padId: 'pad_16', name: 'Room Sweep FX', engine: 'fx', durationSec: 0.52, gain: 0.66, tags: ['fx', 'classroom'] }
       ]
     }
+  ];
+
+  var OG_PROCEDURAL_VOICE_PRESETS = [
+    { id: 'tight', label: 'Tight', summary: 'Short, focused hits for fast patterns.', voice: { pitch: 1.03, brightness: 1.12, decay: 0.72, noise: 0.82, click: 1.22, body: 0.92 } },
+    { id: 'deep', label: 'Deep', summary: 'Lower body and rounder low-end weight.', voice: { pitch: 0.82, brightness: 0.78, decay: 1.08, noise: 0.68, click: 0.82, body: 1.32 } },
+    { id: 'bright', label: 'Bright', summary: 'Sharper attack and extra upper detail.', voice: { pitch: 1.1, brightness: 1.54, decay: 0.86, noise: 1.12, click: 1.42, body: 0.9 } },
+    { id: 'warm', label: 'Warm', summary: 'Softer classroom-friendly tone.', voice: { pitch: 0.96, brightness: 0.74, decay: 1.22, noise: 0.76, click: 0.74, body: 1.18 } },
+    { id: 'airy', label: 'Airy', summary: 'Longer tails for hats, cymbals, and effects.', voice: { pitch: 1, brightness: 1.25, decay: 1.48, noise: 1.28, click: 0.7, body: 0.86 } }
   ];
 
   function ogClone(value) {
@@ -1665,6 +1855,296 @@
     };
   }
 
+  function ogXmlFirstText(parent, tagName, fallback) {
+    if (!parent || !parent.getElementsByTagName) return fallback;
+    var node = parent.getElementsByTagName(tagName)[0];
+    var text = node ? String(node.textContent || '').trim() : '';
+    return text || fallback;
+  }
+
+  function ogXmlDirectChildren(parent) {
+    if (!parent || !parent.childNodes) return [];
+    return Array.prototype.slice.call(parent.childNodes).filter(function (child) {
+      return child && child.nodeType === 1;
+    });
+  }
+
+  function ogParseMusicXmlDocument(xmlText) {
+    var text = String(xmlText || '').trim();
+    if (!text) throw new Error('OpenGroove: MusicXML text is empty');
+    if (typeof DOMParser === 'undefined') throw new Error('OpenGroove: MusicXML import requires a browser XML parser');
+    var doc = new DOMParser().parseFromString(text, 'application/xml');
+    if (doc.getElementsByTagName('parsererror').length) throw new Error('OpenGroove: MusicXML could not be parsed');
+    return doc;
+  }
+
+  function ogMusicXmlPitchFromNote(noteEl, warnings) {
+    var pitchEl = noteEl && noteEl.getElementsByTagName('pitch')[0];
+    if (!pitchEl) return null;
+    var step = ogXmlFirstText(pitchEl, 'step', 'C').toUpperCase();
+    var alterRaw = Number(ogXmlFirstText(pitchEl, 'alter', '0'));
+    var octave = ogInt(ogXmlFirstText(pitchEl, 'octave', '4'), 4);
+    if (!/^[A-G]$/.test(step)) {
+      warnings.push('Skipped unsupported MusicXML step ' + step + '.');
+      return null;
+    }
+    if (!isFinite(alterRaw) || Math.round(alterRaw) !== alterRaw) {
+      warnings.push('Skipped microtonal MusicXML accidental on ' + step + octave + '.');
+      return null;
+    }
+    var alter = Math.max(-6, Math.min(6, Math.round(alterRaw)));
+    var base = OG_NOTE_SEMITONES[step];
+    var midi = (octave + 1) * 12 + base + alter;
+    if (midi < 0 || midi > 127) {
+      warnings.push('Skipped out-of-range MusicXML pitch ' + step + octave + '.');
+      return null;
+    }
+    var accidental = alter > 0 ? Array(alter + 1).join('#') : alter < 0 ? Array(Math.abs(alter) + 1).join('b') : '';
+    var spelling = step + accidental + octave;
+    var supportedSpelling = alter >= -1 && alter <= 1 && ogNoteNameToMidi(spelling) === midi;
+    var pitch = supportedSpelling ? spelling : ogMidiToNoteName(midi);
+    if (!supportedSpelling && alter !== 0) warnings.push('Imported ' + spelling + ' as ' + pitch + '.');
+    return { pitch: pitch, spelling: pitch, midi: midi };
+  }
+
+  function ogMusicXmlDurationTicks(project, durationUnits, divisions) {
+    var units = Math.max(0, ogFinite(durationUnits, 0));
+    var divs = Math.max(1, ogFinite(divisions, 1));
+    return Math.max(1, Math.round((units / divs) * ogTicksPerBeat(project)));
+  }
+
+  function ogMusicXmlTicksPerMeasure(project, timeSignature) {
+    var ts = Array.isArray(timeSignature) ? timeSignature : project && project.timeSignature;
+    var numerator = Math.max(1, ogInt(ts && ts[0], 4));
+    var denominator = Math.max(1, ogInt(ts && ts[1], 4));
+    return Math.round(ogTicksPerBeat(project) * numerator * (4 / denominator));
+  }
+
+  function ogMusicXmlTimeSignatureFromAttributes(attributesEl, fallback) {
+    var beatsText = ogXmlFirstText(attributesEl, 'beats', '');
+    var beatTypeText = ogXmlFirstText(attributesEl, 'beat-type', '');
+    if (!beatsText || !beatTypeText || beatsText.indexOf('+') >= 0 || beatTypeText.indexOf('+') >= 0) return fallback;
+    return [Math.max(1, ogInt(beatsText, fallback && fallback[0] || 4)), Math.max(1, ogInt(beatTypeText, fallback && fallback[1] || 4))];
+  }
+
+  function ogMusicXmlSameTimeSignature(a, b) {
+    return Array.isArray(a) && Array.isArray(b) && ogInt(a[0], 4) === ogInt(b[0], 4) && ogInt(a[1], 4) === ogInt(b[1], 4);
+  }
+
+  function ogMusicXmlTieState(noteEl) {
+    var state = { start: false, stop: false };
+    ['tie', 'tied'].forEach(function (tagName) {
+      Array.prototype.slice.call(noteEl && noteEl.getElementsByTagName ? noteEl.getElementsByTagName(tagName) : []).forEach(function (tieEl) {
+        var type = String(tieEl.getAttribute('type') || '').toLowerCase();
+        if (type === 'start' || type === 'continue') state.start = true;
+        if (type === 'stop' || type === 'continue') state.stop = true;
+      });
+    });
+    return state;
+  }
+
+  function ogMusicXmlNodeName(node) {
+    return String(node && (node.localName || node.nodeName) || '').toLowerCase();
+  }
+
+  function ogFindMusicXmlPartMeasures(doc, partId) {
+    var root = doc && doc.documentElement;
+    var rootName = ogMusicXmlNodeName(root);
+    var selectedId = partId ? String(partId) : '';
+    if (rootName === 'score-timewise') {
+      var timeMeasures = ogXmlDirectChildren(root).filter(function (child) { return ogMusicXmlNodeName(child) === 'measure'; });
+      if (!selectedId) {
+        timeMeasures.some(function (measure) {
+          var firstPart = ogXmlDirectChildren(measure).filter(function (child) { return ogMusicXmlNodeName(child) === 'part'; })[0];
+          selectedId = firstPart && String(firstPart.getAttribute('id') || '') || '';
+          return !!selectedId;
+        });
+      }
+      var foundSelectedPart = false;
+      var partMeasures = timeMeasures.map(function (measure) {
+        var parts = ogXmlDirectChildren(measure).filter(function (child) { return ogMusicXmlNodeName(child) === 'part'; });
+        var match = selectedId
+          ? parts.filter(function (part) { return String(part.getAttribute('id') || '') === selectedId; })[0]
+          : parts[0];
+        if (match) foundSelectedPart = true;
+        return match || null;
+      });
+      return foundSelectedPart ? { id: selectedId || 'P1', measures: partMeasures, format: 'timewise' } : null;
+    }
+    var parts = Array.prototype.slice.call(doc.getElementsByTagName('part'));
+    if (!parts.length) return null;
+    var part = selectedId
+      ? parts.filter(function (candidate) { return String(candidate.getAttribute('id') || '') === selectedId; })[0]
+      : parts[0];
+    if (!part) return null;
+    return {
+      id: String(part.getAttribute('id') || selectedId || 'P1'),
+      measures: Array.prototype.slice.call(part.getElementsByTagName('measure')),
+      format: 'partwise'
+    };
+  }
+
+  function ogParseMusicXmlInput(xmlText, project, options) {
+    options = options || {};
+    var doc = ogParseMusicXmlDocument(xmlText);
+    var partInfo = ogFindMusicXmlPartMeasures(doc, options.partId);
+    if (!partInfo) throw new Error('OpenGroove: MusicXML part not found');
+    var measures = partInfo.measures || [];
+    var projectMeasureTicks = ogTicksPerMeasure(project);
+    var startBar = Math.max(0, ogInt(options.startBar, 0));
+    var velocity = ogNormalizeVelocity(options.velocity == null ? 0.76 : options.velocity);
+    var divisions = 1;
+    var events = [];
+    var warnings = [];
+    var currentTimeSignature = Array.isArray(project && project.timeSignature) ? project.timeSignature.slice(0, 2) : [4, 4];
+    var currentMeasureTicks = ogMusicXmlTicksPerMeasure(project, currentTimeSignature);
+    var importedTimeSignature = null;
+    var warnedTimeChange = false;
+    var originTick = startBar * projectMeasureTicks;
+    var cursor = originTick;
+    var endTick = cursor;
+    var activeTies = {};
+    var tieMergeCount = 0;
+    measures.forEach(function (measure) {
+      var measureStart = cursor;
+      var measureTicksForThisMeasure = currentMeasureTicks;
+      cursor = measureStart;
+      var lastNoteStart = measureStart;
+      ogXmlDirectChildren(measure).forEach(function (child) {
+        var name = String(child.localName || child.nodeName || '').toLowerCase();
+        if (name === 'attributes') {
+          divisions = Math.max(1, ogFinite(ogXmlFirstText(child, 'divisions', divisions), divisions));
+          var nextTimeSignature = ogMusicXmlTimeSignatureFromAttributes(child, currentTimeSignature);
+          if (!ogMusicXmlSameTimeSignature(nextTimeSignature, currentTimeSignature)) {
+            if (!importedTimeSignature) importedTimeSignature = nextTimeSignature.slice(0, 2);
+            else if (!ogMusicXmlSameTimeSignature(nextTimeSignature, importedTimeSignature) && !warnedTimeChange) {
+              warnings.push('Imported score has time signature changes; Open Groove uses the first imported signature for display.');
+              warnedTimeChange = true;
+            }
+            currentTimeSignature = nextTimeSignature.slice(0, 2);
+            measureTicksForThisMeasure = ogMusicXmlTicksPerMeasure(project, currentTimeSignature);
+            currentMeasureTicks = measureTicksForThisMeasure;
+          }
+          return;
+        }
+        if (name === 'backup' || name === 'forward') {
+          var moveTicks = ogMusicXmlDurationTicks(project, ogXmlFirstText(child, 'duration', '0'), divisions);
+          cursor = name === 'backup' ? Math.max(measureStart, cursor - moveTicks) : cursor + moveTicks;
+          endTick = Math.max(endTick, cursor);
+          return;
+        }
+        if (name !== 'note') return;
+        var durationTicks = ogMusicXmlDurationTicks(project, ogXmlFirstText(child, 'duration', divisions), divisions);
+        var isChord = child.getElementsByTagName('chord').length > 0;
+        var startTick = isChord ? lastNoteStart : cursor;
+        if (child.getElementsByTagName('rest').length) {
+          if (!isChord) cursor += durationTicks;
+          endTick = Math.max(endTick, cursor);
+          return;
+        }
+        var pitchInfo = ogMusicXmlPitchFromNote(child, warnings);
+        var pitch = pitchInfo && pitchInfo.pitch;
+        var midi = pitchInfo && pitchInfo.midi;
+        var tieState = ogMusicXmlTieState(child);
+        var voice = ogXmlFirstText(child, 'voice', '1');
+        var tieKey = pitch + '|' + voice;
+        if (midi == null) {
+          warnings.push('Skipped unsupported MusicXML note.');
+        } else if (tieState.stop && activeTies[tieKey]) {
+          var tiedEvent = activeTies[tieKey];
+          tieMergeCount += 1;
+          var tiedDuration = Math.max(tiedEvent.durationTicks, startTick + durationTicks - tiedEvent.startTick);
+          tiedEvent.durationTicks = tiedDuration;
+          tiedEvent.notationDurationTicks = tiedDuration;
+          tiedEvent.tie = Object.assign({}, tiedEvent.tie || {}, {
+            imported: true,
+            start: true,
+            stop: !tieState.start,
+            segments: Math.max(2, ogInt(tiedEvent.tie && tiedEvent.tie.segments, 1) + 1)
+          });
+          if (!tieState.start) delete activeTies[tieKey];
+          lastNoteStart = startTick;
+        } else {
+          if (tieState.stop) warnings.push('Started ' + pitch + ' because a MusicXML tie stop had no matching imported start.');
+          var noteEvent = {
+            type: 'note',
+            pitch: pitch,
+            spelling: pitchInfo.spelling || pitch,
+            midi: midi,
+            startTick: startTick,
+            durationTicks: durationTicks,
+            notationStartTick: startTick,
+            notationDurationTicks: durationTicks,
+            velocity: velocity,
+            role: 'notation',
+            source: 'musicXmlImport'
+          };
+          if (tieState.start || tieState.stop) noteEvent.tie = { imported: true, start: tieState.start, stop: tieState.stop, segments: 1 };
+          events.push(noteEvent);
+          if (tieState.start) activeTies[tieKey] = noteEvent;
+          lastNoteStart = startTick;
+        }
+        if (!isChord) cursor += durationTicks;
+        endTick = Math.max(endTick, cursor, startTick + durationTicks);
+      });
+      endTick = Math.max(endTick, measureStart + measureTicksForThisMeasure);
+      cursor = measureStart + measureTicksForThisMeasure;
+    });
+    return {
+      events: events,
+      warnings: warnings,
+      startTick: originTick,
+      endTick: endTick,
+      measureCount: measures.length,
+      noteCount: events.length,
+      tieMergeCount: tieMergeCount,
+      timeSignature: importedTimeSignature,
+      partId: partInfo.id || 'P1'
+    };
+  }
+
+  function ogImportMusicXmlSketch(project, patternId, trackId, xmlText, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    if (!pattern) throw new Error('OpenGroove: pattern not found');
+    var track = ogFindTrack(project, trackId);
+    if (!track || track.type !== 'synth') throw new Error('OpenGroove: synth track not found');
+    var parsed = ogParseMusicXmlInput(xmlText, project, options);
+    if (parsed.timeSignature && options.applyTimeSignature !== false) {
+      project.timeSignature = parsed.timeSignature.slice(0, 2);
+    }
+    if (options.resize !== false && parsed.measureCount) {
+      pattern.bars = Math.max(1, ogInt(pattern.bars, 1), Math.max(1, ogInt(options.startBar, 0) + parsed.measureCount));
+    }
+    var patternLength = ogPatternLengthTicks(project, pattern);
+    var replaceEnd = Math.min(patternLength, Math.max(parsed.endTick, parsed.startTick + ogTicksPerMeasure(project)));
+    if (options.replace !== false) {
+      pattern.events = (pattern.events || []).filter(function (event) {
+        return !(event.type === 'note' && event.trackId === trackId && event.startTick >= parsed.startTick && event.startTick < replaceEnd);
+      });
+    }
+    var created = parsed.events.filter(function (event) {
+      return event.startTick < patternLength;
+    }).map(function (event) {
+      var durationTicks = Math.max(1, Math.min(event.durationTicks, patternLength - event.startTick));
+      return ogAppendEvent(project, pattern.id, Object.assign({}, event, {
+        trackId: trackId,
+        durationTicks: durationTicks,
+        notationDurationTicks: durationTicks
+      }));
+    });
+    return {
+      events: created,
+      noteCount: created.length,
+      warnings: parsed.warnings,
+      startTick: parsed.startTick,
+      endTick: parsed.endTick,
+      measureCount: parsed.measureCount,
+      tieMergeCount: parsed.tieMergeCount,
+      timeSignature: parsed.timeSignature,
+      partId: parsed.partId
+    };
+  }
   function ogDiatonicIndexFromPitch(pitch) {
     var parsed = ogParsePitchSpelling(pitch);
     var steps = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
@@ -1679,6 +2159,32 @@
     if (ratio >= 0.75) return 'quarter';
     if (ratio >= 0.375) return 'eighth';
     return 'sixteenth';
+  }
+
+  function ogNormalizeStaffClef(clefLike) {
+    var clef = ogSafeString(clefLike, 'treble').toLowerCase();
+    return clef === 'bass' ? 'bass' : 'treble';
+  }
+
+  function ogInferStaffClef(project, trackId, options) {
+    options = options || {};
+    var requested = ogSafeString(options.clef, 'auto').toLowerCase();
+    if (requested === 'treble' || requested === 'bass') return requested;
+    var track = ogFindTrack(project, trackId);
+    var presetId = options.presetId || track && track.instrument && track.instrument.presetId || '';
+    var range = ogBuildInstrumentRange(presetId);
+    if (!range) return 'treble';
+    var center = (range.lowMidi + range.highMidi) / 2;
+    return center < 60 ? 'bass' : 'treble';
+  }
+
+  function ogStaffBottomLineIndex(clefLike) {
+    var clef = ogNormalizeStaffClef(clefLike);
+    return clef === 'bass' ? 2 * 7 + 4 : 4 * 7 + 2; // Bass G2 or treble E4.
+  }
+
+  function ogStaffClefLabel(clefLike) {
+    return ogNormalizeStaffClef(clefLike) === 'bass' ? 'Bass' : 'Treble';
   }
 
   function ogStaffLedgerLines(y, geometry) {
@@ -1715,7 +2221,8 @@
     var stepY = lineSpacing / 2;
     var bars = Math.max(1, ogInt(pattern.bars, 1));
     var measureWidth = (width - left - right) / bars;
-    var bottomLineIndex = 4 * 7 + 2; // E4 on treble staff.
+    var clef = ogInferStaffClef(project, options.trackId, options);
+    var bottomLineIndex = ogStaffBottomLineIndex(clef);
     var slotsPerMeasure = Math.max(4, ogInt(options.slotsPerMeasure, 8));
     var geometry = {
       width: width,
@@ -1728,7 +2235,8 @@
       stepY: stepY,
       measureWidth: measureWidth,
       noteHeadWidth: 10,
-      noteHeadHeight: 7
+      noteHeadHeight: 7,
+      bottomLineIndex: bottomLineIndex
     };
 
     function xForTick(barIndex, tickInMeasure) {
@@ -1784,7 +2292,8 @@
     return {
       width: width,
       height: height,
-      clef: 'treble',
+      clef: clef,
+      clefLabel: ogStaffClefLabel(clef),
       keyName: preview.keyName,
       timeSignature: [beatsPerMeasure, Math.max(1, ogInt(ts[1], 4))],
       slotsPerMeasure: slotsPerMeasure,
@@ -1913,18 +2422,49 @@
     });
   }
 
+  function ogNormalizeInstrumentRole(roleLike) {
+    var role = ogSafeString(roleLike, 'instrument').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (role === 'keyboard' || role === 'chord' || role === 'chords') role = 'keys';
+    if (role === 'plucked' || role === 'plucked-strings') role = 'pluck';
+    if (role === 'mallets' || role === 'pitched-percussion') role = 'mallet';
+    return role || 'instrument';
+  }
+
+  function ogInstrumentRoleFallback(role) {
+    var label = ogSafeString(role, 'Instrument').replace(/-/g, ' ').replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
+    return {
+      label: label,
+      summary: 'Use this patch role as a focused part in the arrangement.',
+      compositionTip: 'Choose a register that leaves room for the other active parts.',
+      notationTip: 'Keep the rhythm clear and repeatable so the staff remains easy to read.',
+      starterPresetIds: []
+    };
+  }
+
+  function ogInstrumentRoleOrder(role) {
+    var order = ['bass', 'harmony', 'keys', 'melody', 'lead', 'pad', 'pluck', 'mallet'];
+    var index = order.indexOf(ogNormalizeInstrumentRole(role));
+    return index < 0 ? order.length : index;
+  }
+
   function ogBuildInstrumentProfile(presetId) {
     var preset = ogGetSynthPatchPreset(presetId);
     if (!preset) return null;
     var family = ogSafeString(preset.family, 'Synth');
+    var role = ogNormalizeInstrumentRole(preset.role || 'instrument');
     var guide = OG_INSTRUMENT_FAMILY_GUIDES[family] || OG_INSTRUMENT_FAMILY_GUIDES.Synth;
+    var roleGuide = OG_INSTRUMENT_ROLE_GUIDES[role] || ogInstrumentRoleFallback(role);
     var range = OG_INSTRUMENT_RANGES[preset.id] || { low: 'C3', high: 'C5', register: 'classroom range' };
     var rangeLabel = range.low + '-' + range.high;
     return {
       presetId: preset.id,
       name: preset.name,
       family: family,
-      role: ogSafeString(preset.role, 'instrument'),
+      role: role,
+      roleLabel: roleGuide.label,
+      roleSummary: roleGuide.summary,
+      compositionTip: roleGuide.compositionTip,
+      notationTip: roleGuide.notationTip,
       sourceType: ogSafeString(preset.sourceType, 'synth'),
       sourceLabel: guide.sourceLabel,
       lowNote: range.low,
@@ -1938,14 +2478,306 @@
         recommendedNotes: ogClone(guide.sampleNotes || []),
         storageHint: 'User recordings and open-license packs can be layered later without changing the composition.'
       },
-      label: preset.name + ' / ' + family + ' / ' + rangeLabel
+      label: preset.name + ' / ' + family + ' / ' + roleGuide.label + ' / ' + rangeLabel
     };
   }
 
-  function ogListInstrumentProfiles() {
+  function ogListInstrumentProfiles(options) {
+    options = options || {};
+    var roleFilter = options.role ? ogNormalizeInstrumentRole(options.role) : '';
+    var familyFilter = options.family ? ogSafeString(options.family, '') : '';
     return ogListSynthPatchPresets().map(function (preset) {
       return ogBuildInstrumentProfile(preset.id);
-    }).filter(Boolean);
+    }).filter(function (profile) {
+      if (!profile) return false;
+      if (roleFilter && profile.role !== roleFilter) return false;
+      if (familyFilter && profile.family !== familyFilter) return false;
+      return true;
+    });
+  }
+
+  function ogBuildInstrumentRoleGuide(roleLike) {
+    var role = ogNormalizeInstrumentRole(roleLike);
+    var guide = OG_INSTRUMENT_ROLE_GUIDES[role] || ogInstrumentRoleFallback(role);
+    var profiles = ogListInstrumentProfiles({ role: role });
+    return {
+      role: role,
+      label: guide.label,
+      summary: guide.summary,
+      compositionTip: guide.compositionTip,
+      notationTip: guide.notationTip,
+      starterPresetIds: ogClone(guide.starterPresetIds || []),
+      presetCount: profiles.length,
+      presets: profiles.map(function (profile) {
+        return {
+          presetId: profile.presetId,
+          name: profile.name,
+          family: profile.family,
+          rangeLabel: profile.rangeLabel,
+          register: profile.register
+        };
+      })
+    };
+  }
+
+  function ogListInstrumentRoleGuides(options) {
+    options = options || {};
+    var roles = {};
+    ogListSynthPatchPresets().forEach(function (preset) {
+      roles[ogNormalizeInstrumentRole(preset.role || 'instrument')] = true;
+    });
+    if (options.includeEmpty) {
+      Object.keys(OG_INSTRUMENT_ROLE_GUIDES).forEach(function (role) { roles[role] = true; });
+    }
+    return Object.keys(roles).sort(function (a, b) {
+      var orderA = ogInstrumentRoleOrder(a);
+      var orderB = ogInstrumentRoleOrder(b);
+      return orderA - orderB || a.localeCompare(b);
+    }).map(function (role) {
+      return ogBuildInstrumentRoleGuide(role);
+    }).filter(function (guide) {
+      return options.includeEmpty || guide.presetCount > 0;
+    });
+  }
+
+  function ogBuildInstrumentRange(presetId) {
+    var profile = ogBuildInstrumentProfile(presetId);
+    if (!profile) return null;
+    var lowMidi = ogNoteNameToMidi(profile.lowNote);
+    var highMidi = ogNoteNameToMidi(profile.highNote);
+    if (lowMidi == null || highMidi == null) return null;
+    return {
+      presetId: profile.presetId,
+      name: profile.name,
+      family: profile.family,
+      role: profile.role,
+      roleLabel: profile.roleLabel,
+      lowNote: profile.lowNote,
+      highNote: profile.highNote,
+      lowMidi: lowMidi,
+      highMidi: highMidi,
+      rangeLabel: profile.rangeLabel,
+      register: profile.register,
+      label: profile.name + ' playable range ' + profile.rangeLabel
+    };
+  }
+
+  function ogBuildPlayablePitchPalette(project, presetId, options) {
+    options = options || {};
+    var range = ogBuildInstrumentRange(presetId);
+    var lowMidi = range ? range.lowMidi : ogNoteNameToMidi(options.lowNote || 'C4');
+    var highMidi = range ? range.highMidi : ogNoteNameToMidi(options.highNote || 'C6');
+    if (lowMidi == null) lowMidi = 60;
+    if (highMidi == null) highMidi = 84;
+    if (lowMidi > highMidi) {
+      var tmp = lowMidi;
+      lowMidi = highMidi;
+      highMidi = tmp;
+    }
+    var key = project && project.key || {};
+    var scale = ogBuildScale(key.tonic || 'C', key.mode || 'minor');
+    var scalePcs = {};
+    scale.forEach(function (note) {
+      var midi = ogNoteNameToMidi(note + '4');
+      if (midi != null) scalePcs[midi % 12] = true;
+    });
+    var preferScale = options.preferScale === false ? false : true;
+    var candidates = [];
+    for (var midiValue = lowMidi; midiValue <= highMidi; midiValue++) {
+      var inKey = !!scalePcs[midiValue % 12];
+      if (!preferScale || inKey) candidates.push({ midi: midiValue, inKey: inKey });
+    }
+    if (!candidates.length) {
+      for (var chromatic = lowMidi; chromatic <= highMidi; chromatic++) {
+        candidates.push({ midi: chromatic, inKey: !!scalePcs[chromatic % 12] });
+      }
+    }
+    var maxCount = Math.max(4, Math.min(48, ogInt(options.maxCount, 24)));
+    var centerMidi = options.centerMidi != null ? Number(options.centerMidi) : ogNoteNameToMidi(options.centerPitch || '');
+    if (!isFinite(centerMidi)) centerMidi = Math.round((lowMidi + highMidi) / 2);
+    if (candidates.length > maxCount) {
+      candidates = candidates.slice().sort(function (a, b) {
+        return Math.abs(a.midi - centerMidi) - Math.abs(b.midi - centerMidi) || a.midi - b.midi;
+      }).slice(0, maxCount).sort(function (a, b) { return a.midi - b.midi; });
+    }
+    var direction = options.direction === 'ascending' ? 'ascending' : 'descending';
+    if (direction === 'descending') candidates = candidates.slice().reverse();
+    var pitchEntries = candidates.map(function (entry) {
+      return {
+        pitch: ogMidiToNoteName(entry.midi),
+        midi: entry.midi,
+        inKey: entry.inKey,
+        inRange: entry.midi >= lowMidi && entry.midi <= highMidi
+      };
+    });
+    return {
+      available: !!range,
+      presetId: range && range.presetId || null,
+      instrumentName: range && range.name || 'Default staff',
+      rangeLabel: range ? range.rangeLabel : ogMidiToNoteName(lowMidi) + '-' + ogMidiToNoteName(highMidi),
+      lowMidi: lowMidi,
+      highMidi: highMidi,
+      keyName: (key.tonic || 'C') + ' ' + ogModeDisplayName(key.mode || 'minor'),
+      scale: scale,
+      maxCount: maxCount,
+      pitches: pitchEntries,
+      pitchNames: pitchEntries.map(function (entry) { return entry.pitch; })
+    };
+  }
+
+  function ogBuildInstrumentRangeReport(project, patternId, trackId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    var track = ogFindTrack(project, trackId);
+    var presetId = options.presetId || track && track.instrument && track.instrument.presetId || '';
+    var range = ogBuildInstrumentRange(presetId);
+    var empty = {
+      available: false,
+      trackId: trackId || null,
+      presetId: presetId || null,
+      instrumentName: track && track.name || 'Instrument',
+      rangeLabel: '',
+      noteCount: 0,
+      inRangeCount: 0,
+      outOfRangeCount: 0,
+      belowCount: 0,
+      aboveCount: 0,
+      notes: [],
+      outOfRangeNotes: [],
+      summary: 'Choose a profiled instrument preset to check playable range.'
+    };
+    if (!track || !pattern || !range) return empty;
+    var notes = [];
+    var outOfRangeNotes = [];
+    var belowCount = 0;
+    var aboveCount = 0;
+    (pattern.events || []).forEach(function (event) {
+      if (!event || event.type !== 'note' || event.trackId !== track.id) return;
+      var midi = event.midi != null ? Number(event.midi) : ogNoteNameToMidi(event.pitch || event.spelling);
+      if (!isFinite(midi)) return;
+      midi = Math.round(midi);
+      var status = 'in-range';
+      var semitonesOutside = 0;
+      if (midi < range.lowMidi) {
+        status = 'below-range';
+        semitonesOutside = range.lowMidi - midi;
+        belowCount += 1;
+      } else if (midi > range.highMidi) {
+        status = 'above-range';
+        semitonesOutside = midi - range.highMidi;
+        aboveCount += 1;
+      }
+      var entry = {
+        id: event.id,
+        pitch: event.notation && event.notation.spelling || event.pitch || ogMidiToNoteName(midi),
+        midi: midi,
+        status: status,
+        semitonesOutside: semitonesOutside,
+        startTick: ogInt(event.startTick, 0),
+        notationStartTick: event.notation && event.notation.startTick != null ? ogInt(event.notation.startTick, 0) : ogInt(event.startTick, 0),
+        durationTicks: ogInt(event.durationTicks, 0)
+      };
+      notes.push(entry);
+      if (status !== 'in-range') outOfRangeNotes.push(entry);
+    });
+    notes.sort(function (a, b) { return a.notationStartTick - b.notationStartTick || a.midi - b.midi; });
+    outOfRangeNotes.sort(function (a, b) { return a.notationStartTick - b.notationStartTick || a.midi - b.midi; });
+    var outCount = outOfRangeNotes.length;
+    var summary = notes.length
+      ? outCount ? outCount + ' of ' + notes.length + ' notes are outside ' + range.name + ' range.' : 'All ' + notes.length + ' notes fit ' + range.name + ' range.'
+      : 'No synth notes to check for ' + range.name + '.';
+    return {
+      available: true,
+      trackId: track.id,
+      presetId: range.presetId,
+      instrumentName: range.name,
+      family: range.family,
+      role: range.role,
+      roleLabel: range.roleLabel,
+      lowNote: range.lowNote,
+      highNote: range.highNote,
+      lowMidi: range.lowMidi,
+      highMidi: range.highMidi,
+      rangeLabel: range.rangeLabel,
+      register: range.register,
+      noteCount: notes.length,
+      inRangeCount: notes.length - outCount,
+      outOfRangeCount: outCount,
+      belowCount: belowCount,
+      aboveCount: aboveCount,
+      notes: notes,
+      outOfRangeNotes: outOfRangeNotes,
+      summary: summary
+    };
+  }
+
+  function ogFitMidiToInstrumentRange(midiLike, range) {
+    var original = Number(midiLike);
+    if (!isFinite(original) || !range) return null;
+    original = Math.round(original);
+    var target = original;
+    if (target < range.lowMidi) {
+      while (target < range.lowMidi && target + 12 <= range.highMidi) target += 12;
+    }
+    if (target > range.highMidi) {
+      while (target > range.highMidi && target - 12 >= range.lowMidi) target -= 12;
+    }
+    if (target < range.lowMidi) target = range.lowMidi;
+    if (target > range.highMidi) target = range.highMidi;
+    return {
+      originalMidi: original,
+      midi: target,
+      changed: target !== original,
+      semitones: target - original,
+      pitch: ogMidiToNoteName(target)
+    };
+  }
+
+  function ogFitTrackNotesToInstrumentRange(project, patternId, trackId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    var track = ogFindTrack(project, trackId);
+    var beforeReport = ogBuildInstrumentRangeReport(project, patternId, trackId, options);
+    var result = {
+      available: beforeReport.available,
+      trackId: trackId || null,
+      presetId: beforeReport.presetId || null,
+      instrumentName: beforeReport.instrumentName || 'Instrument',
+      changedCount: 0,
+      changes: [],
+      beforeReport: beforeReport,
+      afterReport: beforeReport,
+      summary: beforeReport.available ? 'No notes needed range fitting.' : beforeReport.summary
+    };
+    if (!pattern || !track || !beforeReport.available) return result;
+    var range = ogBuildInstrumentRange(options.presetId || track.instrument && track.instrument.presetId || beforeReport.presetId);
+    if (!range) return result;
+    (pattern.events || []).forEach(function (event) {
+      if (!event || event.type !== 'note' || event.trackId !== track.id) return;
+      var originalMidi = event.midi != null ? Number(event.midi) : ogNoteNameToMidi(event.pitch || event.spelling);
+      var fit = ogFitMidiToInstrumentRange(originalMidi, range);
+      if (!fit || !fit.changed) return;
+      var previousPitch = event.notation && event.notation.spelling || event.pitch || ogMidiToNoteName(fit.originalMidi);
+      event.midi = fit.midi;
+      event.pitch = fit.pitch;
+      if (event.notation) event.notation.spelling = fit.pitch;
+      result.changes.push({
+        id: event.id,
+        fromPitch: previousPitch,
+        toPitch: fit.pitch,
+        fromMidi: fit.originalMidi,
+        toMidi: fit.midi,
+        semitones: fit.semitones,
+        startTick: ogInt(event.startTick, 0),
+        notationStartTick: event.notation && event.notation.startTick != null ? ogInt(event.notation.startTick, 0) : ogInt(event.startTick, 0)
+      });
+    });
+    result.changedCount = result.changes.length;
+    result.afterReport = ogBuildInstrumentRangeReport(project, patternId, trackId, options);
+    result.summary = result.changedCount
+      ? result.changedCount + ' note' + (result.changedCount === 1 ? '' : 's') + ' moved into ' + range.name + ' range.'
+      : 'All notes already fit ' + range.name + ' range.';
+    return result;
   }
 
   function ogGetSynthPatchPreset(presetId) {
@@ -2846,15 +3678,21 @@
     });
   }
 
-  function ogBuildMusicXmlSketch(project, patternId, trackId) {
+  function ogBuildMusicXmlSketch(project, patternId, trackId, options) {
+    options = options || {};
     var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
     var track = ogFindTrack(project, trackId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
     var preview = ogBuildNotationPreview(project, pattern.id);
     var ts = Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
+    var clef = ogInferStaffClef(project, trackId, options);
+    var clefSign = clef === 'bass' ? 'F' : 'G';
+    var clefLine = clef === 'bass' ? 4 : 2;
     var lines = [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<score-partwise version="3.1">',
+      '  <work><work-title>' + ogEscapeXml(project && project.title || 'Open Groove Sketch') + '</work-title></work>',
+      '  <identification><creator type="software">Open Groove Studio</creator></identification>',
       '  <part-list>',
       '    <score-part id="P1"><part-name>' + ogEscapeXml(track && track.name || 'Open Groove Track') + '</part-name></score-part>',
       '  </part-list>',
@@ -2867,7 +3705,7 @@
         lines.push('        <divisions>' + ogTicksPerBeat(project) + '</divisions>');
         lines.push('        <key><fifths>0</fifths></key>');
         lines.push('        <time><beats>' + ogInt(ts[0], 4) + '</beats><beat-type>' + ogInt(ts[1], 4) + '</beat-type></time>');
-        lines.push('        <clef><sign>G</sign><line>2</line></clef>');
+        lines.push('        <clef><sign>' + clefSign + '</sign><line>' + clefLine + '</line></clef>');
         lines.push('      </attributes>');
       }
       var notes = measure.notes.filter(function (note) { return !trackId || note.trackId === trackId; });
@@ -3627,6 +4465,8 @@
     var phraseId = ogSafeString(options.phraseId, 'melody-' + style.id + '-' + (startBar + 1));
     var pool = ogBuildScaleMidiPool(project, octave);
     var scale = ogBuildScale(project && project.key && project.key.tonic || 'C', project && project.key && project.key.mode || 'minor');
+    var instrumentRange = options.fitToInstrumentRange === false ? null : ogBuildInstrumentRange(options.presetId || track.instrument && track.instrument.presetId || '');
+    var rangeFitChanges = [];
     var chordEvents = (pattern.events || []).filter(function (event) {
       return event.type === 'chord' && event.startTick < endTick && event.startTick + ogInt(event.durationTicks, measureTicks) > startTick;
     });
@@ -3674,13 +4514,28 @@
       var chord = chordAt(phraseTick);
       var chordTone = ogNearestPitchFromClasses(pool, ogChordPitchClasses(chord, octave), midi);
       if ((localStep === 0 || localStep === Math.floor(stepsPerBar / 2)) && chordTone != null) midi = chordTone;
+      if (instrumentRange) {
+        var fit = ogFitMidiToInstrumentRange(midi, instrumentRange);
+        if (fit && fit.changed) {
+          rangeFitChanges.push({
+            step: step,
+            fromPitch: ogMidiToNoteName(fit.originalMidi),
+            toPitch: fit.pitch,
+            fromMidi: fit.originalMidi,
+            toMidi: fit.midi,
+            semitones: fit.semitones
+          });
+          midi = fit.midi;
+        }
+      }
+      var pitchName = ogMidiToNoteName(midi);
       var durationSteps = style.id === 'sparse' ? 2 : localStep >= stepsPerBar - 2 ? 1 : 1 + Math.floor(ogSeededUnit(seed + ':dur:' + step) * 2);
       var durationTicks = Math.min(endTick - phraseTick, durationSteps * stepTicks);
       created.push(ogAppendEvent(project, pattern.id, {
         type: 'note',
         trackId: trackId,
-        pitch: ogMidiToNoteName(midi),
-        spelling: ogMidiToNoteName(midi),
+        pitch: pitchName,
+        spelling: pitchName,
         startTick: phraseTick,
         durationTicks: durationTicks,
         velocity: velocity,
@@ -3701,6 +4556,9 @@
       stepsPerBar: stepsPerBar,
       scale: scale,
       noteCount: created.length,
+      rangeFitCount: rangeFitChanges.length,
+      rangeFitChanges: rangeFitChanges,
+      instrumentRange: instrumentRange ? ogClone(instrumentRange) : null,
       events: created
     };
   }
@@ -3810,6 +4668,52 @@
       body: ogClamp(voiceLike.body, 0, 2, 1)
     };
   }
+
+  function ogDescribeProceduralVoice(voiceLike) {
+    var voice = ogNormalizeProceduralVoice(voiceLike || {});
+    function band(value, low, high, lowLabel, midLabel, highLabel) {
+      if (value < low) return lowLabel;
+      if (value > high) return highLabel;
+      return midLabel;
+    }
+    var fields = [
+      { id: 'register', label: 'Register', value: band(voice.pitch, 0.92, 1.12, 'Low', 'Center', 'High') },
+      { id: 'timbre', label: 'Timbre', value: band(voice.brightness, 0.85, 1.25, 'Warm', 'Balanced', 'Bright') },
+      { id: 'envelope', label: 'Envelope', value: band(voice.decay, 0.85, 1.2, 'Tight', 'Medium', 'Long') },
+      { id: 'texture', label: 'Texture', value: band(voice.noise, 0.75, 1.2, 'Clean', 'Textured', 'Airy') },
+      { id: 'transient', label: 'Transient', value: band(voice.click, 0.82, 1.2, 'Soft', 'Defined', 'Punchy') },
+      { id: 'body', label: 'Body', value: band(voice.body, 0.88, 1.16, 'Lean', 'Balanced', 'Full') }
+    ];
+    return {
+      character: voice.character,
+      kitId: voice.kitId,
+      kitName: voice.kitName,
+      summary: fields.map(function (field) { return field.value; }).join(' / '),
+      fields: fields,
+      values: {
+        pitch: voice.pitch,
+        brightness: voice.brightness,
+        decay: voice.decay,
+        noise: voice.noise,
+        click: voice.click,
+        body: voice.body
+      }
+    };
+  }
+  function ogListProceduralVoicePresets() {
+    return OG_PROCEDURAL_VOICE_PRESETS.map(function (preset) {
+      return ogClone(preset);
+    });
+  }
+
+  function ogGetProceduralVoicePreset(presetId) {
+    var id = String(presetId || '').trim();
+    for (var i = 0; i < OG_PROCEDURAL_VOICE_PRESETS.length; i++) {
+      if (OG_PROCEDURAL_VOICE_PRESETS[i].id === id) return ogClone(OG_PROCEDURAL_VOICE_PRESETS[i]);
+    }
+    return null;
+  }
+
   function ogListFactorySampleKits() {
     return OG_FACTORY_SAMPLE_KITS.map(function (kit) {
       return ogClone(kit);
@@ -3968,6 +4872,79 @@
       click: varied('click', 0, 2, 1),
       body: varied('body', 0, 2, 1)
     });
+  }
+
+  function ogApplyPadProceduralVoicePreset(project, trackId, padId, presetId) {
+    var preset = ogGetProceduralVoicePreset(presetId);
+    if (!preset) throw new Error('OpenGroove: voice preset not found');
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    var base = pad.proceduralVoice || (asset && asset.proceduralVoice) || ogResolvePadProceduralVoiceDefault(project, trackId, padId);
+    var updates = Object.assign({}, preset.voice || {});
+    if (base && base.character) updates.character = base.character;
+    if (base && base.kitId) updates.kitId = base.kitId;
+    if (base && base.kitName) updates.kitName = base.kitName;
+    return ogSetPadProceduralVoice(project, trackId, padId, updates);
+  }
+
+  function ogCompareProceduralVoice(currentLike, referenceLike) {
+    var current = ogNormalizeProceduralVoice(currentLike || {});
+    var reference = ogNormalizeProceduralVoice(referenceLike || {});
+    var specs = [
+      { id: 'pitch', label: 'Pitch' },
+      { id: 'brightness', label: 'Bright' },
+      { id: 'decay', label: 'Decay' },
+      { id: 'noise', label: 'Noise' },
+      { id: 'click', label: 'Click' },
+      { id: 'body', label: 'Body' }
+    ];
+    function round(value) { return Math.round(value * 100) / 100; }
+    function signed(value) {
+      var rounded = round(value);
+      if (Math.abs(rounded) < 0.01) return '0';
+      return (rounded > 0 ? '+' : '') + String(rounded);
+    }
+    var deltas = specs.map(function (spec) {
+      var delta = round(current[spec.id] - reference[spec.id]);
+      return {
+        id: spec.id,
+        label: spec.label,
+        current: current[spec.id],
+        reference: reference[spec.id],
+        delta: delta,
+        deltaText: signed(delta),
+        direction: Math.abs(delta) < 0.01 ? 'same' : delta > 0 ? 'higher' : 'lower'
+      };
+    });
+    var changed = deltas.filter(function (item) { return item.direction !== 'same'; });
+    var summary = changed.length
+      ? changed.slice(0, 3).map(function (item) { return item.label + ' ' + item.deltaText; }).join(', ') + (changed.length > 3 ? ', +' + (changed.length - 3) + ' more' : '')
+      : 'Matches factory voice';
+    return {
+      current: ogDescribeProceduralVoice(current),
+      reference: ogDescribeProceduralVoice(reference),
+      deltas: deltas,
+      changed: changed,
+      changedCount: changed.length,
+      summary: summary
+    };
+  }
+
+  function ogDescribePadProceduralVoice(project, trackId, padId) {
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    return ogDescribeProceduralVoice(pad.proceduralVoice || (asset && asset.proceduralVoice) || ogResolvePadProceduralVoiceDefault(project, trackId, padId));
+  }
+
+  function ogComparePadProceduralVoice(project, trackId, padId) {
+    var pad = ogFindPad(project, trackId, padId);
+    if (!pad) throw new Error('OpenGroove: pad not found');
+    var asset = pad.assetId ? ogFindAsset(project, pad.assetId) : null;
+    var current = pad.proceduralVoice || (asset && asset.proceduralVoice) || ogResolvePadProceduralVoiceDefault(project, trackId, padId);
+    var reference = ogResolvePadProceduralVoiceDefault(project, trackId, padId);
+    return ogCompareProceduralVoice(current, reference);
   }
   function ogNormalizeStemMode(mode) {
     var key = String(mode || 'four').toLowerCase();
@@ -4517,7 +5494,9 @@
     OG_SCALE_INTERVALS: ogClone(OG_SCALE_INTERVALS),
     OG_CHORD_INTERVALS: ogClone(OG_CHORD_INTERVALS),
     OG_SYNTH_PATCH_PRESETS: ogListSynthPatchPresets(),
+    OG_INSTRUMENT_ROLE_GUIDES: ogClone(OG_INSTRUMENT_ROLE_GUIDES),
     OG_FACTORY_SAMPLE_KITS: ogListFactorySampleKits(),
+    OG_PROCEDURAL_VOICE_PRESETS: ogListProceduralVoicePresets(),
     OG_EFFECT_PRESETS: ogListEffectPresets(),
     OG_AUTOMATION_TARGETS: ogListAutomationTargets(),
     OG_SONG_FORM_PRESETS: ogListSongFormPresets(),
@@ -4556,13 +5535,24 @@
     ogNotationDurationTicks: ogNotationDurationTicks,
     ogParseNotationInput: ogParseNotationInput,
     ogWriteNotationInput: ogWriteNotationInput,
+    ogParseMusicXmlInput: ogParseMusicXmlInput,
+    ogImportMusicXmlSketch: ogImportMusicXmlSketch,
+    ogNormalizeStaffClef: ogNormalizeStaffClef,
+    ogInferStaffClef: ogInferStaffClef,
     ogBuildStaffEngraving: ogBuildStaffEngraving,
     ogSetStaffNote: ogSetStaffNote,
     ogNormalizeSynthInstrument: ogNormalizeSynthInstrument,
     ogListSynthPatchPresets: ogListSynthPatchPresets,
     ogListSynthPatchFamilies: ogListSynthPatchFamilies,
+    ogNormalizeInstrumentRole: ogNormalizeInstrumentRole,
     ogBuildInstrumentProfile: ogBuildInstrumentProfile,
     ogListInstrumentProfiles: ogListInstrumentProfiles,
+    ogBuildInstrumentRoleGuide: ogBuildInstrumentRoleGuide,
+    ogListInstrumentRoleGuides: ogListInstrumentRoleGuides,
+    ogBuildInstrumentRange: ogBuildInstrumentRange,
+    ogBuildPlayablePitchPalette: ogBuildPlayablePitchPalette,
+    ogBuildInstrumentRangeReport: ogBuildInstrumentRangeReport,
+    ogFitTrackNotesToInstrumentRange: ogFitTrackNotesToInstrumentRange,
     ogGetSynthPatchPreset: ogGetSynthPatchPreset,
     ogSetSynthInstrument: ogSetSynthInstrument,
     ogApplySynthPatchPreset: ogApplySynthPatchPreset,
@@ -4627,12 +5617,19 @@
     ogRegisterUserRecording: ogRegisterUserRecording,
     ogListFactorySampleKits: ogListFactorySampleKits,
     ogGetFactorySampleKit: ogGetFactorySampleKit,
+    ogListProceduralVoicePresets: ogListProceduralVoicePresets,
+    ogGetProceduralVoicePreset: ogGetProceduralVoicePreset,
     ogNormalizeProceduralVoice: ogNormalizeProceduralVoice,
+    ogDescribeProceduralVoice: ogDescribeProceduralVoice,
+    ogCompareProceduralVoice: ogCompareProceduralVoice,
     ogInstallFactorySampleKit: ogInstallFactorySampleKit,
     ogSetPadProceduralVoice: ogSetPadProceduralVoice,
     ogResolvePadProceduralVoiceDefault: ogResolvePadProceduralVoiceDefault,
     ogResetPadProceduralVoice: ogResetPadProceduralVoice,
     ogRandomizePadProceduralVoice: ogRandomizePadProceduralVoice,
+    ogApplyPadProceduralVoicePreset: ogApplyPadProceduralVoicePreset,
+    ogDescribePadProceduralVoice: ogDescribePadProceduralVoice,
+    ogComparePadProceduralVoice: ogComparePadProceduralVoice,
     ogEmbedAssetData: ogEmbedAssetData,
     ogAssignAssetToPad: ogAssignAssetToPad,
     ogSetPadSampleRegion: ogSetPadSampleRegion,

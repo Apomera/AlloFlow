@@ -31,14 +31,14 @@
     const PHONEME_PACK_LIB_KEY = 'allo_phoneme_voice_packs_v1';    // library: { activeId, packs: [{ id, name, kind, consent, clips, history, studentName, studentId }] }
     const PHONEME_PACK_GROUPS = {
         'Consonants': ['b','c','d','f','g','h','j','k','l','m','n','p','r','s','t','v','w','y','z'],
-        'Digraphs': ['sh','zh','ch','th','wh','ph','ck','ng','q'],
+        'Digraphs': ['sh','zh','ch','th','dh','wh','ph','ck','ng','q'],
         'Short Vowels': ['a','e','i','o','u','oo_short'],
         'Long Vowels': ['ee','oo','ue','aw','oa'],
         'Diphthongs': ['ay','ie','ow','oy'],
         'R-Controlled': ['ar','er','ir','or','ur','air','ear'],
     };
     const PHONEME_PACK_ALIASES = { ai: 'ay', ea: 'ee' };
-    const PHONEME_PACK_EXAMPLES = { b:'ball', c:'cat', d:'dog', f:'fish', g:'goat', h:'hat', j:'jam', k:'kite', l:'leg', m:'man', n:'net', p:'pig', r:'red', s:'sun', t:'top', v:'van', w:'win', y:'yes', z:'zip', sh:'ship', zh:'measure', ch:'chip', th:'thumb', wh:'whale', ph:'phone', ck:'duck', ng:'ring', q:'queen', a:'apple', e:'egg', i:'igloo', o:'octopus', u:'up', oo_short:'book', ee:'tree', oo:'moon', ue:'blue', aw:'paw', oa:'boat', ay:'play', ie:'pie', ow:'cow', oy:'boy', ar:'car', er:'her', ir:'bird', or:'fork', ur:'fur', air:'chair', ear:'ear' };
+    const PHONEME_PACK_EXAMPLES = { b:'ball', c:'cat', d:'dog', f:'fish', g:'goat', h:'hat', j:'jam', k:'kite', l:'leg', m:'man', n:'net', p:'pig', r:'red', s:'sun', t:'top', v:'van', w:'win', y:'yes', z:'zip', sh:'ship', zh:'measure', ch:'chip', th:'thumb', dh:'this', wh:'whale', ph:'phone', ck:'duck', ng:'ring', q:'queen', a:'apple', e:'egg', i:'igloo', o:'octopus', u:'up', oo_short:'book', ee:'tree', oo:'moon', ue:'blue', aw:'paw', oa:'boat', ay:'play', ie:'pie', ow:'cow', oy:'boy', ar:'car', er:'her', ir:'bird', or:'fork', ur:'fur', air:'chair', ear:'ear' };
     // Kid-friendly articulatory cues — turns each recording into a mini phonics
     // lesson: how the mouth makes the sound, whether it is voiced ("buzzy") or
     // unvoiced ("quiet"), and whether it is a continuant ("stretch it") or a stop
@@ -68,6 +68,7 @@
         zh: 'Like /sh/ but WITH voice (treasure).',
         ch: 'Like /t/ + /sh/ together (chip). Quick.',
         th: 'Tongue tip between teeth, push air.',
+        dh: 'Tongue tip between teeth WITH voice; feel the throat buzz.',
         wh: 'Round lips, blow (whale).',
         ph: 'Same as /f/: teeth on lip, push air.',
         ck: 'Same as /k/: back of tongue, quiet pop. Quick.',
@@ -125,9 +126,15 @@
     // Show the example word with its target grapheme bolded (sound <-> symbol):
     // /sh/ -> "ship", /a/ -> "cat". Falls back to plain text if the grapheme is
     // not a literal substring of the example.
+    function phonemePackLabel(key) {
+        return key === 'oo_short' ? 'oo' : (key === 'dh' ? 'ð' : key);
+    }
+    function phonemePackGrapheme(key) {
+        return key === 'oo_short' ? 'oo' : (key === 'dh' ? 'th' : key);
+    }
     function renderExampleWithGrapheme(key, word) {
         if (!word) return null;
-        const g = key === 'oo_short' ? 'oo' : key;
+        const g = phonemePackGrapheme(key);
         const idx = word.toLowerCase().indexOf(g.toLowerCase());
         if (idx < 0) return <span>like {word}</span>;
         return <span>like {word.slice(0, idx)}<b className="text-violet-700">{word.slice(idx, idx + g.length)}</b>{word.slice(idx + g.length)}</span>;
@@ -491,7 +498,7 @@
             setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'checking' } }));
             const ex = PHONEME_PACK_EXAMPLES[key];
             const cue = PHONEME_PACK_CUES[key];
-            const prompt = 'You are a kind phonics articulation coach for a young child. The TARGET is the English phoneme /' + key + '/' + (ex ? ' as in "' + ex + '"' : '') + '.' + (cue ? ' A clean version: ' + cue : '') + ' Listen to the short recording and judge ONLY the sound it contains, against your knowledge of how that phoneme should sound. IGNORE the speaker\'s voice, age and accent — many correct voices are fine. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "one short, specific, encouraging fix the child can do, 12 words max"}. "clipped" is true when the sound is clean with no extra vowel (e.g. /p/ not "puh").';
+            const prompt = 'You are a kind phonics articulation coach for a young child. The TARGET is the English phoneme /' + phonemePackLabel(key) + '/' + (ex ? ' as in "' + ex + '"' : '') + '.' + (cue ? ' A clean version: ' + cue : '') + ' Listen to the short recording and judge ONLY the sound it contains, against your knowledge of how that phoneme should sound. IGNORE the speaker\'s voice, age and accent — many correct voices are fine. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "one short, specific, encouraging fix the child can do, 12 words max"}. "clipped" is true when the sound is clean with no extra vowel (e.g. /p/ not "puh").';
             Promise.resolve().then(() => window.callGeminiAudio(prompt, dataUri, {})).then((resp) => {
                 const parsed = parsePhonemePackJsonLoose(resp);
                 if (parsed) { setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: parsed.match, clipped: parsed.clipped, note: parsed.note || '' } })); updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, packId); }
@@ -511,7 +518,7 @@
             if (!ctrl || !ctrl.supported) { try { if (ctrl && ctrl.result && typeof ctrl.result.catch === 'function') ctrl.result.catch(() => {}); } catch (e) {} setStatus(T('word_sounds.voice_pack_msg_unsupported', 'Recording is not supported in this browser.')); return; }
             recorderRef.current = ctrl;
             setRecordingKey(key);
-            setStatus(T('word_sounds.voice_pack_msg_recording', '● Recording {what}. Tap again to stop.', { what: (opts.label || ('/' + key + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : ''))) }));
+            setStatus(T('word_sounds.voice_pack_msg_recording', '● Recording {what}. Tap again to stop.', { what: (opts.label || ('/' + phonemePackLabel(key) + '/' + (PHONEME_PACK_EXAMPLES[key] ? ' (like ' + PHONEME_PACK_EXAMPLES[key] + ')' : ''))) }));
             ctrl.result.then(async (rec) => {
                 if (rec && rec.base64) {
                     let finalClip = rec.base64;
@@ -538,7 +545,7 @@
         const playClip = (key) => { const d = clips[key]; if (!d) return; playPreview(d); };
         const playReference = (key) => {
             const ref = phonemeReferenceClip(key);
-            if (!ref) { setStatus(T('word_sounds.voice_pack_msg_no_model', 'No model recording for /{key}/ in the default voice. Record what you think it sounds like, or check a reference chart.', { key: key })); return; }
+            if (!ref) { setStatus(T('word_sounds.voice_pack_msg_no_model', 'No model recording for /{key}/ in the default voice. Record what you think it sounds like, or check a reference chart.', { key: phonemePackLabel(key) })); return; }
             playPreview(ref);
         };
         const playCompare = (key) => {
@@ -547,7 +554,7 @@
             const ref = phonemeReferenceClip(key);
             const mine = clips[key];
             if (!ref || !mine) return;
-            const lbl = key === 'oo_short' ? 'oo' : key;
+            const lbl = phonemePackLabel(key);
             setStatus(T('word_sounds.voice_pack_msg_listen_compare', '🔁 Listen: the model first, then your /{lbl}/.', { lbl: lbl }));
             const playMine = () => { playPreview(mine); };
             const a = playPreview(ref);
@@ -704,7 +711,7 @@
                                     <div className="text-[11px] font-semibold text-slate-600">{histKeys.length} {T('word_sounds.voice_pack_progress_sounds', 'sounds practiced')} · {totalAttempts} {T('word_sounds.voice_pack_progress_recordings', 'recordings')}{improving > 0 ? (' · ' + improving + ' ' + T('word_sounds.voice_pack_progress_improving', 'improving')) : ''}</div>
                                     {histKeys.map((k) => {
                                         const arr = pack.history[k];
-                                        const lbl = k === 'oo_short' ? 'oo' : k;
+                                        const lbl = phonemePackLabel(k);
                                         const last = arr[arr.length - 1];
                                         return (
                                             <div key={k} className="flex items-center gap-2">
@@ -736,7 +743,7 @@
                                     <div className="flex flex-wrap gap-1.5">
                                         {PHONEME_PACK_WORDS.map((w) => {
                                             const ready = wordReady(w);
-                                            const missing = w.keys.filter((k) => !clips[k]).map((k) => '/' + (k === 'oo_short' ? 'oo' : k) + '/').join(' ');
+                                            const missing = w.keys.filter((k) => !clips[k]).map((k) => '/' + phonemePackLabel(k) + '/').join(' ');
                                             return (
                                                 <button key={w.word} type="button" onClick={() => ready && playWord(w)} disabled={!ready} aria-label={ready ? T('word_sounds.voice_pack_word_hear', 'Hear {word} in your voice', { word: w.word }) : T('word_sounds.voice_pack_word_need', '{word}: still need {missing}', { word: w.word, missing: missing })} title={ready ? T('word_sounds.voice_pack_word_hear_title', 'Hear "{word}" in your voice', { word: w.word }) : T('word_sounds.voice_pack_word_record', 'Record: {missing}', { missing: missing })} className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${ready ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white text-slate-400 border border-slate-200 cursor-not-allowed'}`}>{ready ? '🔊 ' : '🔒 '}{w.word}</button>
                                             );
@@ -752,7 +759,7 @@
                                     {PHONEME_PACK_GROUPS[group].map((key) => {
                                         const has = !!clips[key];
                                         const rec = recordingKey === key;
-                                        const label = key === 'oo_short' ? 'oo' : key;
+                                        const label = phonemePackLabel(key);
                                         const hasRef = !!phonemeReferenceClip(key);
                                         return (
                                             <div key={key} className={`flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
@@ -2396,6 +2403,7 @@ const WordSoundsReviewPanel = ({
     onBackToSetup,
     onPlayAudio,
     onRegenerateWord,
+    onCheckPhonemes,
     onRegenerateOption,
     onRegenerateAll,
     onRetryFailedTTS,
@@ -2983,10 +2991,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <div className="flex items-center gap-2">
                                                     <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
                                                     <button type="button"
-                                                        onClick={() => onRegenerateWord && onRegenerateWord(idx)}
+                                                        onClick={() => onCheckPhonemes && onCheckPhonemes(idx)}
                                                         disabled={regeneratingIndex === idx}
                                                         className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-600 hover:bg-violet-200'}`}
-                                                        title={t('word_sounds.recheck_phonemes_tooltip') || 'Re-check phonemes with Gemini'}
+                                                        title={t('word_sounds.recheck_phonemes_tooltip') || 'Check phonemes with local analysis, AI alignment, and dictionary IPA'}
                                                     >
                                                         {regeneratingIndex === idx ? <div className="animate-spin motion-reduce:animate-none h-3 w-3 border-2 border-current border-t-transparent rounded-full" /> : '✨'}
                                                         Check

@@ -3,6 +3,8 @@
   "kind": "pd_module",
   "metadata": {
     "id": "udl-representation-quickstart",
+    "version": "1.0.0",
+    "language": "en-US",
     "title": "UDL Quick Start: Multiple Means of Representation",
     "topic": "UDL",
     "summary": "A ~15-minute primer on the UDL principle of Multiple Means of Representation — the 'what' of learning — with a knowledge check and a classroom-application reflection. General educator PD; no AlloFlow features required.",

@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-13T03:28:42.524Z",
+  "generatedAt": "2026-07-16T19:35:56.135Z",
   "source": {
-    "stemToolFileCount": 119,
-    "registeredToolCount": 122,
+    "stemToolFileCount": 122,
+    "registeredToolCount": 125,
     "monitoredMarkerCount": 74
   },
   "summary": {
     "loadErrorCount": 0,
     "markerPassCount": 74,
     "markerFailCount": 0,
-    "monitoredIssueCount": 16,
+    "monitoredIssueCount": 17,
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 6,
-    "monitoredNoticeCount": 10,
-    "syncDriftCount": 3,
-    "sourcePublicDriftCount": 0,
-    "monitoredSyncDriftCount": 2
+    "monitoredNoticeCount": 11,
+    "syncDriftCount": 9,
+    "sourcePublicDriftCount": 2,
+    "monitoredSyncDriftCount": 4
   },
   "loadErrors": [],
   "markerResults": [
@@ -25,7 +25,7 @@
       "marker": "data-opticslab-focus",
       "label": "Optics focus panel",
       "ok": true,
-      "htmlBytes": 20751,
+      "htmlBytes": 21421,
       "issues": [
         {
           "toolId": "opticsLab",
@@ -45,7 +45,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 20751
+        "htmlBytes": 21421
       }
     },
     {
@@ -118,14 +118,14 @@
       "marker": "data-climate-mission-panel",
       "label": "Climate mission panel",
       "ok": true,
-      "htmlBytes": 33456,
+      "htmlBytes": 33986,
       "issues": [],
       "metrics": {
         "buttons": 39,
         "fields": 0,
         "canvases": 2,
         "headings": 2,
-        "htmlBytes": 33456
+        "htmlBytes": 33986
       }
     },
     {
@@ -182,7 +182,7 @@
       "marker": "data-cellularlab-focus-panel",
       "label": "Cellular focus panel",
       "ok": true,
-      "htmlBytes": 13063,
+      "htmlBytes": 26481,
       "issues": [
         {
           "toolId": "cellularLab",
@@ -195,29 +195,20 @@
           "severity": "notice",
           "code": "horizontal-overflow-risk",
           "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 6,
+          "count": 1,
           "examples": [
             {
-              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(1)"
-            },
-            {
-              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(2)"
-            },
-            {
-              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(3)"
-            },
-            {
-              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(4)"
+              "selector": "div#cell-panel > div > div:nth-of-type(1) > span"
             }
           ]
         }
       ],
       "metrics": {
-        "buttons": 22,
-        "fields": 1,
+        "buttons": 52,
+        "fields": 3,
         "canvases": 0,
         "headings": 0,
-        "htmlBytes": 13063
+        "htmlBytes": 26481
       }
     },
     {
@@ -322,14 +313,14 @@
       "marker": "data-spacecolony-life-support",
       "label": "Space Colony life-support mission",
       "ok": true,
-      "htmlBytes": 15773,
+      "htmlBytes": 20254,
       "issues": [],
       "metrics": {
-        "buttons": 13,
-        "fields": 7,
+        "buttons": 16,
+        "fields": 8,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 15773
+        "htmlBytes": 20254
       }
     },
     {
@@ -338,14 +329,14 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 25739,
+      "htmlBytes": 25727,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 25739
+        "htmlBytes": 25727
       }
     },
     {
@@ -370,14 +361,14 @@
       "marker": "data-beehive-command",
       "label": "Beehive superorganism command deck",
       "ok": true,
-      "htmlBytes": 66162,
+      "htmlBytes": 68879,
       "issues": [],
       "metrics": {
-        "buttons": 65,
+        "buttons": 74,
         "fields": 5,
         "canvases": 1,
         "headings": 9,
-        "htmlBytes": 66162
+        "htmlBytes": 68879
       }
     },
     {
@@ -418,14 +409,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 21708,
+      "htmlBytes": 22312,
       "issues": [],
       "metrics": {
-        "buttons": 39,
+        "buttons": 40,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 21708
+        "htmlBytes": 22312
       }
     },
     {
@@ -565,14 +556,14 @@
       "marker": "data-fisherlab-command",
       "label": "FisherLab harbor briefing",
       "ok": true,
-      "htmlBytes": 21757,
+      "htmlBytes": 22731,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 21757
+        "htmlBytes": 22731
       }
     },
     {
@@ -581,14 +572,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25524,
+      "htmlBytes": 25575,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25524
+        "htmlBytes": 25575
       }
     },
     {
@@ -645,14 +636,31 @@
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 19839,
-      "issues": [],
+      "htmlBytes": 33395,
+      "issues": [
+        {
+          "toolId": "brainAtlas",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 2,
+          "examples": [
+            {
+              "selector": "div#brainatlas-canvas-fullscreen > div.brainatlas-canvas-stage:nth-of-type(3) > div.brainatlas-canvas-zoom-frame"
+            },
+            {
+              "selector": "div#brainatlas-canvas-fullscreen > div.brainatlas-canvas-stage:nth-of-type(3) > div.brainatlas-canvas-zoom-frame > canvas.brainatlas-canvas.border-2",
+              "width": "840"
+            }
+          ]
+        }
+      ],
       "metrics": {
-        "buttons": 46,
+        "buttons": 54,
         "fields": 1,
         "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 19839
+        "headings": 6,
+        "htmlBytes": 33395
       }
     },
     {
@@ -661,14 +669,14 @@
       "marker": "data-anatomy-mission",
       "label": "Anatomy mission panel",
       "ok": true,
-      "htmlBytes": 33485,
+      "htmlBytes": 34318,
       "issues": [],
       "metrics": {
         "buttons": 66,
         "fields": 1,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 33485
+        "htmlBytes": 34318
       }
     },
     {
@@ -677,7 +685,7 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 146094,
+      "htmlBytes": 143920,
       "issues": [
         {
           "toolId": "birdLab",
@@ -702,7 +710,7 @@
         "fields": 1,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 146094
+        "htmlBytes": 143920
       }
     },
     {
@@ -711,14 +719,14 @@
       "marker": "data-watercycle-focus",
       "label": "Water Cycle focus panel",
       "ok": true,
-      "htmlBytes": 21817,
+      "htmlBytes": 21850,
       "issues": [],
       "metrics": {
         "buttons": 30,
         "fields": 6,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 21817
+        "htmlBytes": 21850
       }
     },
     {
@@ -727,7 +735,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17740,
+      "htmlBytes": 17749,
       "issues": [
         {
           "toolId": "playlab",
@@ -756,7 +764,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 17740
+        "htmlBytes": 17749
       }
     },
     {
@@ -781,14 +789,14 @@
       "marker": "data-astronomy-command",
       "label": "Astronomy observation command",
       "ok": true,
-      "htmlBytes": 12452,
+      "htmlBytes": 14042,
       "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 12452
+        "htmlBytes": 14042
       }
     },
     {
@@ -845,14 +853,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13366,
+      "htmlBytes": 13365,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13366
+        "htmlBytes": 13365
       }
     },
     {
@@ -861,14 +869,14 @@
       "marker": "data-solarsystem-command-center",
       "label": "Solar System command center",
       "ok": true,
-      "htmlBytes": 16665,
+      "htmlBytes": 16736,
       "issues": [],
       "metrics": {
         "buttons": 25,
         "fields": 1,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 16665
+        "htmlBytes": 16736
       }
     },
     {
@@ -921,14 +929,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47679,
+      "htmlBytes": 47677,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47679
+        "htmlBytes": 47677
       }
     },
     {
@@ -973,7 +981,7 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 70487,
+      "htmlBytes": 70512,
       "issues": [
         {
           "toolId": "skatelab",
@@ -989,7 +997,7 @@
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 70487
+        "htmlBytes": 70512
       }
     },
     {
@@ -998,14 +1006,14 @@
       "marker": "data-probability-command",
       "label": "Probability Lab command deck",
       "ok": true,
-      "htmlBytes": 20164,
+      "htmlBytes": 20277,
       "issues": [],
       "metrics": {
         "buttons": 37,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 20164
+        "htmlBytes": 20277
       }
     },
     {
@@ -1236,7 +1244,7 @@
       "marker": "data-volume-command",
       "label": "Volume design brief",
       "ok": true,
-      "htmlBytes": 34685,
+      "htmlBytes": 36006,
       "issues": [
         {
           "toolId": "volume",
@@ -1252,11 +1260,11 @@
         }
       ],
       "metrics": {
-        "buttons": 26,
+        "buttons": 28,
         "fields": 11,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 34685
+        "htmlBytes": 36006
       }
     },
     {
@@ -1423,7 +1431,7 @@
   "sync": {
     "drift": [
       {
-        "file": "stem_tool_optics.js",
+        "file": "stem_tool_aquarium.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1431,9 +1439,94 @@
           "build": true
         },
         "hashes": {
-          "source": "834C495D8445",
-          "public": "834C495D8445",
-          "build": "494E67C4A75D"
+          "source": "7515A8366A6C",
+          "public": "1AEF8A007DC5",
+          "build": "2A1D68686F0F"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "65E8BA8FDE65",
+          "public": "65E8BA8FDE65",
+          "build": "7E74A0E8B596"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_cyberdefense.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "2CB9967FD950",
+          "public": "2CB9967FD950",
+          "build": "4538E453F147"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_dinolab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "5B5FB939D507",
+          "public": "5B5FB939D507",
+          "build": "AB476DC3484C"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_fisherlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "049AECCF594D",
+          "public": "049AECCF594D",
+          "build": "AB4EA064106D"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_geometryworld.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0479DAFD428F",
+          "public": "0479DAFD428F",
+          "build": "14C5DDB064AB"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1448,36 +1541,52 @@
           "build": true
         },
         "hashes": {
-          "source": "946E2E78A5F5",
-          "public": "946E2E78A5F5",
-          "build": "F1FB6EE0170C"
+          "source": "42CED05136DF",
+          "public": "42CED05136DF",
+          "build": "84079C80EE8A"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_platetectonics.js",
-        "monitored": true,
+        "file": "stem_tool_typingpractice.js",
+        "monitored": false,
         "exists": {
           "source": true,
           "public": true,
           "build": true
         },
         "hashes": {
-          "source": "A928406DD1A6",
-          "public": "A928406DD1A6",
-          "build": "6D522DB866EE"
+          "source": "5BBCB3C751E1",
+          "public": "5BBCB3C751E1",
+          "build": "48AEB59A03C8"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_weathersystems.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "278841FA10BA",
+          "public": "22D738952CCB",
+          "build": "4BDCC0C5B79A"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
       }
     ],
-    "sourcePublicDrift": [],
-    "monitoredDrift": [
+    "sourcePublicDrift": [
       {
-        "file": "stem_tool_optics.js",
+        "file": "stem_tool_aquarium.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1485,16 +1594,69 @@
           "build": true
         },
         "hashes": {
-          "source": "834C495D8445",
-          "public": "834C495D8445",
-          "build": "494E67C4A75D"
+          "source": "7515A8366A6C",
+          "public": "1AEF8A007DC5",
+          "build": "2A1D68686F0F"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_weathersystems.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "278841FA10BA",
+          "public": "22D738952CCB",
+          "build": "4BDCC0C5B79A"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
+    "monitoredDrift": [
+      {
+        "file": "stem_tool_aquarium.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "7515A8366A6C",
+          "public": "1AEF8A007DC5",
+          "build": "2A1D68686F0F"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "65E8BA8FDE65",
+          "public": "65E8BA8FDE65",
+          "build": "7E74A0E8B596"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_platetectonics.js",
+        "file": "stem_tool_dinolab.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1502,9 +1664,26 @@
           "build": true
         },
         "hashes": {
-          "source": "A928406DD1A6",
-          "public": "A928406DD1A6",
-          "build": "6D522DB866EE"
+          "source": "5B5FB939D507",
+          "public": "5B5FB939D507",
+          "build": "AB476DC3484C"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_fisherlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "049AECCF594D",
+          "public": "049AECCF594D",
+          "build": "AB4EA064106D"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1546,13 +1725,14 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 10,
-      "toolCount": 10,
+      "count": 11,
+      "toolCount": 11,
       "exampleTools": [
         "opticsLab",
         "cellularLab",
         "dinoLab",
         "printingPress",
+        "brainAtlas",
         "birdLab",
         "playlab",
         "bikeLab",

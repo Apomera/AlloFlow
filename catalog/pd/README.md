@@ -24,9 +24,9 @@ catalog/pd/
 
 A learner's completion produces a **self-paced completion record** (JSON) and an
 optional printable **certificate**. Both are explicitly *not* accredited contact
-hours or a verified credential — a purely client-side app cannot issue
-tamper-proof credentials. The record schema is upgrade-ready for a future
-server/Open-Badges issuer.
+hours or a verified credential. A separate protected server-to-server adapter
+can sign reviewed decisions, but it is not yet connected to UMS identity,
+reviewer authorization, evidence storage, Open Badges, or Parchment systems.
 
 ## `pd_module` schema (v `pd-1.0`)
 
@@ -36,6 +36,8 @@ server/Open-Badges issuer.
   "kind": "pd_module",
   "metadata": {
     "id": "my-module-slug",        // stable id; used for progress + history keys
+    "version": "1.0.0",           // publisher version; bump when content changes
+    "language": "en-US",          // primary language for accessibility review
     "title": "Module title",        // required
     "topic": "UDL",                 // shown as a chip + a browse filter
     "summary": "1–2 sentences.",
@@ -58,10 +60,10 @@ Every activity needs `id` (unique), `type`, `title`, and a `gate`.
 |-------------|------------------------------------------------------------------|-------------------------------|----------|
 | `read`      | `{ body, keyPoints?: [], links?: [{label,url}] }`                | learner acknowledges          | no       |
 | `video`     | `{ url, body? }`                                                  | learner marks "watched"       | no       |
-| `quiz`      | `{ questions: [{ prompt, options:[…≥2], correctIndex, explanation? }] }` | all questions answered         | **yes**  |
+| `quiz`      | `{ questions: [{ prompt, options:[…≥2], correctIndex, explanation? }] }` | all answered and submitted     | **yes**  |
 | `reflect`   | `{ prompt }`                                                      | non-empty response            | no       |
 | `checklist` | `{ items: [string, …] }`                                          | ≥ 1 item checked              | no       |
-| `sim`       | `{ scenario, rubric? }`                                           | AI returns a formative masteryScore — or, if AI is unavailable, on a written response | no¹ |
+| `sim`       | `{ scenario, rubric }`                                            | AI returns a formative masteryScore — or, if AI is unavailable, on a written response | no¹ |
 
 > ¹ `sim` is an **AI-assessed scenario**: the learner writes a response and the
 > shared AI returns a *formative* `masteryScore` (0–100) + feedback. That score
@@ -116,5 +118,59 @@ presentation layer over completion history — they add no new storage or gating
    `approved/<slug>.json`.
 3. Add an entry to `index.json` (`slug`, `title`, `topic`, `summary`,
    `estMinutes`, `credit`, `license`, `path`) and push to `main`.
+## Immutable publishing and accessibility readiness
+
+Every approved manifest entry should carry `version`, `language`, and the
+`contentDigest` returned by `PdCore.moduleContentDigest(module)`. The learner
+runtime fails closed when a bound manifest digest does not match the fetched
+module. Completion records retain both the publisher version and exact digest.
+
+Before publishing, run `PdCore.auditAccessibilityReadiness(module)`. A result
+of `ready-for-render-audit` means only that required content alternatives are
+present; it is not a conformance claim. The complete rendered process and every
+interactive state still require automated and manual WCAG 2.2 AA verification.
+Video activities need captions plus a transcript or documented accessible
+alternative.
+
+## Typed-response paste policy
+
+A module or individual activity may declare:
+
+```json
+{
+  "assessmentPolicy": {
+    "paste": {
+      "mode": "allowed | monitored | restricted",
+      "accessibleAlternative": "Optional accessible response path",
+      "accommodationContact": "Optional facilitator/contact guidance"
+    }
+  }
+}
+```
+
+`allowed` is the default. `monitored` permits pasting and records only
+timestamp, activity/field ID, character count, word count, and blocked status.
+Clipboard contents are never stored. `restricted` is opt-in and valid only
+with an accessible alternative or accommodation contact. A paste event is a
+review signal only and never automatically fails a learner.
+
+## Reviewed institutional issuance
+
+Local progress, imported history, completion JSON, and certificates remain
+self-reported and unverified. They can satisfy personal learning-path displays
+but cannot establish institutional badge eligibility.
+
+Reviewed `POST /issuePd` calls require a server-held
+`PD_ISSUER_AUTH_TOKEN` and a `pd-reviewed-decision-1.0` body. The trusted
+upstream caller must authenticate the learner and reviewer, resolve evidence
+references, establish the accessibility decision, and bind all of those facts
+to the same module version/digest. The Worker validates the contract structure
+and internal cross-bindings but does not independently establish those facts.
+Arbitrary client `{ "record": { "complete": true } }` signing is rejected by
+default. The optional self-paced signing lane is explicitly non-institutional
+and requires a separate keypair.
+
+See [the microcredential foundation](../../docs/PD_MICROCREDENTIAL_FOUNDATION.md)
+for the contract, UMS pathway mapping, privacy boundary, and deployment steps.
 
 The app reads `index.json` from GitHub raw, so a push is all it takes to publish.

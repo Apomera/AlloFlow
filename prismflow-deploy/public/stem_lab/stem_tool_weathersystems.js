@@ -305,6 +305,45 @@
     };
   }
 
+  function frontPassageHour(state, station) {
+    var scenario = scenarioById(state.scenario);
+    if (!station || scenario.frontType === 'none' || state.frontSpeed <= 0) return null;
+    return round(clamp(((station.x - 0.28) * 500) / state.frontSpeed, 0, 24), 1);
+  }
+
+  function stationTimeSeries(state, station, endHour, step) {
+    var end = clamp(endHour == null ? 12 : endHour, 1, 24);
+    var increment = clamp(step == null ? 1 : step, 1, 6);
+    var points = [];
+    for (var hour = 0; hour <= end; hour += increment) {
+      points.push(stationObservation(Object.assign({}, state, { simHour: hour }), station));
+      points[points.length - 1].hour = hour;
+    }
+    var passage = frontPassageHour(state, station);
+    var beforeHour = passage == null ? 0 : clamp(passage - 1.5, 0, end);
+    var afterHour = passage == null ? end : clamp(passage + 1.5, 0, end);
+    var before = stationObservation(Object.assign({}, state, { simHour: beforeHour }), station);
+    var after = stationObservation(Object.assign({}, state, { simHour: afterHour }), station);
+    var rawWindShift = Math.abs(after.windDir - before.windDir);
+    return {
+      station: station.id,
+      points: points,
+      passageHour: passage,
+      beforeHour: round(beforeHour, 1),
+      afterHour: round(afterHour, 1),
+      before: before,
+      after: after,
+      deltas: {
+        temperature: round(after.temperature - before.temperature, 1),
+        dewPoint: round(after.dewPoint - before.dewPoint, 1),
+        pressure: round(after.seaLevelPressure - before.seaLevelPressure, 1),
+        windShift: Math.round(Math.min(rawWindShift, 360 - rawWindShift)),
+        cloudCover: Math.round(after.cloudCover - before.cloudCover),
+        precipPotential: Math.round(after.precipPotential - before.precipPotential)
+      }
+    };
+  }
+
   function expectedForecast(state) {
     var scenario = scenarioById(state.scenario);
     var future = projectConditions(state, 6);
@@ -429,6 +468,47 @@
     };
   }
 
+  function compareScenarioPatterns(state, comparisonId, hours) {
+    var hour = clamp(hours != null ? Number(hours) : state.simHour, 0, 24);
+    var activeScenario = scenarioById(state.scenario);
+    var comparisonScenario = scenarioById(comparisonId);
+    var active = projectConditions(state, hour);
+    var comparisonState = resolvedState({ scenario: comparisonScenario.id, simHour: hour });
+    var comparison = projectConditions(comparisonState, hour);
+    var definitions = [
+      { id: 'temperature', label: 'Temperature', key: 'temperature', unit: '\u00B0C', min: -20, max: 45 },
+      { id: 'dewPoint', label: 'Dew point', key: 'dewPoint', unit: '\u00B0C', min: -30, max: 35 },
+      { id: 'pressure', label: 'Pressure', key: 'pressure', unit: ' hPa', min: 980, max: 1040 },
+      { id: 'windSpeed', label: 'Wind speed', key: 'windSpeed', unit: ' km/h', min: 0, max: 100 },
+      { id: 'cloudCover', label: 'Cloud cover', key: 'cloudCover', unit: '%', min: 0, max: 100 },
+      { id: 'precipPotential', label: 'Precipitation potential', key: 'precipPotential', unit: '%', min: 0, max: 100 }
+    ];
+    var metrics = definitions.map(function (definition) {
+      var activeValue = active[definition.key];
+      var comparisonValue = comparison[definition.key];
+      var range = definition.max - definition.min;
+      return Object.assign({}, definition, {
+        active: activeValue,
+        comparison: comparisonValue,
+        delta: round(comparisonValue - activeValue, 1),
+        normalizedDifference: range ? Math.abs(comparisonValue - activeValue) / range : 0
+      });
+    });
+    var strongest = metrics.reduce(function (best, metric) {
+      return !best || metric.normalizedDifference > best.normalizedDifference ? metric : best;
+    }, null);
+    return {
+      hour: hour,
+      activeScenario: activeScenario,
+      comparisonScenario: comparisonScenario,
+      active: active,
+      comparison: comparison,
+      metrics: metrics,
+      strongest: strongest,
+      controlled: false
+    };
+  }
+
   function scoreForecast(state, forecast) {
     var truth = expectedForecast(state);
     var evidence = forecast.evidence || [];
@@ -450,19 +530,62 @@
     return { score: score, truth: truth, notes: notes, expectedAction: expectedAction, actionCorrect: actionCorrect, calibration: calibration };
   }
 
+  function weatherCodeLabel(code) {
+    var value = Number(code);
+    if (value === 0) return 'Clear sky';
+    if (value <= 3) return 'Partly cloudy';
+    if (value === 45 || value === 48) return 'Fog';
+    if (value >= 51 && value <= 57) return 'Drizzle';
+    if (value >= 61 && value <= 67) return 'Rain';
+    if (value >= 71 && value <= 77) return 'Snow';
+    if (value >= 80 && value <= 82) return 'Rain showers';
+    if (value >= 85 && value <= 86) return 'Snow showers';
+    if (value >= 95) return 'Thunderstorms';
+    return 'Variable conditions';
+  }
+
+  function normalizeLiveWeatherResponse(payload, label, latitude, longitude) {
+    if (!payload || !payload.current) throw new Error('Live weather response did not include current conditions.');
+    var current = payload.current;
+    return {
+      label: label || 'Selected location',
+      latitude: Math.round(Number(latitude) * 10000) / 10000,
+      longitude: Math.round(Number(longitude) * 10000) / 10000,
+      observedAt: current.time || '',
+      timezone: payload.timezone_abbreviation || payload.timezone || '',
+      temperature: Number(current.temperature_2m),
+      humidity: Number(current.relative_humidity_2m),
+      precipitation: Number(current.precipitation || 0),
+      weatherCode: Number(current.weather_code),
+      condition: weatherCodeLabel(current.weather_code),
+      cloudCover: Number(current.cloud_cover || 0),
+      pressure: Number(current.surface_pressure),
+      windSpeed: Number(current.wind_speed_10m || 0),
+      windDir: Number(current.wind_direction_10m || 0),
+      visibility: current.visibility != null ? Number(current.visibility) : null,
+      source: 'Open-Meteo',
+      sourceUrl: 'https://open-meteo.com/'
+    };
+  }
+
   window.WeatherSystemsKernel = {
     scenarios: SCENARIOS,
     dewPointC: dewPointC,
     projectConditions: projectConditions,
     stationObservation: stationObservation,
     stationNetworkAnalysis: stationNetworkAnalysis,
+    frontPassageHour: frontPassageHour,
+    stationTimeSeries: stationTimeSeries,
     expectedForecast: expectedForecast,
     ensembleForecast: ensembleForecast,
     readinessActionForHazard: readinessActionForHazard,
     calibrateConfidence: calibrateConfidence,
     experimentVariables: EXPERIMENT_VARIABLES,
     runExperiment: runExperiment,
+    compareScenarioPatterns: compareScenarioPatterns,
     scoreForecast: scoreForecast,
+    weatherCodeLabel: weatherCodeLabel,
+    normalizeLiveWeatherResponse: normalizeLiveWeatherResponse,
     resolvedState: resolvedState
   };
 
@@ -557,7 +680,7 @@
     g.lineWidth = 1;
     g.stroke();
     g.fillStyle = palette.muted;
-    g.font = '700 10px system-ui';
+    g.font = '700 11px system-ui';
     g.fillText('VISIBLE MAP LAYERS', x + 14, y + 19);
 
     g.fillStyle = frontColor;
@@ -587,7 +710,7 @@
     g.strokeStyle = dark ? 'rgba(186,230,253,.45)' : 'rgba(15,23,42,.28)'; g.stroke();
     g.fillStyle = '#38bdf8';
     g.beginPath(); g.moveTo(0, -18); g.lineTo(-6, 4); g.lineTo(0, 0); g.lineTo(6, 4); g.closePath(); g.fill();
-    g.fillStyle = palette.text; g.font = '800 10px system-ui'; g.textAlign = 'center'; g.fillText('N', 0, -7);
+    g.fillStyle = palette.text; g.font = '800 11px system-ui'; g.textAlign = 'center'; g.fillText('N', 0, -7);
     g.restore();
   }
 
@@ -824,6 +947,8 @@
       var dark = ctx.darkMode !== false;
       var band = gradeBand(ctx.gradeLevel);
       var canvasRef = React.useRef(null);
+      var immersiveCanvasRef = React.useRef(null);
+      var immersiveRuntimeRef = React.useRef(null);
       var state = resolvedState(d);
       var scenario = scenarioById(state.scenario);
       var selectedStation = d.selectedStation || 'central';
@@ -842,6 +967,104 @@
           var next = Object.assign({}, prev);
           next.weatherSystems = Object.assign({}, prev.weatherSystems || {}, patch);
           return next;
+        });
+      }
+
+      function fetchLiveWeather(latitude, longitude, label) {
+        update({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: 'Connecting to live observations...' });
+        var fields = 'temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,visibility';
+        var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(latitude) + '&longitude=' + encodeURIComponent(longitude) + '&current=' + fields + '&timezone=auto';
+        return window.fetch(url).then(function (response) {
+          if (!response.ok) throw new Error('Live weather service returned ' + response.status + '.');
+          return response.json();
+        }).then(function (payload) {
+          var live = normalizeLiveWeatherResponse(payload, label, latitude, longitude);
+          update({ liveWeather: live, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Live observation loaded for ' + live.label + '.', immersiveDataSource: 'live' });
+          if (addToast) addToast('Live weather loaded for ' + live.label + '.', 'success');
+          if (announce) announce('Live weather loaded for ' + live.label + '. Observed condition: ' + live.condition + '.');
+          return live;
+        }).catch(function (error) {
+          var message = error && error.message ? error.message : 'Live weather could not be loaded.';
+          update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: '' });
+          if (addToast) addToast(message, 'error');
+          if (announce) announce('Live weather error. ' + message);
+          return null;
+        });
+      }
+
+      function requestDeviceWeather() {
+        if (!window.navigator || !window.navigator.geolocation) {
+          update({ liveWeatherError: 'Location services are not available in this browser.' });
+          if (addToast) addToast('Location services are not available.', 'warning');
+          return;
+        }
+        update({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: 'Waiting for location permission...' });
+        window.navigator.geolocation.getCurrentPosition(function (position) {
+          fetchLiveWeather(position.coords.latitude, position.coords.longitude, 'My location');
+        }, function (error) {
+          var message = error && error.code === 1 ? 'Location permission was not granted. Search for a place instead.' : 'Your location could not be determined. Search for a place instead.';
+          update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: '' });
+          if (addToast) addToast(message, 'warning');
+          if (announce) announce(message);
+        }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
+      }
+
+      function searchLiveWeather() {
+        var query = (d.liveLocationQuery || '').trim();
+        if (query.length < 2) {
+          if (addToast) addToast('Enter a city or place name.', 'warning');
+          if (announce) announce('Enter at least two characters for a place search.');
+          return;
+        }
+        update({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: 'Searching for ' + query + '...' });
+        var url = 'https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) + '&count=5&language=en&format=json';
+        window.fetch(url).then(function (response) {
+          if (!response.ok) throw new Error('Location search returned ' + response.status + '.');
+          return response.json();
+        }).then(function (payload) {
+          if (!payload.results || !payload.results.length) throw new Error('No matching place was found. Try a city and state or country.');
+          var place = payload.results[0];
+          var parts = [place.name, place.admin1, place.country].filter(Boolean);
+          return fetchLiveWeather(place.latitude, place.longitude, parts.join(', '));
+        }).catch(function (error) {
+          var message = error && error.message ? error.message : 'Location search failed.';
+          update({ liveWeatherLoading: false, liveWeatherError: message, liveWeatherStatus: '' });
+          if (addToast) addToast(message, 'error');
+          if (announce) announce('Location search error. ' + message);
+        });
+      }
+
+      function enterWeatherVR() {
+        var runtime = immersiveRuntimeRef.current;
+        if (!runtime || !runtime.renderer) {
+          if (addToast) addToast('The immersive scene is still loading.', 'info');
+          if (announce) announce('The immersive weather scene is still loading.');
+          return;
+        }
+        if (!window.navigator || !window.navigator.xr || !window.navigator.xr.isSessionSupported) {
+          update({ vrStatus: 'WebXR immersive VR is not available in this browser or device.' });
+          if (addToast) addToast('WebXR VR is not available on this device.', 'warning');
+          return;
+        }
+        update({ vrStatus: 'Checking VR headset support...' });
+        window.navigator.xr.isSessionSupported('immersive-vr').then(function (supported) {
+          if (!supported) throw new Error('No immersive VR session is available. You can still orbit the 3D scene.');
+          return window.navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] });
+        }).then(function (session) {
+          return runtime.renderer.xr.setSession(session).then(function () {
+            update({ vrStatus: 'VR session active.', vrSessionActive: true });
+            if (addToast) addToast('VR weather immersion started.', 'success');
+            if (announce) announce('VR weather immersion started.');
+            session.addEventListener('end', function () {
+              update({ vrStatus: 'VR session ended.', vrSessionActive: false });
+              if (announce) announce('VR weather immersion ended.');
+            }, { once: true });
+          });
+        }).catch(function (error) {
+          var message = error && error.message ? error.message : 'VR session could not start.';
+          update({ vrStatus: message, vrSessionActive: false });
+          if (addToast) addToast(message, 'warning');
+          if (announce) announce(message);
         });
       }
 
@@ -870,9 +1093,24 @@
           predictionHazard: '',
           readinessAction: '',
           forecastConfidence: '',
+          reasoning: '',
           evidence: [],
+          lensEvidence: [],
+          carriedEvidence: null,
+          changeLensViewed: false,
           forecastHistory: [],
           observationLog: [],
+          teacherRatings: {},
+          teacherConferenceNote: '',
+          reflectionShift: '',
+          reflectionReadiness: '',
+          reflectionQuestion: '',
+          reflectionSubmitted: false,
+          reasoningPulseResponses: {},
+          peerReviewStrength: '',
+          peerReviewMove: '',
+          peerReviewFeedback: '',
+          peerReviewSubmitted: false,
           boundaryGuess: '',
           boundaryResult: null,
           experimentVariable: 'humidity',
@@ -937,9 +1175,11 @@
       }
 
       function issueForecast() {
-        if (!d.predictionPrecip || !d.predictionTiming || !d.predictionHazard || !d.readinessAction || !d.forecastConfidence) {
-          if (addToast) addToast('Complete precipitation, timing, hazard, school action, and confidence before issuing the forecast.', 'warning');
-          if (announce) announce('Forecast incomplete. Choose precipitation, timing, hazard, school action, and confidence.');
+        var reasoningTarget = band === 'K-2' ? 10 : 20;
+        var reasoningText = (d.reasoning || '').trim();
+        if (!d.predictionPrecip || !d.predictionTiming || !d.predictionHazard || !d.readinessAction || !d.forecastConfidence || reasoningText.length < reasoningTarget) {
+          if (addToast) addToast('Complete the forecast choices and explain your reasoning before verification.', 'warning');
+          if (announce) announce('Forecast incomplete. Complete precipitation, timing, hazard, school action, confidence, and the reasoning note.');
           return;
         }
         var result = scoreForecast(state, {
@@ -962,10 +1202,11 @@
           action: d.readinessAction,
           confidence: Number(d.forecastConfidence),
           evidenceCount: (d.evidence || []).length,
+          reasoning: reasoningText,
           modelHour: state.simHour
         });
         if (history.length > 5) history = history.slice(history.length - 5);
-        update({ forecastResult: result, forecastsIssued: issued, bestForecast: best, forecastHistory: history });
+        update({ forecastResult: result, forecastsIssued: issued, bestForecast: best, forecastHistory: history, reflectionSubmitted: false, peerReviewSubmitted: false });
         if (ctx.awardXP) ctx.awardXP('weatherSystems', result.score >= 80 ? 15 : 5, 'Weather forecast');
         if (result.score >= 80 && ctx.celebrate) ctx.celebrate();
         if (addToast) addToast('Forecast verified: ' + result.score + '/100', result.score >= 80 ? 'success' : 'info');
@@ -1002,6 +1243,184 @@
       }, [state.scenario, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.frontSpeed, state.instability, state.terrain, state.simHour, state.radar, state.fronts, state.windLayer, state.motion, selectedStation, dark]);
 
       React.useEffect(function () {
+        if ((d.tab || 'map') !== 'immersive') return undefined;
+        var canvas = immersiveCanvasRef.current;
+        var THREE = window.THREE;
+        if (!canvas || !THREE || !dataRoot._threeLoaded) return undefined;
+        var live = d.immersiveDataSource === 'live' ? d.liveWeather : null;
+        var model = projectConditions(state, state.simHour);
+        var temperature = live ? live.temperature : model.temperature;
+        var humidity = live ? live.humidity : model.humidity;
+        var pressure = live ? live.pressure : model.pressure;
+        var windSpeed = live ? live.windSpeed : model.windSpeed;
+        var windDir = live ? live.windDir : model.windDir;
+        var cloudCover = live ? live.cloudCover : model.cloudCover;
+        var precipitation = live ? live.precipitation : (model.precipPotential >= 45 ? model.precipPotential / 35 : 0);
+        var weatherCode = live ? live.weatherCode : (model.precipType === 'storms' ? 95 : model.precipType === 'snow' ? 73 : model.precipType === 'rain' ? 63 : 2);
+        var reduceMotion = false;
+        try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
+        var width = Math.max(320, canvas.clientWidth || 960);
+        var height = Math.max(360, canvas.clientHeight || 580);
+        var scene = new THREE.Scene();
+        var stormy = weatherCode >= 51 || precipitation > 0;
+        scene.background = new THREE.Color(stormy ? 0x111827 : cloudCover > 65 ? 0x334155 : 0x0c4a6e);
+        scene.fog = new THREE.FogExp2(stormy ? 0x1e293b : 0x7dd3fc, stormy ? 0.025 : 0.014);
+        var camera = new THREE.PerspectiveCamera(52, width / height, 0.1, 180);
+        camera.position.set(18, 12, 22);
+        camera.lookAt(0, 4, 0);
+        var renderer;
+        try {
+          renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+        } catch (error) {
+          update({ immersiveRenderError: 'WebGL could not start. The Canvas 2D map remains available.' });
+          return undefined;
+        }
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(width, height, false);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.xr.enabled = true;
+        if (renderer.xr.setReferenceSpaceType) renderer.xr.setReferenceSpaceType('local-floor');
+        immersiveRuntimeRef.current = { renderer: renderer, scene: scene, camera: camera };
+
+        var hemisphere = new THREE.HemisphereLight(stormy ? 0x94a3b8 : 0xbae6fd, 0x183c32, stormy ? 0.82 : 1.05);
+        scene.add(hemisphere);
+        var sun = new THREE.DirectionalLight(stormy ? 0xc7d2fe : 0xfff7d6, stormy ? 0.72 : 1.2);
+        sun.position.set(-10, 22, 10); sun.castShadow = true;
+        scene.add(sun);
+        var rim = new THREE.DirectionalLight(0x67e8f9, 0.38);
+        rim.position.set(18, 8, -16); scene.add(rim);
+
+        var groundGeo = new THREE.PlaneGeometry(44, 34, 32, 24);
+        var positions = groundGeo.attributes.position;
+        for (var vertex = 0; vertex < positions.count; vertex += 1) {
+          var vx = positions.getX(vertex); var vy = positions.getY(vertex);
+          var elevation = Math.sin(vx * 0.28) * 0.45 + Math.cos(vy * 0.34) * 0.34 + Math.max(0, vx + 8) * state.terrain * 0.0022;
+          positions.setZ(vertex, elevation);
+        }
+        positions.needsUpdate = true;
+        groundGeo.computeVertexNormals();
+        var groundMat = new THREE.MeshPhongMaterial({ color: stormy ? 0x285142 : 0x34785d, shininess: 20, flatShading: false });
+        var ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2; ground.position.y = -0.8; ground.receiveShadow = true;
+        scene.add(ground);
+        var grid = new THREE.GridHelper(40, 20, 0x38bdf8, 0x164e63);
+        grid.position.y = -0.66; grid.material.transparent = true; grid.material.opacity = 0.18;
+        scene.add(grid);
+
+        var coolMass = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 22), new THREE.MeshPhongMaterial({ color: 0x2563eb, transparent: true, opacity: 0.13, side: THREE.DoubleSide, depthWrite: false }));
+        coolMass.position.set(-11, 3.2, 0); scene.add(coolMass);
+        var warmMass = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 22), new THREE.MeshPhongMaterial({ color: 0xf97316, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false }));
+        warmMass.position.set(11, 3.2, 0); scene.add(warmMass);
+        var frontMat = new THREE.MeshPhongMaterial({ color: scenario.frontType === 'warm' ? 0xef4444 : scenario.frontType === 'occluded' ? 0xa855f7 : 0x38bdf8, transparent: true, opacity: scenario.frontType === 'none' ? 0.08 : 0.38, side: THREE.DoubleSide, depthWrite: false });
+        var frontPlane = new THREE.Mesh(new THREE.PlaneGeometry(27, 11), frontMat);
+        frontPlane.position.set(-3 + state.simHour * state.frontSpeed * 0.025, 4.4, 0);
+        frontPlane.rotation.y = Math.PI / 2.8; frontPlane.rotation.z = -0.18;
+        scene.add(frontPlane);
+
+        var cloudGroup = new THREE.Group();
+        var cloudMaterial = new THREE.MeshPhongMaterial({ color: stormy ? 0x94a3b8 : 0xf8fafc, transparent: true, opacity: stormy ? 0.78 : 0.72, shininess: 10, depthWrite: false });
+        var cloudGeometry = new THREE.SphereGeometry(1, 16, 12);
+        var cloudCount = Math.max(2, Math.min(14, Math.round(cloudCover / 8)));
+        for (var cloudIndex = 0; cloudIndex < cloudCount; cloudIndex += 1) {
+          var cluster = new THREE.Group();
+          for (var puff = 0; puff < 4; puff += 1) {
+            var cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+            cloudMesh.scale.set(1.5 + puff * 0.18, 0.72 + (puff % 2) * 0.18, 1.05);
+            cloudMesh.position.set((puff - 1.5) * 1.1, Math.sin(puff * 1.7) * 0.45, (puff % 2) * 0.65);
+            cluster.add(cloudMesh);
+          }
+          cluster.position.set(-17 + (cloudIndex * 7.1) % 34, 6.2 + (cloudIndex % 3) * 1.4, -10 + (cloudIndex * 5.3) % 20);
+          cluster.userData.speed = 0.0015 + windSpeed * 0.000035;
+          cloudGroup.add(cluster);
+        }
+        scene.add(cloudGroup);
+
+        var precipitationPoints = null;
+        if (precipitation > 0 || weatherCode >= 51) {
+          var particleCount = Math.min(1800, Math.max(280, Math.round(precipitation * 280 + cloudCover * 7)));
+          var particlePositions = new Float32Array(particleCount * 3);
+          for (var particle = 0; particle < particleCount; particle += 1) {
+            particlePositions[particle * 3] = -18 + ((particle * 47) % 360) / 10;
+            particlePositions[particle * 3 + 1] = 1 + ((particle * 83) % 100) / 10;
+            particlePositions[particle * 3 + 2] = -12 + ((particle * 61) % 240) / 10;
+          }
+          var particleGeo = new THREE.BufferGeometry();
+          particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+          var snowing = weatherCode >= 71 && weatherCode <= 86;
+          var particleMat = new THREE.PointsMaterial({ color: snowing ? 0xf8fafc : 0x7dd3fc, size: snowing ? 0.12 : 0.075, transparent: true, opacity: 0.78, depthWrite: false });
+          precipitationPoints = new THREE.Points(particleGeo, particleMat);
+          scene.add(precipitationPoints);
+        }
+
+        var windRadians = (windDir - 90) * Math.PI / 180;
+        for (var arrowIndex = 0; arrowIndex < 12; arrowIndex += 1) {
+          var direction = new THREE.Vector3(Math.cos(windRadians), 0.08, Math.sin(windRadians)).normalize();
+          var origin = new THREE.Vector3(-15 + (arrowIndex * 5.7) % 30, 1.2 + (arrowIndex % 3) * 1.25, -9 + (arrowIndex * 4.1) % 18);
+          var arrow = new THREE.ArrowHelper(direction, origin, 1.8 + windSpeed * 0.055, 0x67e8f9, 0.45, 0.25);
+          scene.add(arrow);
+        }
+
+        STATIONS.forEach(function (stationItem, stationIndex) {
+          var marker = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.34, 1.4, 10), new THREE.MeshPhongMaterial({ color: stationItem.id === selectedStation ? 0xfbbf24 : 0xf8fafc, emissive: stationItem.id === selectedStation ? 0x92400e : 0x0f172a }));
+          marker.position.set((stationItem.x - 0.5) * 32, 0.1, (stationItem.y - 0.5) * 23);
+          marker.castShadow = true; marker.userData.station = stationItem.name; scene.add(marker);
+        });
+
+        var controls = null;
+        if (THREE.OrbitControls) {
+          controls = new THREE.OrbitControls(camera, renderer.domElement);
+          controls.enableDamping = true; controls.dampingFactor = 0.07;
+          controls.target.set(0, 3.2, 0); controls.minDistance = 8; controls.maxDistance = 58;
+          controls.maxPolarAngle = Math.PI * 0.48;
+        }
+        var clock = new THREE.Clock();
+        renderer.setAnimationLoop(function () {
+          var delta = Math.min(0.05, clock.getDelta());
+          if (!reduceMotion) {
+            cloudGroup.children.forEach(function (cluster) {
+              cluster.position.x += cluster.userData.speed * delta * 1000;
+              if (cluster.position.x > 20) cluster.position.x = -20;
+            });
+            if (precipitationPoints) {
+              var attrs = precipitationPoints.geometry.attributes.position;
+              for (var p = 0; p < attrs.count; p += 1) {
+                var py = attrs.getY(p) - delta * (weatherCode >= 71 && weatherCode <= 86 ? 1.4 : 7.5);
+                attrs.setY(p, py < -0.6 ? 10 : py);
+              }
+              attrs.needsUpdate = true;
+            }
+          }
+          if (controls) controls.update();
+          renderer.render(scene, camera);
+        });
+        function resizeImmersiveScene() {
+          var nextWidth = Math.max(320, canvas.clientWidth || 960);
+          var nextHeight = Math.max(360, canvas.clientHeight || 580);
+          camera.aspect = nextWidth / nextHeight; camera.updateProjectionMatrix();
+          renderer.setSize(nextWidth, nextHeight, false);
+        }
+        window.addEventListener('resize', resizeImmersiveScene);
+        update({ immersiveRenderError: '', immersiveSceneReady: true });
+        return function () {
+          window.removeEventListener('resize', resizeImmersiveScene);
+          renderer.setAnimationLoop(null);
+          var session = renderer.xr && renderer.xr.getSession ? renderer.xr.getSession() : null;
+          if (session && session.end) { try { session.end(); } catch (e) { } }
+          if (controls && controls.dispose) controls.dispose();
+          scene.traverse(function (object) {
+            if (object.geometry && object.geometry.dispose) object.geometry.dispose();
+            if (object.material) {
+              var materials = Array.isArray(object.material) ? object.material : [object.material];
+              materials.forEach(function (material) { if (material && material.dispose) material.dispose(); });
+            }
+          });
+          renderer.dispose();
+          immersiveRuntimeRef.current = null;
+        };
+      }, [d.tab, dataRoot._threeLoaded, d.immersiveDataSource, d.liveWeather && d.liveWeather.observedAt, state.scenario, state.simHour, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.terrain, selectedStation]);
+
+      React.useEffect(function () {
         if (!d.playing) return undefined;
         var timer = window.setInterval(function () {
           setToolData(function (prev) {
@@ -1015,11 +1434,19 @@
         return function () { window.clearInterval(timer); };
       }, [d.playing]);
 
-      var rootClass = 'min-h-screen rounded-xl overflow-hidden ' + (dark ? 'bg-slate-950 text-slate-100' : 'bg-sky-50 text-slate-900');
+      var rootClass = 'min-h-screen overflow-hidden rounded-xl antialiased ' + (dark ? 'bg-slate-950 text-slate-100' : 'bg-sky-50 text-slate-900');
       var panelClass = 'rounded-xl border shadow-sm ' + (dark ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-sky-200');
       var mutedClass = dark ? 'text-slate-300' : 'text-slate-600';
-      var inputClass = 'w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none ' + (dark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900');
-      var buttonClass = 'rounded-lg px-3 py-2 text-sm font-bold border transition-colors focus:ring-2 focus:ring-yellow-400 focus:outline-none ' + (dark ? 'bg-slate-800 border-slate-600 hover:bg-slate-700' : 'bg-white border-slate-300 hover:bg-sky-50');
+      var skyAccentClass = dark ? 'text-sky-300' : 'text-sky-700';
+      var cyanAccentClass = dark ? 'text-cyan-300' : 'text-cyan-700';
+      var amberAccentClass = dark ? 'text-amber-300' : 'text-amber-700';
+      var violetAccentClass = dark ? 'text-violet-300' : 'text-violet-700';
+      var fuchsiaAccentClass = dark ? 'text-fuchsia-300' : 'text-fuchsia-700';
+      var indigoAccentClass = dark ? 'text-indigo-300' : 'text-indigo-700';
+      var emeraldAccentClass = dark ? 'text-emerald-300' : 'text-emerald-700';
+      var tealAccentClass = dark ? 'text-teal-300' : 'text-teal-800';
+      var inputClass = 'min-h-11 w-full rounded-lg border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-300 focus-visible:outline-none ' + (dark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900');
+      var buttonClass = 'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (dark ? 'bg-slate-800 border-slate-600 hover:bg-slate-700' : 'bg-white border-slate-300 hover:bg-sky-50');
 
       function meteorologistBadgeBoard() {
         var observationCount = (d.observationLog || []).length;
@@ -1048,28 +1475,111 @@
               h('div', { className: 'flex min-w-0 flex-1 items-center gap-3' },
                 h('div', { className: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xl shadow-lg', 'aria-hidden': true }, '\uD83C\uDFC5'),
                 h('div', { className: 'min-w-0' },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-widest text-indigo-400' }, 'Career pathway'),
+                  h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + indigoAccentClass }, 'Career pathway'),
                   h('h3', { id: 'meteorologist-badges-title', className: 'text-sm font-black' }, 'Meteorologist Badge Board'),
-                  h('p', { className: 'truncate text-[10px] ' + mutedClass }, nextBadge ? 'Next: ' + nextBadge.title + ' - ' + nextBadge.detail : 'All badges earned - keep testing new weather stories!')
+                  h('p', { className: 'text-xs leading-snug ' + mutedClass }, nextBadge ? 'Next: ' + nextBadge.title + ' - ' + nextBadge.detail : 'All badges earned - keep testing new weather stories!')
                 )
               ),
               h('div', { className: 'min-w-[150px] flex-1 sm:max-w-xs' },
-                h('div', { className: 'mb-1 flex items-center justify-between text-[10px] font-bold' }, h('span', null, earned + ' of ' + badges.length + ' earned'), h('span', { className: 'text-indigo-400' }, progress + '%')),
+                h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, earned + ' of ' + badges.length + ' earned'), h('span', { className: indigoAccentClass }, progress + '%')),
                 h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': 'Meteorologist badges earned', 'aria-valuemin': 0, 'aria-valuemax': badges.length, 'aria-valuenow': earned },
-                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-amber-300 transition-all', style: { width: progress + '%' } })
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-amber-300 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
               ),
-              nextBadge && h('button', { type: 'button', onClick: function () { update({ tab: nextBadge.tab }); }, className: 'rounded-lg bg-indigo-600 px-3 py-2 text-[10px] font-black text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-yellow-400' }, nextBadge.action + ' \u2192'),
+              nextBadge && h('button', { type: 'button', onClick: function () { update({ tab: nextBadge.tab }); }, className: 'min-h-11 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300' }, nextBadge.action + ' \u2192'),
               h('button', { type: 'button', onClick: function () { update({ badgeBoardOpen: !open }); }, 'aria-expanded': open, 'aria-controls': 'meteorologist-badge-grid', className: buttonClass + ' text-xs' }, open ? 'Hide badges' : 'Show badges')
             ),
             open && h('div', { id: 'meteorologist-badge-grid', className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5', role: 'list', 'aria-label': 'Meteorologist achievement badges' }, badges.map(function (badge) {
-              return h('div', { key: badge.id, role: 'listitem', 'aria-label': badge.title + (badge.complete ? ' earned' : ' in progress'), className: 'rounded-xl border p-3 transition-colors ' + (badge.complete ? (dark ? 'border-amber-400/40 bg-amber-400/10' : 'border-amber-200 bg-amber-50') : (dark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white/80')) },
+              return h('div', { key: badge.id, role: 'listitem', 'aria-label': badge.title + (badge.complete ? ' earned' : ' in progress'), className: 'rounded-xl border p-3 transition-colors motion-reduce:transition-none ' + (badge.complete ? (dark ? 'border-amber-400/40 bg-amber-400/10' : 'border-amber-200 bg-amber-50') : (dark ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white/80')) },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('span', { className: 'text-xl ' + (badge.complete ? '' : 'grayscale opacity-60'), 'aria-hidden': true }, badge.icon),
-                  h('span', { className: 'rounded-full px-2 py-0.5 text-[9px] font-black ' + (badge.complete ? 'bg-amber-300 text-amber-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, badge.complete ? '\u2713 Earned' : badge.progress)
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (badge.complete ? 'bg-amber-300 text-amber-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, badge.complete ? '\u2713 Earned' : badge.progress)
                 ),
                 h('p', { className: 'mt-2 text-xs font-black' }, badge.title),
-                h('p', { className: 'mt-1 text-[10px] leading-snug ' + mutedClass }, badge.detail)
+                h('p', { className: 'mt-1 text-xs leading-snug ' + mutedClass }, badge.detail)
+              );
+            }))
+          )
+        );
+      }
+
+      function investigationNavigator() {
+        var early = band === 'K-2';
+        var stages = [
+          {
+            id: 'observe', icon: '\uD83D\uDD2D', label: early ? 'Look closely' : 'Observe',
+            detail: early ? 'Save one weather clue.' : 'Log a station observation.', action: 'Log an observation', tab: 'map',
+            complete: (d.observationLog || []).length >= 1
+          },
+          {
+            id: 'compare', icon: '\u2194\uFE0F', label: early ? 'Compare' : 'Compare',
+            detail: early ? 'Find what changed.' : 'Select evidence or compare systems.', action: 'Compare weather evidence', tab: 'map',
+            complete: !!d.patternCompared || (d.lensEvidence || []).length >= 1 || !!d.carriedEvidence
+          },
+          {
+            id: 'test', icon: '\uD83E\uDDEA', label: early ? 'Try a change' : 'Test',
+            detail: early ? 'Change one ingredient.' : 'Run a one-variable investigation.', action: 'Run a controlled test', tab: 'experiment',
+            complete: (d.experimentsRun || 0) >= 1
+          },
+          {
+            id: 'forecast', icon: '\uD83D\uDCE1', label: early ? 'Share a forecast' : 'Forecast',
+            detail: early ? 'Tell what may happen.' : 'Verify an evidence-based forecast.', action: 'Verify a forecast', tab: 'forecast',
+            complete: (d.forecastsIssued || 0) >= 1
+          },
+          {
+            id: 'revise', icon: '\uD83D\uDD01', label: early ? 'Make it better' : 'Revise',
+            detail: early ? 'Try your forecast again.' : 'Compare two verified forecasts.', action: 'Revise and verify again', tab: 'forecast',
+            complete: (d.forecastHistory || []).length >= 2
+          }
+        ];
+        var completedCount = stages.filter(function (stage) { return stage.complete; }).length;
+        var nextStage = stages.filter(function (stage) { return !stage.complete; })[0] || null;
+        function openStage(stage) {
+          update({ tab: stage.tab, navigatorStage: stage.id });
+          if (announce) announce(stage.label + ' stage opened. ' + stage.detail);
+        }
+        return h('nav', {
+          className: 'border-b ' + (dark ? 'border-slate-800 bg-slate-950/80' : 'border-sky-200 bg-white/90'),
+          'data-weather-investigation-pathway': true,
+          'aria-labelledby': 'weather-investigation-pathway-title'
+        },
+          h('div', { className: 'mx-auto max-w-7xl px-4 py-4' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+              h('div', null,
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + tealAccentClass }, 'Learning journey'),
+                h('h3', { id: 'weather-investigation-pathway-title', className: 'mt-1 text-base font-black' }, early ? 'Weather Detective Path' : 'Investigation Pathway'),
+                h('p', { className: 'mt-1 text-xs ' + mutedClass }, nextStage ? 'Recommended next: ' + nextStage.action + '.' : 'Investigation cycle complete. Keep testing new scenarios and improving explanations.')
+              ),
+              h('div', { className: 'min-w-[150px] text-right' },
+                h('p', { className: 'text-sm font-black ' + tealAccentClass }, completedCount + ' of ' + stages.length + ' stages'),
+                h('p', { className: 'text-[11px] font-bold ' + mutedClass }, nextStage ? 'Next: ' + nextStage.label : 'Cycle complete'),
+                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': 'Weather investigation pathway progress', 'aria-valuemin': 0, 'aria-valuemax': stages.length, 'aria-valuenow': completedCount },
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all motion-reduce:transition-none', style: { width: (completedCount / stages.length * 100) + '%' } })
+                )
+              )
+            ),
+            h('ol', { className: 'mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5', 'aria-label': 'Weather investigation stages' }, stages.map(function (stage, index) {
+              var recommended = nextStage && nextStage.id === stage.id;
+              var stateClass = stage.complete
+                ? (dark ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-100' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
+                : recommended
+                  ? (dark ? 'border-sky-300 bg-sky-400/15 text-white ring-2 ring-sky-400/30' : 'border-sky-400 bg-sky-50 text-sky-950 ring-2 ring-sky-200')
+                  : (dark ? 'border-slate-700 bg-slate-900/70 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-800');
+              return h('li', { key: stage.id },
+                h('button', {
+                  type: 'button',
+                  onClick: function () { openStage(stage); },
+                  'aria-current': recommended ? 'step' : undefined,
+                  'aria-label': stage.label + '. ' + (stage.complete ? 'Complete. ' : recommended ? 'Recommended next step. ' : 'Not yet complete. ') + stage.detail,
+                  className: 'min-h-24 w-full rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 ' + stateClass
+                },
+                  h('div', { className: 'flex items-start justify-between gap-2' },
+                    h('span', { className: 'text-xl', 'aria-hidden': true }, stage.icon),
+                    h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (stage.complete ? 'bg-emerald-300 text-emerald-950' : recommended ? 'bg-sky-300 text-sky-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-white text-slate-700')) }, stage.complete ? 'Done' : recommended ? 'Next' : String(index + 1))
+                  ),
+                  h('span', { className: 'mt-2 block text-xs font-black' }, stage.label),
+                  h('span', { className: 'mt-1 block text-[11px] leading-snug opacity-85' }, stage.detail)
+                )
               );
             }))
           )
@@ -1079,6 +1589,7 @@
       function header() {
         var tabs = [
           { id: 'map', label: 'Map Lab', icon: '\uD83D\uDDFA\uFE0F' },
+          { id: 'immersive', label: 'Immersive 3D', icon: '\uD83C\uDF10' },
           { id: 'experiment', label: 'Cause & Effect Lab', icon: '\uD83E\uDDEA' },
           { id: 'forecast', label: 'Forecast Mission', icon: '\uD83D\uDCE1' },
           { id: 'teacher', label: 'Teacher Guide', icon: '\uD83C\uDF93' }
@@ -1090,7 +1601,7 @@
               h('div', { className: 'flex flex-wrap items-center gap-2' },
                 h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83C\uDF26\uFE0F'),
                 h('h2', { className: 'text-lg font-black tracking-tight' }, 'Weather Systems & Forecasting'),
-                h('span', { className: 'rounded-full bg-sky-600 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white' }, band)
+                h('span', { className: 'rounded-full bg-sky-700 px-2 py-1 text-xs font-black uppercase tracking-wide text-white' }, band)
               ),
               h('p', { className: 'text-xs ' + mutedClass }, 'Observe patterns, test a model, and defend a forecast with evidence.')
             ),
@@ -1105,15 +1616,33 @@
             }, '\uD83D\uDCF8 Snapshot')
           ),
           h('div', { className: 'flex flex-wrap gap-2 px-4 pb-3', role: 'tablist', 'aria-label': 'Weather lab sections' },
-            tabs.map(function (tab) {
+            tabs.map(function (tab, tabIndex) {
               var active = (d.tab || 'map') === tab.id;
               return h('button', {
                 key: tab.id,
                 type: 'button',
                 role: 'tab',
+                id: 'weather-tab-' + tab.id,
                 'aria-selected': active,
+                'aria-controls': 'weather-panel-' + tab.id,
                 onClick: function () { update({ tab: tab.id }); },
-                className: 'rounded-full px-4 py-2 text-xs font-black transition-colors focus:ring-2 focus:ring-yellow-400 focus:outline-none ' + (active ? 'bg-sky-600 text-white' : (dark ? 'bg-slate-900 text-slate-300 hover:bg-slate-800' : 'bg-sky-100 text-sky-900 hover:bg-sky-200'))
+                onKeyDown: function (event) {
+                  var nextIndex = null;
+                  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
+                  if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
+                  if (event.key === 'Home') nextIndex = 0;
+                  if (event.key === 'End') nextIndex = tabs.length - 1;
+                  if (nextIndex == null) return;
+                  event.preventDefault();
+                  var nextTab = tabs[nextIndex];
+                  update({ tab: nextTab.id });
+                  if (window.requestAnimationFrame) window.requestAnimationFrame(function () {
+                    var target = document.getElementById('weather-tab-' + nextTab.id);
+                    if (target) target.focus();
+                  });
+                  if (announce) announce(nextTab.label + ' selected.');
+                },
+                className: 'min-h-11 rounded-full px-4 py-2 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (active ? 'bg-sky-700 text-white' : (dark ? 'bg-slate-900 text-slate-300 hover:bg-slate-800' : 'bg-sky-100 text-sky-900 hover:bg-sky-200'))
               }, tab.icon + ' ' + tab.label);
             })
           )
@@ -1125,20 +1654,20 @@
         return h('label', { key: key, htmlFor: id, className: 'block' },
           h('span', { className: 'mb-1 flex items-center justify-between gap-2 text-xs font-bold' },
             h('span', null, label),
-            h('span', { className: 'font-mono text-sky-500' }, value + unit)
+            h('span', { className: 'font-mono ' + skyAccentClass }, value + unit)
           ),
           h('input', {
             id: id,
             type: 'range', min: min, max: max, step: step, value: value,
             onChange: function (event) { setValue(key, Number(event.target.value)); },
-            className: 'w-full accent-sky-500'
+            className: 'h-6 w-full accent-sky-500'
           })
         );
       }
 
       function scenarioPicker() {
         return h('div', { className: panelClass + ' p-3' },
-          h('label', { htmlFor: 'weather-scenario', className: 'mb-1 block text-xs font-black uppercase tracking-wide text-sky-500' }, 'Scenario'),
+          h('label', { htmlFor: 'weather-scenario', className: 'mb-1 block text-xs font-black uppercase tracking-wide ' + skyAccentClass }, 'Scenario'),
           h('select', { id: 'weather-scenario', value: scenario.id, onChange: function (event) { applyScenario(event.target.value); }, className: inputClass },
             SCENARIOS.map(function (item) { return h('option', { key: item.id, value: item.id }, item.name); })
           ),
@@ -1152,12 +1681,12 @@
         return h('div', { className: panelClass + ' p-4', 'data-weather-station-panel': true },
           h('div', { className: 'mb-3 flex flex-wrap items-start justify-between gap-3' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Observation station'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Observation station'),
               h('h3', { className: 'text-base font-black' }, observation.name),
               h('p', { className: 'text-xs ' + mutedClass }, observation.elevation + ' m elevation | T +' + state.simHour + ' h')
             ),
             h('div', { className: 'text-right' },
-              h('p', { className: 'text-2xl font-black text-sky-500' }, observation.temperature + '\u00B0C'),
+              h('p', { className: 'text-2xl font-black ' + skyAccentClass }, observation.temperature + '\u00B0C'),
               h('p', { className: 'text-xs ' + mutedClass }, sky)
             )
           ),
@@ -1169,7 +1698,7 @@
               ['Wind', cardinal(observation.windDir) + ' ' + observation.windSpeed + ' km/h']
             ].map(function (row) {
               return h('div', { key: row[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
-                h('p', { className: 'text-[10px] font-bold ' + mutedClass }, row[0]),
+                h('p', { className: 'text-xs font-bold ' + mutedClass }, row[0]),
                 h('p', { className: 'text-sm font-black' }, row[1])
               );
             })
@@ -1199,11 +1728,11 @@
         return h('section', { className: panelClass + ' p-4', 'data-weather-station-network': true, 'aria-labelledby': 'weather-network-title' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-amber-500' }, 'Synoptic analysis'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + amberAccentClass }, 'Synoptic analysis'),
               h('h3', { id: 'weather-network-title', className: 'text-base font-black' }, 'Station Network: Find the Boundary'),
               h('p', { className: 'mt-1 text-xs ' + mutedClass }, band === '3-5' ? 'Compare nearby stations. Big changes can show where two air masses meet.' : 'Locate the strongest neighboring contrast in temperature, dew point, pressure, and wind direction.')
             ),
-            h('span', { className: 'rounded-full px-3 py-1 text-[10px] font-black ' + (dark ? 'bg-amber-950/50 text-amber-300' : 'bg-amber-100 text-amber-800') }, 'T +' + state.simHour + ' h')
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-amber-950/50 text-amber-300' : 'bg-amber-100 text-amber-800') }, 'T +' + state.simHour + ' h')
           ),
           h('svg', {
             viewBox: '0 0 720 205', className: 'mt-3 h-auto w-full', role: 'img',
@@ -1221,12 +1750,12 @@
                 h('circle', { cx: x, cy: 92, r: item.id === selectedStation ? 19 : 15, fill: warm ? '#fb7185' : '#60a5fa', stroke: item.id === selectedStation ? '#facc15' : (dark ? '#0f172a' : '#ffffff'), strokeWidth: item.id === selectedStation ? 5 : 3 }),
                 h('text', { x: x, y: 55, textAnchor: 'middle', fill: textColor, fontSize: 12, fontWeight: 700 }, item.temperature + '\u00B0C'),
                 h('text', { x: x, y: 126, textAnchor: 'middle', fill: textColor, fontSize: 11, fontWeight: 700 }, item.name),
-                h('text', { x: x, y: 143, textAnchor: 'middle', fill: mutedColor, fontSize: 10 }, 'dew ' + item.dewPoint + '\u00B0 | ' + cardinal(item.windDir)),
-                h('text', { x: x, y: 159, textAnchor: 'middle', fill: mutedColor, fontSize: 10 }, item.seaLevelPressure + ' hPa')
+                h('text', { x: x, y: 143, textAnchor: 'middle', fill: mutedColor, fontSize: 11 }, 'dew ' + item.dewPoint + '\u00B0 | ' + cardinal(item.windDir)),
+                h('text', { x: x, y: 159, textAnchor: 'middle', fill: mutedColor, fontSize: 11 }, item.seaLevelPressure + ' hPa')
               );
             }),
-            h('text', { x: 70, y: 190, fill: mutedColor, fontSize: 10, fontWeight: 700 }, 'WEST'),
-            h('text', { x: 650, y: 190, textAnchor: 'end', fill: mutedColor, fontSize: 10, fontWeight: 700 }, 'EAST')
+            h('text', { x: 70, y: 190, fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'WEST'),
+            h('text', { x: 650, y: 190, textAnchor: 'end', fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'EAST')
           ),
           analysis.hasFront ? h('div', { className: 'mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]' },
             h('label', { htmlFor: 'weather-boundary-guess', className: 'block' },
@@ -1268,7 +1797,7 @@
         return h('section', { className: panelClass + ' p-4', 'data-weather-station-model': true, 'aria-labelledby': 'weather-station-model-title' },
           h('div', { className: 'grid gap-4 md:grid-cols-[320px_1fr]' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Meteorologist notation'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Meteorologist notation'),
               h('h3', { id: 'weather-station-model-title', className: 'text-base font-black' }, 'Decode the station model'),
               h('svg', { viewBox: '0 0 300 165', className: 'mt-2 h-auto w-full', role: 'img', 'aria-label': observation.name + ' station model: temperature ' + observation.temperature + ' degrees Celsius, dew point ' + observation.dewPoint + ' degrees Celsius, sea-level pressure ' + observation.seaLevelPressure + ' hectopascals, cloud cover ' + observation.cloudCover + ' percent, wind from ' + cardinal(observation.windDir) + ' at ' + observation.windSpeed + ' kilometers per hour.' },
                 h('line', { x1: cx, y1: cy, x2: windX, y2: windY, stroke: baseStroke, strokeWidth: 4, strokeLinecap: 'round' }),
@@ -1290,9 +1819,9 @@
                 ['Circle + staff', 'Cloud cover and wind', cover + '% | ' + cardinal(observation.windDir) + ' ' + observation.windSpeed + ' km/h']
               ].map(function (row) {
                 return h('div', { key: row[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
-                  h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-500' }, row[0]),
+                  h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, row[0]),
                   h('p', { className: 'text-xs font-bold' }, row[1]),
-                  h('p', { className: 'text-[10px] ' + mutedClass }, row[2])
+                  h('p', { className: 'text-xs ' + mutedClass }, row[2])
                 );
               })
             )
@@ -1310,14 +1839,14 @@
         return h('section', { className: panelClass + ' p-4', 'data-weather-cross-section': true, 'aria-labelledby': 'weather-cross-section-title' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'From map to atmosphere'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'From map to atmosphere'),
               h('h3', { id: 'weather-cross-section-title', className: 'text-base font-black' }, 'Vertical air-mass cross-section')
             ),
-            h('span', { className: 'rounded-full px-3 py-1 text-[10px] font-black ' + (dark ? 'bg-slate-800 text-sky-300' : 'bg-sky-100 text-sky-800') }, scenario.name)
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-slate-800 text-sky-300' : 'bg-sky-100 text-sky-800') }, scenario.name)
           ),
           h('svg', { viewBox: '0 0 720 245', className: 'mt-3 h-auto w-full', role: 'img', 'aria-label': frontLabel },
             h('defs', null, h('marker', { id: 'weather-cross-arrow', markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto' }, h('path', { d: 'M0,0 L0,6 L7,3 z', fill: textColor }))),
-            h('rect', { x: 0, y: 0, width: 720, height: 210, rx: 14, fill: dark ? '#0b1830' : '#e0f2fe' }),
+            h('rect', { x: 0, y: 0, width: '100%', height: 210, rx: 14, fill: dark ? '#0b1830' : '#e0f2fe' }),
             h('line', { x1: 20, y1: 205, x2: 700, y2: 205, stroke: dark ? '#94a3b8' : '#475569', strokeWidth: 3 }),
             fair ? h('g', null,
               h('path', { d: 'M70 205 L70 70 L650 70 L650 205 Z', fill: dark ? '#163b57' : '#bae6fd', opacity: 0.7 }),
@@ -1348,10 +1877,10 @@
         return h('div', { className: panelClass + ' overflow-hidden', 'data-weather-observation-log': true },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b p-3 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Evidence notebook'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Evidence notebook'),
               h('h3', { className: 'text-sm font-black' }, 'Logged observations (' + log.length + ')')
             ),
-            h('button', { type: 'button', onClick: function () { update({ observationLog: [] }); }, className: 'text-xs font-bold text-sky-500 hover:underline focus:ring-2 focus:ring-yellow-400 focus:outline-none' }, 'Clear log')
+            h('button', { type: 'button', onClick: function () { update({ observationLog: [] }); }, className: 'min-h-11 rounded-lg px-2 text-xs font-bold ' + skyAccentClass + ' hover:underline focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, 'Clear log')
           ),
           h('div', { className: 'overflow-x-auto' },
             h('table', { className: 'w-full min-w-[620px] text-left text-xs' },
@@ -1375,41 +1904,104 @@
         );
       }
       function trendChart() {
-        var points = [];
-        for (var hour = 0; hour <= 12; hour += 2) points.push(projectConditions(state, hour));
-        function pathFor(field, low, high) {
+        var series = stationTimeSeries(state, station, 12, 1);
+        var points = series.points;
+        var passageVisible = series.passageHour != null && series.passageHour <= 12;
+        function signed(value, unit) { return (value > 0 ? '+' : '') + value + unit; }
+
+        if (band === 'K-2') {
+          var storyHours = passageVisible ? [Math.max(0, Math.floor(series.passageHour - 2)), Math.round(series.passageHour), Math.min(12, Math.ceil(series.passageHour + 2))] : [0, 6, 12];
+          var storyLabels = passageVisible ? ['Before', 'Near the front', 'After'] : ['Start', 'Middle', 'Later'];
+          return h('section', { className: panelClass + ' p-4', 'data-weather-front-meteogram': true, 'aria-labelledby': 'weather-meteogram-title' },
+            h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, '12-hour weather story'),
+            h('h3', { id: 'weather-meteogram-title', className: 'mt-1 text-base font-black' }, 'Before, during, and after'),
+            h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' }, storyHours.map(function (hour, index) {
+              var point = stationObservation(Object.assign({}, state, { simHour: hour }), station);
+              var sky = point.cloudCover < 35 ? 'few clouds' : point.cloudCover < 75 ? 'more clouds' : 'cloudy';
+              return h('div', { key: storyLabels[index], className: 'rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
+                h('p', { className: 'text-xs font-black ' + skyAccentClass }, storyLabels[index] + ' | T +' + hour),
+                h('p', { className: 'mt-1 text-lg font-black' }, point.temperature + '\u00B0C'),
+                h('p', { className: 'text-xs ' + mutedClass }, sky + ' | wind ' + cardinal(point.windDir))
+              );
+            })),
+            h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, passageVisible ? 'Watch how the weather changes as the boundary reaches ' + station.name + '.' : 'This scenario has no front crossing this station in the next 12 hours.')
+          );
+        }
+
+        function xFor(hour) { return 86 + hour / 12 * 610; }
+        function pathFor(field, low, high, top, bottom) {
           return points.map(function (point, index) {
-            var x = 45 + index * 83;
-            var y = 125 - ((point[field] - low) / Math.max(1, high - low)) * 82;
-            return (index === 0 ? 'M' : 'L') + x + ' ' + clamp(y, 28, 128);
+            var x = xFor(point.hour);
+            var y = bottom - clamp((point[field] - low) / Math.max(1, high - low), 0, 1) * (bottom - top);
+            return (index === 0 ? 'M' : 'L') + x + ' ' + y;
           }).join(' ');
         }
-        var temps = points.map(function (p) { return p.temperature; });
-        var lowTemp = Math.min.apply(Math, temps) - 2;
-        var highTemp = Math.max.apply(Math, temps) + 2;
-        return h('div', { className: panelClass + ' p-3' },
-          h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
+        var temperatures = points.reduce(function (all, point) { all.push(point.temperature, point.dewPoint); return all; }, []);
+        var tempLow = Math.floor(Math.min.apply(Math, temperatures) - 2);
+        var tempHigh = Math.ceil(Math.max.apply(Math, temperatures) + 2);
+        var pressures = points.map(function (point) { return point.seaLevelPressure; });
+        var pressureLow = Math.floor(Math.min.apply(Math, pressures) - 1);
+        var pressureHigh = Math.ceil(Math.max.apply(Math, pressures) + 1);
+        var windHigh = Math.max(20, Math.ceil(Math.max.apply(Math, points.map(function (point) { return point.windSpeed; })) / 10) * 10);
+        var textColor = dark ? '#e2e8f0' : '#0f172a';
+        var mutedColor = dark ? '#94a3b8' : '#475569';
+        var gridColor = dark ? '#334155' : '#cbd5e1';
+        var passageX = passageVisible ? xFor(series.passageHour) : null;
+        var summary = 'Twelve-hour meteogram for ' + station.name + '. Temperature changes from ' + points[0].temperature + ' to ' + points[points.length - 1].temperature + ' degrees Celsius, pressure from ' + points[0].seaLevelPressure + ' to ' + points[points.length - 1].seaLevelPressure + ' hectopascals, wind from ' + points[0].windSpeed + ' to ' + points[points.length - 1].windSpeed + ' kilometers per hour, and precipitation potential from ' + points[0].precipPotential + ' to ' + points[points.length - 1].precipPotential + ' percent.' + (passageVisible ? ' The modeled front reaches the station near hour ' + series.passageHour + '.' : '');
+
+        return h('section', { className: panelClass + ' p-4', 'data-weather-front-meteogram': true, 'aria-labelledby': 'weather-meteogram-title' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, '12-hour model trend'),
-              h('p', { className: 'text-xs ' + mutedClass }, 'Temperature and precipitation potential are linked to the same evolving air mass.')
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, '12-hour model trend at ' + station.name),
+              h('h3', { id: 'weather-meteogram-title', className: 'text-base font-black' }, 'Front-Passage Meteogram'),
+              h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'A meteogram aligns several station measurements on one time axis.')
             ),
-            h('div', { className: 'flex gap-3 text-[10px] font-bold ' + mutedClass },
-              h('span', null, h('span', { className: 'mr-1 inline-block h-2 w-4 rounded bg-orange-400' }), 'Temperature'),
-              h('span', null, h('span', { className: 'mr-1 inline-block h-2 w-4 rounded bg-sky-400' }), 'Precipitation potential')
-            )
+            passageVisible && h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-amber-950/60 text-amber-300' : 'bg-amber-100 text-amber-800') }, 'Front near T +' + series.passageHour + ' h')
           ),
-          h('svg', { viewBox: '0 0 570 150', className: 'h-auto w-full', role: 'img', 'aria-label': 'Forecast trend from zero to twelve hours. Temperature ranges from ' + lowTemp + ' to ' + highTemp + ' degrees Celsius and precipitation potential changes with the weather system.' },
-            [0, 1, 2, 3].map(function (line) { return h('line', { key: 'g' + line, x1: 45, y1: 38 + line * 28, x2: 545, y2: 38 + line * 28, stroke: dark ? '#334155' : '#cbd5e1', strokeWidth: 1 }); }),
-            h('path', { d: pathFor('temperature', lowTemp, highTemp), fill: 'none', stroke: '#fb923c', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { d: pathFor('precipPotential', 0, 100), fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            points.map(function (point, index) {
-              var x = 45 + index * 83;
-              return h('g', { key: point.hour },
-                h('circle', { cx: x, cy: clamp(125 - ((point.temperature - lowTemp) / Math.max(1, highTemp - lowTemp)) * 82, 28, 128), r: 4, fill: '#fb923c' }),
-                h('circle', { cx: x, cy: clamp(125 - point.precipPotential / 100 * 82, 28, 128), r: 4, fill: '#38bdf8' }),
-                h('text', { x: x, y: 145, textAnchor: 'middle', fill: dark ? '#cbd5e1' : '#334155', fontSize: 10 }, '+' + point.hour + 'h')
+          h('div', { className: 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold ' + mutedClass },
+            [
+              ['#fb923c', 'Temperature'], ['#22d3ee', 'Dew point'], ['#a78bfa', 'Pressure'],
+              ['#34d399', 'Wind speed'], ['#38bdf8', 'Precipitation'], ['#94a3b8', 'Cloud cover']
+            ].map(function (item) { return h('span', { key: item[1] }, h('span', { className: 'mr-1 inline-block h-2 w-4 rounded', style: { backgroundColor: item[0] } }), item[1]); })
+          ),
+          h('svg', { viewBox: '0 0 760 355', className: 'mt-2 h-auto w-full', role: 'img', 'aria-label': summary },
+            [0, 3, 6, 9, 12].map(function (hour) {
+              var x = xFor(hour);
+              return h('g', { key: 'hour-' + hour },
+                h('line', { x1: x, y1: 35, x2: x, y2: 315, stroke: gridColor, strokeWidth: 1 }),
+                h('text', { x: x, y: 340, textAnchor: 'middle', fill: mutedColor, fontSize: 11 }, 'T+' + hour)
               );
+            }),
+            [
+              { y: 42, label: 'Temp / dew' },
+              { y: 112, label: 'Pressure' },
+              { y: 182, label: 'Wind' },
+              { y: 252, label: 'Clouds / precip' }
+            ].map(function (lane) {
+              return h('g', { key: lane.label },
+                h('text', { x: 76, y: lane.y + 26, textAnchor: 'end', fill: textColor, fontSize: 11, fontWeight: 700 }, lane.label),
+                h('line', { x1: 86, y1: lane.y + 58, x2: 696, y2: lane.y + 58, stroke: gridColor, strokeWidth: 1 })
+              );
+            }),
+            passageVisible && h('g', null,
+              h('line', { x1: passageX, y1: 25, x2: passageX, y2: 315, stroke: '#f59e0b', strokeWidth: 3, strokeDasharray: '7 5' }),
+              h('text', { x: passageX, y: 18, textAnchor: 'middle', fill: '#f59e0b', fontSize: 11, fontWeight: 700 }, 'FRONT')
+            ),
+            h('path', { d: pathFor('temperature', tempLow, tempHigh, 42, 100), fill: 'none', stroke: '#fb923c', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { d: pathFor('dewPoint', tempLow, tempHigh, 42, 100), fill: 'none', stroke: '#22d3ee', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { d: pathFor('seaLevelPressure', pressureLow, pressureHigh, 112, 170), fill: 'none', stroke: '#a78bfa', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { d: pathFor('windSpeed', 0, windHigh, 182, 240), fill: 'none', stroke: '#34d399', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { d: pathFor('cloudCover', 0, 100, 252, 310), fill: 'none', stroke: '#94a3b8', strokeWidth: 3, strokeDasharray: '6 4', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { d: pathFor('precipPotential', 0, 100, 252, 310), fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            points.filter(function (point) { return point.hour % 3 === 0; }).map(function (point) {
+              return h('circle', { key: 'precip-' + point.hour, cx: xFor(point.hour), cy: 310 - point.precipPotential / 100 * 58, r: 4, fill: '#38bdf8' });
             })
+          ),
+          h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
+            h('p', { className: 'text-xs font-black' }, passageVisible ? 'Modeled front passage near T +' + series.passageHour + ' h' : 'No modeled front passage in this 12-hour window'),
+            h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, passageVisible
+              ? 'Across the three-hour passage window: temperature ' + signed(series.deltas.temperature, '\u00B0C') + ', dew point ' + signed(series.deltas.dewPoint, '\u00B0C') + ', pressure ' + signed(series.deltas.pressure, ' hPa') + ', wind shifts ' + series.deltas.windShift + '\u00B0, and precipitation potential ' + signed(series.deltas.precipPotential, ' points') + '.'
+              : 'Compare the aligned measurements for gradual trends caused by heating, moisture, elevation, or the larger weather system.')
           )
         );
       }
@@ -1454,21 +2046,21 @@
         return h('section', { className: 'overflow-hidden rounded-xl border border-blue-400/30 bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-950 text-white shadow-lg', 'data-weather-atmosphere-storyline': true, 'aria-labelledby': 'atmosphere-storyline-title' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
             h('div', null,
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-cyan-300' }, 'Time and change'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest text-cyan-300' }, 'Time and change'),
               h('h3', { id: 'atmosphere-storyline-title', className: 'text-lg font-black' }, 'Atmosphere Storyline'),
               h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Read the model as a sequence of evidence, not a single weather snapshot.')
             ),
             h('div', { className: 'rounded-xl bg-white/10 px-3 py-2 text-center ring-1 ring-white/10' },
               h('p', { className: 'text-xl font-black text-cyan-300' }, 'T +' + state.simHour),
-              h('p', { className: 'text-[9px] font-bold uppercase tracking-wide text-slate-300' }, state.simHour === 0 ? 'Starting conditions' : state.simHour < 6 ? 'Early evolution' : state.simHour < 12 ? 'Developing pattern' : 'Later outlook')
+              h('p', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-300' }, state.simHour === 0 ? 'Starting conditions' : state.simHour < 6 ? 'Early evolution' : state.simHour < 12 ? 'Developing pattern' : 'Later outlook')
             )
           ),
           h('div', { className: 'p-4' },
             h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Jump to a model-hour chapter' },
-              h('span', { className: 'mr-1 text-[10px] font-black uppercase tracking-wide text-cyan-300' }, 'Jump to chapter'),
+              h('span', { className: 'mr-1 text-xs font-black uppercase tracking-wide text-cyan-300' }, 'Jump to chapter'),
               chapters.map(function (hour) {
                 var active = state.simHour === hour;
-                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'rounded-full border px-3 py-1.5 text-[10px] font-black transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10') }, 'T +' + hour);
+                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10') }, 'T +' + hour);
               })
             ),
             h('div', { className: 'relative mt-4 grid gap-3 md:grid-cols-3', 'aria-live': 'polite' }, cards.map(function (card) {
@@ -1476,23 +2068,23 @@
               return h('article', { key: card.id, className: 'relative rounded-xl border p-4 ' + (currentCard ? 'border-cyan-300/50 bg-cyan-400/10 shadow-lg shadow-cyan-950/30' : 'border-white/10 bg-white/5') },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('div', null,
-                    h('p', { className: 'text-[9px] font-black uppercase tracking-wide ' + (currentCard ? 'text-cyan-300' : 'text-slate-400') }, card.eyebrow),
+                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + (currentCard ? 'text-cyan-300' : 'text-slate-400') }, card.eyebrow),
                     h('p', { className: 'mt-1 text-base font-black' }, 'T +' + card.hour + ' hours')
                   ),
                   h('span', { className: 'text-xl', 'aria-hidden': true }, card.icon)
                 ),
-                h('p', { className: 'mt-3 rounded-lg bg-black/20 p-2 font-mono text-[10px] leading-relaxed text-cyan-100' }, conditionsLine(card.point)),
+                h('p', { className: 'mt-3 rounded-lg bg-black/20 p-2 font-mono text-xs leading-relaxed text-cyan-100' }, conditionsLine(card.point)),
                 h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-200' }, card.story)
               );
             })),
             h('div', { className: 'mt-4 flex items-start gap-3 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3' },
               h('span', { className: 'text-xl', 'aria-hidden': true }, '\uD83D\uDC41\uFE0F'),
               h('div', null,
-                h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-amber-300' }, 'Evidence cue'),
+                h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-amber-300' }, 'Evidence cue'),
                 h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, watchCue)
               )
             ),
-            h('p', { className: 'mt-3 text-[10px] leading-relaxed text-slate-400' }, 'Storyline chapters are projections from this transparent teaching model, not observed future weather.')
+            h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-400' }, 'Storyline chapters are projections from this transparent teaching model, not observed future weather.')
           )
         );
       }
@@ -1522,48 +2114,315 @@
         return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-visual-scene-studio': true, 'aria-labelledby': 'visual-scene-studio-title' },
           h('div', { className: 'flex items-start justify-between gap-2 border-b p-3 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
             h('div', null,
-              h('p', { className: 'text-[9px] font-black uppercase tracking-widest text-violet-400' }, 'Map appearance'),
+              h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + violetAccentClass }, 'Map appearance'),
               h('h3', { id: 'visual-scene-studio-title', className: 'text-xs font-black uppercase tracking-wide' }, 'Visual Scene Studio')
             ),
-            h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (activePreset ? (dark ? 'bg-violet-950 text-violet-300' : 'bg-violet-100 text-violet-800') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), role: 'status', 'aria-live': 'polite' }, activePreset ? activePreset.label : 'Custom mix')
+            h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + (activePreset ? (dark ? 'bg-violet-950 text-violet-300' : 'bg-violet-100 text-violet-800') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), role: 'status', 'aria-live': 'polite' }, activePreset ? activePreset.label : 'Custom mix')
           ),
           h('div', { className: 'p-3' },
             h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Weather map visual presets' }, presets.map(function (preset) {
               var selected = activePreset && activePreset.id === preset.id;
-              return h('button', { key: preset.id, type: 'button', onClick: function () { applyVisualPreset(preset); }, 'aria-pressed': !!selected, className: 'rounded-xl border p-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-yellow-400 ' + (selected ? 'border-violet-400 bg-violet-600 text-white shadow-md' : (dark ? 'border-slate-700 bg-slate-950/60 hover:border-violet-500/50 hover:bg-slate-800' : 'border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50')) },
-                h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, preset.icon), h('span', { className: 'text-[10px] font-black' }, preset.label)),
-                h('p', { className: 'mt-1 text-[9px] leading-snug ' + (selected ? 'text-violet-100' : mutedClass) }, preset.detail)
+              return h('button', { key: preset.id, type: 'button', onClick: function () { applyVisualPreset(preset); }, 'aria-pressed': !!selected, className: 'min-h-16 rounded-xl border p-3 text-left transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-violet-400 bg-violet-600 text-white shadow-md' : (dark ? 'border-slate-700 bg-slate-950/60 hover:border-violet-500/50 hover:bg-slate-800' : 'border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50')) },
+                h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, preset.icon), h('span', { className: 'text-xs font-black' }, preset.label)),
+                h('p', { className: 'mt-1 text-[11px] leading-snug ' + (selected ? 'text-violet-100' : mutedClass) }, preset.detail)
               );
             })),
             h('div', { className: 'mt-3 border-t pt-3 ' + (dark ? 'border-slate-700' : 'border-sky-100') },
               h('div', { className: 'mb-1 flex items-center justify-between gap-2' },
-                h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-500' }, 'Fine-tune layers'),
-                h('span', { className: 'text-[9px] ' + mutedClass }, layers.filter(function (layer) { return layer.value; }).length + '/4 visible')
+                h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, 'Fine-tune layers'),
+                h('span', { className: 'text-[11px] ' + mutedClass }, layers.filter(function (layer) { return layer.value; }).length + '/4 visible')
               ),
               layers.map(function (layer) {
-                return h('label', { key: layer.id, className: 'flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors ' + (dark ? 'hover:bg-slate-800' : 'hover:bg-sky-50') },
+                return h('label', { key: layer.id, className: 'flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors motion-reduce:transition-none ' + (dark ? 'hover:bg-slate-800' : 'hover:bg-sky-50') },
                   h('span', { className: 'flex items-center gap-2' },
                     h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-md ' + (layer.value ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-700') : (dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400')), 'aria-hidden': true }, layer.icon),
-                    h('span', null, h('span', { className: 'block text-[10px] font-black' }, layer.label), h('span', { className: 'block text-[9px] ' + mutedClass }, layer.detail))
+                    h('span', null, h('span', { className: 'block text-xs font-black' }, layer.label), h('span', { className: 'block text-[11px] ' + mutedClass }, layer.detail))
                   ),
-                  h('input', { type: 'checkbox', checked: layer.value, onChange: function (event) { var patch = {}; patch[layer.id] = event.target.checked; update(patch); }, className: 'h-4 w-4 ' + layer.accent, 'aria-label': layer.label })
+                  h('input', { type: 'checkbox', checked: layer.value, onChange: function (event) { var patch = {}; patch[layer.id] = event.target.checked; update(patch); }, className: 'h-6 w-6 ' + layer.accent, 'aria-label': layer.label })
                 );
               })
             ),
-            h('p', { className: 'mt-2 rounded-lg p-2 text-[9px] leading-relaxed ' + (dark ? 'bg-slate-950/70 text-slate-400' : 'bg-sky-50 text-slate-600') }, 'Visual presets change only the displayed layers. Weather measurements and model outcomes stay the same.')
+            h('p', { className: 'mt-2 rounded-lg p-2 text-[11px] leading-relaxed ' + (dark ? 'bg-slate-950/70 text-slate-400' : 'bg-sky-50 text-slate-600') }, 'Visual presets change only the displayed layers. Weather measurements and model outcomes stay the same.')
+          )
+        );
+      }
+
+      function weatherChangeLens() {
+        var futureMode = state.simHour < 24;
+        var startHour = futureMode ? state.simHour : Math.max(0, state.simHour - 3);
+        var endHour = futureMode ? Math.min(24, state.simHour + 3) : state.simHour;
+        var start = projectConditions(state, startHour);
+        var end = projectConditions(state, endHour);
+        var pressureDelta = round(end.pressure - start.pressure, 1);
+        var precipDelta = end.precipPotential - start.precipPotential;
+        var rawWindShift = Math.abs(end.windDir - start.windDir);
+        var windShift = Math.round(Math.min(rawWindShift, 360 - rawWindShift));
+        function direction(delta, threshold) {
+          if (Math.abs(delta) < threshold) return { icon: '→', label: 'Steady' };
+          return delta > 0 ? { icon: '↑', label: 'Rising' } : { icon: '↓', label: 'Falling' };
+        }
+        function signedValue(value, unit) {
+          return (value > 0 ? '+' : '') + value + unit;
+        }
+        var metrics = [
+          {
+            id: 'temperature', icon: '🌡️', label: 'Temperature',
+            start: start.temperature, end: end.temperature, delta: round(end.temperature - start.temperature, 1), unit: '°C', threshold: 0.4, scale: 8, evidenceId: 'tempDew',
+            card: dark ? 'border-orange-400/25 bg-orange-400/10' : 'border-orange-200 bg-orange-50',
+            accent: dark ? 'text-orange-300' : 'text-orange-800', bar: 'bg-orange-500'
+          },
+          {
+            id: 'pressure', icon: '◎', label: 'Pressure',
+            start: start.pressure, end: end.pressure, delta: pressureDelta, unit: ' hPa', threshold: 0.5, scale: 8, evidenceId: 'pressure',
+            card: dark ? 'border-violet-400/25 bg-violet-400/10' : 'border-violet-200 bg-violet-50',
+            accent: dark ? 'text-violet-300' : 'text-violet-800', bar: 'bg-violet-500'
+          },
+          {
+            id: 'wind', icon: '💨', label: 'Wind speed',
+            start: start.windSpeed, end: end.windSpeed, delta: end.windSpeed - start.windSpeed, unit: ' km/h', threshold: 2, scale: 24, evidenceId: 'windShift',
+            card: dark ? 'border-cyan-400/25 bg-cyan-400/10' : 'border-cyan-200 bg-cyan-50',
+            accent: dark ? 'text-cyan-300' : 'text-cyan-800', bar: 'bg-cyan-500'
+          },
+          {
+            id: 'precipitation', icon: '🌧️', label: 'Precipitation',
+            start: start.precipPotential, end: end.precipPotential, delta: precipDelta, unit: ' points', threshold: 4, scale: 45, evidenceId: 'clouds',
+            card: dark ? 'border-sky-400/25 bg-sky-400/10' : 'border-sky-200 bg-sky-50',
+            accent: dark ? 'text-sky-300' : 'text-sky-800', bar: 'bg-sky-500'
+          }
+        ];
+        var signalTitle = 'Gradual evolution';
+        var signalIcon = '🧭';
+        var signalText = 'The model changes slowly. Compare several observations before making a forecast claim.';
+        if (pressureDelta <= -1 && precipDelta >= 5) {
+          signalTitle = 'System strengthening';
+          signalIcon = '🌀';
+          signalText = 'Falling pressure and rising precipitation potential point to a developing or approaching weather system.';
+        } else if (pressureDelta >= 1 && precipDelta <= -5) {
+          signalTitle = 'Clearing signal';
+          signalIcon = '🌤️';
+          signalText = 'Rising pressure and falling precipitation potential support a transition toward quieter weather.';
+        } else if (windShift >= 45) {
+          signalTitle = 'Boundary passage signal';
+          signalIcon = '🔺';
+          signalText = 'A ' + windShift + '° wind shift is evidence that a front or air-mass boundary may be moving through.';
+        } else if (precipDelta >= 8) {
+          signalTitle = 'Moistening signal';
+          signalIcon = '💧';
+          signalText = 'Precipitation potential is climbing. Check cloud cover, humidity, lift, and radar for supporting evidence.';
+        } else if (precipDelta <= -8) {
+          signalTitle = 'Drying signal';
+          signalIcon = '☀️';
+          signalText = 'Precipitation potential is dropping. Look for decreasing cloud cover or air moving behind the system.';
+        }
+        if (band === 'K-2') {
+          signalText = signalTitle === 'System strengthening' || signalTitle === 'Moistening signal'
+            ? 'The model shows weather becoming wetter or more active. Look for more clouds and rain.'
+            : signalTitle === 'Clearing signal' || signalTitle === 'Drying signal'
+              ? 'The model shows weather becoming calmer or drier. Look for fewer clouds.'
+              : signalTitle === 'Boundary passage signal'
+                ? 'The wind changes direction when different kinds of air move past the station.'
+                : 'The weather changes a little at a time. Watch more than one clue.';
+        }
+        var summary = 'Evidence lens from model hour ' + startHour + ' to ' + endHour + '. Temperature changes ' + signedValue(round(end.temperature - start.temperature, 1), ' degrees Celsius') + ', pressure ' + signedValue(pressureDelta, ' hectopascals') + ', wind speed ' + signedValue(end.windSpeed - start.windSpeed, ' kilometers per hour') + ', and precipitation potential ' + signedValue(precipDelta, ' percentage points') + '. Main signal: ' + signalTitle + '. ' + signalText;
+        var selectedLensEvidence = (d.lensEvidence || []).slice();
+        function toggleLensEvidence(id) {
+          var next = selectedLensEvidence.slice();
+          var index = next.indexOf(id);
+          if (index === -1) next.push(id); else next.splice(index, 1);
+          update({ lensEvidence: next });
+          var item = EVIDENCE.filter(function (candidate) { return candidate.id === id; })[0];
+          if (announce && item) announce(item.label + (index === -1 ? ' selected for the forecast.' : ' removed from the forecast evidence tray.'));
+        }
+        function carryLensEvidence() {
+          if (!selectedLensEvidence.length) {
+            if (announce) announce('Select at least one evidence card before opening the Forecast Mission.');
+            return;
+          }
+          var merged = (d.evidence || []).slice();
+          selectedLensEvidence.forEach(function (id) { if (merged.indexOf(id) === -1) merged.push(id); });
+          update({
+            tab: 'forecast',
+            changeLensViewed: true,
+            evidence: merged,
+            carriedEvidence: {
+              startHour: startHour,
+              endHour: endHour,
+              signalTitle: signalTitle,
+              signalText: signalText,
+              ids: selectedLensEvidence.slice()
+            }
+          });
+          if (announce) announce(selectedLensEvidence.length + ' evidence sources carried into the Forecast Mission.');
+        }
+        return h('section', {
+          className: panelClass + ' overflow-hidden',
+          'data-weather-change-lens': true,
+          'aria-labelledby': 'weather-change-lens-title',
+          'aria-describedby': 'weather-change-lens-summary'
+        },
+          h('p', { id: 'weather-change-lens-summary', className: 'sr-only' }, summary),
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900' : 'border-sky-200 bg-gradient-to-r from-white via-indigo-50 to-white') },
+            h('div', null,
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + indigoAccentClass }, 'Compare, then explain'),
+              h('h3', { id: 'weather-change-lens-title', className: 'text-base font-black' }, futureMode ? 'Next 3-hour Evidence Lens' : 'Recent 3-hour Evidence Lens'),
+              h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Select measurable changes to carry into your forecast, then explain how they support your claim.')
+            ),
+            h('span', { className: 'rounded-full px-3 py-1.5 text-xs font-black ' + (dark ? 'bg-indigo-950 text-indigo-200 ring-1 ring-indigo-400/30' : 'bg-indigo-100 text-indigo-900') }, 'T +' + startHour + ' → T +' + endHour)
+          ),
+          h('div', { className: 'p-4' },
+            h('p', { className: 'mb-3 text-xs font-bold ' + mutedClass, role: 'status', 'aria-live': 'polite' }, selectedLensEvidence.length ? selectedLensEvidence.length + ' evidence card' + (selectedLensEvidence.length === 1 ? '' : 's') + ' selected' : 'Choose one or more evidence cards to build your forecast trail.'),
+            h('div', { className: 'grid grid-cols-2 gap-3 lg:grid-cols-4' }, metrics.map(function (metric) {
+              var trend = direction(metric.delta, metric.threshold);
+              var strength = Math.round(clamp(Math.abs(metric.delta) / metric.scale * 100, 8, 100));
+              var lensSelected = selectedLensEvidence.indexOf(metric.evidenceId) !== -1;
+              return h('button', {
+                key: metric.id,
+                type: 'button',
+                onClick: function () { toggleLensEvidence(metric.evidenceId); },
+                'aria-pressed': lensSelected,
+                className: 'min-h-32 w-full rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 ' + metric.card + (lensSelected ? ' ring-2 ring-indigo-400' : '')
+              },
+                h('div', { className: 'flex items-start justify-between gap-2' },
+                  h('div', null,
+                    h('p', { className: 'text-xs font-black ' + metric.accent }, metric.icon + ' ' + metric.label),
+                    h('p', { className: 'mt-1 text-sm font-black' }, metric.start + (metric.id === 'precipitation' ? '%' : metric.unit) + ' → ' + metric.end + (metric.id === 'precipitation' ? '%' : metric.unit))
+                  ),
+                  h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + metric.accent }, lensSelected ? 'Selected' : trend.icon + ' ' + trend.label)
+                ),
+                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), 'aria-hidden': true },
+                  h('div', { className: 'h-full rounded-full ' + metric.bar, style: { width: strength + '%' } })
+                ),
+                h('p', { className: 'mt-2 text-xs font-bold ' + mutedClass }, 'Change: ' + signedValue(metric.delta, metric.unit))
+              );
+            })),
+            h('div', { className: 'mt-4 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center ' + (dark ? 'border-indigo-400/25 bg-indigo-400/10' : 'border-indigo-200 bg-indigo-50') },
+              h('span', { className: 'text-2xl', 'aria-hidden': true }, signalIcon),
+              h('div', { className: 'min-w-0 flex-1' },
+                h('p', { className: 'text-xs font-black uppercase tracking-wide ' + indigoAccentClass }, 'Dominant evidence signal'),
+                h('p', { className: 'mt-1 text-sm font-black' }, signalTitle),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, signalText)
+              ),
+              h('button', {
+                type: 'button',
+                onClick: carryLensEvidence,
+                disabled: selectedLensEvidence.length === 0,
+                className: buttonClass + ' shrink-0 border-indigo-400/40 disabled:cursor-not-allowed disabled:opacity-50 ' + (dark ? 'bg-indigo-950 text-indigo-100 hover:bg-indigo-900' : 'bg-white text-indigo-900 hover:bg-indigo-100')
+              }, selectedLensEvidence.length ? 'Carry ' + selectedLensEvidence.length + ' to forecast' : 'Select evidence to continue')
+            )
+          )
+        );
+      }
+
+      function patternCompareStudio() {
+        var alternatives = SCENARIOS.filter(function (item) { return item.id !== scenario.id; });
+        var requestedId = d.compareScenario;
+        var comparisonId = alternatives.some(function (item) { return item.id === requestedId; }) ? requestedId : alternatives[0].id;
+        var comparison = compareScenarioPatterns(state, comparisonId, state.simHour);
+        var visibleMetrics = band === 'K-2'
+          ? comparison.metrics.filter(function (metric) { return ['temperature', 'cloudCover', 'precipPotential'].indexOf(metric.id) !== -1; })
+          : comparison.metrics;
+        var activeName = comparison.activeScenario.name;
+        var otherName = comparison.comparisonScenario.name;
+        var strongest = visibleMetrics.reduce(function (best, metric) {
+          return !best || metric.normalizedDifference > best.normalizedDifference ? metric : best;
+        }, null);
+        function barWidth(value, metric) {
+          return clamp((value - metric.min) / (metric.max - metric.min) * 100, 2, 100);
+        }
+        function differenceText(metric) {
+          var amount = Math.abs(metric.delta);
+          if (amount < 0.1) return 'Nearly the same';
+          return otherName + ' is ' + amount + metric.unit + (metric.delta > 0 ? ' higher' : ' lower');
+        }
+        var summary = 'Pattern comparison at model hour ' + comparison.hour + '. ' + activeName + ' compared with ' + otherName + '. ' + visibleMetrics.map(function (metric) {
+          return metric.label + ': ' + metric.active + metric.unit + ' compared with ' + metric.comparison + metric.unit;
+        }).join('. ') + '. The largest normalized contrast is ' + strongest.label + '.';
+        return h('section', {
+          className: 'overflow-hidden rounded-xl border shadow-lg ' + (dark ? 'border-cyan-400/25 bg-gradient-to-br from-slate-950 via-cyan-950/35 to-fuchsia-950/25' : 'border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-fuchsia-50'),
+          'data-weather-pattern-compare': true,
+          'aria-labelledby': 'weather-pattern-compare-title',
+          'aria-describedby': 'weather-pattern-compare-summary'
+        },
+          h('p', { id: 'weather-pattern-compare-summary', className: 'sr-only' }, summary),
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-white/10' : 'border-cyan-100') },
+            h('div', null,
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + cyanAccentClass }, 'Compare systems'),
+              h('h3', { id: 'weather-pattern-compare-title', className: 'mt-1 text-lg font-black' }, 'Pattern Compare Studio'),
+              h('p', { className: 'mt-1 text-xs ' + mutedClass }, band === 'K-2' ? 'Look for what is the same and different in two kinds of weather.' : 'Compare system-wide patterns at the same model hour before asking what caused the differences.')
+            ),
+            h('span', { className: 'rounded-full px-3 py-1.5 text-xs font-black ' + (dark ? 'bg-white/10 text-cyan-200 ring-1 ring-white/10' : 'bg-cyan-100 text-cyan-900') }, 'Same time: T +' + comparison.hour)
+          ),
+          h('div', { className: 'p-4' },
+            h('div', { className: 'grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(220px,.55fr)] md:items-end' },
+              h('div', { className: 'flex flex-wrap items-center gap-2 text-sm font-black' },
+                h('span', { className: 'rounded-full bg-cyan-500 px-3 py-1.5 text-cyan-950' }, comparison.activeScenario.icon + ' ' + activeName),
+                h('span', { className: mutedClass, 'aria-hidden': true }, 'vs'),
+                h('span', { className: 'rounded-full bg-fuchsia-700 px-3 py-1.5 text-white' }, comparison.comparisonScenario.icon + ' ' + otherName)
+              ),
+              h('label', { htmlFor: 'weather-compare-scenario', className: 'block' },
+                h('span', { className: 'mb-1 block text-xs font-black' }, 'Comparison system'),
+                h('select', {
+                  id: 'weather-compare-scenario',
+                  value: comparisonId,
+                  onChange: function (event) {
+                    var next = scenarioById(event.target.value);
+                    update({ compareScenario: next.id, patternCompared: true });
+                    if (announce) announce('Comparing ' + scenario.name + ' with ' + next.name + ' at model hour ' + state.simHour + '.');
+                  },
+                  className: inputClass
+                }, alternatives.map(function (item) { return h('option', { key: item.id, value: item.id }, item.name); }))
+              )
+            ),
+            h('div', { className: 'mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3' }, visibleMetrics.map(function (metric) {
+              return h('article', { key: metric.id, className: 'rounded-xl border p-3 ' + (dark ? 'border-white/10 bg-black/15' : 'border-white bg-white/80') },
+                h('div', { className: 'flex items-start justify-between gap-2' },
+                  h('p', { className: 'text-xs font-black' }, metric.label),
+                  h('span', { className: 'text-[11px] font-bold ' + mutedClass }, differenceText(metric))
+                ),
+                h('div', { className: 'mt-3 space-y-3' },
+                  h('div', null,
+                    h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-[11px] font-bold' }, h('span', { className: dark ? 'text-cyan-300' : 'text-cyan-800' }, activeName), h('span', null, metric.active + metric.unit)),
+                    h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-cyan-100'), 'aria-hidden': true }, h('div', { className: 'h-full rounded-full bg-cyan-500', style: { width: barWidth(metric.active, metric) + '%' } }))
+                  ),
+                  h('div', null,
+                    h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-[11px] font-bold' }, h('span', { className: dark ? 'text-fuchsia-300' : 'text-fuchsia-800' }, otherName), h('span', null, metric.comparison + metric.unit)),
+                    h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-fuchsia-100'), 'aria-hidden': true }, h('div', { className: 'h-full rounded-full bg-fuchsia-500', style: { width: barWidth(metric.comparison, metric) + '%' } }))
+                  )
+                )
+              );
+            })),
+            h('div', { className: 'mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]' },
+              h('div', { className: 'rounded-xl border p-3 ' + (dark ? 'border-amber-300/20 bg-amber-300/10' : 'border-amber-200 bg-amber-50') },
+                h('p', { className: 'text-xs font-black uppercase tracking-wide ' + (dark ? 'text-amber-300' : 'text-amber-800') }, 'Largest pattern contrast'),
+                h('p', { className: 'mt-1 text-sm font-black' }, strongest.label + ': ' + activeName + ' ' + strongest.active + strongest.unit + ' vs ' + otherName + ' ' + strongest.comparison + strongest.unit),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, band === 'K-2' ? 'This is the biggest difference shown in the cards.' : 'The active side includes your slider changes, while the comparison uses preset defaults. Many starting conditions differ, so this reveals a pattern but does not prove which variable caused it.')
+              ),
+              h('div', { className: 'flex flex-col justify-center gap-2 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white') },
+                h('p', { className: 'text-xs font-black' }, 'Pattern comparison, not a controlled test'),
+                h('button', {
+                  type: 'button',
+                  onClick: function () {
+                    update({ tab: 'experiment' });
+                    if (announce) announce('Cause and Effect Lab opened for a one-variable controlled test.');
+                  },
+                  className: buttonClass
+                }, 'Open controlled test')
+              )
+            )
           )
         );
       }
 
       function mapLab() {
         var showAdvanced = band === '6-8' || band === '9-12';
+        var mapDescription = scenario.name + ' weather map at model hour ' + state.simHour + '. ' + current.cloudCover + ' percent cloud cover, ' + current.precipPotential + ' percent precipitation potential, wind from ' + cardinal(current.windDir) + ' at ' + current.windSpeed + ' kilometers per hour. Visible layers include pressure contours' + (state.fronts ? ', fronts' : '') + (state.radar ? ', radar intensity and sweep' : '') + (state.windLayer ? ', and directional wind tracers' : '') + '. Selected station: ' + station.name + '.';
         return h('div', { className: 'grid gap-4 p-4 lg:grid-cols-[285px_minmax(0,1fr)]' },
           h('aside', { className: 'space-y-3' },
             scenarioPicker(),
             h('div', { className: panelClass + ' space-y-3 p-3' },
               h('div', { className: 'flex items-center justify-between' },
-                h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-500' }, showAdvanced ? 'Model variables' : 'Weather controls'),
-                h('button', { type: 'button', onClick: function () { applyScenario(scenario.id); }, className: 'text-xs font-bold text-sky-500 hover:underline focus:ring-2 focus:ring-yellow-400 focus:outline-none' }, 'Reset')
+                h('p', { className: 'text-xs font-black uppercase tracking-wide ' + skyAccentClass }, showAdvanced ? 'Model variables' : 'Weather controls'),
+                h('button', { type: 'button', onClick: function () { applyScenario(scenario.id); }, className: 'min-h-11 rounded-lg px-2 text-xs font-bold ' + skyAccentClass + ' hover:underline focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, 'Reset')
               ),
               rangeControl('temp', 'Air temperature', -15, 38, 1, state.temp, '\u00B0C'),
               rangeControl('humidity', 'Relative humidity', 10, 100, 1, state.humidity, '%'),
@@ -1590,18 +2449,16 @@
                 )
               ),
               h('div', { className: 'relative overflow-hidden bg-slate-900' },
+                h('p', { id: 'weather-map-description', className: 'sr-only' }, mapDescription),
                 h('canvas', {
                   ref: canvasRef,
-                  width: 960,
-                  height: 500,
-                  className: 'block h-auto w-full',
-                  role: 'img',
-                  'aria-describedby': 'weather-map-visual-key',
-                  'aria-label': scenario.name + ' weather map at model hour ' + state.simHour + '. ' + current.cloudCover + ' percent cloud cover, ' + current.precipPotential + ' percent precipitation potential, wind from ' + cardinal(current.windDir) + ' at ' + current.windSpeed + ' kilometers per hour. Visible layers include pressure contours' + (state.fronts ? ', fronts' : '') + (state.radar ? ', radar intensity and sweep' : '') + (state.windLayer ? ', and directional wind tracers' : '') + '.'
+                  className: 'block aspect-[48/25] h-auto w-full',
+                  'aria-hidden': 'true',
+                  'data-weather-map-canvas': true
                 })
               ),
-              h('div', { id: 'weather-map-visual-key', className: 'flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-3 py-2 text-[10px] font-bold ' + (dark ? 'border-slate-700 bg-slate-950/80 text-slate-300' : 'border-sky-200 bg-sky-50 text-slate-700'), 'data-weather-canvas-visual-key': true },
-                h('span', { className: 'font-black uppercase tracking-wide text-sky-500' }, 'Canvas visual key'),
+              h('div', { id: 'weather-map-visual-key', className: 'flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-3 py-2 text-xs font-bold ' + (dark ? 'border-slate-700 bg-slate-950/80 text-slate-300' : 'border-sky-200 bg-sky-50 text-slate-700'), 'data-weather-canvas-visual-key': true },
+                h('span', { className: 'font-black uppercase tracking-wide ' + skyAccentClass }, 'Canvas visual key'),
                 h('span', null, '\u25CF Selected station pulses amber'),
                 h('span', null, '\u25B3 Front symbols show movement'),
                 h('span', null, '\u2192 Wind marks show direction'),
@@ -1615,11 +2472,13 @@
                     type: 'button',
                     onClick: function () { viewStation(item.id); },
                     'aria-pressed': active,
-                    className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors focus:ring-2 focus:ring-yellow-400 focus:outline-none ' + (active ? 'border-sky-400 bg-sky-600 text-white' : (dark ? 'border-slate-700 bg-slate-900 hover:bg-slate-800' : 'border-sky-200 bg-white hover:bg-sky-50'))
-                  }, item.name, h('span', { className: 'mt-0.5 block text-[10px] font-normal opacity-80' }, item.elevation + ' m'));
+                    className: 'min-h-14 rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (active ? 'border-sky-400 bg-sky-700 text-white' : (dark ? 'border-slate-700 bg-slate-900 hover:bg-slate-800' : 'border-sky-200 bg-white hover:bg-sky-50'))
+                  }, item.name, h('span', { className: 'mt-0.5 block text-xs font-normal opacity-80' }, item.elevation + ' m'));
                 })
               )
             ),
+            weatherChangeLens(),
+            patternCompareStudio(),
             atmosphereStoryline(),
             frontCrossSectionPanel(),
             stationPanel(),
@@ -1641,9 +2500,81 @@
         );
       }
 
+      function reasoningPulseQuestions() {
+        var fairTest = {
+          id: 'fairTest',
+          title: band === 'K-2' ? 'Try one change' : 'Fair-test reasoning',
+          prompt: band === 'K-2' ? 'You want to see what humidity does. Which is a fair try?' : 'Which design best tests how starting humidity affects precipitation potential?',
+          correct: 'oneVariable',
+          options: [
+            { id: 'oneVariable', label: band === 'K-2' ? 'Change humidity only' : 'Change humidity while holding other starting conditions fixed' },
+            { id: 'twoVariables', label: band === 'K-2' ? 'Change humidity and wind' : 'Change humidity and wind speed together' },
+            { id: 'everything', label: band === 'K-2' ? 'Change everything' : 'Compare two scenarios with many different starting conditions' }
+          ],
+          explanation: band === 'K-2' ? 'Changing one ingredient helps you tell what made the difference.' : 'A controlled test changes one variable while holding the others fixed, supporting a causal comparison.'
+        };
+        if (band === 'K-2') return [
+          {
+            id: 'clues',
+            title: 'Use more than one clue',
+            prompt: 'One cloud looks dark. What makes your weather idea stronger?',
+            correct: 'moreClues',
+            options: [
+              { id: 'moreClues', label: 'Look at more weather clues' },
+              { id: 'colorOnly', label: 'Use only the cloud color' },
+              { id: 'favorite', label: 'Pick the answer you like' }
+            ],
+            explanation: 'More clues, such as wind, temperature, and clouds, make a weather idea stronger.'
+          },
+          fairTest
+        ];
+        var systems = {
+          id: 'systems',
+          title: band === '3-5' ? 'Read a station pattern' : 'Interpret system signals',
+          prompt: band === '3-5' ? 'Several stations show falling pressure, changing wind, and thicker clouds. What is the strongest explanation?' : 'Pressure falls across several stations while winds shift and clouds thicken. Which interpretation is best supported?',
+          correct: 'approaching',
+          options: [
+            { id: 'approaching', label: band === '3-5' ? 'A weather system is moving in' : 'An organized weather system or boundary is approaching' },
+            { id: 'singleError', label: 'One thermometer must be broken' },
+            { id: 'noChange', label: 'The pattern shows no meaningful change' }
+          ],
+          explanation: 'A coordinated pressure tendency, wind shift, and cloud increase across stations supports an approaching system more strongly than one isolated measurement.'
+        };
+        if (band === '9-12') return [
+          systems,
+          fairTest,
+          {
+            id: 'ensemble',
+            title: 'Interpret ensemble agreement',
+            prompt: 'Seven of nine teaching-ensemble members produce rain. What conclusion is warranted?',
+            correct: 'sensitivity',
+            options: [
+              { id: 'sensitivity', label: 'Rain is the dominant modeled outcome under these varied starting conditions' },
+              { id: 'probability', label: 'There is exactly a 78% operational probability of rain' },
+              { id: 'certainty', label: 'Rain is certain because most members agree' }
+            ],
+            explanation: 'The small teaching ensemble demonstrates sensitivity and agreement among modeled starts; it is not an operational probability or a guarantee.'
+          }
+        ];
+        var saturation = {
+          id: 'saturation',
+          title: band === '3-5' ? 'Connect moisture and clouds' : 'Moisture and saturation',
+          prompt: band === '3-5' ? 'Which air is more ready to form clouds?' : 'At the same air temperature, which station is closer to saturation and cloud formation?',
+          correct: 'smallSpread',
+          options: [
+            { id: 'smallSpread', label: band === '3-5' ? 'The station where temperature and dew point are close' : 'The station with the smaller temperature-dew point spread' },
+            { id: 'temperatureOnly', label: 'Whichever station has the higher air temperature' },
+            { id: 'pressureOnly', label: 'Whichever station reports pressure first' }
+          ],
+          explanation: 'A smaller temperature-dew point spread means higher relative humidity and air closer to saturation, making cloud formation more likely when lift or cooling occurs.'
+        };
+        return [systems, saturation, fairTest];
+      }
+
       function forecastMission() {
         var truth = forecastResult && forecastResult.truth;
         var selectedEvidenceCount = (d.evidence || []).length;
+        var reasoningTarget = band === 'K-2' ? 10 : 20;
         var reasoningLength = (d.reasoning || '').trim().length;
         var ensemble = ensembleForecast(state);
         var readinessItems = [
@@ -1653,7 +2584,7 @@
           { id: 'hazard', icon: '\u26A0\uFE0F', label: 'Identify a hazard', complete: !!d.predictionHazard, progress: d.predictionHazard ? 1 : 0, status: d.predictionHazard ? 'Chosen' : 'Needed' },
           { id: 'action', icon: '\uD83C\uDFEB', label: 'Choose a school action', complete: !!d.readinessAction, progress: d.readinessAction ? 1 : 0, status: d.readinessAction ? 'Chosen' : 'Needed' },
           { id: 'confidence', icon: '\uD83C\uDFAF', label: 'Rate forecast confidence', complete: !!d.forecastConfidence, progress: d.forecastConfidence ? 1 : 0, status: d.forecastConfidence ? d.forecastConfidence + '%' : 'Needed' },
-          { id: 'reasoning', icon: '\uD83E\uDDE0', label: 'Explain your reasoning', complete: reasoningLength >= 20, progress: Math.min(1, reasoningLength / 20), status: reasoningLength >= 20 ? 'Ready' : reasoningLength + '/20 chars' }
+          { id: 'reasoning', icon: '\uD83E\uDDE0', label: 'Explain your reasoning', complete: reasoningLength >= reasoningTarget, progress: Math.min(1, reasoningLength / reasoningTarget), status: reasoningLength >= reasoningTarget ? 'Ready' : reasoningLength + '/' + reasoningTarget + ' chars' }
         ];
         var forecastReadiness = Math.round(readinessItems.reduce(function(sum, item) { return sum + item.progress; }, 0) / readinessItems.length * 100);
         var nextReadinessItem = readinessItems.filter(function(item) { return !item.complete; })[0] || null;
@@ -1663,21 +2594,144 @@
           { label: 'Hazard', points: 25, color: 'bg-amber-400' },
           { label: 'Evidence', points: 10, color: 'bg-emerald-400' }
         ];
+        function carriedEvidencePanel() {
+          var carried = d.carriedEvidence;
+          var ids = carried && Array.isArray(carried.ids) ? carried.ids : [];
+          if (!carried || !ids.length) return null;
+          var items = ids.map(function (id) {
+            return EVIDENCE.filter(function (candidate) { return candidate.id === id; })[0];
+          }).filter(Boolean);
+          return h('section', {
+            className: 'overflow-hidden rounded-xl border shadow-sm ' + (dark ? 'border-indigo-400/30 bg-gradient-to-br from-indigo-950/70 via-slate-900 to-cyan-950/60 text-white' : 'border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-cyan-50'),
+            'data-weather-carried-evidence': true,
+            'aria-labelledby': 'weather-carried-evidence-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-white/10' : 'border-indigo-100') },
+              h('div', null,
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + indigoAccentClass }, 'Map-to-forecast evidence trail'),
+                h('h3', { id: 'weather-carried-evidence-title', className: 'mt-1 text-base font-black' }, 'Evidence carried from the Map Lab'),
+                h('p', { className: 'mt-1 text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, 'These sources stay selected below, preserving where your forecast evidence came from.')
+              ),
+              h('span', { className: 'rounded-full px-3 py-1.5 text-xs font-black ' + (dark ? 'bg-white/10 text-indigo-200 ring-1 ring-white/10' : 'bg-indigo-100 text-indigo-900') }, 'T +' + carried.startHour + ' to T +' + carried.endHour)
+            ),
+            h('div', { className: 'p-4' },
+              h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Evidence carried from the map' }, items.map(function (item) {
+                return h('span', { key: item.id, role: 'listitem', className: 'rounded-full px-3 py-1.5 text-xs font-black ' + (dark ? 'bg-cyan-400/10 text-cyan-200 ring-1 ring-cyan-300/20' : 'bg-cyan-100 text-cyan-900') }, item.label);
+              })),
+              h('div', { className: 'mt-4 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center ' + (dark ? 'border-amber-300/20 bg-amber-300/10' : 'border-amber-200 bg-amber-50') },
+                h('span', { className: 'text-2xl', 'aria-hidden': true }, '\uD83E\uDDED'),
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-xs font-black uppercase tracking-wide ' + (dark ? 'text-amber-300' : 'text-amber-800') }, 'Dominant signal: ' + carried.signalTitle),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed ' + (dark ? 'text-slate-200' : 'text-slate-700') }, carried.signalText)
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: function () {
+                    update({ tab: 'map' });
+                    if (announce) announce('Map Lab opened with your evidence cards still selected.');
+                  },
+                  className: buttonClass + ' shrink-0'
+                }, 'Review map evidence')
+              )
+            )
+          );
+        }
+        function cerComposerPanel() {
+          var precipLabels = { none: 'no precipitation', rain: 'rain', snow: 'snow', mixed: 'a wintry mix', storms: 'thunderstorms' };
+          var timingLabels = { '0-3': 'within 0 to 3 hours', '4-6': 'within 4 to 6 hours', '7-12': 'within 7 to 12 hours', after12: 'after 12 hours or not during this period' };
+          var chosenEvidence = EVIDENCE.filter(function (item) { return (d.evidence || []).indexOf(item.id) !== -1; });
+          var claimComplete = !!d.predictionPrecip && !!d.predictionTiming;
+          var evidenceComplete = chosenEvidence.length >= 2;
+          var reasoningComplete = reasoningLength >= reasoningTarget;
+          var steps = [
+            { id: 'claim', icon: '\uD83D\uDCE3', label: 'Claim', detail: 'State what weather you expect and when.', complete: claimComplete },
+            { id: 'evidence', icon: '\uD83D\uDD0E', label: 'Evidence', detail: 'Name at least two observations or model signals.', complete: evidenceComplete },
+            { id: 'reasoning', icon: '\uD83E\uDDE0', label: 'Reasoning', detail: 'Explain why the evidence supports the claim.', complete: reasoningComplete }
+          ];
+          var completed = steps.filter(function (step) { return step.complete; }).length;
+          var precipPhrase = precipLabels[d.predictionPrecip] || '[type of weather]';
+          var timingPhrase = timingLabels[d.predictionTiming] || '[time window]';
+          var evidencePhrase = chosenEvidence.length
+            ? chosenEvidence.slice(0, 3).map(function (item) { return item.label.toLowerCase(); }).join(', ')
+            : '[two observations]';
+          var signalPhrase = d.carriedEvidence && d.carriedEvidence.signalTitle
+            ? d.carriedEvidence.signalTitle.toLowerCase()
+            : 'the pattern in the model';
+          var frames = band === 'K-2' ? [
+            { id: 'claim', label: 'Add a claim', text: 'I think ' + precipPhrase + ' will happen ' + timingPhrase + '.' },
+            { id: 'evidence', label: 'Add evidence', text: 'I noticed ' + evidencePhrase + '.' },
+            { id: 'reasoning', label: 'Add why it matters', text: 'This clue matters because it shows how the weather is changing.' }
+          ] : [
+            { id: 'claim', label: 'Add claim frame', text: 'I predict ' + precipPhrase + ' will begin ' + timingPhrase + '.' },
+            { id: 'evidence', label: 'Add evidence frame', text: 'My strongest evidence is ' + evidencePhrase + '.' },
+            { id: 'reasoning', label: 'Add reasoning frame', text: 'This evidence supports my claim because ' + signalPhrase + ' connects the observations to the forecast.' }
+          ];
+          function appendFrame(frame) {
+            var existing = (d.reasoning || '').trim();
+            var next = existing ? existing + ' ' + frame.text : frame.text;
+            update({ reasoning: next, forecastResult: null });
+            if (announce) announce(frame.label + ' added to the reasoning note. Edit the sentence in your own words.');
+          }
+          return h('section', {
+            className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-teal-400/25 bg-teal-950/20' : 'border-teal-200 bg-teal-50/70'),
+            'data-weather-cer-composer': true,
+            'aria-labelledby': 'weather-cer-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-3 ' + (dark ? 'border-teal-400/15' : 'border-teal-100') },
+              h('div', null,
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + (dark ? 'text-teal-300' : 'text-teal-800') }, 'Build the explanation'),
+                h('h4', { id: 'weather-cer-title', className: 'mt-1 text-base font-black' }, band === 'K-2' ? 'Tell Your Weather Story' : 'CER Composer'),
+                h('p', { id: 'weather-cer-guidance', className: 'mt-1 text-xs ' + mutedClass }, 'Use the frames as a starting point, then revise them in your own words.')
+              ),
+              h('div', { className: 'min-w-[110px] text-right' },
+                h('p', { className: 'text-sm font-black ' + (dark ? 'text-teal-300' : 'text-teal-800') }, completed + ' of 3'),
+                h('p', { className: 'text-[11px] font-bold ' + mutedClass }, completed === 3 ? 'CER structure ready' : 'parts ready'),
+                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), role: 'progressbar', 'aria-label': 'Claim Evidence Reasoning completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completed },
+                  h('div', { className: 'h-full rounded-full bg-teal-500 transition-all motion-reduce:transition-none', style: { width: (completed / 3 * 100) + '%' } })
+                )
+              )
+            ),
+            h('div', { className: 'p-3' },
+              h('div', { className: 'grid gap-2 sm:grid-cols-3' }, steps.map(function (step) {
+                return h('article', { key: step.id, className: 'rounded-lg border p-3 ' + (step.complete ? (dark ? 'border-emerald-400/25 bg-emerald-400/10' : 'border-emerald-200 bg-emerald-50') : (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white')) },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('span', { className: 'text-lg', 'aria-hidden': true }, step.icon),
+                    h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (step.complete ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, step.complete ? 'Ready' : 'Build')
+                  ),
+                  h('p', { className: 'mt-2 text-xs font-black' }, step.label),
+                  h('p', { className: 'mt-1 text-[11px] leading-snug ' + mutedClass }, step.detail)
+                );
+              })),
+              h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Claim Evidence Reasoning sentence frames' }, frames.map(function (frame) {
+                return h('button', {
+                  key: frame.id,
+                  type: 'button',
+                  onClick: function () { appendFrame(frame); },
+                  'aria-controls': 'forecast-reasoning',
+                  className: 'min-h-20 rounded-lg border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 ' + (dark ? 'border-teal-500/30 bg-teal-400/10 hover:bg-teal-400/15' : 'border-teal-200 bg-white hover:bg-teal-100')
+                },
+                  h('span', { className: 'block text-xs font-black ' + (dark ? 'text-teal-300' : 'text-teal-800') }, frame.label),
+                  h('span', { className: 'mt-1 block text-[11px] leading-snug ' + mutedClass }, frame.text)
+                );
+              }))
+            )
+          );
+        }
         function readinessCard() {
           var checklist = readinessItems.map(function (item) {
             return h('div', { key: item.id, className: 'rounded-xl border p-3 ' + (item.complete ? 'border-emerald-300/30 bg-emerald-400/10' : 'border-white/10 bg-white/5') },
               h('div', { className: 'flex items-start justify-between gap-2' },
                 h('span', { className: 'text-lg', 'aria-hidden': true }, item.icon),
-                h('span', { className: 'rounded-full px-2 py-0.5 text-[9px] font-black ' + (item.complete ? 'bg-emerald-300 text-emerald-950' : 'bg-white/10 text-slate-200') }, item.complete ? 'Done' : item.status)
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (item.complete ? 'bg-emerald-300 text-emerald-950' : 'bg-white/10 text-slate-200') }, item.complete ? 'Done' : item.status)
               ),
-              h('div', { className: 'mt-2 text-[10px] font-black leading-snug' }, item.label)
+              h('div', { className: 'mt-2 text-xs font-black leading-snug' }, item.label)
             );
           });
           var scoreSegments = scoringWeights.map(function (weight) {
             return h('span', { key: weight.label, className: weight.color, style: { width: weight.points + '%' }, title: weight.label + ': ' + weight.points + ' points' });
           });
           var scoreLabels = scoringWeights.map(function (weight) {
-            return h('div', { key: weight.label, className: 'flex items-center justify-between text-[9px] text-slate-300' },
+            return h('div', { key: weight.label, className: 'flex items-center justify-between text-[11px] text-slate-300' },
               h('span', null, weight.label),
               h('span', { className: 'font-black text-white' }, weight.points + ' pts')
             );
@@ -1685,18 +2739,18 @@
           return h('section', { className: 'overflow-hidden rounded-xl border border-sky-500/30 bg-gradient-to-br from-sky-950 via-slate-900 to-indigo-950 text-white shadow-lg', 'data-weather-forecast-readiness': true, 'aria-labelledby': 'weather-readiness-title' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
               h('div', null,
-                h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-300' }, 'Mission progress'),
+                h('p', { className: 'text-xs font-black uppercase tracking-widest text-sky-300' }, 'Mission progress'),
                 h('h3', { id: 'weather-readiness-title', className: 'mt-1 text-lg font-black' }, 'Forecast Readiness'),
                 h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Build a complete, evidence-based forecast before verification.')
               ),
               h('div', { className: 'rounded-xl bg-white/10 px-3 py-2 text-center ring-1 ring-white/10' },
                 h('div', { className: 'text-2xl font-black text-sky-300' }, forecastReadiness + '%'),
-                h('div', { className: 'text-[9px] font-bold uppercase tracking-wide text-slate-300' }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
+                h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-300' }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
               )
             ),
             h('div', { className: 'px-4 pt-3' },
               h('div', { className: 'h-2 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Forecast readiness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastReadiness },
-                h('div', { className: 'h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all', style: { width: forecastReadiness + '%' } })
+                h('div', { className: 'h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all motion-reduce:transition-none', style: { width: forecastReadiness + '%' } })
               )
             ),
             h('div', { className: 'grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 xl:grid-cols-5' }, checklist),
@@ -1704,14 +2758,14 @@
               h('div', { className: 'flex items-start gap-2 rounded-xl bg-white/5 p-3' },
                 h('span', { className: 'text-lg', 'aria-hidden': true }, nextReadinessItem ? '\uD83D\uDCA1' : '\u2705'),
                 h('div', null,
-                  h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-300' }, nextReadinessItem ? 'Your next move' : 'Forecast complete'),
+                  h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, nextReadinessItem ? 'Your next move' : 'Forecast complete'),
                   h('p', { className: 'mt-0.5 text-xs font-bold' }, nextReadinessItem ? nextReadinessItem.label : 'All readiness signals are complete. Verify when ready.')
                 )
               ),
               h('div', { className: 'rounded-xl bg-white/5 p-3', 'data-weather-scoring-guide': true },
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('span', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-300' }, 'Transparent scoring rubric'),
-                  h('span', { className: 'text-[9px] text-slate-400' }, 'Reasoning: teacher/peer review')
+                  h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Transparent scoring rubric'),
+                  h('span', { className: 'text-[11px] text-slate-400' }, 'Reasoning: teacher/peer review')
                 ),
                 h('div', { className: 'mt-2 flex h-2 overflow-hidden rounded-full bg-black/30' }, scoreSegments),
                 h('div', { className: 'mt-2 grid grid-cols-2 gap-x-3 gap-y-1' }, scoreLabels)
@@ -1727,13 +2781,13 @@
           return h('section', { className: panelClass + ' p-4', 'data-weather-ensemble': true, 'aria-labelledby': 'weather-ensemble-title' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
               h('div', null,
-                h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-violet-400' }, 'Uncertainty lab'),
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + violetAccentClass }, 'Uncertainty lab'),
                 h('h3', { id: 'weather-ensemble-title', className: 'text-base font-black' }, '9-member teaching ensemble'),
                 h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Each member starts with a slightly different temperature, humidity, pressure, wind, and instability value.')
               ),
               h('div', { className: 'rounded-lg px-3 py-2 text-center ' + (dark ? 'bg-violet-950/60' : 'bg-violet-50') },
-                h('p', { className: 'text-xl font-black text-violet-400' }, agreementCount + '/9'),
-                h('p', { className: 'text-[9px] font-bold ' + mutedClass }, 'agree on ' + labels[ensemble.dominantPrecip])
+                h('p', { className: 'text-xl font-black ' + violetAccentClass }, agreementCount + '/9'),
+                h('p', { className: 'text-[11px] font-bold ' + mutedClass }, 'agree on ' + labels[ensemble.dominantPrecip])
               )
             ),
             h('div', { className: 'mt-4 space-y-2' }, rows.map(function (key) {
@@ -1748,7 +2802,7 @@
               h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: mutedClass }, 'Temperature spread'), h('p', { className: 'font-black' }, ensemble.temperatureRange[0] + ' to ' + ensemble.temperatureRange[1] + '\u00B0C')),
               h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: mutedClass }, 'Pressure spread'), h('p', { className: 'font-black' }, ensemble.pressureRange[0] + ' to ' + ensemble.pressureRange[1] + ' hPa'))
             ),
-            h('p', { className: 'mt-3 text-[10px] leading-relaxed ' + mutedClass }, 'These 9 outcomes demonstrate sensitivity to starting conditions. Their agreement is not an operational weather probability.')
+            h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, 'These 9 outcomes demonstrate sensitivity to starting conditions. Their agreement is not an operational weather probability.')
           );
         }
         function forecastJournalPanel() {
@@ -1762,24 +2816,24 @@
           return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-forecast-journal': true, 'aria-labelledby': 'weather-journal-title' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700' : 'border-sky-200') },
               h('div', null,
-                h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-fuchsia-400' }, 'Predict - verify - revise'),
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + fuchsiaAccentClass }, 'Predict - verify - revise'),
                 h('h3', { id: 'weather-journal-title', className: 'text-base font-black' }, 'Forecast Revision Journal'),
                 h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Your last five verified forecasts stay visible for comparison.')
               ),
               h('div', { className: 'flex gap-2' },
                 h('div', { className: 'rounded-lg px-3 py-2 text-center ' + (dark ? 'bg-fuchsia-950/50' : 'bg-fuchsia-50') },
-                  h('p', { className: 'text-lg font-black text-fuchsia-400' }, history.length),
-                  h('p', { className: 'text-[9px] font-bold ' + mutedClass }, history.length === 1 ? 'attempt' : 'attempts')
+                  h('p', { className: 'text-lg font-black ' + fuchsiaAccentClass }, history.length),
+                  h('p', { className: 'text-[11px] font-bold ' + mutedClass }, history.length === 1 ? 'attempt' : 'attempts')
                 ),
                 h('div', { className: 'rounded-lg px-3 py-2 text-center ' + (dark ? 'bg-emerald-950/50' : 'bg-emerald-50') },
-                  h('p', { className: 'text-lg font-black text-emerald-400' }, history.length ? Math.max.apply(null, history.map(function (entry) { return entry.score; })) : '--'),
-                  h('p', { className: 'text-[9px] font-bold ' + mutedClass }, 'best score')
+                  h('p', { className: 'text-lg font-black ' + emeraldAccentClass }, history.length ? Math.max.apply(null, history.map(function (entry) { return entry.score; })) : '--'),
+                  h('p', { className: 'text-[11px] font-bold ' + mutedClass }, 'best score')
                 )
               )
             ),
             h('div', { className: 'p-4' },
               h('div', { className: 'rounded-xl border p-3 ' + (delta != null && delta > 0 ? (dark ? 'border-emerald-700 bg-emerald-950/30' : 'border-emerald-200 bg-emerald-50') : (dark ? 'border-fuchsia-800 bg-fuchsia-950/20' : 'border-fuchsia-200 bg-fuchsia-50')) },
-                h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-fuchsia-400' }, latest ? (delta != null && delta > 0 ? 'Revision momentum' : 'Reflection prompt') : 'Journal ready'),
+                h('p', { className: 'text-xs font-black uppercase tracking-wide ' + fuchsiaAccentClass }, latest ? (delta != null && delta > 0 ? 'Revision momentum' : 'Reflection prompt') : 'Journal ready'),
                 h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, reflection)
               ),
               history.length > 0 && h('ol', { className: 'mt-3 space-y-2', 'aria-label': 'Verified forecast attempts' }, history.slice().reverse().map(function (entry, reverseIndex) {
@@ -1788,19 +2842,310 @@
                   h('div', { className: 'flex items-center justify-between gap-3' },
                     h('div', null,
                       h('p', { className: 'text-xs font-black' }, 'Forecast #' + entry.attempt + (isLatest ? ' - latest' : '')),
-                      h('p', { className: 'mt-0.5 text-[10px] ' + mutedClass }, 'Model hour +' + entry.modelHour + ' | ' + entry.evidenceCount + ' evidence sources | ' + entry.confidence + '% confidence')
+                      h('p', { className: 'mt-0.5 text-xs ' + mutedClass }, 'Model hour +' + entry.modelHour + ' | ' + entry.evidenceCount + ' evidence sources | ' + entry.confidence + '% confidence')
                     ),
-                    h('span', { className: 'rounded-full px-2.5 py-1 text-sm font-black ' + (entry.score >= 80 ? 'bg-emerald-500 text-white' : entry.score >= 55 ? 'bg-amber-400 text-amber-950' : 'bg-rose-500 text-white') }, entry.score)
+                    h('span', { className: 'rounded-full px-2.5 py-1 text-sm font-black ' + (entry.score >= 80 ? 'bg-emerald-700 text-white' : entry.score >= 55 ? 'bg-amber-400 text-amber-950' : 'bg-rose-600 text-white') }, entry.score)
                   ),
                   h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Forecast ' + entry.attempt + ' score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': entry.score },
                     h('div', { className: 'h-full rounded-full ' + (entry.score >= 80 ? 'bg-emerald-400' : entry.score >= 55 ? 'bg-amber-400' : 'bg-rose-400'), style: { width: entry.score + '%' } })
                   ),
-                  h('p', { className: 'mt-2 text-[10px] leading-relaxed ' + mutedClass }, (precipLabels[entry.precip] || entry.precip) + ' | ' + entry.timing + ' hours | ' + (hazardLabels[entry.hazard] || entry.hazard))
+                  h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, (precipLabels[entry.precip] || entry.precip) + ' | ' + entry.timing + ' hours | ' + (hazardLabels[entry.hazard] || entry.hazard)),
+                  entry.reasoning && h('blockquote', { className: 'mt-2 rounded-lg border-l-4 px-3 py-2 text-xs italic leading-relaxed ' + (dark ? 'border-fuchsia-500 bg-slate-950/60 text-slate-300' : 'border-fuchsia-300 bg-white text-slate-700') }, 'Reasoning: ' + entry.reasoning)
                 );
               }))
             )
           );
         }
+        function reasoningPulsePanel() {
+          var questions = reasoningPulseQuestions();
+          var responses = d.reasoningPulseResponses || {};
+          var unlocked = (d.forecastsIssued || 0) >= 1;
+          var answered = questions.filter(function (question) { return !!responses[question.id]; }).length;
+          var supported = questions.filter(function (question) { return responses[question.id] === question.correct; }).length;
+          var complete = answered === questions.length;
+          var progress = Math.round(answered / questions.length * 100);
+          function chooseReasoning(question, optionId) {
+            var next = Object.assign({}, responses);
+            next[question.id] = optionId;
+            update({ reasoningPulseResponses: next });
+            if (announce) announce(question.title + ' response selected. ' + (optionId === question.correct ? 'Explanation supported.' : 'Review the feedback and reconsider.'));
+          }
+          return h('section', {
+            className: panelClass + ' overflow-hidden',
+            'data-weather-reasoning-pulse': true,
+            'aria-labelledby': 'weather-reasoning-pulse-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-amber-950/30 to-orange-950/20' : 'border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50') },
+              h('div', { className: 'max-w-2xl' },
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + amberAccentClass }, 'Diagnostic reasoning'),
+                h('h3', { id: 'weather-reasoning-pulse-title', className: 'mt-1 text-lg font-black' }, band === 'K-2' ? 'Weather Thinking Check' : 'Reasoning Pulse Check'),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, band === 'K-2' ? 'Choose the idea that uses weather clues best.' : 'Choose the strongest explanation, then use the feedback to revise your reasoning.')
+              ),
+              h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (complete ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : unlocked ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, !unlocked ? '\uD83D\uDD12 Verify first' : complete ? supported + '/' + questions.length + ' explanations supported' : answered + '/' + questions.length + ' checked')
+            ),
+            h('div', { className: 'p-4' },
+              !unlocked && h('div', { className: 'mb-4 rounded-xl border p-3 text-sm font-bold ' + (dark ? 'border-amber-800 bg-amber-950/30 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-900'), role: 'status' }, 'Verify at least one forecast to unlock the reasoning check.'),
+              h('div', { className: 'mb-4' },
+                h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, 'Explanations checked'), h('span', { className: amberAccentClass }, answered + '/' + questions.length)),
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-amber-100'), role: 'progressbar', 'aria-label': 'Reasoning pulse completion', 'aria-valuemin': 0, 'aria-valuemax': questions.length, 'aria-valuenow': answered },
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
+                )
+              ),
+              h('div', { className: 'space-y-3', role: 'list', 'aria-label': band + ' weather reasoning prompts' }, questions.map(function (question, index) {
+                var selected = responses[question.id] || '';
+                var isSupported = selected === question.correct;
+                var promptId = 'weather-reasoning-prompt-' + question.id;
+                return h('article', { key: question.id, role: 'listitem', className: 'rounded-xl border p-4 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
+                  h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + amberAccentClass }, 'Reasoning prompt ' + (index + 1)),
+                  h('h4', { className: 'mt-1 text-sm font-black' }, question.title),
+                  h('p', { id: promptId, className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, question.prompt),
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-labelledby': promptId }, question.options.map(function (option) {
+                    var pressed = selected === option.id;
+                    return h('button', {
+                      key: option.id,
+                      type: 'button',
+                      disabled: !unlocked,
+                      onClick: function () { chooseReasoning(question, option.id); },
+                      'aria-pressed': pressed,
+                      className: 'min-h-14 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50 ' + (pressed ? (isSupported ? (dark ? 'border-emerald-300 bg-emerald-900 text-white' : 'border-emerald-600 bg-emerald-100 text-emerald-950') : (dark ? 'border-amber-300 bg-amber-900 text-white' : 'border-amber-600 bg-amber-100 text-amber-950')) : (dark ? 'border-slate-600 bg-slate-900 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-amber-50'))
+                    }, option.label);
+                  })),
+                  selected && h('div', { className: 'mt-3 rounded-lg border p-3 text-xs font-bold leading-relaxed ' + (isSupported ? (dark ? 'border-emerald-800 bg-emerald-950/30 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-900') : (dark ? 'border-amber-800 bg-amber-950/30 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-900')), role: 'status' }, (isSupported ? '\u2713 Supported. ' : '\u21BB Reconsider. ') + question.explanation)
+                );
+              })),
+              h('p', { className: 'mt-4 text-xs leading-relaxed ' + mutedClass }, 'This diagnostic highlights explanations to revisit. It is not a quiz grade, and a selected response can be revised at any time.')
+            )
+          );
+        }
+
+        function peerReviewPanel() {
+          var unlocked = (d.forecastsIssued || 0) >= 1;
+          var strength = d.peerReviewStrength || '';
+          var revisionMove = d.peerReviewMove || '';
+          var feedback = (d.peerReviewFeedback || '').trim();
+          var feedbackTarget = band === 'K-2' ? 3 : 10;
+          var strengthOptions = band === 'K-2' ? [
+            { id: 'claim', icon: '\uD83C\uDFAF', label: 'Clear weather idea' },
+            { id: 'evidence', icon: '\uD83D\uDD0E', label: 'A helpful clue' },
+            { id: 'safety', icon: '\uD83D\uDEE1\uFE0F', label: 'A safe action' }
+          ] : [
+            { id: 'claim', icon: '\uD83C\uDFAF', label: 'Clear forecast claim' },
+            { id: 'evidence', icon: '\uD83D\uDD0E', label: 'Relevant evidence' },
+            { id: 'reasoning', icon: '\uD83D\uDD17', label: 'Claim-evidence connection' },
+            { id: 'safety', icon: '\uD83D\uDEE1\uFE0F', label: 'Useful readiness action' }
+          ].concat(band === '6-8' || band === '9-12' ? [{ id: 'uncertainty', icon: '\uD83C\uDF9A\uFE0F', label: 'Calibrated uncertainty' }] : []);
+          var moveOptions = band === 'K-2' ? [
+            { id: 'askEvidence', label: 'Add one more weather clue' },
+            { id: 'explainLink', label: 'Tell why the clue matters' },
+            { id: 'clarifyAction', label: 'Match the weather to a safe action' }
+          ] : [
+            { id: 'askEvidence', label: 'Add another measurement' },
+            { id: 'explainLink', label: 'Explain how the evidence supports the claim' },
+            { id: 'clarifyAction', label: 'Connect the hazard to the readiness action' },
+            { id: 'transfer', label: 'Test the reasoning in another scenario' }
+          ].concat(band === '6-8' || band === '9-12' ? [{ id: 'considerUncertainty', label: 'Name what could change the outcome' }] : []);
+          var completedParts = [!!strength, !!revisionMove, feedback.length >= feedbackTarget].filter(Boolean).length;
+          var complete = unlocked && completedParts === 3;
+          var submitted = complete && !!d.peerReviewSubmitted;
+          var progress = Math.round(completedParts / 3 * 100);
+          function savePeerReview() {
+            if (!complete) {
+              var message = unlocked ? 'Complete all three peer-review prompts before saving.' : 'Verify a forecast before beginning peer review.';
+              if (addToast) addToast(message, 'warning');
+              if (announce) announce(message);
+              return;
+            }
+            update({ peerReviewSubmitted: true });
+            if (addToast) addToast('Peer review saved.', 'success');
+            if (announce) announce('Peer review saved for the Teacher Handoff Brief.');
+          }
+          return h('section', {
+            className: panelClass + ' overflow-hidden',
+            'data-weather-peer-review': true,
+            'aria-labelledby': 'weather-peer-review-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-violet-950/20' : 'border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50') },
+              h('div', { className: 'max-w-2xl' },
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + indigoAccentClass }, 'Argument from evidence'),
+                h('h3', { id: 'weather-peer-review-title', className: 'mt-1 text-lg font-black' }, band === 'K-2' ? 'Partner Weather Talk' : 'Peer Review Exchange'),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, band === 'K-2' ? 'Listen for a strong idea, then help your partner make it even clearer.' : 'Identify one strength, choose one useful revision move, and leave evidence-focused feedback.')
+              ),
+              h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (submitted ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : unlocked ? (dark ? 'bg-indigo-950 text-indigo-300' : 'bg-indigo-100 text-indigo-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, submitted ? '\u2713 Review saved' : unlocked ? completedParts + '/3 complete' : '\uD83D\uDD12 Verify first')
+            ),
+            h('div', { className: 'p-4' },
+              !unlocked && h('div', { className: 'mb-4 rounded-xl border p-3 text-sm font-bold ' + (dark ? 'border-indigo-800 bg-indigo-950/30 text-indigo-200' : 'border-indigo-200 bg-indigo-50 text-indigo-900'), role: 'status' }, 'Verify at least one forecast before exchanging peer feedback.'),
+              h('div', { className: 'mb-4' },
+                h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, 'Peer-review completeness'), h('span', { className: indigoAccentClass }, progress + '%')),
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': 'Peer review completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
+                )
+              ),
+              h('fieldset', { disabled: !unlocked },
+                h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '1. What was strong?' : '1. Which part of the forecast is strongest?'),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Choose a peer-review strength' }, strengthOptions.map(function (option) {
+                  var selected = strength === option.id;
+                  return h('button', {
+                    key: option.id,
+                    type: 'button',
+                    onClick: function () { update({ peerReviewStrength: option.id, peerReviewSubmitted: false }); },
+                    'aria-pressed': selected,
+                    className: 'min-h-14 rounded-xl border px-3 py-2 text-left text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50 ' + (selected ? (dark ? 'border-indigo-300 bg-indigo-900 text-white' : 'border-indigo-600 bg-indigo-100 text-indigo-950') : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-indigo-50'))
+                  }, h('span', { className: 'mr-1', 'aria-hidden': true }, option.icon), option.label);
+                }))
+              ),
+              h('fieldset', { className: 'mt-4', disabled: !unlocked },
+                h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '2. What could make it even better?' : '2. Choose one actionable revision move'),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 lg:grid-cols-3', role: 'group', 'aria-label': 'Choose a peer-review revision move' }, moveOptions.map(function (option) {
+                  var selected = revisionMove === option.id;
+                  return h('button', {
+                    key: option.id,
+                    type: 'button',
+                    onClick: function () { update({ peerReviewMove: option.id, peerReviewSubmitted: false }); },
+                    'aria-pressed': selected,
+                    className: 'min-h-14 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50 ' + (selected ? (dark ? 'border-violet-300 bg-violet-900 text-white' : 'border-violet-600 bg-violet-100 text-violet-950') : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-violet-50'))
+                  }, option.label);
+                }))
+              ),
+              h('label', { htmlFor: 'weather-peer-feedback', className: 'mt-4 block' },
+                h('span', { className: 'block text-sm font-black' }, band === 'K-2' ? '3. Finish: I noticed... I wonder...' : '3. Write concise, evidence-focused feedback'),
+                h('textarea', {
+                  id: 'weather-peer-feedback',
+                  value: d.peerReviewFeedback || '',
+                  maxLength: 180,
+                  disabled: !unlocked,
+                  onChange: function (event) { update({ peerReviewFeedback: event.target.value.slice(0, 180), peerReviewSubmitted: false }); },
+                  'aria-describedby': 'weather-peer-feedback-count weather-peer-review-purpose',
+                  placeholder: band === 'K-2' ? 'I noticed... I wonder...' : 'I notice... I wonder... One next step is...',
+                  className: inputClass + ' mt-2 min-h-[100px] resize-y disabled:cursor-not-allowed disabled:opacity-50'
+                }),
+                h('span', { id: 'weather-peer-feedback-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (feedback.length >= feedbackTarget ? emeraldAccentClass : mutedClass) }, feedback.length + ' / ' + feedbackTarget + ' minimum characters')
+              ),
+              h('div', { className: 'mt-4 flex flex-wrap items-center justify-between gap-3' },
+                h('p', { id: 'weather-peer-review-purpose', className: 'max-w-2xl text-xs leading-relaxed ' + mutedClass }, 'Review the reasoning, not the person. Do not enter names or sensitive information. Peer feedback is not a grade.'),
+                h('button', {
+                  type: 'button',
+                  onClick: savePeerReview,
+                  disabled: !complete,
+                  className: 'min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-indigo-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50'
+                }, submitted ? '\u2713 Peer review saved' : 'Save peer review')
+              )
+            )
+          );
+        }
+
+        function reflectionExitTicketPanel() {
+          var unlocked = (d.forecastsIssued || 0) >= 1;
+          var shift = d.reflectionShift || '';
+          var readiness = d.reflectionReadiness || '';
+          var question = (d.reflectionQuestion || '').trim();
+          var questionTarget = band === 'K-2' ? 3 : 8;
+          var shiftOptions = [
+            { id: 'station', icon: '\uD83C\uDF21\uFE0F', label: band === 'K-2' ? 'A weather clue' : 'A station measurement' },
+            { id: 'pattern', icon: '\uD83D\uDCC8', label: band === 'K-2' ? 'What changed' : 'A pattern over time' },
+            { id: 'experiment', icon: '\uD83E\uDDEA', label: band === 'K-2' ? 'Trying one change' : 'The controlled test' },
+            { id: 'verification', icon: '\uD83C\uDFAF', label: band === 'K-2' ? 'Checking my idea' : 'Checking the forecast' },
+            { id: 'discussion', icon: '\uD83D\uDDE3\uFE0F', label: band === 'K-2' ? 'Talking it through' : 'Explaining to someone' }
+          ];
+          var readinessOptions = band === 'K-2' ? [
+            { id: 'needHelp', label: 'I need help' },
+            { id: 'developing', label: 'I can tell with help' },
+            { id: 'explain', label: 'I can explain it' },
+            { id: 'transfer', label: 'I can try a new story' }
+          ] : [
+            { id: 'needHelp', label: 'I need a conference' },
+            { id: 'developing', label: 'I can explain with a prompt' },
+            { id: 'explain', label: 'I can explain with evidence' },
+            { id: 'transfer', label: 'I can apply it to a new system' }
+          ];
+          var completedParts = [!!shift, !!readiness, question.length >= questionTarget].filter(Boolean).length;
+          var complete = unlocked && completedParts === 3;
+          var submitted = complete && !!d.reflectionSubmitted;
+          var progress = Math.round(completedParts / 3 * 100);
+          function submitReflection() {
+            if (!complete) {
+              var message = unlocked ? 'Complete all three reflection prompts before saving the exit ticket.' : 'Verify a forecast before completing the exit ticket.';
+              if (addToast) addToast(message, 'warning');
+              if (announce) announce(message);
+              return;
+            }
+            update({ reflectionSubmitted: true });
+            if (addToast) addToast('Reflection and exit ticket saved.', 'success');
+            if (announce) announce('Reflection and exit ticket saved for the teacher handoff.');
+          }
+          return h('section', {
+            className: panelClass + ' overflow-hidden',
+            'data-weather-reflection-ticket': true,
+            'aria-labelledby': 'weather-reflection-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-emerald-950/30 to-teal-950/20' : 'border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50') },
+              h('div', { className: 'max-w-2xl' },
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + emeraldAccentClass }, 'Metacognition and transfer'),
+                h('h3', { id: 'weather-reflection-title', className: 'mt-1 text-lg font-black' }, band === 'K-2' ? 'Think Back & Share' : 'Reflection & Exit Ticket'),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, band === 'K-2' ? 'Think about what helped your weather idea grow.' : 'Name what changed your thinking, assess your explanation readiness, and leave a question for the next investigation.')
+              ),
+              h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (submitted ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : unlocked ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, submitted ? '\u2713 Saved' : unlocked ? completedParts + '/3 complete' : '\uD83D\uDD12 Verify first')
+            ),
+            h('div', { className: 'p-4' },
+              !unlocked && h('div', { className: 'mb-4 rounded-xl border p-3 text-sm font-bold ' + (dark ? 'border-amber-800 bg-amber-950/30 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-900'), role: 'status' }, 'Verify at least one forecast to unlock the reflection exit ticket.'),
+              h('div', { className: 'mb-4' },
+                h('div', { className: 'mb-1 flex items-center justify-between text-xs font-bold' }, h('span', null, 'Reflection completeness'), h('span', { className: emeraldAccentClass }, progress + '%')),
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-emerald-100'), role: 'progressbar', 'aria-label': 'Learner reflection completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
+                )
+              ),
+              h('fieldset', { disabled: !unlocked },
+                h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '1. What helped your idea change?' : '1. What most changed or strengthened your thinking?'),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Choose what changed your thinking' }, shiftOptions.map(function (option) {
+                  var selected = shift === option.id;
+                  return h('button', {
+                    key: option.id,
+                    type: 'button',
+                    onClick: function () { update({ reflectionShift: option.id, reflectionSubmitted: false }); },
+                    'aria-pressed': selected,
+                    className: 'min-h-14 rounded-xl border px-3 py-2 text-left text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50 ' + (selected ? (dark ? 'border-emerald-300 bg-emerald-900 text-white' : 'border-emerald-600 bg-emerald-100 text-emerald-950') : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-emerald-50'))
+                  }, h('span', { className: 'mr-1', 'aria-hidden': true }, option.icon), option.label);
+                }))
+              ),
+              h('fieldset', { className: 'mt-4', disabled: !unlocked },
+                h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '2. How ready are you to tell your weather story?' : '2. How ready are you to explain your forecast reasoning?'),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'group', 'aria-label': 'Choose explanation readiness' }, readinessOptions.map(function (option) {
+                  var selected = readiness === option.id;
+                  return h('button', {
+                    key: option.id,
+                    type: 'button',
+                    onClick: function () { update({ reflectionReadiness: option.id, reflectionSubmitted: false }); },
+                    'aria-pressed': selected,
+                    className: 'min-h-14 rounded-xl border px-2 py-2 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50 ' + (selected ? (dark ? 'border-teal-300 bg-teal-900 text-white' : 'border-teal-600 bg-teal-100 text-teal-950') : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-teal-50'))
+                  }, option.label);
+                }))
+              ),
+              h('label', { htmlFor: 'weather-reflection-question', className: 'mt-4 block' },
+                h('span', { className: 'block text-sm font-black' }, band === 'K-2' ? '3. What do you still wonder?' : '3. What weather question would you investigate next?'),
+                h('textarea', {
+                  id: 'weather-reflection-question',
+                  value: d.reflectionQuestion || '',
+                  maxLength: 180,
+                  disabled: !unlocked,
+                  onChange: function (event) { update({ reflectionQuestion: event.target.value.slice(0, 180), reflectionSubmitted: false }); },
+                  'aria-describedby': 'weather-reflection-question-count weather-reflection-purpose',
+                  placeholder: band === 'K-2' ? 'I wonder...' : 'I would investigate...',
+                  className: inputClass + ' mt-2 min-h-[100px] resize-y disabled:cursor-not-allowed disabled:opacity-50'
+                }),
+                h('span', { id: 'weather-reflection-question-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (question.length >= questionTarget ? emeraldAccentClass : mutedClass) }, question.length + ' / ' + questionTarget + ' minimum characters')
+              ),
+              h('div', { className: 'mt-4 flex flex-wrap items-center justify-between gap-3' },
+                h('p', { id: 'weather-reflection-purpose', className: 'max-w-2xl text-xs leading-relaxed ' + mutedClass }, 'This self-assessment describes learning readiness, not forecast accuracy or a grade.'),
+                h('button', {
+                  type: 'button',
+                  onClick: submitReflection,
+                  disabled: !complete,
+                  className: 'min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-emerald-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50'
+                }, submitted ? '\u2713 Exit ticket saved' : 'Save exit ticket')
+              )
+            )
+          );
+        }
+
         function forecastBroadcastPanel() {
           var audienceId = d.broadcastAudience || 'school';
           var audiences = [
@@ -1830,47 +3175,47 @@
           return h('section', { className: 'overflow-hidden rounded-xl border border-cyan-400/30 bg-gradient-to-br from-cyan-950 via-slate-900 to-blue-950 text-white shadow-lg', 'data-weather-broadcast-studio': true, 'aria-labelledby': 'weather-broadcast-title' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
               h('div', null,
-                h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-cyan-300' }, 'Science communication'),
+                h('p', { className: 'text-xs font-black uppercase tracking-widest text-cyan-300' }, 'Science communication'),
                 h('h3', { id: 'weather-broadcast-title', className: 'text-lg font-black' }, 'Weather Broadcast Studio'),
                 h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Translate model evidence into a useful briefing for a real audience.')
               ),
-              h('span', { className: 'rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wide ' + (communicationReady ? 'bg-emerald-300 text-emerald-950' : 'bg-white/10 text-cyan-200') }, communicationReady ? '\u25CF On air' : completed + '/4 details')
+              h('span', { className: 'rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ' + (communicationReady ? 'bg-emerald-300 text-emerald-950' : 'bg-white/10 text-cyan-200') }, communicationReady ? '\u25CF On air' : completed + '/4 details')
             ),
             h('div', { className: 'p-4' },
-              h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, 'Choose your audience'),
+              h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-300' }, 'Choose your audience'),
               h('div', { className: 'mt-2 grid grid-cols-3 gap-2' }, audiences.map(function (item) {
                 var selected = item.id === audienceId;
-                return h('button', { key: item.id, type: 'button', onClick: function () { update({ broadcastAudience: item.id }); }, 'aria-pressed': selected, className: 'rounded-xl border px-2 py-3 text-center text-[10px] font-black transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 ' + (selected ? 'border-cyan-300 bg-cyan-400 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10') },
+                return h('button', { key: item.id, type: 'button', onClick: function () { update({ broadcastAudience: item.id }); }, 'aria-pressed': selected, className: 'min-h-16 rounded-xl border px-2 py-3 text-center text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-cyan-300 bg-cyan-400 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10') },
                   h('span', { className: 'mb-1 block text-xl', 'aria-hidden': true }, item.icon), item.label
                 );
               })),
               h('div', { className: 'mt-4' },
-                h('div', { className: 'mb-2 flex items-center justify-between text-[10px] font-bold text-slate-300' },
+                h('div', { className: 'mb-2 flex items-center justify-between text-xs font-bold text-slate-300' },
                   h('span', null, 'Briefing completeness'),
                   h('span', null, communicationProgress + '%')
                 ),
                 h('div', { className: 'h-2 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Broadcast briefing completeness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communicationProgress },
-                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-300 transition-all', style: { width: communicationProgress + '%' } })
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-300 transition-all motion-reduce:transition-none', style: { width: communicationProgress + '%' } })
                 )
               ),
-              h('div', { className: 'mt-3 grid grid-cols-4 gap-2' }, communicationItems.map(function (item) {
-                return h('div', { key: item.label, className: 'rounded-lg border px-2 py-2 text-center text-[9px] font-black ' + (item.complete ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200' : 'border-white/10 bg-white/5 text-slate-400') }, (item.complete ? '\u2713 ' : '') + item.label);
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' }, communicationItems.map(function (item) {
+                return h('div', { key: item.label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-black ' + (item.complete ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200' : 'border-white/10 bg-white/5 text-slate-400') }, (item.complete ? '\u2713 ' : '') + item.label);
               })),
               h('div', { className: 'mt-4 rounded-xl border border-cyan-300/20 bg-black/20 p-4', role: 'status', 'aria-live': 'polite' },
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, communicationReady ? 'Broadcast script ready' : 'Live script builder'),
-                  h('span', { className: 'text-[9px] text-slate-400' }, audience.label + ' audience')
+                  h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-300' }, communicationReady ? 'Broadcast script ready' : 'Live script builder'),
+                  h('span', { className: 'text-[11px] text-slate-400' }, audience.label + ' audience')
                 ),
                 h('p', { className: 'mt-2 text-sm font-bold leading-relaxed' }, script)
               ),
-              h('p', { className: 'mt-3 text-[10px] leading-relaxed text-slate-400' }, 'Communication readiness is separate from forecast accuracy. Verify the science before treating the script as a model outcome.')
+              h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-400' }, 'Communication readiness is separate from forecast accuracy. Verify the science before treating the script as a model outcome.')
             )
           );
         }
         return h('div', { className: 'mx-auto grid max-w-6xl gap-4 p-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)]' },
           h('div', { className: 'space-y-4' },
             h('div', { className: panelClass + ' p-4' },
-              h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Meteorologist briefing'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Meteorologist briefing'),
               h('h3', { className: 'mt-1 text-xl font-black' }, 'What will happen in the next 6 hours?'),
               h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, scenario.summary),
               h('div', { className: 'mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4' },
@@ -1879,13 +3224,17 @@
                   ['Dew point', current.dewPoint + '\u00B0C'],
                   ['Pressure', current.pressure + ' hPa'],
                   ['Wind', cardinal(current.windDir) + ' ' + current.windSpeed + ' km/h']
-                ].map(function (row) { return h('div', { key: row[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: 'text-[10px] ' + mutedClass }, row[0]), h('p', { className: 'text-sm font-black' }, row[1])); })
+                ].map(function (row) { return h('div', { key: row[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: 'text-xs ' + mutedClass }, row[0]), h('p', { className: 'text-sm font-black' }, row[1])); })
               )
             ),
+            carriedEvidencePanel(),
             ensemblePanel(),
             readinessCard(),
             forecastJournalPanel(),
             forecastBroadcastPanel(),
+            reasoningPulsePanel(),
+            peerReviewPanel(),
+            reflectionExitTicketPanel(),
             h('div', { className: panelClass + ' p-4' },
               h('h3', { className: 'text-base font-black' }, '1. Select evidence'),
               h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Choose the observations you used. Strong forecasts connect more than one data source.'),
@@ -1894,7 +3243,7 @@
                   var selected = (d.evidence || []).indexOf(item.id) !== -1;
                   return h('button', {
                     key: item.id, type: 'button', onClick: function () { toggleEvidence(item.id); }, 'aria-pressed': selected,
-                    className: 'rounded-full border px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none ' + (selected ? 'border-sky-400 bg-sky-600 text-white' : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-sky-50'))
+                    className: 'min-h-11 rounded-full border px-3 py-2 text-xs font-bold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (selected ? 'border-sky-400 bg-sky-700 text-white' : (dark ? 'border-slate-600 bg-slate-950 hover:bg-slate-800' : 'border-slate-300 bg-white hover:bg-sky-50'))
                   }, selected ? '\u2713 ' + item.label : item.label);
                 })
               )
@@ -1930,30 +3279,33 @@
                   { value: '95', label: '95% - Very high confidence' }
                 ], function (event) { update({ forecastConfidence: event.target.value, forecastResult: null }); })
               ),
+              cerComposerPanel(),
               h('label', { htmlFor: 'forecast-reasoning', className: 'mt-4 block' },
                 h('span', { className: 'mb-1 block text-xs font-black' }, band === 'K-2' ? 'Why do you think so?' : 'Claim-Evidence-Reasoning note'),
                 h('textarea', {
                   id: 'forecast-reasoning', rows: 4, value: d.reasoning || '',
-                  onChange: function (event) { update({ reasoning: event.target.value }); },
+                  onChange: function (event) { update({ reasoning: event.target.value, forecastResult: null }); },
+                  'aria-describedby': 'weather-cer-guidance weather-reasoning-count',
                   placeholder: band === 'K-2' ? 'I think... because I noticed...' : 'I predict... My evidence is... This matters because...',
                   className: inputClass
-                })
+                }),
+                h('span', { id: 'weather-reasoning-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (reasoningLength >= reasoningTarget ? emeraldAccentClass : mutedClass) }, reasoningLength + ' / ' + reasoningTarget + ' minimum characters')
               ),
-              h('button', { type: 'button', onClick: issueForecast, className: 'mt-4 w-full rounded-lg bg-sky-600 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-sky-500 focus:ring-2 focus:ring-yellow-400 focus:outline-none' }, '\uD83D\uDCE1 Verify forecast')
+              h('button', { type: 'button', onClick: issueForecast, className: 'mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors motion-reduce:transition-none hover:bg-sky-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83D\uDCE1 Verify forecast')
             )
           ),
           h('aside', { className: 'space-y-4' },
             stationPanel(),
             h('div', { className: panelClass + ' p-4', role: 'status', 'aria-live': 'polite' },
               !forecastResult && h('div', null,
-                h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Forecast desk'),
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Forecast desk'),
                 h('h3', { className: 'mt-1 text-lg font-black' }, 'Awaiting your forecast'),
                 h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, 'Meteorologists combine observations, patterns, and models. A forecast is a testable claim, not a guess.')
               ),
               forecastResult && h('div', null,
                 h('div', { className: 'flex items-end justify-between gap-3' },
-                  h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Forecast verification'), h('h3', { className: 'text-lg font-black' }, forecastResult.score >= 80 ? 'Strong forecast' : forecastResult.score >= 55 ? 'Developing forecast' : 'Revise and retry')),
-                  h('p', { className: 'text-4xl font-black ' + (forecastResult.score >= 80 ? 'text-emerald-400' : 'text-amber-400') }, forecastResult.score)
+                  h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Forecast verification'), h('h3', { className: 'text-lg font-black' }, forecastResult.score >= 80 ? 'Strong forecast' : forecastResult.score >= 55 ? 'Developing forecast' : 'Revise and retry')),
+                  h('p', { className: 'text-4xl font-black ' + (forecastResult.score >= 80 ? emeraldAccentClass : 'text-amber-400') }, forecastResult.score)
                 ),
                 h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-700', role: 'progressbar', 'aria-label': 'Forecast score', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastResult.score }, h('div', { className: forecastResult.score >= 80 ? 'h-full bg-emerald-400' : 'h-full bg-amber-400', style: { width: forecastResult.score + '%' } })),
                 h('ul', { className: 'mt-4 space-y-2 text-xs leading-relaxed ' + mutedClass }, forecastResult.notes.map(function (note, index) { return h('li', { key: index }, '\u2022 ' + note); })),
@@ -1966,7 +3318,7 @@
                 forecastResult.calibration && h('div', { className: 'mt-4 rounded-lg border p-3 ' + (forecastResult.calibration.status === 'well' ? (dark ? 'border-violet-700 bg-violet-950/40' : 'border-violet-200 bg-violet-50') : (dark ? 'border-amber-700 bg-amber-950/40' : 'border-amber-200 bg-amber-50')) },
                   h('div', { className: 'flex items-center justify-between gap-2' },
                     h('p', { className: 'text-xs font-black' }, '\uD83C\uDFAF ' + forecastResult.calibration.label),
-                    h('span', { className: 'text-xs font-black text-violet-400' }, forecastResult.calibration.selected + '% vs ' + forecastResult.calibration.agreement + '%')
+                    h('span', { className: 'text-xs font-black ' + violetAccentClass }, forecastResult.calibration.selected + '% vs ' + forecastResult.calibration.agreement + '%')
                   ),
                   h('p', { className: 'mt-1 text-xs ' + mutedClass }, forecastResult.calibration.status === 'well' ? 'Your confidence is close to the teaching ensemble agreement.' : forecastResult.calibration.status === 'over' ? 'Your confidence is higher than ensemble agreement. Name what could change the outcome.' : 'The ensemble agrees more strongly than your confidence suggests. Identify the strongest shared signal.')
                 ),
@@ -2042,8 +3394,8 @@
                 h('line', { x1: x1, y1: y, x2: x2, y2: y, stroke: testColor, strokeWidth: 4, strokeLinecap: 'round' }),
                 h('circle', { cx: x1, cy: y, r: 7, fill: baseColor }),
                 h('polygon', { points: x2 + ',' + (y - 8) + ' ' + (x2 + 8) + ',' + y + ' ' + x2 + ',' + (y + 8) + ' ' + (x2 - 8) + ',' + y, fill: testColor }),
-                h('text', { x: x1, y: y - 11, textAnchor: 'middle', fill: baseColor, fontSize: 10, fontWeight: 700 }, result.control[metric.key] + metric.unit),
-                h('text', { x: x2, y: y + 21, textAnchor: 'middle', fill: testColor, fontSize: 10, fontWeight: 700 }, result.test[metric.key] + metric.unit)
+                h('text', { x: x1, y: y - 11, textAnchor: 'middle', fill: baseColor, fontSize: 11, fontWeight: 700 }, result.control[metric.key] + metric.unit),
+                h('text', { x: x2, y: y + 21, textAnchor: 'middle', fill: testColor, fontSize: 11, fontWeight: 700 }, result.test[metric.key] + metric.unit)
               );
             })
           );
@@ -2053,14 +3405,14 @@
         var changeWord = result ? (result.testValue > result.baselineValue ? 'Increasing' : result.testValue < result.baselineValue ? 'Decreasing' : 'Keeping') : '';
         return h('div', { className: 'mx-auto max-w-6xl space-y-4 p-4', 'data-weather-experiment-lab': true },
           h('section', { className: panelClass + ' p-5', 'aria-labelledby': 'weather-experiment-title' },
-            h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-cyan-500' }, 'Controlled investigation'),
+            h('p', { className: 'text-xs font-black uppercase tracking-widest ' + cyanAccentClass }, 'Controlled investigation'),
             h('h3', { id: 'weather-experiment-title', className: 'mt-1 text-xl font-black' }, 'Change one thing'),
             h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, band === 'K-2' ? 'Change one weather ingredient. Keep the others the same and see what happens.' : 'Isolate one starting variable while every other condition stays fixed. Predict, test, and explain the modeled effect.')
           ),
           h('div', { className: 'grid gap-4 lg:grid-cols-[330px_minmax(0,1fr)]' },
             h('section', { className: panelClass + ' space-y-4 p-4', 'aria-label': 'Controlled experiment setup' },
               h('div', { className: 'rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-cyan-50') },
-                h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-500' }, 'Fair-test rule'),
+                h('p', { className: 'text-xs font-black uppercase tracking-wide ' + cyanAccentClass }, 'Fair-test rule'),
                 h('p', { className: 'mt-1 text-xs font-bold' }, 'Keep all other starting conditions fixed.')
               ),
               h('label', { htmlFor: 'weather-experiment-variable', className: 'block' },
@@ -2072,17 +3424,17 @@
               h('div', null,
                 h('div', { className: 'mb-1 flex items-center justify-between gap-2 text-xs font-black' },
                   h('label', { htmlFor: 'weather-experiment-value' }, '2. One-variable test value'),
-                  h('span', { className: 'font-mono text-cyan-500' }, experimentValue + experimentConfig.unit)
+                  h('span', { className: 'font-mono ' + cyanAccentClass }, experimentValue + experimentConfig.unit)
                 ),
                 h('input', {
                   id: 'weather-experiment-value', type: 'range',
                   min: experimentConfig.min, max: experimentConfig.max, step: experimentConfig.step, value: experimentValue,
                   onChange: function (event) { update({ experimentValue: Number(event.target.value), experimentResult: null }); },
-                  className: 'w-full accent-cyan-500'
+                  className: 'h-6 w-full accent-cyan-500'
                 }),
                 h('div', { className: 'mt-2 grid grid-cols-2 gap-2 text-xs' },
                   h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-slate-100') }, h('p', { className: mutedClass }, 'Baseline'), h('p', { className: 'font-black' }, state[experimentVariable] + experimentConfig.unit)),
-                  h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-cyan-950/50' : 'bg-cyan-50') }, h('p', { className: mutedClass }, 'Test'), h('p', { className: 'font-black text-cyan-500' }, experimentValue + experimentConfig.unit))
+                  h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-cyan-950/50' : 'bg-cyan-50') }, h('p', { className: mutedClass }, 'Test'), h('p', { className: 'font-black ' + cyanAccentClass }, experimentValue + experimentConfig.unit))
                 )
               ),
               h('label', { htmlFor: 'weather-experiment-hour', className: 'block' },
@@ -2099,12 +3451,12 @@
                     return h('button', {
                       key: choice, type: 'button', onClick: function () { update({ experimentPrediction: choice, experimentResult: null }); },
                       'aria-pressed': selected,
-                      className: 'rounded-lg border px-2 py-2 text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none ' + (selected ? 'border-cyan-400 bg-cyan-600 text-white' : (dark ? 'border-slate-600 bg-slate-950' : 'border-slate-300 bg-white'))
+                      className: 'min-h-11 rounded-lg border px-2 py-2 text-xs font-bold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (selected ? 'border-cyan-400 bg-cyan-700 text-white' : (dark ? 'border-slate-600 bg-slate-950' : 'border-slate-300 bg-white'))
                     }, predictionLabels[choice]);
                   })
                 )
               ),
-              h('button', { type: 'button', onClick: performExperiment, className: 'w-full rounded-lg bg-cyan-600 px-4 py-3 text-sm font-black text-white hover:bg-cyan-500 focus:ring-2 focus:ring-yellow-400 focus:outline-none' }, '\uD83E\uDDEA Run controlled test')
+              h('button', { type: 'button', onClick: performExperiment, className: 'min-h-11 w-full rounded-lg bg-cyan-700 px-4 py-3 text-sm font-black text-white hover:bg-cyan-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83E\uDDEA Run controlled test')
             ),
             h('section', { className: panelClass + ' p-4', 'aria-live': 'polite', 'data-weather-experiment-result': !!result },
               !result && h('div', { className: 'flex min-h-[300px] items-center justify-center text-center' },
@@ -2117,7 +3469,7 @@
               result && h('div', null,
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                   h('div', null,
-                    h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-cyan-500' }, 'Experiment result | T +' + result.hour + ' hours'),
+                    h('p', { className: 'text-xs font-black uppercase tracking-widest ' + cyanAccentClass }, 'Experiment result | T +' + result.hour + ' hours'),
                     h('h3', { className: 'mt-1 text-lg font-black' }, result.predictionCorrect ? 'Prediction supported' : 'Revise your explanation')
                   ),
                   h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (result.predictionCorrect ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-800')) }, result.predictionCorrect ? '\u2713 Match' : '\u21BB Different result')
@@ -2126,10 +3478,89 @@
                 h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-cyan-50') },
                   h('p', { className: 'text-xs font-black' }, 'What the model shows'),
                   h('p', { className: 'mt-1 text-sm leading-relaxed ' + mutedClass }, changeWord + ' ' + experimentConfig.label.toLowerCase() + ' from ' + result.baselineValue + result.unit + ' to ' + result.testValue + result.unit + ' made precipitation potential ' + effectWord + ' by ' + Math.abs(result.deltas.precipPotential) + ' percentage points.'),
-                  h('p', { className: 'mt-2 text-xs font-bold text-cyan-500' }, band === 'K-2' ? 'Tell a partner what changed and what stayed the same.' : 'Explain the mechanism: How did this variable affect moisture, lift, saturation, clouds, or precipitation?')
+                  h('p', { className: 'mt-2 text-xs font-bold ' + cyanAccentClass }, band === 'K-2' ? 'Tell a partner what changed and what stayed the same.' : 'Explain the mechanism: How did this variable affect moisture, lift, saturation, clouds, or precipitation?')
                 )
               )
             )
+          )
+        );
+      }
+
+      function immersiveWeatherLab() {
+        var live = d.liveWeather || null;
+        var useLive = d.immersiveDataSource === 'live' && !!live;
+        var model = projectConditions(state, state.simHour);
+        var sceneLabel = useLive ? live.label : scenario.name + ' teaching model';
+        var sceneCondition = useLive ? live.condition : (model.precipType === 'none' ? (model.cloudCover >= 65 ? 'Cloudy model conditions' : 'Quiet model conditions') : model.precipType + ' model conditions');
+        var values = useLive ? [
+          ['Temperature', live.temperature + '\u00B0C'], ['Humidity', live.humidity + '%'], ['Cloud cover', live.cloudCover + '%'],
+          ['Pressure', live.pressure + ' hPa'], ['Wind', cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h'], ['Visibility', live.visibility != null ? Math.round(live.visibility / 100) / 10 + ' km' : 'Not reported']
+        ] : [
+          ['Temperature', model.temperature + '\u00B0C'], ['Humidity', model.humidity + '%'], ['Cloud cover', model.cloudCover + '%'],
+          ['Pressure', model.pressure + ' hPa'], ['Wind', cardinal(model.windDir) + ' ' + model.windSpeed + ' km/h'], ['Precipitation potential', model.precipPotential + '%']
+        ];
+        var engineReady = !!dataRoot._threeLoaded;
+        var engineError = dataRoot._threeLoadError || d.immersiveRenderError;
+        var xrAvailable = !!(window.navigator && window.navigator.xr);
+        return h('div', { className: 'mx-auto max-w-7xl space-y-4 p-4', 'data-weather-immersive-lab': true },
+          h('section', { className: 'overflow-hidden rounded-2xl border border-indigo-400/30 bg-gradient-to-br from-slate-950 via-indigo-950 to-cyan-950 text-white shadow-2xl' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-5' },
+              h('div', { className: 'max-w-2xl' },
+                h('p', { className: 'text-[10px] font-black uppercase tracking-[0.22em] text-cyan-300' }, 'Atmosphere explorer'),
+                h('h3', { className: 'mt-1 text-2xl font-black' }, 'Immersive 3D Weather Space'),
+                h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-300' }, 'Orbit through air masses, frontal slope, terrain, cloud layers, precipitation particles, wind vectors, and stations. Live observations can drive the scene while the Canvas map remains the evidence-analysis view.')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('span', { className: 'rounded-full bg-cyan-300 px-3 py-1.5 text-[10px] font-black text-cyan-950' }, engineReady ? '\u25CF 3D engine ready' : '\u25CB Loading 3D engine'),
+                h('span', { className: 'rounded-full px-3 py-1.5 text-[10px] font-black ' + (xrAvailable ? 'bg-violet-300 text-violet-950' : 'bg-white/10 text-slate-300') }, xrAvailable ? 'WebXR detected' : 'Desktop 3D available')
+              )
+            ),
+            h('div', { className: 'grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_330px]' },
+              h('div', { className: 'relative min-h-[440px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950' },
+                h('canvas', { ref: immersiveCanvasRef, className: 'block h-[min(68vh,620px)] min-h-[440px] w-full', 'data-weather-immersive-canvas': true, role: 'img', 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Use pointer or touch to orbit and zoom.' }),
+                !engineReady && !engineError && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
+                engineError && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, '3D view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, engineError), h('button', { type: 'button', onClick: function () { update({ tab: 'map' }); }, className: 'mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-black text-white' }, 'Return to 2D Canvas map'))),
+                h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-2' },
+                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? 'Live observation scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
+                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[9px] text-slate-300 backdrop-blur-sm' }, 'Drag to orbit | Scroll or pinch to zoom')
+                )
+              ),
+              h('aside', { className: 'space-y-3' },
+                h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
+                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-cyan-300' }, 'Scene data'), h('h4', { className: 'text-sm font-black' }, useLive ? 'Live observations' : 'Teaching model')), h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[9px] font-black' }, useLive ? 'LIVE' : 'MODEL')),
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive weather data source' },
+                    h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'rounded-lg border px-3 py-2 text-[10px] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
+                    h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'rounded-lg border px-3 py-2 text-[10px] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? 'Use live weather' : 'Load live weather')
+                  ),
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2' }, values.map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[9px] text-slate-400' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black' }, metric[1])); })),
+                  h('p', { className: 'mt-3 text-[10px] leading-relaxed text-slate-400' }, sceneCondition + (useLive && live.observedAt ? ' | Observed ' + live.observedAt + (live.timezone ? ' ' + live.timezone : '') + '.' : '.'))
+                ),
+                h('section', { className: 'rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4', 'data-weather-live-control': true },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-emerald-300' }, 'Live weather connection'),
+                  h('h4', { className: 'text-sm font-black' }, 'Bring local conditions into 3D'),
+                  h('p', { className: 'mt-1 text-[10px] text-slate-300' }, 'Nothing loads automatically. Choose location access or search for a place.'),
+                  h('button', { type: 'button', onClick: requestDeviceWeather, disabled: !!d.liveWeatherLoading, className: 'mt-3 w-full rounded-lg bg-emerald-500 px-3 py-2 text-xs font-black text-emerald-950 disabled:opacity-50' }, d.liveWeatherLoading ? 'Connecting...' : '\uD83D\uDCCD Use my location'),
+                  h('form', { className: 'mt-2 flex gap-2', onSubmit: function (event) { event.preventDefault(); searchLiveWeather(); } },
+                    h('label', { className: 'min-w-0 flex-1' }, h('span', { className: 'sr-only' }, 'Search city or place'), h('input', { type: 'search', value: d.liveLocationQuery || '', onChange: function (event) { update({ liveLocationQuery: event.target.value }); }, placeholder: 'City, state, or country', className: 'w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-white placeholder:text-slate-500' })),
+                    h('button', { type: 'submit', disabled: !!d.liveWeatherLoading, className: 'rounded-lg border border-emerald-300/30 bg-white/5 px-3 py-2 text-xs font-black text-emerald-200 disabled:opacity-50' }, 'Search')
+                  ),
+                  d.liveWeatherStatus && h('p', { className: 'mt-2 text-[10px] font-bold text-emerald-200', role: 'status', 'aria-live': 'polite' }, d.liveWeatherStatus),
+                  d.liveWeatherError && h('p', { className: 'mt-2 rounded-lg bg-rose-950/40 p-2 text-[10px] text-rose-200', role: 'alert' }, d.liveWeatherError),
+                  live && h('p', { className: 'mt-2 text-[9px] text-slate-400' }, 'Source: ', h('a', { href: live.sourceUrl, target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, live.source), '. Coordinates are rounded and stored only with this local lab state.'),
+                  h('p', { className: 'mt-2 text-[9px] text-slate-500' }, 'Educational visualization only; not a safety or operational forecast.')
+                ),
+                h('section', { className: 'rounded-xl border border-violet-400/20 bg-violet-950/20 p-4', 'data-weather-vr-control': true },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-violet-300' }, 'WebXR bridge'),
+                  h('h4', { className: 'text-sm font-black' }, 'Enter immersive VR'),
+                  h('p', { className: 'mt-1 text-[10px] text-slate-300' }, 'Requires HTTPS, WebXR, and a supported headset. Desktop orbit controls remain available.'),
+                  h('button', { type: 'button', onClick: enterWeatherVR, disabled: !engineReady || !!engineError, className: 'mt-3 w-full rounded-lg bg-violet-500 px-3 py-2 text-xs font-black text-white disabled:opacity-40' }, d.vrSessionActive ? 'VR session active' : 'Check headset and enter VR'),
+                  d.vrStatus && h('p', { className: 'mt-2 text-[10px] text-violet-200', role: 'status', 'aria-live': 'polite' }, d.vrStatus)
+                )
+              )
+            )
+          ),
+          h('section', { className: panelClass + ' grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Immersive weather layer guide' },
+            [['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Sloped wall', 'Frontal boundary'], ['Arrows and particles', 'Wind and precipitation']].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black text-sky-500' }, item[0]), h('p', { className: 'mt-1 text-[10px] ' + mutedClass }, item[1])); })
           )
         );
       }
@@ -2141,9 +3572,375 @@
           ['6-8', 'Analyze station contrasts, fronts, pressure, humidity, dew point, wind shifts, and radar as interacting evidence.'],
           ['9-12', 'Evaluate model assumptions, instability, terrain lift, uncertainty, controlled experiments, and forecast verification.']
         ];
+        function teacherCheckpointDashboard() {
+          var observationCount = (d.observationLog || []).length;
+          var stationCount = Object.keys(d.stationsViewed || {}).length;
+          var selectedChangeCount = (d.lensEvidence || []).length;
+          var comparisonComplete = !!d.patternCompared || selectedChangeCount >= 1 || !!d.carriedEvidence;
+          var experimentCount = d.experimentsRun || 0;
+          var forecastCount = d.forecastsIssued || 0;
+          var history = d.forecastHistory || [];
+          var latestForecast = history.length ? history[history.length - 1] : null;
+          var reasoningLength = (d.reasoning || (latestForecast && latestForecast.reasoning) || '').trim().length;
+          var evidenceCount = Math.max((d.evidence || []).length, latestForecast && latestForecast.evidenceCount || 0);
+          var reasoningTarget = band === 'K-2' ? 10 : 20;
+          var revisionDelta = history.length >= 2 ? Number(history[history.length - 1].score || 0) - Number(history[history.length - 2].score || 0) : null;
+          var checkpoints = [
+            {
+              id: 'observe', icon: '🔭', title: band === 'K-2' ? 'Weather clues' : 'Observation evidence', tab: 'map', complete: observationCount >= 1, started: stationCount >= 1,
+              evidence: observationCount ? observationCount + ' saved station observation' + (observationCount === 1 ? '.' : 's.') : stationCount ? stationCount + ' station' + (stationCount === 1 ? '' : 's') + ' inspected; no observation saved yet.' : 'No station evidence recorded yet.',
+              prompt: observationCount ? 'Ask: Which measurement is the strongest clue, and why?' : band === 'K-2' ? 'Invite the learner to save one sky or station clue.' : 'Invite the learner to save a station observation before explaining a pattern.'
+            },
+            {
+              id: 'compare', icon: '↔️', title: band === 'K-2' ? 'Notice a change' : 'Pattern comparison', tab: 'map', complete: comparisonComplete, started: !!d.changeLensViewed || !!d.compareScenario,
+              evidence: selectedChangeCount ? selectedChangeCount + ' measurable change signal' + (selectedChangeCount === 1 ? ' selected.' : 's selected.') : d.patternCompared ? 'Two weather systems compared at the same model hour.' : d.carriedEvidence ? 'A change-lens evidence set was carried into the forecast.' : 'No recorded comparison yet.',
+              prompt: comparisonComplete ? 'Ask: What stayed the same, what changed, and which contrast matters most?' : band === 'K-2' ? 'Ask the learner to name one thing that looks different.' : 'Have the learner compare two systems or select a recent change signal.'
+            },
+            {
+              id: 'test', icon: '🧪', title: band === 'K-2' ? 'Try one change' : 'Controlled test', tab: 'experiment', complete: experimentCount >= 1, started: !!d.experimentPrediction || !!d.experimentResult,
+              evidence: d.experimentResult ? (d.experimentResult.predictionCorrect ? 'The latest one-variable test supported the prediction.' : 'The latest one-variable test produced a result to explain and revise.') : experimentCount ? experimentCount + ' controlled test' + (experimentCount === 1 ? ' recorded.' : 's recorded.') : 'No controlled test recorded yet.',
+              prompt: experimentCount ? 'Ask: What changed, what stayed fixed, and what mechanism explains the result?' : band === 'K-2' ? 'Ask the learner to predict what one weather change will do.' : 'Have the learner change one variable, predict, and compare with the baseline.'
+            },
+            {
+              id: 'forecast', icon: '📡', title: band === 'K-2' ? 'Share a forecast' : 'Forecast and CER', tab: 'forecast', complete: forecastCount >= 1, started: !!d.predictionPrecip || reasoningLength > 0,
+              evidence: latestForecast ? 'Latest verified model match: ' + latestForecast.score + '/100 with ' + (latestForecast.evidenceCount || 0) + ' evidence source' + ((latestForecast.evidenceCount || 0) === 1 ? '.' : 's.') : forecastCount ? forecastCount + ' verified forecast' + (forecastCount === 1 ? ' recorded.' : 's recorded.') : reasoningLength ? 'Reasoning note started (' + reasoningLength + ' of ' + reasoningTarget + ' minimum characters).' : 'No verified forecast recorded yet.',
+              prompt: forecastCount ? (evidenceCount >= 2 && reasoningLength >= reasoningTarget ? 'Ask: How does each evidence source support the claim?' : 'Conference on connecting at least two measurements to the claim.') : band === 'K-2' ? 'Help the learner say what may happen and point to a clue.' : 'Have the learner issue a claim, cite measurements, and explain the mechanism.'
+            },
+            {
+              id: 'revise', icon: '🔁', title: band === 'K-2' ? 'Make it better' : 'Revision', tab: 'forecast', complete: history.length >= 2, started: history.length >= 1,
+              evidence: history.length >= 2 ? (revisionDelta > 0 ? 'Latest revision improved the model-match score by ' + revisionDelta + ' points.' : revisionDelta < 0 ? 'Latest revision changed the model-match score by ' + revisionDelta + ' points; compare the evidence choices.' : 'The two latest forecasts have the same model-match score; compare their evidence and reasoning.') : history.length === 1 ? 'One verified forecast is ready to revise and compare.' : 'No forecast revision recorded yet.',
+              prompt: history.length >= 2 ? 'Ask: What did you change, why, and what would you test next?' : 'Revisit the forecast after new evidence, then explain what changed in the reasoning.'
+            }
+          ];
+          var readyCount = checkpoints.filter(function (checkpoint) { return checkpoint.complete; }).length;
+          var nextCheckpoint = checkpoints.filter(function (checkpoint) { return !checkpoint.complete; })[0] || null;
+          var readinessPercent = Math.round(readyCount / checkpoints.length * 100);
+          function checkpointStatus(checkpoint) {
+            return checkpoint.complete ? 'Ready' : checkpoint.started ? 'Developing' : 'Not yet';
+          }
+          function openCheckpoint(checkpoint) {
+            update({ tab: checkpoint.tab, navigatorStage: checkpoint.id });
+            if (announce) announce(checkpoint.title + ' student stage opened.');
+          }
+          return h('section', {
+            className: panelClass + ' overflow-hidden',
+            'data-weather-teacher-checkpoints': true,
+            'aria-labelledby': 'weather-teacher-checkpoints-title'
+          },
+            h('div', { className: 'border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-teal-950/40 to-indigo-950/40' : 'border-teal-200 bg-gradient-to-r from-teal-50 via-white to-indigo-50') },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', { className: 'max-w-2xl' },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + tealAccentClass }, 'Formative assessment snapshot'),
+                  h('h3', { id: 'weather-teacher-checkpoints-title', className: 'mt-1 text-lg font-black' }, 'Teacher Checkpoint Dashboard'),
+                  h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, 'Use the recorded work below to choose a short student conference focus. Open the corresponding student stage to gather stronger evidence.')
+                ),
+                h('div', { className: 'min-w-[210px] flex-1 sm:max-w-xs' },
+                  h('div', { className: 'mb-1 flex items-center justify-between gap-3 text-xs font-bold' },
+                    h('span', null, readyCount + ' of ' + checkpoints.length + ' checkpoints ready'),
+                    h('span', { className: tealAccentClass }, readinessPercent + '%')
+                  ),
+                  h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-teal-100'), role: 'progressbar', 'aria-label': 'Teacher checkpoint readiness', 'aria-valuemin': 0, 'aria-valuemax': checkpoints.length, 'aria-valuenow': readyCount },
+                    h('div', { className: 'h-full rounded-full bg-gradient-to-r from-teal-400 via-cyan-400 to-indigo-400 transition-all motion-reduce:transition-none', style: { width: readinessPercent + '%' } })
+                  )
+                )
+              )
+            ),
+            h('div', { className: 'p-4' },
+              h('div', { className: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-5', role: 'list', 'aria-label': 'Recorded investigation checkpoints' }, checkpoints.map(function (checkpoint) {
+                var status = checkpointStatus(checkpoint);
+                var statusClass = checkpoint.complete ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : checkpoint.started ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700');
+                return h('article', { key: checkpoint.id, role: 'listitem', className: 'flex min-h-[220px] flex-col rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
+                  h('div', { className: 'flex items-start justify-between gap-2' },
+                    h('span', { className: 'text-xl', 'aria-hidden': true }, checkpoint.icon),
+                    h('span', { className: 'rounded-full px-2 py-1 text-[11px] font-black ' + statusClass }, status)
+                  ),
+                  h('h4', { className: 'mt-3 text-sm font-black' }, checkpoint.title),
+                  h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, checkpoint.evidence),
+                  h('p', { className: 'mt-3 border-t pt-3 text-xs font-bold leading-relaxed ' + (dark ? 'border-slate-700 ' + tealAccentClass : 'border-slate-200 ' + tealAccentClass) }, checkpoint.prompt)
+                );
+              })),
+              h('div', { className: 'mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 ' + (dark ? 'border-indigo-800 bg-indigo-950/30' : 'border-indigo-200 bg-indigo-50') },
+                h('div', { className: 'max-w-2xl' },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + indigoAccentClass }, nextCheckpoint ? 'Suggested conference focus: ' + nextCheckpoint.title : 'Suggested conference focus: Transfer and model limits'),
+                  h('p', { className: 'mt-1 text-sm leading-relaxed ' + mutedClass }, nextCheckpoint ? nextCheckpoint.prompt : 'Compare the teaching model with local weather observations. Ask which assumptions, missing measurements, or scale differences could explain a mismatch.')
+                ),
+                nextCheckpoint && h('button', { type: 'button', onClick: function () { openCheckpoint(nextCheckpoint); }, className: buttonClass }, 'Open student stage: ' + nextCheckpoint.title + ' →')
+              ),
+              h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, 'Completion indicators summarize recorded interactions; they are not a grade or proof of scientific understanding. Use student explanations, discussion, and work samples to interpret the evidence.')
+            )
+          );
+        }
+
+
+        function teacherConferencePlanner() {
+          var ratings = d.teacherRatings || {};
+          var note = d.teacherConferenceNote || '';
+          var criteriaByBand = {
+            'K-2': [
+              { id: 'observe', title: 'Notice a weather clue', detail: 'Names or pictures a useful sky, wind, or temperature clue.' },
+              { id: 'compare', title: 'Tell what changed', detail: 'Describes one way the weather became the same or different.' },
+              { id: 'explain', title: 'Try one change', detail: 'Makes a prediction and tells what happened after one ingredient changed.' },
+              { id: 'revise', title: 'Share and improve', detail: 'Uses a clue to share a forecast, then makes the forecast better.' }
+            ],
+            '3-5': [
+              { id: 'observe', title: 'Record useful measurements', detail: 'Selects and records measurements that help answer the weather question.' },
+              { id: 'compare', title: 'Compare patterns over time', detail: 'Uses station or timeline evidence to describe meaningful changes.' },
+              { id: 'explain', title: 'Explain one-variable effects', detail: 'Separates what changed from what stayed fixed and explains the outcome.' },
+              { id: 'revise', title: 'Forecast and revise with evidence', detail: 'Supports a forecast with evidence and explains why a revision is stronger.' }
+            ],
+            '6-8': [
+              { id: 'observe', title: 'Select relevant station evidence', detail: 'Chooses measurements that are relevant, precise, and sufficient for the claim.' },
+              { id: 'compare', title: 'Analyze interacting patterns', detail: 'Connects pressure, moisture, wind, temperature, fronts, or radar across time and place.' },
+              { id: 'explain', title: 'Explain cause and effect', detail: 'Uses a controlled comparison to explain a plausible weather mechanism.' },
+              { id: 'revise', title: 'Forecast, justify, and revise', detail: 'Builds a CER forecast, checks it against the model, and explains a revision.' }
+            ],
+            '9-12': [
+              { id: 'observe', title: 'Evaluate evidence quality', detail: 'Judges the relevance, precision, limitations, and sufficiency of measurements.' },
+              { id: 'compare', title: 'Analyze interacting systems', detail: 'Synthesizes spatial, temporal, and ensemble patterns without overstating certainty.' },
+              { id: 'explain', title: 'Defend causal reasoning', detail: 'Uses controlled evidence and atmospheric mechanisms while acknowledging model assumptions.' },
+              { id: 'revise', title: 'Calibrate and revise a forecast', detail: 'Aligns confidence with evidence, verifies the claim, and justifies meaningful revisions.' }
+            ]
+          };
+          var criteria = criteriaByBand[band] || criteriaByBand['6-8'];
+          var ratingOptions = [
+            { id: '', label: 'Not reviewed' },
+            { id: 'emerging', label: 'Emerging' },
+            { id: 'developing', label: 'Developing' },
+            { id: 'secure', label: 'Secure' }
+          ];
+          var ratedCount = criteria.filter(function (criterion) { return !!ratings[criterion.id]; }).length;
+          var secureCount = criteria.filter(function (criterion) { return ratings[criterion.id] === 'secure'; }).length;
+          var focusCriterion = criteria.filter(function (criterion) { return !ratings[criterion.id]; })[0] || criteria.filter(function (criterion) { return ratings[criterion.id] !== 'secure'; })[0] || null;
+          var reviewPercent = Math.round(ratedCount / criteria.length * 100);
+          function setTeacherRating(criterion, rating) {
+            var nextRatings = Object.assign({}, ratings);
+            if (rating) nextRatings[criterion.id] = rating;
+            else delete nextRatings[criterion.id];
+            update({ teacherRatings: nextRatings });
+            if (announce) announce(criterion.title + ' marked ' + (rating || 'not reviewed') + '.');
+          }
+          function ratingLabel(value) {
+            var option = ratingOptions.filter(function (item) { return item.id === value; })[0];
+            return option ? option.label : 'Not reviewed';
+          }
+          function focusPrompt() {
+            if (!focusCriterion) return 'Invite transfer to a new scenario. Ask which evidence would still matter and which model assumptions could change the conclusion.';
+            var value = ratings[focusCriterion.id] || '';
+            if (!value) return 'Review this look-for during the next student explanation and record one specific example.';
+            if (value === 'emerging') return 'Offer a sentence frame, then ask for one measurable example from the simulation.';
+            return 'Ask the learner to connect two pieces of evidence, explain why they matter, and try the reasoning in a new scenario.';
+          }
+          function teacherHandoffBrief() {
+            var observationCount = (d.observationLog || []).length;
+            var comparisonReady = !!d.patternCompared || (d.lensEvidence || []).length >= 1 || !!d.carriedEvidence;
+            var experimentCount = d.experimentsRun || 0;
+            var forecastCount = d.forecastsIssued || 0;
+            var history = d.forecastHistory || [];
+            var checkpointCount = [observationCount >= 1, comparisonReady, experimentCount >= 1, forecastCount >= 1, history.length >= 2].filter(Boolean).length;
+            var latest = history.length ? history[history.length - 1] : null;
+            var previous = history.length >= 2 ? history[history.length - 2] : null;
+            var scoreChange = latest && previous ? Number(latest.score || 0) - Number(previous.score || 0) : null;
+            var reflectionShiftLabels = { station: 'Station measurement', pattern: 'Pattern over time', experiment: 'Controlled test', verification: 'Forecast verification', discussion: 'Explaining to someone' };
+            var reflectionReadinessLabels = { needHelp: 'Needs a conference', developing: 'Can explain with a prompt', explain: 'Can explain with evidence', transfer: 'Ready to apply to a new system' };
+            var pulseQuestions = reasoningPulseQuestions();
+            var pulseResponses = d.reasoningPulseResponses || {};
+            var pulseAnswered = pulseQuestions.filter(function (question) { return !!pulseResponses[question.id]; }).length;
+            var pulseSupported = pulseQuestions.filter(function (question) { return pulseResponses[question.id] === question.correct; }).length;
+            var pulseReview = pulseQuestions.filter(function (question) { return pulseResponses[question.id] && pulseResponses[question.id] !== question.correct; }).map(function (question) { return question.title; });
+            var peerStrengthLabels = { claim: 'Clear forecast claim', evidence: 'Relevant evidence', reasoning: 'Claim-evidence connection', uncertainty: 'Calibrated uncertainty', safety: 'Useful readiness action' };
+            var peerMoveLabels = { askEvidence: 'Add another measurement', explainLink: 'Explain how the evidence supports the claim', considerUncertainty: 'Name what could change the outcome', clarifyAction: 'Connect the hazard to the readiness action', transfer: 'Test the reasoning in another scenario' };
+            var lines = [
+              'WEATHER SYSTEMS TEACHER HANDOFF',
+              'Grade band: ' + band,
+              'Scenario: ' + scenario.name,
+              'Model time: T +' + state.simHour + ' hours',
+              '',
+              'RECORDED INTERACTION EVIDENCE (NOT A GRADE)',
+              '- Investigation checkpoints ready: ' + checkpointCount + '/5',
+              '- Saved station observations: ' + observationCount,
+              '- Pattern comparison recorded: ' + (comparisonReady ? 'Yes' : 'Not yet'),
+              '- Controlled tests recorded: ' + experimentCount,
+              '- Verified forecasts: ' + forecastCount,
+              '- Forecast revisions available: ' + history.length,
+              '- Learner exit ticket: ' + (d.reflectionSubmitted ? 'Saved' : 'Not yet'),
+              '- Reasoning pulse: ' + (pulseAnswered ? pulseSupported + '/' + pulseQuestions.length + ' explanations supported; ' + pulseAnswered + '/' + pulseQuestions.length + ' answered' : 'Not yet'),
+              '- Peer review: ' + (d.peerReviewSubmitted ? 'Saved' : 'Not yet')
+            ];
+            if (latest) lines.push('- Latest model-match score: ' + latest.score + '/100 with ' + (latest.evidenceCount || 0) + ' evidence source' + ((latest.evidenceCount || 0) === 1 ? '' : 's'));
+            if (scoreChange != null) lines.push('- Latest score change: ' + (scoreChange > 0 ? '+' : '') + scoreChange + ' points');
+            if (pulseReview.length) lines.push('- Reasoning review focus: ' + pulseReview.join(', '));
+            if (d.peerReviewSubmitted) {
+              lines.push('- Peer-identified strength: ' + (peerStrengthLabels[d.peerReviewStrength] || 'Not recorded'));
+              lines.push('- Peer revision move: ' + (peerMoveLabels[d.peerReviewMove] || 'Not recorded'));
+              lines.push('- Peer feedback: ' + ((d.peerReviewFeedback || '').replace(/\s+/g, ' ').trim() || 'Not recorded'));
+            }
+            if (d.reflectionSubmitted) {
+              lines.push('- Thinking changed by: ' + (reflectionShiftLabels[d.reflectionShift] || 'Not recorded'));
+              lines.push('- Self-assessed explanation readiness: ' + (reflectionReadinessLabels[d.reflectionReadiness] || 'Not recorded'));
+              lines.push('- Learner next question: ' + ((d.reflectionQuestion || '').replace(/\s+/g, ' ').trim() || 'Not recorded'));
+            }
+            lines.push('', 'TEACHER-AUTHORED LOOK-FORS');
+            criteria.forEach(function (criterion) {
+              lines.push('- ' + criterion.title + ': ' + ratingLabel(ratings[criterion.id] || ''));
+            });
+            lines.push(
+              '',
+              'SUGGESTED NEXT INSTRUCTIONAL MOVE',
+              focusPrompt(),
+              '',
+              'CONFERENCE OBSERVATION NOTE',
+              note || 'No teacher note recorded.',
+              '',
+              'Use student explanations and work samples to interpret this summary. Do not add student names or sensitive personal information.'
+            );
+            var handoffText = lines.join('\n');
+            function copyResult(ok) {
+              var message = ok ? 'Teacher handoff copied to clipboard.' : 'Copy failed. Select the visible handoff text and copy it manually.';
+              if (addToast) addToast(message, ok ? 'success' : 'info');
+              if (announce) announce(message);
+            }
+            function legacyCopy(text) {
+              try {
+                var field = document.createElement('textarea');
+                field.value = text;
+                field.setAttribute('readonly', '');
+                field.style.position = 'fixed';
+                field.style.left = '-9999px';
+                field.style.top = '0';
+                document.body.appendChild(field);
+                field.focus();
+                field.select();
+                var copied = false;
+                try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
+                document.body.removeChild(field);
+                copyResult(copied);
+              } catch (error) {
+                copyResult(false);
+              }
+            }
+            function copyHandoff() {
+              try {
+                if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+                  window.navigator.clipboard.writeText(handoffText).then(function () { copyResult(true); }).catch(function () { legacyCopy(handoffText); });
+                  return;
+                }
+              } catch (error) {}
+              legacyCopy(handoffText);
+            }
+            return h('section', {
+              className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-teal-800 bg-teal-950/20' : 'border-teal-200 bg-teal-50'),
+              'data-weather-teacher-handoff': true,
+              'aria-labelledby': 'weather-teacher-handoff-title'
+            },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-teal-900' : 'border-teal-200') },
+                h('div', { className: 'max-w-2xl' },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + tealAccentClass }, 'Portable planning record'),
+                  h('h4', { id: 'weather-teacher-handoff-title', className: 'mt-1 text-base font-black' }, 'Teacher Handoff Brief'),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'A plain-language snapshot for lesson notes, instructional teams, or the next conference.')
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: copyHandoff,
+                  'aria-label': 'Copy Teacher Handoff Brief to clipboard',
+                  className: 'min-h-11 rounded-lg bg-teal-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
+                }, '\uD83D\uDCCB Copy handoff brief')
+              ),
+              h('pre', {
+                className: 'whitespace-pre-wrap break-words p-4 font-sans text-xs leading-relaxed ' + (dark ? 'text-slate-200' : 'text-slate-700'),
+                'aria-label': 'Teacher Handoff Brief plain text'
+              }, handoffText),
+              h('p', { className: 'border-t px-4 py-3 text-xs font-bold ' + (dark ? 'border-teal-900 text-teal-300' : 'border-teal-200 text-teal-900') }, 'Plain text only. Review the brief before sharing and keep student-identifying information out of the note.')
+            );
+          }
+
+          return h('section', {
+            className: panelClass + ' overflow-hidden',
+            'data-weather-teacher-conference-planner': true,
+            'aria-labelledby': 'weather-teacher-conference-title'
+          },
+            h('div', { className: 'border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-violet-950/30 to-slate-900' : 'border-violet-200 bg-gradient-to-r from-violet-50 via-white to-sky-50') },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', { className: 'max-w-2xl' },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + violetAccentClass }, 'Teacher-authored evidence'),
+                  h('h3', { id: 'weather-teacher-conference-title', className: 'mt-1 text-lg font-black' }, 'Teacher Conference Planner'),
+                  h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, 'Use these grade-banded look-fors during discussion or work review. Ratings reflect teacher judgment and remain separate from the automated checkpoint summary.')
+                ),
+                h('div', { className: 'min-w-[210px] flex-1 sm:max-w-xs' },
+                  h('div', { className: 'mb-1 flex items-center justify-between gap-3 text-xs font-bold' },
+                    h('span', null, ratedCount + ' of ' + criteria.length + ' look-fors reviewed'),
+                    h('span', { className: violetAccentClass }, secureCount + ' secure')
+                  ),
+                  h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-violet-100'), role: 'progressbar', 'aria-label': 'Teacher look-fors reviewed', 'aria-valuemin': 0, 'aria-valuemax': criteria.length, 'aria-valuenow': ratedCount },
+                    h('div', { className: 'h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 transition-all motion-reduce:transition-none', style: { width: reviewPercent + '%' } })
+                  )
+                )
+              )
+            ),
+            h('div', { className: 'p-4' },
+              h('div', { className: 'grid gap-3 md:grid-cols-2', role: 'list', 'aria-label': band + ' teacher conference look-fors' }, criteria.map(function (criterion, index) {
+                var selected = ratings[criterion.id] || '';
+                return h('article', { key: criterion.id, role: 'listitem', className: 'rounded-xl border p-4 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
+                  h('div', { className: 'flex items-start justify-between gap-3' },
+                    h('div', null,
+                      h('p', { className: 'text-[11px] font-black uppercase tracking-widest ' + violetAccentClass }, 'Look-for ' + (index + 1)),
+                      h('h4', { className: 'mt-1 text-sm font-black' }, criterion.title)
+                    ),
+                    h('span', { className: 'shrink-0 rounded-full px-2 py-1 text-[11px] font-black ' + (selected === 'secure' ? (dark ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : selected === 'developing' ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') : selected === 'emerging' ? (dark ? 'bg-amber-950 text-amber-300' : 'bg-amber-100 text-amber-900') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700')) }, ratingLabel(selected))
+                  ),
+                  h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, criterion.detail),
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Rate ' + criterion.title }, ratingOptions.map(function (option) {
+                    var pressed = selected === option.id;
+                    return h('button', {
+                      key: option.id || 'not-reviewed',
+                      type: 'button',
+                      onClick: function () { setTeacherRating(criterion, option.id); },
+                      'aria-pressed': pressed,
+                      className: 'min-h-11 rounded-lg border px-2 py-2 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (pressed ? (dark ? 'border-violet-300 bg-violet-900 text-white' : 'border-violet-600 bg-violet-100 text-violet-950') : (dark ? 'border-slate-600 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-50'))
+                    }, option.label);
+                  }))
+                );
+              })),
+              h('div', { className: 'mt-4 grid gap-4 lg:grid-cols-[1fr_1.2fr]' },
+                h('div', { className: 'rounded-xl border p-4 ' + (dark ? 'border-fuchsia-900 bg-fuchsia-950/20' : 'border-fuchsia-200 bg-fuchsia-50') },
+                  h('p', { className: 'text-xs font-black uppercase tracking-widest ' + fuchsiaAccentClass }, focusCriterion ? 'Suggested next look-for: ' + focusCriterion.title : 'Transfer challenge'),
+                  h('p', { className: 'mt-2 text-sm leading-relaxed ' + mutedClass }, focusPrompt())
+                ),
+                h('div', { className: 'rounded-xl border p-4 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white') },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('label', { htmlFor: 'weather-teacher-conference-note', className: 'text-sm font-black' }, 'Conference observation note'),
+                    h('span', { id: 'weather-teacher-note-count', className: 'text-xs font-bold ' + mutedClass }, note.length + ' / 280')
+                  ),
+                  h('textarea', {
+                    id: 'weather-teacher-conference-note',
+                    value: note,
+                    maxLength: 280,
+                    onChange: function (event) { update({ teacherConferenceNote: event.target.value.slice(0, 280) }); },
+                    'aria-describedby': 'weather-teacher-note-count weather-teacher-note-privacy',
+                    placeholder: 'Record a specific student explanation, misconception, or next instructional move.',
+                    className: inputClass + ' mt-2 min-h-[120px] resize-y'
+                  }),
+                  h('div', { className: 'mt-2 flex flex-wrap items-start justify-between gap-3' },
+                    h('p', { id: 'weather-teacher-note-privacy', className: 'max-w-xl text-xs leading-relaxed ' + mutedClass }, 'Use instructional observations only. Do not enter student names or sensitive personal information.'),
+                    h('button', {
+                      type: 'button',
+                      onClick: function () {
+                        update({ teacherRatings: {}, teacherConferenceNote: '' });
+                        if (announce) announce('Teacher conference ratings and note cleared.');
+                      },
+                      disabled: ratedCount === 0 && !note,
+                      className: buttonClass + ' text-xs disabled:cursor-not-allowed disabled:opacity-50'
+                    }, 'Clear conference record')
+                  )
+                )
+              ),
+              teacherHandoffBrief()
+            )
+          );
+        }
+
         return h('div', { className: 'mx-auto max-w-5xl space-y-4 p-4' },
           h('div', { className: panelClass + ' p-5', 'data-weather-teacher-guide': true },
-            h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-sky-500' }, 'Ready-to-teach sequence | 35-50 minutes'),
+            h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Ready-to-teach sequence | 35-50 minutes'),
             h('h3', { className: 'mt-1 text-xl font-black' }, 'Predict - Observe - Explain - Revise'),
             h('div', { className: 'mt-4 grid gap-3 sm:grid-cols-4' },
               [
@@ -2151,13 +3948,15 @@
                 ['2. Observe', 'Teams inspect multiple stations and analysis layers.'],
                 ['3. Explain', 'Students cite measurements in a CER response.'],
                 ['4. Revise', 'Verify against the teaching model and improve the claim.']
-              ].map(function (item) { return h('div', { key: item[0], className: 'rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: 'text-sm font-black text-sky-500' }, item[0]), h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, item[1])); })
+              ].map(function (item) { return h('div', { key: item[0], className: 'rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: 'text-sm font-black ' + skyAccentClass }, item[0]), h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, item[1])); })
             )
           ),
+          teacherCheckpointDashboard(),
+          teacherConferencePlanner(),
           h('div', { className: panelClass + ' overflow-hidden' },
             h('div', { className: 'border-b p-4 ' + (dark ? 'border-slate-700' : 'border-sky-200') }, h('h3', { className: 'text-base font-black' }, 'Grade-band progression')),
             h('div', { className: 'divide-y ' + (dark ? 'divide-slate-700' : 'divide-sky-100') },
-              rows.map(function (row) { return h('div', { key: row[0], className: 'grid gap-2 p-4 sm:grid-cols-[90px_1fr]' }, h('p', { className: 'font-black text-sky-500' }, row[0]), h('p', { className: 'text-sm ' + mutedClass }, row[1])); })
+              rows.map(function (row) { return h('div', { key: row[0], className: 'grid gap-2 p-4 sm:grid-cols-[90px_1fr]' }, h('p', { className: 'font-black ' + skyAccentClass }, row[0]), h('p', { className: 'text-sm ' + mutedClass }, row[1])); })
             )
           ),
           h('div', { className: 'grid gap-4 md:grid-cols-2' },
@@ -2177,7 +3976,8 @@
             h('div', { className: panelClass + ' p-4' },
               h('h3', { className: 'text-base font-black' }, 'Model boundaries'),
               h('p', { className: 'mt-3 text-sm leading-relaxed ' + mutedClass }, 'This is a transparent teaching model, not an operational weather forecast. Scenario outcomes are intentionally simplified so students can isolate relationships among temperature, moisture, pressure, lift, wind, fronts, and hazards. The 9-member ensemble varies starting conditions for comparison; it is not an operational probability forecast.'),
-              h('p', { className: 'mt-3 text-xs font-bold text-sky-500' }, 'Use real local observations after the lab to compare model patterns with authentic weather data.')
+              h('p', { className: 'mt-3 text-xs font-bold ' + skyAccentClass }, 'Use the Live Weather connection or another trusted observation source to compare model patterns with timestamped authentic data.'),
+              h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, 'Immersive 3D and VR are optional representations. Always keep the Canvas map, numeric metrics, keyboard controls, and verbal descriptions available so learners can choose an accessible evidence view. Live observations describe current conditions and should not be presented as an operational forecast.')
             )
           ),
           h('div', { className: panelClass + ' p-4' },
@@ -2191,7 +3991,12 @@
       return h('section', { className: rootClass, 'data-weather-systems-root': true },
         header(),
         meteorologistBadgeBoard(),
-        tab === 'forecast' ? forecastMission() : tab === 'experiment' ? experimentLab() : tab === 'teacher' ? teacherGuide() : mapLab()
+        investigationNavigator(),
+        h('div', {
+          role: 'tabpanel',
+          id: 'weather-panel-' + tab,
+          'aria-labelledby': 'weather-tab-' + tab
+        }, tab === 'forecast' ? forecastMission() : tab === 'experiment' ? experimentLab() : tab === 'immersive' ? immersiveWeatherLab() : tab === 'teacher' ? teacherGuide() : mapLab())
       );
     }
   });

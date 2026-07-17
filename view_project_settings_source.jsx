@@ -233,6 +233,15 @@ function ProjectSettingsView(props) {
               <div className="sm:col-span-2">
                 {renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)}
               </div>
+              <div className='sm:col-span-2'>
+                {renderFeatureToggle(
+                  'proj-allow-student-byok-ai',
+                  'allowStudentByokAi',
+                  tx('project_settings.allow_student_byok_ai', 'Allow students to connect their own AI provider'),
+                  tx('project_settings.allow_student_byok_ai_desc', 'QR and Class Mailbox links stay AI-off by default. When enabled, students may enter and test their own provider credentials for this browser session. Your API key is never shared.'),
+                  false
+                )}
+              </div>
               {renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true)}
               {renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true)}
               {renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true)}

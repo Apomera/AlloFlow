@@ -22,14 +22,12 @@ depends on your institution's configuration and agreements.
 
 ABOUT THE "UNKNOWN PUBLISHER" / SMARTSCREEN WARNING
 
-Windows may have warned you that this installer is from an "unknown
-publisher". That is expected for this beta: AlloFlow is not yet signed
-with a paid code-signing certificate. Signing requires a commercial
-identity-verification process that is planned before wide release.
-Until then, Windows shows its standard caution for any unsigned app.
-If you obtained this installer directly from AlloFlow's repository or
-from the person who built it for you, you can proceed with
-"More info" -> "Run anyway".
+If Windows reports an "unknown publisher", that particular copy is an
+unsigned test build. Production releases are expected to carry a valid
+Authenticode signature. Do not bypass a warning unless you obtained the
+file from a trusted AlloFlow release and verified its published SHA-256
+checksum. Right-click the file, choose Properties, and check Digital
+Signatures before distributing it to another computer.
 
 BETA SOFTWARE NOTICE
 

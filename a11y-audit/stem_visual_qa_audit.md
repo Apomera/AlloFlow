@@ -1,11 +1,11 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-13T03:28:42.524Z
+Generated: 2026-07-16T19:35:56.135Z
 
 ## Scope
 
-- Registered STEM tools: 122
-- STEM tool files: 119
+- Registered STEM tools: 125
+- STEM tool files: 122
 - Monitored student-facing visual markers: 74
 
 ## Summary
@@ -15,11 +15,11 @@ Generated: 2026-07-13T03:28:42.524Z
 | Load errors | 0 |
 | Marker passes | 74 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 16 |
+| Monitored first-screen findings | 17 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 0 |
-| Any source/public/build drift | 3 |
-| Monitored file drift | 2 |
+| Source/public drift | 2 |
+| Any source/public/build drift | 9 |
+| Monitored file drift | 4 |
 
 ## Visual Marker Coverage
 
@@ -107,15 +107,21 @@ Generated: 2026-07-13T03:28:42.524Z
 | warning | `canvas-focus` | 3 | `bikeLab`, `skatelab`, `funcGrapher` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
 | warning | `canvas-name` | 1 | `funcGrapher` |
-| notice | `horizontal-overflow-risk` | 10 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `statsLab`, `volume` |
+| notice | `horizontal-overflow-risk` | 11 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `brainAtlas`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `statsLab`, `volume` |
 
 ## Sync Drift
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_optics.js` | yes | source `834C495D8445`, public `834C495D8445`, build `494E67C4A75D` |
-| build-drift | `stem_tool_particlelab3d.js` | no | source `946E2E78A5F5`, public `946E2E78A5F5`, build `F1FB6EE0170C` |
-| build-drift | `stem_tool_platetectonics.js` | yes | source `A928406DD1A6`, public `A928406DD1A6`, build `6D522DB866EE` |
+| source-public-drift | `stem_tool_aquarium.js` | yes | source `7515A8366A6C`, public `1AEF8A007DC5`, build `2A1D68686F0F` |
+| build-drift | `stem_tool_brainatlas.js` | yes | source `65E8BA8FDE65`, public `65E8BA8FDE65`, build `7E74A0E8B596` |
+| build-drift | `stem_tool_cyberdefense.js` | no | source `2CB9967FD950`, public `2CB9967FD950`, build `4538E453F147` |
+| build-drift | `stem_tool_dinolab.js` | yes | source `5B5FB939D507`, public `5B5FB939D507`, build `AB476DC3484C` |
+| build-drift | `stem_tool_fisherlab.js` | yes | source `049AECCF594D`, public `049AECCF594D`, build `AB4EA064106D` |
+| build-drift | `stem_tool_geometryworld.js` | no | source `0479DAFD428F`, public `0479DAFD428F`, build `14C5DDB064AB` |
+| build-drift | `stem_tool_particlelab3d.js` | no | source `42CED05136DF`, public `42CED05136DF`, build `84079C80EE8A` |
+| build-drift | `stem_tool_typingpractice.js` | no | source `5BBCB3C751E1`, public `5BBCB3C751E1`, build `48AEB59A03C8` |
+| source-public-drift | `stem_tool_weathersystems.js` | no | source `278841FA10BA`, public `22D738952CCB`, build `4BDCC0C5B79A` |
 
 ## Gate Policy
 

@@ -1,6 +1,7 @@
 !ifndef BUILD_UNINSTALLER
   !include LogicLib.nsh
   !include nsDialogs.nsh
+  !include WinVer.nsh
 
   ; Friendly, teacher-facing installer chrome. customWelcomePage is the hook
   ; the electron-builder template inserts BEFORE the page flow (customHeader
@@ -11,7 +12,7 @@
   !macro customWelcomePage
     !define MUI_WELCOMEPAGE_TITLE "Welcome to AlloFlow Desktop (Beta)"
     !define MUI_WELCOMEPAGE_TEXT "AlloFlow turns your materials into accessible, differentiated learning resources - leveled readers, glossaries, quizzes, visual supports, STEM tools, and live classroom sessions.$\r$\n$\r$\nThe Desktop edition is local-first: classroom sessions stay on your computer and school network, with optional built-in AI (text, images, and voices) that needs no cloud account.$\r$\n$\r$\nClick Next to learn more."
-    !define MUI_LICENSEPAGE_TEXT_TOP "A quick word about this beta - including why Windows showed a publisher warning."
+    !define MUI_LICENSEPAGE_TEXT_TOP "A quick word about this beta, privacy, and how to verify your installer."
     !define MUI_LICENSEPAGE_TEXT_BOTTOM "This beta is provided as-is. Click below to continue."
     !define MUI_LICENSEPAGE_BUTTON "I Understand"
     !define MUI_FINISHPAGE_TITLE "AlloFlow Desktop is ready"
@@ -31,6 +32,7 @@
     ClearErrors
     FileOpen $InstallDiagnosticHandle "$InstallDiagnosticLog" a
     ${IfNot} ${Errors}
+      FileSeek $InstallDiagnosticHandle 0 END
       FileWrite $InstallDiagnosticHandle "${LINE}$\r$\n"
       FileClose $InstallDiagnosticHandle
     ${EndIf}
@@ -48,6 +50,46 @@
       ${EndIf}
     ${EndIf}
   !macroend
+  ; Fail before extracting hundreds of megabytes when the OS cannot run the
+  ; bundled Electron application. This also gives users a useful explanation
+  ; instead of a generic Windows compatibility dialog after installation.
+  !macro customInit
+    Delete "$LOCALAPPDATA\AlloFlow Desktop\install-diagnostics.txt"
+    !insertmacro LogInstallDiagnostic "installerStarted=true"
+    !insertmacro LogInstallDiagnostic "version=${VERSION}"
+
+    ; Architecture-specific packages must run only on their native Windows
+    ; architecture. The combined setup contains both payloads and is the
+    ; recommended download for users who do not know which CPU they have.
+    !ifdef APP_64
+      !ifndef APP_ARM64
+        ${If} ${IsNativeARM64}
+          !insertmacro LogInstallDiagnostic "ERROR=x64InstallerOnArm64"
+          MessageBox MB_ICONSTOP|MB_OK "This is the Intel/AMD x64 installer, but this computer uses Windows on ARM. Use the combined setup or the ARM64 installer." /SD IDOK
+          SetErrorLevel 2
+          Quit
+        ${EndIf}
+      !endif
+    !endif
+    !ifdef APP_ARM64
+      !ifndef APP_64
+        ${IfNot} ${IsNativeARM64}
+          !insertmacro LogInstallDiagnostic "ERROR=arm64InstallerOnX64"
+          MessageBox MB_ICONSTOP|MB_OK "This is the ARM64 installer, but this computer uses an Intel or AMD processor. Use the combined setup or the x64 installer." /SD IDOK
+          SetErrorLevel 2
+          Quit
+        ${EndIf}
+      !endif
+    !endif
+
+    ${IfNot} ${AtLeastWin10}
+      !insertmacro LogInstallDiagnostic "ERROR=unsupportedWindowsVersion"
+      MessageBox MB_ICONSTOP|MB_OK "AlloFlow Desktop requires 64-bit Windows 10 or Windows 11. This version of Windows cannot run the app." /SD IDOK
+      SetErrorLevel 2
+      Quit
+    ${EndIf}
+  !macroend
+
 
   !macro customInstallMode
     StrCpy $isForceCurrentInstall "1"
@@ -80,7 +122,6 @@
 
   !macro customInstall
     CreateDirectory "$LOCALAPPDATA\AlloFlow Desktop"
-    Delete "$LOCALAPPDATA\AlloFlow Desktop\install-diagnostics.txt"
 
     !insertmacro LogInstallDiagnostic "---- AlloFlow Desktop install ----"
     !insertmacro LogInstallDiagnostic "INSTDIR=$INSTDIR"
@@ -132,7 +173,7 @@
       StrCpy $launchLink ""
       !insertmacro LogInstallDiagnostic "appExeExists=false"
       !insertmacro LogInstallDiagnostic "ERROR=Installed app executable is missing after file extraction."
-      MessageBox MB_ICONEXCLAMATION|MB_OK "AlloFlow Desktop did not finish installing its app file, so shortcuts were not created. Diagnostic log: $LOCALAPPDATA\AlloFlow Desktop\install-diagnostics.txt"
+      MessageBox MB_ICONEXCLAMATION|MB_OK "AlloFlow Desktop did not finish installing its app file, so shortcuts were not created. Diagnostic log: $LOCALAPPDATA\AlloFlow Desktop\install-diagnostics.txt" /SD IDOK
     ${EndIf}
   !macroend
 !endif

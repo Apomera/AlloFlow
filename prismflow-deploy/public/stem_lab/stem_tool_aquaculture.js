@@ -7303,6 +7303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       passedRedNun: false,
       reachedLease: false,
       returnedHome: false,
+      dockReminderShown: false,
       fuel: 100
     };
     boat.position.copy(boatState.pos);
@@ -7337,13 +7338,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     var keys = {};
+    var suspended = !!document.hidden;
     function onKeyDown(e) {
-      keys[e.key.toLowerCase()] = true;
-      if (e.key === ' ') e.preventDefault();
+      var target = e.target;
+      if (target && target.matches && target.matches('input, textarea, select, button, [contenteditable="true"]')) return;
+      if (target !== canvas) return;
+      var key = e.key.toLowerCase();
+      if (key === 'escape') {
+        e.preventDefault();
+        clearKeys();
+        aqAnnounce('Exiting the AquacultureLab 3D simulator.');
+        if (opts && opts.onExit) opts.onExit();
+        return;
+      }
+      if (e.repeat && (key === 'f' || key === 'p')) return;
+      keys[key] = true;
+      if ({ ' ': 1, w: 1, a: 1, s: 1, d: 1, arrowup: 1, arrowdown: 1, arrowleft: 1, arrowright: 1, f: 1, p: 1 }[key]) e.preventDefault();
     }
-    function onKeyUp(e) { keys[e.key.toLowerCase()] = false; }
+    function onKeyUp(e) {
+      if (e.target !== canvas) return;
+      keys[e.key.toLowerCase()] = false;
+    }
+    function clearKeys() { keys = {}; }
+    function onWindowBlur() { suspended = true; clearKeys(); }
+    function onWindowFocus() { suspended = !!document.hidden; lastT = performance.now(); }
+    function onVisibilityChange() {
+      suspended = !!document.hidden;
+      lastT = performance.now();
+      if (suspended) clearKeys();
+    }
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onWindowBlur);
+    window.addEventListener('focus', onWindowFocus);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    canvas.addEventListener('blur', clearKeys);
 
     var cameraTarget = new THREE.Vector3();
 
@@ -7355,10 +7384,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var alive = true;
     var lastT = t0;
     var elapsed = 0;
+    var lastHudUpdate = -Infinity;
 
     function tick() {
       if (!alive) return;
       var now = performance.now();
+      if (suspended) {
+        lastT = now;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       var dt = Math.min(0.08, (now - lastT) / 1000);
       lastT = now;
       elapsed += dt;
@@ -7434,7 +7469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         } else {
           boatState.droppersDeployed += 1;
           rebuildDroppers(boatState.droppersDeployed);
-          statusCb({ type: 'dropper', text: 'Dropper ' + boatState.droppersDeployed + '/5 deployed with mussel seed' });
+          statusCb({ type: 'dropper', count: boatState.droppersDeployed, text: 'Dropper ' + boatState.droppersDeployed + '/5 deployed with mussel seed' });
           aqAnnounce('Dropper ' + boatState.droppersDeployed + ' of 5 deployed');
         }
       }
@@ -7455,10 +7490,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       // Returned home
       if (boatState.reachedLease && !boatState.returnedHome) {
         var dDock = boat.position.distanceTo(dock.position);
-        if (dDock < 4 && Math.abs(boatState.speed) < 1) {
+        if (dDock > 6) boatState.dockReminderShown = false;
+        if (dDock < 4 && Math.abs(boatState.speed) < 1 && boatState.passedRedNun && boatState.droppersDeployed >= 5) {
           boatState.returnedHome = true;
           aqAnnounce('Docked. Mission summary available.');
           statusCb({ type: 'complete', text: 'Mission complete — review summary' });
+        }
+        else if (dDock < 4 && Math.abs(boatState.speed) < 1 && !boatState.dockReminderShown) {
+          boatState.dockReminderShown = true;
+          var missing = [];
+          if (!boatState.passedRedNun) missing.push('pass the red nun correctly');
+          if (boatState.droppersDeployed < 5) missing.push('deploy ' + (5 - boatState.droppersDeployed) + ' more dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's'));
+          aqAnnounce('Docked, but the mission is not complete. Still needed: ' + missing.join(' and ') + '.');
+          statusCb({ type: 'info', text: 'Mission incomplete - still need to ' + missing.join(' and ') });
         }
       }
 
@@ -7483,17 +7527,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       camera.lookAt(cameraTarget);
 
       // HUD
-      hudCb({
-        speed: boatState.speed,
-        heading: boatState.heading,
-        fuel: boatState.fuel,
-        droppersDeployed: boatState.droppersDeployed,
-        probeReadingsCount: boatState.probeReadingsCount,
-        passedRedNun: boatState.passedRedNun,
-        reachedLease: boatState.reachedLease,
-        returnedHome: boatState.returnedHome,
-        elapsed: elapsed
-      });
+      if (now - lastHudUpdate >= 200) {
+        lastHudUpdate = now;
+        hudCb({
+          speed: boatState.speed,
+          heading: boatState.heading,
+          fuel: boatState.fuel,
+          droppersDeployed: boatState.droppersDeployed,
+          probeReadingsCount: boatState.probeReadingsCount,
+          passedRedNun: boatState.passedRedNun,
+          reachedLease: boatState.reachedLease,
+          returnedHome: boatState.returnedHome,
+          elapsed: elapsed
+        });
+      }
 
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
       raf = requestAnimationFrame(tick);
@@ -7511,11 +7558,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     window.addEventListener('resize', onResize);
 
     return {
+      setControl: function(key, active) {
+        if (!alive) return;
+        keys[String(key || '').toLowerCase()] = !!active;
+      },
       dispose: function() {
         alive = false;
         if (raf) cancelAnimationFrame(raf);
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
+        window.removeEventListener('blur', onWindowBlur);
+        window.removeEventListener('focus', onWindowFocus);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        canvas.removeEventListener('blur', clearKeys);
+        clearKeys();
         window.removeEventListener('resize', onResize);
         try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
         try { renderer.dispose(); } catch (_) {}
@@ -7562,6 +7618,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var canvasRef = useRef(null);
     var farmRef = useRef(null);
 
+    var initTimerRef = useRef(null);
+    var controlPulseTimersRef = useRef({});
     useEffect(function() {
       var s = loadState();
       s.region = region;
@@ -7571,43 +7629,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function pushStatus(ev) {
       setStatus(function(prev) { return (prev || []).concat([ev]).slice(-8); });
       if (ev.type === 'probe') {
-        var ns = probes.concat([ev.reading]);
-        setProbes(ns);
-        var s2 = loadState();
-        s2.probeReadings = ns;
-        saveState(s2);
+        setProbes(function(prev) {
+          var ns = (prev || []).concat([ev.reading]).slice(-50);
+          var s2 = loadState();
+          s2.probeReadings = ns;
+          saveState(s2);
+          return ns;
+        });
       }
       if (ev.type === 'dropper') {
         setDroppers(function(c) {
-          var nv = c + 1;
+          var nv = typeof ev.count === 'number' ? ev.count : c + 1;
           var s2 = loadState();
           s2.droppersDeployed = nv;
           saveState(s2);
           return nv;
         });
       }
+      if (ev.type === 'complete') {
+        var s3 = loadState();
+        s3.completedMissions = s3.completedMissions || {};
+        s3.completedMissions['mission-1'] = { completedAt: Date.now() };
+        saveState(s3);
+      }
     }
 
     function startSim() {
       function actuallyStart() {
-        var c = canvasRef.current;
-        if (!c) return;
-        if (farmRef.current && farmRef.current.dispose) farmRef.current.dispose();
-        try {
-          farmRef.current = initFarmSim(c, {
-            onHudUpdate: setHud,
-            onStatus: pushStatus,
-            initialDroppers: loadState().droppersDeployed || 0
-          });
-          if (!farmRef.current) {
-            throw new Error('Farm simulation failed to initialize');
+        setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
+        if (initTimerRef.current) clearTimeout(initTimerRef.current);
+        initTimerRef.current = setTimeout(function() {
+          initTimerRef.current = null;
+          var c = canvasRef.current;
+          if (!c) {
+            setSim({ active: false, threeLoaded: true, threeError: true, loading: false });
+            return;
           }
-          setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
-          aqAnnounce('AquacultureLab 3D sim launched. WASD/arrow keys to steer, F to drop a seeded line at lease, P to take a water-quality probe reading.');
-        } catch (err) {
-          console.error('[Aquaculture] WebGL / 3D initialization failed:', err);
-          setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-        }
+          if (farmRef.current && farmRef.current.dispose) farmRef.current.dispose();
+          try {
+            farmRef.current = initFarmSim(c, {
+              onHudUpdate: setHud,
+              onStatus: pushStatus,
+              initialDroppers: loadState().droppersDeployed || 0,
+              onExit: stopSim
+            });
+            if (!farmRef.current) throw new Error('Farm simulation failed to initialize');
+            try { c.focus(); } catch (focusError) {}
+            aqAnnounce('AquacultureLab 3D sim launched. Focus is in the farm view. WASD or arrow keys steer, F drops a seeded line at the lease, P takes a water-quality probe reading, and Escape exits.');
+          } catch (err) {
+            console.error('[Aquaculture] WebGL / 3D initialization failed:', err);
+            setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+          }
+        }, 0);
       }
       if (window.THREE) actuallyStart();
       else {
@@ -7619,13 +7692,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       }
     }
     function stopSim() {
+      if (initTimerRef.current) clearTimeout(initTimerRef.current);
+      initTimerRef.current = null;
+      clearFarmControlPulses();
       if (farmRef.current && farmRef.current.dispose) farmRef.current.dispose();
       farmRef.current = null;
       setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     }
 
+    function setFarmControl(key, active) {
+      if (farmRef.current && farmRef.current.setControl) farmRef.current.setControl(key, active);
+    }
+    function clearFarmControlPulses() {
+      var timers = controlPulseTimersRef.current || {};
+      Object.keys(timers).forEach(function(key) { clearTimeout(timers[key]); });
+      controlPulseTimersRef.current = {};
+    }
+    function pulseFarmControl(key) {
+      setFarmControl(key, true);
+      var timers = controlPulseTimersRef.current;
+      if (timers[key]) clearTimeout(timers[key]);
+      timers[key] = setTimeout(function() {
+        setFarmControl(key, false);
+        delete timers[key];
+      }, 180);
+    }
+
     useEffect(function() {
-      return function() { if (farmRef.current && farmRef.current.dispose) farmRef.current.dispose(); };
+      return function() {
+        if (initTimerRef.current) clearTimeout(initTimerRef.current);
+        if (farmRef.current && farmRef.current.dispose) farmRef.current.dispose();
+        clearFarmControlPulses();
+      };
     }, []);
 
     var cardStyle = { background: 'linear-gradient(135deg, rgba(8,30,28,0.92), rgba(4,18,18,0.92))', border: '1px solid rgba(20,184,166,0.22)', borderRadius: 12, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12 };
@@ -7949,7 +8047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               style: { padding: '12px 24px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               '▶ Cast off — head up-river to your lease')) : null,
           sim.active ? h('div', { style: { position: 'relative' } },
-            h('canvas', { ref: canvasRef, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: '#c4d8e3' },
+            h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D aquaculture farm simulator', 'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P Escape', onPointerDown: function (event) { try { event.currentTarget.focus(); } catch (error) {} }, onFocus: function (event) { event.currentTarget.style.outline = '3px solid #5eead4'; event.currentTarget.style.outlineOffset = '-3px'; }, onBlur: function (event) { event.currentTarget.style.outline = 'none'; }, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: '#c4d8e3', outline: 'none' },
               'aria-label': '3D Bagaduce River farm scene. WASD or arrow keys to pilot, F to drop a seeded line at lease, P to take a water-quality probe reading.' }),
             h('div', { style: { position: 'absolute', top: 10, left: 10, background: 'rgba(4,18,18,0.78)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
               h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
@@ -7971,7 +8069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               var sx = function(i) { return pad + (n === 1 ? W - 2 * pad : i / (n - 1) * (W - 2 * pad)); };
               var sy = function(v) { return pad + (1 - (v - doMin) / ((doMax - doMin) || 1)) * (H - 2 * pad); };
               var pts = doVals.map(function(v, i) { return sx(i).toFixed(1) + ',' + sy(v).toFixed(1); }).join(' ');
-              return h('div', { style: { position: 'absolute', bottom: 116, right: 10, background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', width: 204 } },
+              return h('div', { style: { position: 'absolute', top: 108, right: 10, background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', width: 204 } },
                 h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 3 } }, '💧 Water quality (latest)'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   h('span', null, 'Temp ' + latest.temp + '°C'),
@@ -7990,6 +8088,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
+            h('div', { role: 'group', 'aria-label': 'On-screen vessel controls', style: { position: 'absolute', left: 10, bottom: 116, width: 'min(250px, calc(100% - 20px))', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, padding: 7, borderRadius: 9, background: 'rgba(4,18,18,0.82)' } },
+              [
+                { key: 'arrowup', label: 'Forward', hold: true },
+                { key: 'arrowleft', label: 'Turn left', hold: true },
+                { key: 'arrowdown', label: 'Reverse', hold: true },
+                { key: 'arrowright', label: 'Turn right', hold: true },
+                { key: ' ', label: 'Boost', hold: true },
+                { key: 'f', label: 'Drop line', hold: false },
+                { key: 'p', label: 'Take probe', hold: false }
+              ].map(function(c) {
+                var props = { key: c.key, type: 'button', className: 'aq-btn', 'aria-label': c.label, style: { minHeight: 38, padding: '5px 6px', border: '1px solid rgba(94,234,212,0.45)', borderRadius: 7, background: 'rgba(15,23,42,0.88)', color: '#ecfeff', fontSize: 10, fontWeight: 800, cursor: 'pointer', touchAction: 'none' } };
+                if (c.hold) {
+                  props.onPointerDown = function(event) { event.preventDefault(); try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} setFarmControl(c.key, true); };
+                  props.onPointerUp = function(event) { setFarmControl(c.key, false); try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} };
+                  props.onPointerCancel = function() { setFarmControl(c.key, false); };
+                  props.onLostPointerCapture = function() { setFarmControl(c.key, false); };
+                  props.onKeyDown = function(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setFarmControl(c.key, true); } };
+                  props.onKeyUp = function(event) { if (event.key === 'Enter' || event.key === ' ') setFarmControl(c.key, false); };
+                  props.onClick = function(event) { if (event.detail === 0) pulseFarmControl(c.key); };
+                } else {
+                  props.onClick = function() { pulseFarmControl(c.key); };
+                }
+                return h('button', props, c.label);
+              })
+            ),
             h('button', { onClick: stopSim, className: 'aq-btn',
               style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '✕ Exit sim')) : null
         ),

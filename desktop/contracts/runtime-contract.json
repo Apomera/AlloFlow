@@ -130,6 +130,7 @@
   },
   "httpApi": [
     { "method": "GET", "path": "/api/health", "purpose": "Runtime, app, path, and service status" },
+    { "method": "POST", "path": "/api/sourceFetchProxy", "purpose": "Bundled-app public-page importer with public-DNS pinning, redirect revalidation, text-only extraction, and strict time/byte limits" },
     { "method": "GET", "path": "/api/config", "purpose": "Redacted runtime configuration" },
     { "method": "POST", "path": "/api/config", "purpose": "Merge runtime configuration" },
     { "method": "GET", "path": "/api/app/status", "purpose": "Managed AlloFlow web app status" },

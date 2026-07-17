@@ -463,9 +463,12 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                     <span className="text-3xl text-slate-600 font-bold">?</span>
                     {onRetryPortrait && (
                         <button
-                            aria-label={t('common.refresh')}
+                            type="button"
+                            aria-label={t('persona.generate_portrait_for', { name: character.name })}
                             onClick={() => onRetryPortrait(character)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer z-20 relative ${
+                            disabled={Boolean(character.isUpdating)}
+                            aria-busy={character.isUpdating ? 'true' : 'false'}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${
                                 side === 'left'
                                 ? 'bg-indigo-500 hover:bg-indigo-600 text-white'
                                 : 'bg-rose-500 hover:bg-rose-600 text-white'
@@ -478,7 +481,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                 </div>
             )}
             {character.isUpdating && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-10">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-30 pointer-events-auto" role="status" aria-live="polite" aria-label={t('persona.status_generating_portrait', { name: character.name })}>
                     <RefreshCw size={32} className="text-white animate-spin"/>
                 </div>
             )}

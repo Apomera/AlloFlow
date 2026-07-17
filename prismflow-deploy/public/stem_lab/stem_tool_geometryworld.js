@@ -23,6 +23,15 @@
   })();
 
   (function() {
+    if (document.getElementById('allo-geometryworld-ui-css')) return;
+    var uiStyle = document.createElement('style');
+    uiStyle.id = 'allo-geometryworld-ui-css';
+    uiStyle.textContent = '.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}';
+    document.head.appendChild(uiStyle);
+  })();
+
+
+  (function() {
     if (document.getElementById('allo-live-geometryworld')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-geometryworld'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
@@ -368,6 +377,400 @@
     };
   }
 
+  function diagnoseVolumePrediction(measurement, comparison, strategy) {
+    if (!measurement || !comparison) return null;
+    var strategyLabel = strategy || 'your strategy';
+    if (comparison.percentError <= 10) {
+      return {
+        code: comparison.relation === 'exact' ? 'exact' : 'close',
+        prompt: comparison.relation === 'exact'
+          ? 'Your ' + strategyLabel + ' reasoning matched the measured volume. Explain why it worked.'
+          : 'Your ' + strategyLabel + ' reasoning was close. Use the measured dimensions to refine it.'
+      };
+    }
+    var predicted = comparison.prediction;
+    var layerProducts = [measurement.L * measurement.W, measurement.L * measurement.H, measurement.W * measurement.H];
+    var usedOneLayer = measurement.isSolidPrism && layerProducts.some(function(value) { return value > 0 && Math.abs(predicted - value) < 0.0001; });
+    if (usedOneLayer) {
+      return { code: 'one_layer', prompt: 'You may have found the area of one layer. How many equal layers make the whole prism?' };
+    }
+    if (measurement.hasFractions && Math.abs(predicted - measurement.count) < 0.0001 && Math.abs(measurement.count - measurement.occupiedVolume) > 0.0001) {
+      return { code: 'fraction_count', prompt: 'You counted pieces, but some pieces are fractional cubes. Combine their fractional volumes.' };
+    }
+    if (!measurement.isSolidPrism && Math.abs(predicted - measurement.boundingVolume) < 0.0001 && measurement.missingVolume > 0) {
+      return { code: 'bounding_box', prompt: 'Your estimate matches the full bounding box. Which spaces inside that box are empty?' };
+    }
+    return {
+      code: comparison.relation === 'over' ? 'overestimate' : 'underestimate',
+      prompt: comparison.relation === 'over'
+        ? 'Your estimate is high. Look for empty space or cubes that may have been counted twice.'
+        : 'Your estimate is low. Check every layer and every part of the structure.'
+    };
+  }
+
+  function comparePredictionRevision(originalComparison, revisedValue) {
+    if (!originalComparison) return null;
+    var revised = compareVolumePrediction(revisedValue, originalComparison.actual);
+    if (!revised) return null;
+    var improvement = originalComparison.percentError - revised.percentError;
+    return {
+      prediction: revised.prediction,
+      actual: revised.actual,
+      percentError: revised.percentError,
+      relation: revised.relation,
+      improvement: improvement,
+      feedback: revised.percentError === 0
+        ? 'Revision matches the measured volume exactly.'
+        : improvement > 0
+          ? 'Your revision improved by ' + improvement + ' percentage point' + (improvement === 1 ? '' : 's') + '.'
+          : improvement === 0
+            ? 'Your revision is equally close. Try a different representation or strategy.'
+            : 'This revision moved farther away. Recheck the dimensions and occupied spaces.'
+    };
+  }
+
+  function evaluateVolumePrediction(measurement, predictionState) {
+    var state = predictionState || {};
+    var comparison = compareVolumePrediction(state.input, measurement && measurement.occupiedVolume);
+    if (!comparison) return null;
+    var diagnosis = diagnoseVolumePrediction(measurement, comparison, state.strategy);
+    comparison.strategy = state.strategy || '';
+    comparison.reason = String(state.reason || '').trim();
+    comparison.diagnosisCode = diagnosis ? diagnosis.code : '';
+    comparison.learningPrompt = diagnosis ? diagnosis.prompt : '';
+    return comparison;
+  }
+
+  function objectiveEvidenceFor(text, context) {
+    var objective = String(text || '');
+    var ctx = context || {};
+    var measurements = completeMeasurementRecords(ctx.measurements || []);
+    var answered = Number(ctx.answered || 0);
+    var totalQuestions = Number(ctx.totalQuestions || 0);
+    var blocksPlaced = Number(ctx.blocksPlaced || 0);
+    var structureCount = Number(ctx.structureCount || 0);
+    var explainedPredictions = measurements.filter(function(record) {
+      var data = record && record.data ? record.data : (record || {});
+      return typeof data.prediction === 'number' && !!String(data.predictionReason || data.reason || data.predictionStrategy || data.strategy || '').trim();
+    }).length;
+    var result = { done: false, evidence: 'No matching evidence yet' };
+
+    if (/answer|talk|ask|speak/i.test(objective) && totalQuestions > 0) {
+      result = { done: answered >= totalQuestions, evidence: answered + '/' + totalQuestions + ' questions completed' };
+    } else if (/compare/i.test(objective)) {
+      result = { done: measurements.length >= 2, evidence: Math.min(measurements.length, 2) + '/2 complete measurements' };
+    } else if (/revise|reflect/i.test(objective)) {
+      result = { done: !!ctx.revisionCompleted || !!String(ctx.reflectionText || '').trim(), evidence: ctx.revisionCompleted ? 'Prediction revised from evidence' : 'Revision or reflection needed' };
+    } else if (/predict|estimate|strategy|explain|reason/i.test(objective)) {
+      result = { done: explainedPredictions > 0, evidence: explainedPredictions + ' explained prediction' + (explainedPredictions === 1 ? '' : 's') };
+    } else if (/build|place|construct|create|make|stack/i.test(objective)) {
+      var buildTarget = Number(ctx.buildTarget || 5);
+      result = { done: blocksPlaced >= buildTarget, evidence: Math.min(blocksPlaced, buildTarget) + '/' + buildTarget + ' blocks placed' };
+    } else if (/explore|find|locate|visit/i.test(objective)) {
+      var exploreTarget = structureCount > 1 ? 2 : 1;
+      var explored = Math.max(measurements.length, totalQuestions > 0 ? answered : 0);
+      result = { done: explored >= exploreTarget, evidence: Math.min(explored, exploreTarget) + '/' + exploreTarget + ' structures investigated' };
+    } else if (/measure|ruler|volume|surface|dimension/i.test(objective)) {
+      result = { done: measurements.length > 0, evidence: measurements.length + ' complete measurement' + (measurements.length === 1 ? '' : 's') };
+    }
+    return result;
+  }
+
+  function buildEvidenceReflectionPrompt(measurement, prediction, revision) {
+    var data = measurement && measurement.data ? measurement.data : (measurement || {});
+    var actual = typeof data.occupiedVolume === 'number' ? data.occupiedVolume : (typeof data.volume === 'number' ? data.volume : null);
+    if (actual === null) return 'Describe one strategy you tried, what evidence you noticed, and what you would do next.';
+    var comparison = prediction || {};
+    var predicted = typeof comparison.prediction === 'number' ? comparison.prediction : (typeof data.prediction === 'number' ? data.prediction : null);
+    var strategy = comparison.strategy || data.predictionStrategy || data.strategy || '';
+    var revised = revision && typeof revision.prediction === 'number' ? revision.prediction : null;
+    var prompt = predicted === null
+      ? 'You measured ' + formatVolume(actual) + ' cubic units.'
+      : 'You predicted ' + formatVolume(predicted) + ' cubic units' + (strategy ? ' using ' + strategy : '') + ', then measured ' + formatVolume(actual) + '.';
+    if (revised !== null) prompt += ' You revised your prediction to ' + formatVolume(revised) + '.';
+    return prompt + ' Complete: "I first thought... I noticed... Next time I will..."';
+  }
+
+  function buildVolumeRepresentations(measurement) {
+    if (!measurement || measurement.isComplete === false) return [];
+    var actual = typeof measurement.occupiedVolume === 'number' ? measurement.occupiedVolume : measuredVolume(measurement);
+    if (!Number.isFinite(actual)) return [];
+    var views = [];
+    var shapeCounts = measurement.shapeCounts || {};
+
+    if (measurement.hasFractions) {
+      var fractionValues = { cube: 1, halfA: 0.5, halfB: 0.5, quarter: 0.25 };
+      var fractionLabels = { cube: '1', halfA: '1/2', halfB: '1/2', quarter: '1/4' };
+      var pieces = ['cube', 'halfA', 'halfB', 'quarter'].filter(function(shape) { return shapeCounts[shape] > 0; }).map(function(shape) {
+        return shapeCounts[shape] + '\u00d7' + fractionLabels[shape];
+      });
+      if (pieces.length) {
+        views.push({
+          key: 'fraction_composition',
+          label: 'Compose fractional pieces',
+          expression: pieces.join(' + ') + ' = ' + formatVolume(actual),
+          question: 'Which fractional pieces could combine to make another whole cubic unit?'
+        });
+      }
+      var wholeEquivalent = Object.keys(shapeCounts).reduce(function(sum, shape) {
+        return sum + (shapeCounts[shape] || 0) * (fractionValues[shape] || 0);
+      }, 0);
+      views.push({
+        key: 'whole_equivalent',
+        label: 'Whole-cube equivalent',
+        expression: 'Fractional pieces occupy ' + formatVolume(wholeEquivalent) + ' whole cubic units',
+        question: 'How is piece count different from occupied volume?'
+      });
+    } else if (measurement.isSolidPrism && [measurement.L, measurement.W, measurement.H].every(function(value) { return typeof value === 'number'; })) {
+      var baseArea = measurement.L * measurement.W;
+      views.push({
+        key: 'layers',
+        label: 'Base layers',
+        expression: '(' + formatVolume(measurement.L) + '\u00d7' + formatVolume(measurement.W) + ') \u00d7 ' + formatVolume(measurement.H) + ' layers = ' + formatVolume(baseArea) + '\u00d7' + formatVolume(measurement.H) + ' = ' + formatVolume(actual),
+        question: 'What does each factor represent in the structure?'
+      });
+      views.push({
+        key: 'rotated_layers',
+        label: 'Reoriented layers',
+        expression: '(' + formatVolume(measurement.W) + '\u00d7' + formatVolume(measurement.H) + ') \u00d7 ' + formatVolume(measurement.L) + ' layers = ' + formatVolume(actual),
+        question: 'Why does changing the layer direction keep the volume equal?'
+      });
+    } else if (typeof measurement.boundingVolume === 'number') {
+      views.push({
+        key: 'bounding_subtraction',
+        label: 'Bounding box minus empty',
+        expression: formatVolume(measurement.boundingVolume) + ' \u2212 ' + formatVolume(measurement.missingVolume || 0) + ' = ' + formatVolume(actual),
+        question: 'Where do you see the empty cubic units in the 3D structure?'
+      });
+      views.push({
+        key: 'decomposition',
+        label: 'Decompose and add',
+        expression: 'Non-overlapping prism parts must add to ' + formatVolume(actual),
+        question: 'Where could you split this structure into rectangular prisms without overlap?'
+      });
+    }
+
+    views.push({
+      key: 'occupied_units',
+      label: 'Occupied unit cubes',
+      expression: formatVolume(actual) + ' cubic units of space are occupied',
+      question: measurement.hasFractions ? 'How can fractional pieces be regrouped into whole units?' : 'How does counting occupied units connect to multiplication?'
+    });
+    return views;
+  }
+
+  function buildRepresentationExploration(views, visitedKeys, activeKey) {
+    var available = (views || []).map(function(view) { return view && view.key; }).filter(Boolean);
+    var availableLookup = {};
+    available.forEach(function(key) { availableLookup[key] = true; });
+    var seen = {};
+    (visitedKeys || []).concat(activeKey ? [activeKey] : []).forEach(function(key) {
+      if (availableLookup[key]) seen[key] = true;
+    });
+    var visited = available.filter(function(key) { return seen[key]; });
+    var target = Math.min(2, available.length);
+    var visitedTowardTarget = Math.min(visited.length, target);
+    return {
+      visitedKeys: visited,
+      remainingKeys: available.filter(function(key) { return !seen[key]; }),
+      visitedCount: visited.length,
+      total: available.length,
+      target: target,
+      progressValue: visitedTowardTarget,
+      percent: target ? Math.round((visitedTowardTarget / target) * 100) : 0,
+      complete: target > 0 && visited.length >= target,
+      prompt: visited.length >= target ? 'You compared multiple views. Explain what stays equal.' : 'Explore one more view, then explain how the representations match.'
+    };
+  }
+
+  function determinePredictionScaffold(history) {
+    var complete = completeMeasurementRecords(history || []);
+    var explained = complete.filter(function(record) {
+      return typeof record.prediction === 'number' && !!String(record.reason || record.strategy || '').trim();
+    }).length;
+    var close = complete.filter(function(record) {
+      return typeof record.percentError === 'number' && record.percentError <= 10;
+    }).length;
+    if (complete.length < 2 || explained < 1) {
+      return {
+        level: 'guided',
+        label: 'Guided support',
+        cue: 'Start with one layer: find its base area, then count or estimate the layers.',
+        strategyPrompt: 'Choose a strategy',
+        reasonPrompt: 'How does your strategy count every cubic unit?'
+      };
+    }
+    if (complete.length < 4 || close < 2) {
+      return {
+        level: 'supported',
+        label: 'Light support',
+        cue: 'Choose a representation, estimate, and justify how it matches the structure.',
+        strategyPrompt: 'Choose a representation',
+        reasonPrompt: 'Why does this representation fit?'
+      };
+    }
+    return {
+      level: 'independent',
+      label: 'Independent transfer',
+      cue: 'Plan, estimate, and justify independently. Use the strategy menu only if it helps.',
+      strategyPrompt: 'Strategy if helpful',
+      reasonPrompt: 'Defend or challenge your estimate.'
+    };
+  }
+
+  function buildRetrievalCheckpoint(history) {
+    var complete = completeMeasurementRecords(history || []);
+    if (complete.length < 2) return null;
+    var latest = complete[complete.length - 1] || {};
+    var volume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
+    if (!Number.isFinite(volume) || volume <= 0) return null;
+    var checkpoint = { id: '', concept: '', prompt: '', expected: null, hint: '' };
+
+    if (latest.hasFractions && typeof latest.blocks === 'number' && latest.blocks > volume) {
+      checkpoint.concept = 'fractional_volume';
+      checkpoint.expected = latest.blocks - volume;
+      checkpoint.prompt = 'This structure uses ' + latest.blocks + ' pieces but occupies ' + formatVolume(volume) + ' cubic units. How much less is that than ' + latest.blocks + ' whole cubes?';
+      checkpoint.hint = 'Subtract the occupied volume from the number of whole-cube spaces.';
+    } else if (latest.isSolidPrism === false && typeof latest.boundingVolume === 'number' && latest.boundingVolume > volume) {
+      checkpoint.concept = 'empty_space';
+      checkpoint.expected = latest.boundingVolume - volume;
+      checkpoint.prompt = 'A bounding box is ' + formatVolume(latest.boundingVolume) + ' cubic units and the structure occupies ' + formatVolume(volume) + '. How much space is empty?';
+      checkpoint.hint = 'Subtract occupied volume from bounding-box volume.';
+    } else if ([latest.L, latest.W, latest.H].every(function(value) { return typeof value === 'number' && value > 0; })) {
+      if (complete.length % 2 === 0) {
+        checkpoint.concept = 'scale_height';
+        checkpoint.expected = latest.H * 2;
+        checkpoint.prompt = 'A new prism keeps the same ' + formatVolume(latest.L) + ' by ' + formatVolume(latest.W) + ' base but doubles the volume to ' + formatVolume(volume * 2) + '. What height will it need?';
+        checkpoint.hint = 'With the same base area, doubling volume doubles the number of layers.';
+      } else {
+        checkpoint.concept = 'layer_area';
+        checkpoint.expected = latest.L * latest.W;
+        checkpoint.prompt = 'For the latest prism, what is the area of one ' + formatVolume(latest.L) + ' by ' + formatVolume(latest.W) + ' layer?';
+        checkpoint.hint = 'Multiply the two dimensions of the base.';
+      }
+    } else {
+      var previous = complete[complete.length - 2] || {};
+      var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
+      if (!Number.isFinite(previousVolume)) return null;
+      checkpoint.concept = 'volume_difference';
+      checkpoint.expected = Math.abs(volume - previousVolume);
+      checkpoint.prompt = 'What is the absolute volume difference between the previous structure (' + formatVolume(previousVolume) + ') and the latest (' + formatVolume(volume) + ')?';
+      checkpoint.hint = 'Subtract the smaller volume from the larger volume.';
+    }
+    checkpoint.id = 'retrieval-' + (latest.t || complete.length) + '-' + checkpoint.concept;
+    return checkpoint;
+  }
+
+  function checkRetrievalAnswer(checkpoint, value, attemptNumber) {
+    if (!checkpoint || !Number.isFinite(checkpoint.expected)) return null;
+    var answer = parseVolumePrediction(value);
+    if (answer === null) return { correct: false, valid: false, feedback: 'Enter a positive number or fraction.' };
+    var correct = Math.abs(answer - checkpoint.expected) < 0.0001;
+    return {
+      correct: correct,
+      valid: true,
+      answer: answer,
+      expected: checkpoint.expected,
+      feedback: correct ? 'Correct - you retrieved the relationship from earlier evidence.' : (Number(attemptNumber || 1) <= 1 ? 'Pause before calculating: name what stays the same, what changes, and which operation connects them.' : checkpoint.hint)
+    };
+  }
+
+  function escapeReportHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function misconceptionGuidance(code) {
+    var guidance = {
+      one_layer: { label: 'Used one layer as total volume', nextStep: 'Reconnect base area to the number of equal layers.' },
+      bounding_box: { label: 'Counted empty bounding-box space', nextStep: 'Use bounding-box volume minus empty space with a composite model.' },
+      fraction_count: { label: 'Counted fractional pieces as whole cubes', nextStep: 'Compose fractional pieces into whole cubic units.' },
+      overestimate: { label: 'General overestimate', nextStep: 'Check for empty space and overlapping parts.' },
+      underestimate: { label: 'General underestimate', nextStep: 'Check every layer and each decomposed part.' }
+    };
+    return guidance[code] || { label: 'Unclassified pattern', nextStep: 'Ask the student to model and explain their strategy.' };
+  }
+
+  function summarizeLearningEvidence(log) {
+    var events = log || [];
+    var measurements = events.filter(function(event) { return event && event.type === 'measurement' && (!event.data || event.data.isComplete !== false); });
+    var revisions = events.filter(function(event) { return event && event.type === 'prediction_revision'; });
+    var retrievalChecks = events.filter(function(event) { return event && event.type === 'retrieval_check'; });
+    var representationViews = events.filter(function(event) { return event && event.type === 'representation_view'; });
+    var strategyCounts = {};
+    var representationConnections = events.filter(function(event) { return event && event.type === 'representation_connection' && event.data && String(event.data.text || '').trim(); });
+    var representationCounts = {};
+    var misconceptionCounts = {};
+    var explainedPredictions = 0;
+    measurements.forEach(function(event) {
+      var data = event.data || {};
+      var strategy = String(data.predictionStrategy || data.strategy || '').trim();
+      var reason = String(data.predictionReason || data.reason || '').trim();
+      var misconception = String(data.misconception || data.diagnosisCode || '').trim();
+      if (strategy) strategyCounts[strategy] = (strategyCounts[strategy] || 0) + 1;
+      if (typeof data.prediction === 'number' && (strategy || reason)) explainedPredictions += 1;
+      if (misconception && misconception !== 'exact' && misconception !== 'close') {
+        misconceptionCounts[misconception] = (misconceptionCounts[misconception] || 0) + 1;
+      }
+    });
+    var revisionImprovements = revisions.map(function(event) {
+      return Number(event.data && event.data.improvement);
+    }).filter(function(value) { return Number.isFinite(value); });
+    representationViews.forEach(function(event) {
+      var representation = String(event.data && event.data.representation || '').trim();
+      if (representation) representationCounts[representation] = (representationCounts[representation] || 0) + 1;
+    });
+    var representations = Object.keys(representationCounts).sort().map(function(representation) {
+      return { representation: representation, count: representationCounts[representation] };
+    });
+    var strategies = Object.keys(strategyCounts).sort().map(function(strategy) {
+      return { strategy: strategy, count: strategyCounts[strategy] };
+    });
+    var misconceptions = Object.keys(misconceptionCounts).map(function(code) {
+      var detail = misconceptionGuidance(code);
+      return { code: code, label: detail.label, count: misconceptionCounts[code], nextStep: detail.nextStep };
+    }).sort(function(a, b) { return b.count - a.count || a.code.localeCompare(b.code); });
+    var retrievalByCheckpoint = {};
+    retrievalChecks.forEach(function(event, index) {
+      var data = event.data || {};
+      var key = data.checkpointId || ('event-' + index);
+      if (!retrievalByCheckpoint[key]) retrievalByCheckpoint[key] = { attempts: 0, correct: false, firstTryCorrect: false };
+      var checkpoint = retrievalByCheckpoint[key];
+      checkpoint.attempts += 1;
+      var attempt = Number(data.attempt || checkpoint.attempts);
+      if (data.correct === true) {
+        checkpoint.correct = true;
+        if (attempt === 1) checkpoint.firstTryCorrect = true;
+      }
+    });
+    var retrievalCheckpointValues = Object.keys(retrievalByCheckpoint).map(function(key) { return retrievalByCheckpoint[key]; });
+    return {
+      explainedPredictions: explainedPredictions,
+      revisionsMade: revisions.length,
+      revisionsImproved: revisionImprovements.filter(function(value) { return value > 0; }).length,
+      averageRevisionImprovement: revisionImprovements.length ? Math.round(revisionImprovements.reduce(function(sum, value) { return sum + value; }, 0) / revisionImprovements.length) : null,
+      reflectionsCompleted: events.filter(function(event) { return event && event.type === 'reflection' && event.data && String(event.data.text || '').trim(); }).length,
+      retrievalAttempts: retrievalChecks.length,
+      retrievalCorrect: retrievalChecks.filter(function(event) { return event.data && event.data.correct === true; }).length,
+      retrievalCheckpoints: retrievalCheckpointValues.length,
+      retrievalCheckpointsCorrect: retrievalCheckpointValues.filter(function(item) { return item.correct; }).length,
+      representationConnections: representationConnections.length,
+      representationConnectionExamples: representationConnections.slice(-3).map(function(event) {
+        return { from: String(event.data.from || ''), to: String(event.data.to || ''), text: String(event.data.text || '').trim() };
+      }),
+      retrievalFirstTryCorrect: retrievalCheckpointValues.filter(function(item) { return item.firstTryCorrect; }).length,
+      strategies: strategies,
+      representationViews: representationViews.length,
+      representations: representations,
+      misconceptions: misconceptions,
+      mostCommonMisconception: misconceptions.length ? misconceptions[0] : null
+    };
+  }
+
   // ── Achievement Badges ──
 
   // Counts exposed unit faces for a connected structure made entirely from full cubes.
@@ -442,6 +845,29 @@
       };
     });
   }
+  function elapsedSecondsForEvent(event) {
+    if (event && typeof event.timestamp === 'number' && Number.isFinite(event.timestamp)) return Math.round(event.timestamp / 1000);
+    var parsed = event && event.elapsed ? parseFloat(event.elapsed) : NaN;
+    return Number.isFinite(parsed) ? Math.round(parsed) : null;
+  }
+
+  function questionDetailsForReport(log) {
+    return (log || []).filter(function(event) {
+      return event && (event.type === 'answer_correct' || event.type === 'answer_wrong');
+    }).map(function(event, index) {
+      var data = event.data || {};
+      return {
+        sequence: index + 1,
+        timestamp: event.elapsed || '',
+        elapsedSeconds: elapsedSecondsForEvent(event),
+        npc: data.npc || '',
+        question: data.question || '',
+        correct: event.type === 'answer_correct',
+        answer: data.choice || data.chosenAnswer || ''
+      };
+    });
+  }
+
 
 
 
@@ -1557,7 +1983,23 @@
       var activeLesson = d.activeLesson || 'volumeExplorer';
       var measureResult = d.measureResult ? enrichMeasurement(d.measureResult) : null;
       var volumePrediction = d.volumePrediction || '';
+      var volumeRepresentationFromKey = d.volumeRepresentationFromKey || '';
+      var volumeRepresentationReason = d.volumeRepresentationReason || '';
+      var volumeRepresentationConnectionSaved = d.volumeRepresentationConnectionSaved || false;
       var predictionResult = d.predictionResult || null;
+      var volumeRepresentationKey = d.volumeRepresentationKey || '';
+      var volumeRepresentations = buildVolumeRepresentations(measureResult);
+      var activeVolumeRepresentation = volumeRepresentations.find(function(view) { return view.key === volumeRepresentationKey; }) || volumeRepresentations[0] || null;
+      var predictionStrategy = d.predictionStrategy || '';
+      var volumeRepresentationVisitedKeys = d.volumeRepresentationVisitedKeys || [];
+      var representationExploration = buildRepresentationExploration(volumeRepresentations, volumeRepresentationVisitedKeys, activeVolumeRepresentation && activeVolumeRepresentation.key);
+      var predictionReason = d.predictionReason || '';
+      var predictionRevision = d.predictionRevision || '';
+      var predictionRevisionResult = d.predictionRevisionResult || null;
+      var predictionReflection = d.predictionReflection || '';
+      var retrievalAnswer = d.retrievalAnswer || '';
+      var retrievalResult = d.retrievalResult || null;
+      var retrievalAttemptCount = d.retrievalAttemptCount || 0;
       var npcChatInput = d.npcChatInput || '';
       var npcChatHistory = d.npcChatHistory || {};
       var npcChatLoading = d.npcChatLoading || false;
@@ -1575,7 +2017,11 @@
       var blockRotation = d.blockRotation || 0; // 0-3 = 0°, 90°, 180°, 270° around Y axis
       var measureHistory = d.measureHistory || []; // past measurements
       var completedMeasurements = completeMeasurementRecords(measureHistory);
+      var predictionScaffold = determinePredictionScaffold(measureHistory);
+      var latestCompleteMeasurement = completedMeasurements.length ? completedMeasurements[completedMeasurements.length - 1] : null;
+      var reflectionEvidencePrompt = buildEvidenceReflectionPrompt(latestCompleteMeasurement, predictionResult, predictionRevisionResult);
       var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
+      var activeRetrievalCheckpoint = buildRetrievalCheckpoint(measureHistory);
       var actionFeedback = d.actionFeedback || ''; // brief key action text
       var homeLang = d.homeLang || 'en';
       var npcTranslations = d.npcTranslations || {};
@@ -2515,10 +2961,10 @@
           // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
           }
           engine._progressKey = progressKey;
         };
@@ -2852,15 +3298,15 @@
                 if (m) {
                   sfxMeasure();
                   // Save to measurement history (last 10)
-                  var predictionComparison = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
-                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, t: Date.now() }]);
+                  var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
+                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
                   var measurementFeedback = m.isComplete === false
                     ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
                     : m.isSolidPrism
                       ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
                       : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
-                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
+                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
                   announceToSR((m.isComplete === false
                     ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
                     : m.isSolidPrism
@@ -2876,7 +3322,7 @@
                   var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
                   for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
                   }
-                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, blocks: m.count });
+                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, predictionStrategy: predictionComparison ? predictionComparison.strategy : '', predictionReason: predictionComparison ? predictionComparison.reason : '', misconception: predictionComparison ? predictionComparison.diagnosisCode : '', blocks: m.count });
                   var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
                   if (m.isComplete !== false) {
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
@@ -4182,6 +4628,7 @@
 
           // Measurement accuracy — how many measurements matched expected volumes
           var predictionSummary = summarizePredictionAccuracy(measurements);
+          var learningEvidence = summarizeLearningEvidence(log);
 
           // RTI Tier suggestion based on accuracy
           var rtiTier = accuracy >= 80 ? 'Tier 1 (Benchmark)' : accuracy >= 50 ? 'Tier 2 (Strategic)' : 'Tier 3 (Intensive)';
@@ -4221,15 +4668,8 @@
             worksheetsPrinted: log.filter(function(e) { return e.type === 'worksheet_print'; }).length,
 
             // Detail for longitudinal tracking
-            questionDetails: correct.concat(wrong).map(function(e) {
-              return {
-                timestamp: e.elapsed,
-                npc: e.data.npc || '',
-                question: e.data.question || '',
-                correct: e.type === 'answer_correct',
-                answer: e.data.choice || e.data.chosenAnswer || ''
-              };
-            }),
+            learningEvidence: learningEvidence,
+            questionDetails: questionDetailsForReport(log),
             measurementDetails: measurementDetailsForReport(measurements),
 
             // Standards alignment
@@ -4286,6 +4726,37 @@
           h += '<div class="metric"><div class="val">' + r.worldsCreated + '</div><div class="lbl">Worlds Created</div></div>';
           h += '<div class="metric"><div class="val">' + r.worksheetsPrinted + '</div><div class="lbl">Worksheets</div></div>';
           h += '</div>';
+          if (r.learningEvidence && (r.learningEvidence.explainedPredictions || r.learningEvidence.revisionsMade || r.learningEvidence.reflectionsCompleted || r.learningEvidence.retrievalAttempts || r.learningEvidence.representationViews || r.learningEvidence.representationConnections || r.learningEvidence.misconceptions.length)) {
+            var le = r.learningEvidence;
+            h += '<h2>Learning Evidence</h2><div>';
+            h += '<div class="metric"><div class="val">' + le.explainedPredictions + '</div><div class="lbl">Explained predictions</div></div>';
+            h += '<div class="metric"><div class="val">' + le.revisionsImproved + '/' + le.revisionsMade + '</div><div class="lbl">Revisions improved</div></div>';
+            h += '<div class="metric"><div class="val">' + (le.averageRevisionImprovement === null ? '&mdash;' : le.averageRevisionImprovement + ' pts') + '</div><div class="lbl">Avg revision gain</div></div>';
+            h += '<div class="metric"><div class="val">' + le.reflectionsCompleted + '</div><div class="lbl">Reflections</div></div>';
+            h += '<div class="metric"><div class="val">' + le.retrievalCheckpointsCorrect + '/' + le.retrievalCheckpoints + '</div><div class="lbl">Checkpoints mastered</div></div>';
+            h += '<div class="metric"><div class="val">' + le.retrievalFirstTryCorrect + '</div><div class="lbl">First-try retrieval</div></div>';
+            h += '<div class="metric"><div class="val">' + le.representationViews + '</div><div class="lbl">Representation switches</div></div>';
+            h += '<div class="metric"><div class="val">' + le.representationConnections + '</div><div class="lbl">Connections explained</div></div></div>';
+            if (le.strategies.length) {
+              h += '<p><strong>Strategies used:</strong> ' + le.strategies.map(function(item) { return escapeReportHtml(item.strategy) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            }
+            if (le.representations.length) {
+              h += '<p><strong>Equivalent views explored:</strong> ' + le.representations.map(function(item) { return escapeReportHtml(item.representation.replace(/_/g, ' ')) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            if (le.representationConnectionExamples.length) {
+              h += '<p><strong>Student connections between equivalent views:</strong></p><ul>';
+              le.representationConnectionExamples.forEach(function(item) { h += '<li><strong>' + escapeReportHtml(item.from.replace(/_/g, ' ')) + ' \u2192 ' + escapeReportHtml(item.to.replace(/_/g, ' ')) + ':</strong> ' + escapeReportHtml(item.text) + '</li>'; });
+              h += '</ul>';
+            }
+            }
+            if (le.misconceptions.length) {
+              h += '<table><tr><th>Observed pattern</th><th>Count</th><th>Suggested instructional response</th></tr>';
+              le.misconceptions.forEach(function(item) {
+                h += '<tr><td>' + escapeReportHtml(item.label) + '</td><td>' + item.count + '</td><td>' + escapeReportHtml(item.nextStep) + '</td></tr>';
+              });
+              h += '</table>';
+            }
+          }
+
 
           // Achievement badges earned this session
           var badgeKeys = Object.keys(earnedBadges);
@@ -4322,7 +4793,7 @@
             r.questionDetails.forEach(function(q, i) {
               h += '<tr><td>' + (i + 1) + '</td><td>' + (q.npc || '\u2014') + '</td><td style="font-size:11px">' + (q.question || '\u2014') + '</td>';
               h += '<td style="color:' + (q.correct ? '#22c55e' : '#ef4444') + ';font-weight:700">' + (q.correct ? '\u2713 Correct' : '\u2717 Incorrect') + '</td>';
-              h += '<td>' + (q.timestamp ? Math.round(q.timestamp) + 's' : '\u2014') + '</td></tr>';
+              h += '<td>' + (q.elapsedSeconds === null ? (q.timestamp || '\u2014') : q.elapsedSeconds + 's') + '</td></tr>';
             });
             h += '</table>';
           }
@@ -4768,7 +5239,7 @@
         // (attached once in initEngine) so they can't see number-key block switches,
         // shape cycling (Q), rotation (R), or collab-mode toggling.
         engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
-        engine._predictionState = { input: volumePrediction, history: measureHistory };
+        engine._predictionState = { input: volumePrediction, strategy: predictionStrategy, reason: predictionReason, history: measureHistory };
         // Badges bridge — runAchievementCheck called via setTimeout from stale closures
         // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
         engine._badgesRef = earnedBadges;
@@ -4841,18 +5312,42 @@
             )
           ),
           // Measure result
-          el('div', { role: 'group', 'aria-label': 'Predict volume before measuring', style: { display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
+          el('div', { role: 'group', 'aria-label': 'Predict and explain volume before measuring', 'data-geometry-prediction-cycle': 'predict-explain', style: { display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', maxWidth: '470px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
             el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Predict V'),
             el('input', {
               id: 'gw-volume-prediction',
               type: 'text', inputMode: 'decimal', value: volumePrediction,
-              onChange: function(ev) { upd({ volumePrediction: ev.target.value, predictionResult: null }); },
+              onChange: function(ev) { upd({ volumePrediction: ev.target.value, predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' }); },
               placeholder: 'e.g. 24',
               'aria-label': 'Predicted volume in cubic units',
               title: 'Enter a prediction before measuring. Decimals and fractions such as 3/4 are supported.',
               style: { width: '58px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '11px', fontFamily: 'monospace' }
             }),
-            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu')
+            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu'),
+            el('label', { htmlFor: 'gw-prediction-strategy', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'using'),
+            el('select', {
+              id: 'gw-prediction-strategy', value: predictionStrategy,
+              onChange: function(ev) { upd('predictionStrategy', ev.target.value); },
+              'aria-label': 'Prediction strategy',
+              style: { maxWidth: '132px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
+            },
+              el('option', { value: '' }, predictionScaffold.strategyPrompt),
+              el('option', { value: 'counting cubes' }, 'Count cubes'),
+              el('option', { value: 'layers' }, 'Base area \u00d7 height'),
+              el('option', { value: 'decomposition' }, 'Split into prisms'),
+              el('option', { value: 'bounding box' }, 'Box \u2212 empty space')
+            ),
+            el('input', {
+              type: 'text', value: predictionReason,
+              onChange: function(ev) { upd('predictionReason', ev.target.value); },
+              placeholder: predictionScaffold.reasonPrompt,
+              'aria-label': 'Brief reason for prediction',
+              style: { width: '125px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
+            }),
+            el('div', { 'data-geometry-prediction-scaffold': predictionScaffold.level, title: predictionScaffold.cue, style: { flexBasis: '100%', display: 'flex', gap: '5px', alignItems: 'center', color: predictionScaffold.level === 'independent' ? '#86efac' : '#bfdbfe', fontSize: '9px', lineHeight: 1.3 } },
+              el('span', { style: { fontWeight: 800, whiteSpace: 'nowrap' } }, predictionScaffold.label + ':'),
+              el('span', null, predictionScaffold.cue)
+            )
           ),
           measureResult && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
             el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
@@ -4874,11 +5369,100 @@
               measureResult.isComplete === false
                 ? 'Surface area unavailable until the full structure is measured'
                 : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
-            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '3px 5px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
+            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '5px 6px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
               el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Prediction ' + formatVolume(predictionResult.prediction) + ' \u2192 Actual ' + formatVolume(predictionResult.actual)),
-              el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)'))
+              el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)')),
+              (predictionResult.strategy || predictionResult.reason) && el('div', { style: { color: '#bfdbfe', fontSize: '9px' } },
+                (predictionResult.strategy ? 'Strategy: ' + predictionResult.strategy : '') + (predictionResult.reason ? ' \u2022 Reason: ' + predictionResult.reason : '')
+              ),
+              predictionResult.learningPrompt && el('div', { 'data-geometry-misconception-feedback': predictionResult.diagnosisCode || 'general', style: { marginTop: '3px', color: '#fff', fontSize: '10px', fontWeight: 700 } }, 'Think: ' + predictionResult.learningPrompt),
+              el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' } },
+                el('label', { htmlFor: 'gw-prediction-revision', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'Revise'),
+                el('input', {
+                  id: 'gw-prediction-revision', type: 'text', inputMode: 'decimal', value: predictionRevision,
+                  onChange: function(ev) { upd({ predictionRevision: ev.target.value, predictionRevisionResult: null }); },
+                  placeholder: 'new V', 'aria-label': 'Revised volume prediction',
+                  style: { width: '52px', background: '#0f172a', border: '1px solid #a78bfa', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
+                }),
+                el('input', {
+                  type: 'text', value: predictionReflection,
+                  onChange: function(ev) { upd('predictionReflection', ev.target.value); },
+                  placeholder: 'What changed in your thinking?', 'aria-label': 'Explain what changed in your reasoning',
+                  style: { width: '160px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
+                }),
+                el('button', {
+                  type: 'button', className: 'gw-focusable',
+                  onClick: function() {
+                    var revision = comparePredictionRevision(predictionResult, predictionRevision);
+                    if (!revision) { if (addToast) addToast('Enter a positive revised volume.', 'info'); return; }
+                    upd('predictionRevisionResult', revision);
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('prediction_revision', { originalPrediction: predictionResult.prediction, revisedPrediction: revision.prediction, actualVolume: revision.actual, originalPercentError: predictionResult.percentError, revisedPercentError: revision.percentError, improvement: revision.improvement, strategy: predictionResult.strategy || '', misconception: predictionResult.diagnosisCode || '', reflection: predictionReflection.trim() });
+                  },
+                  style: { background: '#7c3aed', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: 'pointer' }
+                }, 'Check revision')
+              ),
+              predictionRevisionResult && el('div', { role: 'status', 'data-geometry-revision-result': 'true', style: { marginTop: '3px', color: predictionRevisionResult.improvement >= 0 ? '#86efac' : '#fca5a5', fontSize: '10px', fontWeight: 700 } },
+                predictionRevisionResult.feedback + ' Revised error: ' + predictionRevisionResult.percentError + '%.'
+              )
             ),
 
+            volumeRepresentations.length > 1 && activeVolumeRepresentation && el('div', { 'data-geometry-volume-representation': activeVolumeRepresentation.key, style: { marginTop: '3px', padding: '5px 6px', borderRadius: '5px', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(167,139,250,0.3)', maxWidth: '320px' } },
+              el('div', { style: { display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '3px' } },
+                el('label', { htmlFor: 'gw-volume-representation', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 800, whiteSpace: 'nowrap' } }, 'Equivalent view'),
+                el('select', {
+                  id: 'gw-volume-representation', value: activeVolumeRepresentation.key,
+                  'aria-label': 'Choose an equivalent volume representation',
+                  onChange: function(ev) {
+                    var key = ev.target.value;
+                    upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key, volumeRepresentationKey: key, volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }), volumeRepresentationReason: '', volumeRepresentationConnectionSaved: false });
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
+                  },
+                  style: { flex: 1, minWidth: '110px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
+                }, volumeRepresentations.map(function(view) { return el('option', { key: view.key, value: view.key }, view.label); }))
+              ),
+              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px', fontWeight: 700 } }, activeVolumeRepresentation.expression),
+              el('div', {
+                role: 'progressbar',
+                'data-geometry-representation-progress': representationExploration.visitedCount + '/' + representationExploration.target,
+                'aria-label': 'Equivalent volume views explored',
+                'aria-valuemin': 0,
+                'aria-valuemax': representationExploration.target || 1,
+                'aria-valuenow': representationExploration.progressValue,
+                style: { marginBottom: '4px' }
+              },
+                el('div', { style: { display: 'flex', justifyContent: 'space-between', color: representationExploration.complete ? '#86efac' : '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, el('span', null, 'Views compared: ' + representationExploration.visitedCount + '/' + representationExploration.target), el('span', null, representationExploration.complete ? '\u2713 Ready to explain' : 'Compare 2 views')),
+                el('div', { style: { height: '3px', marginTop: '2px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(148,163,184,0.25)' } }, el('div', { style: { width: representationExploration.percent + '%', height: '100%', borderRadius: '999px', background: representationExploration.complete ? '#22c55e' : '#a78bfa', transition: 'width 0.2s ease' } }))
+              ),
+              el('div', { style: { color: '#cbd5e1', fontSize: '8px', marginBottom: '3px' } }, representationExploration.prompt),
+              el('div', { style: { color: '#bfdbfe', fontSize: '9px', marginTop: '2px' } }, 'Connect: ' + activeVolumeRepresentation.question),
+              volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key && el('div', { 'data-geometry-representation-connection': 'true', style: { marginTop: '5px', display: 'grid', gap: '4px' } },
+                el('label', { htmlFor: 'gw-representation-reason', style: { color: '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, 'Explain: Both views show the same volume because...'),
+                el('textarea', {
+                  id: 'gw-representation-reason',
+                  value: volumeRepresentationReason,
+                  rows: 2,
+                  'aria-label': 'Explain why the two volume representations are equivalent',
+                  placeholder: 'Both views show ' + formatVolume(measureResult.occupiedVolume) + ' cubic units because...',
+                  onChange: function(ev) { upd({ volumeRepresentationReason: ev.target.value, volumeRepresentationConnectionSaved: false }); },
+                  style: { resize: 'vertical', minHeight: '34px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '4px', color: '#fff', fontSize: '9px', lineHeight: 1.35 }
+                }),
+                el('button', {
+                  type: 'button',
+                  disabled: volumeRepresentationConnectionSaved,
+                  onClick: function() {
+                    var response = volumeRepresentationReason.trim();
+                    if (response.length < 8) { if (addToast) addToast('Add a little more evidence about why the views are equal.', 'info'); return; }
+                    upd('volumeRepresentationConnectionSaved', true);
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('representation_connection', { from: volumeRepresentationFromKey, to: activeVolumeRepresentation.key, text: response, viewsExplored: representationExploration.visitedCount, volume: measureResult.occupiedVolume, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite' });
+                  },
+                  style: { justifySelf: 'start', background: volumeRepresentationConnectionSaved ? '#166534' : '#7c3aed', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: volumeRepresentationConnectionSaved ? 'default' : 'pointer' }
+                }, volumeRepresentationConnectionSaved ? '\u2713 Connection saved' : 'Save connection'),
+                volumeRepresentationConnectionSaved && el('div', { role: 'status', style: { color: '#86efac', fontSize: '9px', fontWeight: 700 } }, 'Your explanation is part of the learning evidence.')
+              )
+            ),
             el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               measureResult.count + ' blocks' + (measureResult.hasFractions
                 ? ' (' + Object.keys(measureResult.shapeCounts).map(function(s) {
@@ -5366,29 +5950,36 @@
           // ── Objectives checklist (auto-computed from lesson data + live state) ──
           (function() {
             var objectives = [];
-            // 1. Lesson's explicit objectives (from lesson JSON)
+            var objectiveContext = {
+              answered: Object.keys(answeredNpcs).length,
+              totalQuestions: totalQ,
+              blocksPlaced: (engine && engine.blocksPlaced) || 0,
+              measurements: measureHistory,
+              structureCount: (currentLesson.structures || []).length,
+              revisionCompleted: !!predictionRevisionResult,
+              reflectionText: reflectionText,
+              buildTarget: 5
+            };
+            function addEvidenceObjective(text) {
+              var evidence = objectiveEvidenceFor(text, objectiveContext);
+              objectives.push({ text: text, done: evidence.done, evidence: evidence.evidence });
+            }
             if (Array.isArray(currentLesson.objectives) && currentLesson.objectives.length > 0) {
-              currentLesson.objectives.forEach(function(text) {
-                // Heuristic: mark done if text matches one of the known behaviors + state hits threshold.
-                var done = false;
-                if (/answer|talk|ask|speak/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
-                else if (/build|place|construct|create|make|stack/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
-                else if (/measure|ruler|volume/i.test(text)) done = completedMeasurements.length > 0;
-                else if (/explore|find|locate|visit/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length > 0;
-                objectives.push({ text: text, done: done });
-              });
+              currentLesson.objectives.forEach(addEvidenceObjective);
             } else {
-              // 2. Fallback auto-generated objectives from lesson shape
-              if (totalQ > 0) objectives.push({ text: 'Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'), done: Object.keys(answeredNpcs).length >= totalQ });
-              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: completedMeasurements.length > 0 });
-              objectives.push({ text: __alloT('stem.geometryworld.place_at_least_5_blocks', 'Place at least 5 blocks'), done: ((engine && engine.blocksPlaced) || 0) >= 5 });
+              if (totalQ > 0) addEvidenceObjective('Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'));
+              if ((currentLesson.structures || []).length > 0) addEvidenceObjective((currentLesson.structures || []).length > 1 ? 'Investigate at least 2 structures' : 'Explore the structure');
+              addEvidenceObjective(__alloT('stem.geometryworld.place_at_least_5_blocks', 'Place at least 5 blocks'));
+            }
+            if ((currentLesson.structures || []).length > 0 && !objectives.some(function(o) { return /predict|estimate|strategy|explain|reason/i.test(o.text); })) {
+              addEvidenceObjective('Make and explain a volume prediction');
             }
             var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
             return el('div', { style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(148,163,184,0.2)' } },
               el('div', { style: { fontSize: '9px', fontWeight: 800, color: allDone ? '#4ade80' : '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '2px' } },
                 (allDone ? '✨ ' : '🎯 ') + 'Objectives'),
               objectives.slice(0, 4).map(function(o, i) {
-                return el('div', { key: 'hudobj-' + i + '-' + (o && o.text ? String(o.text).slice(0, 24) : ''), style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
+                return el('div', { key: 'hudobj-' + i + '-' + (o && o.text ? String(o.text).slice(0, 24) : ''), title: o.evidence, 'aria-label': o.text + '. ' + o.evidence, style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
                   el('span', { style: { color: o.done ? '#4ade80' : '#94a3b8', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
                   el('span', { style: { color: o.done ? '#94a3b8' : '#cbd5e1', textDecoration: o.done ? 'line-through' : 'none' } }, o.text)
                 );
@@ -5791,7 +6382,7 @@
             onClick: function() {
               var eng = window[engineKey];
               if (eng) eng.loadLesson(currentLesson);
-              upd({ score: 0, answeredNpcs: {}, measureResult: null, volumePrediction: '', predictionResult: null });
+              upd({ score: 0, answeredNpcs: {}, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             },
             style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
           }, '\u21BB Reset World')
@@ -5898,12 +6489,17 @@
           // Rotation badge (only when non-cube shape selected)
           selectedShape > 0 && el('span', {
             style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#94a3b8', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
+            className: 'gw-focusable', role: 'button', tabIndex: 0,
+            'aria-label': 'Rotate selected shape. Current rotation ' + (blockRotation * 90) + ' degrees',
+            onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('blockRotation', (blockRotation + 1) % 4); } },
+            'aria-pressed': blockRotation > 0 ? 'true' : 'false',
             onClick: function() { upd('blockRotation', (blockRotation + 1) % 4); },
             title: 'Click or press R to rotate (' + (blockRotation * 90) + '\u00b0)'
           }, '\u21BB' + (blockRotation > 0 ? blockRotation * 90 + '\u00b0' : '')),
           BLOCK_SHAPES.map(function(bs, i) {
             return el('div', {
               key: bs.id,
+              className: 'gw-focusable',
               role: 'button', tabIndex: 0,
               'aria-label': 'Select ' + bs.name + ' shape, ' + bs.desc + (i === selectedShape ? ', currently selected' : ''),
               'aria-pressed': i === selectedShape ? 'true' : 'false',
@@ -5925,6 +6521,7 @@
             var isActive = i === selectedBlock;
             return el('div', {
               key: bt.id,
+              className: 'gw-focusable',
               role: 'button',
               tabIndex: 0,
               'aria-label': 'Select ' + bt.name + ' block, key ' + (i + 1) + (isActive ? ', currently selected' : ''),
@@ -5981,8 +6578,8 @@
           // SR-announce pill — indicator + click toggle (matches 'C' key). When on, position
           // is announced periodically to the shared live region so low-vision students can
           // navigate by coordinate.
-          el('div', {
-            role: 'button', tabIndex: 0,
+          el('button', {
+            type: 'button', className: 'gw-focusable',
             onClick: function() {
               var eng = window[engineKey]; if (!eng) return;
               eng._coordAnnounce = !eng._coordAnnounce;
@@ -5991,7 +6588,6 @@
                 announceToSR('Coordinate announcements on. Position at X ' + Math.floor(eng.camera.position.x) + ' Y ' + Math.floor(eng.camera.position.y) + ' Z ' + Math.floor(eng.camera.position.z));
               }
             },
-            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.currentTarget.click(); } },
             'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
             'aria-label': __alloT('stem.geometryworld.toggle_coordinate_screen_reader_announ', 'Toggle coordinate screen-reader announcements (key C)'),
             title: __alloT('stem.geometryworld.announce_coordinates_to_screen_reader_', 'Announce coordinates to screen reader (C)'),
@@ -6009,6 +6605,7 @@
         },
           // Fly mode toggle (always visible)
           el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': 'Toggle fly mode',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
@@ -6020,25 +6617,29 @@
           }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
           // Undo — conditional
-          engine._undoStack && engine._undoStack.length > 0 && el('div', {
+          engine._undoStack && engine._undoStack.length > 0 && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': 'Undo last action',
             style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.undo) engine.undo(); },
             title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
           }, '\u21A9 ' + engine._undoStack.length),
           // Redo — conditional
-          engine._redoStack && engine._redoStack.length > 0 && el('div', {
+          engine._redoStack && engine._redoStack.length > 0 && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': 'Redo last action',
             style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
           }, '\u21AA ' + engine._redoStack.length),
           // Home (return to spawn)
-          worldActive && el('div', {
+          worldActive && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': 'Return to spawn point',
             style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
             title: __alloT('stem.geometryworld.return_to_spawn_point_h', 'Return to spawn point (H)')
           }, '\uD83C\uDFE0 Home'),
           // Clear my blocks
-          worldActive && el('div', {
+          worldActive && el('button', {
+            type: 'button', className: 'gw-focusable', 'aria-label': 'Clear my placed blocks',
             style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() {
               if (!engine || !engine.clearPlayerBlocks) return;
@@ -6074,12 +6675,14 @@
           el('div', { style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
+              className: 'gw-focusable', 'aria-label': 'Jump', title: 'Jump',
               onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround && !engine._jumpLock) { engine.velocity.y = 6; sfxJump(); engine._jumpLock = true; } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
               onTouchEnd: function() { engine.moveState.flyUp = false; engine._jumpLock = false; },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u2B06\uFE0F'),
             // Place block button
             el('button', {
+              className: 'gw-focusable', 'aria-label': 'Place block', title: 'Place block',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
                 var THREE2 = window.THREE; if (!THREE2) return;
@@ -6102,6 +6705,7 @@
             }, '\uD83E\uDDF1'),
             // Break block button
             el('button', {
+              className: 'gw-focusable', 'aria-label': 'Break block', title: 'Break block',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
                 var THREE2 = window.THREE; if (!THREE2) return;
@@ -6119,6 +6723,7 @@
             }, '\u26CF\uFE0F'),
             // Measure button
             el('button', {
+              className: 'gw-focusable', 'aria-label': 'Measure structure', title: 'Measure structure',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
                 var THREE2 = window.THREE; if (!THREE2) return;
@@ -6129,16 +6734,16 @@
                   var m = engine.measureStructure(gp.x, gp.y, gp.z);
                   if (m) {
                     sfxMeasure();
-                    var mobilePrediction = m.isComplete === false ? null : compareVolumePrediction((engine._predictionState || {}).input, m.occupiedVolume);
-                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, t: Date.now() }]);
+                    var mobilePrediction = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
+                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, strategy: mobilePrediction ? mobilePrediction.strategy : '', reason: mobilePrediction ? mobilePrediction.reason : '', diagnosisCode: mobilePrediction ? mobilePrediction.diagnosisCode : '', t: Date.now() }]);
                     if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
-                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, actionFeedback: (m.isComplete === false
+                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: (m.isComplete === false
                       ? '\uD83D\uDCCF Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
                       : m.isSolidPrism
                       ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
                       : '\uD83D\uDCCF Occupied volume: ' + m.formattedOccupiedVolume + ' (' + m.fillPercent + '% filled)') + (mobilePrediction ? ' \u2022 ' + mobilePrediction.accuracyLabel : '') });
                     announceToSR(m.isComplete === false ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete.' : 'Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
-                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, blocks: m.count, input: 'touch' });
+                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, predictionStrategy: mobilePrediction ? mobilePrediction.strategy : '', predictionReason: mobilePrediction ? mobilePrediction.reason : '', misconception: mobilePrediction ? mobilePrediction.diagnosisCode : '', blocks: m.count, input: 'touch' });
                     setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                     if (m.isComplete !== false) setTimeout(runAchievementCheck, 100);
                   }
@@ -6148,6 +6753,7 @@
             }, '\uD83D\uDCCF'),
             // Talk to NPC button
             el('button', {
+              className: 'gw-focusable', 'aria-label': 'Talk to nearby character', title: 'Talk to nearby character',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
                 var minD = 5, nearest = -1;
@@ -6162,6 +6768,7 @@
             }, '\uD83D\uDDE3\uFE0F'),
             // Undo button
             engine._undoStack && engine._undoStack.length > 0 && el('button', {
+              className: 'gw-focusable', 'aria-label': 'Undo last block action', title: 'Undo last block action',
               onTouchStart: function(ev) { ev.stopPropagation(); if (engine.undo) engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); },
               style: { width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(251,191,36,0.3)', border: '2px solid rgba(251,191,36,0.5)', color: '#fff', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u21A9')
@@ -6186,8 +6793,9 @@
         actionFeedback && el('div', {
           style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
             background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px',
-            padding: '6px 16px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'nowrap',
-            animation: 'fadeIn 0.2s ease-out' }
+            padding: '7px 14px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'normal',
+            width: 'max-content', maxWidth: isMobile ? 'calc(100vw - 168px)' : 'min(680px, calc(100vw - 40px))', textAlign: 'center', lineHeight: 1.35, overflowWrap: 'anywhere',
+            boxShadow: '0 8px 24px rgba(2,6,23,0.35)', animation: 'fadeIn 0.2s ease-out' }
         }, actionFeedback),
         // ── Block rotation indicator (near shape selector) ──
         blockRotation > 0 && selectedShape > 0 && el('div', {
@@ -6197,9 +6805,10 @@
         }, '\u21BB ' + (blockRotation * 90) + '\u00b0 (R)'),
         // ── Measurement history panel (bottom-left, above position HUD) ──
         measureHistory.length > 0 && el('div', {
-          style: { position: 'absolute', bottom: '80px', left: '8px', zIndex: 19,
+          style: { position: 'absolute', bottom: isMobile ? '196px' : '80px', left: '8px', zIndex: 19,
             background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
-            padding: '6px 8px', fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '150px' }
+            padding: '7px 9px', fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', width: isMobile ? '168px' : '220px',
+            maxWidth: isMobile ? 'calc(100vw - 84px)' : 'min(220px, calc(100vw - 24px))', maxHeight: isMobile ? '42vh' : '50vh', overflowY: 'auto', boxShadow: '0 8px 24px rgba(2,6,23,0.3)' }
         },
           el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS - ' + completedMeasurements.length + '/' + measureHistory.length + ' complete'),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
@@ -6215,6 +6824,38 @@
             measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
             measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
             measurementComparison.surfaceAreaDifference === null && el('div', { style: { color: '#94a3b8' } }, 'Surface comparison unavailable for partial blocks.')
+          ),
+          activeRetrievalCheckpoint && el('div', { 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept, style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(34,211,238,0.35)', lineHeight: 1.35 } },
+            el('div', { style: { color: '#67e8f9', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px', marginBottom: '2px' } }, 'RETRIEVAL CHECK'),
+            el('div', { style: { color: '#e2e8f0', fontSize: '9px', marginBottom: '4px' } }, activeRetrievalCheckpoint.prompt),
+            el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+              el('input', {
+                type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                onChange: function(ev) { upd({ retrievalAnswer: ev.target.value, retrievalResult: null }); },
+                placeholder: 'answer', 'aria-label': 'Retrieval checkpoint answer',
+                style: { width: '62px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '3px 4px', color: '#fff', fontSize: '9px' }
+              }),
+              el('button', {
+                type: 'button', className: 'gw-focusable',
+                disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                onClick: function() {
+                  var nextAttempt = retrievalAttemptCount + 1;
+                  var result = checkRetrievalAnswer(activeRetrievalCheckpoint, retrievalAnswer, nextAttempt);
+                  if (!result) return;
+                  result.checkpointId = activeRetrievalCheckpoint.id;
+                  result.attempt = result.valid ? nextAttempt : retrievalAttemptCount;
+                  upd({ retrievalResult: result, retrievalAttemptCount: result.attempt });
+                  if (result.valid) {
+                    var eng = window[engineKey];
+                    if (eng && eng.logEvent) eng.logEvent('retrieval_check', { checkpointId: activeRetrievalCheckpoint.id, concept: activeRetrievalCheckpoint.concept, attempt: result.attempt, answer: result.answer, expected: result.expected, correct: result.correct });
+                    if (result.correct) sfxCorrect(); else sfxWrong();
+                  }
+                  announceToSR(result.feedback);
+                },
+                style: { background: '#0e7490', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: retrievalResult && retrievalResult.correct ? 'default' : 'pointer', opacity: retrievalResult && retrievalResult.correct ? 0.65 : 1 }
+              }, 'Check')
+            ),
+            retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && el('div', { role: 'status', 'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry', style: { marginTop: '3px', color: retrievalResult.correct ? '#86efac' : '#fde68a', fontSize: '9px', fontWeight: 700 } }, retrievalResult.feedback)
           )
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
@@ -6360,10 +7001,13 @@
           el('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '\uD83E\uDD14'),
           el('div', { style: { fontSize: '16px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, 'Quick Reflection'),
           el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px' } }, 'Take a moment to think about what you learned:'),
+          latestCompleteMeasurement && el('div', { 'data-geometry-reflection-evidence': 'true', style: { marginBottom: '10px', padding: '8px 10px', textAlign: 'left', borderRadius: '8px', background: 'rgba(14,116,144,0.18)', border: '1px solid rgba(34,211,238,0.3)', color: '#cffafe', fontSize: '11px', lineHeight: 1.45 } },
+            reflectionEvidencePrompt
+          ),
           el('textarea', {
             value: reflectionText,
             onChange: function(ev) { upd('reflectionText', ev.target.value); },
-            placeholder: __alloT('stem.geometryworld.what_was_the_most_interesting_thing_yo', 'What was the most interesting thing you discovered? What strategy helped you solve problems?'),
+            placeholder: reflectionEvidencePrompt,
             style: { width: '100%', height: '70px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '8px', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
           }),
           el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
@@ -6372,7 +7016,7 @@
               onClick: function() {
                 upd('showReflection', false);
                 var eng = window[engineKey];
-                if (eng && eng.logEvent && reflectionText.trim()) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title });
+                if (eng && eng.logEvent && reflectionText.trim()) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title, measuredVolume: latestCompleteMeasurement ? latestCompleteMeasurement.occupiedVolume : null, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
               },
               style: { background: reflectionText.trim() ? '#7c3aed' : 'rgba(124,58,237,0.5)', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }
             }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Continue without writing'),

@@ -3,6 +3,8 @@
   "kind": "pd_module",
   "metadata": {
     "id": "actionable-feedback-quickstart",
+    "version": "1.0.0",
+    "language": "en-US",
     "title": "Giving Actionable Feedback to Students",
     "topic": "Feedback",
     "summary": "A ~12-minute module on making feedback specific and actionable — read the principles, then practice rewriting feedback in a scenario and get formative AI coaching. General educator PD.",

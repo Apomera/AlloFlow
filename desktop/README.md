@@ -95,6 +95,10 @@ npm.cmd run verify:artifacts:win
 
 Artifacts are written to `desktop/dist/`. Windows ARM64 is supported by the local Electron runtime in this workspace. Mac artifacts should be produced on macOS or in a macOS CI runner before signing/notarization.
 
+On Windows, `package:win` requires at least 6 GiB free on the staging volume, then builds into a unique folder under the machine's temporary directory outside OneDrive/Dropbox-style synchronized paths. It verifies both unpacked architectures, binds every updater entry to that installer's exact SHA-512, validates the exact `SHA256SUMS-windows.txt` set, and copies only hash-checked release files back to `desktop/dist/`. Use `package:win:direct` only for troubleshooting on a workspace that is not synchronized.
+
+For Windows download selection, SmartScreen/signature checks, S mode, supported versions, and diagnostic logs, see `WINDOWS-INSTALL.md`.
+
 Signing and updates:
 
 - Windows signing is handled by electron-builder when a code-signing certificate is provided through secure CI/user environment variables such as `CSC_LINK` and `CSC_KEY_PASSWORD`.

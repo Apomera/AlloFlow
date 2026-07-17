@@ -52,6 +52,7 @@ function SessionModal({
   setConfirmDialog,
   setSessionData,
   setShowSessionModal,
+  studentAiPolicy = 'off',
   t,
   toggleSessionMode,
   warnLog,
@@ -74,6 +75,7 @@ function SessionModal({
   const [liveQrSvg, setLiveQrSvg] = React.useState('');
   const [liveQrError, setLiveQrError] = React.useState(false);
   const qrStatusText = liveQrSvg ? 'QR validated' : liveQrError ? 'QR unavailable' : 'QR loading';
+  const studentAiLabel = studentAiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off';
   const dialogRef = React.useRef(null);
   React.useEffect(function () {
     const dialog = dialogRef.current;
@@ -121,7 +123,7 @@ function SessionModal({
     const params = {
       allo_join: activeSessionCode,
       allo_host: activeSessionAppId || appId,
-      allo_ai: 'off',
+      allo_ai: studentAiPolicy === 'student-byok' ? 'byok' : 'off',
     };
     if (typeof window.__alloBuildShareUrl === 'function') {
       try { return window.__alloBuildShareUrl(params); } catch (_) {}
@@ -145,7 +147,7 @@ function SessionModal({
     } catch (_) {
       return '';
     }
-  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl]);
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl, studentAiPolicy]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -195,10 +197,10 @@ function SessionModal({
     try { popup.opener = null; } catch (_) {}
     const safeCode = String(activeSessionCode || '').replace(/[^A-Z0-9-]/gi, '');
     popup.document.open();
-    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>AlloFlow live session ${safeCode}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.mode{font-weight:700;color:#0e7490;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 54px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>AlloFlow live session</h1><div class="mode">${isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'} · AI tools off</div><div class="qr">${liveQrSvg}</div><div>Fallback class code</div><div class="code">${safeCode}</div><div class="note">Scan the QR code to join. This invitation works only while the teacher session is active.</div></body></html>`);
+    popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>AlloFlow live session ${safeCode}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.mode{font-weight:700;color:#0e7490;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 54px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>AlloFlow live session</h1><div class="mode">${isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'} · ${studentAiLabel}</div><div class="qr">${liveQrSvg}</div><div>Fallback class code</div><div class="code">${safeCode}</div><div class="note">Scan the QR code to join. This invitation works only while the teacher session is active.</div></body></html>`);
     popup.document.close();
     setTimeout(() => { try { popup.focus(); popup.print(); } catch (_) {} }, 250);
-  }, [activeSessionCode, addToast, isMailboxSession, liveQrSvg]);
+  }, [activeSessionCode, addToast, isMailboxSession, liveQrSvg, studentAiLabel]);
 
   return (
     <div className={`fixed inset-0 bg-black/80 z-[150] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? 'p-0' : 'p-4'}`} role="presentation" onClick={handleSetShowSessionModalToFalse}>
@@ -258,7 +260,7 @@ function SessionModal({
                 Print QR <Printer size={12} aria-hidden="true"/>
               </button>
             </div>
-            <p className="text-[11px] text-cyan-800 mt-2 text-center"><span role="status" aria-live="polite" aria-atomic="true">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}</span>{isMailboxSession ? 'Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session.' : 'Ready to scan. QR students join this live session with AI generation off; the link stops working when the session ends.'}</p>
+            <p className="text-[11px] text-cyan-800 mt-2 text-center"><span role="status" aria-live="polite" aria-atomic="true">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}</span>{isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${studentAiPolicy === 'student-byok' ? 'Students may connect their own AI provider for this tab.' : 'AI generation stays off.'} The link stops working when the session ends.`}</p>
           </div>
         )}
         {!liveJoinUrl && (
