@@ -20,7 +20,7 @@ mkdir -p "dev-tools/i18n/tm_$tool"
 [ -f "dev-tools/i18n/tm_$tool/$slug.json" ] || node -e "require('fs').writeFileSync('dev-tools/i18n/tm_$tool/$slug.json',JSON.stringify({filled:{}}))"
 node dev-tools/i18n/gen_stem_handtl.cjs "$slug" "$iso" "$tool" "$HT" 2>&1 | tail -1
 node dev-tools/i18n/apply_stem_tool_translations.cjs "$tool" "dev-tools/i18n/handtl_${tool}_${iso}.json" 2>&1 | grep -E "\+[0-9]"
-N=$(node -e "console.log(Object.keys(require('$REPO/dev-tools/i18n/stem_${tool}_en.json')).length)")
+N=$(node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('dev-tools/i18n/stem_${tool}_en.json','utf8'))).length)")
 node -e "const fs=require('fs');const re=new RegExp(process.argv[1]);const f=JSON.parse(fs.readFileSync('lang/$slug.js','utf8')).stem['$tool'];let b=[];for(const k in f){if(re.test(f[k]))b.push(k);}console.log('$slug contam:',b.slice(0,8).join(',')||'none','| keys:',Object.keys(f).length,'/',$N);" "$contam"
 node dev-tools/check_lang_json.cjs 2>&1 | tail -1
 P="lang/$slug.js dev-tools/i18n/handtl_${tool}_${iso}.json dev-tools/i18n/tm_$tool/$slug.json"
