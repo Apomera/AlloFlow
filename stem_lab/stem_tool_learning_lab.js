@@ -10577,100 +10577,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var fs = R.useState({ who: '', what: '', outcome: 'helpful', notes: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var whatError = es[0]; var setWhatError = es[1];
 
     var OUTCOMES = [
-      { id: 'helpful',    label: 'Helpful', icon: '✓', color: '#10b981' },
-      { id: 'partial',    label: 'Partial', icon: '~', color: '#fbbf24' },
-      { id: 'not-useful', label: 'Not useful', icon: '✗', color: 'var(--allo-stem-text-soft, #94a3b8)' },
-      { id: 'hard',       label: 'Hard to ask', icon: '😰', color: '#a855f7' }
+      { id: 'helpful', label: 'Helpful', icon: '✓', color: '#10b981' },
+      { id: 'partial', label: 'Partly helpful', icon: '~', color: '#fbbf24' },
+      { id: 'not-useful', label: 'Not useful', icon: '×', color: '#94a3b8' },
+      { id: 'hard', label: 'Hard to ask', icon: '😰', color: '#a855f7' }
     ];
 
-    function log() {
-      if (!form.what.trim()) { alert('Need at least "what".'); return; }
-      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData({ asks: [entry].concat(data.asks || []) });
-      setForm({ who: '', what: '', outcome: 'helpful', notes: '' });
+    function focusWhat() {
+      setTimeout(function() { var input = document.getElementById('learning-lab-ask-what'); if (input) input.focus(); }, 0);
     }
-    function remove(id) {
-      setData({ asks: (data.asks || []).filter(function(a) { return a.id !== id; }) });
+    function logAsk() {
+      var what = form.what.trim();
+      if (!what) {
+        setWhatError('Describe what you asked for.');
+        focusWhat();
+        return;
+      }
+      var outcome = OUTCOMES.filter(function(item) { return item.id === form.outcome; })[0] || OUTCOMES[0];
+      var entry = {
+        id: tkId(),
+        date: todayISO(),
+        time: Date.now(),
+        who: form.who.trim(),
+        what: what,
+        outcome: outcome.id,
+        notes: form.notes.trim()
+      };
+      setData(Object.assign({}, data, { asks: [entry].concat(data.asks || []) }));
+      setForm({ who: '', what: '', outcome: 'helpful', notes: '' });
+      setWhatError('');
+      llAnnounce('Help request logged. Outcome: ' + outcome.label + '.');
+    }
+    async function remove(id) {
+      var entry = (data.asks || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes the help request' + (entry ? ' "' + entry.what + '"' : '') + '.', {
+        title: 'Delete this help request?', confirmText: 'Delete request'
+      }))) return;
+      setData(Object.assign({}, data, { asks: (data.asks || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Help request deleted.');
     }
 
     var asks = data.asks || [];
-    var weekCount = asks.filter(function(a) { return daysAgo(a.date) <= 7; }).length;
+    var weekCount = asks.filter(function(entry) { return daysAgo(entry.date) <= 7; }).length;
+    var helpfulPercent = asks.length > 0 ? Math.round(asks.filter(function(entry) { return entry.outcome === 'helpful'; }).length / asks.length * 100) + '%' : 'No data';
+    var metrics = [
+      { label: 'Total asks', value: asks.length, icon: '🙋' },
+      { label: 'This week', value: weekCount, icon: '📅' },
+      { label: 'Helpful percentage', value: helpfulPercent, icon: '✨' }
+    ];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 7, border: '1px solid rgba(16,185,129,0.50)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', marginBottom: 4 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🙋', 'Ask-for-Help Tracker', 'Log every help-ask. The act of asking is the skill, separate from whether the help was useful.', '#10b981'),
+      tkSectionHeader('🙋', 'Ask-for-Help Tracker', 'Log every help request. The act of asking is the skill, separate from whether the help was useful.', '#10b981'),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: 'Total asks', value: asks.length, color: '#10b981', icon: '🙋' },
-          { label: 'This week', value: weekCount, color: '#fbbf24', icon: '📅' },
-          { label: 'Helpful %', value: asks.length > 0 ? Math.round(asks.filter(function(a) { return a.outcome === 'helpful'; }).length / asks.length * 100) + '%' : '—', color: '#a855f7', icon: '✨' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'ats-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
-          );
-        })
-      ),
-
-      tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '🙋 Log an ask'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 8, marginBottom: 8 } },
-            tkInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who?'),
-            tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'What did you ask for?')
-          ),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'How did it go?'),
-          hh('div', { style: { display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' } },
-            OUTCOMES.map(function(o) {
-              var on = form.outcome === o.id;
-              return hh('button', { key: 'oc-' + o.id,
-                onClick: function() { setForm(Object.assign({}, form, { outcome: o.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-              }, o.icon + ' ' + o.label);
-            })
-          ),
-          tkTextarea(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (optional) — what surprised you?', 2, { marginBottom: 8 }),
-          tkBtn('💾 Log', log, 'primary')
+      hh('section', { 'aria-label': 'Help request statistics', style: { marginBottom: 12 } },
+        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, margin: 0 } },
+          metrics.map(function(metric, index) {
+            return hh('div', { key: 'ats-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.35)', textAlign: 'center' } },
+              hh('span', { 'aria-hidden': 'true', style: { fontSize: 14, display: 'block', marginBottom: 2 } }, metric.icon),
+              hh('dt', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, metric.label),
+              hh('dd', { style: { margin: 0, fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } }, String(metric.value))
+            );
+          })
         )
       ),
 
-      asks.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Recent asks'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          asks.slice(0, 15).map(function(a) {
-            var o = OUTCOMES.filter(function(x) { return x.id === a.outcome; })[0] || OUTCOMES[0];
-            return hh('div', { key: 'as-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + o.color } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('div', { style: { flex: 1 } },
-                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                    hh('span', { style: { color: o.color, fontWeight: 700, marginRight: 4 } }, o.icon),
-                    a.who ? hh('strong', { style: { color: '#10b981' } }, a.who + ': ') : null,
-                    a.what
+      tkCard('#10b981',
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); logAsk(); }, 'aria-labelledby': 'learning-lab-ask-form-heading' },
+          hh('h3', { id: 'learning-lab-ask-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', margin: '0 0 8px' } }, 'Log a help request'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 8 } },
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-ask-who', style: labelStyle }, 'Who did you ask? (optional)'),
+              hh('input', { id: 'learning-lab-ask-who', type: 'text', value: form.who, maxLength: 240, placeholder: 'e.g., Teacher, tutor, classmate', onChange: function(event) { setForm(Object.assign({}, form, { who: event.target.value })); }, style: fieldStyle })
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-ask-what', style: labelStyle }, 'What did you ask for? (required)'),
+              hh('input', { id: 'learning-lab-ask-what', type: 'text', value: form.what, required: true, maxLength: 500, 'aria-invalid': whatError ? 'true' : undefined, 'aria-describedby': whatError ? 'learning-lab-ask-what-error' : undefined, placeholder: 'Describe the help you requested', onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); if (whatError) setWhatError(''); }, style: fieldStyle }),
+              hh('div', { id: 'learning-lab-ask-what-error', role: 'alert', style: { minHeight: whatError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: whatError ? 4 : 0 } }, whatError)
+            )
+          ),
+          hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 10px' } },
+            hh('legend', { style: labelStyle }, 'How did it go?'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 6 } },
+              OUTCOMES.map(function(outcome) {
+                var selected = form.outcome === outcome.id;
+                return hh('label', { key: 'oc-' + outcome.id, htmlFor: 'learning-lab-ask-outcome-' + outcome.id, style: { boxSizing: 'border-box', minHeight: 44, padding: '7px 9px', borderRadius: 7, background: selected ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #e2e8f0)', border: '2px solid ' + (selected ? outcome.color : 'rgba(148,163,184,0.35)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 } },
+                  hh('input', { id: 'learning-lab-ask-outcome-' + outcome.id, type: 'radio', name: 'learning-lab-ask-outcome', value: outcome.id, checked: selected, onChange: function() { setForm(Object.assign({}, form, { outcome: outcome.id })); }, style: { width: 20, height: 20, margin: 0, accentColor: outcome.color, flexShrink: 0 } }),
+                  hh('span', null, hh('span', { 'aria-hidden': 'true' }, outcome.icon + ' '), outcome.label)
+                );
+              })
+            )
+          ),
+          hh('label', { htmlFor: 'learning-lab-ask-notes', style: labelStyle }, 'Reflection notes (optional)'),
+          hh('textarea', { id: 'learning-lab-ask-notes', value: form.notes, rows: 3, maxLength: 2000, placeholder: 'What surprised you?', onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical', marginBottom: 8 }) }),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Log help request')
+        )
+      ),
+
+      asks.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-ask-history-heading' },
+        hh('h3', { id: 'learning-lab-ask-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Recent help requests'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+          asks.slice(0, 15).map(function(entry) {
+            var outcome = OUTCOMES.filter(function(item) { return item.id === entry.outcome; })[0] || OUTCOMES[0];
+            var askedAt = new Date(entry.time);
+            var validDate = Number.isFinite(askedAt.getTime());
+            return hh('li', { key: 'as-' + entry.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + outcome.color } },
+              hh('article', { 'aria-label': (entry.who ? 'Asked ' + entry.who + ': ' : 'Help request: ') + entry.what + '. Outcome: ' + outcome.label + '.' },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                  hh('div', { style: { flex: 1, minWidth: 0 } },
+                    hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                      hh('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, outcome.icon),
+                      hh('span', { style: { fontWeight: 800 } }, outcome.label + '. '),
+                      entry.who ? hh('strong', null, entry.who + ': ') : null,
+                      entry.what
+                    ),
+                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, validDate ? hh('time', { dateTime: askedAt.toISOString() }, askedAt.toLocaleString()) : relDate(entry.date))
                   ),
-                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, relDate(a.date))
+                  hh('button', { type: 'button', 'aria-label': 'Delete help request: ' + entry.what, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                 ),
-                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              a.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontStyle: 'italic' } }, a.notes) : null
+                entry.notes ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', margin: '4px 0 0', fontStyle: 'italic' } }, entry.notes) : null
+              )
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#10b981' } }, '🎓 Why log this: '),
-        'Asking for help is THE most underused academic skill. Especially among neurodivergent students and high-achievers. Logging it normalizes it — converts an internal "I should be able to figure this out" voice into a behavior that has data. Watch the pattern: who do you ask easily? Who do you avoid?'
+      hh('aside', { 'aria-label': 'Why tracking help requests matters', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#6ee7b7' } }, 'Why log this: '),
+        'Asking for help is an academic skill. Logging requests can normalize the behavior and reveal who feels easy or difficult to approach, so you can plan the support you need.'
       )
     );
   }
 
   // ── KK. PERSONAL MINDFULNESS PRACTICE (Wave 8) ──
-  // 6 guided mindfulness practices with timers and instructions.
-  // Body scan, mindful breathing, RAIN (body-focused), open awareness,
-  // walking meditation, mindful eating. Each with research citations.
+  // Six guided mindfulness practices with timers and instructions.
+  // Body scan, mindful breathing, RAIN, open awareness, walking
+  // meditation, and mindful eating. Each includes research context.
   function PersonalMindfulness(props) {
     if (!R) return null;
     var data = props.data || { sessions: [] };
