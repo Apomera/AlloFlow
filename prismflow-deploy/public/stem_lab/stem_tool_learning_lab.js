@@ -10866,96 +10866,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { logs: [] };
     var setData = props.setData;
-    var as = R.useState(null);                       var active = as[0]; var setActive = as[1];
+    var as = R.useState(null); var active = as[0]; var setActive = as[1];
 
     var TOOLS = [
-      { id: 'name',     label: 'Name it', icon: '🏷', color: '#3b82f6',
-        steps: ['"Anxiety is here right now."', 'Just naming activates regulation circuits (Lieberman 2007).', 'Notice: where do you feel it in your body?', 'Right now you are safe in this moment. The anxiety is information, not danger.']
-      },
-      { id: 'breath',   label: 'Slow exhale breath', icon: '🌬', color: '#06b6d4',
-        steps: ['Inhale for 4 counts.', 'Hold for 2.', 'Exhale slowly for 8 counts. (Longer exhale than inhale = parasympathetic activation.)', 'Repeat 4-6 times.', 'Notice: heart rate slowing, body softening slightly.']
-      },
-      { id: 'cold',     label: 'Cold water on face/wrists', icon: '🥶', color: '#a855f7',
-        steps: ['Hold ice cube to face or run cold water on wrists.', 'The mammalian dive reflex slows heart rate within 30 seconds.', 'Linehan DBT — a "TIPP" skill for distress tolerance.', 'Not a fix — buys regulation time so you can think.']
-      },
-      { id: 'thought',  label: 'Cognitive defusion', icon: '🪂', color: '#fbbf24',
-        steps: ['Notice the anxious thought.', 'Say: "I\'m having the thought that ___" (instead of "___ is true").', 'Or: imagine the thought as a leaf floating down a river.', 'You are not your thoughts. You\'re the observer noticing them.', 'ACT (Hayes) approach. Reduces fusion with anxious content.']
-      },
-      { id: 'sense',    label: '5-4-3-2-1 grounding', icon: '🌱', color: '#10b981',
-        steps: ['5 things you can SEE right now.', '4 things you can FEEL (clothes, chair, air).', '3 things you can HEAR.', '2 things you can SMELL.', '1 thing you can TASTE.', 'Sensory awareness shifts attention OUT of anxious thoughts.']
-      },
-      { id: 'evidence', label: 'Evidence-for / evidence-against', icon: '⚖️', color: '#ef4444',
-        steps: ['What\'s the anxious thought?', 'Evidence FOR it being true:', 'Evidence AGAINST it being true:', 'A more balanced thought might be: ___', 'CBT skill. Not "positive thinking" — accurate thinking.']
-      }
+      { id: 'name', label: 'Name it', icon: '🏷', color: '#3b82f6',
+        steps: ['Say: “Anxiety is here right now.”', 'Naming a feeling can help engage regulation circuits.', 'Notice where you feel it in your body.', 'Remind yourself: anxiety is information, not proof of danger.'] },
+      { id: 'breath', label: 'Slow exhale breath', icon: '🌬', color: '#06b6d4',
+        steps: ['Inhale for 4 counts.', 'Hold for 2 counts.', 'Exhale slowly for 8 counts.', 'Repeat 4 to 6 times.', 'Notice whether your heart rate or muscle tension changes.'] },
+      { id: 'cold', label: 'Cold water on face or wrists', icon: '🥶', color: '#a855f7',
+        steps: ['Hold a cool cloth to your face or run cool water on your wrists.', 'Notice your breathing and heart rate for about 30 seconds.', 'This is a DBT distress-tolerance strategy.', 'Use the regulation time to choose your next step.'] },
+      { id: 'thought', label: 'Cognitive defusion', icon: '🪂', color: '#fbbf24',
+        steps: ['Notice the anxious thought.', 'Say: “I am having the thought that…” instead of treating the thought as a fact.', 'Imagine the thought as a leaf floating down a river.', 'Remember that you can observe a thought without obeying it.', 'This ACT strategy reduces fusion with anxious content.'] },
+      { id: 'sense', label: '5-4-3-2-1 grounding', icon: '🌱', color: '#10b981',
+        steps: ['Name 5 things you can see.', 'Name 4 things you can feel.', 'Name 3 things you can hear.', 'Name 2 things you can smell.', 'Name 1 thing you can taste.', 'Return attention to the room and choose your next step.'] },
+      { id: 'evidence', label: 'Evidence for and against', icon: '⚖', color: '#ef4444',
+        steps: ['State the anxious thought.', 'List evidence that supports it.', 'List evidence that does not support it.', 'Write a more balanced thought.', 'Aim for accurate thinking rather than forced positive thinking.'] }
     ];
 
-    function logTool(t) {
-      setData({ logs: [{ id: tkId(), date: todayISO(), time: Date.now(), toolId: t.id }].concat(data.logs || []) });
+    function focusById(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
+    function openTool(tool) {
+      setActive(tool.id);
+      llAnnounce(tool.label + ' anxiety tool opened.');
+      focusById('learning-lab-anxiety-active-heading');
+    }
+    function backToTools(tool) {
+      setActive(null);
+      llAnnounce('Returned to the anxiety tool list.');
+      focusById('learning-lab-anxiety-start-' + tool.id);
+    }
+    function logTool(tool) {
+      var entry = { id: tkId(), date: todayISO(), time: Date.now(), toolId: tool.id };
+      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setActive(null);
+      llAnnounce(tool.label + ' use logged.');
+      focusById('learning-lab-anxiety-start-' + tool.id);
     }
 
     var logs = data.logs || [];
+    var usage = TOOLS.map(function(tool) {
+      return { tool: tool, count: logs.filter(function(entry) { return entry.toolId === tool.id; }).length };
+    }).filter(function(item) { return item.count > 0; }).sort(function(a, b) { return b.count - a.count; });
 
     if (active) {
-      var t = TOOLS.filter(function(x) { return x.id === active; })[0];
-      if (!t) { setActive(null); return null; }
+      var activeTool = TOOLS.filter(function(tool) { return tool.id === active; })[0];
+      if (!activeTool) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This anxiety tool is not available. Return to the toolkit and choose another.');
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(t.icon, t.label, 'Step through these slowly. There\'s no rush.', t.color),
-        hh('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '20, rgba(15,23,42,0.7))', border: '2px solid ' + t.color, marginBottom: 14 } },
-          hh('ol', { style: { margin: 0, paddingLeft: 22, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 2.0 } },
-            t.steps.map(function(s, i) {
-              return hh('li', { key: 'st-' + i, style: { marginBottom: 8 } }, s);
+        tkSectionHeader(activeTool.icon, activeTool.label, 'Move through these steps slowly. There is no rush.', activeTool.color),
+        hh('h2', { id: 'learning-lab-anxiety-active-heading', tabIndex: -1, style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Active anxiety tool: ' + activeTool.label),
+        hh('section', { 'aria-labelledby': 'learning-lab-anxiety-steps-heading', style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, ' + activeTool.color + '20, rgba(15,23,42,0.7))', border: '2px solid ' + activeTool.color, marginBottom: 14 } },
+          hh('h3', { id: 'learning-lab-anxiety-steps-heading', style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 8px' } }, 'Steps for ' + activeTool.label),
+          hh('ol', { style: { margin: 0, paddingLeft: 22, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 2 } },
+            activeTool.steps.map(function(step, index) {
+              return hh('li', { key: 'st-' + index, style: { marginBottom: 8 } }, step);
             })
           )
         ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Back', function() { setActive(null); }, 'ghost'),
-          tkBtn('✓ Logged use of this tool', function() { logTool(t); setActive(null); }, 'good')
+        hh('div', { role: 'group', 'aria-label': 'Anxiety tool actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+          hh('button', { type: 'button', onClick: function() { backToTools(activeTool); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← Back to tools'),
+          hh('button', { type: 'button', onClick: function() { logTool(activeTool); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Finish and log this tool')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧰', 'Anxiety Toolkit', 'Quick-access tools when anxiety hits. Pick what fits the moment.', '#ef4444'),
+      tkSectionHeader('🧰', 'Anxiety Toolkit', 'Quick-access tools for everyday anxiety. Choose what fits the moment.', '#ef4444'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
-        'Call or text 988 (US Suicide + Crisis Lifeline). Maine Mobile Crisis: 1-888-568-1112. These tools are for everyday anxiety; reach out for human help if you\'re unsafe.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-anxiety-crisis-heading', style: { padding: 12, borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-anxiety-crisis-heading', style: { fontSize: 12, margin: '0 0 5px', color: 'var(--allo-stem-text, #fff)', fontWeight: 900 } }, 'If you are in crisis or feel unsafe'),
+        hh('p', { style: { margin: '0 0 6px' } },
+          hh('a', { href: 'tel:988', 'aria-label': 'Call the 988 Suicide and Crisis Lifeline', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'Call 988'),
+          ' or ',
+          hh('a', { href: 'sms:988', 'aria-label': 'Text the 988 Suicide and Crisis Lifeline', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'text 988'),
+          '. You can also ',
+          hh('a', { href: 'https://988lifeline.org/chat/', target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Chat with the 988 Suicide and Crisis Lifeline, opens in a new tab', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'chat with 988'),
+          '.'
+        ),
+        hh('p', { style: { margin: 0 } },
+          'In Maine, ', hh('a', { href: 'tel:+18885681112', 'aria-label': 'Call the Maine Crisis Line at 1-888-568-1112', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'call the Maine Crisis Line at 1-888-568-1112'), '. Maine Relay users can ', hh('a', { href: 'tel:711', 'aria-label': 'Call Maine Relay at 711', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'call 711'), '.'
+        )
       ),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
-        TOOLS.map(function(t) {
-          var count = logs.filter(function(l) { return l.toolId === t.id; }).length;
-          return hh('button', { key: 'at-' + t.id,
-            onClick: function() { setActive(t.id); },
-            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
-          },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: t.color } }, t.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, t.steps.length + ' steps' + (count > 0 ? ' · used ' + count + 'x' : ''))
+      hh('ul', { 'aria-label': 'Available anxiety tools', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
+        TOOLS.map(function(tool) {
+          var count = logs.filter(function(entry) { return entry.toolId === tool.id; }).length;
+          return hh('li', { key: 'at-' + tool.id },
+            hh('button', { id: 'learning-lab-anxiety-start-' + tool.id, type: 'button', 'aria-label': 'Open ' + tool.label + ', ' + tool.steps.length + ' steps' + (count > 0 ? ', used ' + count + (count === 1 ? ' time' : ' times') : ''), onClick: function() { openTool(tool); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + tool.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + tool.color + '55', borderLeft: '4px solid ' + tool.color, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
+              hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 22, marginBottom: 4 } }, tool.icon),
+              hh('strong', { style: { display: 'block', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)' } }, tool.label),
+              hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, tool.steps.length + ' steps' + (count > 0 ? ' · used ' + count + (count === 1 ? ' time' : ' times') : ''))
+            )
           );
         })
       ),
 
-      logs.length > 0 ? hh('div', { style: { marginTop: 14 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Most-used tools'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          TOOLS.map(function(t) {
-            var c = logs.filter(function(l) { return l.toolId === t.id; }).length;
-            if (c === 0) return null;
-            return hh('div', { key: 'l-' + t.id, style: { display: 'flex', justifyContent: 'space-between', padding: 6, borderRadius: 4, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid ' + t.color } },
-              hh('span', { style: { fontSize: 11, color: t.color } }, t.icon + ' ' + t.label),
-              hh('strong', { style: { fontSize: 11, color: t.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, c)
+      usage.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-anxiety-usage-heading', style: { marginTop: 14 } },
+        hh('h3', { id: 'learning-lab-anxiety-usage-heading', style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Most-used tools'),
+        hh('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+          usage.map(function(item, index) {
+            return hh('li', { key: 'l-' + item.tool.id, style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: 8, borderRadius: 4, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid ' + item.tool.color } },
+              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', { 'aria-hidden': 'true' }, item.tool.icon + ' '), (index + 1) + '. ' + item.tool.label),
+              hh('strong', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } }, item.count + (item.count === 1 ? ' use' : ' uses'))
             );
-          }).filter(Boolean)
+          })
         )
       ) : null
     );
   }
 
   // ── MM. PERSONAL DECISION MAKER (Wave 8) ──
-  // Structured decision-making tool. Define options, criteria, weights.
-  // Score each option. Surfaces the implicit choice. Useful for big
-  // decisions students often default-pick out of overwhelm.
+  // Structured decision-making tool. Define options, criteria, and weights.
+  // Score each option to make an implicit choice visible.
   function PersonalDecisionMaker(props) {
     if (!R) return null;
     var data = props.data || { decisions: [] };
