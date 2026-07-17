@@ -7671,27 +7671,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState({ title: '', cue: '', main: '', summary: '' });
     var form = fs[0];                              var setForm = fs[1];
     var qs = R.useState('');                       var search = qs[0]; var setSearch = qs[1];
+    var es = R.useState('');                       var formError = es[0]; var setFormError = es[1];
 
     var notebooks = data.notebooks && data.notebooks.length ? data.notebooks : ['General'];
     var notes = data.notes || [];
 
-    function addNotebook() {
-      var name = prompt('Notebook name? (e.g., "AP Biology")');
-      if (!name) return;
-      setData(Object.assign({}, data, { notebooks: notebooks.concat([name]) }));
+    async function addNotebook() {
+      var values = await askLearningLabForm({
+        title: 'Add a notebook',
+        description: 'Give the notebook a short, descriptive subject name.',
+        submitText: 'Add notebook',
+        fields: [{ name: 'name', label: 'Notebook name', required: true, maxLength: 80, placeholder: 'e.g., AP Biology' }],
+        validate: function(result) {
+          return notebooks.some(function(existing) { return existing.toLowerCase() === result.name.toLowerCase(); }) ? 'A notebook with that name already exists.' : '';
+        }
+      });
+      if (!values) return;
+      setData(Object.assign({}, data, { notebooks: notebooks.concat([values.name]) }));
+      llAnnounce('Notebook added: ' + values.name + '.');
     }
-    function removeNotebook(name) {
-      if (name === 'General') { alert('Cannot delete General notebook.'); return; }
-      if (!confirm('Delete notebook "' + name + '" and all its notes?')) return;
+    async function removeNotebook(name) {
+      if (name === 'General') return;
+      if (!(await askLearningLabConfirmation('This permanently removes the notebook and every note it contains.', {
+        title: 'Delete "' + name + '" notebook?', confirmText: 'Delete notebook'
+      }))) return;
       setData({
         notebooks: notebooks.filter(function(n) { return n !== name; }),
         notes: notes.filter(function(n) { return n.notebook !== name; })
       });
+      llAnnounce('Notebook deleted: ' + name + '.');
     }
     function saveNote() {
-      if (!form.title.trim()) { alert('Need a title.'); return; }
+      if (!form.title.trim()) {
+        setFormError('Note title is required.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-note-title'); if (field) field.focus(); }, 0);
+        return;
+      }
       var id = activeNote || tkId();
-      var note = Object.assign({ id: id, notebook: activeNb || 'General', createdAt: todayISO(), updatedAt: todayISO() }, form);
+      var note = Object.assign({ id: id, notebook: activeNb || 'General', createdAt: todayISO(), updatedAt: todayISO() }, form, { title: form.title.trim() });
       var arr = notes.slice();
       var i = arr.findIndex(function(n) { return n.id === id; });
       if (i >= 0) arr[i] = Object.assign({}, arr[i], note);
@@ -7699,47 +7716,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setData(Object.assign({}, data, { notes: arr }));
       setActiveNote(null);
       setForm({ title: '', cue: '', main: '', summary: '' });
+      setFormError('');
       setView('notebook');
+      llAnnounce('Note saved.');
     }
-    function removeNote(id) {
-      if (!confirm('Delete this note?')) return;
+    async function removeNote(id) {
+      var note = notes.filter(function(n) { return n.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (note && note.title ? ' the note "' + note.title + '"' : ' this note') + '.', {
+        title: 'Delete this note?', confirmText: 'Delete note'
+      }))) return;
       setData(Object.assign({}, data, { notes: notes.filter(function(n) { return n.id !== id; }) }));
+      llAnnounce('Note deleted.');
     }
     function openNote(n) {
       setActiveNote(n.id);
       setForm({ title: n.title, cue: n.cue || '', main: n.main || '', summary: n.summary || '' });
+      setFormError('');
       setView('edit');
     }
+
+    var fieldLabelStyle = { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 };
+    var fieldHelpStyle = { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(96,165,250,0.45)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
 
     if (view === 'edit') {
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader('📝', activeNote ? 'Edit note' : 'New Cornell note', 'Main column = your notes. Cue column = questions or key terms. Summary at end.', '#3b82f6'),
         tkCard('#3b82f6',
           hh('div', null,
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Note title'),
-            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'e.g., "Cell biology — Sept 12 lecture"', { marginBottom: 14 }),
+            hh('label', { htmlFor: 'learning-lab-note-title', style: fieldLabelStyle }, 'Note title (required)'),
+            hh('input', { id: 'learning-lab-note-title', type: 'text', value: form.title, required: true, maxLength: 160, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-note-title-error' : undefined, placeholder: 'e.g., Cell biology — Sept 12 lecture', onChange: function(e) { setForm(Object.assign({}, form, { title: e.target.value })); if (formError) setFormError(''); }, style: Object.assign({}, fieldStyle, { marginBottom: formError ? 4 : 14 }) }),
+            hh('div', { id: 'learning-lab-note-title-error', role: 'alert', style: { minHeight: formError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: formError ? 10 : 0 } }, formError),
 
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '30% 70%', gap: 10, marginBottom: 12 } },
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🔑 Cue column'),
-                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, 'Questions, key terms, prompts'),
-                tkTextarea(form.cue, function(v) { setForm(Object.assign({}, form, { cue: v })); }, 'What is photosynthesis?\nKey term: chlorophyll\n...', 12, { fontFamily: 'Georgia, serif', fontSize: 11 })
+                hh('label', { htmlFor: 'learning-lab-note-cue', style: fieldLabelStyle }, '🔑 Cue column'),
+                hh('div', { id: 'learning-lab-note-cue-help', style: fieldHelpStyle }, 'Questions, key terms, prompts'),
+                hh('textarea', { id: 'learning-lab-note-cue', value: form.cue, rows: 12, 'aria-describedby': 'learning-lab-note-cue-help', placeholder: 'What is photosynthesis?\nKey term: chlorophyll\n...', onChange: function(e) { setForm(Object.assign({}, form, { cue: e.target.value })); }, style: Object.assign({}, fieldStyle, { resize: 'vertical', fontFamily: 'Georgia, serif', fontSize: 11 }) })
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '📝 Main notes'),
-                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, 'Your detailed notes'),
-                tkTextarea(form.main, function(v) { setForm(Object.assign({}, form, { main: v })); }, 'Plants use sunlight + CO2 + H2O to make glucose...', 12, { fontFamily: 'inherit', fontSize: 11 })
+                hh('label', { htmlFor: 'learning-lab-note-main', style: fieldLabelStyle }, '📝 Main notes'),
+                hh('div', { id: 'learning-lab-note-main-help', style: fieldHelpStyle }, 'Your detailed notes'),
+                hh('textarea', { id: 'learning-lab-note-main', value: form.main, rows: 12, 'aria-describedby': 'learning-lab-note-main-help', placeholder: 'Plants use sunlight + CO2 + H2O to make glucose...', onChange: function(e) { setForm(Object.assign({}, form, { main: e.target.value })); }, style: Object.assign({}, fieldStyle, { resize: 'vertical', fontSize: 11 }) })
               )
             ),
 
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🎓 Summary (2-3 sentences in your own words)'),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, 'The most important part of Cornell. Compress this lecture into 2-3 sentences.'),
-            tkTextarea(form.summary, function(v) { setForm(Object.assign({}, form, { summary: v })); }, 'In your own words...', 3)
+            hh('label', { htmlFor: 'learning-lab-note-summary', style: fieldLabelStyle }, '🎓 Summary (2-3 sentences in your own words)'),
+            hh('div', { id: 'learning-lab-note-summary-help', style: fieldHelpStyle }, 'The most important part of Cornell. Compress this lecture into 2-3 sentences.'),
+            hh('textarea', { id: 'learning-lab-note-summary', value: form.summary, rows: 3, 'aria-describedby': 'learning-lab-note-summary-help', placeholder: 'In your own words...', onChange: function(e) { setForm(Object.assign({}, form, { summary: e.target.value })); }, style: Object.assign({}, fieldStyle, { resize: 'vertical' }) })
           )
         ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setActiveNote(null); setForm({ title: '', cue: '', main: '', summary: '' }); setView('notebook'); }, 'ghost'),
-          tkBtn('💾 Save note', saveNote, 'primary')
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+          tkBtn('← Cancel', function() { setActiveNote(null); setForm({ title: '', cue: '', main: '', summary: '' }); setFormError(''); setView('notebook'); }, 'ghost', { minHeight: 44 }),
+          tkBtn('💾 Save note', saveNote, 'primary', { minHeight: 44 })
         )
       );
     }
@@ -7752,22 +7781,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }) : nbNotes;
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader('📚', activeNb, nbNotes.length + ' notes', '#3b82f6'),
-        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
-          tkBtn('← All notebooks', function() { setView('list'); setActiveNb(null); }, 'ghost'),
-          tkInput(search, setSearch, '🔎 Search notes', { flex: 1 }),
-          tkBtn('+ New note', function() { setForm({ title: '', cue: '', main: '', summary: '' }); setActiveNote(null); setView('edit'); }, 'primary')
+        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap', alignItems: 'flex-end' } },
+          tkBtn('← All notebooks', function() { setView('list'); setActiveNb(null); setSearch(''); }, 'ghost', { minHeight: 44 }),
+          hh('div', { style: { flex: '1 1 12rem' } },
+            hh('label', { htmlFor: 'learning-lab-notes-search', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#60a5fa', marginBottom: 4 } }, 'Search notes'),
+            hh('input', { id: 'learning-lab-notes-search', type: 'search', value: search, placeholder: 'Search note titles and content', onChange: function(e) { setSearch(e.target.value); }, style: Object.assign({}, fieldStyle, { width: '100%' }) })
+          ),
+          tkBtn('+ New note', function() { setForm({ title: '', cue: '', main: '', summary: '' }); setFormError(''); setActiveNote(null); setView('edit'); }, 'primary', { minHeight: 44 })
         ),
+        hh('div', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, filtered.length + ' note' + (filtered.length === 1 ? '' : 's') + (search ? ' match your search.' : ' in this notebook.')),
         filtered.length === 0
           ? tkEmptyState('📝', search ? 'No notes match your search.' : 'No notes in this notebook yet.', null, null)
-          : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 } },
               filtered.map(function(n) {
                 return hh('div', { key: 'n-' + n.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(59,130,246,0.30)', borderLeft: '3px solid #3b82f6' } },
-                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4, gap: 8, flexWrap: 'wrap' } },
                     hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, n.title),
                     hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
                       hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(n.createdAt)),
-                      hh('button', { onClick: function() { openNote(n); }, style: { background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 11, cursor: 'pointer' } }, '✏'),
-                      hh('button', { onClick: function() { removeNote(n.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+                      hh('button', { type: 'button', 'aria-label': 'Edit note: ' + n.title, onClick: function() { openNote(n); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 14, cursor: 'pointer' } }, '✏'),
+                      hh('button', { type: 'button', 'aria-label': 'Delete note: ' + n.title, onClick: function() { removeNote(n.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
                     )
                   ),
                   n.summary ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.55, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #60a5fa', marginTop: 4 } },
@@ -7785,15 +7818,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
         notebooks.map(function(nbName) {
           var count = notes.filter(function(n) { return n.notebook === nbName; }).length;
-          return hh('button', { key: 'nb-' + nbName,
-            onClick: function() { setActiveNb(nbName); setView('notebook'); },
-            style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
-          },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
-              hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#60a5fa' } }, '📚 ' + nbName),
-              nbName !== 'General' ? hh('span', { onClick: function(e) { e.stopPropagation(); removeNotebook(nbName); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕') : null
-            ),
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, count + ' note' + (count !== 1 ? 's' : ''))
+          var notebookContents = [
+            hh('div', { key: 'name', style: { fontSize: 14, fontWeight: 800, color: '#60a5fa' } }, '📚 ' + nbName),
+            hh('div', { key: 'count', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, count + ' note' + (count !== 1 ? 's' : ''))
+          ];
+          if (nbName === 'General') {
+            return hh('button', { key: 'nb-' + nbName,
+              onClick: function() { setActiveNb(nbName); setView('notebook'); },
+              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
+            },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } }, notebookContents[0]),
+              notebookContents[1]
+            );
+          }
+          return hh('div', { key: 'nb-' + nbName, style: { position: 'relative', minHeight: 80 } },
+            hh('button', { type: 'button', onClick: function() { setActiveNb(nbName); setView('notebook'); }, style: { display: 'block', width: '100%', minHeight: 80, height: '100%', textAlign: 'left', padding: '14px 58px 14px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' } }, notebookContents),
+            hh('button', { type: 'button', 'aria-label': 'Delete notebook: ' + nbName, onClick: function() { removeNotebook(nbName); }, style: { position: 'absolute', top: 8, right: 8, minWidth: 44, minHeight: 44, padding: 8, border: 'none', borderRadius: 8, background: 'rgba(2,6,23,0.65)', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14 } }, '✕')
           );
         }),
         hh('button', { onClick: addNotebook,
