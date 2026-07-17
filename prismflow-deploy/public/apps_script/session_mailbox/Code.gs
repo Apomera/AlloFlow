@@ -624,7 +624,7 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'status') return value === 'active';
   if (field === 'xp') return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 10000000;
   if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
-  if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
+  if (field === 'signalAt' || field === 'viewingAt' || field === 'lastSeen') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0); // Presence heartbeat (2026-07-16): lastSeen is a ms timestamp, validated like signalAt/viewingAt
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
   if (field === 'wsProgress') return validWsProgressValue(value);
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
@@ -636,7 +636,7 @@ function participantCanPatchSession(updates, uid) {
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
-    wsProgress: 1, wsProbeResult: 1
+    wsProgress: 1, wsProbeResult: 1, lastSeen: 1
   };
   var roots = [
     'quizState.allResponses.' + uid,
