@@ -12128,55 +12128,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var m = data.map || {};
 
     function update(key, val) {
-      setData({ map: Object.assign({}, m, (function() { var o = {}; o[key] = val; return o; })()) });
+      var patch = {}; patch[key] = val;
+      setData(Object.assign({}, data, { map: Object.assign({}, m, patch) }));
     }
 
     var DIMENSIONS = [
-      { id: 'roles',       label: 'Roles I play', icon: '👥', color: '#9333ea',
-        prompt: 'e.g., daughter, sister, student, soccer captain, big-sib in church youth group' },
-      { id: 'cultures',    label: 'My cultures + heritage', icon: '🌍', color: '#10b981',
-        prompt: 'e.g., Cape Verdean-American, Maine Yankee, second-gen, Catholic, queer Catholic' },
-      { id: 'values',      label: 'Values I hold', icon: '⭐', color: '#fbbf24',
-        prompt: 'What matters to me, even when it costs me something? e.g., loyalty, honesty, fairness, creativity, family' },
-      { id: 'communities', label: 'Communities I belong to', icon: '🤝', color: '#3b82f6',
-        prompt: 'Where I feel I belong. e.g., robotics team, church, Discord server, family, friend group' },
-      { id: 'strengths',   label: 'My strengths', icon: '💪', color: '#06b6d4',
-        prompt: 'What I do well + what people compliment me on. Internal AND external skills.' },
-      { id: 'growing',     label: 'Where I\'m growing', icon: '🌱', color: '#a855f7',
-        prompt: 'Skills, qualities, areas of self I\'m working on right now' },
-      { id: 'voices',      label: 'Voices that have shaped me', icon: '🗣', color: '#ec4899',
-        prompt: 'People (alive or gone), authors, artists who taught me how to think + see' },
-      { id: 'aspirations', label: 'Who I want to become', icon: '🌟', color: '#f97316',
-        prompt: 'The version of me I\'m moving toward. Specific is better than aspirational-vague.' }
+      { id: 'roles', label: 'Roles I play', icon: '👥', borderColor: '#9333ea', textColor: '#ddd6fe',
+        prompt: 'For example: child, sibling, student, teammate, club leader, or community member.' },
+      { id: 'cultures', label: 'My cultures and heritage', icon: '🌍', borderColor: '#10b981', textColor: '#a7f3d0',
+        prompt: 'Cultures, heritage, traditions, faiths, places, languages, or identities that are part of me.' },
+      { id: 'values', label: 'Values I hold', icon: '⭐', borderColor: '#fbbf24', textColor: '#fde68a',
+        prompt: 'What matters to me, even when it costs me something? For example: loyalty, honesty, fairness, creativity, or family.' },
+      { id: 'communities', label: 'Communities I belong to', icon: '🤝', borderColor: '#3b82f6', textColor: '#bfdbfe',
+        prompt: 'Where do I feel I belong? For example: a team, faith community, online group, family, or friend group.' },
+      { id: 'strengths', label: 'My strengths', icon: '💪', borderColor: '#06b6d4', textColor: '#a5f3fc',
+        prompt: 'What do I do well, and what do people appreciate about me? Include personal qualities and practical skills.' },
+      { id: 'growing', label: 'Where I am growing', icon: '🌱', borderColor: '#a855f7', textColor: '#ddd6fe',
+        prompt: 'Skills, qualities, or parts of myself I am working on right now.' },
+      { id: 'voices', label: 'Voices that have shaped me', icon: '🗣', borderColor: '#ec4899', textColor: '#fbcfe8',
+        prompt: 'People, authors, artists, or communities that have influenced how I think and see the world.' },
+      { id: 'aspirations', label: 'Who I want to become', icon: '🌟', borderColor: '#f97316', textColor: '#fed7aa',
+        prompt: 'Describe the version of me I am moving toward. Specific details can make this easier to picture.' }
     ];
+    var textareaStyle = { boxSizing: 'border-box', width: '100%', minHeight: 104, padding: '10px', borderRadius: 8, border: '1px solid rgba(226,232,240,0.55)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit', lineHeight: 1.5, resize: 'vertical' };
+    var printButtonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #ddd6fe', background: 'rgba(88,28,135,0.45)', color: '#f5f3ff', fontWeight: 800, cursor: 'pointer' };
 
-    function print() { try { window.print(); } catch (e) {} }
+    function print() {
+      try {
+        llAnnounce('Opening the browser print dialog for your identity map.');
+        window.print();
+      } catch (error) {
+        llAnnounce('The print dialog could not be opened in this browser.');
+      }
+    }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🪞', 'My Identity Map', 'A snapshot of who you are right now. For YOU first. Sharable with mentors, counselors, IEP team.', '#a855f7'),
+      tkSectionHeader('🪞', 'My Identity Map', 'A snapshot of who you are right now. For you first, and shareable only when you choose.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🪞 Identity ≠ a fixed thing. '),
-        'Erikson (1968) described adolescence as the identity-exploration stage. The work is articulating who you are NOW, while staying open to who you\'re becoming. There are no wrong answers.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-identity-intro-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(88,28,135,0.35)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-identity-intro-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🪞 '), 'Identity can change and grow'),
+        hh('p', { style: { margin: 0 } }, 'There are no wrong answers. Describe who you are now while staying open to who you are becoming. You control whether and with whom you share this map.')
       ),
 
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
-        tkBtn('🖨 Print map', print, 'secondary')
+        hh('button', { type: 'button', onClick: print, 'data-ll-focusable': true, style: printButtonStyle }, hh('span', { 'aria-hidden': 'true' }, '🖨 '), 'Print identity map')
       ),
 
-      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-        DIMENSIONS.map(function(d) {
-          return hh('div', { key: 'id-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + d.color } },
-            hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: d.color, marginBottom: 4 } }, d.icon + ' ' + d.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, d.prompt),
-            tkTextarea(m[d.id], function(v) { update(d.id, v); }, '', 3)
-          );
-        })
+      hh('section', { 'aria-labelledby': 'learning-lab-identity-dimensions-heading' },
+        hh('h3', { id: 'learning-lab-identity-dimensions-heading', style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 4px' } }, 'Explore eight parts of your identity'),
+        hh('p', { id: 'learning-lab-identity-save-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Each response is optional and saves automatically in this browser. Identity information can be personal, so use a device and account you trust.'),
+        hh('ul', { 'aria-label': 'Identity map dimensions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 } },
+          DIMENSIONS.map(function(d) {
+            var fieldId = 'learning-lab-identity-' + d.id;
+            var promptId = fieldId + '-prompt';
+            return hh('li', { key: 'id-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + d.borderColor } },
+              hh('h4', { style: { margin: '0 0 4px' } },
+                hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: d.textColor } }, hh('span', { 'aria-hidden': 'true' }, d.icon + ' '), d.label, ' (optional)')
+              ),
+              hh('p', { id: promptId, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, margin: '0 0 8px' } }, d.prompt),
+              hh('textarea', { id: fieldId, value: m[d.id] || '', rows: 4, maxLength: 4000, 'aria-describedby': promptId + ' learning-lab-identity-save-note', onChange: function(event) { update(d.id, event.target.value); }, onBlur: function() { llAnnounce(d.label + ' saved automatically.'); }, 'data-ll-focusable': true, style: textareaStyle })
+            );
+          })
+        )
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#a855f7' } }, '💡 Use it: '),
-        'Re-read at the start of each school year. Update when something has shifted. Especially powerful when you\'re struggling — identity questions ("who AM I?") get loud in those moments, and having your own answers written down is grounding.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-identity-use-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(88,28,135,0.30)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-identity-use-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '💡 '), 'Ways to use your map'),
+        hh('p', { style: { margin: 0 } }, 'Revisit it when something shifts or at the start of a school year. You may choose to share selected parts with a trusted mentor, counselor, family member, or support team.')
       )
     );
   }
