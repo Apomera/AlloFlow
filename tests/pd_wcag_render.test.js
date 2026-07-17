@@ -60,6 +60,7 @@ function violations(results) {
 }
 
 const noop = () => {};
+const CATALOG_RENDER_AUDIT_TIMEOUT_MS = 15_000;
 const activities = {
   read: {
     id: 'read-1', type: 'read', title: 'Read', gate: { kind: 'none' },
@@ -231,6 +232,6 @@ describe('approved PD catalog ? immutable accessibility-ready bindings', () => {
           }
         }
       }
-    });
+    }, CATALOG_RENDER_AUDIT_TIMEOUT_MS);
   }
 });

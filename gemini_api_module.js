@@ -439,16 +439,29 @@ const createGeminiAPI = (deps) => {
       };
       // ── Canvas search: use WebSearchProvider instead of google_search tool (which 401s) ──
       let _canvasSearchMetadata = null;
-      if (useSearch && _isCanvasEnv && window.WebSearchProvider) {
+      if (useSearch && _isCanvasEnv) {
+          if (!window.WebSearchProvider || typeof window.WebSearchProvider.search !== 'function') {
+              const unavailable = new Error('Canvas web search provider is not loaded.');
+              unavailable.code = 'allo/search-unavailable';
+              throw unavailable;
+          }
           try {
               const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10, searchQuery);
-              _canvasSearchMetadata = groundingMetadata;
-              if (contextPrompt) {
-                  payload.contents[0].parts[0].text = contextPrompt + prompt;
+              const groundedChunks = Array.isArray(groundingMetadata?.groundingChunks)
+                  ? groundingMetadata.groundingChunks
+                  : [];
+              if (!contextPrompt || groundedChunks.length === 0) {
+                  const unavailable = new Error('Canvas web search returned no attributable sources.');
+                  unavailable.code = 'allo/search-unavailable';
+                  throw unavailable;
               }
-              console.log('[callGemini] Canvas search via WebSearchProvider:', _canvasSearchMetadata ? 'results found' : 'no results');
+              _canvasSearchMetadata = groundingMetadata;
+              payload.contents[0].parts[0].text = contextPrompt + prompt;
+              console.log('[callGemini] Canvas search via WebSearchProvider: sourced results found');
           } catch (searchErr) {
-              console.warn('[callGemini] Canvas WebSearch failed, proceeding without grounding:', searchErr.message);
+              console.warn('[callGemini] Canvas WebSearch failed:', searchErr.message);
+              if (!searchErr.code) searchErr.code = 'allo/search-unavailable';
+              throw searchErr;
           }
       } else if (useSearch) {
           payload.tools = [{ google_search: {} }];

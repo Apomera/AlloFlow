@@ -7985,6 +7985,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // a pre-filled Google Form fallback). The Test Prep Hub renders a per-item "Suggest a
     // correction" button that calls window.AlloModules.ItemCorrection.openFor(...) (guarded).
     loadModule('ItemCorrection', 'https://alloflow-cdn.pages.dev/item_correction_module.js?v=1');
+    // Canvas compatibility search transport. The July 2026 Firebase hardening
+    // moved owned deployments to authenticated POST requests, but Gemini Canvas
+    // cannot mint that deployment's Auth/App Check tokens. Keep the previously
+    // working maintainer proxy available only inside Canvas; AIBackend enforces
+    // the Canvas-only GET contract, caps every query, and honors the emergency
+    // kill switch below. Owned/self-hosted deployments continue to use the
+    // authenticated Function path.
+    if (_isCanvasEnv && !window.ALLOFLOW_DISABLE_CANVAS_SEARCH_PROXY && !window.ALLOFLOW_CANVAS_SEARCH_PROXY) {
+      window.ALLOFLOW_CANVAS_SEARCH_PROXY = 'https://prismflow-911fe.web.app/api/searchProxy';
+    }
     (function() {
       const url = pluginCdnBase + 'ai_backend_module.js?v=' + pluginCdnVersion;
       const s = document.createElement('script');
@@ -38057,7 +38067,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               rosterKey={rosterKey}
               setRosterKey={setRosterKey}
               t={t}
-              onClose={() => setActiveView('content')}
+              onClose={handleCloseDashboard}
               onShareWithTeacher={() => {
                   const report = {
                       type: 'parent_progress_share',

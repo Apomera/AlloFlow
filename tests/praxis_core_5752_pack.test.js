@@ -49,7 +49,7 @@ describe('Praxis Core Combined 5752 diagnostic bank', () => {
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
       expect(item.references.some((url) => /57(13|23|33)\.pdf$/.test(url))).toBe(true);
-      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | review-required']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
+      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
     }

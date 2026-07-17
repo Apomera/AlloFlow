@@ -597,7 +597,10 @@ describe('mirrored data contract (reading_library/)', () => {
     });
   });
 
-  it('public mirror is byte-for-byte in sync with every runtime data file', { timeout: 60000 }, () => {
+  // This reads both copies of the full runtime corpus (currently ~280 MB
+  // total). Keep the byte-for-byte assertion, but allow for cold OneDrive and
+  // full-suite worker I/O contention on Windows.
+  it('public mirror is byte-for-byte in sync with every runtime data file', { timeout: 180000 }, () => {
     const pub = path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library');
     const mismatches = [];
     ['index.json', 'index_cards.json', 'open_catalog.json'].concat(allBooks.map((entry) => entry.file)).forEach((name) => {

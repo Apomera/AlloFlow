@@ -51,7 +51,7 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
       // Two honest tiers: 200 source-reviewed questions, then 300 guided-review
       // activities that MUST NOT claim qa-passed until experts validate them.
       if (index < 200) expect(item).toMatchObject({ reviewStatus: 'source-reviewed', qaStatus: 'qa-passed' });
-      else expect(item).toMatchObject({ reviewStatus: 'assistant-reviewed-guided-practice-only', qaStatus: 'review-required' });
+      else expect(item).toMatchObject({ reviewStatus: 'assistant-reviewed-guided-practice-only', qaStatus: 'structural-qa-passed-guided-practice-only' });
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
     });
@@ -62,7 +62,7 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
     expect(pack.assistantReview).toMatchObject({ sourceItems: 200, guidedReviewItems: 300, verdict: 'reviewed-target-not-met' });
     // No guided-tier item may launder into the reviewed tier.
     expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
-    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
+    expect(pack.items.filter((item) => item.qaStatus === 'structural-qa-passed-guided-practice-only').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
   });
 
   it('builds category and confidence diagnostics without inventing a scaled score or pass decision', () => {

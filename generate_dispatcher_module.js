@@ -2794,9 +2794,11 @@ ${_itemsBlock}`;
                 const deepResult = await performDeepVerification(textToProcess);
                 verificationContext = deepResult.text;
                 collectedSources = (deepResult.sources || []).map(s => ({ uri: s.uri, title: s.title }));
-                if (!verificationContext || verificationContext.length < 10) {
-                    verificationContext = "Verification attempted but no specific data returned.";
+                if (!verificationContext || verificationContext.length < 10 || collectedSources.length === 0) {
+                    verificationContext = "";
+                    collectedSources = [];
                     isSearchActive = false;
+                    addToast(t('toasts.verification_unavailable'), "info");
                 }
             } catch (verifyErr) {
                 warnLog("Analysis Verification Step Failed", verifyErr);
@@ -2929,6 +2931,15 @@ ${_itemsBlock}`;
              grammar: Array.isArray(analysisData.grammar) ? analysisData.grammar : [],
              translatedText: analysisData.translatedText
         };
+        if (checkAccuracyWithSearch && !isSearchActive) {
+            analysisData.accuracy = {
+                ...analysisData.accuracy,
+                rating: "Not web-verified",
+                reason: "Web verification did not return attributable sources. This is an AI-generated estimate, not a Google Search-verified accuracy result.",
+                discrepancies: [],
+                verifiedFacts: []
+            };
+        }
         if (typeof analysisData.readingLevel === 'string') {
             analysisData.readingLevel = { range: analysisData.readingLevel, explanation: "AI did not provide detailed explanation." };
         }

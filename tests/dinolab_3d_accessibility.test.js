@@ -4,6 +4,11 @@ import { resolve } from 'node:path';
 import axe from 'axe-core';
 import { setupDinoLab, renderTab } from './helpers/dino_lab_harness.js';
 
+// Full WCAG axe scans over the larger DinoLab panels are CPU-heavy. They pass
+// in well under this budget in isolation, but need headroom under full-suite
+// parallel load so a slow worker does not turn a clean audit into a timeout.
+const AXE_AUDIT_TIMEOUT_MS = 60000;
+
 describe('Dino Lab 3D Field Station accessibility contract', () => {
   it('supports focused keyboard rotation with live status and cleanup', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dinolab.js'), 'utf8');
@@ -67,7 +72,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results.violations).toEqual([]);
-  }, 20000);
+  }, AXE_AUDIT_TIMEOUT_MS);
 
   it('renders the Dig Site without automated structural WCAG A/AA axe violations', async () => {
     setupDinoLab();
@@ -78,5 +83,5 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results.violations).toEqual([]);
-  }, 20000);
+  }, AXE_AUDIT_TIMEOUT_MS);
 });

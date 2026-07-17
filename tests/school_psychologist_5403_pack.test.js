@@ -30,7 +30,7 @@ describe('Praxis School Psychologist 5403 diagnostic bank', () => {
     // Honest tiers: exactly 200 expert/source-reviewed items; every other item
     // must carry the candid guided-review status until experts validate it.
     expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);
-    expect(pack.items.filter((item) => item.qaStatus === 'review-required').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
+    expect(pack.items.filter((item) => item.qaStatus === 'structural-qa-passed-guided-practice-only').every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({
       'permeating-practices': 0.32,
       'student-level-services': 0.23,
@@ -60,7 +60,7 @@ describe('Praxis School Psychologist 5403 diagnostic bank', () => {
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((entry) => entry.length >= 100)).toBe(true);
       expect(item.references).toContain('https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf');
-      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | review-required']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
+      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.skillIds).toHaveLength(1);
       expect(item.chapterIds).toHaveLength(1);
     }

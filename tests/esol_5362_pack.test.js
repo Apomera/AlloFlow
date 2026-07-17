@@ -29,7 +29,7 @@ describe('Praxis ESOL 5362 diagnostic bank', () => {
     expect(new Set(pack.items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim())).size).toBe(500);
     for (const item of pack.items) {
       expect(item.type).toBe('single-choice');
-      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | review-required']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
+      expect(['source-reviewed | qa-passed', 'assistant-reviewed-guided-practice-only | structural-qa-passed-guided-practice-only']).toContain(item.reviewStatus + ' | ' + item.qaStatus);
       expect(item.choices).toHaveLength(4);
       expect(new Set(item.choices).size).toBe(4);
       expect(item.rationale.length).toBeGreaterThanOrEqual(120);
