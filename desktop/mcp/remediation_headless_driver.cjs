@@ -392,7 +392,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, pdfLibCdn }) => {
+      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn }) => {
         const pipeline = window.__mcpPipeline;
         const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
         progress('audit', 'opening accessibility audit');
@@ -403,8 +403,86 @@ function createDriver(options) {
           targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses,
           onProgress: (step, msg) => progress('fix', (typeof step === 'number' ? 'step ' + step + ': ' : '') + (msg || '')),
         });
+        // ── AUTO-CONTINUE (#6-full payoff): the SAME improvement loop the app runs, merging every
+        // accepted round through the ONE canonical reducer (finalizeRemediationRound) — so the
+        // connector and the app can never disagree about what a round means. Branch fidelity
+        // mirrors the host: axe violations → deterministic autoFixAxeViolations; AI-flagged
+        // issues (+ Equal-Access-confirmed lines, finding 7) → aiFixChunked; nothing fixable but
+        // verification incomplete → ONE audit-only evidence refresh. Loop POLICY mirrors the host
+        // too: wait-not-stop calm gate per round, noise-aware revert on a REAL deterministic
+        // regression (the reducer's _detScore), two-stall abandon.
+        let cur = result;
+        let roundsRun = 0;
+        const roundLog = [];
+        if (wantAutoContinue && cur && typeof cur.accessibleHtml === 'string') {
+          const isComplete = (r) => r.verificationState === 'complete' && r.afterScoreVerified === true && !r.requiresManualReview;
+          let curDet = (typeof cur._detScore === 'number') ? cur._detScore
+            : ((typeof cur.axeScore === 'number') ? cur.axeScore : null);
+          let stagnant = 0;
+          for (let round = 0; round < autoContinueRounds; round++) {
+            if ((cur.afterScore || 0) >= targetScore && isComplete(cur)) break;
+            const _vio = (cur.axeAudit && cur.axeAudit.totalViolations) || 0;
+            const _aiIssues = (cur.verificationAudit && Array.isArray(cur.verificationAudit.issues)) ? cur.verificationAudit.issues : [];
+            const _eaFails = (cur.secondEngineAudit && (cur.secondEngineAudit.failViolations
+              || (Array.isArray(cur.secondEngineAudit.fails) ? cur.secondEngineAudit.fails.length : 0))) || 0;
+            const auditOnly = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !isComplete(cur);
+            try { await pipeline.waitForGeminiCalm({ maxWaitMs: 120000 }); } catch (_) {}
+            progress('auto-continue', 'round ' + (round + 1) + '/' + autoContinueRounds + ' — ' +
+              (auditOnly ? 'verification refresh (no rewrite)' : (_vio > 0 ? _vio + ' axe violation(s)' : _aiIssues.length + ' AI-flagged issue(s)')) +
+              ', score ' + (cur.afterScore || 0) + '/' + targetScore);
+            roundsRun = round + 1;
+            let roundOut;
+            try {
+              if (_vio > 0) {
+                roundOut = await pipeline.autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, fixPasses);
+              } else if (auditOnly) {
+                let _refreshAxe = null;
+                try { _refreshAxe = await pipeline.runAxeAudit(cur.accessibleHtml); } catch (_) {}
+                roundOut = { html: cur.accessibleHtml, axe: _refreshAxe, passes: 0, _auditOnly: true };
+              } else {
+                const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
+                  .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
+                const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
+                const _fixedHtml = await pipeline.aiFixChunked(cur.accessibleHtml, _instr, 'mcp-auto-continue-round-' + (round + 1));
+                let _axe = null;
+                try { _axe = await pipeline.runAxeAudit(_fixedHtml); } catch (_) {}
+                roundOut = { html: _fixedHtml, axe: _axe, passes: 1 };
+              }
+            } catch (e) { roundLog.push('round ' + (round + 1) + ' failed: ' + ((e && e.message) || e)); break; }
+            if (!roundOut || typeof roundOut.html !== 'string' || !roundOut.html) { roundLog.push('round ' + (round + 1) + ': no output — stopping'); break; }
+            const reVerify = await pipeline.auditOutputAccessibility(roundOut.html).catch(() => null);
+            if (!reVerify) { roundLog.push('round ' + (round + 1) + ': re-verification unavailable — keeping prior state'); break; }
+            let _ea = null;
+            try { _ea = await pipeline.runEqualAccessAudit(roundOut.html); } catch (_) {}
+            let _roundIR = cur.issueResolution;
+            try { const _r = pipeline.recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
+            let merged;
+            try {
+              merged = await pipeline.finalizeRemediationRound(cur, {
+                html: roundOut.html, aiAudit: reVerify, axeAudit: roundOut.axe, eaAudit: _ea,
+                auditOnly: !!roundOut._auditOnly, sourceText: cur.sourceText, issueResolution: _roundIR,
+                passes: roundOut.passes || 0,
+              });
+            } catch (e) { roundLog.push('round ' + (round + 1) + ' merge failed: ' + ((e && e.message) || e)); break; }
+            const _det = merged._detScore;
+            const _detRegressed = (_det !== null) && (typeof curDet === 'number') && _det < (curDet - 1);
+            const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
+            if (!roundOut._auditOnly && (_detRegressed || _moreIssues)) {
+              roundLog.push('round ' + (round + 1) + ' REVERTED (det ' + _det + ' vs ' + curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ')');
+              stagnant++;
+              if (stagnant >= 2) break;
+              continue;
+            }
+            if ((merged.afterScore || 0) <= (cur.afterScore || 0)) stagnant++; else stagnant = 0;
+            roundLog.push('round ' + (round + 1) + ' accepted: score ' + (cur.afterScore || 0) + ' → ' + (merged.afterScore || 0) + ' (det ' + _det + ', state ' + merged.verificationState + ')');
+            cur = merged;
+            curDet = _det;
+            if (roundOut._auditOnly) break; // evidence refresh is deliberately single-shot
+            if (stagnant >= 2) break;
+          }
+        }
         const verdict = (() => {
-          try { return pipeline.distributionVerdict(result, { targetScore }); } catch (_) { return null; }
+          try { return pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { return null; }
         })();
         let taggedPdfB64 = null, taggedPdfError = null;
         if (wantTaggedPdf) {
@@ -420,9 +498,9 @@ function createDriver(options) {
             const bin = atob(b64);
             const bytes = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            const tagged = await pipeline.createTaggedPdf(bytes, result, {
+            const tagged = await pipeline.createTaggedPdf(bytes, cur, {
               title: fileName.replace(/\.pdf$/i, ''),
-              lang: (result && result.documentLanguage) || (audit && audit.documentLanguage) || 'en',
+              lang: (cur && cur.documentLanguage) || (audit && audit.documentLanguage) || 'en',
               subject: 'Remediated for accessibility by AlloFlow',
             });
             const outBytes = tagged && (tagged.bytes || tagged);
@@ -437,17 +515,18 @@ function createDriver(options) {
         const stats = (() => { try { return pipeline.getPipelineStats(); } catch (_) { return null; } })();
         return {
           beforeScore: audit && typeof audit.score === 'number' ? audit.score : null,
-          afterScore: result ? (typeof result.afterScore === 'number' ? result.afterScore : null) : null,
+          afterScore: cur ? (typeof cur.afterScore === 'number' ? cur.afterScore : null) : null,
           verdict,
-          aiVerificationIncomplete: !!(result && result._aiVerificationIncomplete),
-          scoreSource: (result && result._scoreSource) || null,
-          estimatedMinimumScore: (result && result._estimatedMinimumScore) !== undefined ? result._estimatedMinimumScore : null,
-          integrityCoverage: (result && result.integrityCoverage) !== undefined ? result.integrityCoverage : null,
-          integrityWarning: (result && result.integrityWarning) || null,
-          fidelityNotes: ((result && result.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
-          verificationState: (result && result.verificationState) || null,
-          runId: (result && result._runId) || null,
-          accessibleHtml: (result && result.accessibleHtml) || null,
+          aiVerificationIncomplete: !!(cur && cur._aiVerificationIncomplete),
+          scoreSource: (cur && cur._scoreSource) || null,
+          estimatedMinimumScore: (cur && cur._estimatedMinimumScore) !== undefined ? cur._estimatedMinimumScore : null,
+          integrityCoverage: (cur && cur.integrityCoverage) !== undefined ? cur.integrityCoverage : null,
+          integrityWarning: (cur && cur.integrityWarning) || null,
+          fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
+          verificationState: (cur && cur.verificationState) || null,
+          runId: (cur && cur._runId) || null,
+          autoContinue: wantAutoContinue ? { roundsRun, log: roundLog } : undefined,
+          accessibleHtml: (cur && cur.accessibleHtml) || null,
           taggedPdfB64, taggedPdfError,
           stats: stats ? { apiCalls: stats.apiCalls, visionCalls: stats.visionCalls, retries: stats.retries, recoveredRetries: stats.recoveredRetries, authThrottles: stats.authThrottles, terminalFailures: stats.terminalFailures } : null,
         };
@@ -459,6 +538,8 @@ function createDriver(options) {
         // Tagged-PDF export is a PDF-in → PDF-out artifact; for DOCX/PPTX inputs the
         // accessible HTML is the deliverable (matches the app).
         wantTaggedPdf: opts.taggedPdf !== false && _isPdfInput,
+        wantAutoContinue: !!opts.autoContinue,
+        autoContinueRounds: Math.max(1, Math.min(5, Number(opts.autoContinueRounds) || 3)),
         pdfLibCdn: PDFLIB_CDN,
       })
     );

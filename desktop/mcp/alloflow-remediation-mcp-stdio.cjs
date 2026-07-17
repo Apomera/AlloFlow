@@ -232,7 +232,9 @@ function validateRemediateOptions(args) {
   const fixPasses = optionalBoundedNumber(args, 'fix_passes', 0, 5);
   const polishPasses = optionalBoundedNumber(args, 'polish_passes', 0, 3);
   if (args.tagged_pdf !== undefined && typeof args.tagged_pdf !== 'boolean') throw invalidParams('arguments.tagged_pdf must be a boolean');
-  return { targetScore, fixPasses, polishPasses, taggedPdf: args.tagged_pdf !== false, ocrLanguage: optionalOcrLanguage(args) };
+  if (args.auto_continue !== undefined && typeof args.auto_continue !== 'boolean') throw invalidParams('arguments.auto_continue must be a boolean');
+  const autoContinueRounds = optionalBoundedNumber(args, 'auto_continue_rounds', 1, 5);
+  return { targetScore, fixPasses, polishPasses, taggedPdf: args.tagged_pdf !== false, autoContinue: args.auto_continue === true, autoContinueRounds, ocrLanguage: optionalOcrLanguage(args) };
 }
 
 function resolveOutputDir(args, filePath) {
@@ -268,6 +270,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog) {
     integrityWarning: out.integrityWarning,
     fidelityNotes: out.fidelityNotes,
     verificationState: out.verificationState,
+    autoContinue: out.autoContinue,
     taggedPdfError: out.taggedPdfError || undefined,
     runId: out.runId,
     stats: out.stats,
@@ -329,6 +332,8 @@ const TOOLS = [
       fix_passes: { type: 'number', minimum: 0, maximum: 5, description: 'Max auto-fix passes (default 2)' },
       polish_passes: { type: 'number', minimum: 0, maximum: 3, description: 'Extra polish passes (default 0)' },
       tagged_pdf: { type: 'boolean', description: 'Also build the tagged PDF export (default true)' },
+      auto_continue: { type: 'boolean', description: "Run the app's auto-continue improvement loop after the primary pass: extra fix rounds merged through the same canonical reducer the app uses, until the target score + complete verification or the rounds are spent (default false; adds time and Gemini quota)" },
+      auto_continue_rounds: { type: 'number', minimum: 1, maximum: 5, description: 'Max auto-continue rounds (default 3)' },
       ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
     };
     const JOB_ID_SCHEMA = { type: 'object', required: ['job_id'], properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
@@ -466,7 +471,7 @@ const TOOL_HANDLERS = {
   },
 
   async pdf_remediate(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'ocr_language'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -475,7 +480,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_start(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'ocr_language'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -486,7 +491,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_batch_remediate_start(args) {
-    assertAllowedKeys(args, ['dir_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['dir_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'ocr_language'], 'arguments');
     if (typeof args.dir_path !== 'string' || !args.dir_path.trim()) throw invalidParams('arguments.dir_path is required');
     const dir = path.resolve(args.dir_path);
     let entries;

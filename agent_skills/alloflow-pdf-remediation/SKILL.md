@@ -40,7 +40,10 @@ about what it claims, and you must be too.
 3. `pdf_remediate_start` with the file path. Defaults are right for most
    documents (target 95, 2 fix passes, tagged PDF on). Set `ocr_language`
    (Tesseract code, e.g. `spa`) only when the user says the scan is in a
-   specific non-English language.
+   specific non-English language. Add `auto_continue: true` when the user
+   wants the strongest result and accepts extra time/quota — it runs the
+   app's own improvement loop (same canonical round merge) after the primary
+   pass; report `autoContinue.roundsRun` and any reverted rounds from its log.
 4. Poll `remediation_job_status`. Report meaningful transitions ("OCR running",
    "throttled — waiting, not stuck"), not every poll.
 5. `remediation_job_result` → report:

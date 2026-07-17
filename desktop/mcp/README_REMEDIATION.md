@@ -108,7 +108,17 @@ The Canvas app never needs this — only this connector does.
 
 Remediate options (same on all three remediate tools): `output_dir`, `target_score` (default
 95), `fix_passes` (default 2), `polish_passes` (default 0), `tagged_pdf` (default true),
-`ocr_language` (Tesseract code for scanned docs, e.g. `spa`; omit for auto-detect).
+`auto_continue` (default false), `auto_continue_rounds` (default 3, max 5), `ocr_language`
+(Tesseract code for scanned docs, e.g. `spa`; omit for auto-detect).
+
+**Auto-continue parity (#6-full):** with `auto_continue: true` the connector runs the SAME
+improvement loop the app runs after the primary pass — axe violations go to the deterministic
+fixer, AI-flagged + Equal-Access-confirmed issues go to the chunked AI fixer, a clean-but-
+unverified doc gets one evidence refresh — and every accepted round is merged through
+`finalizeRemediationRound`, the one canonical reducer the app itself uses. Same revert rule
+(only a REAL deterministic regression reverts a round), same stall limit. The result carries
+`autoContinue: { roundsRun, log }`. Costs extra time and Gemini quota; the verdict and the
+tagged PDF are built from the final round's state.
 
 **Office inputs:** the remediate/audit/batch tools also accept `.docx` and `.pptx` — the
 pipeline routes them through its deterministic Office branches (mammoth/pptx extraction, no
