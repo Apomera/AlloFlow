@@ -8885,6 +8885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var fs = R.useState({ bedtime: '22:30', waketime: '06:30', quality: 4, factors: [] });
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var timeError = es[0]; var setTimeError = es[1];
 
     var FACTORS = [
       { id: 'phone', label: 'Phone in bed', icon: '📱', good: false },
@@ -8898,140 +8899,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     ];
 
     function toggleFactor(id) {
-      var f = form.factors.slice();
-      var i = f.indexOf(id);
-      if (i >= 0) f.splice(i, 1);
-      else f.push(id);
-      setForm(Object.assign({}, form, { factors: f }));
+      var factors = form.factors.slice();
+      var index = factors.indexOf(id);
+      if (index >= 0) factors.splice(index, 1);
+      else factors.push(id);
+      setForm(Object.assign({}, form, { factors: factors }));
     }
 
-    function totalHours() {
-      function toMin(t) { var p = t.split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
+    function totalHoursNumber() {
+      if (!form.bedtime || !form.waketime) return NaN;
+      function toMin(time) { var parts = time.split(':'); return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10); }
       var bed = toMin(form.bedtime); var wake = toMin(form.waketime);
       var diff = wake - bed;
       if (diff < 0) diff += 24 * 60;
-      return (diff / 60).toFixed(1);
+      return diff / 60;
+    }
+    function totalHours() {
+      var hours = totalHoursNumber();
+      return Number.isFinite(hours) ? hours.toFixed(1) : '—';
     }
 
     function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO(), hours: parseFloat(totalHours()) }, form);
-      setData({ entries: [entry].concat(data.entries || []) });
+      var hours = totalHoursNumber();
+      if (!Number.isFinite(hours) || hours <= 0) {
+        setTimeError(!form.bedtime || !form.waketime ? 'Bedtime and wake time are required.' : 'Bedtime and wake time must describe a sleep period longer than zero hours.');
+        setTimeout(function() { var field = document.getElementById(!form.bedtime ? 'learning-lab-sleep-bedtime' : 'learning-lab-sleep-waketime'); if (field) field.focus(); }, 0);
+        return;
+      }
+      var entry = Object.assign({ id: tkId(), date: todayISO(), hours: parseFloat(hours.toFixed(1)) }, form);
+      setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
+      setTimeError('');
+      llAnnounce('Sleep log saved. ' + entry.hours + ' hours, quality ' + entry.quality + ' out of 5.');
     }
-    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+    async function remove(id) {
+      var entry = (data.entries || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (entry ? ' the sleep log from ' + entry.date : ' this sleep log') + '.', {
+        title: 'Delete this sleep log?', confirmText: 'Delete log'
+      }))) return;
+      setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Sleep log deleted.');
+    }
 
     var entries = data.entries || [];
     var today = todayISO();
-    var todayEntry = entries.filter(function(e) { return e.date === today; })[0];
-
+    var todayEntry = entries.filter(function(entry) { return entry.date === today; })[0];
     var last7 = entries.slice(0, 7);
-    var avgHours = last7.length > 0 ? (last7.reduce(function(s, e) { return s + (e.hours || 0); }, 0) / last7.length).toFixed(1) : '—';
-    var avgQuality = last7.length > 0 ? (last7.reduce(function(s, e) { return s + (e.quality || 0); }, 0) / last7.length).toFixed(1) : '—';
+    var avgHours = last7.length > 0 ? (last7.reduce(function(sum, entry) { return sum + (entry.hours || 0); }, 0) / last7.length).toFixed(1) : '—';
+    var avgQuality = last7.length > 0 ? (last7.reduce(function(sum, entry) { return sum + (entry.quality || 0); }, 0) / last7.length).toFixed(1) : '—';
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
+    var inputStyle = { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: '#60a5fa', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 };
+
+    var chartDays = [];
+    for (var dayOffset = 6; dayOffset >= 0; dayOffset--) {
+      var chartDate = new Date(); chartDate.setDate(chartDate.getDate() - dayOffset);
+      var chartIso = chartDate.toISOString().slice(0, 10);
+      var chartEntry = entries.filter(function(item) { return item.date === chartIso; })[0];
+      chartDays.push({ date: chartIso, label: chartDate.toLocaleDateString('en-US', { weekday: 'short' }), hours: chartEntry ? (chartEntry.hours || 0) : 0 });
+    }
+    var chartSummary = chartDays.map(function(day) { return day.label + ' ' + (day.hours > 0 ? day.hours + ' hours' : 'no log'); }).join(', ');
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('😴', 'Sleep Log', 'Daily log of bedtime, waketime, quality, factors. Pattern over time = personal insight.', '#3b82f6'),
+      tkSectionHeader('😴', 'Sleep Log', 'Daily log of bedtime, wake time, quality, and factors. Patterns over time can support personal insight.', '#3b82f6'),
 
-      // Stats
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+      hh('section', { 'aria-label': 'Sleep summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
         [
-          { label: 'Last 7d avg', value: avgHours + 'h', color: '#3b82f6', icon: '⏰' },
-          { label: 'Avg quality', value: avgQuality + '/5', color: '#a855f7', icon: '⭐' },
+          { label: 'Last 7 days average', value: avgHours + 'h', color: '#3b82f6', icon: '⏰' },
+          { label: 'Average quality', value: avgQuality + '/5', color: '#a855f7', icon: '⭐' },
           { label: 'Total logs', value: entries.length, color: '#10b981', icon: '📔' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'ss-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
+        ].map(function(stat, index) {
+          return hh('div', { key: 'ss-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value),
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label)
           );
         })
       ),
 
-      todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, color: '#22c55e', fontWeight: 700 } }, '✓ Today logged: ' + todayEntry.hours + 'h sleep · quality ' + todayEntry.quality + '/5')
+      todayEntry ? hh('div', { role: 'status', style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
+        hh('div', { style: { fontSize: 11, color: '#22c55e', fontWeight: 700 } }, '✓ Today logged: ' + todayEntry.hours + ' hours sleep · quality ' + todayEntry.quality + ' out of 5')
       ) : tkCard('#3b82f6',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '😴 Log last night\'s sleep'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-sleep-form-heading' },
+          hh('h3', { id: 'learning-lab-sleep-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', margin: '0 0 10px' } }, '😴 Log last night\'s sleep'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 4 } },
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Bedtime'),
-              hh('input', { type: 'time', value: form.bedtime,
-                onChange: function(e) { setForm(Object.assign({}, form, { bedtime: e.target.value })); },
-                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#60a5fa', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
-              })
+              hh('label', { htmlFor: 'learning-lab-sleep-bedtime', style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Bedtime (required)'),
+              hh('input', { id: 'learning-lab-sleep-bedtime', type: 'time', value: form.bedtime, required: true, 'aria-invalid': timeError ? 'true' : undefined, 'aria-describedby': timeError ? 'learning-lab-sleep-time-error' : undefined, onChange: function(event) { setForm(Object.assign({}, form, { bedtime: event.target.value })); if (timeError) setTimeError(''); }, 'data-ll-focusable': true, style: inputStyle })
             ),
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Waketime'),
-              hh('input', { type: 'time', value: form.waketime,
-                onChange: function(e) { setForm(Object.assign({}, form, { waketime: e.target.value })); },
-                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#60a5fa', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 }
+              hh('label', { htmlFor: 'learning-lab-sleep-waketime', style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Wake time (required)'),
+              hh('input', { id: 'learning-lab-sleep-waketime', type: 'time', value: form.waketime, required: true, 'aria-invalid': timeError ? 'true' : undefined, 'aria-describedby': timeError ? 'learning-lab-sleep-time-error' : undefined, onChange: function(event) { setForm(Object.assign({}, form, { waketime: event.target.value })); if (timeError) setTimeError(''); }, 'data-ll-focusable': true, style: inputStyle })
+            )
+          ),
+          hh('div', { id: 'learning-lab-sleep-time-error', role: 'alert', style: { minHeight: timeError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, margin: timeError ? '4px 0 8px' : 0 } }, timeError),
+          hh('div', { role: 'status', 'aria-live': 'polite', style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.40)', textAlign: 'center', marginBottom: 14 } },
+            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Calculated total:'),
+            hh('strong', { style: { fontSize: 20, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, totalHours() + ' hours')
+          ),
+          hh('div', { style: { marginBottom: 12 } },
+            hh('label', { htmlFor: 'learning-lab-sleep-quality', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 4 } }, 'Sleep quality: ', hh('strong', { style: { fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.quality + '/5')),
+            hh('input', { id: 'learning-lab-sleep-quality', type: 'range', min: 1, max: 5, step: 1, value: form.quality, 'aria-valuetext': form.quality + ' out of 5', onChange: function(event) { setForm(Object.assign({}, form, { quality: parseInt(event.target.value, 10) })); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, accentColor: '#3b82f6' } })
+          ),
+          hh('div', { style: { marginBottom: 12 } },
+            hh('div', { id: 'learning-lab-sleep-factors-label', style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 6 } }, 'Sleep factors (select all that apply)'),
+            hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-sleep-factors-label', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+              FACTORS.map(function(factor) {
+                var on = form.factors.indexOf(factor.id) >= 0;
+                var color = factor.good ? '#10b981' : '#ef4444';
+                return hh('button', { key: 'fa-' + factor.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function() { toggleFactor(factor.id); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: on ? color + '20' : 'rgba(15,23,42,0.5)', color: on ? color : '#94a3b8', border: '1px solid ' + (on ? color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, factor.icon + ' '), factor.label);
               })
             )
           ),
-          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.40)', textAlign: 'center', marginBottom: 14 } },
-            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Total:'),
-            hh('strong', { style: { fontSize: 20, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, totalHours() + 'h')
-          ),
-          hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 4 } }, 'Quality: ', hh('strong', { style: { fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.quality + '/5')),
-            hh('input', { type: 'range', min: 1, max: 5, step: 1, value: form.quality,
-              onChange: function(e) { setForm(Object.assign({}, form, { quality: parseInt(e.target.value, 10) })); },
-              style: { width: '100%', accentColor: '#3b82f6' }
-            })
-          ),
-          hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 6 } }, 'Sleep factors (tap all that apply)'),
-            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-              FACTORS.map(function(f) {
-                var on = form.factors.indexOf(f.id) >= 0;
-                var col = f.good ? '#10b981' : '#ef4444';
-                return hh('button', { key: 'fa-' + f.id,
-                  onClick: function() { toggleFactor(f.id); },
-                  style: { padding: '6px 10px', borderRadius: 6, background: on ? col + '20' : 'rgba(15,23,42,0.5)', color: on ? col : '#94a3b8', border: '1px solid ' + (on ? col : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, f.icon + ' ' + f.label);
-              })
-            )
-          ),
-          tkBtn('💾 Save sleep log', save, 'primary')
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save sleep log')
         )
       ),
 
-      // 7-day strip
-      entries.length > 0 ? hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 nights'),
-        hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-end', height: 80 } },
-          (function() {
-            var arr = [];
-            for (var i = 6; i >= 0; i--) {
-              var dt = new Date(); dt.setDate(dt.getDate() - i);
-              var iso = dt.toISOString().slice(0, 10);
-              var e = entries.filter(function(x) { return x.date === iso; })[0];
-              var hrs = e ? (e.hours || 0) : 0;
-              var pct = hrs > 0 ? Math.min(100, (hrs / 10) * 100) : 0;
-              var col = hrs >= 8 ? '#10b981' : hrs >= 7 ? '#fbbf24' : hrs > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
-              arr.push(hh('div', { key: 'd-' + iso, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
-                hh('div', { style: { width: '100%', height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
-                  hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
-                ),
-                hh('div', { style: { fontSize: 8, color: col, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, hrs > 0 ? hrs + 'h' : '—'),
-                hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()])
-              ));
-            }
-            return arr;
-          })()
+      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-sleep-chart-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-sleep-chart-heading', style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📊 Last 7 nights'),
+        hh('div', { role: 'img', 'aria-label': 'Sleep hours for the last seven nights. ' + chartSummary, style: { display: 'flex', gap: 4, alignItems: 'flex-end', height: 80 } },
+          chartDays.map(function(day) {
+            var pct = day.hours > 0 ? Math.min(100, (day.hours / 10) * 100) : 0;
+            var color = day.hours >= 8 ? '#10b981' : day.hours >= 7 ? '#fbbf24' : day.hours > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
+            return hh('div', { key: 'd-' + day.date, 'aria-hidden': 'true', style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
+              hh('div', { style: { width: '100%', height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } }, hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: color, transition: 'height 300ms ease' } })),
+              hh('div', { style: { fontSize: 8, color: color, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, day.hours > 0 ? day.hours + 'h' : '—'),
+              hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, day.label)
+            );
+          })
         )
       ) : null,
 
-      // History
-      entries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📔 Recent logs'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          entries.slice(0, 14).map(function(e) {
-            var hrs = e.hours || 0;
-            var col = hrs >= 8 ? '#10b981' : hrs >= 7 ? '#fbbf24' : '#ef4444';
-            return hh('div', { key: 'le-' + e.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
-              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.bedtime + ' → ' + e.waketime),
+      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-sleep-history-heading' },
+        hh('h3', { id: 'learning-lab-sleep-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📔 Recent logs'),
+        hh('ul', { style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 4 }) },
+          entries.slice(0, 14).map(function(entry) {
+            var hours = entry.hours || 0;
+            var color = hours >= 8 ? '#10b981' : hours >= 7 ? '#fbbf24' : '#ef4444';
+            return hh('li', { key: 'le-' + entry.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + color, flexWrap: 'wrap' } },
+              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, entry.date + ' · ' + entry.bedtime + ' to ' + entry.waketime),
               hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                hh('span', { style: { fontSize: 11, color: col, fontWeight: 700 } }, hrs + 'h · ' + e.quality + '/5'),
-                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+                hh('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, hours + ' hours · quality ' + entry.quality + '/5'),
+                hh('button', { type: 'button', 'aria-label': 'Delete sleep log from ' + entry.date, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
               )
             );
           })
@@ -9040,7 +9047,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // ── Z. PERSONAL LEARNING JOURNAL (Wave 6) ──
   // Long-form journal with subject tags + mood tracking + search.
   // For "I learned X about Y today" entries that build a personal
   // knowledge log over time. Distinct from Weekly Reflection (structured)
