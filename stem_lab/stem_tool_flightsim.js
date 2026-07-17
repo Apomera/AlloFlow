@@ -9163,11 +9163,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           underMesh.position.y = -40;
           scene.add(underMesh);
 
+          // ── 3D sky population ── the WebGL sky was an EMPTY gradient dome:
+          // clouds and stars existed only in the 2D fallback renderer, which
+          // is gated off whenever THREE loads. Both are camera-following.
+          // Stars: ~600 points spread on the upper hemisphere via the golden
+          // angle (deterministic — stable field, no Math.random), opacity
+          // driven per-frame by night/altitude. fog=false so they never haze.
+          var starGeo = new THREE.BufferGeometry();
+          var starN = 600;
+          var starPos = new Float32Array(starN * 3);
+          for (var st = 0; st < starN; st++) {
+            var sAz = st * 137.508 * Math.PI / 180;
+            // Elevation must be DECORRELATED from the azimuth sequence — a
+            // shared linear index made the field render as a dotted spiral
+            // across the night sky. Hash the index instead.
+            var sU = ((Math.sin(st * 78.233 + 12.9898) * 43758.5453) % 1 + 1) % 1;
+            var sEl = Math.acos(1 - sU); // 0 (zenith) .. π/2 (horizon), area-uniform
+            var sR = 200000;
+            starPos[st * 3] = Math.cos(sAz) * Math.sin(sEl) * sR;
+            starPos[st * 3 + 1] = Math.cos(sEl) * sR;
+            starPos[st * 3 + 2] = Math.sin(sAz) * Math.sin(sEl) * sR;
+          }
+          starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+          var starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.2, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false });
+          starMat.fog = false;
+          var starPoints = new THREE.Points(starGeo, starMat);
+          scene.add(starPoints);
+
+          // Clouds: soft billboard sprites from a tiny generated texture,
+          // scattered deterministically in a ±60k ft square that wraps around
+          // the camera (infinite scroll). Weather type drives how many show.
+          var cloudCanvas = document.createElement('canvas');
+          cloudCanvas.width = 128; cloudCanvas.height = 64;
+          var cgx = cloudCanvas.getContext('2d');
+          [[64, 40, 36], [38, 42, 24], [92, 44, 22], [64, 30, 20]].forEach(function(b) {
+            var cGrad = cgx.createRadialGradient(b[0], b[1], 2, b[0], b[1], b[2]);
+            cGrad.addColorStop(0, 'rgba(255,255,255,0.85)');
+            cGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            cgx.fillStyle = cGrad;
+            cgx.fillRect(0, 0, 128, 64);
+          });
+          var cloudTex = new THREE.CanvasTexture(cloudCanvas);
+          var cloudGroup = new THREE.Group();
+          for (var cl = 0; cl < 24; cl++) {
+            var clh1 = ((Math.sin(cl * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
+            var clh2 = ((Math.sin(cl * 269.5 + 183.3) * 28001.8384) % 1 + 1) % 1;
+            var cSprMat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: 0.8, depthWrite: false });
+            var cSpr = new THREE.Sprite(cSprMat);
+            cSpr.position.set((clh1 - 0.5) * 120000, 4500 + clh2 * 3500, (clh2 - 0.5) * 120000);
+            var cSc = 9000 + clh1 * 9000;
+            cSpr.scale.set(cSc, cSc * 0.42, 1);
+            cloudGroup.add(cSpr);
+          }
+          scene.add(cloudGroup);
+
           threeResourcesRef.current = {
             skyMesh: skyMesh,
             ambientLight: ambientLight,
             dirLight: dirLight,
             underMesh: underMesh,
+            starPoints: starPoints,
+            cloudGroup: cloudGroup,
             aircraft: null,
             terrainMesh: null,
             runwayMeshes: {},
@@ -9197,8 +9253,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               if (obj.geometry) obj.geometry.dispose();
               if (obj.material) {
                 if (Array.isArray(obj.material)) {
-                  obj.material.forEach(function(m) { m.dispose(); });
+                  obj.material.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); });
                 } else {
+                  if (obj.material.map) obj.material.map.dispose();
                   obj.material.dispose();
                 }
               }
@@ -9827,6 +9884,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Follow the camera horizontally only — y stays at −40 so the
           // backstop always sits under the terrain mesh, never through it.
           resources.underMesh.position.set(camera.position.x, -40, camera.position.z);
+        }
+        if (resources.starPoints) {
+          // Star dome rides with the camera (no parallax, like the sky
+          // sphere). Fade in at night, or faintly at very high altitude —
+          // same rules the 2D fallback renderer uses.
+          resources.starPoints.position.copy(camera.position);
+          var dnBright = dayNight.brightness != null ? dayNight.brightness : 1;
+          var starNight = Math.max(0, 1 - dnBright * 1.4);
+          var starAltF = Math.max(0, Math.min(1, ((state.altitude || 0) - 20000) / 20000)) * 0.7;
+          resources.starPoints.material.opacity = Math.max(starNight, starAltF);
+          resources.starPoints.visible = resources.starPoints.material.opacity > 0.03;
+        }
+        if (resources.cloudGroup) {
+          // Weather chooses the cloud census; positions wrap around the
+          // camera so the deck is endless without ever moving a cloud the
+          // player is looking at (single-step toroidal wrap per frame).
+          var wxNow3 = (weatherRef.current && weatherRef.current.type) || 'clear';
+          var cloudN = wxNow3 === 'clear' ? 8 : wxNow3 === 'breezy' ? 12 : wxNow3 === 'gusty' ? 14 : wxNow3 === 'stormy' ? 22 : 24;
+          var dnB2 = dayNight.brightness != null ? dayNight.brightness : 1;
+          var cloudTint = wxNow3 === 'stormy' ? 0.45 : 1; // storm decks read darker
+          var cloudHalf = 60000;
+          var cKids = resources.cloudGroup.children;
+          for (var ck = 0; ck < cKids.length; ck++) {
+            var cSpr2 = cKids[ck];
+            cSpr2.visible = ck < cloudN;
+            if (!cSpr2.visible) continue;
+            var cOx = cSpr2.position.x - camera.position.x;
+            var cOz = cSpr2.position.z - camera.position.z;
+            if (cOx > cloudHalf) cSpr2.position.x -= cloudHalf * 2;
+            else if (cOx < -cloudHalf) cSpr2.position.x += cloudHalf * 2;
+            if (cOz > cloudHalf) cSpr2.position.z -= cloudHalf * 2;
+            else if (cOz < -cloudHalf) cSpr2.position.z += cloudHalf * 2;
+            cSpr2.material.opacity = 0.75 * Math.max(0.2, dnB2);
+            var cGray = Math.max(0.35, dnB2) * cloudTint;
+            cSpr2.material.color.setRGB(cGray, cGray, cGray * (wxNow3 === 'stormy' ? 1.05 : 1));
+          }
         }
         
         var solarHr = dayNight.solarHour != null ? dayNight.solarHour : 12;
@@ -19647,9 +19740,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
 
-          // Weather effects (rain, haze, lightning)
-          drawWeatherEffects(gfx, W, H, horizonY, timeRef.current, state);
-
           // Iconic landmark sprites (Eiffel Tower, Pyramids, etc.) — render before labels
           drawIconicLandmarks(gfx, W, H, horizonY, state, timeRef.current);
 
@@ -19657,16 +19747,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           drawGeography(gfx, W, H, horizonY, state, timeRef.current);
           }
 
+          // Weather effects (rain, haze, lightning) — OUTSIDE the 2D-only
+          // gate: these are translucent screen-space overlays (windshield
+          // rain, haze wash, lightning flash, rainbow), so they belong over
+          // the 3D world too. Gated, a student who chose "stormy" in 3D mode
+          // got fog but no rain — the weather system looked broken.
+          drawWeatherEffects(gfx, W, H, horizonY, timeRef.current, state);
+
           // Geography quiz overlay
           drawGeoQuiz(gfx, W, H);
 
           if (!threeLoaded) {
             // Country borders at altitude
             drawCountryBorders(gfx, W, H, horizonY, state);
-
-            // Jet stream visualization
-            drawJetStream(gfx, W, H, horizonY, state, timeRef.current);
           }
+
+          // Jet stream visualization — screen-space streaks + the "+N kt E"
+          // label. Un-gated so 3D-mode flights SEE why their ground speed
+          // jumped (the tailwind physics applies in both render modes).
+          drawJetStream(gfx, W, H, horizonY, state, timeRef.current);
 
           // Navigation Computer (when flight plan active)
           drawNavComputer(gfx, 10, H - 240, state, timeRef.current);
