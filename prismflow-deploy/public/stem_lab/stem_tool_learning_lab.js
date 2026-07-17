@@ -11894,68 +11894,155 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { quotes: [] };
     var setData = props.setData;
-    var fs = R.useState({ text: '', source: '', context: '', tag: '' });
+    var emptyForm = function() { return { text: '', source: '', context: '', tag: '' }; };
+    var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
     var qs = R.useState(''); var search = qs[0]; var setSearch = qs[1];
+    var es = R.useState(''); var quoteError = es[0]; var setQuoteError = es[1];
+    var initialQuotes = data.quotes || [];
+    var rs = R.useState(function() {
+      return initialQuotes.length ? initialQuotes[Math.floor(Math.random() * initialQuotes.length)].id : null;
+    });
+    var featuredId = rs[0]; var setFeaturedId = rs[1];
 
-    function save() {
-      if (!form.text.trim()) { alert('Need quote text.'); return; }
-      var quote = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ quotes: [quote].concat(data.quotes || []) });
-      setForm({ text: '', source: '', context: '', tag: '' });
+    function updateForm(key, value) {
+      var patch = {}; patch[key] = value;
+      setForm(Object.assign({}, form, patch));
+      if (key === 'text' && quoteError) setQuoteError('');
     }
-    function remove(id) { setData({ quotes: (data.quotes || []).filter(function(q) { return q.id !== id; }) }); }
+    function save() {
+      var text = form.text.trim();
+      if (!text) {
+        setQuoteError('Enter the quote you want to save.');
+        llAnnounce('Quote was not saved. Enter the quote text.');
+        focusById('learning-lab-quote-text');
+        return;
+      }
+      var quote = {
+        id: tkId(),
+        date: todayISO(),
+        text: text,
+        source: form.source.trim(),
+        context: form.context.trim(),
+        tag: form.tag.trim().replace(/^#/, '')
+      };
+      setData(Object.assign({}, data, { quotes: [quote].concat(data.quotes || []) }));
+      setForm(emptyForm());
+      setQuoteError('');
+      if (!featuredId) setFeaturedId(quote.id);
+      llAnnounce('Quote saved' + (quote.source ? ' from ' + quote.source : '') + '.');
+      focusById('learning-lab-quote-text');
+    }
+    async function remove(quote) {
+      var label = (quote.text || 'this quote').trim();
+      if (label.length > 80) label = label.slice(0, 77) + '...';
+      if (!(await askLearningLabConfirmation('This permanently removes “' + label + '” from your collection.', {
+        title: 'Remove this quote?', confirmText: 'Remove quote'
+      }))) return;
+      setData(Object.assign({}, data, { quotes: (data.quotes || []).filter(function(item) { return item.id !== quote.id; }) }));
+      if (featuredId === quote.id) setFeaturedId(null);
+      llAnnounce('Quote removed.');
+      focusById('learning-lab-quote-search');
+    }
+    function showAnother() {
+      if (!quotes.length) return;
+      var currentIndex = quotes.findIndex(function(quote) { return quote.id === (random && random.id); });
+      var next = quotes[(currentIndex + 1) % quotes.length];
+      setFeaturedId(next.id);
+      llAnnounce('Another quote is now featured' + (next.source ? ' from ' + next.source : '') + '.');
+    }
+    function clearSearch() {
+      setSearch('');
+      llAnnounce('Quote search cleared. Showing all ' + quotes.length + ' quote' + (quotes.length === 1 ? '.' : 's.'));
+      focusById('learning-lab-quote-search');
+    }
 
     var quotes = data.quotes || [];
-    var filtered = search ? quotes.filter(function(q) {
-      var s = search.toLowerCase();
-      return (q.text || '').toLowerCase().indexOf(s) >= 0 ||
-             (q.source || '').toLowerCase().indexOf(s) >= 0 ||
-             (q.tag || '').toLowerCase().indexOf(s) >= 0;
+    var normalizedSearch = search.trim().toLowerCase();
+    var filtered = normalizedSearch ? quotes.filter(function(q) {
+      return (q.text || '').toLowerCase().indexOf(normalizedSearch) >= 0 ||
+             (q.source || '').toLowerCase().indexOf(normalizedSearch) >= 0 ||
+             (q.context || '').toLowerCase().indexOf(normalizedSearch) >= 0 ||
+             (q.tag || '').toLowerCase().indexOf(normalizedSearch) >= 0;
     }) : quotes;
-    var random = quotes.length > 0 ? quotes[Math.floor(Math.random() * quotes.length)] : null;
+    var random = quotes.filter(function(quote) { return quote.id === featuredId; })[0] || quotes[0] || null;
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(251,191,36,0.65)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fde68a', textTransform: 'uppercase', marginBottom: 4 };
+    var actionStyle = { minWidth: 44, minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #fde68a', background: 'rgba(120,53,15,0.35)', color: '#fef3c7', fontWeight: 800, cursor: 'pointer' };
+
+    function textField(id, label, key, placeholder) {
+      return hh('div', null,
+        hh('label', { htmlFor: id, style: labelStyle }, label + ' (optional)'),
+        hh('input', { id: id, type: 'text', value: form[key], maxLength: 500, placeholder: placeholder, onChange: function(event) { updateForm(key, event.target.value); }, style: fieldStyle })
+      );
+    }
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('💭', 'Quote Collector', 'Save lines from books + classes + conversations + anywhere. Browse on hard days.', '#fbbf24'),
 
-      random ? hh('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14 } },
-        hh('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '✨ Random from your collection'),
-        hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic' } }, '"' + random.text + '"'),
-        random.source ? hh('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 8, fontFamily: 'Georgia, serif' } }, '— ' + random.source) : null
+      random ? hh('aside', { 'aria-labelledby': 'learning-lab-featured-quote-heading', style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.20), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-featured-quote-heading', style: { fontSize: 11, color: '#fde68a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' } }, hh('span', { 'aria-hidden': 'true' }, '✨ '), 'From your collection'),
+        hh('blockquote', { style: { margin: 0 } },
+          hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', margin: 0 } }, random.text),
+          random.source ? hh('footer', { style: { fontSize: 11, color: '#fde68a', marginTop: 8, fontFamily: 'Georgia, serif' } }, '— ', hh('cite', null, random.source)) : null
+        ),
+        quotes.length > 1 ? hh('button', { type: 'button', onClick: showAnother, 'data-ll-focusable': true, style: Object.assign({}, actionStyle, { marginTop: 10 }) }, 'Show another quote') : null
       ) : null,
 
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Save a quote'),
-          tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'The quote (no quotation marks needed)', 3, { marginBottom: 6 }),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 6, marginBottom: 8 } },
-            tkInput(form.source, function(v) { setForm(Object.assign({}, form, { source: v })); }, 'Source (e.g., "Toni Morrison")'),
-            tkInput(form.tag, function(v) { setForm(Object.assign({}, form, { tag: v })); }, 'Tag (optional)')
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-quote-form-heading' },
+          hh('h3', { id: 'learning-lab-quote-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 8px' } }, 'Save a quote'),
+          hh('div', { style: { marginBottom: 8 } },
+            hh('label', { htmlFor: 'learning-lab-quote-text', style: labelStyle }, 'Quote (required)'),
+            hh('div', { id: 'learning-lab-quote-text-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 4 } }, 'Enter the words without adding quotation marks.'),
+            hh('textarea', { id: 'learning-lab-quote-text', value: form.text, required: true, rows: 3, maxLength: 3000, placeholder: 'The words you want to remember', 'aria-invalid': quoteError ? 'true' : undefined, 'aria-describedby': quoteError ? 'learning-lab-quote-text-help learning-lab-quote-text-error' : 'learning-lab-quote-text-help', onChange: function(event) { updateForm('text', event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+            hh('div', { id: 'learning-lab-quote-text-error', role: 'alert', style: { minHeight: quoteError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: quoteError ? 4 : 0 } }, quoteError)
           ),
-          tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Where you found it / why it matters', { marginBottom: 8 }),
-          tkBtn('💾 Save quote', save, 'primary')
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 8 } },
+            textField('learning-lab-quote-source', 'Source', 'source', 'e.g., Toni Morrison'),
+            textField('learning-lab-quote-tag', 'Tag', 'tag', 'e.g., courage')
+          ),
+          hh('div', { style: { marginBottom: 8 } }, textField('learning-lab-quote-context', 'Where you found it or why it matters', 'context', 'Book, class, conversation, or personal meaning')),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: actionStyle }, 'Save quote')
         )
       ),
 
-      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, gap: 8, flexWrap: 'wrap' } },
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, quotes.length + ' quote' + (quotes.length !== 1 ? 's' : '')),
-        tkInput(search, setSearch, '🔎 Search', { width: 200 })
-      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-quote-library-heading' },
+        hh('h3', { id: 'learning-lab-quote-library-heading', style: { fontSize: 13, color: '#fde68a', margin: '0 0 8px' } }, 'Saved quotes'),
+        hh('form', { role: 'search', onSubmit: function(event) { event.preventDefault(); }, style: { display: 'flex', alignItems: 'flex-end', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+          hh('div', { style: { flex: '1 1 220px' } },
+            hh('label', { htmlFor: 'learning-lab-quote-search', style: labelStyle }, 'Search saved quotes'),
+            hh('input', { id: 'learning-lab-quote-search', type: 'search', value: search, placeholder: 'Search quote, source, context, or tag', 'aria-describedby': 'learning-lab-quote-results-status', onChange: function(event) { setSearch(event.target.value); }, style: fieldStyle })
+          ),
+          search ? hh('button', { type: 'button', onClick: clearSearch, 'data-ll-focusable': true, style: actionStyle }, 'Clear search') : null
+        ),
+        hh('p', { id: 'learning-lab-quote-results-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 12px' } },
+          normalizedSearch ? filtered.length + ' of ' + quotes.length + ' quotes match your search.' : quotes.length + ' quote' + (quotes.length === 1 ? '' : 's') + ' saved.'
+        ),
 
-      filtered.length === 0 ? tkEmptyState('💭', quotes.length === 0 ? 'No quotes saved yet.' : 'No matches.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          filtered.map(function(q) {
-            return hh('div', { key: 'qu-' + q.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
-                hh('div', { style: { flex: 1, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + q.text + '"'),
-                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              q.source ? hh('div', { style: { fontSize: 11, color: '#fbbf24', marginTop: 6, fontWeight: 700 } }, '— ' + q.source) : null,
-              q.context ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, q.context) : null,
-              q.tag ? hh('span', { style: { display: 'inline-block', marginTop: 6, padding: '2px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontSize: 9, fontWeight: 700 } }, '#' + q.tag) : null
-            );
-          })
-        )
+        filtered.length === 0 ? tkEmptyState('💭', quotes.length === 0 ? 'No quotes saved yet.' : 'No quotes match your search.', null, null)
+        : hh('ul', { 'aria-label': 'Saved quote results', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
+            filtered.map(function(q) {
+              var quoteLabel = (q.text || 'Untitled quote').trim();
+              if (quoteLabel.length > 60) quoteLabel = quoteLabel.slice(0, 57) + '...';
+              return hh('li', { key: 'qu-' + q.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
+                hh('article', { 'aria-labelledby': 'learning-lab-quote-heading-' + q.id },
+                  hh('h4', { id: 'learning-lab-quote-heading-' + q.id, style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 } }, 'Saved quote: ' + quoteLabel),
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                    hh('blockquote', { style: { flex: 1, margin: 0 } },
+                      hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif', margin: 0 } }, q.text),
+                      q.source ? hh('footer', { style: { fontSize: 11, color: '#fde68a', marginTop: 6, fontWeight: 700 } }, '— ', hh('cite', null, q.source)) : null
+                    ),
+                    hh('button', { type: 'button', 'aria-label': 'Remove quote: ' + quoteLabel, onClick: function() { remove(q); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+                  ),
+                  q.context ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0', fontStyle: 'italic' } }, 'Context: ' + q.context) : null,
+                  q.tag ? hh('p', { style: { margin: '6px 0 0' } }, hh('span', { style: { display: 'inline-block', padding: '3px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fde68a', fontSize: 10, fontWeight: 700 } }, 'Tag: ' + q.tag.replace(/^#/, ''))) : null,
+                  q.date ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0' } }, hh('time', { dateTime: q.date }, 'Saved ' + q.date)) : null
+                )
+              );
+            })
+          )
+      )
     );
   }
 
