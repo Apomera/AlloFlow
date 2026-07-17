@@ -44,21 +44,18 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
   try {
     const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
     if (!st) return null;
-    // A stored AI take only counts as a hit for the voice it was
-    // synthesized with — otherwise a session set to Kore keeps replaying
-    // clips captured under Puck. Human recordings are voice-setting-
-    // independent and always play. Legacy AI entries without voice
-    // metadata count as a mismatch so one playthrough re-synthesizes and
-    // self-heals them under the active voice (capture replaces them).
-    const urlFor = s => {
+    const urlFor = (s) => {
       if (!s) return null;
+      if (typeof st.getCompatible === "function") {
+        return st.getCompatible(s, currentVoice ? { voice: currentVoice } : {});
+      }
       const url = st.get(s);
       if (!url) return null;
       if (currentVoice) {
-        const src = String(typeof st.sourceOf === 'function' && st.sourceOf(s) || 'ai');
-        if (src.indexOf('human') !== 0 && typeof st.metadataOf === 'function') {
+        const src = String(typeof st.sourceOf === "function" && st.sourceOf(s) || "ai");
+        if (src.indexOf("human") !== 0 && typeof st.metadataOf === "function") {
           const meta = st.metadataOf(s) || {};
-          if (String(meta.voice || '') !== String(currentVoice)) return null;
+          if (String(meta.voice || "") !== String(currentVoice)) return null;
         }
       }
       return url;
@@ -140,6 +137,7 @@ const resolveAdventureSentenceVoice = (sentences, index, activeSpeaker, voiceMap
 };
 const _kokoroPrewarmSkip = /^(af_|am_|bf_|bm_)/i;
 const sanitizeTtsText = (text) => String(text || "").replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1").replace(/\[?\u207D[\u2070\u00B9\u00B2\u00B3\u2074-\u2079]+\u207E\]?/g, "").replace(/\[Source\s+\d+\]/gi, "").replace(/\[\d+\]/g, "").replace(/^#{1,6}\s+/gm, "").replace(/\*\*/g, "").replace(/\*/g, "").replace(/__|_/g, "").replace(/~~/g, "").replace(/`/g, "").replace(/^>\s?/gm, "").replace(/^[-*+]\s/gm, "").replace(/^\d+\.\s/gm, "").replace(/\s+/g, " ").trim();
+const sequenceBufferKey = (index, voice, spokenText) => `${index}-${voice}-${String(spokenText || "").slice(0, 160)}`;
 const chunkPersonaSentences = (sentences) => {
   const displaySentences = Array.isArray(sentences) ? sentences : [];
   const chunks = [];
@@ -231,14 +229,14 @@ const prewarmSequenceAudio = (text, opts) => {
     const { callTTS, splitTextToSentences, selectedVoice } = deps;
     if (typeof callTTS !== "function" || typeof splitTextToSentences !== "function" || !text) return 0;
     const sentences = splitTextToSentences(String(text)).filter((s) => s && s.trim());
-    let activeSpeaker = null;
+    let activeSpeaker = selectedVoice || null;
     let warmed = 0;
     for (let i = 0; i < Math.min(count, sentences.length); i++) {
       const r = resolveAdventureSentenceVoice(sentences, i, activeSpeaker, voiceMap, selectedVoice);
       activeSpeaker = r.nextSpeaker;
       if (_kokoroPrewarmSkip.test(String(r.currentVoice || ""))) continue;
       try {
-        Promise.resolve(callTTS(sentences[i], r.currentVoice)).catch(() => {
+        Promise.resolve(callTTS(sanitizeTtsText(sentences[i]), r.currentVoice)).catch(() => {
         });
         warmed++;
       } catch (_) {
@@ -296,7 +294,6 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     }
     let audio;
     let audioUrl;
-    const bufferKey = `${index}-${currentVoice}`;
     let textToSpeak = sentences[index];
     if (mode === "script") {
       textToSpeak = textToSpeak.replace(/^(\*+)?([A-Za-z]+)(\*+)?:\s*/, "");
@@ -306,6 +303,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       textToSpeak = preparePersonaTtsText(textToSpeak, speakingChar, activeSpeaker, selectedVoice, _isCanvasEnv, _ttsState);
     }
     if (mode !== "persona") textToSpeak = sanitizeTtsText(textToSpeak);
+    const bufferKey = sequenceBufferKey(index, currentVoice, textToSpeak);
     let audioStoreSentence = textToSpeak;
     let usingStoredReadAloud = false;
     const storedReadAloudUrl = shouldUseReadAloudStore(contentId, mode) ? getStoredReadAloudUrl(sentences[index], audioStoreSentence, currentVoice) : null;
@@ -449,7 +447,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       if (targetIdx >= sentences.length) break;
       let targetVoice = selectedVoice;
       let targetText = sentences[targetIdx].trim();
-      let textToPreload = targetText.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1").replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, "").replace(/\[Source\s+\d+\]/gi, "").replace(/\[\d+\]/g, "").replace(/^#{1,6}\s+/gm, "").replace(/\*\*/g, "").replace(/\*/g, "").replace(/__|_/g, "").replace(/~~/g, "").replace(/`/g, "").replace(/^>\s?/gm, "").replace(/^[-*+]\s/gm, "").replace(/^\d+\.\s/gm, "").replace(/\s+/g, " ").trim();
+      let textToPreload = targetText;
       if (mode === "adventure") {
         const hasOpen = /["“]/.test(targetText);
         const hasClose = /["”]/.test(targetText);
@@ -493,7 +491,8 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         const preloadChar = resolvePersonaSpeakingChar(personaState, activeSpeaker, speakerName);
         textToPreload = preparePersonaTtsText(targetText, preloadChar, targetVoice, selectedVoice, _isCanvasEnv, _ttsState);
       }
-      const nextBufferKey = `${targetIdx}-${targetVoice}`;
+      if (mode !== "persona") textToPreload = sanitizeTtsText(textToPreload);
+      const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload);
       const storedPreloadUrl = isReadAloudStorePlayback ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice) : null;
       if (storedPreloadUrl) {
         if (offset === 1) {
@@ -2711,6 +2710,13 @@ window.AlloModules.PhaseKHelpers = {
   handleSpeak,
   prewarmSequenceAudio,
   prewarmPersonaMessageAudio,
+  // THE canonical spoken-text sanitizer (2026-07-17). Every surface that
+  // derives what the synthesizer will actually say (playback, look-ahead,
+  // prewarm, karaoke overlay/store keys, downloads) must call this — the
+  // per-surface regex copies are what kept orphaning cached audio.
+  sanitizeTtsText,
+  toSpokenText: sanitizeTtsText,
+  sequenceBufferKey,
   resolveAdventureSentenceVoice,
   resolvePersonaMessageVoice,
   syncProgressToFirestore,

@@ -76,6 +76,11 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
         // self-heals them under the active voice (capture replaces them).
         const urlFor = (s) => {
             if (!s) return null;
+            // Shared guard (2026-07-17): the store owns compatibility logic so
+            // this path and the karaoke overlay can never drift apart again.
+            if (typeof st.getCompatible === 'function') {
+                return st.getCompatible(s, currentVoice ? { voice: currentVoice } : {});
+            }
             const url = st.get(s);
             if (!url) return null;
             if (currentVoice) {
@@ -197,6 +202,15 @@ const sanitizeTtsText = (text) => String(text || '')
     .replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '')
     .replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
 
+// Sequence-buffer identity (2026-07-17). index+voice alone let a NEW
+// resource/scene await or reuse a PREVIOUS one's promise at the same slot —
+// audioBufferRef survives stopPlayback, so "sentence 0, Kore" from the last
+// resource answered for sentence 0 of the next. Keying on the spoken text
+// makes stale reuse structurally impossible. Live playback and look-ahead
+// MUST both use this builder (same contract as the tts urlCache key).
+const sequenceBufferKey = (index, voice, spokenText) =>
+    `${index}-${voice}-${String(spokenText || '').slice(0, 160)}`;
+
 const chunkPersonaSentences = (sentences) => {
     const displaySentences = Array.isArray(sentences) ? sentences : [];
     const chunks = [];
@@ -293,13 +307,20 @@ const prewarmSequenceAudio = (text, opts) => {
         const { callTTS, splitTextToSentences, selectedVoice } = deps;
         if (typeof callTTS !== 'function' || typeof splitTextToSentences !== 'function' || !text) return 0;
         const sentences = splitTextToSentences(String(text)).filter(s => s && s.trim());
-        let activeSpeaker = null;
+        // Mirror playback EXACTLY (2026-07-17): handleSpeak starts the
+        // adventure chain with activeSpeaker = selectedVoice (phase_k
+        // handleSpeak), and playSequence sanitizes with sanitizeTtsText
+        // before callTTS. This prewarm used to start from null and send the
+        // RAW sentence — both diverged from playback's urlCache key, so the
+        // warm call was a guaranteed miss that queued AHEAD of the real
+        // request and made startup slower, not faster.
+        let activeSpeaker = selectedVoice || null;
         let warmed = 0;
         for (let i = 0; i < Math.min(count, sentences.length); i++) {
             const r = resolveAdventureSentenceVoice(sentences, i, activeSpeaker, voiceMap, selectedVoice);
             activeSpeaker = r.nextSpeaker;
             if (_kokoroPrewarmSkip.test(String(r.currentVoice || ''))) continue;
-            try { Promise.resolve(callTTS(sentences[i], r.currentVoice)).catch(() => {}); warmed++; } catch (_) {}
+            try { Promise.resolve(callTTS(sanitizeTtsText(sentences[i]), r.currentVoice)).catch(() => {}); warmed++; } catch (_) {}
         }
         return warmed;
     } catch (_) { return 0; }
@@ -351,7 +372,6 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           }
           let audio;
           let audioUrl;
-          const bufferKey = `${index}-${currentVoice}`;
           let textToSpeak = sentences[index];
           if (mode === 'script') {
                textToSpeak = textToSpeak.replace(/^(\*+)?([A-Za-z]+)(\*+)?:\s*/, '');
@@ -361,6 +381,9 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               textToSpeak = preparePersonaTtsText(textToSpeak, speakingChar, activeSpeaker, selectedVoice, _isCanvasEnv, _ttsState);
           }
            if (mode !== 'persona') textToSpeak = sanitizeTtsText(textToSpeak);
+          // Key AFTER text finalization so the buffer identity includes the
+          // spoken text (see sequenceBufferKey).
+          const bufferKey = sequenceBufferKey(index, currentVoice, textToSpeak);
           let audioStoreSentence = textToSpeak;
           let usingStoredReadAloud = false;
           const storedReadAloudUrl = shouldUseReadAloudStore(contentId, mode)
@@ -504,16 +527,12 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               if (targetIdx >= sentences.length) break;
               let targetVoice = selectedVoice;
               let targetText = sentences[targetIdx].trim();
-              let textToPreload = targetText
-                  .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-                  .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '') // superscript citations ⁽³⁾
-                  .replace(/\[Source\s+\d+\]/gi, '') // [Source N] markers
-                  .replace(/\[\d+\]/g, '') // [1] numeric refs
-                  .replace(/^#{1,6}\s+/gm, '')
-                  .replace(/\*\*/g, '').replace(/\*/g, '')
-                  .replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '')
-                  .replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '')
-                  .replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
+              // Preload text mirrors playback's textToSpeak EXACTLY: mode
+              // shaping first, then the ONE shared sanitizer (below, after
+              // the mode branches). The inline sanitizer copy that lived here
+              // had already drifted from playback for script mode, so a
+              // preloaded segment could miss the urlCache key playback asks for.
+              let textToPreload = targetText;
               if (mode === 'adventure') {
                   const hasOpen = /["“]/.test(targetText);
                   const hasClose = /["”]/.test(targetText);
@@ -557,7 +576,8 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   const preloadChar = resolvePersonaSpeakingChar(personaState, activeSpeaker, speakerName);
                   textToPreload = preparePersonaTtsText(targetText, preloadChar, targetVoice, selectedVoice, _isCanvasEnv, _ttsState);
               }
-              const nextBufferKey = `${targetIdx}-${targetVoice}`;
+              if (mode !== 'persona') textToPreload = sanitizeTtsText(textToPreload);
+              const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload);
               const storedPreloadUrl = isReadAloudStorePlayback
                   ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice)
                   : null;
@@ -2886,6 +2906,13 @@ window.AlloModules.PhaseKHelpers = {
   handleSpeak,
   prewarmSequenceAudio,
   prewarmPersonaMessageAudio,
+  // THE canonical spoken-text sanitizer (2026-07-17). Every surface that
+  // derives what the synthesizer will actually say (playback, look-ahead,
+  // prewarm, karaoke overlay/store keys, downloads) must call this — the
+  // per-surface regex copies are what kept orphaning cached audio.
+  sanitizeTtsText,
+  toSpokenText: sanitizeTtsText,
+  sequenceBufferKey,
   resolveAdventureSentenceVoice,
   resolvePersonaMessageVoice,
   syncProgressToFirestore,

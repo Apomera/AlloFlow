@@ -541,6 +541,13 @@ function SimplifiedView(props) {
     // Must mirror playSequence's textToSpeak cleaning (phase_k) — the store
     // key is derived from the cleaned sentence on BOTH sides, so a rule
     // present in one place but not the other orphans that sentence's audio.
+    // Delegate to THE shared sanitizer when the phase_k module is loaded
+    // (2026-07-17) so the two can never drift; the inline chain below is
+    // the standalone fallback and must stay rule-identical to it.
+    try {
+      var _pk = window.AlloModules && window.AlloModules.PhaseKHelpers;
+      if (_pk && typeof _pk.toSpokenText === 'function') return _pk.toSpokenText(sentence);
+    } catch (_) {}
     return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
   };
   var getReadAloudStore = function () {
@@ -551,15 +558,32 @@ function SimplifiedView(props) {
     }
   };
   var getKaraokeAudioUrl = React.useCallback(function (sentenceText) {
-    try {
-      var st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-      var storedUrl = st && st.get(sentenceText);
-      if (storedUrl) return Promise.resolve(storedUrl);
-    } catch (_) {}
-    if (typeof callTTS !== 'function') return Promise.resolve(null);
     var voice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Puck';
     var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
     var language = leveledTextLanguage || 'English';
+    try {
+      var st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+      if (st) {
+        // Stored-clip compatibility guard (2026-07-17): this resolver used
+        // to return st.get() blind, bypassing the voice guard the main
+        // playSequence path applies — so an older Puck AI clip kept playing
+        // after the teacher selected Kore. The store's shared getCompatible
+        // enforces voice/speed/language for AI takes; human recordings
+        // remain voice-independent and always play.
+        if (typeof st.getCompatible === 'function') {
+          var compatibleUrl = st.getCompatible(sentenceText, {
+            voice: voice,
+            speed: speed,
+            language: language
+          });
+          if (compatibleUrl) return Promise.resolve(compatibleUrl);
+        } else {
+          var storedUrl = st.get(sentenceText);
+          if (storedUrl) return Promise.resolve(storedUrl);
+        }
+      }
+    } catch (_) {}
+    if (typeof callTTS !== 'function') return Promise.resolve(null);
     return Promise.resolve(callTTS(sentenceText, voice, speed, {
       language: language
     }, language)).catch(function () {

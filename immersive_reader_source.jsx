@@ -1243,6 +1243,17 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         capturedWarmRef.current = new Set();
     }, [text, sentenceList]);
 
+    // Warm state is index-based, so it is only valid for ONE request
+    // signature. The parent's getAudioUrl resolver closes over the selected
+    // voice/speed/language (view_simplified memoizes it on exactly those), so
+    // a NEW resolver identity means the signature changed — indices marked
+    // warm under Puck must not read as warm under Kore (2026-07-17). Spurious
+    // identity churn only costs a cheap re-warm through the urlCache.
+    useEffect(() => {
+        warmedRef.current = new Set();
+        capturedWarmRef.current = new Set();
+    }, [getAudioUrl]);
+
     // ── Zero-latency pre-warm (2026-07-06) ──────────────────────────────
     // Whenever the active sentence changes, quietly fetch the NEXT few
     // sentences through the SAME getAudioUrl the player uses. Because that
@@ -1299,7 +1310,13 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         // the queue; pre-warm fills in behind it.
         const timer = setTimeout(run, 200);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage]);
+        // getAudioUrl is a dep ON PURPOSE (2026-07-17): a new resolver identity
+        // means the request signature (voice/speed/language) may have changed;
+        // the reset effect above just cleared the warm sets, and re-running
+        // here re-warms under the new signature. This never restarts the
+        // CURRENT sentence — warming is forward-only (idx+1…) and playback
+        // reads via getAudioUrlRef.
+    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage, getAudioUrl]);
 
     // If saving is enabled while a sentence is already playing, capture that
     // current clip instead of waiting for the next sentence.

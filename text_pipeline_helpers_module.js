@@ -310,6 +310,30 @@ const normalizeCitationPlacement = (text) => {
     return result;
 };
 
+// ── Markdown block-boundary repair (2026-07-17) ───────────────────────────
+// The model sometimes glues an ATX heading onto the previous paragraph with
+// no newline — "...night. [⁽⁴⁾](url)## Why the Brain Dreams" — and Markdown
+// (correctly) renders the "##" as literal text because headings must start at
+// a line boundary. Deterministic, CONSERVATIVE repair: only fires when the
+// hash run directly follows sentence/citation-closing punctuation, so inline
+// uses like "C# is", "issue #5", or "# hashtag" prose never match. Fenced
+// code blocks are protected wholesale. Heading-only by design (the confirmed
+// failure class) — do NOT extend to mid-line list/blockquote markers without
+// their own regression fixtures.
+const normalizeMarkdownBlockBoundaries = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    // Split out fenced code (``` … ```); odd segments are fences — untouched.
+    const parts = String(text).split(/(```[\s\S]*?(?:```|$))/);
+    return parts.map((part, i) => {
+        if (i % 2 === 1) return part;
+        return part
+            // Glued: ")## Heading", ".# Heading", "?## Heading" …
+            .replace(/([)\].!?:'"”’…])(#{1,6})(?=[ \t]+\S)/g, '$1\n\n$2')
+            // Space-separated needs ≥2 hashes (". # 5" in prose must survive):
+            .replace(/([)\].!?:'"”’…])[ \t]+(#{2,6})(?=[ \t]+\S)/g, '$1\n\n$2');
+    }).join('');
+};
+
 const filterEducationalSources = (chunks) => {
     if (!chunks || !Array.isArray(chunks)) return chunks;
     const rejectUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
@@ -852,6 +876,7 @@ const createTextPipelineHelpers = () => ({
   processMathHTML,
   sanitizeTruncatedCitations,
   normalizeCitationPlacement,
+  normalizeMarkdownBlockBoundaries,
   filterEducationalSources,
   generateBibliographyString,
   processGrounding,

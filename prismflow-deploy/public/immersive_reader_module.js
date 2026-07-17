@@ -1055,6 +1055,10 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     capturedWarmRef.current = /* @__PURE__ */ new Set();
   }, [text, sentenceList]);
   useEffect(() => {
+    warmedRef.current = /* @__PURE__ */ new Set();
+    capturedWarmRef.current = /* @__PURE__ */ new Set();
+  }, [getAudioUrl]);
+  useEffect(() => {
     if (!isOpen || !isPlaying || currentAudioReadyIdx !== sentenceIdx || sentences.length === 0) return;
     const resolver = getAudioUrlRef.current;
     if (typeof resolver !== "function") return;
@@ -1095,7 +1099,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage]);
+  }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage, getAudioUrl]);
   const previousCaptureOnRef = useRef(captureOn);
   useEffect(() => {
     const justEnabled = !previousCaptureOnRef.current && captureOn;

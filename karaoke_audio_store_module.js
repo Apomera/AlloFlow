@@ -193,6 +193,28 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       // Provenance of a stored sentence ('ai' | 'human-teacher' | ...) or null.
       sourceOf: function (sentence) { var e = map.get(keyFor(sentence)); return e ? (e.source || 'ai') : null; },
       metadataOf: function (sentence) { var e = map.get(keyFor(sentence)); return e && e.metadata ? Object.assign({}, e.metadata) : null; },
+      // THE shared stored-clip compatibility guard (2026-07-17). Human
+      // recordings are voice-setting-independent and always play. AI clips
+      // only count as a hit when their stored metadata matches the ACTIVE
+      // request (voice, and speed/language when both sides carry them) —
+      // otherwise a session switched to Kore keeps replaying clips captured
+      // under Puck. Legacy AI entries without voice metadata count as a
+      // mismatch so one playthrough re-synthesizes and self-heals them.
+      // Used by phase_k playback AND the karaoke overlay resolver; do not
+      // add a surface that reads .get() directly for AI playback.
+      getCompatible: function (sentence, opts) {
+        var e = map.get(keyFor(sentence));
+        if (!e) return null;
+        if (String(e.source || 'ai').indexOf('human') === 0) return e.url;
+        var o = opts || {};
+        var meta = e.metadata || null;
+        if (o.voice) {
+          if (!meta || !meta.voice || String(meta.voice).toLowerCase() !== String(o.voice).toLowerCase()) return null;
+        }
+        if (o.speed != null && meta && meta.speed != null && Math.abs(Number(meta.speed) - Number(o.speed)) > 0.001) return null;
+        if (o.language && meta && meta.language && String(meta.language).toLowerCase() !== String(o.language).toLowerCase()) return null;
+        return e.url;
+      },
       lastPutError: function () { return lastPutError ? Object.assign({}, lastPutError) : null; },
       limits: function () { return { maxBytes: DEFAULT_MAX_BYTES, maxClipBytes: DEFAULT_MAX_CLIP_BYTES }; },
       remove: function (sentence) { var k = keyFor(sentence); _revoke(map.get(k)); map.delete(k); },

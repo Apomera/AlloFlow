@@ -8164,7 +8164,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=3b7b7101');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=e75e151f');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=edc2161c3');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=edc2161c3');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -8181,7 +8181,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=edc2161c3');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=edc2161c3');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=edc2161c3');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=24c81e1c');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=b2cf323a');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=edc2161c3');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=edc2161c3');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=edc2161c3');
@@ -8201,7 +8201,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=edc2161c3');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=edc2161c3');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=edc2161c3');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=7f1632c7');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d65f8010');
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=edc2161c3');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=edc2161c3');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=edc2161c3');
@@ -17284,6 +17284,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   };
   const releaseBlob = (url) => {
       if (url && activeBlobUrlsRef.current.has(url)) {
+          // TTS-cache-owned URLs are NOT revoked here (2026-07-17): callTTS's
+          // urlCache retains the same string, so revoking after one playback
+          // handed every REPLAY a dead blob: URL (1s+2s+4s retry storm). The
+          // cache owns those URLs until its own bounded LRU eviction revokes
+          // them (tts_source _cacheSet). We only drop our tracking reference.
+          if (typeof window.__alloTtsCacheOwnsUrl === 'function' && window.__alloTtsCacheOwnsUrl(url)) {
+              activeBlobUrlsRef.current.delete(url);
+              return;
+          }
           URL.revokeObjectURL(url);
           activeBlobUrlsRef.current.delete(url);
       }
@@ -26936,10 +26945,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       try {
           const _pk = window.AlloModules && window.AlloModules.PhaseKHelpers;
           if (!_pk || typeof _pk.prewarmSequenceAudio !== 'function') return;
-          const key = String(text || '').slice(0, 80);
-          if (!key || _advPrewarmedRef.current === key) return;
+          // Playback resolves voices from the CUMULATIVE adventureState.voiceMap
+          // (handleSpeak 'adventure-active'), not the per-scene voices field —
+          // continuation scenes usually omit voices entirely, so warming from
+          // scene.voices alone resolved the wrong voice and missed the cache.
+          // Merge cumulative map + any fresh scene voices (same result the
+          // commit path stores). Dedup by the FULL request signature (text
+          // prefix + narrator + voice map), not text alone: a voice change on
+          // the same scene must re-warm (2026-07-17).
+          const effectiveVoices = Object.assign({}, (adventureState && adventureState.voiceMap) || {}, voices || {});
+          const key = String(text || '').slice(0, 80) + '|' + String(selectedVoice || '') + '|' + JSON.stringify(effectiveVoices);
+          if (!String(text || '') || _advPrewarmedRef.current === key) return;
           _advPrewarmedRef.current = key;
-          _pk.prewarmSequenceAudio(text, { count: 2, voiceMap: voices || {}, deps: { callTTS, splitTextToSentences, selectedVoice } });
+          _pk.prewarmSequenceAudio(text, { count: 2, voiceMap: effectiveVoices, deps: { callTTS, splitTextToSentences, selectedVoice } });
       } catch (_) { /* pre-warm is best-effort; playback synthesizes on demand */ }
   };
   // Warm the PENDING scene while the dice modal / image generation runs (the

@@ -2084,7 +2084,13 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         _audioRef.current.pause();
         _audioRef.current.onended = null; // prevent chained playback
         if (currentSrc && currentSrc.startsWith('blob:') && _blobUrlsRef) {
-             URL.revokeObjectURL(currentSrc);
+             // Same ownership rule as the host's releaseBlob (2026-07-17): a
+             // URL still held by callTTS's urlCache must NOT be revoked here —
+             // replay would receive a dead blob: URL from the cache. Eviction
+             // in tts_source is the only place cache-owned URLs are revoked.
+             if (!(typeof window.__alloTtsCacheOwnsUrl === 'function' && window.__alloTtsCacheOwnsUrl(currentSrc))) {
+                 URL.revokeObjectURL(currentSrc);
+             }
              _blobUrlsRef.current.delete(currentSrc);
         }
         _audioRef.current = null;

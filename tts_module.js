@@ -79,6 +79,38 @@ const createTTS = deps => {
     wavBytes.set(pcmBytes);
     return buffer;
   };
+
+  // ── urlCache ownership + bounded eviction (2026-07-17) ────────────────
+  // The cache OWNS its blob URLs: playback must never revoke a URL that is
+  // still cached (playSequence used to releaseBlob() after each segment
+  // while the cache retained the string — every replay then got a dead
+  // blob: URL and burned 1s+2s+4s retries). Ownership contract:
+  //  • all cache writes go through _cacheSet (Map insertion order = LRU);
+  //  • eviction is the ONLY place a cache-owned URL is revoked;
+  //  • hosts ask window.__alloTtsCacheOwnsUrl(url) before revoking any
+  //    blob URL that may have come from callTTS.
+  const URL_CACHE_MAX_ENTRIES = 150;
+  const _cacheSet = (key, url) => {
+    if (state.urlCache.has(key)) state.urlCache.delete(key);
+    state.urlCache.set(key, url);
+    while (state.urlCache.size > URL_CACHE_MAX_ENTRIES) {
+      const oldestKey = state.urlCache.keys().next().value;
+      const oldestUrl = state.urlCache.get(oldestKey);
+      state.urlCache.delete(oldestKey);
+      try {
+        if (oldestUrl && String(oldestUrl).indexOf('blob:') === 0) URL.revokeObjectURL(oldestUrl);
+      } catch (_) {}
+    }
+  };
+  try {
+    window.__alloTtsCacheOwnsUrl = url => {
+      if (!url) return false;
+      for (const cached of state.urlCache.values()) {
+        if (cached === url) return true;
+      }
+      return false;
+    };
+  } catch (_) {}
   const fetchTTSBytes = (text, voiceName = "Puck", speed = 1, language = 'English', signal = null) => {
     // Defensive: ensure voiceName is a valid Gemini voice, fall back to Puck if not
     const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
@@ -255,12 +287,6 @@ const createTTS = deps => {
           throw new Error("No audio data received.");
         }
         const bytes = decodeBase64(base64Audio);
-        // Inter-request breathing room — the Word Sounds preload fires 10+
-        // TTS requests back-to-back through this queue, and the Canvas proxy
-        // rotates auth tokens fast enough that a request can land mid-
-        // rotation and come back 401. A small post-call delay (150ms) gives
-        // the proxy time to settle before the next serialized fetch starts.
-        await new Promise(r => setTimeout(r, 150));
         return {
           bytes,
           base64: base64Audio
@@ -270,7 +296,14 @@ const createTTS = deps => {
         throw err;
       }
     });
-    state.queue = queuedTask.catch(() => {});
+    // Inter-request breathing room — the Word Sounds preload fires 10+
+    // TTS requests back-to-back through this queue, and the Canvas proxy
+    // rotates auth tokens fast enough that a request can land mid-
+    // rotation and come back 401. The 150ms settle gap lives on the QUEUE
+    // (before the next serialized fetch), not on the caller's await —
+    // moving it off the critical path (2026-07-17) shaves 150ms from
+    // every time-to-first-audio without changing inter-request spacing.
+    state.queue = queuedTask.catch(() => {}).then(() => new Promise(r => setTimeout(r, 150)));
     return queuedTask;
   };
 
@@ -420,7 +453,7 @@ const createTTS = deps => {
                 type: 'audio/wav'
               });
               const url = URL.createObjectURL(blob);
-              state.urlCache.set(canvasCacheKey, url);
+              _cacheSet(canvasCacheKey, url);
               console.log('[Canvas TTS] ✅ Gemini TTS succeeded!');
               return url;
             }
@@ -663,7 +696,7 @@ const createTTS = deps => {
           type: 'audio/wav'
         });
         const url = URL.createObjectURL(blob);
-        state.urlCache.set(cacheKey, url);
+        _cacheSet(cacheKey, url);
         return url;
       } catch (e) {
         lastError = e;
@@ -974,7 +1007,7 @@ const createTTS = deps => {
           type: 'audio/wav'
         });
         const url = URL.createObjectURL(blob);
-        state.urlCache.set(cacheKey, url);
+        _cacheSet(cacheKey, url);
         console.log("[TTS-Bot] ✅ Bot speech generated via dedicated queue for:", text?.substring(0, 30));
         return url;
       } catch (e) {

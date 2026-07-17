@@ -2029,6 +2029,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   currentEnglishDisplay = normalizeCitationPlacement(currentEnglishDisplay);
               }
           }
+          // Structural Markdown repair AFTER citation repair, BEFORE every
+          // state write (2026-07-17): the model sometimes glues "## Heading"
+          // onto the previous paragraph ("...(url)## Why the Brain Dreams")
+          // and the renderer then correctly shows a literal "##". Applies on
+          // every streamed chunk update, citations kept or not. Identity
+          // fallback tolerates a stale helpers module during CDN skew.
+          const _mdBounds = (window.AlloModules && window.AlloModules.TextPipelineHelpers
+              && window.AlloModules.TextPipelineHelpers.normalizeMarkdownBlockBoundaries) || ((s) => s);
+          currentTotal = _mdBounds(currentTotal);
+          currentEnglishDisplay = _mdBounds(currentEnglishDisplay);
           if (effectiveLanguage !== 'English') {
               currentTotal += `\n\n${delimiter}\n\n${currentEnglishDisplay}`;
           }
@@ -2069,6 +2079,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                       repairedEnglish = normalizeCitationPlacement(repairedEnglish);
                   }
               }
+              // Same structural Markdown repair as the streamed path above.
+              const _mdBoundsRepair = (window.AlloModules && window.AlloModules.TextPipelineHelpers
+                  && window.AlloModules.TextPipelineHelpers.normalizeMarkdownBlockBoundaries) || ((s) => s);
+              repairedTotal = _mdBoundsRepair(repairedTotal);
+              repairedEnglish = _mdBoundsRepair(repairedEnglish);
               if (effectiveLanguage !== 'English') {
                   repairedTotal += `\n\n${delimiter}\n\n${repairedEnglish}`;
               }
