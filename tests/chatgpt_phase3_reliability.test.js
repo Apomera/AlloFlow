@@ -128,11 +128,15 @@ describe('#6 — content fidelity is re-measured after html mutations', () => {
   it('wiring: exported, aliased into the primary pass, and merged per accepted auto-continue round', () => {
     expect(dp).toContain('recomputeContentFidelity: _wrap(_recomputeContentFidelity),');
     expect(dp).toContain('const _normIntegrity = _alloNormForCoverage;');
-    expect(anti).toContain('try { _roundFid = (!result._auditOnly && recomputeContentFidelity) ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}');
-    expect(anti).toContain('integrityCoverage: _nextIntegrityCoverage,');
-    // The accepted round is now one exact-HTML-bound snapshot. Fidelity and binding
-    // must travel through that same snapshot into rendered state.
-    expect(anti).toMatch(/verificationHtmlBinding: _verificationHtmlBinding,[\s\S]{0,500}?integrityCoverage: _nextIntegrityCoverage,[\s\S]{0,2500}?!attachVerificationHtmlProof\(cur, result\.html\)[\s\S]{0,500}?const snapshot = cur;[\s\S]{0,800}?setPdfFixResult\(snapshot\);/);
+    // #6-full (2026-07-16): the per-round recompute + merge moved into the canonical reducer;
+    // the host merges every accepted round through it.
+    expect(dp).toContain('_roundFid = _recomputeContentFidelity(round.sourceText, html);');
+    expect(dp).toContain('integrityCoverage: _nextIntegrityCoverage,');
+    expect(anti).toContain('_mergedRound = await _finalizeRound(cur, {');
+    // The accepted round is still one exact-HTML-bound snapshot: the reducer binds fidelity +
+    // binding into the same assign, and the host routes that snapshot into rendered state.
+    expect(dp).toMatch(/verificationHtmlBinding: _verificationHtmlBinding,[\s\S]{0,500}?integrityCoverage: _nextIntegrityCoverage,/);
+    expect(anti).toMatch(/!attachVerificationHtmlProof\(cur, result\.html\)[\s\S]{0,500}?const snapshot = cur;[\s\S]{0,800}?setPdfFixResult\(snapshot\);/);
   });
 });
 

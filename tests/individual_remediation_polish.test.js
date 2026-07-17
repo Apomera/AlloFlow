@@ -129,12 +129,15 @@ describe('#6-ext — per-round recompute carries numeric + structural warnings (
   it('wiring: the host REPLACES recomputable kinds and carries run-scoped kinds forward', () => {
     expect(dp).toContain('const _RECOMPUTABLE_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };');
     expect(dp).toContain('recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS,');
-    expect(anti).toContain('(cur.fidelityNotes || []).filter((n) => !(n && _recompKinds[n.kind])).concat(_roundFid.fidelityNotes || [])');
-    expect(anti).toContain('fidelityNotes: _roundNotes,');
-    expect(anti).toContain('if (_verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {');
+    // #6-full (2026-07-16): the replace-recomputable/carry-run-scoped merge moved VERBATIM into
+    // the canonical reducer (which uses the module constant directly); the host delegates.
+    expect(dp).toContain('(cur.fidelityNotes || []).filter((n) => !(n && _RECOMPUTABLE_FIDELITY_KINDS[n.kind])).concat(_roundFid.fidelityNotes || [])');
+    expect(dp).toContain('fidelityNotes: _roundNotes,');
+    expect(dp).toContain('_roundFid.numericWarn].filter(Boolean)');
+    expect(anti).toContain('_mergedRound = await _finalizeRound(cur, {');
+    expect(anti).toContain('if (cur.verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {');
     expect(anti).toContain('const snapshot = cur;');
     expect(anti).toContain('setPdfFixResult(snapshot);');
-    expect(anti).toContain('_roundFid.numericWarn].filter(Boolean)');
   });
 });
 

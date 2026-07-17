@@ -108,7 +108,11 @@ describe('single source of truth: one computeHeadline, consumed everywhere (2026
     expect(antiSrc).toMatch(/const _ch = window\.AlloModules && window\.AlloModules\.createDocPipeline && window\.AlloModules\.createDocPipeline\.computeHeadline;/);
     expect(antiSrc).toMatch(/if \(typeof _ch === 'function'\) return _ch\(aiScore, axeScore\);/);
     // the monolith's auto-continue round routes its headline through the delegating helper, not a raw min
-    expect(antiSrc).toMatch(/const newScore = \(_det !== null\) \? blendAiAxe\(reVerify\.score, _det\)/);
+    // #6-full (2026-07-16): the round headline moved into the canonical reducer, which consumes
+    // _alloComputeHeadline DIRECTLY (one hop closer to the single source than blendAiAxe was);
+    // the host loop commits the reducer's afterScore verbatim.
+    expect(pipeSrc).toContain('const afterScore = (_det !== null) ? _alloComputeHeadline(aiAudit.score, _det) : aiAudit.score;');
+    expect(antiSrc).toContain('const newScore = _mergedRound.afterScore;');
     expect(antiSrc).not.toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\)/);
   });
 });

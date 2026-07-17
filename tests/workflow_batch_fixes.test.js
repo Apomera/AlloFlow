@@ -92,7 +92,10 @@ describe('lang-ell: override wrong en, preserve a region subtag', () => {
 
 describe('anti-drift: the host auto-continue loop scores by min + clears the degraded flag', () => {
   it('the loop routes its headline through the shared blendAiAxe (delegating helper), not a raw min/mean', () => {
-    expect(host).toMatch(/const newScore = \(_det !== null\) \? blendAiAxe\(reVerify\.score, _det\) : reVerify\.score;/);
+    // #6-full (2026-07-16): the round headline is computed in the canonical reducer (via
+    // _alloComputeHeadline, the same single source blendAiAxe delegates to); the loop commits it.
+    expect(pipe).toContain('const afterScore = (_det !== null) ? _alloComputeHeadline(aiAudit.score, _det) : aiAudit.score;');
+    expect(host).toContain('const newScore = _mergedRound.afterScore;');
     expect(host).not.toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\)/);
     expect(host).not.toMatch(/Math\.round\(\(reVerify\.score \+ _det\) \/ 2\)/);
   });
@@ -104,7 +107,8 @@ describe('anti-drift: the host auto-continue loop scores by min + clears the deg
   it('a completed FULL-COVERAGE re-verify clears _aiVerificationIncomplete on the primary path', () => {
     // Tightened 2026-07-10 (ChatGPT review, finding 6): a PARTIAL re-audit can carry a numeric
     // score — clearing on "numeric" alone erased the incomplete disclosure from 2-of-3 coverage.
-    expect(host).toContain("const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';");
+    // #6-full (2026-07-16): the coverage-based clear lives in the canonical reducer now.
+    expect(pipe).toContain("const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';");
   });
 });
 
