@@ -1093,6 +1093,9 @@ window.SelHub = window.SelHub || {
       // ──────────────────────────────────────────────────────────
       // MODE: select (scenario picker grid)
       // ──────────────────────────────────────────────────────────
+      if (mode === 'replay' && window.SelHubConflictReplay) {
+        return window.SelHubConflictReplay.render(ctx, { h: h, fg: _cftFg, bg: _cftBg, bd: _cftBd, d: d, upd: upd, announceSR: announceSR, band: band });
+      }
       if (mode === 'select') {
         var scenarioList = Object.keys(SCENARIOS).map(function(k) { return SCENARIOS[k]; });
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
@@ -1141,6 +1144,16 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('p', { style: { fontSize: 10, color: _cftFg('#64748b'), textAlign: 'center', margin: 0 } }, 'Click any scenario to read the full setup and start.'),
+          // ── Conflict Replay launch card (camera wave; hidden when AI/vision is off) ──
+          ctx.callGeminiVision ? h('button', {
+            'aria-label': 'Open Conflict Replay: act a scene, record it, and watch the tagged replay',
+            onClick: function() { upd('mode', 'replay'); announceSR('Conflict Replay opened.'); },
+            style: { width: '100%', textAlign: 'left', marginTop: 14, padding: 12, borderRadius: 12, border: '1px dashed #f59e0b', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer' }
+          },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _cftFg('#f1f5f9') } }, '🎬 Conflict Replay — act it, record it, re-shoot it'),
+            h('p', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), margin: '4px 0 0', lineHeight: 1.5 } },
+              'Record up to 3 minutes of an ACTED conflict, watch the tagged replay (openers, bids, repair attempts), then re-shoot the scene with one change. Recordings stay on this device and are deleted when you finish.')
+          ) : null,
           // Cross-session memory control: forget characters' memory of you
           Object.keys(memory).length > 0 && h('div', { style: { textAlign: 'center', marginTop: 16, paddingTop: 14, borderTop: '1px solid #1e293b' } },
             h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), marginBottom: 6 } },
@@ -1592,4 +1605,265 @@ window.SelHub = window.SelHub || {
   });
 
   console.log('[SelHub] sel_tool_conflicttheater.js loaded — Conflict Theater v0.1');
+
+  // ═══════════════════════════════════════════════════════════════
+  // Conflict Replay wave (2026-07-17, design: docs/conflict_replay_design.md)
+  // Students ACT a conflict from a theater card, record ≤3 minutes,
+  // and get back a tagged timeline (acting-out-cycle arc + Gottman-derived
+  // OBSERVABLE moment vocabulary) with SIP pause questions and ONE
+  // Selman-leveled re-shoot suggestion. A lens and a conversation
+  // scaffold — never a measurement, never a prediction.
+  //
+  // INVARIANT-6 (ephemeral footage): recordings and analysis live ONLY in
+  // this transient module variable — never in ctx.update/toolData, never in
+  // any browser storage, never uploaded except the single in-memory
+  // analysis call. Tags persist ONLY via the explicit adult Save button.
+  var _crT = { stream: null, rec: null, chunks: [], blob: null, url: null, timer: null, secs: 0, takes: [null, null], analyzing: false, err: null };
+  function _crRelease(full) {
+    try { if (_crT.stream) _crT.stream.getTracks().forEach(function(t) { t.stop(); }); } catch (_) {}
+    try { if (_crT.url) URL.revokeObjectURL(_crT.url); } catch (_) {}
+    if (_crT.timer) { clearInterval(_crT.timer); }
+    _crT.stream = null; _crT.rec = null; _crT.chunks = []; _crT.blob = null; _crT.url = null; _crT.timer = null; _crT.secs = 0; _crT.analyzing = false; _crT.err = null;
+    if (full) { _crT.takes = [null, null]; }
+  }
+  window.addEventListener('beforeunload', function() { _crRelease(true); });
+
+  // INVARIANT-3 caption — rendered on every analysis surface.
+  var _CR_CAPTION = 'These are conversation starters an AI noticed — not an assessment of any student.';
+  // Prompt pins invariants 1/2/4/5/8/9. Speaker A/B de-identification is the default and only register.
+  var _CR_PROMPT = [
+    'You are helping students review a ROLEPLAYED (acted) peer conflict they recorded on purpose to practice repair skills.',
+    'Tag OBSERVABLE moments only, using this vocabulary: opener (soft or harsh start), escalation (voice, interruption, body cues), bid (an attempt to connect, lighten, or fix — received, missed, or turned away), repair (an attempt to make it right — landed or not), flooding (someone may need a break).',
+    'Rules you must never break:',
+    '- Refer to people ONLY as "Speaker A" and "Speaker B". Never guess names, ages, or identities.',
+    '- Describe behaviors, never traits: name the MOMENT ("a criticism-shaped opener at 0:12"), never the PERSON ("Speaker A is critical").',
+    '- Never predict the future of any relationship or person. No risk language, no trajectories.',
+    '- No scores, grades, percentages, or ratios of any kind.',
+    '- kidLine wording must be warm, plain, and shame-free (grade 3-8 reading level).',
+    '- repairSuggestion: ONE next-step invitation phrased as "You could try..." matched one small step above what you observed (impulsive -> unilateral -> reciprocal -> collaborative register). Do not name or mention the level itself.',
+    '- If the footage shows real distress, physical aggression, threats, or anything that does not look like acting, set "crisis": true and return NO tags.',
+    'Return ONLY minified JSON, no markdown fences: {"crisis":false,"arc":[{"phase":"trigger|agitation|acceleration|peak|deescalation|recovery","t":seconds}],"tags":[{"t":seconds,"type":"opener|escalation|bid|repair|flooding","speaker":"A|B","kidLine":string,"evidence":string,"received":true|false|null}],"pausePoints":[{"t":seconds,"why":string}],"repairSuggestion":string,"debriefSeeds":[string]}',
+  ].join('\n');
+  var _CR_TAG_META = {
+    opener: { icon: '🚪', label: 'Opener' }, escalation: { icon: '📈', label: 'Heating up' },
+    bid: { icon: '🤝', label: 'Bid' }, repair: { icon: '🔧', label: 'Repair attempt' }, flooding: { icon: '🌊', label: 'Flooded?' }
+  };
+  function _crFmtT(s) { s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+  function _crParse(raw) {
+    try {
+      var txt = String(raw || '').replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
+      var j = JSON.parse(txt);
+      if (j.crisis === true) return { crisis: true };
+      if (!Array.isArray(j.tags) || !Array.isArray(j.arc)) return null;
+      // Fail-closed field validation: drop malformed entries rather than invent.
+      j.tags = j.tags.filter(function(t) { return t && _CR_TAG_META[t.type] && typeof t.kidLine === 'string' && (t.speaker === 'A' || t.speaker === 'B'); }).slice(0, 24);
+      j.pausePoints = (Array.isArray(j.pausePoints) ? j.pausePoints : []).slice(0, 3);
+      j.debriefSeeds = (Array.isArray(j.debriefSeeds) ? j.debriefSeeds : []).filter(function(x) { return typeof x === 'string'; }).slice(0, 4);
+      j.repairSuggestion = typeof j.repairSuggestion === 'string' ? j.repairSuggestion : '';
+      return j;
+    } catch (_) { return null; }
+  }
+
+  window.SelHubConflictReplay = { render: function(ctx, env) {
+    var h = env.h, fg = env.fg, bg = env.bg, d = env.d, upd = env.upd, announceSR = env.announceSR;
+    var r = d.replay || {};
+    var updR = function(patch) { var next = Object.assign({}, r, patch); upd('replay', next); };
+    var step = r.step || 'consent';
+    var take = r.take || 1;
+    var vision = ctx.callGeminiVision;
+    var exit = function() { _crRelease(true); if (ctx.updateMulti) ctx.updateMulti('conflicttheater', { mode: 'select', replay: { savedTags: r.savedTags || null } }); else upd('mode', 'select'); };
+    var card = function(children, extra) { return h('div', Object.assign({ style: { padding: 14, borderRadius: 12, background: bg('#1e293b'), border: '1px solid #334155', marginBottom: 12 } }, extra || {}), children); };
+    var caption = h('p', { role: 'note', style: { fontSize: 11, color: fg('#94a3b8'), fontStyle: 'italic', margin: '8px 0 0' } }, '🔍 ' + _CR_CAPTION);
+    var head = h('div', { style: { textAlign: 'center', marginBottom: 14 } },
+      h('div', { style: { fontSize: 40 } }, '🎬'),
+      h('h2', { tabIndex: -1, style: { fontSize: 20, fontWeight: 800, color: fg('#f1f5f9'), margin: '2px 0' } }, 'Conflict Replay'),
+      h('p', { style: { fontSize: 12, color: fg('#94a3b8'), margin: 0 } }, 'Act it. Watch it back. Re-shoot it better. Take ' + take + ' of 2.'));
+    var backBtn = h('button', { onClick: exit, style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '← Back to Conflict Theater');
+
+    // ── Step: consent (INVARIANT-10 — the recorder is unreachable until affirmed) ──
+    if (step === 'consent') {
+      var c1 = !!r.cActors, c2 = !!r.cDevice, c3 = !!r.cAdult;
+      var all = c1 && c2 && c3;
+      var chk = function(key, val, label) {
+        return h('label', { style: { display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 12.5, color: fg('#e2e8f0'), cursor: 'pointer', marginBottom: 8, lineHeight: 1.5 } },
+          h('input', { type: 'checkbox', checked: val, onChange: function(ev) { var p = {}; p[key] = ev.target.checked; updR(p); } }), label);
+      };
+      return h('div', { style: { padding: 20, maxWidth: 640, margin: '0 auto' } }, head,
+        card([
+          h('h3', { key: 'h', style: { fontSize: 14, fontWeight: 800, color: fg('#f1f5f9'), marginTop: 0 } }, '📋 Before the camera turns on'),
+          chk('cActors', c1, 'Everyone on camera is an ACTOR in this practice scene, and we all agreed to record it.'),
+          chk('cDevice', c2, 'The recording stays on this device and is deleted automatically when we finish or close the tab. It is never saved.'),
+          chk('cAdult', c3, 'A teacher or counselor is with us for the watch-back conversation.'),
+          h('p', { key: 'n', style: { fontSize: 11, color: fg('#94a3b8'), lineHeight: 1.5, margin: '10px 0 0' } },
+            'This is coaching practice, not discipline: nothing here can be used for consequences, and the AI\'s tags are conversation starters, not judgments. Conflict Replay is for everyday practice conflicts — anything bigger belongs with your adult, not a camera.'),
+          caption
+        ]),
+        h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+          backBtn,
+          h('button', {
+            disabled: !all || !vision,
+            onClick: function() { if (all) { updR({ step: 'record' }); announceSR('Consent affirmed. Recorder ready.'); } },
+            style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: all && vision ? 'pointer' : 'not-allowed', background: all && vision ? '#f59e0b' : '#475569', color: '#1e293b' }
+          }, vision ? '🎥 Open the recorder' : 'AI features are turned off')));
+    }
+
+    // ── Step: record (≤180s hard cap; footage → _crT only) ──
+    if (step === 'record') {
+      var recording = !!(_crT.rec && _crT.rec.state === 'recording');
+      var startRec = function() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream) {
+          _crT.stream = stream; _crT.chunks = []; _crT.secs = 0;
+          var v = document.getElementById('cr-live'); if (v) { v.srcObject = stream; v.muted = true; v.play().catch(function() {}); }
+          var mr = new MediaRecorder(stream);
+          _crT.rec = mr;
+          mr.ondataavailable = function(ev) { if (ev.data && ev.data.size) _crT.chunks.push(ev.data); };
+          mr.onstop = function() {
+            var blob = new Blob(_crT.chunks, { type: mr.mimeType || 'video/webm' });
+            _crT.chunks = [];
+            try { if (_crT.stream) _crT.stream.getTracks().forEach(function(t) { t.stop(); }); } catch (_) {}
+            _crT.stream = null;
+            if (blob.size > 19 * 1024 * 1024) { _crT.err = 'That take is too big to analyze (' + Math.round(blob.size / 1048576) + ' MB — limit ~19). Try a shorter or lower-light take.'; updR({ step: 'record' }); return; }
+            if (_crT.url) { try { URL.revokeObjectURL(_crT.url); } catch (_) {} }
+            _crT.blob = blob; _crT.url = URL.createObjectURL(blob); _crT.err = null;
+            updR({ step: 'analyzing' });
+            var fr = new FileReader();
+            fr.onload = function() {
+              var b64 = String(fr.result || '').split(',')[1] || '';
+              vision(_CR_PROMPT, b64, blob.type || 'video/webm').then(function(res) {
+                var parsed = _crParse(res);
+                if (parsed && parsed.crisis) {
+                  _crRelease(); // INVARIANT-9: stop, discard, route to adults
+                  if (typeof ctx.onSafetyFlag === 'function') { try { ctx.onSafetyFlag({ tool: 'conflicttheater', kind: 'replay-crisis' }); } catch (_) {} }
+                  updR({ step: 'crisis' }); return;
+                }
+                _crT.takes[take - 1] = parsed; // may be null → "analysis unavailable"
+                _crT.analyzing = false;
+                updR({ step: 'replay' });
+                announceSR(parsed ? 'Replay ready with ' + parsed.tags.length + ' tagged moments.' : 'Replay ready. Analysis unavailable.');
+              }).catch(function() { _crT.takes[take - 1] = null; updR({ step: 'replay' }); });
+            };
+            fr.readAsDataURL(blob);
+          };
+          mr.start();
+          _crT.timer = setInterval(function() {
+            _crT.secs++;
+            var el = document.getElementById('cr-timer'); if (el) el.textContent = _crFmtT(_crT.secs) + ' / 3:00';
+            if (_crT.secs >= 180 && mr.state === 'recording') { clearInterval(_crT.timer); _crT.timer = null; mr.stop(); }
+          }, 1000);
+          updR({ step: 'record' });
+        }).catch(function() { _crT.err = 'Camera and microphone permission is needed to record the scene.'; updR({ step: 'record' }); });
+      };
+      return h('div', { style: { padding: 20, maxWidth: 640, margin: '0 auto' } }, head,
+        card([
+          h('video', { key: 'v', id: 'cr-live', playsInline: true, style: { width: '100%', borderRadius: 10, background: '#000', minHeight: 200 } }),
+          h('div', { key: 't', id: 'cr-timer', 'aria-live': 'polite', style: { textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 700, color: fg('#fbbf24'), marginTop: 6 } }, recording ? _crFmtT(_crT.secs) + ' / 3:00' : 'Up to 3 minutes'),
+          _crT.err ? h('p', { key: 'e', style: { fontSize: 12, color: fg('#fbbf24'), marginTop: 6 } }, '⚠️ ' + _crT.err) : null,
+          take === 2 && r.tryThis ? h('p', { key: 'g', style: { fontSize: 12.5, color: fg('#e2e8f0'), background: bg('#0f172a'), padding: 10, borderRadius: 8, marginTop: 8, lineHeight: 1.5 } }, '🎯 This take: ' + r.tryThis) : null
+        ]),
+        h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+          backBtn,
+          recording
+            ? h('button', { onClick: function() { if (_crT.timer) { clearInterval(_crT.timer); _crT.timer = null; } _crT.rec.stop(); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#ef4444', color: '#fff' } }, '⏹ Stop & watch back')
+            : h('button', { onClick: startRec, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '⏺ Action!')));
+    }
+
+    if (step === 'analyzing') {
+      return h('div', { style: { padding: 40, textAlign: 'center' } },
+        h('div', { style: { fontSize: 40 } }, '🎞️'),
+        h('p', { style: { color: fg('#e2e8f0'), fontSize: 14, fontWeight: 700 } }, 'Watching your scene for repair moments…'),
+        h('p', { style: { color: fg('#94a3b8'), fontSize: 12 } }, 'The recording stays on this device and is deleted when you finish.'));
+    }
+
+    // ── Step: crisis (INVARIANT-9) ──
+    if (step === 'crisis') {
+      return h('div', { style: { padding: 20, maxWidth: 560, margin: '0 auto' } },
+        card([
+          h('h3', { key: 'h', style: { color: fg('#fbbf24'), fontSize: 15, marginTop: 0 } }, '🧡 Let\'s pause here'),
+          h('p', { key: 'p', style: { color: fg('#e2e8f0'), fontSize: 13, lineHeight: 1.6 } },
+            'This looked bigger than a practice conflict, so the recording was deleted and no tags were made. That\'s not a judgment — some things deserve a person, not a camera. Please talk with the teacher or counselor in the room.'),
+          window.SelHub && typeof window.SelHub.renderCrisisResources === 'function' ? window.SelHub.renderCrisisResources(h, env.band) : null
+        ]),
+        h('div', { style: { textAlign: 'center' } }, backBtn));
+    }
+
+    // ── Step: replay (tagged timeline; adult may remove tags — AI proposes, human disposes) ──
+    if (step === 'replay') {
+      var a = _crT.takes[take - 1];
+      var removed = r.removedIdx || {};
+      var seek = function(t) { var v = document.getElementById('cr-play'); if (v && isFinite(t)) { v.currentTime = t; v.play().catch(function() {}); } };
+      var tagRows = a ? a.tags.map(function(tg, i) {
+        if (removed[take + ':' + i]) return null;
+        var m = _CR_TAG_META[tg.type];
+        return h('div', { key: i, style: { display: 'flex', gap: 8, alignItems: 'flex-start', padding: '7px 0', borderBottom: '1px solid #334155' } },
+          h('button', { onClick: function() { seek(tg.t); }, 'aria-label': 'Jump to ' + _crFmtT(tg.t), style: { fontVariantNumeric: 'tabular-nums', fontSize: 11.5, fontWeight: 800, color: fg('#7dd3fc'), background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 } }, _crFmtT(tg.t)),
+          h('div', { style: { flex: 1 } },
+            h('div', { style: { fontSize: 12.5, fontWeight: 700, color: fg('#f1f5f9') } }, m.icon + ' ' + m.label + ' — Speaker ' + tg.speaker + (tg.type === 'bid' || tg.type === 'repair' ? (tg.received === true ? ' · received' : tg.received === false ? ' · missed' : '') : '')),
+            h('div', { style: { fontSize: 12, color: fg('#cbd5e1'), lineHeight: 1.5 } }, tg.kidLine),
+            tg.evidence ? h('div', { style: { fontSize: 10.5, color: fg('#94a3b8'), fontStyle: 'italic' } }, tg.evidence) : null),
+          h('button', { onClick: function() { var p = {}; p[take + ':' + i] = true; updR({ removedIdx: Object.assign({}, removed, p) }); }, 'aria-label': 'Remove this tag (adult)', title: 'Remove this tag (adult)', style: { border: 'none', background: 'transparent', color: fg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'));
+      }).filter(Boolean) : null;
+      return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } }, head,
+        card([
+          _crT.url ? h('video', { key: 'v', id: 'cr-play', src: _crT.url, controls: true, playsInline: true, style: { width: '100%', borderRadius: 10, background: '#000' } }) : h('p', { key: 'nv', style: { color: fg('#94a3b8'), fontSize: 12 } }, 'The recording was already released.'),
+          a && a.arc.length ? h('div', { key: 'arc', 'aria-label': 'Conflict arc', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 } }, a.arc.map(function(ph, i) {
+            return h('button', { key: i, onClick: function() { seek(ph.t); }, style: { fontSize: 10.5, padding: '3px 8px', borderRadius: 999, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer' } }, ph.phase + ' ' + _crFmtT(ph.t));
+          })) : null,
+          caption
+        ]),
+        a ? card([h('h3', { key: 'h', style: { fontSize: 13.5, fontWeight: 800, color: fg('#f1f5f9'), marginTop: 0 } }, '🏷️ Tagged moments'), tagRows && tagRows.length ? tagRows : h('p', { key: 'none', style: { fontSize: 12, color: fg('#94a3b8') } }, 'No tagged moments — that can happen with short or quiet takes.')])
+          : card([h('p', { key: 'na', style: { fontSize: 12.5, color: fg('#94a3b8'), margin: 0 } }, 'Analysis unavailable for this take — you can still re-watch and talk it through together.')]),
+        a && a.pausePoints.length ? card([
+          h('h3', { key: 'h', style: { fontSize: 13.5, fontWeight: 800, color: fg('#f1f5f9'), marginTop: 0 } }, '⏸️ Pause and think'),
+          a.pausePoints.map(function(pp, i) {
+            return h('div', { key: i, style: { marginBottom: 8 } },
+              h('button', { onClick: function() { seek(pp.t); }, style: { fontSize: 11.5, fontWeight: 800, color: fg('#7dd3fc'), background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 } }, _crFmtT(pp.t) + (pp.why ? ' — ' + pp.why : '')),
+              h('p', { style: { fontSize: 12, color: fg('#cbd5e1'), margin: '2px 0 0', lineHeight: 1.5 } }, 'What did you see? What did you think it meant? What else could it have meant?'));
+          })
+        ]) : null,
+        h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+          backBtn,
+          take === 1 && a && a.repairSuggestion ? h('button', { onClick: function() { updR({ step: 'record', take: 2, tryThis: a.repairSuggestion }); announceSR('Re-shoot with one change.'); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '🎬 Re-shoot with one change') : null,
+          take === 2 ? h('button', { onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '🗣️ Debrief') : (a ? h('button', { onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' } }, 'Skip to debrief') : null)));
+    }
+
+    // ── Step: debrief (restorative + Peacemakers + emotion-coaching cue card) ──
+    if (step === 'debrief') {
+      var t1 = _crT.takes[0], t2 = _crT.takes[1];
+      var col = function(title, ta) {
+        return h('div', { style: { flex: 1, minWidth: 220 } },
+          h('h4', { style: { fontSize: 12, fontWeight: 800, color: fg('#f1f5f9'), margin: '0 0 6px' } }, title),
+          ta ? ta.tags.map(function(tg, i) { var m = _CR_TAG_META[tg.type]; return h('div', { key: i, style: { fontSize: 11.5, color: fg('#cbd5e1'), padding: '3px 0' } }, _crFmtT(tg.t) + ' ' + m.icon + ' ' + tg.kidLine); })
+            : h('p', { style: { fontSize: 11, color: fg('#94a3b8') } }, 'No analysis for this take.'));
+      };
+      return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } }, head,
+        t1 && t2 ? card([h('h3', { key: 'h', style: { fontSize: 13.5, fontWeight: 800, color: fg('#f1f5f9'), marginTop: 0 } }, '🎞️ Before → after'), h('div', { key: 'c', style: { display: 'flex', gap: 14, flexWrap: 'wrap' } }, col('Take 1', t1), col('Take 2', t2)), caption]) : null,
+        card([
+          h('h3', { key: 'h', style: { fontSize: 13.5, fontWeight: 800, color: fg('#f1f5f9'), marginTop: 0 } }, '🗣️ Talk it through'),
+          h('ol', { key: 'q', style: { fontSize: 12.5, color: fg('#e2e8f0'), lineHeight: 1.8, paddingLeft: 18, margin: 0 } },
+            h('li', null, 'What happened, from each side?'),
+            h('li', null, 'Who was affected, and how?'),
+            h('li', null, 'What does each of you want, feel, and why? (Say it back in their words before answering.)'),
+            h('li', null, 'Invent two options together that could work for both of you.'),
+            h('li', null, 'What needs to happen to make it right — and what will you each try next time?'))
+        ]),
+        card([
+          h('h3', { key: 'h', style: { fontSize: 13, fontWeight: 800, color: fg('#fde68a'), marginTop: 0 } }, '🧑‍🏫 For the adult in the room'),
+          h('p', { key: 'p', style: { fontSize: 12, color: fg('#cbd5e1'), lineHeight: 1.6, margin: 0 } },
+            'Name feelings before problem-solving ("It sounds like that felt unfair") and validate before redirecting. Conflict is normal; repair is the muscle this practices. Tags are moments, not verdicts — remove any that don\'t match what you saw.')
+        ]),
+        h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() {
+              // Explicit adult action: the ONLY path by which any analysis output persists (de-identified tags, no footage).
+              var save = { when: new Date().toISOString(), takes: [t1, t2].map(function(ta) { return ta ? { tags: ta.tags, arc: ta.arc } : null; }) };
+              updR({ savedTags: save });
+              if (ctx.addToast) ctx.addToast('Saved the de-identified tags (Speaker A/B only). The recordings themselves are gone.', 'success');
+            },
+            style: { padding: '8px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
+          }, '💾 Save tags (adult only)'),
+          h('button', { onClick: exit, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '✅ Finish (recordings deleted)')));
+    }
+
+    return h('div', null, backBtn);
+  } };
 })();
