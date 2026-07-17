@@ -1,0 +1,1289 @@
+[
+  {
+    "id": "parapro-b4-mathematics-001",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "A school has 2,856 stickers and places them equally into 24 reward packets. How many stickers are in each packet?",
+    "choices": [
+      "119",
+      "109",
+      "129",
+      "68"
+    ],
+    "answerIndex": 0,
+    "rationale": "Equal sharing requires division. Since 24 times 120 is 2,880, subtracting one group of 24 gives 2,856, so 2,856 divided by 24 equals 119 stickers per packet.",
+    "choiceRationales": [
+      "This is correct because 24 multiplied by 119 equals 2,856, accounting for every sticker in equal packets.",
+      "This is 10 stickers too few per packet; 24 times 109 is only 2,616, leaving 240 stickers unassigned.",
+      "This is 10 stickers too many per packet; 24 times 129 is 3,096, which exceeds the available total.",
+      "This comes from subtracting or combining the given numbers rather than dividing the total into 24 equal groups."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-002",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A fabric panel is 2 2/3 feet wide and 1 1/2 feet high. What is its area?",
+    "choices": [
+      "3 1/6 square feet",
+      "4 square feet",
+      "4 1/6 square feet",
+      "4 1/2 square feet"
+    ],
+    "answerIndex": 1,
+    "rationale": "Area is width times height. Converting the mixed numbers gives 8/3 times 3/2; canceling the factors of 3 and simplifying 24/6 gives exactly 4 square feet.",
+    "choiceRationales": [
+      "This results from combining parts of the mixed numbers without correctly multiplying the two complete factors.",
+      "This is correct because (8/3) times (3/2) simplifies to 8/2, or 4 square feet.",
+      "This adds an unnecessary sixth after the product has simplified to the whole number 4.",
+      "This is the sum of 2 2/3 and 1 1/2 rather than the product required to find rectangular area."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-003",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A container held 18.050 liters of solution. After 7.896 liters were used, how many liters remained?",
+    "choices": [
+      "10.846",
+      "11.154",
+      "10.154",
+      "11.954"
+    ],
+    "answerIndex": 2,
+    "rationale": "Aligning decimal points and subtracting thousandths gives 18.050 - 7.896 = 10.154. Adding 7.896 back to 10.154 returns 18.050, confirming the difference.",
+    "choiceRationales": [
+      "This reflects subtracting digits by size in some columns instead of regrouping across aligned place values.",
+      "This is one liter too large because the regrouping through the ones place was not completed correctly.",
+      "This is correct because aligned place-value subtraction yields 10.154 liters and the inverse addition checks.",
+      "This difference is too large and results from incorrect regrouping in both the decimal and whole-number places."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-004",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which situation is modeled by 72 divided by 9?",
+    "choices": [
+      "A shelf holds 72 books and receives 9 more books.",
+      "A shelf holds 72 books and 9 books are removed.",
+      "Nine shelves each hold 72 books.",
+      "Seventy-two books are shared equally among 9 shelves."
+    ],
+    "answerIndex": 3,
+    "rationale": "The expression 72 divided by 9 describes separating a total of 72 into 9 equal groups and finding the size of each group. Each shelf would receive 8 books.",
+    "choiceRationales": [
+      "Receiving 9 more books represents the addition expression 72 + 9, not equal sharing.",
+      "Removing 9 books represents the subtraction expression 72 - 9, not division into groups.",
+      "Nine groups of 72 represents multiplication, 9 times 72, and produces a much larger total.",
+      "This is correct because the 72 books are partitioned into 9 equal groups, exactly modeling 72 divided by 9."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-005",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "In the expression 9 + 4m, which number is the constant term added to the product 4m?",
+    "choices": [
+      "9",
+      "4",
+      "13",
+      "36"
+    ],
+    "answerIndex": 0,
+    "rationale": "The product 4m contains a numerical factor and a variable. The separate addend that does not depend on the value of m is 9, so 9 is the expression's constant term.",
+    "choiceRationales": [
+      "This is correct because 9 is the addend whose value remains fixed regardless of the value assigned to m.",
+      "The number 4 is the coefficient, or numerical factor multiplying m, rather than the separate constant term.",
+      "This adds 9 and 4 even though unlike terms cannot be combined before a value of m is known.",
+      "This multiplies 9 by 4 without justification and does not identify a term appearing in the expression."
+    ],
+    "skillIds": [
+      "mathematics-ratio-algebra"
+    ],
+    "chapterIds": [
+      "parapro-ch-06"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-006",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Compare the four numbers. Which value is greatest?",
+    "choices": [
+      "-0.30",
+      "-0.28",
+      "-31%",
+      "-7/20"
+    ],
+    "answerIndex": 1,
+    "rationale": "Writing each value as a decimal gives -0.30, -0.28, -0.31, and -0.35. Among negative numbers, the value closest to zero is greatest, so -0.28 is greatest.",
+    "choiceRationales": [
+      "Negative 0.30 lies to the left of negative 0.28 on a number line, so it is smaller.",
+      "This is correct because -0.28 is closest to zero among the four equivalent decimal comparisons.",
+      "Negative 31 percent equals -0.31, which is less than -0.28 because it lies farther from zero.",
+      "Negative 7/20 equals -0.35, making it the least, rather than the greatest, of the listed values."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-007",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "In the number 508.0472, which place value contains the digit 7?",
+    "choices": [
+      "Hundredths",
+      "Ten-thousandths",
+      "Thousandths",
+      "Tenths"
+    ],
+    "answerIndex": 2,
+    "rationale": "Digits to the right of the decimal point represent tenths, hundredths, thousandths, and ten-thousandths in order. The 7 is the third digit to the right, so it is in the thousandths place.",
+    "choiceRationales": [
+      "The hundredths digit is 4, the second digit to the right of the decimal point.",
+      "The ten-thousandths digit is 2, the fourth digit to the right of the decimal point.",
+      "This is correct because the third position to the right of the decimal point is the thousandths place.",
+      "The tenths digit is 0, the first digit immediately to the right of the decimal point."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-008",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A supply cabinet contains 250 folders, and 18% of them are green. How many green folders are in the cabinet?",
+    "choices": [
+      "32",
+      "40",
+      "44",
+      "45"
+    ],
+    "answerIndex": 3,
+    "rationale": "Convert 18% to 0.18 and multiply by the whole: 0.18 times 250 = 45. Equivalently, 10% is 25 and 8% is 20, giving 45 folders altogether.",
+    "choiceRationales": [
+      "This does not equal 18 percent of 250 and may result from applying the percent to an incorrect base.",
+      "This accounts for only 16 percent of 250, not the stated 18 percent.",
+      "This is one short of the product and reflects an arithmetic error when combining the partial percentages.",
+      "This is correct because 0.18 multiplied by 250 equals 45 green folders."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-009",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which power represents the product 3 times 3 times 3 times 3?",
+    "choices": [
+      "3^4",
+      "4^3",
+      "12^1",
+      "3^3"
+    ],
+    "answerIndex": 0,
+    "rationale": "An exponent tells how many times the base is used as a factor. Because 3 appears as a factor four times, the product is represented by 3^4, which has a value of 81.",
+    "choiceRationales": [
+      "This is correct because the base 3 is repeated as a factor exactly four times.",
+      "This uses 4 as the base three times, producing 64 rather than the displayed product of four threes.",
+      "This treats repeated multiplication as addition and uses the sum 12 as a base instead of preserving the factors.",
+      "This includes only three factors of 3, so it represents 27 rather than the four-factor product."
+    ],
+    "skillIds": [
+      "mathematics-ratio-algebra"
+    ],
+    "chapterIds": [
+      "parapro-ch-06"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-010",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "What is the value of 36 divided by (3 + 3) + 4 times 2?",
+    "choices": [
+      "10",
+      "14",
+      "20",
+      "56"
+    ],
+    "answerIndex": 1,
+    "rationale": "Evaluate the parentheses first: 3 + 3 = 6. Then complete division and multiplication before addition: 36 divided by 6 is 6, 4 times 2 is 8, and 6 + 8 = 14.",
+    "choiceRationales": [
+      "This does not include both the quotient 6 and the product 8 in the final addition.",
+      "This is correct because the ordered operations produce 36/6 + 8 = 6 + 8 = 14.",
+      "This can result from adding intermediate values without following the division and multiplication structure.",
+      "This adds or combines the written numbers before completing the grouped and multiplicative operations."
+    ],
+    "skillIds": [
+      "mathematics-ratio-algebra"
+    ],
+    "chapterIds": [
+      "parapro-ch-06"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-011",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Each of 27 classrooms is expected to use about 198 sheets of chart paper this year. Which is the best estimate of the total number of sheets?",
+    "choices": [
+      "600",
+      "3,000",
+      "6,000",
+      "54,000"
+    ],
+    "answerIndex": 2,
+    "rationale": "Round 27 to 30 and 198 to 200. The compatible product 30 times 200 equals 6,000, which is close to the exact product of 5,346 sheets.",
+    "choiceRationales": [
+      "This is about one tenth of a reasonable product and effectively omits a place value during multiplication.",
+      "This is too small because it would average only about 111 sheets per classroom rather than nearly 200.",
+      "This is correct because 27 is near 30 and 198 is near 200, giving the reasonable estimate 6,000.",
+      "This is about ten times too large and likely results from adding an extra zero to the estimated product."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-012",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A bakery delivers 15 trays with 18 muffins on each tray. The muffins are repacked into boxes of 6. How many full boxes can be made?",
+    "choices": [
+      "33",
+      "39",
+      "42",
+      "45"
+    ],
+    "answerIndex": 3,
+    "rationale": "The trays contain 15 times 18 = 270 muffins. Dividing the total by 6 muffins per box gives 270 divided by 6 = 45 full boxes.",
+    "choiceRationales": [
+      "This combines the numbers without first finding and repartitioning the full total of 270 muffins.",
+      "This is six boxes short and does not account for all 270 muffins in equal groups of 6.",
+      "This is three boxes short; 42 boxes would contain only 252 of the 270 muffins.",
+      "This is correct because 15 times 18 produces 270 muffins and 270 divided by 6 equals 45."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-013",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A student has saved $17.50 toward a $46.20 goal. How many more dollars, x, must the student save?",
+    "choices": [
+      "28.7",
+      "29.7",
+      "63.7",
+      "64.7"
+    ],
+    "answerIndex": 0,
+    "rationale": "The situation is represented by 17.5 + x = 46.2. Subtracting 17.5 from the goal gives x = 28.7, and adding $28.70 to $17.50 verifies the $46.20 total.",
+    "choiceRationales": [
+      "This is correct because 46.2 - 17.5 = 28.7 and the inverse addition returns 46.2.",
+      "This is one too large and reflects an error when regrouping across the decimal places.",
+      "This adds the two given values instead of using subtraction to undo the added 17.5.",
+      "This is one more than the sum of the given values and does not satisfy the original equation."
+    ],
+    "skillIds": [
+      "mathematics-ratio-algebra"
+    ],
+    "chapterIds": [
+      "parapro-ch-06"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-014",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "A copying pattern produces 3 shapes in stage 1, then doubles the number at every stage: 3, 6, 12, 24, 48. How many shapes will stage 6 contain?",
+    "choices": [
+      "72",
+      "96",
+      "144",
+      "192"
+    ],
+    "answerIndex": 1,
+    "rationale": "Each term is twice the preceding term: 3 times 2 is 6, 6 times 2 is 12, and the same rule continues. Therefore, the next term is 48 times 2 = 96.",
+    "choiceRationales": [
+      "This adds 24 to 48, but the amount added is not constant across the displayed sequence.",
+      "This is correct because applying the repeated doubling rule to 48 gives 96.",
+      "This triples 48 even though every consecutive pair shows multiplication by 2.",
+      "This multiplies 48 by 4 and skips the immediate next term produced by one doubling."
+    ],
+    "skillIds": [
+      "mathematics-ratio-algebra"
+    ],
+    "chapterIds": [
+      "parapro-ch-06"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-015",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A workshop begins at 9:38 a.m. and ends at 11:05 a.m. How many minutes does the workshop last?",
+    "choices": [
+      "67",
+      "77",
+      "87",
+      "127"
+    ],
+    "answerIndex": 2,
+    "rationale": "From 9:38 to 10:00 is 22 minutes, from 10:00 to 11:00 is 60 minutes, and from 11:00 to 11:05 is 5 minutes. The total is 22 + 60 + 5 = 87 minutes.",
+    "choiceRationales": [
+      "This omits 20 minutes from the elapsed-time count and does not span the full interval.",
+      "This is 10 minutes too short, likely from subtracting clock digits without regrouping an hour.",
+      "This is correct because the three consecutive intervals total 22 + 60 + 5 = 87 minutes.",
+      "This treats the hour-and-minute notation as a base-ten decimal subtraction rather than a base-60 time measure."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-016",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "A rope measures 3 yards 2 feet. What is the rope's total length in feet?",
+    "choices": [
+      "5",
+      "8",
+      "9",
+      "11"
+    ],
+    "answerIndex": 3,
+    "rationale": "Each yard equals 3 feet, so 3 yards equals 9 feet. Adding the remaining 2 feet gives 9 + 2 = 11 feet in all.",
+    "choiceRationales": [
+      "This adds the 3 yards and 2 feet as though their units were already the same.",
+      "This subtracts one foot from the 9-foot yard conversion instead of adding the extra 2 feet.",
+      "This converts the 3 yards correctly but omits the additional 2 feet stated in the measurement.",
+      "This is correct because 3 yards is 9 feet and 9 feet plus 2 feet equals 11 feet."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-017",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which statement must be true about every rectangle?",
+    "choices": [
+      "Its diagonals have equal lengths.",
+      "All four of its sides have equal lengths.",
+      "It has exactly one pair of parallel sides.",
+      "None of its angles is a right angle."
+    ],
+    "answerIndex": 0,
+    "rationale": "Every rectangle has four right angles, and its two diagonals are equal in length. A rectangle has two pairs of parallel sides, but it does not have to have four equal sides.",
+    "choiceRationales": [
+      "This is correct because the diagonals of every rectangle are congruent, even when adjacent sides differ in length.",
+      "Four equal sides are required for a square or rhombus but are not required for every rectangle.",
+      "A rectangle has two pairs of parallel opposite sides, not exactly one pair.",
+      "Every rectangle has four right angles, so this statement contradicts a defining property."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-018",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A rectangular box has a volume of 120 cubic inches. Its length is 6 inches and its width is 5 inches. What is its height?",
+    "choices": [
+      "3 inches",
+      "4 inches",
+      "20 inches",
+      "30 inches"
+    ],
+    "answerIndex": 1,
+    "rationale": "For a rectangular prism, volume equals length times width times height. The base area is 6 times 5 = 30 square inches, and 120 divided by 30 gives a height of 4 inches.",
+    "choiceRationales": [
+      "A height of 3 inches would produce only 6 times 5 times 3 = 90 cubic inches.",
+      "This is correct because 6 times 5 times 4 equals the given volume of 120 cubic inches.",
+      "This divides the volume by only the length and ignores the box's 5-inch width.",
+      "This is the base area in square inches, not the missing linear height of the box."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-019",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which ordered pair identifies the point that is 4 units left of the origin and 3 units above the origin?",
+    "choices": [
+      "(4, -3)",
+      "(-3, 4)",
+      "(-4, 3)",
+      "(4, 3)"
+    ],
+    "answerIndex": 2,
+    "rationale": "Moving left from the origin makes the x-coordinate negative, giving x = -4. Moving above the origin makes the y-coordinate positive, giving y = 3, so the point is (-4, 3).",
+    "choiceRationales": [
+      "This point is 4 units right and 3 units below the origin, reversing both stated directions.",
+      "This swaps the horizontal and vertical distances, placing the point 3 left and 4 above.",
+      "This is correct because left corresponds to x = -4 and above corresponds to y = 3.",
+      "This point is 4 units right, rather than left, of the origin even though its vertical coordinate is correct."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-020",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "A table lists the number of students using a study room: Monday 42, Tuesday 39, Wednesday 44, and Thursday 44. During which interval did the count decrease, and by how much?",
+    "choices": [
+      "Monday to Tuesday; it increased by 3.",
+      "Tuesday to Wednesday; it decreased by 5.",
+      "Wednesday to Thursday; it decreased by 1.",
+      "Monday to Tuesday; it decreased by 3."
+    ],
+    "answerIndex": 3,
+    "rationale": "The only decrease occurs from Monday's 42 students to Tuesday's 39 students. Subtracting 39 from 42 shows that the count decreased by 3 students.",
+    "choiceRationales": [
+      "The size of the difference is 3, but the direction is a decrease from 42 to 39, not an increase.",
+      "The count rises from 39 to 44 during this interval, so it increases by 5 rather than decreasing.",
+      "Both days show 44 students, so this interval has no change rather than a decrease of 1.",
+      "This is correct because the count moves downward from 42 to 39, a difference of 3 students."
+    ],
+    "skillIds": [
+      "mathematics-data-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-08"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-021",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "For the data set 2, 4, 4, 5, and 10, which statement is true?",
+    "choices": [
+      "The mean is 5 and the median is 4.",
+      "The median is 5 and the mode is 4.",
+      "The mean is 4 and the mode is 5.",
+      "The median is 4 and the mode is 10."
+    ],
+    "answerIndex": 0,
+    "rationale": "The values total 25, so their mean is 25 divided by 5 = 5. The middle ordered value is 4, making the median 4; the repeated value 4 is also the mode.",
+    "choiceRationales": [
+      "This is correct because the arithmetic mean is 5 and the center of the ordered list is 4.",
+      "The mode is 4, but the median is also 4, not 5; 5 is the calculated mean.",
+      "The mean and mode have been reversed: the mean is 5, while the only repeated value is 4.",
+      "The median is 4, but 10 occurs only once and therefore is not the mode."
+    ],
+    "skillIds": [
+      "mathematics-data-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-08"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-022",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A bar graph will show category totals of 120, 135, 150, and 165. Which vertical-axis scale begins at zero and places every total on a labeled tick mark?",
+    "choices": [
+      "0 to 18, with intervals of 3",
+      "0 to 180, with intervals of 15",
+      "120 to 165, with intervals of 15",
+      "0 to 180, with intervals of 40"
+    ],
+    "answerIndex": 1,
+    "rationale": "Multiples of 15 include all four data values, and a scale from 0 through 180 contains them while beginning at zero. Thus each bar can end at an accurately labeled tick mark.",
+    "choiceRationales": [
+      "This range is too small to include any of the four totals, which are all at least 120.",
+      "This is correct because 120, 135, 150, and 165 are all multiples of 15 between 0 and 180.",
+      "These ticks include the values, but the scale begins at 120 rather than at the required zero baseline.",
+      "This range begins at zero, but 135, 150, and 165 do not fall on labeled 40-unit tick marks."
+    ],
+    "skillIds": [
+      "mathematics-data-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-08"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-023",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student interprets 48 divided by 6 as 48 - 6 and reports 42. Which support would best develop the meaning of the quotient?",
+    "choices": [
+      "Ask the student to copy the division fact until the answer is memorized.",
+      "Confirm 42 because both subtraction and division make a starting number smaller.",
+      "Have the student arrange 48 counters into groups of 6, count the 8 groups, and connect the model to 48 divided by 6 = 8.",
+      "Have the student add 6 to 48 and label the resulting 54 as the quotient."
+    ],
+    "answerIndex": 2,
+    "rationale": "Grouping 48 counters into sets of 6 makes the division question visible: it asks how many groups of 6 fit in 48. Counting 8 complete groups connects the concrete model to the quotient.",
+    "choiceRationales": [
+      "Copying a fact may rehearse an answer but does not correct the student's confusion between subtraction and division.",
+      "Both operations can reduce a positive number, but that superficial similarity does not make 48 - 6 equivalent to 48/6.",
+      "This is correct because the groups-of-6 model directly represents the divisor, total, and quotient of 8.",
+      "Adding 6 represents a third, unrelated operation and produces neither the quotient nor a useful division model."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-024",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student calculates 5/6 divided by 5 as 25/6. Which model would best clarify the correct quotient?",
+    "choices": [
+      "Draw five wholes, divide each whole into sixths, and count all 30 pieces.",
+      "Join five strips of length 5/6 end to end to model multiplication by 5.",
+      "Shade 5/6 of a strip and then shade five more sixths on the same strip.",
+      "Show 5/6 as five pieces of size 1/6, share those pieces equally among five groups, and note that each group receives 1/6."
+    ],
+    "answerIndex": 3,
+    "rationale": "Dividing by 5 partitions the quantity 5/6 into five equal shares. Because 5/6 consists of five one-sixth pieces, each share contains one piece, so the quotient is 1/6.",
+    "choiceRationales": [
+      "This represents five complete wholes partitioned into sixths, not one quantity of 5/6 shared among five groups.",
+      "Joining five copies models (5/6) times 5, which is the operation behind the student's incorrect result.",
+      "Adding more sixths increases the original amount and does not partition it into equal shares.",
+      "This is correct because distributing the five one-sixth pieces one per group shows that each share is 1/6."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-025",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student tries to find 12% of 75 by calculating 75 divided by 12 and reports 6.25. Which response best develops an accurate percent strategy?",
+    "choices": [
+      "Find 10% of 75 as 7.5 and 2% as 1.5, then combine the parts to obtain 9.",
+      "Round 12% to 10%, use 7.5 as the exact answer, and omit the remaining 2%.",
+      "Multiply 75 by the whole number 12 and report 900 because percent always means multiplication.",
+      "Subtract 12 from 75 and report 63 because the percent sign can be ignored."
+    ],
+    "answerIndex": 0,
+    "rationale": "Decomposing 12% into 10% and 2% connects percent to parts per hundred. Ten percent of 75 is 7.5 and two percent is 1.5, so 12% of 75 equals 9.",
+    "choiceRationales": [
+      "This is correct because the two benchmark-percent parts total 12% and their values combine to 9.",
+      "Rounding can estimate the result, but 7.5 omits 2% of 75 and is not the requested exact value.",
+      "A percent must be written as 0.12 or 12/100 before multiplying; using 12 makes the result 100 times too large.",
+      "Subtracting the numeral 12 treats a rate as a count and does not calculate a percentage of the whole."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-026",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student solves p - 8 = 19 by subtracting 8 from 19 and states that p = 11. Which feedback best addresses the operation needed?",
+    "choices": [
+      "Tell the student to change the subtraction sign in the original equation to addition.",
+      "Use a balance model to add 8 to both sides, obtaining p = 27, and verify that 27 - 8 = 19.",
+      "Multiply both sides by 8 because every equation with a variable requires multiplication.",
+      "Accept 11 because 19 - 8 is a valid arithmetic statement even though it does not satisfy the equation."
+    ],
+    "answerIndex": 1,
+    "rationale": "The subtraction of 8 is undone by adding 8 while preserving equality on both sides. This yields p = 27, and substituting 27 confirms that 27 - 8 equals 19.",
+    "choiceRationales": [
+      "Changing the given equation alters the problem instead of applying an inverse operation to an equivalent equation.",
+      "This is correct because adding 8 to both sides isolates p and substitution verifies the solution 27.",
+      "Multiplying by 8 does not undo subtraction and would not isolate the variable in the stated equation.",
+      "Although 19 - 8 equals 11, substituting 11 for p gives 3, so it fails the original equality."
+    ],
+    "skillIds": [
+      "mathematics-ratio-algebra"
+    ],
+    "chapterIds": [
+      "parapro-ch-06"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-027",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student says that the time from 10:52 a.m. to 11:26 a.m. is 74 minutes after subtracting 1052 from 1126 as ordinary whole numbers. Which support is most appropriate?",
+    "choices": [
+      "Confirm 74 because hours and minutes use the same base-ten grouping as whole numbers.",
+      "Subtract only the minute values, 52 - 26, and report 26 minutes.",
+      "Use an open number line to count 8 minutes to 11:00 and 26 more minutes to 11:26, for a total of 34 minutes.",
+      "Add the clock readings 1052 and 1126, then remove the final zero."
+    ],
+    "answerIndex": 2,
+    "rationale": "Clock time groups 60 minutes into an hour, so treating the notation as a base-ten whole number is invalid. Counting 8 minutes to 11:00 and 26 more gives 34 minutes.",
+    "choiceRationales": [
+      "Time notation is base 60 in the minute position, so ordinary whole-number subtraction misinterprets the units.",
+      "This reverses the minute subtraction and also ignores the transition from the 10 o'clock hour to the 11 o'clock hour.",
+      "This is correct because the two adjacent elapsed-time intervals, 8 and 26 minutes, total 34 minutes.",
+      "Adding the displayed clock numerals has no relationship to the duration between the two times."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-028",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student finds the volume of a 5-by-3-by-2 rectangular prism by adding the dimensions and reports 10 cubic units. Which activity best addresses the misconception?",
+    "choices": [
+      "Measure one outside edge again and use its length as the volume.",
+      "Draw the prism's outline and count its four corners as cubic units.",
+      "Add the dimensions in a different order to show that 2 + 3 + 5 is still 10.",
+      "Build two layers of 15 unit cubes each, count 30 cubes, and connect the layers to 5 times 3 times 2."
+    ],
+    "answerIndex": 3,
+    "rationale": "Volume counts unit cubes filling three-dimensional space. Two layers with 5 times 3 = 15 cubes per layer contain 30 cubes, concretely connecting the dimensions to multiplication.",
+    "choiceRationales": [
+      "One edge is a linear measure and cannot represent the number of unit cubes that fill the prism.",
+      "Corners are features of the solid, not cubic units of space, so counting them does not model volume.",
+      "Reordering the same incorrect addition confirms a sum but does not explain why three dimensions must be multiplied.",
+      "This is correct because the cube layers visibly show 15 cubes per layer times 2 layers, or 30 cubic units."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-029",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "Asked to plot (-3, 2), a student plots (2, -3). Which direction would best correct the coordinate-order error?",
+    "choices": [
+      "Explain that the first coordinate controls horizontal movement, so move 3 units left, then use the second coordinate to move 2 units up.",
+      "Tell the student that coordinate order does not matter as long as both numbers appear on the graph.",
+      "Move 3 units right and 2 units down because negative signs reverse both coordinate positions.",
+      "Plot both points and label them equivalent because their coordinates use the same two numbers."
+    ],
+    "answerIndex": 0,
+    "rationale": "Ordered pairs use x first and y second. For (-3, 2), the negative x-coordinate directs a move 3 units left, and the positive y-coordinate directs a move 2 units up.",
+    "choiceRationales": [
+      "This is correct because it explicitly links coordinate order and sign to the required horizontal and vertical moves.",
+      "Coordinate order is essential; reversing the coordinates generally identifies a different point on the plane.",
+      "This reverses both signs and would lead to (3, -2), which is neither the given point nor the student's point.",
+      "The points (-3, 2) and (2, -3) occupy different locations, so they cannot be labeled equivalent."
+    ],
+    "skillIds": [
+      "mathematics-geometry-measurement"
+    ],
+    "chapterIds": [
+      "parapro-ch-07"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-030",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "The scores are 6, 8, 8, and 10. A student adds to get 32 but divides by 3 because there are three different score values. Which response best addresses the error?",
+    "choices": [
+      "Remove one of the repeated 8s so the number of observations matches the divisor 3.",
+      "Have the student count every observation, including both 8s, and divide 32 by 4 to obtain a mean of 8.",
+      "Divide 32 by the greatest score, 10, because the largest value determines the mean.",
+      "Use 8 as the mean only because it occurs most often, without calculating from all observations."
+    ],
+    "answerIndex": 1,
+    "rationale": "The mean uses the number of observations, not the number of distinct values. Both occurrences of 8 represent data, so the total 32 must be divided by 4, giving a mean of 8.",
+    "choiceRationales": [
+      "Deleting a repeated score changes the data set and no longer computes the mean of the four recorded observations.",
+      "This is correct because all four scores contribute to the sum and therefore all four must be counted in the divisor.",
+      "The maximum does not determine the divisor; the divisor is the total number of recorded observations.",
+      "The mode happens to equal the mean here, but relying on frequency does not establish the mean or correct the divisor error."
+    ],
+    "skillIds": [
+      "mathematics-data-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-08"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-031",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "Students record a seedling's height on Monday, Wednesday, and Friday. A student proposes a circle graph. Which feedback would best support a display of change over time?",
+    "choices": [
+      "Use a circle graph because each date must represent a part of one fixed whole.",
+      "Use an unlabeled pictograph because the order of dates is not important.",
+      "Place the ordered dates on the horizontal axis and heights on the vertical axis of a line graph, then connect the measured points.",
+      "List only Friday's height because the last measurement is enough to show the entire trend."
+    ],
+    "answerIndex": 2,
+    "rationale": "A line graph preserves the chronological order and makes changes between successive measurements visible. A circle graph is intended for parts of a whole, not a time sequence.",
+    "choiceRationales": [
+      "Measurements on different dates are not parts that combine into one meaningful whole, so a circle graph misrepresents the data.",
+      "Date order is essential for interpreting change over time, and removing labels would make the display unusable.",
+      "This is correct because an ordered, labeled line graph displays both the measurements and their trend over time.",
+      "One endpoint cannot show how the plant changed across the three recorded dates."
+    ],
+    "skillIds": [
+      "mathematics-data-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-08"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-032",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student draws equally spaced marks on a graph's vertical axis but labels them 0, 5, 15, and 20. Which feedback best addresses the scale?",
+    "choices": [
+      "Keep the labels because graph intervals may change size without any visual indication.",
+      "Move 15 closer to 5 while leaving the tick marks equally spaced.",
+      "Remove all numerical labels and judge values from bar heights alone.",
+      "Redraw the axis with equally spaced ticks labeled in equal increments, such as 0, 5, 10, 15, and 20, before plotting the data."
+    ],
+    "answerIndex": 3,
+    "rationale": "Equal physical spacing on a numerical axis must represent equal numerical intervals. Redrawing five evenly spaced ticks for 0, 5, 10, 15, and 20 creates consistent increments and permits accurate reading of values.",
+    "choiceRationales": [
+      "Unmarked changes in interval size distort the relationship between position and numerical value.",
+      "Changing a label's visual position without rebuilding all ticks does not establish a consistent numerical scale.",
+      "Without numerical labels, readers cannot determine values or verify whether the spacing represents equal intervals.",
+      "This is correct because redrawing the scale gives every equal physical interval the same 5-unit numerical value."
+    ],
+    "skillIds": [
+      "mathematics-data-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-08"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-mathematics-033",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "contentFocus": "application-classroom",
+    "difficulty": "application",
+    "prompt": "A student reports that 728 divided by 8 equals 9.1. Which response best uses estimation to help the student evaluate the decimal placement?",
+    "choices": [
+      "Estimate 728 as 80, divide by 8, and accept any answer near 10.",
+      "Multiply 728 by 8 and use 5,824 as the estimated quotient.",
+      "Use the compatible number 720: since 720 divided by 8 is 90, the quotient should be near 90; the exact quotient is 91.",
+      "Confirm 9.1 because division always makes a three-digit number into a one-digit number."
+    ],
+    "answerIndex": 2,
+    "rationale": "The nearby compatible number 720 divides evenly by 8 to give 90, establishing the quotient's reasonable magnitude. Exact division gives 91, so 9.1 is ten times too small.",
+    "choiceRationales": [
+      "Rounding 728 all the way to 80 changes its magnitude by nearly a factor of ten and cannot provide a useful estimate.",
+      "Multiplication reverses the requested operation and produces a product, not an estimate of the quotient.",
+      "This is correct because 720/8 = 90 anchors the magnitude and supports the exact quotient 728/8 = 91.",
+      "Division does not guarantee a one-digit result; the sizes of both dividend and divisor determine the quotient."
+    ],
+    "skillIds": [
+      "mathematics-number-operations"
+    ],
+    "chapterIds": [
+      "parapro-ch-05"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  }
+]

@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "id": "test-prep-assistant-review-2026-07-16",
-  "reviewedAt": "2026-07-16",
+  "reviewedAt": "2026-07-17",
   "reviewer": "OpenAI Codex",
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-07-17T03:05:13.990Z",
-    "hash": "cae55684fe1ccdbee1094d91481c8bf8197cbca2c992d2ed437fb987198f8d26"
+    "generatedAt": "2026-07-17T17:19:10.246Z",
+    "hash": "b8b5b572d5808835bcfaed59600a019513882b7ae94befb5ddb1ffcc379e873d"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -18,12 +18,12 @@
     "packs": 22,
     "totalLearningActivities": 11000,
     "originalSourceQuestions": 4400,
-    "assistantAuthoredIndependentItems": 100,
-    "independentPracticeItems": 4500,
-    "guidedReviewActivities": 6500,
+    "assistantAuthoredIndependentItems": 200,
+    "independentPracticeItems": 4600,
+    "guidedReviewActivities": 6400,
     "existingItemsQualitativelySampled": 169,
     "newCredentialSpecificReplacementsReviewed": 68,
-    "newIndependentParaProItemsReviewed": 100,
+    "newIndependentParaProItemsReviewed": 200,
     "allActivitiesStructurallyChecked": true,
     "allGuidedAnswerDerivationsChecked": true
   },
@@ -31,13 +31,13 @@
     "originalSourceQuestions": 4400,
     "distinctSourceContentKernels": 2309,
     "parallelSourceVariants": 2091,
-    "assistantAuthoredIndependentItems": 100,
-    "independentPracticeItems": 4500,
-    "distinctIndependentContentKernels": 2409,
+    "assistantAuthoredIndependentItems": 200,
+    "independentPracticeItems": 4600,
+    "distinctIndependentContentKernels": 2509,
     "parallelIndependentVariants": 2091,
-    "guidedReviewActivities": 6500,
+    "guidedReviewActivities": 6400,
     "independentQuestionTarget": 11000,
-    "newIndependentItemsNeeded": 8591
+    "newIndependentItemsNeeded": 8491
   },
   "verdict": {
     "structuralStatus": "pass",
@@ -64,7 +64,7 @@
     "Corrected targeted Early Childhood Special Education, Praxis Core, reading, grammar, possessive, quotation, and encoding defects identified during sampling.",
     "Added a durable source-correction pass to both full build pipelines and guarded the legacy 200-item collapse step behind an explicit authorization flag.",
     "Separated guided-review attempt mode from diagnostic analytics and excluded guided activities from smart review, targeted sets, custom quizzes, and saved-question review.",
-    "Added and assistant-reviewed 100 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
+    "Added and assistant-reviewed 200 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
   ],
   "limitations": [
     "Assistant review is not licensed-professional endorsement, independent legal/clinical review, field testing, psychometric calibration, or validation of score interpretations.",
@@ -72,7 +72,7 @@
     "Content-kernel counts detect normalized within-pack reuse. They do not by themselves establish item quality or detect every semantically similar question across different wording."
   ],
   "nextWork": [
-    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 8,591.",
+    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 8,491.",
     "Give each new question a new stimulus or decision, plausible distractors, item-specific feedback, and a source that directly supports the tested principle.",
     "Review and release additions pack by pack in 100-item stages; keep guided-review activities as a separate learning mode.",
     "After authoring, run independent subject-matter and psychometric review if the product will make stronger validity or readiness claims."
@@ -183,21 +183,21 @@
     {
       "stem": "parapro",
       "packId": "parapro-1755-practice-1",
-      "title": "ParaPro diagnostic batches 1-2",
+      "title": "ParaPro 1755 practice suite",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 100,
-      "independentPracticeItems": 300,
+      "assistantAuthoredIndependentItems": 200,
+      "independentPracticeItems": 400,
       "distinctSourceContentKernels": 200,
       "parallelSourceVariants": 0,
-      "distinctIndependentContentKernels": 300,
+      "distinctIndependentContentKernels": 400,
       "parallelIndependentVariants": 0,
-      "guidedReviewActivities": 200,
+      "guidedReviewActivities": 100,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 200,
+      "newIndependentItemsNeeded": 100,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "a2767f14bef842231aebf4fb716839ef4d5f351ddc6ba8b4a37ba6ccf8a2875c",
-      "itemsSha256": "d5f9a00754ca58c84badf69a791c17571ca968a876c34ff4cab8a67b3a52a0a2"
+      "packSha256": "311f76c1bb67211c6749d2100cd4dd70c407e7f51b3505db3193710cc8a1f87e",
+      "itemsSha256": "d4531af9ef890c0fbb87ff5e52f833b702adda9ff399c9f3e55b344ede4d2a9c"
     },
     {
       "stem": "plt_5_9_5623",

@@ -145,7 +145,7 @@ describe('EPPP diagram quality review wave 02', () => {
       sharedTemplateDiagramPlacements: 16,
       inlineDiagramPlacements: 42,
       sourceReviewedDiagramTemplates: 15,
-      sourceReviewedDiagramPlacements: 16,
+      sourceReviewedDiagramPlacements: 22,
     });
     const expectedHeadings = {
       neuronActionPotential: 'The Neuron & Neural Communication',
@@ -172,7 +172,7 @@ describe('EPPP diagram quality review wave 02', () => {
         runtimeSectionId: placements[0].sectionId,
       });
     }
-    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(42);
+    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(36);
     expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required').every((placement) => placement.origin === 'inline')).toBe(true);
   });
 
@@ -192,7 +192,7 @@ describe('EPPP diagram quality review wave 02', () => {
     expect(builder.indexOf(wave02Call)).toBeLessThan(builder.indexOf(libraryCall));
     expect(read('test_prep/eppp_diagram_review_wave_02.md')).not.toMatch(/Content QA passed/i);
     const learningQa = json('test_prep/eppp_learning_library_qa.json');
-    expect(learningQa.findings).toContain('Shared renderer accessibility controls are implemented. 16 of 58 learner-visible placements have source-review records; 42 placements still need concept and label review.');
+    expect(learningQa.findings).toContain('Shared renderer accessibility controls are implemented. 22 of 58 learner-visible placements have source-review records; 36 placements still need concept and label review.');
     expect(learningQa.findings.join(' ')).not.toMatch(/(?:each|every) (?:diagram|placement) still needs concept and label review/i);
   });
 });

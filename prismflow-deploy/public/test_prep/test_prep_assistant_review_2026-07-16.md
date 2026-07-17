@@ -1,10 +1,10 @@
-# Test Prep Assistant Review — July 16, 2026
+# Test Prep Assistant Review — July 17, 2026
 
 Status: **Reviewed — 500-distinct-question target not met.** This is a completed assistant review, not a “review required” placeholder.
 
 ## Bottom line
 
-The 22 non-EPPP packs contain **11,000 learning activities**. The current strict audit found **2,309 normalized kernels among the original source banks**, **100 newly assistant-authored independent practice questions**, **2,409 distinct independent-practice content kernels overall**, and **6,500 source-derived guided-review activities**. Reaching 500 genuinely distinct questions in every pack requires **8,591 additional independently authored questions**.
+The 22 non-EPPP packs contain **11,000 learning activities**. The current strict audit found **2,309 normalized kernels among the original source banks**, **200 newly assistant-authored independent practice questions**, **2,509 distinct independent-practice content kernels overall**, and **6,400 source-derived guided-review activities**. Reaching 500 genuinely distinct questions in every pack requires **8,491 additional independently authored questions**.
 
 Structural integrity and guided-answer derivation passed. New independent additions were reviewed for blueprint alignment, keyed-answer defensibility, distractor plausibility, feedback, citations, originality, and answer balance. Guided additions remain approved for guided practice only and are excluded from diagnostic analytics.
 
@@ -22,7 +22,7 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 | Early Childhood Education (5025) | 200 | 0 | 100 | 100 | 300 | 400 |
 | Educational Leadership (5412) | 200 | 0 | 100 | 100 | 300 | 400 |
 | Praxis ESOL (5362) | 200 | 0 | 100 | 100 | 300 | 400 |
-| ParaPro diagnostic batches 1-2 | 200 | 100 | 300 | 0 | 200 | 200 |
+| ParaPro 1755 practice suite | 200 | 200 | 400 | 0 | 100 | 100 |
 | PLT: Grades 5–9 (5623) | 200 | 0 | 100 | 100 | 300 | 400 |
 | PLT: Grades 7–12 (5624) | 200 | 0 | 100 | 100 | 300 | 400 |
 | PLT: Early Childhood (5621) | 200 | 0 | 100 | 100 | 300 | 400 |
@@ -46,9 +46,9 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 - Replaced 68 EBD/ID arithmetic, stacked-context, or credential-mismatched items with new school-based scenarios.
 - Removed misplaced 5383 language from 102 EBD/ID questions and their feedback.
 - Corrected SLD-contaminated scenarios, Praxis Core ambiguity/rationale defects, reading/grammar/quotation issues, and Early Childhood/ECSE defects.
-- Added 100 genuinely new ParaPro practice questions in a separately identified independent diagnostic bank.
+- Added 200 genuinely new ParaPro practice questions in a separately identified independent diagnostic bank.
 - Preserved guided-review banks as a separate learning mode excluded from diagnostic analytics.
 
 ## Next release standard
 
-Author the 8,591-question remaining gap pack by pack in 100-item stages. Every addition should use a new credential-specific stimulus, plausible distractors, item-specific feedback, and directly relevant sources. Guided-review activities should remain available as a separate learning tool.
+Author the 8,491-question remaining gap pack by pack in 100-item stages. Every addition should use a new credential-specific stimulus, plausible distractors, item-specific feedback, and directly relevant sources. Guided-review activities should remain available as a separate learning tool.

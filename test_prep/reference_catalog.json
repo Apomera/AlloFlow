@@ -6,6 +6,13 @@
     "credibility": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept.",
     "metadataSource": "pack-authored"
   },
+  "https://data.census.gov/": {
+    "title": "Explore Census Data",
+    "organization": "U.S. Census Bureau, U.S. Department of Commerce",
+    "summary": "The Census Bureau’s primary centralized data platform supports searches across demographic and economic tables, profiles, maps, and public-use microdata for many topics and geographic areas.",
+    "credibility": "The U.S. Census Bureau is the federal government’s primary statistical agency for population and economic data. Users should verify the selected dataset, year, table, geography, estimates, and margins of error when applicable.",
+    "metadataSource": "explicit-override"
+  },
   "https://dictionary.apa.org/luria-nebraska-neuropsychological-battery": {
     "title": "Luria–Nebraska Neuropsychological Battery (LNNB)",
     "organization": "APA Dictionary of Psychology, American Psychological Association",
@@ -1657,11 +1664,25 @@
     "metadataSource": "Crossref",
     "doi": "10.4103/2229-3485.83221"
   },
+  "https://ies.ed.gov/ncee/wwc/PracticeGuide/14": {
+    "title": "Improving Reading Comprehension in Kindergarten Through 3rd Grade",
+    "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+    "summary": "This K-3 practice guide presents five evidence-rated recommendations addressing comprehension strategies, text structure, high-quality discussion, purposeful text selection, and an engaging context for reading comprehension instruction.",
+    "credibility": "The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and users should retain its recommendation-specific evidence ratings when applying the guidance.",
+    "metadataSource": "explicit-override"
+  },
   "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published": {
     "title": "Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade",
     "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
     "summary": "This K-3 practice guide presents four implementation-focused recommendations covering academic language and vocabulary, speech-sound awareness and letter links, decoding and word analysis, and daily connected-text reading. It reports an evidence rating for each recommendation and discusses common implementation obstacles.",
     "credibility": "The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and it states the supporting-evidence level for each recommendation; users should retain those recommendation-specific ratings when applying the guidance.",
+    "metadataSource": "explicit-override"
+  },
+  "https://ies.ed.gov/ncee/wwc/PracticeGuide/29": {
+    "title": "Providing Reading Interventions for Students in Grades 4–9",
+    "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+    "summary": "This practice guide offers evidence-based intervention recommendations for students in grades 4–9 covering decoding, fluency-building, comprehension-building practices such as gist and questioning, and supported work with challenging stretch text.",
+    "credibility": "The WWC and IES developed the guide through expert-panel analysis and a systematic evidence review. Its recommendation-specific evidence ratings should be considered when translating the guidance into instruction.",
     "metadataSource": "explicit-override"
   },
   "https://openstax.org/books/psychology-2e/pages/10-introduction": {

@@ -1,0 +1,141 @@
+{
+  "reviewedAt": "2026-07-17T13:06:39-04:00",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "reviewedFile": "dev-tools/authored/parapro_batch4_writing_33.json",
+  "reviewedFileSha256": "d80d0ff333b09352d1ca518fd5066db215f24fceb08dcf42a3ed1e5d522943da",
+  "itemCount": 33,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b4-writing-008",
+      "issue": "The four whole-sentence choices differed only by capitalization. The production validator lowercases choices when checking uniqueness, so the otherwise valid item would have been rejected as containing duplicate choices.",
+      "change": "Recast the task as selecting the complete set of words that require initial capitals. The revision preserves the capitalization competency and answer position while providing four substantively and mechanically distinct choices."
+    },
+    {
+      "itemId": "parapro-b4-writing-016",
+      "issue": "The original double-negative prompt did not explicitly limit its usage convention to standard edited English, which could overgeneralize a register-specific rule and treat systematic dialect patterns as inherently defective.",
+      "change": "Added explicit standard-edited-English framing to the prompt, rationale, and relevant choice feedback while preserving the keyed answer and the intended editing competency."
+    },
+    {
+      "itemId": "parapro-b4-writing-029",
+      "issue": "The original weather/whether spellchecker task substantially repeated the dictionary-and-context decision process already assessed by the affect/effect item in the same bank and by earlier reference-use items.",
+      "change": "Replaced the item with a distinct teacher-directed proofreading scaffold for detecting omitted words through text-to-speech, exact visual tracking, and student-controlled correction. The answer position and writing-classroom-support mapping were preserved."
+    }
+  ],
+  "checks": {
+    "currentBlueprintAlignment": {
+      "status": "pass-after-corrections",
+      "officialReference": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "verifiedOn": "2026-07-17",
+      "details": [
+        "All 33 items assess writing knowledge or the application of writing instruction in school settings.",
+        "The bank contains 22 basic-skills-and-knowledge items and 11 classroom-application items, matching the current ETS approximate two-thirds/one-third emphasis.",
+        "The basic items sample grammar, usage, punctuation, capitalization, spelling, sentence parts, parts of speech, revision, source selection, organization, evidence, thesis focus, and objective tone.",
+        "The application items sample prewriting, reference use, thesis development, paragraph unity, conclusions, editing, proofreading, audience and purpose, comparison organization, student authorship, and procedural usability."
+      ]
+    },
+    "grammarWritingRuleAccuracy": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "remainingRuleErrors": 0,
+      "details": "Every keyed usage, agreement, case, tense, punctuation, capitalization, spelling, sentence-part, part-of-speech, revision, and organizational judgment was checked against the sentence context and stated register."
+    },
+    "keyedAnswerDefensibility": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "remainingMultipleDefensibleKeys": 0,
+      "remainingUnsupportedKeys": 0
+    },
+    "distractorQuality": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "choiceCountPerItem": 4,
+      "itemsWithProductionUniqueChoices": 33,
+      "remainingAccidentallyCorrectDistractors": 0,
+      "details": "Distractors reflect recognizable rule confusions, process errors, premature editing, irrelevant evidence, loss of student ownership, or inappropriate classroom supports rather than arbitrary wording."
+    },
+    "feedbackAndRationales": {
+      "status": "pass-after-corrections",
+      "itemsWithItemSpecificRationales": 33,
+      "itemsWithFourSubstantiveChoiceRationales": 33,
+      "minimumRationaleCharacters": 145,
+      "minimumChoiceRationaleCharacters": 62,
+      "remainingFeedbackContradictions": 0
+    },
+    "sourceAlignment": {
+      "status": "pass",
+      "allItemsIncludeCurrentEtsStudyCompanion": true,
+      "allItemsIncludeOpenStaxWritingReference": true,
+      "allReferencesUseHttps": true,
+      "validatedReferenceHosts": [
+        "www.ets.org",
+        "openstax.org"
+      ],
+      "details": "References support the assessed ParaPro writing domains and the writing, revision, organization, and editing principles used in the rationales; no item attributes its invented stimulus to a source."
+    },
+    "promptOriginality": {
+      "status": "pass-after-corrections",
+      "existingPack": "test_prep/parapro_pack.json",
+      "existingWritingActivitiesCompared": 165,
+      "existingSourceDiagnosticWritingPromptsCompared": 66,
+      "normalizedExactMatchesToExistingWriting": 0,
+      "normalizedContentKernelMatches": 0,
+      "normalizedPromptDuplicatesWithinBatch": 0,
+      "nearDuplicateThreshold": 0.82,
+      "nearDuplicateMatches": 0,
+      "maximumPromptJaccardAgainstExistingWriting": 0.4,
+      "maximumPromptJaccardWithinBatch": 0.462,
+      "semanticParallelKernelsReplaced": [
+        "parapro-b4-writing-029"
+      ],
+      "remainingOverlap": "Recurring blueprint competencies use independently written sentences, scenarios, choices, keys, and response decisions."
+    },
+    "accessibility": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "details": [
+        "Prompts use school-relevant contexts without requiring specialized cultural knowledge.",
+        "The double-negative item now identifies standard edited English as the assessed register rather than treating dialect variation as a global language deficit.",
+        "The proofreading support in item 029 uses text-to-speech as an instructional checking tool while retaining student decision-making.",
+        "No item depends on color alone, an image, fine visual discrimination unavailable in text, or an unstated accommodation."
+      ]
+    },
+    "classroomRoleAppropriateness": {
+      "status": "pass-after-corrections",
+      "applicationItemsReviewed": 11,
+      "details": "Classroom supports preserve student authorship and reasoning, focus on instructional scaffolding and observation, and do not authorize the paraeducator to diagnose, select accommodations independently, replace teacher planning, or compose work for the student."
+    },
+    "answerQuota": {
+      "status": "pass",
+      "countsByAnswerIndex": {
+        "0": 8,
+        "1": 8,
+        "2": 8,
+        "3": 9
+      },
+      "expected": "Each answer position appears 8 or 9 times."
+    },
+    "contentFocusQuota": {
+      "status": "pass",
+      "counts": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      },
+      "expected": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      }
+    },
+    "structureAndIntegrationFields": {
+      "status": "pass",
+      "sequentialUniqueIds": true,
+      "singleChoiceItems": 33,
+      "itemsWithFourProductionUniqueChoices": 33,
+      "itemsWithValidAnswerIndex": 33,
+      "itemsWithValidSkillAndChapterLinks": 33,
+      "itemsWithIndependentDraftProvenance": 33,
+      "itemsWithHttpsReferences": 33,
+      "schemaFindings": 0
+    }
+  },
+  "verdict": "pass-after-corrections"
+}

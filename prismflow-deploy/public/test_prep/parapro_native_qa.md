@@ -249,4 +249,5 @@ The official blueprint has 30 questions in each domain, with approximately two-t
 
 - Assistant audit: 200 source questions contain 200 distinct source content kernels and 0 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.
 
-- Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 300 distinct independent content kernels. 200 additional activities remain guided review only. 200 new independent questions remain to reach 500.
+
+- Independent-batch audit: 200 original source questions plus 200 assistant-authored independent practice questions produce 400 distinct independent content kernels. 100 additional activities remain guided review only. 100 new independent questions remain to reach 500.

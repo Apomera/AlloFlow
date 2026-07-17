@@ -83,6 +83,27 @@ const explicitMetadataOverrides = {
     credibility: 'OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed section offers transparent writing-process instruction and examples, while its textbook status should be distinguished from empirical evidence or an official assessment specification.',
     metadataSource: 'explicit-override',
   },
+  'https://data.census.gov/': {
+    title: 'Explore Census Data',
+    organization: 'U.S. Census Bureau, U.S. Department of Commerce',
+    summary: 'The Census Bureau’s primary centralized data platform supports searches across demographic and economic tables, profiles, maps, and public-use microdata for many topics and geographic areas.',
+    credibility: 'The U.S. Census Bureau is the federal government’s primary statistical agency for population and economic data. Users should verify the selected dataset, year, table, geography, estimates, and margins of error when applicable.',
+    metadataSource: 'explicit-override',
+  },
+  'https://ies.ed.gov/ncee/wwc/PracticeGuide/14': {
+    title: 'Improving Reading Comprehension in Kindergarten Through 3rd Grade',
+    organization: 'What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education',
+    summary: 'This K-3 practice guide presents five evidence-rated recommendations addressing comprehension strategies, text structure, high-quality discussion, purposeful text selection, and an engaging context for reading comprehension instruction.',
+    credibility: 'The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and users should retain its recommendation-specific evidence ratings when applying the guidance.',
+    metadataSource: 'explicit-override',
+  },
+  'https://ies.ed.gov/ncee/wwc/PracticeGuide/29': {
+    title: 'Providing Reading Interventions for Students in Grades 4–9',
+    organization: 'What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education',
+    summary: 'This practice guide offers evidence-based intervention recommendations for students in grades 4–9 covering decoding, fluency-building, comprehension-building practices such as gist and questioning, and supported work with challenging stretch text.',
+    credibility: 'The WWC and IES developed the guide through expert-panel analysis and a systematic evidence review. Its recommendation-specific evidence ratings should be considered when translating the guidance into instruction.',
+    metadataSource: 'explicit-override',
+  },
 };
 Object.assign(catalog, explicitMetadataOverrides);
 

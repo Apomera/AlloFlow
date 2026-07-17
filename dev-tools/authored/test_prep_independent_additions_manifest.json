@@ -5,10 +5,31 @@
       {
         "id": "independent-diagnostic-batch-3",
         "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-16",
         "files": [
           "parapro_batch3_reading_34.json",
           "parapro_batch3_mathematics_33.json",
           "parapro_batch3_writing_33.json"
+        ],
+        "reviewReports": [
+          "parapro_batch3_reading_34.review.json",
+          "parapro_batch3_mathematics_33.review.json",
+          "parapro_batch3_writing_33.review.json"
+        ]
+      },
+      {
+        "id": "independent-diagnostic-batch-4",
+        "label": "Assistant-reviewed independent diagnostic bank 4",
+        "reviewedAt": "2026-07-17",
+        "files": [
+          "parapro_batch4_reading_34.json",
+          "parapro_batch4_mathematics_33.json",
+          "parapro_batch4_writing_33.json"
+        ],
+        "reviewReports": [
+          "parapro_batch4_reading_34.review.json",
+          "parapro_batch4_mathematics_33.review.json",
+          "parapro_batch4_writing_33.review.json"
         ]
       }
     ]

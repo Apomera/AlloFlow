@@ -80,6 +80,7 @@
   h1 { margin: 0; font-size: 17px; line-height: 1.2; }
   .subtitle { margin-top: 2px; color: var(--muted); font-size: 12px; }
   .links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .links .mobileViewerShortcut { display: none; }
   .links a, button.linkbtn {
     min-height: 34px;
     display: inline-flex;
@@ -275,6 +276,32 @@
     position: relative;
     min-height: 0;
     border-bottom: 1px solid var(--line);
+  }
+  .viewerToolbar {
+    position: absolute;
+    z-index: 8;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    max-width: calc(100% - 16px);
+  }
+  .viewerToolbar button.secondary {
+    width: auto;
+    min-height: 36px;
+    padding: 7px 11px;
+    text-align: center;
+    background: rgba(16, 24, 39, 0.96);
+    border-color: var(--line2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.34);
+  }
+  .viewerToolbar .status {
+    margin: 0;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: rgba(5, 7, 13, 0.92);
   }
   #molstar { position: absolute; inset: 0; }
   .placeholder, .loadmsg {
@@ -608,6 +635,7 @@
   @media (max-width: 860px) {
     header { align-items: flex-start; flex-direction: column; }
     .links { justify-content: flex-start; }
+    .links .mobileViewerShortcut { display: inline-flex; }
     html, body { height: auto; }
     body { display: block; overflow: auto; }
     .shell { height: auto; min-height: 100vh; grid-template-columns: 1fr; }
@@ -617,6 +645,29 @@
     .facts { grid-template-columns: 1fr; }
     .flowNav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
+  body.viewerFocus {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  body.viewerFocus header,
+  body.viewerFocus aside,
+  body.viewerFocus .details { display: none; }
+  body.viewerFocus .shell {
+    height: 100%;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.viewerFocus main {
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+  body.viewerFocus .viewer { min-height: 0; border-bottom: 0; }
 </style>
 </head>
 <body>
@@ -632,6 +683,7 @@
     <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener">AlphaFold DB</a>
     <a href="https://alphafoldserver.com/" target="_blank" rel="noopener">AlphaFold Server</a>
     <a href="https://molstar.org/" target="_blank" rel="noopener">Mol*</a>
+    <button class="linkbtn mobileViewerShortcut" id="mobileViewerShortcut" type="button">Open 3D viewer</button>
   </div>
 </header>
 
@@ -1049,6 +1101,11 @@
 
   <main aria-label="AlphaFold structure viewer">
     <div class="viewer">
+      <div class="viewerToolbar" role="toolbar" aria-label="Structure viewer controls">
+        <button class="secondary" id="focusViewBtn" type="button" aria-pressed="false" aria-controls="molstar">Focus on protein</button>
+        <button class="secondary" id="fitStructureBtn" type="button" aria-controls="molstar" disabled>Fit structure</button>
+        <span class="status" id="viewerToolbarStatus" role="status" aria-live="polite"></span>
+      </div>
       <div id="molstar"></div>
       <div class="placeholder" id="placeholder">
         Load a public AlphaFold DB structure, import a result file, or prepare safe AlphaFold input from the left panel.
@@ -1652,6 +1709,7 @@
 
   var viewer = null;
   var viewerPromise = null;
+  var structureLoaded = false;
   var current = null;
   var lastJson = '';
   var openerOk = false;
@@ -1765,6 +1823,10 @@
   var confidenceLegend = document.getElementById('confidenceLegend');
   var copyConfidenceGuideBtn = document.getElementById('copyConfidenceGuideBtn');
   var confidenceGuideStatus = document.getElementById('confidenceGuideStatus');
+  var focusViewBtn = document.getElementById('focusViewBtn');
+  var fitStructureBtn = document.getElementById('fitStructureBtn');
+  var mobileViewerShortcut = document.getElementById('mobileViewerShortcut');
+  var viewerToolbarStatus = document.getElementById('viewerToolbarStatus');
   var paeLive = document.getElementById('paeLive');
   var paeLiveCanvas = document.getElementById('paeLiveCanvas');
   var paeLiveSummary = document.getElementById('paeLiveSummary');
@@ -3136,6 +3198,39 @@
     return viewerPromise;
   }
 
+  function fitStructure(announce) {
+    var camera = viewer && viewer.plugin && viewer.plugin.managers && viewer.plugin.managers.camera;
+    if (!structureLoaded || !camera || typeof camera.reset !== 'function') {
+      if (announce) setStatus(viewerToolbarStatus, 'Load a structure before fitting the view.', 'warn');
+      return false;
+    }
+    try {
+      camera.reset();
+      if (announce) setStatus(viewerToolbarStatus, 'Structure fitted to the available viewer.', 'ok');
+      return true;
+    } catch (error) {
+      if (announce) setStatus(viewerToolbarStatus, 'The structure could not be fitted. Try the Mol* reset-camera control.', 'warn');
+      return false;
+    }
+  }
+
+  function scheduleStructureFit() {
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () { fitStructure(false); });
+    });
+  }
+
+  function setViewerFocus(active) {
+    var isActive = !!active;
+    document.body.classList.toggle('viewerFocus', isActive);
+    focusViewBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    focusViewBtn.textContent = isActive ? 'Exit focus view' : 'Focus on protein';
+    setStatus(viewerToolbarStatus, isActive ? 'Protein focus view opened. Press Escape to exit.' : 'Protein focus view closed.', 'ok');
+    window.dispatchEvent(new Event('resize'));
+    scheduleStructureFit();
+    focusViewBtn.focus();
+  }
+
   function showLoading(text) {
     loadmsg.textContent = text || 'Loading...';
     loadmsg.style.display = 'flex';
@@ -3149,6 +3244,8 @@
 
   function loadStructure(record, format, isBinary) {
     current = record;
+    structureLoaded = false;
+    fitStructureBtn.disabled = true;
     renderDetails(record);
     showLoading('Loading structure into Mol*...');
     return ensureViewer().then(function (v) {
@@ -3160,8 +3257,13 @@
       }
       throw new Error('This Mol* build does not expose URL loading');
     }).then(function () {
+      structureLoaded = true;
+      fitStructureBtn.disabled = false;
       hideLoading();
+      scheduleStructureFit();
     }).catch(function (e) {
+      structureLoaded = false;
+      fitStructureBtn.disabled = true;
       loadmsg.textContent = 'Could not load the structure. ' + String((e && e.message) || e).slice(0, 130);
       loadmsg.style.display = 'flex';
       throw e;
@@ -3682,6 +3784,12 @@
   copyScaffoldBtn.addEventListener('click', copyScaffold);
   copyStudentPacketBtn.addEventListener('click', copyStudentPacket);
   copyConfidenceGuideBtn.addEventListener('click', copyConfidenceGuide);
+  focusViewBtn.addEventListener('click', function () { setViewerFocus(!document.body.classList.contains('viewerFocus')); });
+  fitStructureBtn.addEventListener('click', function () { fitStructure(true); });
+  mobileViewerShortcut.addEventListener('click', function () { setViewerFocus(true); });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && document.body.classList.contains('viewerFocus')) setViewerFocus(false);
+  });
   paeAlignedResidue.addEventListener('input', drawLivePae);
   paeComparedResidue.addEventListener('input', drawLivePae);
   routeSelect.addEventListener('change', function () { renderRoute(); renderLmsAssignment(); renderGuide(); });

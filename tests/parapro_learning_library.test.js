@@ -50,7 +50,7 @@ describe('ParaPro native learning library', () => {
     }
   });
 
-  it('links every one of the 200 questions to exactly one compatible skill and chapter', () => {
+  it('links all 500 learning activities to exactly one compatible skill and chapter', () => {
     const skillById = Object.fromEntries(library.skills.map((skill) => [skill.id, skill]));
     const chapterById = Object.fromEntries(library.chapters.map((chapter) => [chapter.id, chapter]));
     expect(pack.items).toHaveLength(500);
@@ -66,7 +66,7 @@ describe('ParaPro native learning library', () => {
       expect(chapter.skillId).toBe(skill.id);
     }
     expect(pack).toMatchObject({
-      version: '0.4.0',
+      version: '0.6.0',
       learningLibraryUrl: './test_prep/parapro_learning_library.json',
       learningLibraryQaUrl: './test_prep/parapro_learning_library_qa.json',
       simulationItemCount: 90,

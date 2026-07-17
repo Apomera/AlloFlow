@@ -60,7 +60,7 @@ const inventory = {
 const audit = {
   schemaVersion: 2,
   id: 'test-prep-assistant-review-2026-07-16',
-  reviewedAt: '2026-07-16',
+  reviewedAt: '2026-07-17',
   reviewer: 'OpenAI Codex',
   status: inventory.newIndependentItemsNeeded ? 'reviewed-target-not-met' : 'reviewed-target-met',
   snapshot: { algorithm: 'sha256', generatedAt: new Date().toISOString(), hash: snapshotHash },
@@ -133,7 +133,7 @@ const audit = {
 };
 
 const table = perPack.map(row => `| ${row.title.replace(/\|/g, '/')} | ${row.sourceQuestions} | ${row.assistantAuthoredIndependentItems} | ${row.distinctIndependentContentKernels} | ${row.parallelIndependentVariants} | ${row.guidedReviewActivities} | ${row.newIndependentItemsNeeded} |`).join('\n');
-const md = `# Test Prep Assistant Review — July 16, 2026
+const md = `# Test Prep Assistant Review — July 17, 2026
 
 Status: **Reviewed — 500-distinct-question target ${inventory.newIndependentItemsNeeded ? 'not met' : 'met'}.** This is a completed assistant review, not a “review required” placeholder.
 

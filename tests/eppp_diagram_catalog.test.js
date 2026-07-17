@@ -9,6 +9,25 @@ const { buildDiagramCatalog } = require('../dev-tools/eppp_diagram_catalog.cjs')
 const read = (relativePath) => JSON.parse(fs.readFileSync(resolve(process.cwd(), relativePath), 'utf8'));
 const temporaryRoots = [];
 
+function makeReviewFixture(waves) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'eppp-diagram-catalog-'));
+  temporaryRoots.push(root);
+  fs.mkdirSync(path.join(root, 'test_prep'), { recursive: true });
+  waves.forEach((items, index) => fs.writeFileSync(
+    path.join(root, 'test_prep', `eppp_diagram_review_wave_${String(index + 1).padStart(2, '0')}.json`),
+    JSON.stringify({ reviewWave: `fixture-wave-${index + 1}`, reviewDate: '2026-07-17', items }),
+    'utf8',
+  ));
+  return root;
+}
+
+const completeFixtureSource = [{
+  title: 'Primary fixture source',
+  organization: 'Fixture Standards Organization',
+  url: 'https://example.org/primary',
+  whyReputable: 'A fixture standing in for a directly reviewed authoritative source.',
+}];
+
 afterEach(() => {
   for (const root of temporaryRoots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
 });
@@ -28,7 +47,7 @@ describe('EPPP diagram template and placement catalog', () => {
       sharedTemplateDiagramPlacements: 16,
       inlineDiagramPlacements: 42,
       sourceReviewedDiagramTemplates: 15,
-      sourceReviewedDiagramPlacements: 16,
+      sourceReviewedDiagramPlacements: 22,
     });
     expect(catalog.diagrams).toHaveLength(25);
     expect(catalog.diagramPlacements).toHaveLength(58);
@@ -48,10 +67,18 @@ describe('EPPP diagram template and placement catalog', () => {
       ...['neuronActionPotential', 'brainRegions', 'eriksonStages', 'operantConditioning', 'reliabilityValidity', 'typesOfValidity', 'cbtTriangle', 'dbtModules']
         .map((key) => [key, { artifact: 'eppp_diagram_review_wave_02.json', wave: 'eppp-diagram-review-wave-02' }]),
     ]);
+    const wave03PlacementIds = new Set([
+      'diagram-placement-ch-6-section-02',
+      'diagram-placement-ch-8-section-05',
+      'diagram-placement-ch-9-section-03',
+      'diagram-placement-ch-9-section-07',
+      'diagram-placement-ch-10-section-03',
+      'diagram-placement-ch-18-section-02',
+    ]);
 
     expect(placedSections).toHaveLength(58);
-    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(16);
-    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(42);
+    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(22);
+    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(36);
     expect(placedSections.every((section) => placementById.has(section.diagramPlacementId))).toBe(true);
     for (const placement of catalog.diagramPlacements) {
       expect(placement.id).toMatch(/^diagram-placement-ch-\d+-section-\d{2}$/);
@@ -77,6 +104,24 @@ describe('EPPP diagram template and placement catalog', () => {
             conceptAccuracy: 'assisted-editorial-pass-expert-pending',
             labelQuality: 'editorial-pass',
             sourceSupport: 'topically-aligned-reputable-source',
+          },
+        });
+        expect(placement.references).toEqual(placement.sourceDetails.map((source) => source.url));
+        expect(placement.sourceDetails.length).toBeGreaterThan(0);
+        expect(placement.sourceDetails.every((source) => source.title && source.organization && source.url && source.whyReputable)).toBe(true);
+      } else if (wave03PlacementIds.has(placement.id)) {
+        expect(placement).toMatchObject({
+          origin: 'inline',
+          templateKey: null,
+          reviewStatus: 'source-reviewed-editorial-pass',
+          reviewArtifact: 'eppp_diagram_review_wave_03.json',
+          reviewWave: 'eppp-diagram-review-wave-03',
+          reviewDate: '2026-07-17',
+          checks: {
+            conceptAccuracy: 'assisted-editorial-pass-expert-pending',
+            labelQuality: 'editorial-pass-minimum-12',
+            sourceSupport: 'topically-aligned-reputable-source',
+            expertReview: 'pending-independent-review',
           },
         });
         expect(placement.references).toEqual(placement.sourceDetails.map((source) => source.url));
@@ -169,6 +214,80 @@ describe('EPPP diagram template and placement catalog', () => {
     expect(result.placements.find((placement) => placement.origin === 'shared-template').reviewStatus).toBe('source-reviewed-editorial-pass');
     expect(result.placements.find((placement) => placement.origin === 'inline')).toMatchObject({ reviewStatus: 'review-required', reviewArtifact: '' });
     expect(result.templates.find((template) => template.key === 'unusedExample')).toMatchObject({ usageStatus: 'unused', reviewStatus: 'review-required' });
+  });
+
+  it('applies explicit placement evidence only to the identified inline diagram', () => {
+    const fixtureRoot = makeReviewFixture([[{
+      placementId: 'diagram-placement-ch-1-section-01',
+      reviewStatus: 'source-reviewed-editorial-pass',
+      reviewNote: 'Fixture inline-placement review record.',
+      references: ['https://example.org/primary'],
+      sourceDetails: completeFixtureSource,
+      checks: { conceptAccuracy: 'editorial-pass', sourceSupport: 'pass' },
+    }]]);
+    const result = buildDiagramCatalog({
+      root: fixtureRoot,
+      diagramTemplates: {},
+      chapters: [{ id: 'ch-1', sections: [
+        { heading: 'Reviewed inline', interactiveDiagram: { description: 'Reviewed', svg: '<svg></svg>' } },
+        { heading: 'Pending inline', interactiveDiagram: { description: 'Pending', svg: '<svg></svg>' } },
+      ] }],
+    });
+
+    expect(result.placements[0]).toMatchObject({
+      id: 'diagram-placement-ch-1-section-01',
+      origin: 'inline',
+      reviewStatus: 'source-reviewed-editorial-pass',
+      reviewArtifact: 'eppp_diagram_review_wave_01.json',
+      sourceDetails: [expect.objectContaining({ organization: 'Fixture Standards Organization' })],
+      checks: { conceptAccuracy: 'editorial-pass', sourceSupport: 'pass' },
+    });
+    expect(result.placements[1]).toMatchObject({ reviewStatus: 'review-required', reviewArtifact: '' });
+  });
+
+  it('rejects unknown placement review identities', () => {
+    const fixtureRoot = makeReviewFixture([[{ placementId: 'diagram-placement-ch-1-section-99' }]]);
+    expect(() => buildDiagramCatalog({
+      root: fixtureRoot,
+      diagramTemplates: {},
+      chapters: [{ id: 'ch-1', sections: [{ interactiveDiagram: { description: 'Inline', svg: '<svg></svg>' } }] }],
+    })).toThrow(/unknown placement diagram-placement-ch-1-section-99/);
+  });
+
+  it('rejects duplicate template and placement identities across review waves', () => {
+    const templateRoot = makeReviewFixture([[{ key: 'sharedExample' }], [{ key: 'sharedExample' }]]);
+    expect(() => buildDiagramCatalog({ root: templateRoot, diagramTemplates: {}, chapters: [] }))
+      .toThrow(/template sharedExample appears in more than one review wave/);
+
+    const placementRoot = makeReviewFixture([
+      [{ placementId: 'diagram-placement-ch-1-section-01' }],
+      [{ placementId: 'diagram-placement-ch-1-section-01' }],
+    ]);
+    expect(() => buildDiagramCatalog({ root: placementRoot, diagramTemplates: {}, chapters: [] }))
+      .toThrow(/placement diagram-placement-ch-1-section-01 appears in more than one review wave/);
+  });
+
+  it.each([
+    ['both identities', { key: 'sharedExample', placementId: 'diagram-placement-ch-1-section-01' }],
+    ['neither identity', {}],
+  ])('rejects review records with %s', (_label, item) => {
+    const fixtureRoot = makeReviewFixture([[item]]);
+    expect(() => buildDiagramCatalog({ root: fixtureRoot, diagramTemplates: {}, chapters: [] }))
+      .toThrow(/must identify exactly one of key or placementId/);
+  });
+
+  it('rejects unsupported statuses and incomplete source-reviewed evidence', () => {
+    const unsupportedRoot = makeReviewFixture([[{ key: 'sharedExample', reviewStatus: 'approved' }]]);
+    expect(() => buildDiagramCatalog({ root: unsupportedRoot, diagramTemplates: {}, chapters: [] }))
+      .toThrow(/unsupported review status approved/);
+
+    const incompleteRoot = makeReviewFixture([[{
+      placementId: 'diagram-placement-ch-1-section-01',
+      reviewStatus: 'source-reviewed-editorial-pass',
+      sourceDetails: [{ title: 'Incomplete source' }],
+    }]]);
+    expect(() => buildDiagramCatalog({ root: incompleteRoot, diagramTemplates: {}, chapters: [] }))
+      .toThrow(/requires complete sourceDetails/);
   });
 
   it('keeps the richer inventory and both deployment mirrors synchronized', () => {

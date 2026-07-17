@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T04:15:36.084Z",
+  "generatedAt": "2026-07-17T17:07:52.417Z",
   "libraryId": "eppp-learning-library",
   "reviewStandard": {
     "checks": [
@@ -26,7 +26,7 @@
     "sharedTemplateDiagramPlacements": 16,
     "inlineDiagramPlacements": 42,
     "sourceReviewedDiagramTemplates": 15,
-    "sourceReviewedDiagramPlacements": 16,
+    "sourceReviewedDiagramPlacements": 22,
     "knowledgeChecks": 109,
     "flashcards": 415,
     "memoryAids": 255,
@@ -1491,7 +1491,7 @@
           "diagramId": "diagram-inline-ch-6-section-02",
           "diagramOrigin": "inline",
           "diagramTemplateKey": null,
-          "diagramDescription": "Competency to Stand Trial vs. Insanity Defense",
+          "diagramDescription": "Two-column comparison. Competence to stand trial concerns present abilities: a factual and rational understanding of proceedings and sufficient ability to consult with counsel rationally. An insanity defense concerns mental state at the alleged offense under the jurisdiction’s rule. The evaluator supplies function-focused evidence and an opinion within applicable law; the court or fact finder makes the legal determination.",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -1961,7 +1961,7 @@
           "id": "ch-8-section-5",
           "runtimeSectionId": "ch-8-section-4",
           "heading": "Supervision Models",
-          "preview": "These models provide common frameworks for understanding how supervision focus and style can vary: Model Developer Key Concept Integrated Developmental Model (IDM) Stoltenberg & Delworth (1987); Stoltenberg & McNeill (2010) Supervisees progress through developmental levels (1–3i), each characterized by changes in motiv",
+          "preview": "These models provide common frameworks for understanding how supervision focus and style can vary: Model Developer Key Concept Integrated Developmental Model (IDM) Stoltenberg & Delworth (1987); Stoltenberg & McNeill (2010) IDM describes developmental levels (1–3i) through patterns in motivation , autonomy , and self-a",
           "keyTerms": [
             "IDM",
             "Discrimination Model",
@@ -1978,7 +1978,7 @@
           "diagramId": "diagram-inline-ch-8-section-05",
           "diagramOrigin": "inline",
           "diagramTemplateKey": null,
-          "diagramDescription": "Integrated Developmental Model (IDM) — Supervisee Levels",
+          "diagramDescription": "Four profiles summarize the Integrated Developmental Model. Level 1 commonly combines high but anxious motivation with dependence and self-focus; Level 2 has fluctuating motivation and dependency–autonomy conflict; Level 3 has stable motivation and substantial autonomy with recognized limits; Level 3i integrates functioning across domains. A supervisee can show different levels in different domains or tasks, so the framework is not a global competence verdict.",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -2124,7 +2124,7 @@
           "id": "ch-9-section-3",
           "runtimeSectionId": "ch-9-section-2",
           "heading": "Malpractice: The Four Ds",
-          "preview": "Malpractice (professional negligence) requires the plaintiff to prove all four of the following elements, commonly called the \"Four Ds\" : Element Definition Example Duty A professional relationship existed, creating a duty of care The psychologist had a client in therapy Dereliction (Breach) The psychologist’s conduct ",
+          "preview": "Malpractice commonly refers to professional negligence. Under governing jurisdictional law, a plaintiff generally must prove each required element; the familiar \"Four Ds\" are a teaching mnemonic for duty, dereliction or breach, damage, and causation: Element Definition Example Duty A professional relationship existed, ",
           "keyTerms": [
             "Malpractice",
             "Four Ds",
@@ -2139,7 +2139,7 @@
           "diagramId": "diagram-inline-ch-9-section-03",
           "diagramOrigin": "inline",
           "diagramTemplateKey": null,
-          "diagramDescription": "The Four Ds of Malpractice — All Must Be Present",
+          "diagramDescription": "The common four-D mnemonic maps to duty, dereliction or breach of the applicable standard of care, legally cognizable damage, and causation. A professional-negligence plaintiff generally must establish every required element under the governing jurisdiction. Failure of an element defeats that negligence claim, but does not rule out an ethics complaint, licensing action, contract claim, or another legal theory.",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -2218,7 +2218,7 @@
           "id": "ch-9-section-7",
           "runtimeSectionId": "ch-9-section-6",
           "heading": "Privilege, Subpoenas, and Court Orders",
-          "preview": "Psychotherapist-patient privilege protects confidential communications from being compelled in court proceedings. Critical distinctions: Concept Definition Key Facts Confidentiality Ethical and professional obligation Governed by APA Ethics Code and HIPAA; applies in all contexts Privilege Legal right protecting commun",
+          "preview": "A demand is not automatic permission for unrestricted disclosure. Psychotherapist-patient privilege can protect confidential communications from compelled disclosure, subject to governing jurisdictional law. Critical distinctions: Concept Definition Key Facts Confidentiality Ethical and professional obligation Governed",
           "keyTerms": [
             "Privilege",
             "Confidentiality",
@@ -2232,7 +2232,7 @@
           "diagramId": "diagram-inline-ch-9-section-07",
           "diagramOrigin": "inline",
           "diagramTemplateKey": null,
-          "diagramDescription": "Decision path: preserve records and deadlines, identify the demand, verify authority and jurisdiction, consult the client and counsel as appropriate, assert privilege or seek protection when available, and disclose only through a legally authorized route and only within its scope.",
+          "diagramDescription": "A demand is not automatic permission for unrestricted disclosure. Preserve records and deadlines; classify an authorization, subpoena or other process, or court/administrative order; verify validity, authority, jurisdiction, HIPAA, privilege, state and specially protected information; consult the client and counsel as appropriate; seek protection when available; then disclose only through an authorized route, within its scope, and document the response.",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -2348,7 +2348,7 @@
           "diagramId": "diagram-inline-ch-10-section-03",
           "diagramOrigin": "inline",
           "diagramTemplateKey": null,
-          "diagramDescription": "Test Data vs. Test Materials Decision Flowchart",
+          "diagramDescription": "First classify requested content as test data, test materials, or overlapping content. Then identify the legal authority and recipient. Apply APA Standard 9.04 to data and Standard 9.11’s reasonable security duty to materials, together with applicable law and contracts. For overlap, consider separation, redaction, secure transmission, legal or publisher consultation, and a documented response limited to the authorized or required scope. Neither category produces an automatic release or refusal.",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -3842,7 +3842,7 @@
           "diagramId": "diagram-inline-ch-18-section-02",
           "diagramOrigin": "inline",
           "diagramTemplateKey": null,
-          "diagramDescription": "Roberts' Seven-Stage Crisis Intervention Model",
+          "diagramDescription": "Roberts’ educational framework includes biopsychosocial and crisis assessment, rapid rapport, problem definition, exploration of feelings, alternatives, an action plan, and follow-up. The stages can overlap, repeat, or change order. Medical danger, suicide or violence risk, intoxication or withdrawal, abuse, environmental danger, and capacity may require concurrent urgent action. This framework does not replace local emergency protocols, crisis-system standards, or clinical judgment.",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -9269,24 +9269,55 @@
       "sectionId": "ch-6-section-1",
       "sectionIndex": 2,
       "sectionHeading": "Forensic Assessment: Competency vs. Insanity",
-      "title": "",
-      "description": "Competency to Stand Trial vs. Insanity Defense",
+      "title": "Competence and Insanity Address Different Times and Legal Questions",
+      "description": "Two-column comparison. Competence to stand trial concerns present abilities: a factual and rational understanding of proceedings and sufficient ability to consult with counsel rationally. An insanity defense concerns mental state at the alleged offense under the jurisdiction’s rule. The evaluator supplies function-focused evidence and an opinion within applicable law; the court or fact finder makes the legal determination.",
       "hasSvg": true,
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "references": [],
-      "sourceDetails": [],
-      "reviewArtifact": "",
-      "reviewWave": "",
-      "reviewDate": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Expanded the full text alternative and made the Dusky abilities, retrospective insanity inquiry, evaluator role, and jurisdiction-specific legal decision explicit. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://supreme.justia.com/cases/federal/us/362/402/",
+        "https://www.aapl.org/docs/pdf/Competence%20to%20Stand%20Trial.pdf",
+        "https://www.aapl.org/docs/pdf/Insanity%20Defense%20Guidelines.pdf",
+        "https://www.law.cornell.edu/uscode/text/18/17"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Dusky v. United States, 362 U.S. 402 (1960)",
+          "organization": "Supreme Court of the United States; case text hosted by Justia",
+          "url": "https://supreme.justia.com/cases/federal/us/362/402/",
+          "whyReputable": "This is the controlling U.S. Supreme Court decision stating the constitutional minimum for present competence: sufficient ability to consult with counsel with rational understanding and a rational as well as factual understanding of the proceedings."
+        },
+        {
+          "title": "AAPL Practice Guideline for the Forensic Psychiatric Evaluation of Competence to Stand Trial",
+          "organization": "American Academy of Psychiatry and the Law; Journal of the American Academy of Psychiatry and the Law",
+          "url": "https://www.aapl.org/docs/pdf/Competence%20to%20Stand%20Trial.pdf",
+          "whyReputable": "This specialty-society practice guideline synthesizes governing law and accepted forensic assessment practice, emphasizes functional and jurisdiction-specific analysis, and distinguishes an evaluator’s evidence and opinion from the court’s legal determination."
+        },
+        {
+          "title": "AAPL Practice Guideline for Forensic Psychiatric Evaluation of Defendants Raising the Insanity Defense",
+          "organization": "American Academy of Psychiatry and the Law; Journal of the American Academy of Psychiatry and the Law",
+          "url": "https://www.aapl.org/docs/pdf/Insanity%20Defense%20Guidelines.pdf",
+          "whyReputable": "This peer-reviewed specialty guideline addresses retrospective evaluation of mental state at the time of an alleged offense and repeatedly anchors conclusions to the particular jurisdiction’s legal test rather than treating insanity as a diagnosis or universal rule."
+        },
+        {
+          "title": "18 U.S. Code § 17 — Insanity defense",
+          "organization": "Legal Information Institute, Cornell Law School; source text from the United States Code",
+          "url": "https://www.law.cornell.edu/uscode/text/18/17",
+          "whyReputable": "Cornell Law School’s Legal Information Institute reproduces the federal statute and links its source and amendments. It demonstrates that insanity criteria and burdens are legal rules and that the federal formulation is not a universal clinical definition."
+        }
+      ],
+      "reviewArtifact": "eppp_diagram_review_wave_03.json",
+      "reviewWave": "eppp-diagram-review-wave-03",
+      "reviewDate": "2026-07-17",
       "checks": {
-        "textAlternative": "shared-renderer-pass-content-review-pending",
-        "reducedMotion": "shared-renderer-pass",
-        "keyboardDependency": "shared-renderer-pass",
-        "conceptAccuracy": "pending",
-        "labelQuality": "pending",
-        "sourceSupport": "pending",
-        "expertReview": "pending-independent-review"
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "jurisdictional-context-editorial-pass"
       }
     },
     {
@@ -9331,24 +9362,48 @@
       "sectionId": "ch-8-section-4",
       "sectionIndex": 5,
       "sectionHeading": "Supervision Models",
-      "title": "",
-      "description": "Integrated Developmental Model (IDM) — Supervisee Levels",
+      "title": "IDM Supervision Profiles Vary by Level, Domain, and Task",
+      "description": "Four profiles summarize the Integrated Developmental Model. Level 1 commonly combines high but anxious motivation with dependence and self-focus; Level 2 has fluctuating motivation and dependency–autonomy conflict; Level 3 has stable motivation and substantial autonomy with recognized limits; Level 3i integrates functioning across domains. A supervisee can show different levels in different domains or tasks, so the framework is not a global competence verdict.",
       "hasSvg": true,
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "references": [],
-      "sourceDetails": [],
-      "reviewArtifact": "",
-      "reviewWave": "",
-      "reviewDate": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Clarified all four IDM profiles, increased every label to at least 12 units, and stated that level varies across domains or tasks rather than judging global competence. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://eric.ed.gov/?id=ED302789",
+        "https://doi.org/10.1002/9781118846360.ch28",
+        "https://doi.org/10.1037/0735-7028.23.6.504"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Integrated Developmental Model of Supervision",
+          "organization": "ERIC, Institute of Education Sciences, U.S. Department of Education",
+          "url": "https://eric.ed.gov/?id=ED302789",
+          "whyReputable": "This federal education-research record indexes Cal Stoltenberg’s original IDM presentation and abstract. It identifies motivation, self-and-other awareness, autonomy, multiple professional domains, three developmental levels, and a fourth integrated level."
+        },
+        {
+          "title": "The integrative developmental model of supervision",
+          "organization": "The Wiley International Handbook of Clinical Supervision, John Wiley & Sons",
+          "url": "https://doi.org/10.1002/9781118846360.ch28",
+          "whyReputable": "This authored handbook chapter is a later scholarly account of IDM by Stoltenberg and colleagues. It reviews Levels 1–3 and 3i, the model’s research base, and professional development across domains rather than treating a level as a global competence verdict."
+        },
+        {
+          "title": "Development of the Supervisee Levels Questionnaire—Revised",
+          "organization": "Professional Psychology: Research and Practice, American Psychological Association",
+          "url": "https://doi.org/10.1037/0735-7028.23.6.504",
+          "whyReputable": "This peer-reviewed APA journal article by McNeill and colleagues documents measurement of IDM’s motivation, autonomy, and self/other awareness structures. It provides traceable empirical context for the model while not converting its profiles into licensure decisions."
+        }
+      ],
+      "reviewArtifact": "eppp_diagram_review_wave_03.json",
+      "reviewWave": "eppp-diagram-review-wave-03",
+      "reviewDate": "2026-07-17",
       "checks": {
-        "textAlternative": "shared-renderer-pass-content-review-pending",
-        "reducedMotion": "shared-renderer-pass",
-        "keyboardDependency": "shared-renderer-pass",
-        "conceptAccuracy": "pending",
-        "labelQuality": "pending",
-        "sourceSupport": "pending",
-        "expertReview": "pending-independent-review"
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "framework-context-editorial-pass"
       }
     },
     {
@@ -9362,24 +9417,41 @@
       "sectionId": "ch-9-section-2",
       "sectionIndex": 3,
       "sectionHeading": "Malpractice: The Four Ds",
-      "title": "",
-      "description": "The Four Ds of Malpractice — All Must Be Present",
+      "title": "Common Elements of a Professional-Negligence Claim",
+      "description": "The common four-D mnemonic maps to duty, dereliction or breach of the applicable standard of care, legally cognizable damage, and causation. A professional-negligence plaintiff generally must establish every required element under the governing jurisdiction. Failure of an element defeats that negligence claim, but does not rule out an ethics complaint, licensing action, contract claim, or another legal theory.",
       "hasSvg": true,
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "references": [],
-      "sourceDetails": [],
-      "reviewArtifact": "",
-      "reviewWave": "",
-      "reviewDate": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Reframed the four-D mnemonic as common jurisdiction-specific negligence elements, modernized causation language, added accessible SVG naming, and separated negligence from other proceedings. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.law.cornell.edu/wex/malpractice",
+        "https://pubmed.ncbi.nlm.nih.gov/25226197/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "malpractice",
+          "organization": "Wex legal encyclopedia, Legal Information Institute, Cornell Law School",
+          "url": "https://www.law.cornell.edu/wex/malpractice",
+          "whyReputable": "Cornell Law School’s editor-reviewed Wex entry defines malpractice as professional negligence and identifies duty, breach, actual and proximate cause, and damages. It also situates the elements within tort law rather than ethics or licensing discipline."
+        },
+        {
+          "title": "Clinical psychopharmacology and medical malpractice: the four Ds",
+          "organization": "Journal of Psychiatric Practice; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/25226197/",
+          "whyReputable": "This peer-reviewed article supplies the familiar four-D teaching mnemonic and explains that each component must be proved for a malpractice finding. PubMed provides stable authorship, journal, abstract, DOI, and indexing metadata."
+        }
+      ],
+      "reviewArtifact": "eppp_diagram_review_wave_03.json",
+      "reviewWave": "eppp-diagram-review-wave-03",
+      "reviewDate": "2026-07-17",
       "checks": {
-        "textAlternative": "shared-renderer-pass-content-review-pending",
-        "reducedMotion": "shared-renderer-pass",
-        "keyboardDependency": "shared-renderer-pass",
-        "conceptAccuracy": "pending",
-        "labelQuality": "pending",
-        "sourceSupport": "pending",
-        "expertReview": "pending-independent-review"
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "jurisdictional-context-editorial-pass"
       }
     },
     {
@@ -9393,24 +9465,41 @@
       "sectionId": "ch-9-section-6",
       "sectionIndex": 7,
       "sectionHeading": "Privilege, Subpoenas, and Court Orders",
-      "title": "Responding to Legal Demands for Records",
-      "description": "Decision path: preserve records and deadlines, identify the demand, verify authority and jurisdiction, consult the client and counsel as appropriate, assert privilege or seek protection when available, and disclose only through a legally authorized route and only within its scope.",
+      "title": "Responding to Authorizations, Subpoenas, and Court Orders",
+      "description": "A demand is not automatic permission for unrestricted disclosure. Preserve records and deadlines; classify an authorization, subpoena or other process, or court/administrative order; verify validity, authority, jurisdiction, HIPAA, privilege, state and specially protected information; consult the client and counsel as appropriate; seek protection when available; then disclose only through an authorized route, within its scope, and document the response.",
       "hasSvg": true,
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "references": [],
-      "sourceDetails": [],
-      "reviewArtifact": "",
-      "reviewWave": "",
-      "reviewDate": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Expanded classification to authorizations, subpoenas or other process, and orders; namespaced every SVG identifier; and made scope, protective options, special law, and documentation explicit. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.hhs.gov/hipaa/for-professionals/faq/judicial-and-administrative-proceedings/index.html",
+        "https://www.apa.org/ethics/code/ethics-code-2017.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Judicial and Administrative Proceedings",
+          "organization": "Office for Civil Rights, U.S. Department of Health and Human Services",
+          "url": "https://www.hhs.gov/hipaa/for-professionals/faq/judicial-and-administrative-proceedings/index.html",
+          "whyReputable": "This official federal HIPAA guidance distinguishes a court order from a subpoena or other lawful process and explains the conditions for disclosures under 45 C.F.R. § 164.512(e), including limits tied to the order or legally sufficient process."
+        },
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct (2002, amended effective 2010 and 2017)",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code/ethics-code-2017.pdf",
+          "whyReputable": "This is the official APA ethics code. Standards 4.01–4.07 address confidentiality and disclosures, while Standards 9.04 and 9.11 distinguish test data release from reasonable efforts to protect test materials consistent with law and contractual obligations."
+        }
+      ],
+      "reviewArtifact": "eppp_diagram_review_wave_03.json",
+      "reviewWave": "eppp-diagram-review-wave-03",
+      "reviewDate": "2026-07-17",
       "checks": {
-        "textAlternative": "shared-renderer-pass-content-review-pending",
-        "reducedMotion": "shared-renderer-pass",
-        "keyboardDependency": "shared-renderer-pass",
-        "conceptAccuracy": "pending",
-        "labelQuality": "pending",
-        "sourceSupport": "pending",
-        "expertReview": "pending-independent-review"
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "jurisdictional-context-editorial-pass"
       }
     },
     {
@@ -9424,24 +9513,41 @@
       "sectionId": "ch-10-section-2",
       "sectionIndex": 3,
       "sectionHeading": "Test Data vs. Test Materials (9.04 vs. 9.11)",
-      "title": "",
-      "description": "Test Data vs. Test Materials Decision Flowchart",
+      "title": "Apply Standards 9.04 and 9.11 Without a Release-or-Refuse Shortcut",
+      "description": "First classify requested content as test data, test materials, or overlapping content. Then identify the legal authority and recipient. Apply APA Standard 9.04 to data and Standard 9.11’s reasonable security duty to materials, together with applicable law and contracts. For overlap, consider separation, redaction, secure transmission, legal or publisher consultation, and a documented response limited to the authorized or required scope. Neither category produces an automatic release or refusal.",
       "hasSvg": true,
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "references": [],
-      "sourceDetails": [],
-      "reviewArtifact": "",
-      "reviewWave": "",
-      "reviewDate": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Removed the binary release/refuse commands, fixed XML ampersands, and replaced them with a sourced five-step analysis covering classification, authority, both APA standards, safeguards, scope, and documentation. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/ethics/code/ethics-code-2017.pdf",
+        "https://www.apa.org/ethics/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct (2002, amended effective 2010 and 2017)",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code/ethics-code-2017.pdf",
+          "whyReputable": "This is the official APA ethics code. Standards 4.01–4.07 address confidentiality and disclosures, while Standards 9.04 and 9.11 distinguish test data release from reasonable efforts to protect test materials consistent with law and contractual obligations."
+        },
+        {
+          "title": "APA Ethics Office",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/",
+          "whyReputable": "The APA Ethics Office is the professional association’s official source for the current code, amendments, ethics resources, and adoption history. It is the appropriate primary organizational source for confirming which code text is in force."
+        }
+      ],
+      "reviewArtifact": "eppp_diagram_review_wave_03.json",
+      "reviewWave": "eppp-diagram-review-wave-03",
+      "reviewDate": "2026-07-17",
       "checks": {
-        "textAlternative": "shared-renderer-pass-content-review-pending",
-        "reducedMotion": "shared-renderer-pass",
-        "keyboardDependency": "shared-renderer-pass",
-        "conceptAccuracy": "pending",
-        "labelQuality": "pending",
-        "sourceSupport": "pending",
-        "expertReview": "pending-independent-review"
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "jurisdictional-context-editorial-pass"
       }
     },
     {
@@ -9943,24 +10049,48 @@
       "sectionId": "ch-18-section-1",
       "sectionIndex": 2,
       "sectionHeading": "Crisis Theory and Intervention",
-      "title": "",
-      "description": "Roberts' Seven-Stage Crisis Intervention Model",
+      "title": "Roberts’ Seven-Stage Crisis Framework With Concurrent Safety Triage",
+      "description": "Roberts’ educational framework includes biopsychosocial and crisis assessment, rapid rapport, problem definition, exploration of feelings, alternatives, an action plan, and follow-up. The stages can overlap, repeat, or change order. Medical danger, suicide or violence risk, intoxication or withdrawal, abuse, environmental danger, and capacity may require concurrent urgent action. This framework does not replace local emergency protocols, crisis-system standards, or clinical judgment.",
       "hasSvg": true,
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "references": [],
-      "sourceDetails": [],
-      "reviewArtifact": "",
-      "reviewWave": "",
-      "reviewDate": "",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, and learner interpretation. Replaced the misleading staircase with a flexible road map, increased every label to at least 12 units, and made concurrent safety/medical triage, linkage, follow-up, and emergency-protocol limits explicit. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://doi.org/10.1093/brief-treatment/mhi030",
+        "https://library.samhsa.gov/product/national-behavioral-health-crisis-care-guidance/pep24-01-037",
+        "https://988lifeline.org/professionals/best-practices/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Seven-Stage Crisis Intervention Model: A Road Map to Goal Attainment, Problem Solving, and Crisis Resolution",
+          "organization": "Brief Treatment and Crisis Intervention, Oxford University Press",
+          "url": "https://doi.org/10.1093/brief-treatment/mhi030",
+          "whyReputable": "This is Roberts and Ottens’s original peer-reviewed exposition of the seven-stage framework. It describes assessment, relationship building, problem definition, emotional exploration, alternatives, an action plan, and follow-up as a practice road map."
+        },
+        {
+          "title": "National Behavioral Health Crisis Care Guidance",
+          "organization": "Substance Abuse and Mental Health Services Administration, U.S. Department of Health and Human Services",
+          "url": "https://library.samhsa.gov/product/national-behavioral-health-crisis-care-guidance/pep24-01-037",
+          "whyReputable": "This current official federal guidance describes coordinated crisis systems, person-centered care, safety, stabilization, linkage, and follow-up. It helps distinguish a teaching model from operational emergency protocols and system-level standards."
+        },
+        {
+          "title": "988 Suicide & Crisis Lifeline Best Practices",
+          "organization": "988 Suicide & Crisis Lifeline, administered by Vibrant Emotional Health for SAMHSA",
+          "url": "https://988lifeline.org/professionals/best-practices/",
+          "whyReputable": "This national crisis-system resource curates evidence-informed suicide prevention and crisis-center practices. It supports concurrent attention to safety, collaborative engagement, connection to services, and continuity rather than a rigid one-pass staircase."
+        }
+      ],
+      "reviewArtifact": "eppp_diagram_review_wave_03.json",
+      "reviewWave": "eppp-diagram-review-wave-03",
+      "reviewDate": "2026-07-17",
       "checks": {
-        "textAlternative": "shared-renderer-pass-content-review-pending",
-        "reducedMotion": "shared-renderer-pass",
-        "keyboardDependency": "shared-renderer-pass",
-        "conceptAccuracy": "pending",
-        "labelQuality": "pending",
-        "sourceSupport": "pending",
-        "expertReview": "pending-independent-review"
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "historicalContext": "framework-context-editorial-pass"
       }
     },
     {

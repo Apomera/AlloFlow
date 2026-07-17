@@ -1883,7 +1883,7 @@ describe('vsMuxWebm', () => {
 
 // ─── Demo Autopilot capture validation ───────────────────────────────────────
 describe('vsValidateDemoCapture', () => {
-  it('accepts only a browser tab identified as AlloFlow', () => {
+  it('accepts browser-tab captures identified as AlloFlow', () => {
     expect(VS.vsValidateDemoCapture('browser', 'AlloFlow — Universal Design for Learning')).toEqual({
       ok: true,
       label: 'AlloFlow — Universal Design for Learning'
@@ -1892,6 +1892,16 @@ describe('vsValidateDemoCapture', () => {
     expect(VS.vsValidateDemoCapture('window', 'AlloFlow').ok).toBe(false);
     expect(VS.vsValidateDemoCapture('browser', 'Student records').ok).toBe(false);
     expect(VS.vsValidateDemoCapture('browser', '').ok).toBe(false);
+  });
+
+  it('accepts Gemini Canvas internal tab labels only with the AlloFlow bridge', () => {
+    var label = 'web-contents-media-stream://3DD175FA0272FB669EFA6736B50578CF';
+    expect(VS.vsValidateDemoCapture('browser', label, { openerConnected: true })).toMatchObject({
+      ok: true,
+      label: 'AlloFlow tab through Gemini Canvas',
+      inferred: true
+    });
+    expect(VS.vsValidateDemoCapture('browser', label, { openerConnected: false }).ok).toBe(false);
   });
 });
 
@@ -2233,8 +2243,11 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('var aliveTimer = setInterval(');
     expect(html).toContain('if (demoState.abandoned) { demoState.abandoned = false; return; }');
     expect(html).toContain("setTimeout(function () { demoRecoverLocal('AlloFlow did not confirm the stop'); }, 8000);");
-    expect(html).toContain('vsValidateDemoCapture(captureSurface, captureTrackLabel)');
+    expect(html).toContain('vsValidateDemoCapture(captureSurface, captureTrackLabel, { openerConnected: !!(opener && !opener.closed) })');
+    expect(html).toContain('demoState.captureValidation = validation');
+    expect(html).toContain('demoState.captureValidation && demoState.captureValidation.label');
     expect(html).toContain("surface !== 'browser'");
+    expect(html).toContain('canvasStreamLabel && hasAlloBridge');
     expect(html).toContain("displaySurface: 'browser'");
     expect(html).toContain("setMicEnabled(audioMode === 'mic')");
     expect(html).toContain('vsScheduleDemoNarrationClip(cue, pcm.byteLength');
@@ -2294,6 +2307,11 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoScriptReviewText"');
     expect(html).toContain('function demoStepPacing(step)');
     expect(html).toContain('function demoPacingAudit(steps)');
+    expect(html).toContain('function applyDemoPacingFit(steps)');
+    expect(html).toContain('var autoPacingChanged = applyDemoPacingFit(steps);');
+    expect(html).toContain('report.autoPacingChanged = autoPacingChanged');
+    expect(html).toContain('Preflight auto-fitted pacing');
+    expect(html).toContain('var changed = applyDemoPacingFit(demoState.steps || []);');
     expect(html).toContain('data-demo-step-pacing');
     expect(html).toContain('function defaultDemoStepScript(step)');
     expect(html).toContain('function demoScriptText()');

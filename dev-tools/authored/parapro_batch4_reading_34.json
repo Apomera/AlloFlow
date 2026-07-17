@@ -1,0 +1,1305 @@
+[
+  {
+    "id": "parapro-b4-reading-001",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. The school library once kept packets of vegetable seeds in an unmarked drawer. Few students knew they could borrow them. This year, the librarian placed the packets in a labeled cabinet, created simple planting cards, and displayed student-grown herbs beside the checkout desk. Seed borrowing tripled within two months. Which statement best expresses the main idea?",
+    "choices": [
+      "Making the seed collection visible and easier to use increased student participation in the program.",
+      "Herbs are the only plants that students can successfully grow from borrowed seeds.",
+      "The librarian removed books from the checkout desk to make room for a seed cabinet.",
+      "Students preferred writing planting cards to checking out materials from the library."
+    ],
+    "answerIndex": 0,
+    "rationale": "The passage links clearer labeling, practical directions, and a visible example with a large increase in seed borrowing, so the first choice captures both the change and its result without adding unsupported details.",
+    "choiceRationales": [
+      "This choice accurately combines the librarian's access improvements with the reported rise in participation.",
+      "Herbs are displayed as an example, but the passage never says they are the only plants available or successful.",
+      "No books were said to be removed, and the cabinet is not described as replacing anything at the desk.",
+      "Students' preferences about writing cards are not discussed; the librarian created the planting cards."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-002",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. A custodian placed two identical thermometers on the playground at noon. One was beneath the new fabric shade and read 78 degrees Fahrenheit. The other was beside an unshaded bench and read 91 degrees Fahrenheit. Which detail most directly supports the conclusion that the fabric shade reduced heat exposure?",
+    "choices": [
+      "The measurements were taken at noon rather than before school.",
+      "The thermometer under the shade recorded a temperature 13 degrees lower than the thermometer in the sun.",
+      "Students often sit on the playground benches during recess.",
+      "The custodian used thermometers that were the same size and color."
+    ],
+    "answerIndex": 1,
+    "rationale": "The 13-degree difference between otherwise comparable locations directly measures the effect relevant to heat exposure. The other facts concern timing, use, or appearance without demonstrating a reduction under the shade.",
+    "choiceRationales": [
+      "The time provides context but does not by itself show that shade changed the temperature.",
+      "This comparison directly shows substantially cooler conditions beneath the fabric shade.",
+      "Bench use may explain why heat matters, but it supplies no evidence that the shade reduced it.",
+      "Matching appearance is not the measured outcome and does not establish a temperature difference."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-003",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Before dismissal, Elena photographed the label inside her raincoat and wrote her bus number on a claim form. She then walked toward the office carrying a different coat that had been left on her classroom hook. Which inference is best supported?",
+    "choices": [
+      "Elena plans to donate both coats to the school office.",
+      "Elena has decided to take a different bus home.",
+      "Elena is trying to recover her own coat and return one that was mistakenly left for her.",
+      "Elena is preparing a photography project about clothing labels."
+    ],
+    "answerIndex": 2,
+    "rationale": "Recording identifying information about her raincoat and bringing a different coat to the office are complementary actions consistent with a coat mix-up. The other choices require intentions or events that the passage does not suggest.",
+    "choiceRationales": [
+      "A claim form indicates an effort to identify property, not a plan to donate it.",
+      "Writing a bus number can help the office contact or identify Elena; it does not indicate a route change.",
+      "Both the claim information and the coat she carries support this explanation of a mistaken exchange.",
+      "The photograph records an identifying label, and no assignment or broader photography activity is mentioned."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-004",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the sentence. Malik was meticulous when assembling the model: he checked each measurement twice, aligned every edge, and removed even the smallest drop of extra glue. As used in the sentence, \"meticulous\" most nearly means",
+    "choices": [
+      "eager to finish before everyone else",
+      "confused by written instructions",
+      "willing to change the model's purpose",
+      "extremely careful about small details"
+    ],
+    "answerIndex": 3,
+    "rationale": "Checking measurements, aligning every edge, and removing tiny amounts of glue all show unusually close attention to detail. Those context clues establish that meticulous means extremely careful rather than fast, confused, or changeable.",
+    "choiceRationales": [
+      "The sentence emphasizes precision, not speed or competition with other students.",
+      "Malik's accurate, organized actions do not suggest that the directions confused him.",
+      "Nothing indicates a different purpose for the model; the details concern how he assembled it.",
+      "This definition fits the repeated examples of careful checking and attention to very small features."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-005",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the passage. First, the robotics team sketched a storage cart. Next, members measured the classroom doorway and revised the cart's width. After building a cardboard prototype, they tested whether it could turn between the tables. Finally, they used the revised dimensions to construct the wooden cart. How is the passage primarily organized?",
+    "choices": [
+      "As a sequence of steps in developing a product",
+      "As a comparison of two competing robotics teams",
+      "As a list of cart features ranked by importance",
+      "As a claim about classroom storage followed by an opposing argument"
+    ],
+    "answerIndex": 0,
+    "rationale": "Signal words such as first, next, after, and finally place the team's actions in the order they occurred, making the passage a sequence describing the development and testing of one product.",
+    "choiceRationales": [
+      "This choice matches both the time-order signals and the progression from sketch to finished cart.",
+      "Only one team and one design process appear, so no team comparison is developed.",
+      "The actions are chronological and are not evaluated or ranked by importance.",
+      "The passage reports a process rather than presenting competing positions about storage."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-006",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the notice. Paint poured into a street drain can flow untreated into Willow Creek. After art projects, rinse reusable brushes in the marked utility sink and place leftover paint in the collection cabinet. Never empty paint outdoors. What is the notice's primary purpose?",
+    "choices": [
+      "To describe the history of Willow Creek",
+      "To explain safe paint-disposal procedures that protect the waterway",
+      "To compare reusable brushes with several brands of disposable brushes",
+      "To invite students to paint pictures beside the creek"
+    ],
+    "answerIndex": 1,
+    "rationale": "The notice identifies an environmental consequence and gives explicit directions for rinsing brushes and storing leftover paint, so its central purpose is procedural guidance designed to prevent water pollution.",
+    "choiceRationales": [
+      "The creek is mentioned only to explain the consequence of improper disposal, not to recount its history.",
+      "This choice captures both the directions and the stated reason for following them.",
+      "No brush brands or performance differences are presented, so the notice is not a product comparison.",
+      "The notice concerns cleanup after projects and specifically warns against emptying paint outdoors."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-007",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Students noticed that visitors often walked past the small campus history display. They interviewed longtime staff members, recorded short audio stories, and attached a scannable code to each photograph in the display. A survey later showed that visitors stayed longer and recalled more details. Which is the best summary?",
+    "choices": [
+      "Visitors were required to complete a survey before entering the campus.",
+      "Longtime staff members replaced all photographs in the history display.",
+      "Students added oral-history recordings to an overlooked display, increasing visitor engagement and recall.",
+      "Scannable codes are too difficult for most campus visitors to use."
+    ],
+    "answerIndex": 2,
+    "rationale": "The third choice includes the initial problem, the students' meaningful response, and the measured outcomes without preserving minor procedural details or introducing a claim not found in the passage.",
+    "choiceRationales": [
+      "The survey measured results afterward; the passage never describes it as an entry requirement.",
+      "Staff contributed interviews, while the existing photographs remained and received codes.",
+      "This choice concisely represents the project and both reported effects on visitors.",
+      "The longer visits and improved recall contradict the claim that the codes were generally too difficult."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-008",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. On the morning of the assembly, Darius arrived early with a roll of colored tape. He marked an X at the front of the stage, then walked to the back row and asked a classmate whether the mark could be seen. After moving it twice, he placed the microphone directly above it. Which inference is best supported?",
+    "choices": [
+      "Darius is measuring the stage so that new curtains can be ordered.",
+      "Darius wants the back row to choose the assembly's music.",
+      "Darius is hiding a damaged section of the stage with colored tape.",
+      "Darius is selecting a visible position for a speaker to stand during the assembly."
+    ],
+    "answerIndex": 3,
+    "rationale": "Testing visibility from the back row and aligning the microphone with the final mark strongly indicate that the mark identifies where an assembly speaker should stand. The alternatives do not explain both actions.",
+    "choiceRationales": [
+      "No dimensions or curtains are mentioned, and visibility of a floor mark would not determine curtain size.",
+      "The classmate reports visibility, not a music preference or selection.",
+      "Moving the mark and placing a microphone over it are inconsistent with concealing fixed damage.",
+      "This inference accounts for the visibility test, the adjusted mark, and the microphone placement."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-009",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the sentence. Although the garden appeared dormant in January, tiny green shoots emerged as soon as several warm days softened the soil. As used in the sentence, \"dormant\" most nearly means",
+    "choices": [
+      "temporarily inactive",
+      "permanently damaged",
+      "carefully harvested",
+      "unusually crowded"
+    ],
+    "answerIndex": 0,
+    "rationale": "The contrast between the garden's January condition and the shoots that emerged with warmth shows that growth had paused temporarily rather than ended. This context supports the meaning temporarily inactive.",
+    "choiceRationales": [
+      "This meaning fits a garden that is not visibly growing for a time but resumes growth later.",
+      "New shoots demonstrate continuing life, so the garden was not permanently damaged.",
+      "No one is described as gathering plants, and harvesting does not fit the later emergence of shoots.",
+      "The sentence describes seasonal activity rather than the number or spacing of plants."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-010",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A student council claims that placing a portable ramp at the auditorium's side entrance improved access for school events. Which evidence most directly supports the claim?",
+    "choices": [
+      "The ramp was delivered in a truck painted with the manufacturer's logo.",
+      "Attendance records and visitor surveys show that several wheelchair users entered through the ramped doorway at each of the next four events.",
+      "The auditorium was built many years before the student council was formed.",
+      "Council members discussed three possible colors before ordering the ramp."
+    ],
+    "answerIndex": 1,
+    "rationale": "Documented use of the ramp by wheelchair users across multiple events directly demonstrates improved physical access. Delivery, building age, and color decisions provide background but do not show that access changed.",
+    "choiceRationales": [
+      "The truck's appearance has no bearing on whether visitors could use the entrance.",
+      "This evidence records repeated use by people for whom the access feature was intended.",
+      "The auditorium's age does not establish either the former barrier or the ramp's later effect.",
+      "Aesthetic deliberation does not demonstrate that anyone gained access through the doorway."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-011",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the newsletter excerpt. \"The garden club planted six native shrubs in March. By October, a motion camera had recorded fourteen bird species near them. The new habitat is unquestionably the finest lunch spot on campus.\" Which analysis of the excerpt is accurate?",
+    "choices": [
+      "All three sentences express judgments that cannot be checked.",
+      "Only the sentence about fourteen species is an opinion.",
+      "The planting date and camera count are verifiable, while the claim about the finest lunch spot expresses an opinion.",
+      "The word unquestionably turns every sentence in the excerpt into a fact."
+    ],
+    "answerIndex": 2,
+    "rationale": "Records and camera data can verify when six shrubs were planted and how many species were observed. Calling the habitat the finest lunch spot is an evaluative judgment whose truth depends on preference, even when phrased confidently.",
+    "choiceRationales": [
+      "The first two statements contain specific events and quantities that records or observations can verify.",
+      "A camera record provides evidence for a count, so the fourteen-species statement is factual rather than merely personal.",
+      "This choice correctly distinguishes checkable evidence from the superlative evaluation in the final sentence.",
+      "A confidence word does not transform a subjective evaluation into an objectively verifiable statement."
+    ],
+    "skillIds": [
+      "reading-main-evidence"
+    ],
+    "chapterIds": [
+      "parapro-ch-01"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-012",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "A table shows library workshop attendance. Monday: Research Basics, 18 students. Tuesday: Citation Tools, 24 students. Wednesday: Research Basics, 21 students. Thursday: Citation Tools, 19 students. Which statement is supported by the table?",
+    "choices": [
+      "Research Basics drew exactly the same attendance on both days.",
+      "A total of 40 students attended the Tuesday and Wednesday workshops.",
+      "Citation Tools always drew more students than Research Basics.",
+      "The two Citation Tools sessions had a combined attendance of 43 students."
+    ],
+    "answerIndex": 3,
+    "rationale": "Adding the two Citation Tools entries gives 24 plus 19, or 43. The remaining statements conflict with the listed counts: 18 differs from 21, Tuesday plus Wednesday is 45, and Thursday's 19 is below Wednesday's 21.",
+    "choiceRationales": [
+      "The two Research Basics counts are 18 and 21, so they are not equal.",
+      "Tuesday and Wednesday total 24 plus 21, which is 45 rather than 40.",
+      "Thursday's Citation Tools attendance of 19 is lower than Wednesday's Research Basics attendance of 21.",
+      "The two relevant entries sum correctly to 43 and require no unsupported comparison."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-013",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the recording-kit directions. Reserve a kit online. At checkout, present the confirmation and school identification, inspect the numbered contents with a staff member, and sign the condition form. Which student followed all of the directions?",
+    "choices": [
+      "Nia reserved a kit, presented both documents, inspected the contents with staff, and signed after the inspection.",
+      "Owen reserved a kit and signed the form but took the unopened case without presenting identification.",
+      "Priya presented identification and inspected a kit alone but had not made a reservation.",
+      "Luis reserved a kit and presented both documents but declined the joint inspection and condition form."
+    ],
+    "answerIndex": 0,
+    "rationale": "Nia completes every required action in a workable sequence: reservation, document presentation, joint inspection, and signature. Each other student omits at least one explicit requirement, so only Nia fully follows the text.",
+    "choiceRationales": [
+      "Nia performs every stated requirement, including inspecting the numbered contents with a staff member before signing.",
+      "Owen omits both required identification and the joint inspection, despite completing two other actions.",
+      "Priya has no reservation and inspects alone, so she fails two explicit conditions.",
+      "Luis completes the reservation and document steps but omits both inspection and signature."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-014",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the passage. Because the classroom's paper-recycling bin had a narrow opening, large sheets often landed on the floor beside it. The facilities team replaced the lid with a wide slot and posted a picture showing how to flatten boxes. During the following week, almost no paper was found on the floor. How is the passage primarily organized?",
+    "choices": [
+      "As a description of two classrooms with equal recycling programs",
+      "As a problem, a response to that problem, and a resulting improvement",
+      "As a debate about whether schools should recycle paper",
+      "As a list of materials arranged from smallest to largest"
+    ],
+    "answerIndex": 1,
+    "rationale": "The passage first identifies paper missing the bin, then describes a wider opening and visual direction, and finally reports a cleaner result. This creates a clear problem-response-outcome structure.",
+    "choiceRationales": [
+      "Only one classroom recycling situation is described, so there is no two-site comparison.",
+      "This choice accurately traces the obstruction, the facilities team's changes, and the observed improvement.",
+      "No opposing positions or arguments about the value of recycling appear in the text.",
+      "The materials are not cataloged or ordered by size; size matters only as part of the solution."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-015",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the sentence. The wireless microphone allowed the presenter to move across the stage without dragging a cord. Which meaning does the suffix -less contribute to wireless?",
+    "choices": [
+      "made mainly for performances",
+      "capable of carrying sound",
+      "without the thing named by the base word",
+      "located a long distance away"
+    ],
+    "answerIndex": 2,
+    "rationale": "The suffix -less means without or lacking. Combined with wire, it indicates that the microphone operates without a wire, a meaning reinforced by the detail that the presenter does not drag a cord.",
+    "choiceRationales": [
+      "The performance setting comes from the sentence, not from the suffix -less.",
+      "A microphone carries sound, but that function is not the meaning contributed by -less.",
+      "This choice correctly combines the base wire with the suffix meaning without.",
+      "The presenter moves across a stage, but -less does not encode distance."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-016",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the sentence. The kayakers checked the river's current before deciding whether it was safe to paddle upstream. Which meaning of \"current\" is used in the sentence?",
+    "choices": [
+      "a topic that is fashionable",
+      "an event happening at the present time",
+      "a continuous movement of electrical charge",
+      "a steady movement of water in a particular direction"
+    ],
+    "answerIndex": 3,
+    "rationale": "The surrounding references to a river, kayakers, safety, and paddling upstream identify current as moving water. Although the word has several meanings, only the water-flow definition fits every contextual clue.",
+    "choiceRationales": [
+      "Nothing in the sentence concerns popularity, trends, or a fashionable subject.",
+      "Current can mean present, but that adjective meaning does not fit after the possessive river's.",
+      "Electrical current is a valid meaning, but no circuit, wire, or charge appears in this context.",
+      "This definition explains why direction and strength would affect paddling upstream safely."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-017",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Read the sentence. Because the orientation was brief, families still had time to visit every classroom. Which revision replaces brief with a synonym while preserving the sentence's meaning?",
+    "choices": [
+      "Because the orientation was short, families still had time to visit every classroom.",
+      "Because the orientation was mandatory, families still had time to visit every classroom.",
+      "Because the orientation was delayed, families still had time to visit every classroom.",
+      "Because the orientation was repeated, families still had time to visit every classroom."
+    ],
+    "answerIndex": 0,
+    "rationale": "In context, brief describes limited duration, and short preserves that meaning as well as the cause of families having time afterward. Mandatory, delayed, and repeated describe different properties of an event.",
+    "choiceRationales": [
+      "Short is a context-appropriate synonym that retains the original relationship between duration and available time.",
+      "Mandatory concerns whether attendance is required, not how long the orientation lasts.",
+      "Delayed changes when the event begins and does not preserve the meaning of brief.",
+      "Repeated indicates frequency and could actually increase total time rather than preserve the stated meaning."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-018",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "The sentence \"The club will expand its tutoring program next fall\" uses expand to mean increase its reach. Which sentence uses a word or phrase with the opposite meaning of expand?",
+    "choices": [
+      "The club will publicize its tutoring schedule next fall.",
+      "The club will reduce the program to one campus next fall.",
+      "The club will evaluate its tutoring materials next fall.",
+      "The club will organize volunteer training next fall."
+    ],
+    "answerIndex": 1,
+    "rationale": "Reducing the program to one campus decreases its reach, the opposite of expanding to a broader scope. Publicizing, evaluating, and organizing may occur during either growth or reduction and therefore are not antonyms.",
+    "choiceRationales": [
+      "Publicizing communicates information but does not necessarily change the program's size or reach.",
+      "Reducing the program expresses the opposite change in scope from expanding it.",
+      "Evaluation judges the program and can take place regardless of whether its reach increases or decreases.",
+      "Organization concerns arrangement or planning rather than an opposite change in extent."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-019",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Request cards are filed alphabetically by last name in this order: Alvarez, Chen, Coleman. Where should a card labeled Cooper be placed?",
+    "choices": [
+      "Before Alvarez",
+      "Between Alvarez and Chen",
+      "After Coleman",
+      "Between Chen and Coleman"
+    ],
+    "answerIndex": 2,
+    "rationale": "Cooper belongs after Coleman. Both begin Co, but at the first differing letter Coleman has l and Cooper has o; because l precedes o alphabetically, Coleman must come first.",
+    "choiceRationales": [
+      "A C name cannot precede Alvarez because A comes before C.",
+      "Cooper begins with C and therefore follows both the A entry and the earlier C entries.",
+      "This placement correctly compares Coleman and Cooper through their first differing letter.",
+      "Chen begins Ch, which alphabetically precedes names beginning Co, so Cooper cannot be inserted before Coleman."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-020",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "Read the sentence. When the debate team met with the drama club, its adviser explained the new room schedule. The sentence is unclear primarily because",
+    "choices": [
+      "the sentence contains no action verb",
+      "the word schedule has no dictionary meaning",
+      "a comma must always follow the word club",
+      "the pronoun its could refer to either the debate team or the drama club"
+    ],
+    "answerIndex": 3,
+    "rationale": "Both the debate team and the drama club are singular collective nouns that could possess an adviser, so the pronoun its has two plausible antecedents. Naming the organization would remove the ambiguity.",
+    "choiceRationales": [
+      "Met and explained are both action verbs, so the sentence does contain expressed actions.",
+      "Schedule is a standard word whose meaning is clear in context; the problem is who has the adviser.",
+      "No rule requires a comma at that location, and punctuation there would not identify the antecedent.",
+      "This choice identifies the actual syntactic ambiguity created by two possible antecedents."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-021",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "foundation",
+    "prompt": "Which word begins with the same consonant sound as \"giant\"?",
+    "choices": [
+      "jelly",
+      "garden",
+      "ghost",
+      "kite"
+    ],
+    "answerIndex": 0,
+    "rationale": "Giant begins with the /j/ sound, and jelly begins with the same sound even though it uses the letter j. Garden and ghost begin with hard /g/, while kite begins with /k/.",
+    "choiceRationales": [
+      "Jelly begins with /j/, matching the initial sound in giant.",
+      "Garden begins with hard /g/, which differs from the soft g sound in giant.",
+      "Ghost also begins with hard /g/ and therefore does not match giant's first sound.",
+      "Kite begins with /k/, which does not match the /j/ sound at the beginning of giant."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-022",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "developing",
+    "prompt": "In the word \"misinterpretation,\" which word part most directly signals that something was understood incorrectly?",
+    "choices": [
+      "the suffix -tion",
+      "the prefix mis-",
+      "the final syllable ta",
+      "the root interpret"
+    ],
+    "answerIndex": 1,
+    "rationale": "The prefix mis- means wrongly or incorrectly, so it adds the error meaning to interpret. The root names the act of explaining or understanding, and -tion changes the word into a noun.",
+    "choiceRationales": [
+      "The suffix -tion forms a noun but does not supply the meaning wrongly.",
+      "Mis- directly contributes the idea of an incorrect or mistaken interpretation.",
+      "Ta is part of the word's syllable pattern but is not a meaningful affix carrying the error concept.",
+      "Interpret identifies understanding or explaining, but by itself it does not indicate that the result was wrong."
+    ],
+    "skillIds": [
+      "reading-inference-vocabulary"
+    ],
+    "chapterIds": [
+      "parapro-ch-02"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-023",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "basic-skills-knowledge",
+    "difficulty": "advanced",
+    "prompt": "A chart lists average morning wait times at the school health office. September: 14 minutes with one staff member. October: 13 minutes with one staff member. November: 8 minutes with two staff members. December: 7 minutes with two staff members. Which conclusion is best supported by the chart?",
+    "choices": [
+      "Every student who visited in December waited exactly seven minutes.",
+      "Adding a second staff member was the only possible cause of shorter waits.",
+      "The months with two staff members had lower average wait times than the months with one staff member.",
+      "The health office served fewer students in November and December than in September and October."
+    ],
+    "answerIndex": 2,
+    "rationale": "The chart directly supports a comparison of the displayed averages: 8 and 7 minutes with two staff members are below 14 and 13 with one. It does not establish individual waits, sole causation, or visit totals.",
+    "choiceRationales": [
+      "An average does not mean every individual observation equaled that value.",
+      "The association is visible, but the chart does not rule out other changes that could affect waiting time.",
+      "This statement reports exactly the relationship shown without making an unsupported causal claim.",
+      "No student-volume data appear, so the number of visitors cannot be inferred from wait averages."
+    ],
+    "skillIds": [
+      "reading-structure-sources"
+    ],
+    "chapterIds": [
+      "parapro-ch-03"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-024",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "During a teacher-planned decoding lesson, a student reads ship as sip and chop as cop. Which paraprofessional response would most directly address the pattern in the student's errors?",
+    "choices": [
+      "Ask the student to memorize both sentences without examining the target words.",
+      "Replace the words with easier ones that begin with different letters.",
+      "Have the student identify only the final sound in each word and then guess the whole word.",
+      "Model how s and h combine to represent /sh/ and c and h combine to represent /ch/, then guide the student to blend each word and reread it in context."
+    ],
+    "answerIndex": 3,
+    "rationale": "Both errors omit the second letter in an initial consonant digraph. Explicitly connecting each two-letter spelling with its sound, followed by blending and contextual rereading, targets the demonstrated decoding need.",
+    "choiceRationales": [
+      "Memorizing complete sentences does not teach the digraph relationships causing the repeated errors.",
+      "Substitution removes practice with the target pattern and changes the teacher-selected text.",
+      "Final sounds are not the source of these errors, and guessing would reinforce an inaccurate strategy.",
+      "This response directly teaches the two digraphs, elicits accurate blending, and checks the words in meaningful context."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-025",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "Before students read an article titled \"How Rooftop Gardens Cool City Buildings,\" the teacher asks the paraprofessional to activate relevant background knowledge without explaining the article for them. Which action best meets that goal?",
+    "choices": [
+      "Invite students to examine the title and photograph, share what they know about roofs, plants, and heat, and record questions they expect the article to answer.",
+      "Read the entire article aloud and state its main idea before students open their copies.",
+      "Ask students to copy every unfamiliar word from the article before looking at its title.",
+      "Tell students that predictions are unnecessary because the heading already gives every important detail."
+    ],
+    "answerIndex": 0,
+    "rationale": "Previewing text features, connecting them with relevant knowledge, and generating questions prepares students to read purposefully while leaving the article's explanations and central ideas for students to determine.",
+    "choiceRationales": [
+      "This prereading routine activates useful concepts and establishes purposes without supplying the text's conclusions.",
+      "Reading and explaining the full article completes much of the comprehension work instead of preparing students to do it.",
+      "Copying unknown words before even previewing the topic does not activate organized, relevant background knowledge.",
+      "A title signals a topic but cannot replace the evidence, explanations, and details within the article."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-026",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student can recall details from a biography but does not notice how the subject's early failures influenced later decisions. Which teacher-directed paraprofessional question would best promote deeper comprehension?",
+    "choices": [
+      "How many paragraphs and commas are on this page?",
+      "How did the failed first expedition affect the subject's planning for the second expedition, and which details support your answer?",
+      "What is the longest word in the account of the second expedition?",
+      "Can you repeat the final sentence exactly without referring to earlier events?"
+    ],
+    "answerIndex": 1,
+    "rationale": "The second question directs the student to connect events across the text and support a causal interpretation with evidence, moving beyond isolated recall while keeping the reasoning with the student.",
+    "choiceRationales": [
+      "Counting text features does not examine the relationship between the subject's experiences and choices.",
+      "This question explicitly targets the causal connection and requires evidence from both relevant portions of the biography.",
+      "Word length is unrelated to how an earlier event shaped a later decision.",
+      "Exact repetition of one sentence neither connects events nor asks the student to explain influence."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-027",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A teacher asks a paraprofessional to observe a student's oral reading of a new passage. The student reads planned as plan, crossed as cross, and resting as rest, but accurately reads the surrounding words. Which observation would be most useful to record for instructional planning?",
+    "choices": [
+      "The student seemed to like the passage's illustration.",
+      "The passage contained more than one paragraph.",
+      "Across several words, the student omitted or altered inflectional endings while usually preserving the base word.",
+      "The student should be described simply as a poor reader without examples."
+    ],
+    "answerIndex": 2,
+    "rationale": "The three examples reveal a consistent, instructionally relevant pattern involving endings such as -ed and -ing. Recording the pattern and examples gives the teacher actionable evidence without assigning a broad label.",
+    "choiceRationales": [
+      "A preference inferred from an illustration does not document the oral-reading behavior the teacher requested.",
+      "Passage length is contextual information but does not characterize the student's repeated word-reading errors.",
+      "This statement accurately synthesizes the observed errors while retaining concrete evidence for planning.",
+      "A global judgment is neither objective nor specific enough to guide targeted instruction."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-028",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student is using dictionary guide words. One page is headed harbor-harm, and the next is headed harmony-harvest. The student wants to find harness. Which prompt should the paraprofessional give?",
+    "choices": [
+      "Choose the first page because every word beginning har appears there.",
+      "Search under n because harness contains two n's.",
+      "Use the page containing harvest because harness comes after every word beginning harm.",
+      "Compare harness with the guide words letter by letter; because it falls after harmony but before harvest, search the second page."
+    ],
+    "answerIndex": 3,
+    "rationale": "Guide words state the first and last entries on a page. Letter-by-letter comparison places harness after harmony and before harvest, so the second page contains its alphabetical location and the prompt teaches a transferable lookup process.",
+    "choiceRationales": [
+      "A shared three-letter beginning is not enough to determine the page when many entries begin har.",
+      "Dictionary entries are located from their initial letters in sequence, not by a repeated interior letter.",
+      "Harness does not come after harvest; n precedes v at the first differing position after har.",
+      "This prompt correctly uses both boundary words and asks the student to perform the relevant alphabetical comparison."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-029",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student labels the sentence \"The fundraiser collected $2,400, proving it was the school's best event\" entirely as fact because it contains a number. Which teacher-directed response would best correct the misconception?",
+    "choices": [
+      "Have the student verify the dollar amount in a record, then discuss why best remains a judgment unless a measurable criterion is defined and compared.",
+      "Tell the student that any sentence containing a number must be accepted as wholly factual.",
+      "Ask the student to replace $2,400 with the word many and keep the same label.",
+      "Explain that fundraising records are opinions because people write them."
+    ],
+    "answerIndex": 0,
+    "rationale": "The response separates a verifiable quantitative claim from an undefined evaluative claim within the same sentence. It teaches the student to examine each proposition and the evidence needed rather than relying on a superficial number cue.",
+    "choiceRationales": [
+      "This process verifies the factual portion and exposes the missing standard behind the evaluative word best.",
+      "A number can be inaccurate or can appear beside an opinion, so its presence does not settle every claim in a sentence.",
+      "Changing the wording removes useful evidence but does not explain the difference between verification and judgment.",
+      "Records can provide factual evidence even though people create them; authorship alone does not make them opinions."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-030",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student misinterprets the sentence \"Only after the alarm ended did the custodian unlock the west doors\" to mean that the doors were unlocked during the alarm. Which paraprofessional prompt would best clarify the syntax?",
+    "choices": [
+      "Ask the student to alphabetize alarm, custodian, doors, and west.",
+      "Have the student restate the sentence in ordinary order as \"The custodian unlocked the west doors only after the alarm ended\" and identify which event happened first.",
+      "Tell the student to ignore only after because short phrases rarely affect meaning.",
+      "Ask the student to count how many letters appear before the verb unlock."
+    ],
+    "answerIndex": 1,
+    "rationale": "Recasting the inverted sentence into ordinary subject-verb order while preserving only after makes the temporal relationship explicit and asks the student to demonstrate understanding of the event sequence.",
+    "choiceRationales": [
+      "Alphabetizing selected words does not address how the sentence's grammatical order expresses time.",
+      "This transformation preserves the meaning, exposes the clause relationship, and elicits the correct sequence.",
+      "Removing the signal phrase would erase the very information that determines when the doors were unlocked.",
+      "Letter counting is unrelated to the inversion and temporal meaning that caused the misunderstanding."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-031",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student reads, \"The crew raised the sail before leaving the harbor,\" and says sail means a special sale at a store because the words sound alike. Which response would best help the student use context to distinguish the homophones?",
+    "choices": [
+      "Tell the student that sale and sail are interchangeable because they sound alike.",
+      "Ask the student to choose sale because it appears more often in everyday advertisements.",
+      "Compare the meaning of sale in a sentence about selling goods with the meaning of sail as material that catches wind to move a boat, then use crew, raised, and harbor to confirm the intended meaning.",
+      "Replace the entire sentence so the student does not need to examine the target word."
+    ],
+    "answerIndex": 2,
+    "rationale": "Sale and sail sound alike but have different meanings. Contrasting their meanings and applying the clues crew, raised, and harbor teaches the student to identify the nautical meaning through context rather than pronunciation alone.",
+    "choiceRationales": [
+      "Homophones share pronunciation but are not interchangeable because their meanings and spellings differ.",
+      "A word being familiar from advertisements does not show that its meaning fits this nautical sentence.",
+      "This response explicitly links each homophone to its meaning and uses the surrounding nautical clues to verify the intended sense of sail.",
+      "Avoiding the word removes the opportunity to learn how context distinguishes the homophones."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-032",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "A student is using a print dictionary to find the word conserve but repeatedly stops at concert. Which support should the paraprofessional provide first?",
+    "choices": [
+      "Turn directly to conserve, point to its definition, and close the dictionary.",
+      "Tell the student that words sharing the first three letters appear on the same page.",
+      "Ask the student to search under the final letter e rather than the initial letter c.",
+      "Have the student compare the words letter by letter through con, notice that c in concert comes before s in conserve at the first differing letter, and continue forward from concert."
+    ],
+    "answerIndex": 3,
+    "rationale": "Dictionary order is determined at the first differing letter. Comparing concert and conserve through con and then c versus s explains why conserve appears later and gives the student a procedure that transfers to other searches.",
+    "choiceRationales": [
+      "Supplying the location completes this lookup but does not teach how to navigate from a nearby guide word.",
+      "Sharing three initial letters does not guarantee the words appear on one page, especially in a compact dictionary.",
+      "Alphabetical lookup begins with the first letter and proceeds forward, not from the word's ending.",
+      "This scaffold pinpoints the relevant comparison and tells the student which direction to search next."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-033",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "developing",
+    "prompt": "During a teacher-planned laboratory activity, a student repeatedly begins measuring before completing the instruction \"Zero the digital scale, place the empty container on it, press tare, and then add the sample.\" Which reading support is most appropriate?",
+    "choices": [
+      "Ask the student to number the four actions, point to each one while performing it, and pause after press tare to verify the display reads zero before adding the sample.",
+      "Remove the directions and complete all measurements while the student watches silently.",
+      "Tell the student to perform the steps in any order because each verb is equally important.",
+      "Have the student copy the instruction five times after the laboratory period ends without practicing it."
+    ],
+    "answerIndex": 0,
+    "rationale": "Chunking and numbering the procedural sentence, pairing each clause with its action, and checking the critical intermediate result directly support accurate reading and execution of the ordered directions.",
+    "choiceRationales": [
+      "This support makes sequence visible, connects language with action, and builds in a comprehension check.",
+      "Taking over the task prevents the student from practicing how to follow the written procedure.",
+      "The order matters because adding the sample before taring would produce an inaccurate measurement.",
+      "Copying later does not provide immediate guided practice with interpreting and following the sequence."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  },
+  {
+    "id": "parapro-b4-reading-034",
+    "type": "single-choice",
+    "domainId": "reading",
+    "contentFocus": "application-classroom",
+    "difficulty": "advanced",
+    "prompt": "A student reads a passage stating that cafeteria food waste decreased after a share table opened, but the accompanying bar graph shows that the decrease began one month earlier. Which teacher-directed prompt would best help the student integrate the sources critically?",
+    "choices": [
+      "Ignore the graph because prose always provides stronger evidence than a visual.",
+      "Ask when the graph shows the decline began, compare that date with the table's opening date in the passage, and revise any claim that the share table alone caused the entire decline.",
+      "Have the student copy the graph title without examining its dates or bars.",
+      "Tell the student that two sources included on the same page cannot disagree."
+    ],
+    "answerIndex": 1,
+    "rationale": "The prompt directs attention to the relevant evidence in both representations and distinguishes sequence from causation. It supports a warranted revision without telling the student to discard either source.",
+    "choiceRationales": [
+      "Source format alone does not determine credibility, and ignoring relevant data prevents integration.",
+      "This response makes the student reconcile the timing evidence and limit a causal conclusion that the combined sources do not support.",
+      "Copying a title does not require interpreting the temporal pattern or comparing it with the passage.",
+      "Sources can qualify one another, and recognizing tension is part of critical comprehension."
+    ],
+    "skillIds": [
+      "reading-classroom-support"
+    ],
+    "chapterIds": [
+      "parapro-ch-04"
+    ],
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "authorship": "assistant-authored-independent",
+    "editorialReviewer": "OpenAI Codex",
+    "assistantReviewStatus": "reviewed-independent-draft",
+    "examItemStatus": "assistant-reviewed-independent-draft",
+    "reviewStatus": "assistant-reviewed-independent-draft",
+    "qaStatus": "pending-integrated-qa",
+    "authoredAt": "2026-07-17"
+  }
+]

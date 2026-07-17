@@ -39,6 +39,7 @@ const INVENTORY_SCRIPT = path.join(ROOT, 'dev-tools', 'inventory_eppp_learning_c
 const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learning_library.cjs');
 const DIAGRAM_QUALITY_WAVE_01_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_01.cjs');
 const DIAGRAM_QUALITY_WAVE_02_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_02.cjs');
+const DIAGRAM_QUALITY_WAVE_03_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_03.cjs');
 const REVIEW_LEDGER_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_review_ledger.cjs');
 const NEXT_REVIEW_DOCKET_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_next_review_docket.cjs');
 const CURATION_500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_500_curation_manifest.cjs');
@@ -385,6 +386,7 @@ if (!skipEpppRefresh) {
   execSync(`node "${QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${DIAGRAM_QUALITY_WAVE_01_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${DIAGRAM_QUALITY_WAVE_02_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${DIAGRAM_QUALITY_WAVE_03_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${INVENTORY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${REVIEW_LEDGER_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });

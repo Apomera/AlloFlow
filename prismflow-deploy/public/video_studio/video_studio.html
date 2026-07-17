@@ -3591,14 +3591,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // Demo Autopilot may drive the app only when the selected capture is clearly
   // the AlloFlow browser tab. General-purpose recording can still use any
   // surface; this stricter validator is intentionally limited to automation.
-  function vsValidateDemoCapture(displaySurface, trackLabel) {
+  // Gemini Canvas/Chromium sometimes redacts the captured tab title as an
+  // internal web-contents-media-stream URL, so accept that label only when the
+  // popup still has a live AlloFlow bridge.
+  function vsValidateDemoCapture(displaySurface, trackLabel, options) {
     var surface = String(displaySurface || '').trim().toLowerCase();
     var label = String(trackLabel || '').trim().slice(0, 160);
+    var opts = options || {};
+    var hasAlloBridge = !!opts.openerConnected;
+    var canvasStreamLabel = /^web-contents-media-stream:\/\//i.test(label);
     if (surface !== 'browser') return { ok: false, reason: 'Demo Autopilot requires a browser tab, not a window or entire screen.' };
-    if (!label || !/alloflow/i.test(label)) {
-      return { ok: false, reason: 'The selected tab was not identified as AlloFlow' + (label ? ' (selected: “' + label + '”)' : '') + '. Stop and choose the AlloFlow tab.' };
-    }
-    return { ok: true, label: label };
+    if (label && /alloflow/i.test(label)) return { ok: true, label: label };
+    if (canvasStreamLabel && hasAlloBridge) return { ok: true, label: 'AlloFlow tab through Gemini Canvas', inferred: true };
+    return { ok: false, reason: 'The selected tab was not identified as AlloFlow' + (label ? ' (selected: “' + label + '”)' : '') + '. Stop and choose the AlloFlow tab.' };
   }
 
   // Pre-capture checks are pure so the popup, tests, and future desktop shell
@@ -10617,6 +10622,24 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var items = (Array.isArray(steps) ? steps : []).map(demoStepPacing);
     return { items: items, warningCount: items.filter(function (item) { return item.needsMoreTime; }).length, tooLongCount: items.filter(function (item) { return item.tooLong; }).length };
   }
+  function applyDemoPacingFit(steps) {
+    var changed = 0;
+    (Array.isArray(steps) ? steps : []).forEach(function (step) {
+      if (!step || step._included === false) return;
+      var timing = demoStepPacing(step);
+      if (timing.needsMoreTime && !timing.tooLong && timing.currentHold < timing.suggestedHold) {
+        step.pauseAfter = timing.suggestedHold;
+        changed++;
+      }
+    });
+    return changed;
+  }
+  function syncDemoHoldInputs() {
+    Array.prototype.forEach.call($('demoPlanList').querySelectorAll('input[type="number"]'), function (input, index) {
+      var step = demoState.steps && demoState.steps[index];
+      if (step) input.value = String(cleanDemoResultHold(step.pauseAfter));
+    });
+  }
   function defaultDemoStepScript(step) {
     var s = step || {};
     var actionBeat = (Array.isArray(s.beats) ? s.beats : []).filter(function (beat) { return beat && beat.kind === 'action' && String(beat.text || '').trim(); })[0];
@@ -10964,6 +10987,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try {
     var storageKnown = false, availableBytes = 0;
     var steps = approvedDemoSteps();
+    var autoPacingChanged = applyDemoPacingFit(steps);
+    if (autoPacingChanged) {
+      syncDemoHoldInputs();
+      saveDemoDraft();
+      refreshDemoPlanSummary();
+      steps = approvedDemoSteps();
+    }
     var pacingAudit = demoPacingAudit(steps);
     var commandReadinessKnown = !!demoState.officialId;
     var commandReady = !!demoState.officialId;
@@ -11011,7 +11041,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (version !== demoState.preflightVersion) return { ok: false, stale: true, blockingCount: 1, warningCount: 0, items: [] };
     updateDemoStepReadinessUI();
     $('demoRepairBtn').hidden = !!demoState.officialId || !demoState.commandReport || !!demoState.commandReport.ok;
-    return renderDemoPreflight(vsBuildDemoPreflight({
+    var report = renderDemoPreflight(vsBuildDemoPreflight({
       planCount: steps.length,
       scriptWarningCount: pacingAudit.warningCount,
       scriptTooLongCount: pacingAudit.tooLongCount,
@@ -11027,6 +11057,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       availableBytes: availableBytes,
       recordingBusy: !!(rec && rec.state !== 'inactive')
     }));
+    report.autoPacingChanged = autoPacingChanged;
+    if (autoPacingChanged) {
+      setStatus($('demoPacingStatus'), 'Preflight auto-fitted pacing for ' + autoPacingChanged + ' narration step' + (autoPacingChanged === 1 ? '' : 's') + (pacingAudit.tooLongCount ? '; shorten any remaining long narration lines.' : '. All fitted holds should now fit.'), pacingAudit.tooLongCount ? 'warn' : 'ok');
+    }
+    return report;
     } finally {
       if (demoPreflightController === preflightController) demoPreflightController = null;
     }
@@ -11038,7 +11073,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setMicEnabled(previous);
   }
   function demoCaptureProblem() {
-    var validation = vsValidateDemoCapture(captureSurface, captureTrackLabel);
+    var validation = vsValidateDemoCapture(captureSurface, captureTrackLabel, { openerConnected: !!(opener && !opener.closed) });
+    demoState.captureValidation = validation;
     return validation.ok ? '' : validation.reason;
   }
   function setDemoNarrationStatus(message, kind) {
@@ -11372,15 +11408,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   });
   $('demoPacingFitBtn').addEventListener('click', function () {
-    var changed = 0;
-    (demoState.steps || []).forEach(function (step) {
-      if (step._included === false) return;
-      var timing = demoStepPacing(step);
-      if (timing.needsMoreTime && !timing.tooLong && timing.currentHold < timing.suggestedHold) {
-        step.pauseAfter = timing.suggestedHold;
-        changed++;
-      }
-    });
+    var changed = applyDemoPacingFit(demoState.steps || []);
     if (!changed) { setStatus($('demoStatus'), 'No result holds can be increased automatically. Shorten any highlighted narration lines.', 'warn'); return; }
     renderDemoPlan();
     setStatus($('demoStatus'), 'Pacing fitted for ' + changed + ' narration step' + (changed === 1 ? '' : 's') + '. Review any remaining long-line warnings.', 'ok');
@@ -11722,7 +11750,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         announce('Demo cancelled because the AlloFlow tab was not selected');
         return;
       }
-      setStatus($('demoStatus'), 'Verified tab capture: ' + captureTrackLabel + '. Switch to that tab now; AlloFlow will wait until it is visible.', 'ok');
+      setStatus($('demoStatus'), 'Verified tab capture: ' + ((demoState.captureValidation && demoState.captureValidation.label) || captureTrackLabel || 'AlloFlow tab') + '. Switch to that tab now; AlloFlow will wait until it is visible.', 'ok');
       setDemoPrivacyIndicator('recording the verified AlloFlow tab only. Video stays local; completed narration text may be sent to the configured speech provider.', 'ok');
       $('demoStopBtn').hidden = false;
       // Liveness watchdog: if the AlloFlow tab closes or reloads mid-run, its

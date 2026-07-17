@@ -26,19 +26,19 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(pack.items).toHaveLength(500);
     expect(pack.batchSize).toBe(100);
     expect(pack.sections).toHaveLength(5);
-    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'independent-diagnostic-batch-3', 'guided-review-bank-1', 'guided-review-bank-2']);
-    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'independent-diagnostic', 'guided-review', 'guided-review']);
+    expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'independent-diagnostic-batch-3', 'independent-diagnostic-batch-4', 'guided-review-bank-1']);
+    expect(pack.sections.map((section) => section.kind)).toEqual(['source-diagnostic', 'source-diagnostic', 'independent-diagnostic', 'independent-diagnostic', 'guided-review']);
     expect(pack).toMatchObject({
       sourceDiagnosticBatchCount: 2,
-      assistantAuthoredIndependentBatchCount: 1,
-      independentDiagnosticBatchCount: 3,
-      guidedReviewBatchCount: 2,
+      assistantAuthoredIndependentBatchCount: 2,
+      independentDiagnosticBatchCount: 4,
+      guidedReviewBatchCount: 1,
     });
-    // Honest tiers: 200 source-reviewed questions, 100 assistant-reviewed
-    // independent-practice questions, and 200 guided-review activities.
+    // Honest tiers: 200 source-reviewed questions, 200 assistant-reviewed
+    // independent-practice questions, and 100 guided-review activities.
     expect(pack.items.slice(0, 200).every((item) => item.reviewStatus === 'source-reviewed' && item.qaStatus === 'qa-passed')).toBe(true);
-    expect(pack.items.slice(200, 300).every((item) => item.reviewStatus === 'assistant-reviewed-independent-practice-item' && item.qaStatus === 'qa-passed-independent-practice-item')).toBe(true);
-    expect(pack.items.slice(300).every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only' && item.qaStatus === 'structural-qa-passed-guided-practice-only')).toBe(true);
+    expect(pack.items.slice(200, 400).every((item) => item.reviewStatus === 'assistant-reviewed-independent-practice-item' && item.qaStatus === 'qa-passed-independent-practice-item')).toBe(true);
+    expect(pack.items.slice(400).every((item) => item.reviewStatus === 'assistant-reviewed-guided-practice-only' && item.qaStatus === 'structural-qa-passed-guided-practice-only')).toBe(true);
     expect(Object.fromEntries(pack.domains.map((domain) => [domain.id, domain.weight]))).toEqual({
       reading: 1 / 3,
       mathematics: 1 / 3,
@@ -70,8 +70,8 @@ describe('ParaPro 1755 diagnostic bank', () => {
 
   it('keeps every item explained and preserves its reviewed content tier', () => {
     const sourceItems = pack.items.slice(0, 200);
-    const authoredIndependentItems = pack.items.slice(200, 300);
-    const guidedItems = pack.items.slice(300);
+    const authoredIndependentItems = pack.items.slice(200, 400);
+    const guidedItems = pack.items.slice(400);
 
     expect(pack.items.every((item) => item.type === 'single-choice')).toBe(true);
     expect(pack.items.every((item) => item.choices.length === 4)).toBe(true);

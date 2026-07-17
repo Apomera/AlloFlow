@@ -51,6 +51,10 @@ function normalizeChecks(value) {
 function loadDiagramReviewWaves(root) {
   const artifactRoot = path.join(root, 'test_prep');
   const records = new Map();
+  const placementRecords = new Map();
+  // Keep the historical Map return value (template key -> review) while making
+  // placement-scoped evidence available to catalog construction.
+  Object.defineProperty(records, 'placementRecords', { value: placementRecords });
   if (!fs.existsSync(artifactRoot)) return records;
 
   for (const filename of fs.readdirSync(artifactRoot).filter((entry) => REVIEW_WAVE_PATTERN.test(entry)).sort()) {
@@ -58,15 +62,23 @@ function loadDiagramReviewWaves(root) {
     if (!Array.isArray(artifact.items)) throw new Error(`Diagram review wave ${filename} must contain an items array.`);
     for (const item of artifact.items) {
       const key = cleanText(item && item.key);
+      const placementId = cleanText(item && item.placementId);
       const reviewStatus = cleanText(item && item.reviewStatus) || 'review-required';
-      if (!key) throw new Error(`Diagram review wave ${filename} has an item without a template key.`);
-      if (records.has(key)) throw new Error(`Diagram template ${key} appears in more than one review wave.`);
-      if (!ALLOWED_REVIEW_STATUSES.has(reviewStatus)) throw new Error(`Diagram template ${key} has unsupported review status ${reviewStatus}.`);
-      const sourceDetails = normalizeSources(item && item.sourceDetails);
-      if (reviewStatus === 'source-reviewed-editorial-pass' && sourceDetails.length === 0) {
-        throw new Error(`Source-reviewed diagram template ${key} requires complete sourceDetails.`);
+      if (Boolean(key) === Boolean(placementId)) {
+        throw new Error(`Diagram review wave ${filename} items must identify exactly one of key or placementId.`);
       }
-      records.set(key, {
+      const identityType = key ? 'template' : 'placement';
+      const identity = key || placementId;
+      const targetRecords = key ? records : placementRecords;
+      if (targetRecords.has(identity)) throw new Error(`Diagram ${identityType} ${identity} appears in more than one review wave.`);
+      if (!ALLOWED_REVIEW_STATUSES.has(reviewStatus)) throw new Error(`Diagram ${identityType} ${identity} has unsupported review status ${reviewStatus}.`);
+      const sourceDetails = normalizeSources(item && item.sourceDetails);
+      const rawSourceDetails = item && item.sourceDetails;
+      if (reviewStatus === 'source-reviewed-editorial-pass'
+        && (!Array.isArray(rawSourceDetails) || rawSourceDetails.length === 0 || sourceDetails.length !== rawSourceDetails.length)) {
+        throw new Error(`Source-reviewed diagram ${identityType} ${identity} requires complete sourceDetails.`);
+      }
+      targetRecords.set(identity, {
         reviewStatus,
         reviewNote: cleanText(item && item.reviewNote),
         references: (Array.isArray(item && item.references) ? item.references : []).map(cleanText).filter(Boolean),
@@ -111,6 +123,7 @@ function buildDiagramCatalog({ root, chapters, diagramTemplates, chapterSourceBy
   const templates = Object.entries(diagramTemplates || {});
   const templateKeyByObject = new Map(templates.map(([key, diagram]) => [diagram, key]));
   const reviewByKey = loadDiagramReviewWaves(root);
+  const reviewByPlacementId = reviewByKey.placementRecords || new Map();
   for (const key of reviewByKey.keys()) {
     if (!Object.prototype.hasOwnProperty.call(diagramTemplates, key)) throw new Error(`Diagram review wave references unknown template ${key}.`);
   }
@@ -142,7 +155,7 @@ function buildDiagramCatalog({ root, chapters, diagramTemplates, chapterSourceBy
         title: cleanText(diagram && diagram.title),
         description: cleanText(diagram && diagram.description),
         hasSvg: /<svg\b/i.test(String(diagram && diagram.svg || '')),
-        ...reviewMetadata(templateKey ? reviewByKey.get(templateKey) : null, diagram),
+        ...reviewMetadata(templateKey ? reviewByKey.get(templateKey) : reviewByPlacementId.get(placementId), diagram),
       });
     }
   }
@@ -153,6 +166,12 @@ function buildDiagramCatalog({ root, chapters, diagramTemplates, chapterSourceBy
   if (diagramIds.size !== placements.length) {
     const sharedReuseIsValid = placements.every((placement, index) => placements.findIndex((candidate) => candidate.diagramId === placement.diagramId) === index || placement.origin === 'shared-template');
     if (!sharedReuseIsValid) throw new Error('Inline diagram IDs must be unique.');
+  }
+  const placementById = new Map(placements.map((placement) => [placement.id, placement]));
+  for (const placementId of reviewByPlacementId.keys()) {
+    const placement = placementById.get(placementId);
+    if (!placement) throw new Error(`Diagram review wave references unknown placement ${placementId}.`);
+    if (placement.origin !== 'inline') throw new Error(`Placement-level diagram review ${placementId} must reference an inline placement.`);
   }
 
   const templateRecords = templates.map(([key, diagram]) => {

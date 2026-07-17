@@ -188,7 +188,7 @@ function reviewItem(item, batch, batchNumber) {
     examItemStatus: 'assistant-approved-as-independent-practice-item',
     reviewStatus: 'assistant-reviewed-independent-practice-item',
     qaStatus: 'qa-passed-independent-practice-item',
-    assistantReviewedAt: '2026-07-16',
+    assistantReviewedAt: batch.reviewedAt,
     independentBatchId: batch.id,
     independentBatchNumber: batchNumber,
     reviewMethod: 'independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1',
@@ -289,7 +289,16 @@ for (const [stem, batches] of Object.entries(manifest.packs)) {
   const authored = [];
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
-    if (!batch || !batch.id || !Array.isArray(batch.files) || !batch.files.length) throw new Error(`${stem}: invalid authored-batch manifest entry`);
+    if (!batch || !batch.id || !/^\d{4}-\d{2}-\d{2}$/.test(String(batch.reviewedAt || '')) || !Array.isArray(batch.files) || !batch.files.length) throw new Error(`${stem}: invalid authored-batch manifest entry`);
+    if (!Array.isArray(batch.reviewReports) || batch.reviewReports.length !== batch.files.length) throw new Error(`${stem}/${batch.id}: one independent cross-review report is required per authored domain file`);
+    const reviewReports = batch.reviewReports.map(file => {
+      const filePath = path.join(authoredDir, file);
+      if (!fs.existsSync(filePath)) throw new Error(`${stem}/${batch.id}: missing cross-review report ${file}`);
+      const report = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (!report || !Number.isInteger(report.itemCount) || !/^pass/i.test(String(report.verdict || '')) || !/independent cross-review/i.test(String(report.reviewer || ''))) throw new Error(`${stem}/${batch.id}: invalid or non-passing cross-review report ${file}`);
+      return report;
+    });
+    if (reviewReports.reduce((sum, report) => sum + report.itemCount, 0) !== 100) throw new Error(`${stem}/${batch.id}: cross-review reports must cover exactly 100 items`);
     const batchItems = batch.files.flatMap(file => {
       const filePath = path.join(authoredDir, file);
       if (!fs.existsSync(filePath)) throw new Error(`${stem}/${batch.id}: missing ${file}`);
@@ -297,7 +306,7 @@ for (const [stem, batches] of Object.entries(manifest.packs)) {
       if (!Array.isArray(parsed)) throw new Error(`${file}: expected a JSON array`);
       return parsed;
     });
-    validateAuthoredBatch(pack, batch, batchItems, [...base, ...authored]);
+    validateAuthoredBatch(pack, batch, batchItems, [...base, ...authored, ...existingGuided]);
     authored.push(...batchItems.map(item => reviewItem(item, batch, 3 + batchIndex)));
   }
   if (authored.length % 100 !== 0 || authored.length > 300) throw new Error(`${stem}: independent additions must be complete 100-item batches up to 300 items`);
@@ -333,6 +342,7 @@ for (const [stem, batches] of Object.entries(manifest.packs)) {
   pack.assistantReview = {
     ...(pack.assistantReview || {}),
     reviewer: 'OpenAI Codex',
+    lastReviewedAt: batches[batches.length - 1].reviewedAt,
     structurallyReviewedItems: 500,
     sourceItems: 200,
     assistantAuthoredIndependentItems: authored.length,
@@ -348,8 +358,12 @@ for (const [stem, batches] of Object.entries(manifest.packs)) {
     independentBatchReview: 'blueprint-key-distractor-feedback-originality-citation-balance-and-structural-review-v1',
     limitation: 'Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only.',
   };
-  pack.title = String(pack.title || '').replace(/200 Source Questions \+ 300 Guided Review/gi, `200 Source Questions + ${authored.length} Independent Practice Questions + ${guidedNeeded} Guided Review`);
-  pack.description = String(pack.description || '').replace(/^Contains 200 source diagnostic questions and 300 source-derived guided-review tasks;[^.]*\.\s*/i, '');
+  pack.version = `0.${4 + assistantAuthoredIndependentBatchCount}.0`;
+  pack.shortTitle = 'ParaPro 1755 practice suite';
+  pack.title = String(pack.title || '').replace(/200 Source Questions \+ (?:\d+ Independent Practice Questions \+ )?\d+ Guided Review/gi, `200 Source Questions + ${authored.length} Independent Practice Questions + ${guidedNeeded} Guided Review`);
+  pack.description = String(pack.description || '')
+    .replace(/^Contains 200 original source questions, \d+ assistant-authored independent practice questions, and \d+ source-derived guided-review activities\. The assistant audit found \d+ distinct independent content kernels\.\s*/i, '')
+    .replace(/^Contains 200 source diagnostic questions and 300 source-derived guided-review tasks;[^.]*\.\s*/i, '');
   pack.description = `Contains 200 original source questions, ${authored.length} assistant-authored independent practice questions, and ${guidedNeeded} source-derived guided-review activities. The assistant audit found ${distinctIndependentContentKernels} distinct independent content kernels. ${pack.description}`;
   pack.contentReview = `Assistant audit completed: ${independentItems.length} independent-practice items contain ${distinctIndependentContentKernels} distinct content kernels and ${parallelIndependentVariants} parallel variants under the normalized test. ${guidedNeeded} additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target ${newIndependentItemsNeeded ? 'is not met' : 'is met'}.`;
   pack.bankDisclosure = `This pack has 500 learning activities: 200 original source questions, ${authored.length} assistant-authored independent practice questions, and ${guidedNeeded} source-derived guided-review activities. It currently contains ${distinctIndependentContentKernels} distinct independent content kernels; ${newIndependentItemsNeeded} newly authored independent questions remain to reach 500.`;

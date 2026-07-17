@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "packId": "parapro",
+  "batchId": "independent-diagnostic-batch-4",
+  "domainId": "mathematics",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "reviewedAt": "2026-07-17",
+  "itemCount": 33,
+  "correctionCount": 4,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b4-mathematics-016",
+      "category": "originality-and-context",
+      "fieldsChanged": [
+        "prompt"
+      ],
+      "issue": "The original conversion prompt closely echoed the short wording of an existing inches-to-feet item even though the underlying mixed-unit conversion was different.",
+      "resolution": "Reframed the problem as the total length of a 3-yard-2-foot rope, preserving the verified answer of 11 feet while reducing lexical overlap and adding a concrete context."
+    },
+    {
+      "itemId": "parapro-b4-mathematics-017",
+      "category": "originality-and-distractor-quality",
+      "fieldsChanged": [
+        "prompt",
+        "choices",
+        "rationale",
+        "choiceRationales"
+      ],
+      "issue": "The original square-identification item reused the exact four-shape choice set of an existing quadrilateral item, making the item less distinct than required.",
+      "resolution": "Replaced it with a fresh rectangle-property item. The new key, equal diagonal lengths, is true for every rectangle; the distractors separately test equal sides, number of parallel-side pairs, and right-angle knowledge."
+    },
+    {
+      "itemId": "parapro-b4-mathematics-032",
+      "category": "precision-and-feedback",
+      "fieldsChanged": [
+        "choices[3]",
+        "rationale",
+        "choiceRationales[3]"
+      ],
+      "issue": "The keyed feedback said to relabel four existing equally spaced ticks with five labels, which did not explicitly account for the additional tick required by the corrected scale.",
+      "resolution": "Specified redrawing the axis with five equally spaced ticks labeled 0, 5, 10, 15, and 20, and revised the explanations to distinguish equal physical spacing from equal numerical increments."
+    },
+    {
+      "itemId": "parapro-b4-mathematics-006",
+      "category": "production-schema-prompt-length",
+      "fieldsChanged": [
+        "prompt"
+      ],
+      "issue": "The original prompt was mathematically clear but contained only 24 characters, below the production integration minimum of 35 characters.",
+      "resolution": "Added the construct-preserving direction \"Compare the four numbers\" so the prompt exceeds the production minimum while retaining the same comparison task, choices, and verified key."
+    }
+  ],
+  "checks": {
+    "blueprintFit": {
+      "status": "pass",
+      "officialFramework": "ETS ParaPro Assessment (1755) Study Companion",
+      "basicSkillsKnowledgeItems": 22,
+      "applicationClassroomItems": 11,
+      "basicToApplicationRatio": "2:1",
+      "skillDistribution": {
+        "mathematics-number-operations": 13,
+        "mathematics-ratio-algebra": 6,
+        "mathematics-geometry-measurement": 8,
+        "mathematics-data-support": 6
+      },
+      "applicationDistribution": {
+        "mathematics-number-operations": 4,
+        "mathematics-ratio-algebra": 1,
+        "mathematics-geometry-measurement": 3,
+        "mathematics-data-support": 3
+      },
+      "finding": "The bank samples number sense and operations, foundational algebra, geometry and measurement, and data interpretation while maintaining the ParaPro skills-versus-classroom-application proportion."
+    },
+    "keyAndCalculationReview": {
+      "status": "pass",
+      "reviewedItemCount": 33,
+      "items": [
+        {
+          "itemId": "parapro-b4-mathematics-001",
+          "verification": "2,856 / 24 = 119 because 24 x 119 = 2,856."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-002",
+          "verification": "(2 2/3)(1 1/2) = (8/3)(3/2) = 4 square feet."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-003",
+          "verification": "18.050 - 7.896 = 10.154; inverse addition returns 18.050."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-004",
+          "verification": "Sharing 72 objects equally among 9 groups models 72 / 9 and gives 8 per group."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-005",
+          "verification": "In 9 + 4m, 9 is the variable-free constant term and 4 is the coefficient."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-006",
+          "verification": "The values convert to -0.30, -0.28, -0.31, and -0.35; -0.28 is greatest."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-007",
+          "verification": "In 508.0472, 7 is the third digit right of the decimal and is in the thousandths place."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-008",
+          "verification": "18% of 250 is 0.18 x 250 = 45."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-009",
+          "verification": "Four factors of 3 are represented by 3^4, whose value is 81."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-010",
+          "verification": "36 / (3 + 3) + 4 x 2 = 36 / 6 + 8 = 6 + 8 = 14."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-011",
+          "verification": "27 x 198 = 5,346, and 30 x 200 = 6,000 is the best listed estimate."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-012",
+          "verification": "15 trays x 18 muffins = 270 muffins; 270 / 6 = 45 full boxes."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-013",
+          "verification": "$46.20 - $17.50 = $28.70, and $17.50 + $28.70 = $46.20."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-014",
+          "verification": "The pattern doubles each term; stage 6 is 48 x 2 = 96."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-015",
+          "verification": "9:38 to 10:00 is 22 minutes, then 60 minutes and 5 minutes, totaling 87 minutes."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-016",
+          "verification": "3 yards = 9 feet; adding 2 feet gives 11 feet."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-017",
+          "verification": "Every rectangle has congruent diagonals, two pairs of parallel sides, and four right angles; equal sides are not required."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-018",
+          "verification": "120 / (6 x 5) = 120 / 30 = 4 inches."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-019",
+          "verification": "Four units left gives x = -4 and three units up gives y = 3, so the point is (-4, 3)."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-020",
+          "verification": "The only decrease is 42 to 39 from Monday to Tuesday, a decrease of 3."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-021",
+          "verification": "2 + 4 + 4 + 5 + 10 = 25, so mean = 5; the ordered middle value and median are 4."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-022",
+          "verification": "120, 135, 150, and 165 are all multiples of 15 on a zero-based 0-to-180 scale."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-023",
+          "verification": "Forty-eight counters form 8 complete groups of 6, so 48 / 6 = 8 rather than 42."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-024",
+          "verification": "Five one-sixth pieces shared among five groups give one one-sixth piece per group, so (5/6) / 5 = 1/6."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-025",
+          "verification": "10% of 75 is 7.5 and 2% is 1.5; together 12% is 9."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-026",
+          "verification": "Adding 8 to both sides of p - 8 = 19 gives p = 27; substitution gives 27 - 8 = 19."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-027",
+          "verification": "10:52 to 11:00 is 8 minutes and 11:00 to 11:26 is 26 minutes, totaling 34 minutes."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-028",
+          "verification": "A 5-by-3 base has 15 unit cubes per layer; 2 layers give 30 cubic units."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-029",
+          "verification": "For (-3, 2), the x-coordinate gives 3 units left and the y-coordinate gives 2 units up."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-030",
+          "verification": "6 + 8 + 8 + 10 = 32 across four observations, so the mean is 32 / 4 = 8."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-031",
+          "verification": "Ordered date-height pairs show change over time appropriately on a labeled line graph, not a parts-of-a-whole circle graph."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-032",
+          "verification": "Five evenly spaced ticks labeled 0, 5, 10, 15, and 20 maintain a constant 5-unit interval."
+        },
+        {
+          "itemId": "parapro-b4-mathematics-033",
+          "verification": "720 / 8 = 90 establishes the magnitude; exact division gives 728 / 8 = 91, so 9.1 is ten times too small."
+        }
+      ]
+    },
+    "answerBalance": {
+      "status": "pass",
+      "A": 8,
+      "B": 8,
+      "C": 9,
+      "D": 8
+    },
+    "schemaAndFeedback": {
+      "status": "pass",
+      "findings": [],
+      "minimumRationaleCharacters": 108,
+      "minimumChoiceRationaleCharacters": 68,
+      "fourUniqueChoicesPerItem": true,
+      "fourChoiceRationalesPerItem": true,
+      "validSkillAndChapterLinks": true,
+      "draftProvenancePresent": true,
+      "finding": "All 33 rationales explain the keyed reasoning, and all 132 choice rationales address their corresponding option substantively."
+    },
+    "distractorQualityAndAmbiguity": {
+      "status": "pass",
+      "reviewedChoiceCount": 132,
+      "alternativeCorrectAnswersFound": 0,
+      "finding": "Distractors reflect identifiable arithmetic, representation, unit, graphing, or instructional misconceptions. Item 17's recycled alternative set and item 32's scale wording were corrected before the pass verdict."
+    },
+    "sourceAlignment": {
+      "status": "pass",
+      "itemsWithOfficialEtsReference": 33,
+      "itemsWithOpenStaxReference": 33,
+      "references": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "finding": "The ETS source governs exam scope and the OpenStax Prealgebra 2e source supports the underlying foundational mathematics. No item claims a formula or procedure outside those sources."
+    },
+    "originalityAndOverlap": {
+      "status": "pass",
+      "comparisonSet": "all current ParaPro mathematics items, including Bank 3 and guided activities",
+      "exactPromptOverlaps": 0,
+      "duplicateChoiceSets": 0,
+      "promptsAboveJaccardThreshold": 0,
+      "jaccardThreshold": 0.82,
+      "maximumObservedPromptJaccard": 0.6,
+      "maximumSimilarityExplanation": "The maximum is a short boilerplate overlap between an order-of-operations prompt and an existing exponent-value prompt; the mathematical constructs, numbers, choices, and reasoning are different.",
+      "finding": "No exact or near-duplicate prompt, choice set, or substantive item kernel remains after corrections."
+    },
+    "accessibilityAndParaeducatorScope": {
+      "status": "pass",
+      "finding": "Prompts use concise school or classroom contexts, provide all required numerical information in text, and avoid cultural knowledge unrelated to mathematics. Application items ask for models, feedback, representations, or error analysis within a paraeducator's instructional-support role; none requires diagnosis, grading policy, or unsupervised instructional decisions."
+    }
+  },
+  "verdict": "pass-after-corrections: all 33 mathematics items are key-correct, blueprint-aligned, independently usable, source-supported, accessible, and structurally ready for integrated QA."
+}

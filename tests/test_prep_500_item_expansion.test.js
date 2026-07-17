@@ -53,7 +53,7 @@ function readPack(stem) {
 }
 
 function layoutFor(stem) {
-  const assistantAuthored = stem === 'parapro' ? 100 : 0;
+  const assistantAuthored = stem === 'parapro' ? 200 : 0;
   const source = 200;
   const independent = source + assistantAuthored;
   const guided = 500 - independent;
@@ -69,7 +69,7 @@ function layoutFor(stem) {
     sectionKinds: [
       'source-diagnostic',
       'source-diagnostic',
-      ...(assistantAuthored ? ['independent-diagnostic'] : []),
+      ...Array.from({ length: assistantAuthored / 100 }, () => 'independent-diagnostic'),
       ...Array.from({ length: guided / 100 }, () => 'guided-review'),
     ],
   };
@@ -129,7 +129,7 @@ function sha256(value) {
 }
 
 describe('source-question, independent-practice, and guided-review non-EPPP audit', () => {
-  it('ships the explicit 22-pack manifest with a separate ParaPro independent Bank 3', () => {
+  it('ships the explicit 22-pack manifest with separate ParaPro independent Banks 3 and 4', () => {
     expect(expectedFiles).toHaveLength(22);
 
     for (const stem of expectedFiles) {
@@ -187,6 +187,11 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
           label: 'Assistant-reviewed independent diagnostic bank 3',
           kind: 'independent-diagnostic',
         });
+        expect(pack.sections[3]).toMatchObject({
+          id: 'independent-diagnostic-batch-4',
+          label: 'Assistant-reviewed independent diagnostic bank 4',
+          kind: 'independent-diagnostic',
+        });
         expect(pack).toMatchObject({
           sourceQuestionItems: layout.source,
           assistantAuthoredIndependentItems: layout.assistantAuthored,
@@ -206,7 +211,7 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
             'blueprint-key-distractor-feedback-originality-citation-balance-and-structural-review-v1',
         });
         expect(pack.bankDisclosure).toMatch(
-          /200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities/i,
+          /200 original source questions, 200 assistant-authored independent practice questions, and 100 source-derived guided-review activities/i,
         );
       } else {
         expect(pack.expansionVersion).toBe('source-kernel-audit-plus-guided-review-v1');
@@ -215,7 +220,42 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     }
   }, 60_000);
 
-  it('keeps all IDs and prompts unique and validates the 100 new ParaPro items as independent', () => {
+  it('retains passing independent cross-review evidence for every authored ParaPro domain file', () => {
+    const authoredDir = path.join(root, 'dev-tools', 'authored');
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.join(authoredDir, 'test_prep_independent_additions_manifest.json'),
+        'utf8',
+      ),
+    );
+    const batches = manifest.packs.parapro;
+
+    expect(batches.map((batch) => batch.id)).toEqual([
+      'independent-diagnostic-batch-3',
+      'independent-diagnostic-batch-4',
+    ]);
+
+    for (const batch of batches) {
+      expect(batch.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(batch.files).toHaveLength(3);
+      expect(batch.reviewReports).toHaveLength(3);
+      let reviewedItems = 0;
+
+      for (const reportFile of batch.reviewReports) {
+        const report = JSON.parse(
+          fs.readFileSync(path.join(authoredDir, reportFile), 'utf8'),
+        );
+        expect(report.reviewer).toContain('OpenAI Codex independent cross-review');
+        expect(report.verdict).toMatch(/^pass/i);
+        expect(Array.isArray(report.correctionsMade)).toBe(true);
+        expect(report.checks).toBeTruthy();
+        reviewedItems += report.itemCount;
+      }
+
+      expect(reviewedItems).toBe(100);
+    }
+  });
+  it('keeps all IDs and prompts unique and validates the 200 new ParaPro items as independent', () => {
     for (const stem of expectedFiles) {
       const pack = readPack(stem);
       expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
@@ -229,29 +269,48 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
 
     const paraPro = readPack('parapro');
     const sourceItems = paraPro.items.slice(0, 200);
-    const authoredItems = paraPro.items.slice(200, 300);
+    const authoredItems = paraPro.items.slice(200, 400);
     const sourceKernels = new Set(sourceItems.map(contentKernel));
     const authoredKernels = authoredItems.map(contentKernel);
     const sourcePrompts = new Set(sourceItems.map((item) => canonical(item.prompt)));
 
-    expect(authoredItems).toHaveLength(100);
-    expect(new Set(authoredItems.map((item) => item.id)).size).toBe(100);
-    expect(new Set(authoredItems.map((item) => canonical(item.prompt))).size).toBe(100);
-    expect(new Set(authoredKernels).size).toBe(100);
+    expect(authoredItems).toHaveLength(200);
+    expect(new Set(authoredItems.map((item) => item.id)).size).toBe(200);
+    expect(new Set(authoredItems.map((item) => canonical(item.prompt))).size).toBe(200);
+    expect(new Set(authoredKernels).size).toBe(200);
     expect(authoredKernels.every((kernel) => !sourceKernels.has(kernel))).toBe(true);
     expect(authoredItems.every((item) => !sourcePrompts.has(canonical(item.prompt)))).toBe(true);
     expect(countBy(authoredItems, 'domainId')).toEqual({
-      reading: 34,
-      mathematics: 33,
-      writing: 33,
+      reading: 68,
+      mathematics: 66,
+      writing: 66,
     });
     expect(countBy(authoredItems, 'contentFocus')).toEqual({
-      'basic-skills-knowledge': 67,
-      'application-classroom': 33,
+      'basic-skills-knowledge': 134,
+      'application-classroom': 66,
     });
-    expect(answerCounts(authoredItems)).toEqual([25, 25, 25, 25]);
+    expect(answerCounts(authoredItems)).toEqual([50, 50, 50, 50]);
 
-    for (const item of authoredItems) {
+    for (let bankOffset = 0; bankOffset < 2; bankOffset++) {
+      const bankItems = authoredItems.slice(bankOffset * 100, bankOffset * 100 + 100);
+      expect(bankItems).toHaveLength(100);
+      expect(countBy(bankItems, 'domainId')).toEqual({
+        reading: 34,
+        mathematics: 33,
+        writing: 33,
+      });
+      expect(countBy(bankItems, 'contentFocus')).toEqual({
+        'basic-skills-knowledge': 67,
+        'application-classroom': 33,
+      });
+      expect(answerCounts(bankItems)).toEqual([25, 25, 25, 25]);
+    }
+
+    for (const [index, item] of authoredItems.entries()) {
+      const independentBatchNumber = 3 + Math.floor(index / 100);
+      const assistantReviewedAt = independentBatchNumber === 3
+        ? '2026-07-16'
+        : '2026-07-17';
       expect(item).toMatchObject({
         authorship: 'assistant-authored-independent',
         editorialReviewer: 'OpenAI Codex',
@@ -259,9 +318,9 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
         examItemStatus: 'assistant-approved-as-independent-practice-item',
         reviewStatus: 'assistant-reviewed-independent-practice-item',
         qaStatus: 'qa-passed-independent-practice-item',
-        assistantReviewedAt: '2026-07-16',
-        independentBatchId: 'independent-diagnostic-batch-3',
-        independentBatchNumber: 3,
+        assistantReviewedAt,
+        independentBatchId: `independent-diagnostic-batch-${independentBatchNumber}`,
+        independentBatchNumber,
         reviewMethod:
           'independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1',
       });
@@ -555,7 +614,7 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     });
   }, 60_000);
 
-  it('catalogs every ParaPro Bank 3 source with readable metadata and an exact deploy mirror', () => {
+  it('catalogs every ParaPro Banks 3-4 source with readable metadata and an exact deploy mirror', () => {
     const sourceCatalogBytes = fs.readFileSync(
       path.join(sourceDir, 'reference_catalog.json'),
       'utf8',
@@ -567,11 +626,15 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     const catalog = JSON.parse(sourceCatalogBytes);
     const paraPro = readPack('parapro');
     const authoredReferences = new Set(
-      paraPro.items.slice(200, 300).flatMap((item) => item.references || []),
+      paraPro.items.slice(200, 400).flatMap((item) => item.references || []),
     );
 
     for (const url of paraProReferenceUrls) {
-      expect(authoredReferences.has(url), `${url} should be used by ParaPro Bank 3`).toBe(true);
+      expect(authoredReferences.has(url), `${url} should be used by ParaPro Banks 3-4`).toBe(true);
+    }
+    expect(authoredReferences.size).toBeGreaterThanOrEqual(paraProReferenceUrls.length);
+
+    for (const url of authoredReferences) {
       expect(
         Object.prototype.hasOwnProperty.call(catalog, url),
         `${url} should have a catalog record`,

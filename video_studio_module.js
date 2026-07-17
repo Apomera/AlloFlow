@@ -2468,14 +2468,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // Demo Autopilot may drive the app only when the selected capture is clearly
   // the AlloFlow browser tab. General-purpose recording can still use any
   // surface; this stricter validator is intentionally limited to automation.
-  function vsValidateDemoCapture(displaySurface, trackLabel) {
+  // Gemini Canvas/Chromium sometimes redacts the captured tab title as an
+  // internal web-contents-media-stream URL, so accept that label only when the
+  // popup still has a live AlloFlow bridge.
+  function vsValidateDemoCapture(displaySurface, trackLabel, options) {
     var surface = String(displaySurface || '').trim().toLowerCase();
     var label = String(trackLabel || '').trim().slice(0, 160);
+    var opts = options || {};
+    var hasAlloBridge = !!opts.openerConnected;
+    var canvasStreamLabel = /^web-contents-media-stream:\/\//i.test(label);
     if (surface !== 'browser') return { ok: false, reason: 'Demo Autopilot requires a browser tab, not a window or entire screen.' };
-    if (!label || !/alloflow/i.test(label)) {
-      return { ok: false, reason: 'The selected tab was not identified as AlloFlow' + (label ? ' (selected: “' + label + '”)' : '') + '. Stop and choose the AlloFlow tab.' };
-    }
-    return { ok: true, label: label };
+    if (label && /alloflow/i.test(label)) return { ok: true, label: label };
+    if (canvasStreamLabel && hasAlloBridge) return { ok: true, label: 'AlloFlow tab through Gemini Canvas', inferred: true };
+    return { ok: false, reason: 'The selected tab was not identified as AlloFlow' + (label ? ' (selected: “' + label + '”)' : '') + '. Stop and choose the AlloFlow tab.' };
   }
 
   // Pre-capture checks are pure so the popup, tests, and future desktop shell
