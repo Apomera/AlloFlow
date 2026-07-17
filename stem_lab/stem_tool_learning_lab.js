@@ -9242,98 +9242,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var fs = R.useState({ g1: '', g2: '', g3: '' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var gratitudeError = es[0]; var setGratitudeError = es[1];
 
     function save() {
-      if (!form.g1.trim() && !form.g2.trim() && !form.g3.trim()) { alert('Add at least one.'); return; }
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ entries: [entry].concat(data.entries || []) });
+      if (!form.g1.trim() && !form.g2.trim() && !form.g3.trim()) {
+        setGratitudeError('Add at least one gratitude before saving.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-gratitude-1'); if (field) field.focus(); }, 0);
+        return;
+      }
+      var entry = { id: tkId(), date: todayISO(), g1: form.g1.trim(), g2: form.g2.trim(), g3: form.g3.trim() };
+      setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
       setForm({ g1: '', g2: '', g3: '' });
+      setGratitudeError('');
+      var count = [entry.g1, entry.g2, entry.g3].filter(Boolean).length;
+      llAnnounce('Gratitude log saved with ' + count + ' item' + (count === 1 ? '.' : 's.'));
     }
-    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+    async function remove(id) {
+      var entry = (data.entries || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (entry ? ' the gratitude log from ' + entry.date : ' this gratitude log') + '.', {
+        title: 'Delete this gratitude log?', confirmText: 'Delete log'
+      }))) return;
+      setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Gratitude log deleted.');
+    }
 
     var entries = data.entries || [];
     var today = todayISO();
-    var todayEntry = entries.filter(function(e) { return e.date === today; })[0];
+    var todayEntry = entries.filter(function(entry) { return entry.date === today; })[0];
 
     function streak() {
-      var dates = entries.map(function(e) { return e.date; }).filter(function(d, i, arr) { return arr.indexOf(d) === i; });
-      var s = 0;
-      for (var i = 0; i < 365; i++) {
-        var dt = new Date(); dt.setDate(dt.getDate() - i);
-        var iso = dt.toISOString().slice(0, 10);
-        if (dates.indexOf(iso) >= 0) s++;
-        else if (i > 0) break;
+      var dates = entries.map(function(entry) { return entry.date; }).filter(function(date, index, all) { return all.indexOf(date) === index; });
+      var result = 0;
+      for (var index = 0; index < 365; index++) {
+        var date = new Date(); date.setDate(date.getDate() - index);
+        var iso = date.toISOString().slice(0, 10);
+        if (dates.indexOf(iso) >= 0) result++;
+        else if (index > 0) break;
       }
-      return s;
+      return result;
+    }
+
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(16,185,129,0.5)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
+
+    function gratitudeItems(entry) {
+      return [entry.g1, entry.g2, entry.g3].filter(Boolean);
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🙏', 'Gratitude Log', '3 things you\'re grateful for, daily. Strongest single positive-psychology intervention (Emmons + McCullough 2003).', '#10b981'),
+      tkSectionHeader('🙏', 'Gratitude Log', 'Three things you\'re grateful for, daily. Based on Emmons and McCullough (2003).', '#10b981'),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
+      hh('section', { 'aria-label': 'Gratitude summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
         [
           { label: 'Total entries', value: entries.length, color: '#10b981', icon: '🙏' },
           { label: 'Day streak', value: streak() + 'd', color: '#fbbf24', icon: '🔥' },
-          { label: 'Gratitudes', value: entries.reduce(function(s, e) { return s + (e.g1 ? 1 : 0) + (e.g2 ? 1 : 0) + (e.g3 ? 1 : 0); }, 0), color: '#a855f7', icon: '✨' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'gs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
+          { label: 'Gratitudes', value: entries.reduce(function(sum, entry) { return sum + gratitudeItems(entry).length; }, 0), color: '#a855f7', icon: '✨' }
+        ].map(function(stat, index) {
+          return hh('div', { key: 'gs-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
+            hh('div', { style: { fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value),
+            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label)
           );
         })
       ),
 
-      todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, color: '#10b981', fontWeight: 700, marginBottom: 6 } }, '✓ Today\'s gratitudes:'),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-          todayEntry.g1 ? hh('div', null, '1. ', todayEntry.g1) : null,
-          todayEntry.g2 ? hh('div', null, '2. ', todayEntry.g2) : null,
-          todayEntry.g3 ? hh('div', null, '3. ', todayEntry.g3) : null
+      todayEntry ? hh('section', { role: 'status', 'aria-labelledby': 'learning-lab-gratitude-today-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-gratitude-today-heading', style: { fontSize: 11, color: '#10b981', fontWeight: 700, margin: '0 0 6px' } }, '✓ Today\'s gratitudes'),
+        hh('ol', { style: { margin: 0, paddingLeft: 24, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
+          gratitudeItems(todayEntry).map(function(item, index) { return hh('li', { key: 'today-gratitude-' + index }, item); })
         )
       ) : tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '🙏 3 things I\'m grateful for today'),
-          [1, 2, 3].map(function(n) {
-            var key = 'g' + n;
-            return hh('div', { key: 'gf-' + n, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 } },
-              hh('span', { style: { fontSize: 16, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, minWidth: 20 } }, n + '.'),
-              tkInput(form[key], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[key] = v; return o; })())); }, 'Anything — big or small', { flex: 1 })
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-gratitude-form-heading' },
+          hh('h3', { id: 'learning-lab-gratitude-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#10b981', margin: '0 0 10px' } }, '🙏 Things I\'m grateful for today'),
+          [1, 2, 3].map(function(number) {
+            var key = 'g' + number;
+            var fieldId = 'learning-lab-gratitude-' + number;
+            return hh('div', { key: 'gf-' + number, style: { marginBottom: 8 } },
+              hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, 'Gratitude ' + number + (number === 1 ? ' (at least one required)' : ' (optional)')),
+              hh('input', { id: fieldId, type: 'text', value: form[key], maxLength: 300, 'aria-invalid': gratitudeError && number === 1 ? 'true' : undefined, 'aria-describedby': gratitudeError && number === 1 ? 'learning-lab-gratitude-error' : undefined, placeholder: 'Anything — big or small', onChange: function(event) { var patch = {}; patch[key] = event.target.value; setForm(Object.assign({}, form, patch)); if (gratitudeError) setGratitudeError(''); }, 'data-ll-focusable': true, style: inputStyle })
             );
           }),
+          hh('div', { id: 'learning-lab-gratitude-error', role: 'alert', style: { minHeight: gratitudeError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: gratitudeError ? 8 : 0 } }, gratitudeError),
           hh('div', { style: { textAlign: 'right' } },
-            tkBtn('💾 Save', save, 'primary')
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save gratitude log')
           )
         )
       ),
 
-      entries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 History'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          entries.slice(0, 30).map(function(e) {
-            return hh('div', { key: 'ge-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                hh('span', null, e.date + ' · ' + relDate(e.date)),
-                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-                e.g1 ? hh('div', null, '1. ', e.g1) : null,
-                e.g2 ? hh('div', null, '2. ', e.g2) : null,
-                e.g3 ? hh('div', null, '3. ', e.g3) : null
+      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-gratitude-history-heading' },
+        hh('h3', { id: 'learning-lab-gratitude-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 History'),
+        hh('ul', { style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 6 }) },
+          entries.slice(0, 30).map(function(entry) {
+            return hh('li', { key: 'ge-' + entry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
+              hh('article', { 'aria-label': 'Gratitude log from ' + entry.date },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  hh('span', null, entry.date + ' · ' + relDate(entry.date)),
+                  hh('button', { type: 'button', 'aria-label': 'Delete gratitude log from ' + entry.date, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
+                ),
+                hh('ol', { style: { margin: 0, paddingLeft: 24, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
+                  gratitudeItems(entry).map(function(item, index) { return hh('li', { key: 'gratitude-' + index }, item); })
+                )
               )
             );
           })
         )
       ) : null,
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+      hh('aside', { 'aria-label': 'Why gratitude practice can help', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('strong', { style: { color: '#10b981' } }, '🎓 Why this works: '),
-        'Emmons + McCullough (2003). Daily gratitude practice for 10 weeks → significant gains in well-being, sleep quality, optimism, and physical health vs. neutral-event journaling control. Effect size larger than most positive-psychology interventions. The skeptic\'s version: even 1 line counts. Even on a hard day.'
+        'Emmons and McCullough (2003) found that daily gratitude practice over ten weeks improved well-being, sleep quality, optimism, and physical health compared with neutral-event journaling. Even one line counts, including on a hard day.'
       )
     );
   }
 
-  // ── BB. PERSONAL READING TRACKER (Wave 6) ──
   // Books read + reflections + reading-list management. Read more often
   // = literacy growth, regardless of what you read (Krashen 2004).
   function PersonalReadingTracker(props) {
