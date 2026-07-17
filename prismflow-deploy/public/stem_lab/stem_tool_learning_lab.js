@@ -7871,41 +7871,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var dayOfWeek = new Date().getDay();
     var todayBlocks = plannerBlocks.filter(function(b) { return b.day === dayOfWeek; });
 
+    var ns = R.useState(''); var newText = ns[0]; var setNewText = ns[1];
+    var es = R.useState(''); var itemError = es[0]; var setItemError = es[1];
+
     function addCustom(text) {
-      if (!text.trim()) return;
+      if (!text.trim()) {
+        setItemError('Enter an item before adding it.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-agenda-item'); if (field) field.focus(); }, 0);
+        return;
+      }
       var customToday = Object.assign({}, data.customToday || {});
       customToday[today] = (customToday[today] || []).concat([{ id: tkId(), text: text.trim(), done: false }]);
-      setData({ customToday: customToday });
+      setData(Object.assign({}, data, { customToday: customToday }));
+      setNewText('');
+      setItemError('');
+      llAnnounce('Agenda item added: ' + text.trim() + '.');
     }
     function toggleCustom(id) {
+      var changed = null;
       var customToday = Object.assign({}, data.customToday || {});
       customToday[today] = (customToday[today] || []).map(function(it) {
         if (it.id !== id) return it;
-        return Object.assign({}, it, { done: !it.done });
+        changed = Object.assign({}, it, { done: !it.done });
+        return changed;
       });
-      setData({ customToday: customToday });
+      setData(Object.assign({}, data, { customToday: customToday }));
+      if (changed) llAnnounce(changed.text + (changed.done ? ' marked complete.' : ' marked incomplete.'));
     }
-    function removeCustom(id) {
+    async function removeCustom(id) {
+      var item = todayItems.filter(function(it) { return it.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (item ? ' "' + item.text + '"' : ' this item') + ' from today\'s agenda.', {
+        title: 'Delete this agenda item?', confirmText: 'Delete item'
+      }))) return;
       var customToday = Object.assign({}, data.customToday || {});
       customToday[today] = (customToday[today] || []).filter(function(it) { return it.id !== id; });
-      setData({ customToday: customToday });
+      setData(Object.assign({}, data, { customToday: customToday }));
+      llAnnounce('Agenda item deleted.');
     }
-
-    var ns = R.useState(''); var newText = ns[0]; var setNewText = ns[1];
 
     function dailyScore() {
       var total = 0; var done = 0;
-      // Habits done
       habits.forEach(function(h) {
         total++;
         if ((habitLogs[h.id] || []).indexOf(today) >= 0) done++;
       });
-      // Custom items
       todayItems.forEach(function(it) {
         total++;
         if (it.done) done++;
       });
-      // Tasks (counted as 1 each, doesn't require completion)
       return { done: done, total: total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
     }
     var score = dailyScore();
@@ -7914,11 +7927,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     }
 
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
+    var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('📋', 'Today — ' + dayName(), 'One screen view of what you set yourself up to do today. Pulled from your other toolkit tools.', '#10b981'),
 
-      // Score banner
-      hh('div', { style: {
+      hh('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Today\'s done rate: ' + score.pct + ' percent. ' + score.done + ' of ' + score.total + ' planned items.', style: {
         padding: 18, borderRadius: 14, marginBottom: 14, textAlign: 'center',
         background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))',
         border: '1px solid rgba(16,185,129,0.40)'
@@ -7928,13 +7943,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } }, score.done + ' of ' + score.total + ' planned items')
       ),
 
-      // Scheduled study blocks
       todayBlocks.length > 0 ? tkCard('#3b82f6',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 8 } }, '📅 Scheduled study blocks'),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            todayBlocks.sort(function(a, b) { return a.hour - b.hour; }).map(function(b) {
-              return hh('div', { key: 'tb-' + b.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', display: 'flex', justifyContent: 'space-between' } },
+        hh('section', { 'aria-labelledby': 'learning-lab-agenda-schedule-heading' },
+          hh('h3', { id: 'learning-lab-agenda-schedule-heading', style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', margin: '0 0 8px' } }, '📅 Scheduled study blocks'),
+          hh('ul', { style: listStyle },
+            todayBlocks.slice().sort(function(a, b) { return a.hour - b.hour; }).map(function(b) {
+              return hh('li', { key: 'tb-' + b.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', display: 'flex', justifyContent: 'space-between', gap: 8 } },
                 hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
                   hh('strong', { style: { color: '#60a5fa' } }, (b.hour % 12 || 12) + (b.hour < 12 ? 'a' : 'p') + ' · '),
                   b.subject, b.task ? ' — ' + b.task : ''
@@ -7946,35 +7960,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ) : null,
 
-      // Habits today
       habits.length > 0 ? tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '✅ Today\'s habits'),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+        hh('section', { 'aria-labelledby': 'learning-lab-agenda-habits-heading' },
+          hh('h3', { id: 'learning-lab-agenda-habits-heading', style: { fontSize: 12, fontWeight: 800, color: '#10b981', margin: '0 0 8px' } }, '✅ Today\'s habits'),
+          hh('ul', { style: Object.assign({}, listStyle, { gap: 4 }) },
             habits.map(function(h) {
               var done = (habitLogs[h.id] || []).indexOf(today) >= 0;
-              return hh('div', { key: 'th-' + h.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
-                hh('div', { style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #10b981', background: done ? '#10b981' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, done ? '✓' : ''),
-                hh('span', { style: { fontSize: 11, color: done ? '#94a3b8' : '#e2e8f0', textDecoration: done ? 'line-through' : 'none' } }, h.icon + ' ' + h.name)
+              return hh('li', { key: 'th-' + h.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
+                hh('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #10b981', background: done ? '#10b981' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, done ? '✓' : ''),
+                hh('span', { style: { fontSize: 11, color: done ? '#94a3b8' : '#e2e8f0', textDecoration: done ? 'line-through' : 'none' } }, h.icon + ' ' + h.name),
+                hh('span', { style: srOnlyStyle }, done ? 'Completed' : 'Not completed')
               );
             })
           )
         )
       ) : null,
 
-      // Active goals (just status)
       goals.length > 0 ? tkCard('#9333ea',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '🎯 Active goals'),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+        hh('section', { 'aria-labelledby': 'learning-lab-agenda-goals-heading' },
+          hh('h3', { id: 'learning-lab-agenda-goals-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '🎯 Active goals'),
+          hh('ul', { style: Object.assign({}, listStyle, { gap: 4 }) },
             goals.slice(0, 5).map(function(g) {
-              return hh('div', { key: 'tg-' + g.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #9333ea' } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+              var progress = Math.max(0, Math.min(100, Number(g.progress) || 0));
+              return hh('li', { key: 'tg-' + g.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #9333ea' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
                   hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, g.title),
-                  hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, (g.progress || 0) + '%')
+                  hh('span', { style: { fontSize: 11, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, progress + '%')
                 ),
-                hh('div', { style: { height: 4, background: 'rgba(15,23,42,0.6)', borderRadius: 2, marginTop: 4, overflow: 'hidden' } },
-                  hh('div', { style: { width: (g.progress || 0) + '%', height: '100%', background: '#9333ea' } })
+                hh('div', { role: 'progressbar', 'aria-label': g.title + ' progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress, style: { height: 4, background: 'rgba(15,23,42,0.6)', borderRadius: 2, marginTop: 4, overflow: 'hidden' } },
+                  hh('div', { 'aria-hidden': 'true', style: { width: progress + '%', height: '100%', background: '#9333ea' } })
                 )
               );
             })
@@ -7982,14 +7996,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ) : null,
 
-      // Open tasks (with next step focus)
       tasks.length > 0 ? tkCard('#f97316',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '✂ Tasks in progress — next step'),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+        hh('section', { 'aria-labelledby': 'learning-lab-agenda-tasks-heading' },
+          hh('h3', { id: 'learning-lab-agenda-tasks-heading', style: { fontSize: 12, fontWeight: 800, color: '#fb923c', margin: '0 0 8px' } }, '✂ Tasks in progress — next step'),
+          hh('ul', { style: listStyle },
             tasks.slice(0, 5).map(function(t) {
               var nextStep = (t.steps || []).filter(function(s) { return !s.done; })[0];
-              return hh('div', { key: 'tt-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #f97316' } },
+              return hh('li', { key: 'tt-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #f97316' } },
                 hh('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 700, marginBottom: 2 } }, t.title),
                 nextStep ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } }, '↳ next: ' + nextStep.text + ' (~' + nextStep.estMin + 'm)') : null
               );
@@ -7998,23 +8011,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ) : null,
 
-      // Custom today items
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⭐ Today\'s extra items'),
-          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
-            tkInput(newText, setNewText, 'e.g., "Call Mom about appointment"', { flex: 1 }),
-            tkBtn('+', function() { addCustom(newText); setNewText(''); }, 'primary', { padding: '8px 14px' })
+        hh('section', { 'aria-labelledby': 'learning-lab-agenda-extra-heading' },
+          hh('h3', { id: 'learning-lab-agenda-extra-heading', style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', margin: '0 0 8px' } }, '⭐ Today\'s extra items'),
+          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addCustom(newText); }, style: { marginBottom: 10 } },
+            hh('label', { htmlFor: 'learning-lab-agenda-item', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, 'New agenda item'),
+            hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              hh('input', { id: 'learning-lab-agenda-item', type: 'text', value: newText, maxLength: 160, 'aria-invalid': itemError ? 'true' : undefined, 'aria-describedby': itemError ? 'learning-lab-agenda-item-error' : undefined, placeholder: 'e.g., Call Mom about appointment', onChange: function(event) { setNewText(event.target.value); if (itemError) setItemError(''); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', flex: '1 1 14rem', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' } }),
+              tkBtn('Add item', function() { addCustom(newText); }, 'primary', { minHeight: 44, padding: '8px 14px' })
+            ),
+            hh('div', { id: 'learning-lab-agenda-item-error', role: 'alert', style: { minHeight: itemError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginTop: itemError ? 4 : 0 } }, itemError)
           ),
-          todayItems.length === 0 ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', textAlign: 'center', padding: 8 } }, 'No extra items added yet.')
-          : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          todayItems.length === 0 ? hh('div', { role: 'status', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', textAlign: 'center', padding: 8 } }, 'No extra items added yet.')
+          : hh('ul', { style: Object.assign({}, listStyle, { gap: 4 }) },
               todayItems.map(function(it) {
-                return hh('div', { key: 'tc-' + it.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
-                  hh('button', { onClick: function() { toggleCustom(it.id); },
-                    style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #fbbf24', background: it.done ? '#fbbf24' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
+                return hh('li', { key: 'tc-' + it.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
+                  hh('button', { type: 'button', role: 'checkbox', 'aria-checked': it.done ? 'true' : 'false', 'aria-label': (it.done ? 'Mark incomplete: ' : 'Mark complete: ') + it.text, onClick: function() { toggleCustom(it.id); }, 'data-ll-focusable': true,
+                    style: { minWidth: 44, minHeight: 44, borderRadius: 6, border: '1.5px solid #fbbf24', background: it.done ? '#fbbf24' : 'transparent', color: it.done ? '#0f172a' : '#fbbf24', fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
                   }, it.done ? '✓' : ''),
-                  hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.5 : 1 } }, it.text),
-                  hh('button', { onClick: function() { removeCustom(it.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+                  hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.65 : 1 } }, it.text),
+                  hh('button', { type: 'button', 'aria-label': 'Delete agenda item: ' + it.text, onClick: function() { removeCustom(it.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
                 );
               })
             )
@@ -8023,7 +8039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // ── U. PERSONAL EMOTION CHECK + GROUNDING (Wave 4) ──
+  // U. PERSONAL EMOTION CHECK + GROUNDING (Wave 4)
   // Quick emotion check + 5-4-3-2-1 grounding exercise + box breathing
   // + body scan. Tools for when overwhelm hits. Links to crisis if needed.
   function PersonalEmotionRegulator(props) {
