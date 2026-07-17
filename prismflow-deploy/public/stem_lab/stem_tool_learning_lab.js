@@ -10365,89 +10365,159 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { sheets: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
-    var ns = R.useState('');                           var newTitle = ns[0]; var setNewTitle = ns[1];
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var ns = R.useState(''); var newTitle = ns[0]; var setNewTitle = ns[1];
+    var es = R.useState(''); var titleError = es[0]; var setTitleError = es[1];
 
+    function focusById(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
     function createSheet() {
-      if (!newTitle.trim()) return;
-      var sheet = { id: tkId(), title: newTitle.trim(), sections: [{ id: tkId(), title: 'Key concepts', bullets: [''] }], createdAt: todayISO() };
-      setData({ sheets: [sheet].concat(data.sheets || []) });
+      var title = newTitle.trim();
+      if (!title) {
+        setTitleError('Enter a topic for the cheat sheet.');
+        focusById('learning-lab-cheat-new-title');
+        return;
+      }
+      var firstSection = { id: tkId(), title: 'Key concepts', bullets: [''] };
+      var sheet = { id: tkId(), title: title, sections: [firstSection], createdAt: todayISO() };
+      setData(Object.assign({}, data, { sheets: [sheet].concat(data.sheets || []) }));
       setActiveId(sheet.id);
       setNewTitle('');
+      setTitleError('');
       setView('edit');
+      llAnnounce('Cheat sheet created: ' + sheet.title + '.');
+      focusById('learning-lab-cheat-editor-heading');
     }
-    function getSheet() { return (data.sheets || []).filter(function(s) { return s.id === activeId; })[0]; }
+    function getSheet() { return (data.sheets || []).filter(function(sheet) { return sheet.id === activeId; })[0]; }
     function updateSheet(patch) {
-      setData({
-        sheets: (data.sheets || []).map(function(s) { return s.id === activeId ? Object.assign({}, s, patch) : s; })
-      });
+      setData(Object.assign({}, data, {
+        sheets: (data.sheets || []).map(function(sheet) { return sheet.id === activeId ? Object.assign({}, sheet, patch) : sheet; })
+      }));
     }
-    function removeSheet(id) {
-      if (!confirm('Delete this cheat sheet?')) return;
-      setData({ sheets: (data.sheets || []).filter(function(s) { return s.id !== id; }) });
+    async function removeSheet(id) {
+      var sheet = (data.sheets || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (sheet ? ' "' + sheet.title + '" and all its sections and bullets' : ' this cheat sheet') + '.', {
+        title: 'Delete this cheat sheet?', confirmText: 'Delete cheat sheet'
+      }))) return;
+      setData(Object.assign({}, data, { sheets: (data.sheets || []).filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Cheat sheet deleted.');
     }
     function addSection() {
-      var s = getSheet();
-      updateSheet({ sections: (s.sections || []).concat([{ id: tkId(), title: 'New section', bullets: [''] }]) });
+      var sheet = getSheet();
+      if (!sheet) return;
+      var section = { id: tkId(), title: 'New section', bullets: [''] };
+      updateSheet({ sections: (sheet.sections || []).concat([section]) });
+      llAnnounce('Section added.');
+      focusById('learning-lab-cheat-section-title-' + section.id);
     }
-    function updateSection(i, patch) {
-      var s = getSheet();
-      var sections = s.sections.slice();
-      sections[i] = Object.assign({}, sections[i], patch);
+    function updateSection(index, patch) {
+      var sheet = getSheet();
+      if (!sheet) return;
+      var sections = (sheet.sections || []).slice();
+      sections[index] = Object.assign({}, sections[index], patch);
       updateSheet({ sections: sections });
     }
-    function removeSection(i) {
-      var s = getSheet();
-      updateSheet({ sections: s.sections.filter(function(_, j) { return j !== i; }) });
+    async function removeSection(index) {
+      var sheet = getSheet();
+      if (!sheet) return;
+      var section = (sheet.sections || [])[index];
+      if (!(await askLearningLabConfirmation('This permanently removes the section' + (section ? ' "' + section.title + '" and all its bullets' : '') + '.', {
+        title: 'Delete this section?', confirmText: 'Delete section'
+      }))) return;
+      updateSheet({ sections: (sheet.sections || []).filter(function(_, itemIndex) { return itemIndex !== index; }) });
+      llAnnounce('Cheat sheet section deleted.');
+      focusById('learning-lab-cheat-add-section');
     }
-    function updateBullet(secI, bulI, text) {
-      var s = getSheet();
-      var sections = s.sections.slice();
-      var bullets = sections[secI].bullets.slice();
-      bullets[bulI] = text;
-      sections[secI] = Object.assign({}, sections[secI], { bullets: bullets });
+    function updateBullet(sectionIndex, bulletIndex, text) {
+      var sheet = getSheet();
+      if (!sheet) return;
+      var sections = (sheet.sections || []).slice();
+      var bullets = (sections[sectionIndex].bullets || []).slice();
+      bullets[bulletIndex] = text;
+      sections[sectionIndex] = Object.assign({}, sections[sectionIndex], { bullets: bullets });
       updateSheet({ sections: sections });
     }
-    function addBullet(secI) {
-      var s = getSheet();
-      var sections = s.sections.slice();
-      sections[secI] = Object.assign({}, sections[secI], { bullets: (sections[secI].bullets || []).concat(['']) });
+    function addBullet(sectionIndex) {
+      var sheet = getSheet();
+      if (!sheet) return;
+      var sections = (sheet.sections || []).slice();
+      var section = sections[sectionIndex];
+      var nextIndex = (section.bullets || []).length;
+      sections[sectionIndex] = Object.assign({}, section, { bullets: (section.bullets || []).concat(['']) });
       updateSheet({ sections: sections });
+      llAnnounce('Bullet added to ' + (section.title || 'section') + '.');
+      focusById('learning-lab-cheat-bullet-' + section.id + '-' + nextIndex);
     }
-    function removeBullet(secI, bulI) {
-      var s = getSheet();
-      var sections = s.sections.slice();
-      sections[secI] = Object.assign({}, sections[secI], { bullets: sections[secI].bullets.filter(function(_, j) { return j !== bulI; }) });
+    async function removeBullet(sectionIndex, bulletIndex) {
+      var sheet = getSheet();
+      if (!sheet) return;
+      var sections = (sheet.sections || []).slice();
+      var section = sections[sectionIndex];
+      var bullet = (section.bullets || [])[bulletIndex];
+      if (bullet && !(await askLearningLabConfirmation('This permanently removes the bullet "' + bullet + '".', {
+        title: 'Delete this bullet?', confirmText: 'Delete bullet'
+      }))) return;
+      sections[sectionIndex] = Object.assign({}, section, { bullets: (section.bullets || []).filter(function(_, itemIndex) { return itemIndex !== bulletIndex; }) });
       updateSheet({ sections: sections });
+      llAnnounce('Bullet deleted.');
+      focusById('learning-lab-cheat-add-bullet-' + section.id);
+    }
+    function openSheet(id) {
+      setActiveId(id);
+      setView('edit');
+      focusById('learning-lab-cheat-editor-heading');
+    }
+    function backToList() {
+      var previousId = activeId;
+      setView('list');
+      setActiveId(null);
+      focusById('learning-lab-cheat-open-' + previousId);
     }
 
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(251,191,36,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var hiddenLabelStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+
     if (view === 'edit') {
-      var sheet = getSheet();
-      if (!sheet) { setView('list'); return null; }
+      var activeSheet = getSheet();
+      if (!activeSheet) {
+        return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This cheat sheet is no longer available. Return to the sheet list and choose another.');
+      }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📋', sheet.title, (sheet.sections || []).length + ' sections', '#fbbf24'),
-        hh('div', { style: { display: 'flex', gap: 6, marginBottom: 10 } },
-          tkBtn('← All sheets', function() { setView('list'); setActiveId(null); }, 'ghost'),
-          tkBtn('+ Add section', addSection, 'primary'),
-          tkBtn('🖨 Print', function() { try { window.print(); } catch (e) {} }, 'secondary')
+        tkSectionHeader('📋', activeSheet.title, (activeSheet.sections || []).length + ' sections', '#fbbf24'),
+        hh('h2', { id: 'learning-lab-cheat-editor-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Editing cheat sheet: ' + activeSheet.title),
+        hh('div', { role: 'toolbar', 'aria-label': 'Cheat sheet actions', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+          hh('button', { type: 'button', onClick: backToList, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← All sheets'),
+          hh('button', { id: 'learning-lab-cheat-add-section', type: 'button', onClick: addSection, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ Add section'),
+          hh('button', { type: 'button', onClick: function() { try { window.print(); } catch (error) {} }, 'aria-label': 'Print cheat sheet: ' + activeSheet.title, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #fde68a', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Print')
         ),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-          (sheet.sections || []).map(function(sec, secI) {
-            return hh('div', { key: 'sec-' + sec.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #fbbf24' } },
-              hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
-                tkInput(sec.title, function(v) { updateSection(secI, { title: v }); }, 'Section title', { flex: 1, fontWeight: 800, color: '#fbbf24' }),
-                hh('button', { onClick: function() { removeSection(secI); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 14, cursor: 'pointer', padding: '0 8px' } }, '✕')
-              ),
-              hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-                (sec.bullets || []).map(function(b, bulI) {
-                  return hh('div', { key: 'bul-' + secI + '-' + bulI, style: { display: 'flex', gap: 4, alignItems: 'center' } },
-                    hh('span', { style: { color: '#fbbf24', fontWeight: 800, minWidth: 14 } }, '•'),
-                    tkInput(b, function(v) { updateBullet(secI, bulI, v); }, 'Bullet point', { flex: 1, fontSize: 11 }),
-                    hh('button', { onClick: function() { removeBullet(secI, bulI); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 4 } }, '✕')
-                  );
-                }),
-                tkBtn('+ Bullet', function() { addBullet(secI); }, 'ghost', { padding: '4px 10px', fontSize: 10 })
+        (activeSheet.sections || []).length === 0 ? hh('p', { role: 'status', style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'This cheat sheet has no sections. Add a section to continue.')
+        : hh('ol', { 'aria-label': 'Cheat sheet sections', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 } },
+          (activeSheet.sections || []).map(function(section, sectionIndex) {
+            return hh('li', { key: 'sec-' + section.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #fbbf24' } },
+              hh('section', { 'aria-label': 'Cheat sheet section ' + (sectionIndex + 1) },
+                hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 8 } },
+                  hh('div', { style: { flex: 1 } },
+                    hh('label', { htmlFor: 'learning-lab-cheat-section-title-' + section.id, style: hiddenLabelStyle }, 'Section ' + (sectionIndex + 1) + ' title'),
+                    hh('input', { id: 'learning-lab-cheat-section-title-' + section.id, type: 'text', value: section.title, maxLength: 240, onChange: function(event) { updateSection(sectionIndex, { title: event.target.value }); }, style: Object.assign({}, inputStyle, { fontWeight: 800, color: '#fbbf24' }) })
+                  ),
+                  hh('button', { type: 'button', 'aria-label': 'Delete section: ' + (section.title || (sectionIndex + 1)), onClick: function() { removeSection(sectionIndex); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                ),
+                hh('ul', { 'aria-label': 'Bullets in ' + (section.title || 'section ' + (sectionIndex + 1)), style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+                  (section.bullets || []).map(function(bullet, bulletIndex) {
+                    var bulletId = 'learning-lab-cheat-bullet-' + section.id + '-' + bulletIndex;
+                    return hh('li', { key: 'bul-' + section.id + '-' + bulletIndex, style: { display: 'flex', gap: 6, alignItems: 'flex-start' } },
+                      hh('span', { 'aria-hidden': 'true', style: { color: '#fbbf24', fontWeight: 800, minWidth: 14, paddingTop: 10 } }, '•'),
+                      hh('div', { style: { flex: 1 } },
+                        hh('label', { htmlFor: bulletId, style: hiddenLabelStyle }, 'Bullet ' + (bulletIndex + 1) + ' in ' + (section.title || 'section ' + (sectionIndex + 1))),
+                        hh('input', { id: bulletId, type: 'text', value: bullet, maxLength: 1000, onChange: function(event) { updateBullet(sectionIndex, bulletIndex, event.target.value); }, style: Object.assign({}, inputStyle, { fontSize: 11 }) })
+                      ),
+                      hh('button', { type: 'button', 'aria-label': 'Delete bullet ' + (bulletIndex + 1) + ' from ' + (section.title || 'section ' + (sectionIndex + 1)), onClick: function() { removeBullet(sectionIndex, bulletIndex); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, cursor: 'pointer' } }, '×')
+                    );
+                  })
+                ),
+                hh('button', { id: 'learning-lab-cheat-add-bullet-' + section.id, type: 'button', onClick: function() { addBullet(sectionIndex); }, 'data-ll-focusable': true, style: { minHeight: 44, marginTop: 6, padding: '8px 12px', borderRadius: 8, border: '1px solid #fde68a', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '+ Add bullet')
               )
             );
           })
@@ -10455,45 +10525,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       );
     }
 
+    var sheets = data.sheets || [];
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📋', 'Cheat Sheet Builder', 'Make a 1-page cheat sheet per topic. The BUILDING is the studying — retrieval + compression.', '#fbbf24'),
+      tkSectionHeader('📋', 'Cheat Sheet Builder', 'Make a one-page cheat sheet per topic. Building it practices retrieval and compression.', '#fbbf24'),
 
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ New cheat sheet'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkInput(newTitle, setNewTitle, 'Topic (e.g., "Cell biology chapter 5")', { flex: 1 }),
-            tkBtn('Create', createSheet, 'primary')
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); createSheet(); }, 'aria-labelledby': 'learning-lab-cheat-new-heading' },
+          hh('h3', { id: 'learning-lab-cheat-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', margin: '0 0 8px' } }, 'New cheat sheet'),
+          hh('label', { htmlFor: 'learning-lab-cheat-new-title', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 4 } }, 'Topic (required)'),
+          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start', flexWrap: 'wrap' } },
+            hh('div', { style: { flex: '1 1 220px' } },
+              hh('input', { id: 'learning-lab-cheat-new-title', type: 'text', value: newTitle, required: true, maxLength: 240, 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleError ? 'learning-lab-cheat-title-error' : undefined, placeholder: 'e.g., Cell biology chapter 5', onChange: function(event) { setNewTitle(event.target.value); if (titleError) setTitleError(''); }, style: inputStyle }),
+              hh('div', { id: 'learning-lab-cheat-title-error', role: 'alert', style: { minHeight: titleError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: titleError ? 4 : 0 } }, titleError)
+            ),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Create cheat sheet')
           )
         )
       ),
 
-      (data.sheets || []).length === 0 ? tkEmptyState('📋', 'No cheat sheets yet. Build your first.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          (data.sheets || []).map(function(s) {
-            var totalBullets = (s.sections || []).reduce(function(sum, sec) { return sum + (sec.bullets || []).length; }, 0);
-            return hh('div', { key: 'sh-' + s.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, '📋 ' + s.title),
-                hh('button', { onClick: function() { removeSheet(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, marginBottom: 8 } }, (s.sections || []).length + ' sections · ' + totalBullets + ' bullets · ' + relDate(s.createdAt)),
-              tkBtn('Open ↗', function() { setActiveId(s.id); setView('edit'); }, 'primary', { width: '100%', textAlign: 'center' })
+      sheets.length === 0 ? tkEmptyState('📋', 'No cheat sheets yet. Build your first.', null, null)
+      : hh('ul', { 'aria-label': 'Saved cheat sheets', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          sheets.map(function(sheet) {
+            var totalBullets = (sheet.sections || []).reduce(function(sum, section) { return sum + (section.bullets || []).length; }, 0);
+            return hh('li', { key: 'sh-' + sheet.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
+              hh('article', { 'aria-labelledby': 'learning-lab-cheat-sheet-' + sheet.id },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                  hh('h3', { id: 'learning-lab-cheat-sheet-' + sheet.id, style: { fontSize: 13, color: '#fbbf24', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '📋 '), sheet.title),
+                  hh('button', { type: 'button', 'aria-label': 'Delete cheat sheet: ' + sheet.title, onClick: function() { removeSheet(sheet.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14 } }, '×')
+                ),
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, (sheet.sections || []).length + ' sections · ' + totalBullets + ' bullets · ' + relDate(sheet.createdAt)),
+                hh('button', { id: 'learning-lab-cheat-open-' + sheet.id, type: 'button', 'aria-label': 'Open cheat sheet: ' + sheet.title, onClick: function() { openSheet(sheet.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open cheat sheet')
+              )
             );
           })
         ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#fbbf24' } }, '🎓 Why cheat-sheet building works: '),
-        'The act of deciding what goes ON the cheat sheet forces compression + retrieval. Often you don\'t need to USE the sheet — the building taught you the content. Try it before tests where cheat sheets are allowed (some classes), or as a study tool when they\'re not.'
+      hh('aside', { 'aria-label': 'Why building cheat sheets works', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#fbbf24' } }, 'Why cheat-sheet building works: '),
+        'Deciding what belongs on the sheet forces compression and retrieval. Building the sheet can teach the content even when you cannot use the sheet during a test.'
       )
     );
   }
 
   // ── JJ. PERSONAL ASK-FOR-HELP TRACKER (Wave 7) ──
   // Log every time you ask for help — destigmatize the act. ADHD/autistic
-  // students often UNDER-ask. Tracking surfaces the pattern + builds the
-  // muscle.
+  // students often under-ask. Tracking surfaces the pattern and builds the
+  // skill.
   function PersonalAskTracker(props) {
     if (!R) return null;
     var data = props.data || { asks: [] };
