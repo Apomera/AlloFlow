@@ -11743,72 +11743,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var fs = R.useState({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' });
     var form = fs[0]; var setForm = fs[1];
-    var es = R.useState(null);  var editing = es[0]; var setEditing = es[1];
+    var es = R.useState(null); var editing = es[0]; var setEditing = es[1];
+    var nes = R.useState(''); var nameError = nes[0]; var setNameError = nes[1];
 
-    function save() {
-      if (!form.name.trim()) { alert('Need a class name.'); return; }
+    function focusById(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
+    function emptyForm() { return { name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' }; }
+    function saveClass() {
+      var name = form.name.trim();
+      if (!name) {
+        setNameError('Enter a class name.');
+        focusById('learning-lab-class-name');
+        return;
+      }
       var id = editing || tkId();
-      var cls = Object.assign({ id: id, createdAt: todayISO() }, form);
       var classes = (data.classes || []).slice();
-      var i = classes.findIndex(function(c) { return c.id === id; });
-      if (i >= 0) classes[i] = cls;
-      else classes.unshift(cls);
-      setData({ classes: classes });
-      setForm({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' });
+      var index = classes.findIndex(function(item) { return item.id === id; });
+      var existing = index >= 0 ? classes[index] : null;
+      var classRecord = {
+        id: id,
+        createdAt: existing && existing.createdAt ? existing.createdAt : todayISO(),
+        name: name,
+        teacher: form.teacher.trim(),
+        period: form.period.trim(),
+        room: form.room.trim(),
+        day: form.day.trim(),
+        friend: form.friend.trim(),
+        notes: form.notes.trim()
+      };
+      if (index >= 0) classes[index] = classRecord;
+      else classes.unshift(classRecord);
+      setData(Object.assign({}, data, { classes: classes }));
+      var wasEditing = editing;
+      setForm(emptyForm());
       setEditing(null);
+      setNameError('');
+      llAnnounce(index >= 0 ? 'Class updated: ' + classRecord.name + '.' : 'Class added: ' + classRecord.name + '.');
+      focusById(wasEditing ? 'learning-lab-class-edit-' + wasEditing : 'learning-lab-class-name');
     }
-    function remove(id) {
-      if (!confirm('Remove this class?')) return;
-      setData({ classes: (data.classes || []).filter(function(c) { return c.id !== id; }) });
+    async function remove(id) {
+      var classRecord = (data.classes || []).filter(function(item) { return item.id === id; })[0];
+      if (!(await askLearningLabConfirmation('This permanently removes' + (classRecord ? ' "' + classRecord.name + '" from your roster' : ' this class') + '.', {
+        title: 'Remove this class?', confirmText: 'Remove class'
+      }))) return;
+      setData(Object.assign({}, data, { classes: (data.classes || []).filter(function(item) { return item.id !== id; }) }));
+      if (editing === id) {
+        setEditing(null);
+        setForm(emptyForm());
+        setNameError('');
+      }
+      llAnnounce('Class removed.');
+      focusById('learning-lab-class-name');
     }
-    function startEdit(c) {
-      setEditing(c.id);
-      setForm({ name: c.name, teacher: c.teacher || '', period: c.period || '', room: c.room || '', day: c.day || '', friend: c.friend || '', notes: c.notes || '' });
+    function startEdit(classRecord) {
+      setEditing(classRecord.id);
+      setForm({ name: classRecord.name, teacher: classRecord.teacher || '', period: classRecord.period || '', room: classRecord.room || '', day: classRecord.day || '', friend: classRecord.friend || '', notes: classRecord.notes || '' });
+      setNameError('');
+      llAnnounce('Editing class: ' + classRecord.name + '.');
+      focusById('learning-lab-class-name');
+    }
+    function cancelEdit() {
+      var previousId = editing;
+      setEditing(null);
+      setForm(emptyForm());
+      setNameError('');
+      llAnnounce('Class edit canceled.');
+      focusById('learning-lab-class-edit-' + previousId);
     }
 
     var classes = data.classes || [];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(59,130,246,0.55)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', marginBottom: 4 };
+
+    function field(id, label, key, placeholder, required) {
+      return hh('div', null,
+        hh('label', { htmlFor: id, style: labelStyle }, label + (required ? ' (required)' : ' (optional)')),
+        hh('input', { id: id, type: 'text', value: form[key], required: !!required, maxLength: 500, 'aria-invalid': key === 'name' && nameError ? 'true' : undefined, 'aria-describedby': key === 'name' && nameError ? 'learning-lab-class-name-error' : undefined, placeholder: placeholder, onChange: function(event) { var patch = {}; patch[key] = event.target.value; setForm(Object.assign({}, form, patch)); if (key === 'name' && nameError) setNameError(''); }, style: fieldStyle })
+      );
+    }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎒', 'My Class Roster', 'All your classes, teachers, schedules, room numbers, and friends-in-class. Quick reference.', '#3b82f6'),
+      tkSectionHeader('🎒', 'My Class Roster', 'Keep class names, teachers, schedules, room numbers, classmates, and notes in one reference.', '#3b82f6'),
 
       tkCard('#3b82f6',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 8 } }, editing ? '✏ Edit class' : '+ Add class'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 6 } },
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Class name'),
-            tkInput(form.teacher, function(v) { setForm(Object.assign({}, form, { teacher: v })); }, 'Teacher')
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); saveClass(); }, 'aria-labelledby': 'learning-lab-class-form-heading' },
+          hh('h3', { id: 'learning-lab-class-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#93c5fd', margin: '0 0 8px' } }, editing ? 'Edit class' : 'Add class'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 8 } },
+            field('learning-lab-class-name', 'Class name', 'name', 'e.g., Algebra II', true),
+            field('learning-lab-class-teacher', 'Teacher', 'teacher', 'e.g., Ms. Rivera', false)
           ),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 6, marginBottom: 6 } },
-            tkInput(form.period, function(v) { setForm(Object.assign({}, form, { period: v })); }, 'Period'),
-            tkInput(form.room, function(v) { setForm(Object.assign({}, form, { room: v })); }, 'Room'),
-            tkInput(form.day, function(v) { setForm(Object.assign({}, form, { day: v })); }, 'Days (e.g., "MWF")')
+          hh('div', { id: 'learning-lab-class-name-error', role: 'alert', style: { minHeight: nameError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: nameError ? 8 : 0 } }, nameError),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, marginBottom: 8 } },
+            field('learning-lab-class-period', 'Period', 'period', 'e.g., 3', false),
+            field('learning-lab-class-room', 'Room', 'room', 'e.g., 214', false),
+            field('learning-lab-class-days', 'Meeting days', 'day', 'e.g., Monday, Wednesday, Friday', false)
           ),
-          tkInput(form.friend, function(v) { setForm(Object.assign({}, form, { friend: v })); }, 'Friend in this class (optional)', { marginBottom: 6 }),
-          tkInput(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (workload, vibe, accommodations needed)', { marginBottom: 8 }),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn(editing ? '💾 Update' : '+ Add', save, 'primary'),
-            editing ? tkBtn('Cancel', function() { setEditing(null); setForm({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' }); }, 'ghost') : null
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 8 } },
+            field('learning-lab-class-friend', 'Classmate or friend', 'friend', 'e.g., Jordan', false),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-class-notes', style: labelStyle }, 'Notes (optional)'),
+              hh('textarea', { id: 'learning-lab-class-notes', value: form.notes, rows: 3, maxLength: 2000, placeholder: 'Workload, classroom environment, or accommodations', onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical' }) })
+            )
+          ),
+          hh('div', { role: 'group', 'aria-label': 'Class form actions', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #bfdbfe', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, editing ? 'Update class' : 'Add class'),
+            editing ? hh('button', { type: 'button', onClick: cancelEdit, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel edit') : null
           )
         )
       ),
 
       classes.length === 0 ? tkEmptyState('🎒', 'No classes added yet.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          classes.map(function(c) {
-            return hh('div', { key: 'cl-' + c.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #3b82f6' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
-                hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, '🎒 ' + c.name),
-                hh('div', { style: { display: 'flex', gap: 4 } },
-                  hh('button', { onClick: function() { startEdit(c); }, style: { background: 'transparent', border: 'none', color: '#60a5fa', fontSize: 11, cursor: 'pointer' } }, '✏'),
-                  hh('button', { onClick: function() { remove(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              c.teacher ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, '👤 ' + c.teacher) : null,
-              c.period || c.room || c.day ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
-                [c.period && 'P' + c.period, c.room && 'Rm ' + c.room, c.day].filter(Boolean).join(' · ')
-              ) : null,
-              c.friend ? hh('div', { style: { fontSize: 11, color: '#10b981' } }, '🤝 with ' + c.friend) : null,
-              c.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, c.notes) : null
+      : hh('ul', { 'aria-label': 'Class roster', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          classes.map(function(classRecord) {
+            var details = [
+              { label: 'Teacher', value: classRecord.teacher },
+              { label: 'Period', value: classRecord.period },
+              { label: 'Room', value: classRecord.room },
+              { label: 'Meeting days', value: classRecord.day },
+              { label: 'Classmate or friend', value: classRecord.friend }
+            ].filter(function(detail) { return detail.value; });
+            return hh('li', { key: 'cl-' + classRecord.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #3b82f6' } },
+              hh('article', { 'aria-labelledby': 'learning-lab-class-heading-' + classRecord.id },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
+                  hh('h3', { id: 'learning-lab-class-heading-' + classRecord.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🎒 '), classRecord.name),
+                  hh('div', { role: 'group', 'aria-label': 'Actions for ' + classRecord.name, style: { display: 'flex', gap: 4 } },
+                    hh('button', { id: 'learning-lab-class-edit-' + classRecord.id, type: 'button', 'aria-label': 'Edit class: ' + classRecord.name, onClick: function() { startEdit(classRecord); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: '#93c5fd', fontSize: 14, cursor: 'pointer' } }, '✎'),
+                    hh('button', { type: 'button', 'aria-label': 'Remove class: ' + classRecord.name, onClick: function() { remove(classRecord.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                  )
+                ),
+                details.length ? hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', margin: 0, fontSize: 11 } },
+                  details.reduce(function(items, detail, index) {
+                    items.push(hh('dt', { key: 'dt-' + index, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, detail.label));
+                    items.push(hh('dd', { key: 'dd-' + index, style: { margin: 0, color: 'var(--allo-stem-text, #cbd5e1)' } }, detail.value));
+                    return items;
+                  }, [])
+                ) : null,
+                classRecord.notes ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', margin: '6px 0 0', fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, 'Notes: ' + classRecord.notes) : null
+              )
             );
           })
         )
@@ -11816,9 +11888,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   }
 
   // ── QQ. PERSONAL QUOTE COLLECTOR (Wave 9) ──
-  // Save quotes from books, classes, conversations. Auto-tagged. Browse
-  // for inspiration on hard days. Maintains a personal "library of words
-  // that matter."
+  // Save quotes from books, classes, and conversations. Browse a personal
+  // library of words that matter.
   function PersonalQuoteCollector(props) {
     if (!R) return null;
     var data = props.data || { quotes: [] };
