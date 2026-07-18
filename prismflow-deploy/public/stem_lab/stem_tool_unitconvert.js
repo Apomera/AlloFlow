@@ -60,6 +60,64 @@
     { id: 'tempMaster',     icon: '\uD83C\uDF21\uFE0F', label: 'Temp Master', desc: 'Convert between all 3 temperature units' }
   ];
 
+  var UNIT_FACTORS = {
+    length: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 },
+    weight: { mg: 0.001, g: 1, kg: 1000, oz: 28.349523125, lb: 453.59237, ton: 907184.74 },
+    temperature: { '\u00B0C': 'C', '\u00B0F': 'F', K: 'K' },
+    speed: { 'm/s': 1, 'km/h': 1 / 3.6, mph: 0.44704, knots: 1852 / 3600 },
+    volume: { mL: 0.001, L: 1, gal: 3.785411784, qt: 0.946352946, cup: 0.2365882365, 'fl oz': 0.0295735295625 },
+    time: { sec: 1, min: 60, hr: 3600, day: 86400, week: 604800, year: 31536000 },
+    area: { 'cm\u00B2': 0.0001, 'm\u00B2': 1, 'km\u00B2': 1000000, 'in\u00B2': 0.00064516, 'ft\u00B2': 0.09290304, acre: 4046.8564224 },
+    pressure: { Pa: 1, kPa: 1000, bar: 100000, psi: 6894.757293168, atm: 101325 },
+    energy: { J: 1, kJ: 1000, cal: 4.184, kcal: 4184, Wh: 3600, kWh: 3600000 }
+  };
+
+  function convertUnitValue(value, from, to, category) {
+    var numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) return NaN;
+    if (category === 'temperature') {
+      if (!Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, from) || !Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, to)) return NaN;
+      if (from === to) return numericValue;
+      var celsius = from === '\u00B0C' ? numericValue : from === '\u00B0F' ? (numericValue - 32) * 5 / 9 : numericValue - 273.15;
+      return to === '\u00B0C' ? celsius : to === '\u00B0F' ? celsius * 9 / 5 + 32 : celsius + 273.15;
+    }
+    var units = UNIT_FACTORS[category];
+    if (!units || !Object.prototype.hasOwnProperty.call(units, from) || !Object.prototype.hasOwnProperty.call(units, to)) return NaN;
+    return numericValue * units[from] / units[to];
+  }
+
+  function evaluateNumericAnswer(rawAnswer, expected, absoluteTolerance) {
+    var rawText = rawAnswer === null || rawAnswer === undefined ? '' : String(rawAnswer).trim();
+    var answer = rawText === '' ? NaN : Number(rawText);
+    var target = Number(expected);
+    var tolerance = Math.max(0, Number(absoluteTolerance) || 0.01);
+    if (!Number.isFinite(answer) || !Number.isFinite(target)) return { valid: false, correct: false, answer: answer, expected: target, tolerance: tolerance, error: NaN };
+    var error = Math.abs(answer - target);
+    return { valid: true, correct: error <= tolerance, answer: answer, expected: target, tolerance: tolerance, error: error };
+  }
+
+  function diagnoseNumericAnswer(answer, expected, unit, tolerance) {
+    if (!Number.isFinite(answer)) return 'Enter a valid number before checking your answer.';
+    var inverse = expected === 0 ? NaN : 1 / expected;
+    if (Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
+      return 'The ratio is reversed. Flip the conversion factor so the starting unit cancels. The answer is ' + expected + ' ' + unit + '.';
+    }
+    var slip = null;
+    [10, 100, 1000, 0.1, 0.01, 0.001].forEach(function(factor) {
+      if (slip === null && expected !== 0 && Math.abs(answer / expected - factor) <= Math.abs(factor) * 0.02) slip = factor;
+    });
+    if (slip !== null) return 'The answer is off by ' + (slip >= 1 ? slip : '1/' + Math.round(1 / slip)) + ', which suggests a decimal-place or metric-prefix slip. The answer is ' + expected + ' ' + unit + '.';
+    if (unit === '\u00B0F' || unit === '\u00B0C' || unit === 'K') return 'Temperature uses an offset as well as a scale factor, so a simple ratio will not work. The answer is ' + expected + ' ' + unit + '.';
+    return 'Set up a conversion factor so the starting unit cancels and the requested unit remains. The answer is ' + expected + ' ' + unit + '.';
+  }
+
+  window.__UnitConvertCore = Object.assign({}, window.__UnitConvertCore || {}, {
+    factors: UNIT_FACTORS,
+    convertUnitValue: convertUnitValue,
+    evaluateNumericAnswer: evaluateNumericAnswer,
+    diagnoseNumericAnswer: diagnoseNumericAnswer
+  });
+
   window.StemLab.registerTool('unitConvert', {
     icon: '\uD83D\uDCCF',
     label: 'Unit Converter',
@@ -89,7 +147,7 @@
       var a11yClick = ctx.a11yClick;
 
       return (function() {
-        var d = labToolData.unitConvert || {};
+        var d = Object.assign({}, labToolData.unitConvert || {});
 
         var upd = function(key, val) {
           setLabToolData(function(prev) {
@@ -99,34 +157,27 @@
 
         // â”€â”€ CATEGORIES â”€â”€
         var CATEGORIES = {
-          length:      { label: t('stem.unitconvert.length', '\uD83D\uDCCF Length'),   units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 } },
-          weight:      { label: t('stem.unitconvert.weight', '\u2696\uFE0F Weight'),   units: { mg: 0.001, g: 1, kg: 1000, oz: 28.349523, lb: 453.59237, ton: 907184.74 } },
-          temperature: { label: t('stem.unitconvert.temp', '\uD83C\uDF21\uFE0F Temp'), units: { '\u00B0C': 'C', '\u00B0F': 'F', K: 'K' } },
-          speed:       { label: t('stem.unitconvert.speed', '\uD83D\uDE80 Speed'),    units: { 'm/s': 1, 'km/h': 0.277778, mph: 0.44704, knots: 0.514444 } },
-          volume:      { label: t('stem.unitconvert.volume', '\uD83E\uDDEA Volume'),   units: { mL: 0.001, L: 1, gal: 3.785411784, qt: 0.946352946, cup: 0.2365882365, 'fl oz': 0.0295735296 } },
-          time:        { label: t('stem.unitconvert.time', '\u23F0 Time'),           units: { sec: 1, min: 60, hr: 3600, day: 86400, week: 604800, year: 31536000 } },
-          area:        { label: t('stem.unitconvert.area', '\uD83D\uDDD2\uFE0F Area'), units: { 'cm\u00B2': 0.0001, 'm\u00B2': 1, 'km\u00B2': 1000000, 'in\u00B2': 0.00064516, 'ft\u00B2': 0.09290304, acre: 4046.8564224 } },
-          pressure:    { label: t('stem.unitconvert.pressure', '\uD83D\uDCA8 Pressure'), units: { Pa: 1, kPa: 1000, bar: 100000, psi: 6894.757, atm: 101325 } },
-          energy:      { label: t('stem.unitconvert.energy', '\u26A1 Energy'),         units: { J: 1, kJ: 1000, cal: 4.184, kcal: 4184, Wh: 3600, kWh: 3600000 } },
+          length:      { label: t('stem.unitconvert.length', '\uD83D\uDCCF Length'), units: UNIT_FACTORS.length },
+          weight:      { label: t('stem.unitconvert.weight', '\u2696\uFE0F Mass'), units: UNIT_FACTORS.weight },
+          temperature: { label: t('stem.unitconvert.temp', '\uD83C\uDF21\uFE0F Temp'), units: UNIT_FACTORS.temperature },
+          speed:       { label: t('stem.unitconvert.speed', '\uD83D\uDE80 Speed'), units: UNIT_FACTORS.speed },
+          volume:      { label: t('stem.unitconvert.volume', '\uD83E\uDDEA Volume'), units: UNIT_FACTORS.volume },
+          time:        { label: t('stem.unitconvert.time', '\u23F0 Time'), units: UNIT_FACTORS.time },
+          area:        { label: t('stem.unitconvert.area', '\uD83D\uDDD2\uFE0F Area'), units: UNIT_FACTORS.area },
+          pressure:    { label: t('stem.unitconvert.pressure', '\uD83D\uDCA8 Pressure'), units: UNIT_FACTORS.pressure },
+          energy:      { label: t('stem.unitconvert.energy', '\u26A1 Energy'), units: UNIT_FACTORS.energy }
         };
 
-        var cat = CATEGORIES[d.category] || CATEGORIES.length;
+        d.category = CATEGORIES[d.category] ? d.category : 'length';
+        var cat = CATEGORIES[d.category];
+        var validUnits = Object.keys(cat.units);
+        d.value = Number.isFinite(Number(d.value)) ? Number(d.value) : 1;
+        d.fromUnit = Object.prototype.hasOwnProperty.call(cat.units, d.fromUnit) ? d.fromUnit : validUnits[0];
+        d.toUnit = Object.prototype.hasOwnProperty.call(cat.units, d.toUnit) ? d.toUnit : (validUnits[1] || validUnits[0]);
 
         // â”€â”€ CONVERSION â”€â”€
         var convert = function(val, from, to, catKey) {
-          catKey = catKey || d.category;
-          if (catKey === 'temperature') {
-            if (from === to) return val;
-            if (from === '\u00B0C' && to === '\u00B0F') return val * 9 / 5 + 32;
-            if (from === '\u00B0F' && to === '\u00B0C') return (val - 32) * 5 / 9;
-            if (from === '\u00B0C' && to === 'K') return val + 273.15;
-            if (from === 'K' && to === '\u00B0C') return val - 273.15;
-            if (from === '\u00B0F' && to === 'K') return (val - 32) * 5 / 9 + 273.15;
-            if (from === 'K' && to === '\u00B0F') return (val - 273.15) * 9 / 5 + 32;
-            return val;
-          }
-          var units = (CATEGORIES[catKey] || cat).units;
-          return val * (units[from] || 1) / (units[to] || 1);
+          return convertUnitValue(val, from, to, catKey || d.category);
         };
 
         var fmt = function(n) {
@@ -314,6 +365,62 @@
           });
         }
 
+        function startQuizQuestion() {
+          var question = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
+          upd({ quiz: { q: question.q, a: question.a, unit: question.unit, tol: question.tol || 0.01, answered: false, startTime: Date.now() }, quizDraft: '', quizDraftError: '' });
+          stemBeep && stemBeep(600, 0.06);
+        }
+
+        function gradeQuizAnswer(rawAnswer) {
+          if (!d.quiz || d.quiz.answered) return;
+          var evaluation = evaluateNumericAnswer(rawAnswer, d.quiz.a, d.quiz.tol || 0.01);
+          if (!evaluation.valid) {
+            var inputMessage = 'Enter a valid number before checking your answer.';
+            upd('quizDraftError', inputMessage);
+            if (typeof announceToSR === 'function') announceToSR(inputMessage);
+            return;
+          }
+
+          var answer = evaluation.answer;
+          var correct = evaluation.correct;
+          var feedback = correct ? '' : diagnoseNumericAnswer(answer, d.quiz.a, d.quiz.unit, evaluation.tolerance);
+          var elapsed = d.quiz.startTime ? (Date.now() - d.quiz.startTime) / 1000 : 0;
+          var xp = correct ? (elapsed < 5 ? 3 : elapsed < 10 ? 2 : 1) : 0;
+          var newStreak = correct ? (d.streak || 0) + 1 : 0;
+          var newBest = Math.max(d.bestStreak || 0, newStreak);
+          var newQTotal = quizTotal + 1;
+
+          if (correct) {
+            stemBeep && stemBeep(784, 0.15);
+            if (newStreak >= 5) { stemCelebrate && stemCelebrate(); }
+            awardStemXP && awardStemXP('unitConvert', xp, 'quiz correct');
+            addToast(xp === 3 ? '\u26A1 Lightning fast! +3 XP' : xp === 2 ? '\uD83D\uDE80 Quick! +2 XP' : '\u2705 Correct! +1 XP', 'success');
+            if (typeof announceToSR === 'function') announceToSR('Correct. The answer is ' + d.quiz.a + ' ' + d.quiz.unit + '.');
+          } else {
+            stemBeep && stemBeep(220, 0.2);
+            if (typeof announceToSR === 'function') announceToSR('Not quite. ' + feedback);
+            addToast('Not quite - see why below', 'error');
+          }
+
+          setLabToolData(function(prev) {
+            var previous = prev.unitConvert || {};
+            return Object.assign({}, prev, { unitConvert: Object.assign({}, previous, {
+              score: (previous.score || 0) + xp,
+              streak: newStreak,
+              bestStreak: newBest,
+              quizTotal: newQTotal,
+              quizDraftError: '',
+              quiz: Object.assign({}, previous.quiz, { answered: true, userAns: answer, correct: correct, xp: xp, elapsed: elapsed.toFixed(1), fb: feedback })
+            }) });
+          });
+          checkBadges({
+            quizStreak5: correct && newStreak >= 5,
+            quizStreak10: correct && newStreak >= 10,
+            speedster: correct && elapsed < 3,
+            quizMaster: newQTotal >= 20
+          });
+        }
+
         // â”€â”€ Keyboard shortcuts (no hooks â€” plain render function) â”€â”€
         function handleKey(e) {
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
@@ -324,9 +431,7 @@
           if (key === '4') { e.preventDefault(); upd('tab', 'wordproblem'); }
           if (key.toLowerCase() === 'n' && tab === 'quiz') {
             e.preventDefault();
-            var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-            upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-            stemBeep && stemBeep(600, 0.06);
+            startQuizQuestion();
           }
           if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
           if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
@@ -718,8 +823,8 @@
                 h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.fun_fact', '\uD83D\uDCA1 Fun Fact')),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
-              h('button', { onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
-                className: 'transition-colors text-violet-400 hover:text-violet-600 text-xs font-bold shrink-0 pt-0.5'
+              h('button', { type: 'button', 'aria-label': 'Show next unit fact', title: 'Next fact', onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
+                className: 'transition-colors text-violet-500 hover:text-violet-700 text-xs font-bold shrink-0 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1'
               }, '\u27A1\uFE0F')
             ),
 
@@ -847,11 +952,7 @@
                 (d.bestStreak || 0) > 0 && h('span', { className: 'px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full' }, '\uD83C\uDFC6 Best: ' + d.bestStreak)
               ),
               h('button', { 'aria-label': t('stem.unitconvert.next_question_n', 'Next question (N)'),
-                onClick: function() {
-                  var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-                  upd('quiz', { q: q.q, a: q.a, unit: q.unit, tol: q.tol || 0.01, answered: false, startTime: Date.now() });
-                  stemBeep && stemBeep(600, 0.06);
-                },
+                onClick: startQuizQuestion,
                 className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all active:scale-[0.97]',
                 title: t('stem.unitconvert.next_question_n_2', 'Next question (N)')
               }, d.quiz ? '\uD83D\uDD04 Next' : '\uD83E\uDDE0 Start Quiz')
@@ -868,80 +969,24 @@
               h('p', { className: 'text-lg font-bold text-slate-800 mb-4 tracking-tight' }, d.quiz.q),
 
               !d.quiz.answered
-                ? h('div', { className: 'flex gap-2 items-center' },
+                ? h('div', { className: 'flex flex-wrap gap-2 items-center' },
                     h('input', {
                       type: 'number', placeholder: t('stem.unitconvert.your_answer', 'Your answer...'), autoFocus: true,
                       step: '0.01',
                       'aria-label': t('stem.unitconvert.quiz_answer', 'Quiz answer'),
                       className: 'flex-1 px-3 py-2 border-2 border-cyan-600 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
-                      onKeyDown: function(e) {
-                        if (e.key !== 'Enter') return;
-                        var ans = parseFloat(e.target.value);
-                        var tol = d.quiz.tol || 0.01;
-                        var correct = Math.abs(ans - d.quiz.a) <= Math.max(tol, Math.abs(d.quiz.a) * tol);
-                        // â”€â”€ Misconception diagnosis: name the specific conversion error â”€â”€
-                        // Every quiz question is "how many X in 1 Y", so an inverted ratio
-                        // and decimal-place slips are detectable from the number alone.
-                        var fb = '';
-                        if (!correct) {
-                          var aVal = d.quiz.a;
-                          if (isNaN(ans)) {
-                            fb = 'Type a number first, then press Enter.';
-                          } else if (ans !== 0 && Math.abs(ans * aVal - 1) <= Math.max(0.02, tol * 2)) {
-                            fb = 'You converted in the WRONG DIRECTION â€” ' + ans.toFixed(3) + ' is how many go the other way. Flip the ratio: the question asks how many ' + d.quiz.unit + ' fit in ONE of the bigger unit, so the answer is ' + aVal + ' ' + d.quiz.unit + '.';
-                          } else {
-                            var slip = null;
-                            [10, 100, 1000, 0.1, 0.01, 0.001].forEach(function(f) {
-                              if (slip === null && aVal !== 0 && Math.abs(ans / aVal - f) <= f * 0.02) slip = f;
-                            });
-                            if (slip !== null) {
-                              fb = 'You are off by exactly Ã—' + (slip >= 1 ? slip : '1/' + Math.round(1 / slip)) + ' â€” a decimal-place slip. Check the prefix: kilo = 1000, centi = 1/100, milli = 1/1000. The answer is ' + aVal + ' ' + d.quiz.unit + '.';
-                            } else if (d.quiz.unit === 'Â°F' || d.quiz.unit === 'Â°C') {
-                              fb = 'Temperature is the one conversion that is NOT a simple ratio: Â°F = Â°C Ã— 9/5 + 32 (multiply FIRST, then add 32). The answer is ' + aVal + ' ' + d.quiz.unit + '.';
-                            } else {
-                              fb = 'Set it up so the old unit cancels: value Ã— (new unit / old unit). Done that way, the answer comes out to ' + aVal + ' ' + d.quiz.unit + '.';
-                            }
-                          }
-                        }
-                        var elapsed = (Date.now() - d.quiz.startTime) / 1000;
-                        var xp = correct ? (elapsed < 5 ? 3 : elapsed < 10 ? 2 : 1) : 0;
-                        var newStreak = correct ? (d.streak || 0) + 1 : 0;
-                        var newBest = Math.max(d.bestStreak || 0, newStreak);
-                        var newQTotal = quizTotal + 1;
-                        if (correct) {
-                          stemBeep && stemBeep(784, 0.15);
-                          if (newStreak >= 5) { stemCelebrate && stemCelebrate(); }
-                          awardStemXP && awardStemXP('unitConvert', xp, 'quiz correct');
-                          addToast(xp === 3 ? '\u26A1 Lightning fast! +3 XP' : xp === 2 ? '\uD83D\uDE80 Quick! +2 XP' : '\u2705 Correct! +1 XP', 'success');
-                        } else {
-                          stemBeep && stemBeep(220, 0.2);
-                          if (typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
-                          addToast('\u274C Not quite \u2014 see why below', 'error');
-                        }
-                        setLabToolData(function(prev) {
-                          return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, {
-                            score: (prev.unitConvert.score || 0) + xp,
-                            streak: newStreak,
-                            bestStreak: newBest,
-                            quizTotal: newQTotal,
-                            quiz: Object.assign({}, prev.unitConvert.quiz, { answered: true, userAns: ans, correct: correct, xp: xp, elapsed: elapsed.toFixed(1), fb: fb })
-                          }) });
-                        });
-                        // Badge checks
-                        checkBadges({
-                          quizStreak5: correct && newStreak >= 5,
-                          quizStreak10: correct && newStreak >= 10,
-                          speedster: correct && elapsed < 3,
-                          quizMaster: newQTotal >= 20
-                        });
-                      }
+                      value: d.quizDraft === undefined || d.quizDraft === null ? '' : d.quizDraft,
+                      onChange: function(e) { upd({ quizDraft: e.target.value, quizDraftError: '' }); },
+                      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeQuizAnswer(e.currentTarget.value); } }
                     }),
-                    h('span', { className: 'text-xs text-slate-600 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
-                    h('button', { 'aria-label': t('stem.unitconvert.ask_tutor_2', 'Ask Tutor'),
+                    h('span', { className: 'text-xs text-slate-600 shrink-0' }, d.quiz.unit),
+                    h('button', { type: 'button', onClick: function() { gradeQuizAnswer(d.quizDraft); }, className: 'px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, 'Check answer'),
+                    h('button', { type: 'button', 'aria-label': t('stem.unitconvert.ask_tutor_2', 'Ask Tutor'),
                       onClick: askTutor,
                       className: 'px-2 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm active:scale-[0.97]',
                       title: t('stem.unitconvert.get_a_hint_from_ai', 'Get a hint from AI')
-                    }, '\uD83E\uDDE0')
+                    }, '\uD83E\uDDE0'),
+                    d.quizDraftError && h('p', { role: 'alert', className: 'w-full text-xs font-bold text-red-700 mt-1' }, d.quizDraftError)
                   )
                 : h('div', { style: { animation: d.quiz.correct ? 'ucCorrect 0.5s ease' : 'ucWrong 0.4s ease' } },
                     h('p', { className: 'text-base font-bold mb-1 ' + (d.quiz.correct ? 'text-emerald-600' : 'text-red-500') },

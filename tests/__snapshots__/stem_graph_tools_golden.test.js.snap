@@ -134,12 +134,12 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for unitConvert 1`] = `
 {
-  "buttons": 21,
+  "buttons": 22,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 64,
+  "lengthBucket": 74,
   "paths": 0,
-  "sha": "edc645da00c5479c",
+  "sha": "4068a0032abf1dba",
   "svgs": 0,
 }
 `;
