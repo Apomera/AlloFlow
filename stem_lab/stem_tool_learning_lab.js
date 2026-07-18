@@ -15761,78 +15761,169 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { books: [] };
     var setData = props.setData;
-    var fs = R.useState({ title: '', author: '', currentPage: 0, totalPages: 0 });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { title: '', author: '', currentPage: '0', totalPages: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState({ title: '', currentPage: '', totalPages: '' }); var formErrors = es[0]; var setFormErrors = es[1];
+    var ps = R.useState({}); var pageDrafts = ps[0]; var setPageDrafts = ps[1];
+    var pe = R.useState({}); var progressErrors = pe[0]; var setProgressErrors = pe[1];
 
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function normalizedPage(value, allowBlank) {
+      var text = String(value == null ? '' : value).trim();
+      if (!text && allowBlank) return null;
+      var number = Number(text);
+      return Number.isInteger(number) && number >= 0 && number <= 10000000 ? number : undefined;
+    }
+    function validatePages(currentValue, totalValue) {
+      var current = normalizedPage(currentValue, false);
+      var total = normalizedPage(totalValue, true);
+      var errors = { currentPage: '', totalPages: '' };
+      if (current === undefined) errors.currentPage = 'Enter a whole number from 0 through 10,000,000.';
+      if (total === undefined) errors.totalPages = 'Enter a whole number from 0 through 10,000,000, or leave this blank.';
+      if (current !== undefined && total != null && total !== undefined && current > total) errors.currentPage = 'Current page cannot be greater than total pages.';
+      return { current: current, total: total, errors: errors };
+    }
     function add() {
-      if (!form.title.trim()) { alert('Need a title.'); return; }
-      var b = Object.assign({ id: tkId(), startedAt: todayISO() }, form);
-      setData({ books: [b].concat(data.books || []) });
-      setForm({ title: '', author: '', currentPage: 0, totalPages: 0 });
+      var title = form.title.trim();
+      var checked = validatePages(form.currentPage, form.totalPages);
+      var nextErrors = { title: title ? '' : 'Enter a book title.', currentPage: checked.errors.currentPage, totalPages: checked.errors.totalPages };
+      if (nextErrors.title || nextErrors.currentPage || nextErrors.totalPages) {
+        setFormErrors(nextErrors); llAnnounce('Book not added. Review the highlighted fields.');
+        focusById(nextErrors.title ? 'learning-lab-reading-title' : (nextErrors.currentPage ? 'learning-lab-reading-current-page' : 'learning-lab-reading-total-pages'));
+        return;
+      }
+      var book = { id: tkId(), startedAt: todayISO(), title: title, author: form.author.trim(), currentPage: checked.current, totalPages: checked.total == null ? 0 : checked.total };
+      setData(Object.assign({}, data, { books: [book].concat(data.books || []) }));
+      setForm(emptyForm); setFormErrors({ title: '', currentPage: '', totalPages: '' });
+      llAnnounce('Book added: ' + title); focusById('learning-lab-reading-title');
     }
-    function updatePage(id, p) {
-      setData({ books: (data.books || []).map(function(b) { return b.id === id ? Object.assign({}, b, { currentPage: p, lastRead: todayISO() }) : b; }) });
+    function draftFor(book) {
+      return pageDrafts[book.id] || { currentPage: String(normalizedPage(book.currentPage, false) || 0), totalPages: normalizedPage(book.totalPages, true) ? String(book.totalPages) : '' };
     }
-    function remove(id) { setData({ books: (data.books || []).filter(function(b) { return b.id !== id; }) }); }
+    function setDraft(book, field, value) {
+      var nextDrafts = Object.assign({}, pageDrafts);
+      nextDrafts[book.id] = Object.assign({}, draftFor(book)); nextDrafts[book.id][field] = value;
+      setPageDrafts(nextDrafts);
+      if (progressErrors[book.id]) { var nextErrors = Object.assign({}, progressErrors); delete nextErrors[book.id]; setProgressErrors(nextErrors); }
+    }
+    function updateProgress(book) {
+      var draft = draftFor(book);
+      var checked = validatePages(draft.currentPage, draft.totalPages);
+      if (checked.errors.currentPage || checked.errors.totalPages) {
+        var invalid = Object.assign({}, progressErrors); invalid[book.id] = checked.errors; setProgressErrors(invalid);
+        llAnnounce('Reading progress not saved. Review the highlighted fields.');
+        focusById('learning-lab-reading-progress-' + book.id + (checked.errors.currentPage ? '-current' : '-total'));
+        return;
+      }
+      setData(Object.assign({}, data, { books: (data.books || []).map(function(item) { return item.id === book.id ? Object.assign({}, item, { currentPage: checked.current, totalPages: checked.total == null ? 0 : checked.total, lastRead: todayISO() }) : item; }) }));
+      var nextDrafts = Object.assign({}, pageDrafts); delete nextDrafts[book.id]; setPageDrafts(nextDrafts);
+      var nextErrors = Object.assign({}, progressErrors); delete nextErrors[book.id]; setProgressErrors(nextErrors);
+      llAnnounce('Reading progress saved for ' + String(book.title || 'Untitled book') + '.');
+      focusById('learning-lab-reading-book-heading-' + book.id);
+    }
+    function removeBook(book) {
+      askLearningLabConfirmation('Remove “' + String(book.title || 'Untitled book') + '” and its reading progress? This cannot be undone.', { title: 'Remove this book?', confirmText: 'Remove book' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { books: (data.books || []).filter(function(item) { return item.id !== book.id; }) }));
+        llAnnounce('Book removed from Currently Reading.'); focusById('learning-lab-reading-list-heading');
+      });
+    }
+    function pageSummary(book) {
+      var current = normalizedPage(book.currentPage, false) || 0;
+      var total = normalizedPage(book.totalPages, true);
+      if (total) return 'Page ' + current + ' of ' + total + ', ' + Math.round(Math.min(100, (current / total) * 100)) + ' percent.';
+      return 'Page ' + current + '; total pages not set.';
+    }
 
     var books = data.books || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📖', 'Currently Reading', 'Track multiple books in progress. Update page when you sit down + when you stop.', '#fbbf24'),
-
+      tkSectionHeader('📖', 'Currently Reading', 'Keep an optional record of books and update progress when it is useful to you.', '#fbbf24'),
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Start a book'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr', gap: 6, marginBottom: 8 } },
-            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'Title'),
-            tkInput(form.author, function(v) { setForm(Object.assign({}, form, { author: v })); }, 'Author'),
-            hh('input', { type: 'number', value: form.currentPage,
-              onChange: function(e) { setForm(Object.assign({}, form, { currentPage: parseInt(e.target.value, 10) || 0 })); },
-              placeholder: 'Page',
-              style: { padding: '10px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
-            }),
-            hh('input', { type: 'number', value: form.totalPages,
-              onChange: function(e) { setForm(Object.assign({}, form, { totalPages: parseInt(e.target.value, 10) || 0 })); },
-              placeholder: 'Total',
-              style: { padding: '10px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
-            })
+        hh('form', { onSubmit: function(event) { event.preventDefault(); add(); }, 'aria-labelledby': 'learning-lab-reading-add-heading', 'aria-describedby': 'learning-lab-reading-privacy-note' },
+          hh('h2', { id: 'learning-lab-reading-add-heading', style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 15 } }, 'Add a book'),
+          hh('p', { id: 'learning-lab-reading-privacy-note', style: helpStyle }, 'Book details and progress save in this browser. Avoid private notes if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-reading-title', style: labelStyle }, 'Book title (required)'),
+              hh('input', { id: 'learning-lab-reading-title', type: 'text', value: form.title, required: true, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (formErrors.title) setFormErrors(Object.assign({}, formErrors, { title: '' })); }, 'aria-invalid': formErrors.title ? 'true' : undefined, 'aria-describedby': formErrors.title ? 'learning-lab-reading-title-error' : undefined, style: fieldStyle }),
+              formErrors.title ? hh('p', { id: 'learning-lab-reading-title-error', role: 'alert', style: errorStyle }, formErrors.title) : null
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-reading-author', style: labelStyle }, 'Author or creator (optional)'),
+              hh('input', { id: 'learning-lab-reading-author', type: 'text', value: form.author, maxLength: 500, onChange: function(event) { setForm(Object.assign({}, form, { author: event.target.value })); }, style: fieldStyle })
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-reading-current-page', style: labelStyle }, 'Current page (required)'),
+              hh('input', { id: 'learning-lab-reading-current-page', type: 'number', min: 0, max: 10000000, step: 1, value: form.currentPage, required: true, onChange: function(event) { setForm(Object.assign({}, form, { currentPage: event.target.value })); if (formErrors.currentPage) setFormErrors(Object.assign({}, formErrors, { currentPage: '' })); }, 'aria-invalid': formErrors.currentPage ? 'true' : undefined, 'aria-describedby': 'learning-lab-reading-page-help' + (formErrors.currentPage ? ' learning-lab-reading-current-error' : ''), style: fieldStyle }),
+              formErrors.currentPage ? hh('p', { id: 'learning-lab-reading-current-error', role: 'alert', style: errorStyle }, formErrors.currentPage) : null
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-reading-total-pages', style: labelStyle }, 'Total pages (optional)'),
+              hh('input', { id: 'learning-lab-reading-total-pages', type: 'number', min: 0, max: 10000000, step: 1, value: form.totalPages, onChange: function(event) { setForm(Object.assign({}, form, { totalPages: event.target.value })); if (formErrors.totalPages) setFormErrors(Object.assign({}, formErrors, { totalPages: '' })); }, 'aria-invalid': formErrors.totalPages ? 'true' : undefined, 'aria-describedby': 'learning-lab-reading-page-help' + (formErrors.totalPages ? ' learning-lab-reading-total-error' : ''), style: fieldStyle }),
+              formErrors.totalPages ? hh('p', { id: 'learning-lab-reading-total-error', role: 'alert', style: errorStyle }, formErrors.totalPages) : null
+            )
           ),
-          tkBtn('+ Add', add, 'primary')
+          hh('p', { id: 'learning-lab-reading-page-help', style: helpStyle }, 'Use whole numbers from 0 through 10,000,000. Leave total pages blank if the format has no fixed page count.'),
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { border: '1px solid #fde68a', background: '#a16207' }) }, 'Add book')
         )
       ),
-
-      books.length === 0 ? tkEmptyState('📖', 'No books in progress.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          books.map(function(b) {
-            var pct = b.totalPages > 0 ? (b.currentPage / b.totalPages) * 100 : 0;
-            return hh('div', { key: 'cb-' + b.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #fbbf24' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('div', null,
-                  hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, '📖 ' + b.title),
-                  hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6 } }, b.author ? '— ' + b.author : '')
-                ),
-                hh('button', { onClick: function() { remove(b.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'p.'),
-                hh('input', { type: 'number', value: b.currentPage,
-                  onChange: function(e) { updatePage(b.id, parseInt(e.target.value, 10) || 0); },
-                  style: { width: 70, padding: '6px 8px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 4, textAlign: 'center', fontWeight: 800 }
-                }),
-                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '/ ' + b.totalPages + ' · ' + Math.round(pct) + '%')
-              ),
-              hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden' } },
-                hh('div', { style: { width: pct + '%', height: '100%', background: '#fbbf24' } })
-              )
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-reading-list-heading' },
+        hh('h2', { id: 'learning-lab-reading-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 15 } }, 'Books in progress'),
+        books.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No books in progress yet.')
+          : hh('ul', { 'aria-label': books.length + (books.length === 1 ? ' book in progress' : ' books in progress'), style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              books.map(function(book) {
+                var headingId = 'learning-lab-reading-book-heading-' + book.id;
+                var draft = draftFor(book);
+                var errors = progressErrors[book.id] || { currentPage: '', totalPages: '' };
+                var current = normalizedPage(book.currentPage, false) || 0;
+                var total = normalizedPage(book.totalPages, true);
+                return hh('li', { key: 'cb-' + book.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.65)', border: '1px solid #fbbf24', borderLeft: '4px solid #fbbf24' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: '0 0 4px', color: '#fef3c7', fontSize: 14, overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, '📖 '), String(book.title || 'Untitled book')),
+                        book.author ? hh('p', { style: { margin: '0 0 4px', color: '#f1f5f9', fontSize: 11 } }, 'By ' + String(book.author)) : null,
+                        hh('p', { style: helpStyle }, 'Started ', hh('time', { dateTime: book.startedAt || undefined }, relDate(book.startedAt)), book.lastRead ? hh('span', null, '; last updated ', hh('time', { dateTime: book.lastRead }, relDate(book.lastRead))) : null)
+                      ),
+                      hh('button', { type: 'button', onClick: function() { removeBook(book); }, 'aria-label': 'Remove book: ' + String(book.title || 'Untitled book'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                    ),
+                    hh('p', { id: 'learning-lab-reading-progress-summary-' + book.id, style: { margin: '6px 0', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, pageSummary(book)),
+                    total ? hh('progress', { value: Math.min(current, total), max: total, 'aria-label': 'Reading progress for ' + String(book.title || 'Untitled book'), style: { width: '100%', minHeight: 12, accentColor: '#fbbf24' } }, pageSummary(book)) : null,
+                    hh('form', { onSubmit: function(event) { event.preventDefault(); updateProgress(book); }, 'aria-label': 'Update reading progress for ' + String(book.title || 'Untitled book'), style: { marginTop: 10 } },
+                      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 } },
+                        hh('div', null,
+                          hh('label', { htmlFor: 'learning-lab-reading-progress-' + book.id + '-current', style: labelStyle }, 'Current page'),
+                          hh('input', { id: 'learning-lab-reading-progress-' + book.id + '-current', type: 'number', min: 0, max: 10000000, step: 1, required: true, value: draft.currentPage, onChange: function(event) { setDraft(book, 'currentPage', event.target.value); }, 'aria-invalid': errors.currentPage ? 'true' : undefined, 'aria-describedby': errors.currentPage ? 'learning-lab-reading-progress-' + book.id + '-current-error' : undefined, style: fieldStyle }),
+                          errors.currentPage ? hh('p', { id: 'learning-lab-reading-progress-' + book.id + '-current-error', role: 'alert', style: errorStyle }, errors.currentPage) : null
+                        ),
+                        hh('div', null,
+                          hh('label', { htmlFor: 'learning-lab-reading-progress-' + book.id + '-total', style: labelStyle }, 'Total pages (optional)'),
+                          hh('input', { id: 'learning-lab-reading-progress-' + book.id + '-total', type: 'number', min: 0, max: 10000000, step: 1, value: draft.totalPages, onChange: function(event) { setDraft(book, 'totalPages', event.target.value); }, 'aria-invalid': errors.totalPages ? 'true' : undefined, 'aria-describedby': errors.totalPages ? 'learning-lab-reading-progress-' + book.id + '-total-error' : undefined, style: fieldStyle }),
+                          errors.totalPages ? hh('p', { id: 'learning-lab-reading-progress-' + book.id + '-total-error', role: 'alert', style: errorStyle }, errors.totalPages) : null
+                        )
+                      ),
+                      hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 9, border: '1px solid #fde68a', background: '#a16207' }) }, 'Save progress')
+                    )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
-  // ── PPP. PERSONAL GREAT-DAY PATTERN (Wave 14) ──
-  // What made today great? Capture in 4 categories. Find your pattern
-  // over time — what reliably produces good days for YOU.
   function PersonalGreatDay(props) {
     if (!R) return null;
     var data = props.data || { entries: [] };
