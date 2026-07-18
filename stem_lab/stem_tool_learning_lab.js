@@ -13714,104 +13714,242 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { saved: [] };
     var setData = props.setData;
-    var ts = R.useState(null);                         var activeType = ts[0]; var setActiveType = ts[1];
-    var fs = R.useState({ teacher: '', myName: '', class: '', body: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { teacher: '', myName: '', class: '', body: '' };
+    var ts = R.useState(null); var activeType = ts[0]; var setActiveType = ts[1];
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var be = R.useState(''); var bodyError = be[0]; var setBodyError = be[1];
+    var cs = R.useState(''); var copyStatus = cs[0]; var setCopyStatus = cs[1];
 
     var TEMPLATES = [
-      { id: 'missed',   label: 'Missed class', icon: '🤒',
+      { id: 'missed', label: 'Missed class', icon: '🤒',
         prompt: 'I was absent from [DATE]. Could you let me know what I missed and how I can catch up?',
-        body: 'Hi [Teacher],\n\nI was out sick on [DATE] and missed your [CLASS] class. Could you let me know:\n- What we covered\n- Any assignments I missed\n- When you\'re available for me to come by + catch up\n\nThank you.\n\n[My name]'
+        body: 'Hi [Teacher],\n\nI was out sick on [DATE] and missed your [CLASS] class. Could you let me know:\n- What we covered\n- Any assignments I missed\n- When you\'re available for me to come by and catch up\n\nThank you.\n\n[My name]'
       },
-      { id: 'extension', label: 'Asking for extension', icon: '⏰',
-        prompt: 'I won\'t be able to turn in [ASSIGNMENT] on time because [REASON]. Could I have until [NEW DATE]?',
-        body: 'Hi [Teacher],\n\nI\'m writing about the [ASSIGNMENT] due [ORIGINAL DATE]. Because of [BRIEF, HONEST REASON — illness, family situation, conflicting deadlines, etc.] I\'m not going to be able to turn in my best work by then.\n\nCould I have until [NEW DATE] to finish it? I\'d still rather turn in good work late than rushed work on time.\n\nThank you for considering.\n\n[My name]'
+      { id: 'extension', label: 'Asking for an extension', icon: '⏰',
+        prompt: 'I will not be able to turn in [ASSIGNMENT] on time. Could I have until [NEW DATE]?',
+        body: 'Hi [Teacher],\n\nI\'m writing about the [ASSIGNMENT] due [ORIGINAL DATE]. Because of [BRIEF REASON], I will not be able to finish by then.\n\nCould I have until [NEW DATE] to complete it?\n\nThank you for considering my request.\n\n[My name]'
       },
-      { id: 'accom',    label: 'Asking about accommodation', icon: '🪪',
-        prompt: 'My IEP/504 includes [ACCOMMODATION]. Could we talk about how to use it in your class?',
-        body: 'Hi [Teacher],\n\nMy IEP/504 plan includes [ACCOMMODATION]. I\'d like to use it in your class for [SPECIFIC SITUATION — tests, in-class writing, etc.].\n\nWould you have 5 minutes to talk about how it would work? I\'m available [TIMES].\n\nThank you.\n\n[My name]'
+      { id: 'accom', label: 'Asking about an accommodation', icon: '🪪',
+        prompt: 'My IEP or 504 plan includes [ACCOMMODATION]. Could we discuss how to use it in your class?',
+        body: 'Hi [Teacher],\n\nMy IEP or 504 plan includes [ACCOMMODATION]. I would like to use it in your class for [SPECIFIC SITUATION].\n\nCould we talk about how this will work? I am available [TIMES].\n\nThank you.\n\n[My name]'
       },
-      { id: 'help',     label: 'Asking for help understanding', icon: '🙋',
-        prompt: 'I\'m struggling with [CONCEPT]. Could you point me to resources or have time to meet?',
-        body: 'Hi [Teacher],\n\nI\'ve been working on [CONCEPT/UNIT] and I\'m stuck. I\'ve tried [WHAT YOU TRIED — re-reading notes, looking it up, asking a friend] and still don\'t get [SPECIFIC PART].\n\nCould you:\n- Suggest a resource that explains it differently\n- OR find 10 minutes for me to come by\n\nThank you.\n\n[My name]'
+      { id: 'help', label: 'Asking for help understanding', icon: '🙋',
+        prompt: 'I am working on [CONCEPT]. Could you suggest a resource or a time to meet?',
+        body: 'Hi [Teacher],\n\nI have been working on [CONCEPT OR UNIT] and am stuck on [SPECIFIC PART]. I have already tried [WHAT YOU TRIED].\n\nCould you suggest a resource that explains it differently, or let me know a time when I could ask questions?\n\nThank you.\n\n[My name]'
       },
-      { id: 'grade',    label: 'Questioning a grade', icon: '📝',
-        prompt: 'I have a question about my grade on [ASSIGNMENT]. Could we talk about it?',
-        body: 'Hi [Teacher],\n\nI got my [ASSIGNMENT] back with [GRADE]. Before I do anything else, I want to understand:\n- What were the strongest parts of my submission?\n- Where did I lose the most points + why?\n- Is there anything I could do to learn from this for next time?\n\nThank you for taking the time.\n\n[My name]'
+      { id: 'grade', label: 'Asking about a grade', icon: '📝',
+        prompt: 'I have a question about my grade on [ASSIGNMENT]. Could we discuss the feedback?',
+        body: 'Hi [Teacher],\n\nI received [GRADE] on [ASSIGNMENT], and I would like to understand the feedback. Could you help me identify what was strongest and what I should work on next?\n\nThank you for your time.\n\n[My name]'
       },
-      { id: 'thanks',   label: 'Saying thank you', icon: '🙏',
+      { id: 'thanks', label: 'Saying thank you', icon: '🙏',
         prompt: 'Thank a teacher for something specific.',
-        body: 'Hi [Teacher],\n\nI wanted to say thank you for [SPECIFIC THING — the way you explained X, how you handled Y in class, the extra time on Z, etc.].\n\nIt meant a lot. I just thought you should know.\n\n[My name]'
+        body: 'Hi [Teacher],\n\nI wanted to thank you for [SPECIFIC THING]. It made a difference because [IMPACT].\n\nI thought you should know.\n\n[My name]'
       }
     ];
 
-    function generate(t) {
-      var body = t.body
-        .replace(/\[Teacher\]/g, form.teacher || '[Teacher]')
-        .replace(/\[CLASS\]/g, form.class || '[Class]')
-        .replace(/\[My name\]/g, form.myName || '[Your name]');
-      return body;
+    function focusById(id, selectText) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (!target || typeof target.focus !== 'function') return;
+        target.focus();
+        if (selectText && typeof target.select === 'function') target.select();
+      }, 0);
     }
-    function save(t) {
-      var entry = { id: tkId(), date: todayISO(), type: t.id, body: form.body || generate(t) };
-      setData({ saved: [entry].concat(data.saved || []) });
-      setForm({ teacher: '', myName: '', class: '', body: '' });
-      setActiveType(null);
+    function templateFor(id) {
+      return TEMPLATES.filter(function(template) { return template.id === id; })[0] || null;
+    }
+    function generate(template, values) {
+      values = values || emptyForm;
+      return template.body
+        .replace(/\[Teacher\]/g, values.teacher.trim() || '[Teacher]')
+        .replace(/\[CLASS\]/g, values.class.trim() || '[Class]')
+        .replace(/\[My name\]/g, values.myName.trim() || '[Your name]');
+    }
+    function selectTemplate(template) {
+      var next = Object.assign({}, emptyForm, { body: generate(template, emptyForm) });
+      setForm(next);
+      setBodyError(''); setCopyStatus(''); setActiveType(template.id);
+      llAnnounce(template.label + ' template opened. Review and replace every bracketed placeholder.');
+      focusById('learning-lab-email-editor-heading');
+    }
+    function updateIdentity(field, value, template) {
+      var next = Object.assign({}, form); next[field] = value;
+      if (form.body === generate(template, form)) next.body = generate(template, next);
+      setForm(next);
+    }
+    function returnToTemplates() {
+      setForm(emptyForm); setBodyError(''); setCopyStatus(''); setActiveType(null);
+      focusById('learning-lab-email-template-heading');
+    }
+    function goBack(template) {
+      var baseBody = generate(template, emptyForm);
+      var changed = form.teacher.trim() || form.myName.trim() || form.class.trim() || form.body !== baseBody;
+      if (!changed) { returnToTemplates(); return; }
+      askLearningLabConfirmation('Return to the template list and discard the changes in this email?', {
+        title: 'Discard this email draft?', confirmText: 'Discard changes'
+      }).then(function(accepted) { if (accepted) returnToTemplates(); });
+    }
+    function save(template) {
+      var body = form.body.trim();
+      if (!body) {
+        setBodyError('Enter or keep email text before saving the draft.');
+        llAnnounce('Draft not saved. The email body is empty.');
+        focusById('learning-lab-email-body');
+        return;
+      }
+      var entry = { id: tkId(), date: todayISO(), type: template.id, templateLabel: template.label, body: body };
+      setData(Object.assign({}, data, { saved: [entry].concat(data.saved || []) }));
+      llAnnounce(template.label + ' draft saved in this browser.');
+      returnToTemplates();
+    }
+    function copyEmail() {
+      var body = form.body.trim();
+      if (!body) {
+        setBodyError('Enter or keep email text before copying it.');
+        setCopyStatus('');
+        llAnnounce('Email not copied. The email body is empty.');
+        focusById('learning-lab-email-body');
+        return;
+      }
+      setBodyError('');
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        setCopyStatus('Clipboard access is unavailable. The email body is selected; use Control+C or Command+C to copy it.');
+        llAnnounce('Clipboard access is unavailable. The email body is selected for manual copying.');
+        focusById('learning-lab-email-body', true);
+        return;
+      }
+      Promise.resolve(navigator.clipboard.writeText(body)).then(function() {
+        setCopyStatus('Email copied. Paste it into your email app, review the recipient, and send it there.');
+        llAnnounce('Email copied to the clipboard.');
+      }).catch(function() {
+        setCopyStatus('The email could not be copied automatically. The body is selected; use Control+C or Command+C.');
+        llAnnounce('Automatic copying failed. The email body is selected for manual copying.');
+        focusById('learning-lab-email-body', true);
+      });
+    }
+    function removeDraft(draft) {
+      askLearningLabConfirmation('Remove this saved ' + (draft.templateLabel || draft.type || 'email') + ' draft? This cannot be undone.', {
+        title: 'Remove this saved draft?', confirmText: 'Remove draft'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { saved: (data.saved || []).filter(function(item) { return item.id !== draft.id; }) }));
+        llAnnounce('Saved email draft removed.');
+        focusById('learning-lab-email-saved-heading');
+      });
     }
 
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#dbeafe', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #60a5fa', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#d1d5db', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' };
+
     if (activeType) {
-      var t = TEMPLATES.filter(function(x) { return x.id === activeType; })[0];
-      if (!t) { setActiveType(null); return null; }
+      var activeTemplate = templateFor(activeType);
+      if (!activeTemplate) return null;
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📧', t.label, t.prompt, '#3b82f6'),
-        tkCard('#3b82f6',
-          hh('div', null,
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 } },
-              tkInput(form.teacher, function(v) { setForm(Object.assign({}, form, { teacher: v })); }, 'Teacher name'),
-              tkInput(form.myName, function(v) { setForm(Object.assign({}, form, { myName: v })); }, 'Your name'),
-              tkInput(form.class, function(v) { setForm(Object.assign({}, form, { class: v })); }, 'Class')
-            ),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Email body (template + your edits)'),
-            tkTextarea(form.body || generate(t), function(v) { setForm(Object.assign({}, form, { body: v })); }, '', 14, { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 })
-          )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Back', function() { setActiveType(null); setForm({ teacher: '', myName: '', class: '', body: '' }); }, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn('📋 Copy to clipboard', function() { try { navigator.clipboard.writeText(form.body || generate(t)); alert('Copied — paste into your email.'); } catch (e) {} }, 'secondary'),
-            tkBtn('💾 Save draft', function() { save(t); }, 'primary')
+        tkSectionHeader('📧', activeTemplate.label, activeTemplate.prompt, '#3b82f6'),
+        hh('form', {
+          onSubmit: function(event) { event.preventDefault(); save(activeTemplate); },
+          'aria-labelledby': 'learning-lab-email-editor-heading',
+          'aria-describedby': 'learning-lab-email-privacy-note'
+        },
+          tkCard('#3b82f6',
+            hh('div', null,
+              hh('h2', { id: 'learning-lab-email-editor-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#93c5fd', fontSize: 15 } }, 'Edit ' + activeTemplate.label + ' email'),
+              hh('p', { id: 'learning-lab-email-privacy-note', style: helpStyle }, 'Saved drafts stay in this browser. Clipboard content can be read by other apps on this device, so review private details before copying.'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 12 } },
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-email-teacher', style: labelStyle }, 'Teacher name (optional)'),
+                  hh('input', { id: 'learning-lab-email-teacher', type: 'text', value: form.teacher, maxLength: 200, onChange: function(event) { updateIdentity('teacher', event.target.value, activeTemplate); }, style: fieldStyle })
+                ),
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-email-name', style: labelStyle }, 'Your name (optional)'),
+                  hh('input', { id: 'learning-lab-email-name', type: 'text', autoComplete: 'name', value: form.myName, maxLength: 200, onChange: function(event) { updateIdentity('myName', event.target.value, activeTemplate); }, style: fieldStyle })
+                ),
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-email-class', style: labelStyle }, 'Class (optional)'),
+                  hh('input', { id: 'learning-lab-email-class', type: 'text', value: form.class, maxLength: 200, onChange: function(event) { updateIdentity('class', event.target.value, activeTemplate); }, style: fieldStyle })
+                )
+              ),
+              hh('label', { htmlFor: 'learning-lab-email-body', style: labelStyle }, 'Email body (required)'),
+              hh('textarea', {
+                id: 'learning-lab-email-body', value: form.body, rows: 14, required: true, maxLength: 10000,
+                onChange: function(event) { setForm(Object.assign({}, form, { body: event.target.value })); if (bodyError) setBodyError(''); setCopyStatus(''); },
+                'aria-invalid': bodyError ? 'true' : undefined,
+                'aria-describedby': 'learning-lab-email-body-help' + (bodyError ? ' learning-lab-email-body-error' : ''),
+                style: Object.assign({}, fieldStyle, { minHeight: 260, resize: 'vertical', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.55 })
+              }),
+              hh('p', { id: 'learning-lab-email-body-help', style: helpStyle }, 'Replace every bracketed placeholder, check the tone and facts, and add a subject line in your email app.'),
+              bodyError ? hh('p', { id: 'learning-lab-email-body-error', role: 'alert', style: errorStyle }, bodyError) : null,
+              copyStatus ? hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '8px 0', padding: 8, borderRadius: 6, border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 11 } }, copyStatus) : null
+            )
+          ),
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10 } },
+            hh('button', { type: 'button', onClick: function() { goBack(activeTemplate); }, style: Object.assign({}, buttonStyle, { border: '1px solid #94a3b8', background: '#334155' }) }, 'Back to templates'),
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10 } },
+              hh('button', { type: 'button', onClick: copyEmail, style: Object.assign({}, buttonStyle, { border: '1px solid #93c5fd', background: '#1d4ed8' }) }, 'Copy email'),
+              hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { border: '1px solid #6ee7b7', background: '#047857' }) }, 'Save draft')
+            )
           )
         )
       );
     }
 
+    var savedDrafts = data.saved || [];
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📧', 'Teacher Email Builder', '6 templates for common student emails. Fill in your specifics, copy + send.', '#3b82f6'),
-
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
-        TEMPLATES.map(function(t) {
-          return hh('button', { key: 'te-' + t.id,
-            onClick: function() { setActiveType(t.id); setForm({ teacher: '', myName: '', class: '', body: '' }); },
-            style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.40)', borderLeft: '4px solid #3b82f6', cursor: 'pointer' }
-          },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
-            hh('strong', { style: { fontSize: 13, color: '#60a5fa' } }, t.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt.substring(0, 100))
-          );
-        })
-      ),
-
-      (data.saved || []).length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Saved drafts'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          (data.saved || []).slice(0, 10).map(function(d) {
-            return hh('div', { key: 'sd-' + d.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #3b82f6' } },
-              hh('div', { style: { fontSize: 10, color: '#60a5fa', marginBottom: 4 } }, d.type + ' · ' + relDate(d.date)),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap' } }, d.body.substring(0, 200) + '...')
+      tkSectionHeader('📧', 'Teacher Email Builder', 'Choose a template, review every placeholder, and adapt it in your own words.', '#3b82f6'),
+      hh('p', { style: { margin: '0 0 12px', color: '#dbeafe', fontSize: 11, lineHeight: 1.55 } }, 'This tool prepares text only. It does not address, send, or submit an email.'),
+      hh('section', { 'aria-labelledby': 'learning-lab-email-template-heading' },
+        hh('h2', { id: 'learning-lab-email-template-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 15 } }, 'Choose an email template'),
+        hh('ul', { 'aria-label': 'Teacher email templates', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: '0 0 16px', padding: 0, listStyle: 'none' } },
+          TEMPLATES.map(function(template) {
+            return hh('li', { key: 'te-' + template.id },
+              hh('button', {
+                id: 'learning-lab-email-template-' + template.id, type: 'button', onClick: function() { selectTemplate(template); },
+                style: { boxSizing: 'border-box', display: 'block', width: '100%', minHeight: 44, height: '100%', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(30,58,138,0.27)', color: '#f8fafc', border: '1px solid #60a5fa', cursor: 'pointer' }
+              },
+                hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 22, marginBottom: 4 } }, template.icon),
+                hh('strong', { style: { display: 'block', fontSize: 13, color: '#bfdbfe' } }, template.label),
+                hh('span', { style: { display: 'block', marginTop: 5, color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 } }, template.prompt)
+              )
             );
           })
         )
-      ) : null
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-email-saved-heading' },
+        hh('h2', { id: 'learning-lab-email-saved-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 15 } }, 'Saved drafts'),
+        hh('p', { style: helpStyle }, 'Saved drafts stay in this browser and are not sent. Remove drafts you no longer need, especially on a shared device.'),
+        savedDrafts.length > 10 ? hh('p', { style: helpStyle }, 'Showing the 10 most recent drafts out of ' + savedDrafts.length + '.') : null,
+        savedDrafts.length === 0
+          ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No drafts saved yet.')
+          : hh('ul', { 'aria-label': 'Most recent saved email drafts', style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              savedDrafts.slice(0, 10).map(function(draft) {
+                var template = templateFor(draft.type);
+                var label = draft.templateLabel || (template ? template.label : 'Email');
+                var headingId = 'learning-lab-email-draft-heading-' + draft.id;
+                return hh('li', { key: 'sd-' + draft.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid #60a5fa' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#bfdbfe', fontSize: 13 } }, label + ' draft'),
+                        hh('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 11 } }, 'Saved ', hh('time', { dateTime: draft.date || undefined }, relDate(draft.date)))
+                      ),
+                      hh('button', {
+                        type: 'button', onClick: function() { removeDraft(draft); }, 'aria-label': 'Remove saved ' + label + ' draft',
+                        style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                      }, 'Remove')
+                    ),
+                    hh('details', { style: { marginTop: 10, color: '#e2e8f0' } },
+                      hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#dbeafe', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review full draft'),
+                      hh('pre', { style: { margin: '8px 0 0', padding: 10, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', borderRadius: 6, background: '#020617', color: '#f1f5f9', fontSize: 11, lineHeight: 1.55 } }, String(draft.body || 'Empty draft'))
+                    )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
