@@ -16045,79 +16045,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { profile: {}, observations: [] };
     var setData = props.setData;
-    var p = data.profile || {};
-
-    function update(key, val) {
-      setData(Object.assign({}, data, { profile: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) }));
-    }
-    function addObs(text) {
-      if (!text.trim()) return;
-      var obs = { id: tkId(), date: todayISO(), text: text.trim() };
-      setData(Object.assign({}, data, { observations: [obs].concat(data.observations || []) }));
-    }
-    function removeObs(id) {
-      setData(Object.assign({}, data, { observations: (data.observations || []).filter(function(o) { return o.id !== id; }) }));
-    }
+    var ds = R.useState(Object.assign({}, data.profile || {})); var draft = ds[0]; var setDraft = ds[1];
+    var os = R.useState(''); var observation = os[0]; var setObservation = os[1];
+    var es = R.useState(''); var observationError = es[0]; var setObservationError = es[1];
 
     var DIMENSIONS = [
-      { id: 'light',    label: '💡 Light',      what: 'Bright sun? Soft lamps? Dim? Fluorescents are hard for me?' },
-      { id: 'sound',    label: '🔊 Sound',      what: 'Silence? Background noise? Specific music? Headphones?' },
-      { id: 'touch',    label: '✋ Touch',      what: 'Soft clothes? Tags off? Compression? Weighted blanket?' },
-      { id: 'smell',    label: '👃 Smell',      what: 'What smells help me focus? What smells overwhelm me?' },
-      { id: 'taste',    label: '👅 Taste + food', what: 'Crunchy? Smooth? Specific safe foods?' },
-      { id: 'space',    label: '🏠 Space',      what: 'Cozy enclosed? Open + airy? Specific corner?' },
-      { id: 'movement', label: '🤸 Movement',   what: 'Need to fidget? Pace? Stand-up desk? Rock?' },
-      { id: 'social',   label: '👥 Social',     what: 'Alone? 1-on-1? Small group? Big group? People nearby but not interacting?' }
+      { id: 'light', label: 'Light', icon: '💡', help: 'For example: brightness, glare, natural light, lamps, or fluorescent lighting.' },
+      { id: 'sound', label: 'Sound', icon: '🔊', help: 'For example: quiet, background sound, music, headphones, or sudden noises.' },
+      { id: 'touch', label: 'Touch and texture', icon: '✋', help: 'For example: clothing, tags, pressure, surfaces, or preferred textures.' },
+      { id: 'smell', label: 'Smell', icon: '👃', help: 'Note smells you prefer, avoid, notice strongly, or do not want to record.' },
+      { id: 'taste', label: 'Taste and food texture', icon: '👅', help: 'Record preferences only if useful; food access and needs differ.' },
+      { id: 'space', label: 'Space', icon: '🏠', help: 'For example: enclosed or open spaces, seating location, distance, or visual activity.' },
+      { id: 'movement', label: 'Movement and position', icon: '🤸', help: 'For example: sitting, standing, pacing, fidgeting, rocking, or stillness.' },
+      { id: 'social', label: 'Social environment', icon: '👥', help: 'For example: alone time, one-to-one interaction, groups, or nearby people.' }
     ];
 
-    var obs = data.observations || [];
-    var newObs = R.useState(''); var nt = newObs[0]; var setNt = newObs[1];
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function updateDraft(id, value) { var next = Object.assign({}, draft); next[id] = value; setDraft(next); }
+    function saveProfile() {
+      var normalized = {}; DIMENSIONS.forEach(function(dimension) { normalized[dimension.id] = String(draft[dimension.id] || '').trim(); });
+      setData(Object.assign({}, data, { profile: Object.assign({}, data.profile || {}, normalized) }));
+      setDraft(normalized); llAnnounce('Sensory preferences saved in this browser.'); focusById('learning-lab-sensory-profile-heading');
+    }
+    function addObservation() {
+      var text = observation.trim();
+      if (!text) { setObservationError('Enter an observation before saving it.'); llAnnounce('Observation not saved. Enter some text first.'); focusById('learning-lab-sensory-observation'); return; }
+      var entry = { id: tkId(), date: todayISO(), text: text };
+      setData(Object.assign({}, data, { observations: [entry].concat(data.observations || []) }));
+      setObservation(''); setObservationError(''); llAnnounce('Sensory observation saved.'); focusById('learning-lab-sensory-observation');
+    }
+    function removeObservation(entry) {
+      askLearningLabConfirmation('Remove this sensory observation? This cannot be undone.', { title: 'Remove this observation?', confirmText: 'Remove observation' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { observations: (data.observations || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Sensory observation removed.'); focusById('learning-lab-sensory-observations-heading');
+      });
+    }
+
+    var observations = data.observations || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌈', 'Sensory Profile', 'Map YOUR sensory preferences across 8 dimensions. Helps you build environments that work.', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🌈 Why this matters: '),
-        'Especially for autistic, ADHD, and sensory-sensitive students — your nervous system isn\'t broken, it just has specific preferences. Naming them gives you the language to ask for what works.'
+      tkSectionHeader('🌈', 'Sensory Preferences', 'Record environment preferences and observations in your own words.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-sensory-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-sensory-about-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13 } }, 'Personal notes, not a diagnosis'),
+        hh('p', { style: { margin: 0 } }, 'Sensory experiences vary by person, setting, and day. This tool does not assess or diagnose a condition; skip any category and describe preferences in language that fits you.')
       ),
-
-      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-        DIMENSIONS.map(function(d) {
-          return hh('div', { key: 'sp-' + d.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #a855f7' } },
-            hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 4 } }, d.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, d.what),
-            tkTextarea(p[d.id], function(v) { update(d.id, v); }, '', 2)
-          );
-        })
+      hh('form', { onSubmit: function(event) { event.preventDefault(); saveProfile(); }, 'aria-labelledby': 'learning-lab-sensory-profile-heading', 'aria-describedby': 'learning-lab-sensory-privacy-note' },
+        hh('h2', { id: 'learning-lab-sensory-profile-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 15 } }, 'Preference notes'),
+        hh('p', { id: 'learning-lab-sensory-privacy-note', style: helpStyle }, 'Preferences and observations save in this browser. Avoid private health details if other people use this device.'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 12 } },
+          DIMENSIONS.map(function(dimension) { var inputId = 'learning-lab-sensory-' + dimension.id; var helpId = inputId + '-help'; return hh('section', { key: 'sp-' + dimension.id, 'aria-labelledby': inputId + '-label', style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #c084fc' } },
+            hh('label', { id: inputId + '-label', htmlFor: inputId, style: labelStyle }, hh('span', { 'aria-hidden': 'true' }, dimension.icon + ' '), dimension.label + ' (optional)'),
+            hh('textarea', { id: inputId, value: draft[dimension.id] || '', rows: 3, maxLength: 3000, onChange: function(event) { updateDraft(dimension.id, event.target.value); }, 'aria-describedby': helpId, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+            hh('p', { id: helpId, style: helpStyle }, dimension.help)
+          ); })
+        ),
+        hh('button', { type: 'submit', style: buttonStyle }, 'Save preference notes')
       ),
-
-      // Observations
-      tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '👁 Sensory observation log'),
-          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
-            tkInput(nt, setNt, 'e.g., "I focus best with rain sounds + dimmer light"', { flex: 1 }),
-            tkBtn('+', function() { addObs(nt); setNt(''); }, 'primary', { padding: '8px 14px' })
-          ),
-          obs.length > 0 ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-            obs.slice(0, 15).map(function(o) {
-              return hh('div', { key: 'so-' + o.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid #a855f7', display: 'flex', justifyContent: 'space-between' } },
-                hh('div', null,
-                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, o.text),
-                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.date)
-                ),
-                hh('button', { onClick: function() { removeObs(o.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              );
-            })
-          ) : null
-        )
+      tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); addObservation(); }, 'aria-labelledby': 'learning-lab-sensory-observation-form-heading' },
+        hh('h2', { id: 'learning-lab-sensory-observation-form-heading', style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Add an observation'),
+        hh('label', { htmlFor: 'learning-lab-sensory-observation', style: labelStyle }, 'Observation (required)'),
+        hh('textarea', { id: 'learning-lab-sensory-observation', value: observation, rows: 3, required: true, maxLength: 3000, onChange: function(event) { setObservation(event.target.value); if (observationError) setObservationError(''); }, 'aria-invalid': observationError ? 'true' : undefined, 'aria-describedby': observationError ? 'learning-lab-sensory-observation-error' : undefined, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+        observationError ? hh('p', { id: 'learning-lab-sensory-observation-error', role: 'alert', style: errorStyle }, observationError) : null,
+        hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 8 }) }, 'Save observation')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-sensory-observations-heading' },
+        hh('h2', { id: 'learning-lab-sensory-observations-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#e9d5ff', fontSize: 15 } }, 'Saved observations'),
+        observations.length > 15 ? hh('p', { style: helpStyle }, 'Showing the 15 most recent observations out of ' + observations.length + '.') : null,
+        observations.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No sensory observations saved yet.') : hh('ul', { 'aria-label': 'Most recent sensory observations', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } }, observations.slice(0, 15).map(function(entry) { var headingId = 'learning-lab-sensory-observation-heading-' + entry.id; return hh('li', { key: 'so-' + entry.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #c084fc' } }, hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 12, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(entry.text || 'Empty observation')), hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: entry.date || undefined }, relDate(entry.date)))), hh('button', { type: 'button', onClick: function() { removeObservation(entry); }, 'aria-label': 'Remove sensory observation: ' + String(entry.text || 'Empty observation'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')))); }))
       )
     );
   }
 
-  // ── RRR. PERSONAL NEURODIVERGENCE JOURNAL (Wave 14) ──
-  // Specifically for autistic, ADHD, dyslexic, etc. students to journal
-  // the lived experience of being neurodivergent in a neurotypical world.
   function PersonalNDJournal(props) {
     if (!R) return null;
     var data = props.data || { entries: [], identity: '' };
