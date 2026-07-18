@@ -23088,7 +23088,7 @@
       "select_a_tool_above_to_get_started": "從上方選一個工具開始。"
     },
     "freeforms": {
-      "sr_undone": "已撤销",
+      "sr_undone": "已撤銷",
       "sr_imported": "已導入整理器——現在把它變成你自己的",
       "sr_form_chosen": "已選擇形式",
       "new_group": "新分組",
@@ -23124,8 +23124,8 @@
       "groups": "分組",
       "ideas": "想法",
       "sculpted": "已雕刻",
-      "undo_tip": "撤销上一次更改 (Ctrl+Z)",
-      "undo": "撤销",
+      "undo_tip": "撤銷上一次更改 (Ctrl+Z)",
+      "undo": "撤銷",
       "snapshot_tip": "保存你3D世界的一張圖片",
       "snapshot": "快照",
       "print_tip": "下載可打印的單頁摘要（快照 + 你的想法 + 教練反饋）",
@@ -23180,7 +23180,7 @@
       "studio_smaller": "更小",
       "studio_spin": "旋轉",
       "studio_recolor": "更改顏色",
-      "studio_duplicate": "複制",
+      "studio_duplicate": "複製",
       "studio_remove_part": "移除部件",
       "sculpt_label": "或者描述它…",
       "sculpt": "雕刻",
