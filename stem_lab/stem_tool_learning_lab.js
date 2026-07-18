@@ -16216,118 +16216,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { snapshots: [] };
     var setData = props.setData;
-    var fs = R.useState({});                          var form = fs[0]; var setForm = fs[1];
-
     var DIMENSIONS = [
-      { id: 'school',    label: 'School + academic', color: '#3b82f6', icon: '📚' },
-      { id: 'family',    label: 'Family',            color: '#ef4444', icon: '🏠' },
-      { id: 'friends',   label: 'Friends',           color: '#fbbf24', icon: '🤝' },
-      { id: 'health',    label: 'Physical health',   color: '#10b981', icon: '💪' },
-      { id: 'mental',    label: 'Mental health',     color: '#a855f7', icon: '🧠' },
-      { id: 'creative',  label: 'Creative / hobbies', color: '#ec4899', icon: '🎨' },
-      { id: 'identity',  label: 'Identity + values', color: '#06b6d4', icon: '🪞' },
-      { id: 'future',    label: 'Future / direction', color: '#f97316', icon: '🌅' }
+      { id: 'school', label: 'Learning, school, or work', color: '#93c5fd', icon: '📚' },
+      { id: 'family', label: 'Home or family', color: '#fca5a5', icon: '🏠' },
+      { id: 'friends', label: 'Relationships or community', color: '#fde68a', icon: '🤝' },
+      { id: 'health', label: 'Body or physical well-being', color: '#6ee7b7', icon: '🌿' },
+      { id: 'mental', label: 'Thoughts or emotional well-being', color: '#d8b4fe', icon: '🧠' },
+      { id: 'creative', label: 'Interests, creativity, or recreation', color: '#f9a8d4', icon: '🎨' },
+      { id: 'identity', label: 'Identity or values', color: '#67e8f9', icon: '🪞' },
+      { id: 'future', label: 'Plans or direction', color: '#fdba74', icon: '🌅' }
     ];
+    function initialRatings() { var ratings = {}; DIMENSIONS.forEach(function(dimension) { ratings[dimension.id] = 5; }); return ratings; }
+    function initialIncluded() { var included = {}; DIMENSIONS.forEach(function(dimension) { included[dimension.id] = true; }); return included; }
+    var fs = R.useState(initialRatings()); var form = fs[0]; var setForm = fs[1];
+    var is = R.useState(initialIncluded()); var included = is[0]; var setIncluded = is[1];
+    var es = R.useState(''); var saveError = es[0]; var setSaveError = es[1];
 
-    function setRating(id, val) { setForm(Object.assign({}, form, (function() { var o = {}; o[id] = val; return o; })())); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function normalizedRating(value) { var number = Number(value); return Number.isInteger(number) && number >= 0 && number <= 10 ? number : null; }
+    function setRating(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); if (saveError) setSaveError(''); }
+    function toggleIncluded(id, checked) { var next = Object.assign({}, included); next[id] = checked; setIncluded(next); if (saveError) setSaveError(''); }
+    function selectedRatings() { var ratings = {}; DIMENSIONS.forEach(function(dimension) { if (included[dimension.id]) ratings[dimension.id] = normalizedRating(form[dimension.id]) == null ? 5 : normalizedRating(form[dimension.id]); }); return ratings; }
     function save() {
-      var entry = { id: tkId(), date: todayISO(), ratings: form };
-      setData({ snapshots: [entry].concat(data.snapshots || []) });
-      setForm({});
+      var ratings = selectedRatings();
+      if (Object.keys(ratings).length === 0) { setSaveError('Include at least one area before saving a snapshot.'); llAnnounce('Life Map snapshot not saved. Include at least one area first.'); focusById('learning-lab-life-map-include-school'); return; }
+      var entry = { id: tkId(), date: todayISO(), ratings: ratings };
+      setData(Object.assign({}, data, { snapshots: [entry].concat(data.snapshots || []) }));
+      setForm(initialRatings()); setIncluded(initialIncluded()); setSaveError('');
+      llAnnounce('Life Map snapshot saved with ' + Object.keys(ratings).length + (Object.keys(ratings).length === 1 ? ' rated area.' : ' rated areas.'));
+      focusById('learning-lab-life-map-heading');
     }
-    function remove(id) { setData({ snapshots: (data.snapshots || []).filter(function(s) { return s.id !== id; }) }); }
-
-    var snapshots = data.snapshots || [];
-    var allRated = DIMENSIONS.every(function(d) { return form[d.id]; });
-
-    // SVG radar chart
-    function makeRadar(ratings, size) {
-      var cx = size / 2, cy = size / 2;
-      var n = DIMENSIONS.length;
-      var pts = DIMENSIONS.map(function(d, i) {
-        var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-        var r = ((ratings[d.id] || 0) / 10) * (size / 2 - 30);
-        return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), label: d.label, color: d.color, icon: d.icon };
+    function removeSnapshot(snapshot) {
+      askLearningLabConfirmation('Remove this Life Map snapshot? This cannot be undone.', { title: 'Remove this snapshot?', confirmText: 'Remove snapshot' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { snapshots: (data.snapshots || []).filter(function(item) { return item.id !== snapshot.id; }) }));
+        llAnnounce('Life Map snapshot removed.'); focusById('learning-lab-life-map-history-heading');
       });
-      var polyPts = pts.map(function(p) { return p.x + ',' + p.y; }).join(' ');
-      return hh('svg', { viewBox: '0 0 ' + size + ' ' + size, style: { width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' } },
-        // grid circles
-        [2, 4, 6, 8, 10].map(function(level) {
-          var r = ((level) / 10) * (size / 2 - 30);
-          return hh('circle', { key: 'gc-' + level, cx: cx, cy: cy, r: r, fill: 'none', stroke: 'rgba(100,116,139,0.20)', strokeWidth: 0.5 });
-        }),
-        // axes
-        DIMENSIONS.map(function(d, i) {
-          var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-          var ex = cx + (size / 2 - 30) * Math.cos(angle);
-          var ey = cy + (size / 2 - 30) * Math.sin(angle);
-          return hh('line', { key: 'ax-' + i, x1: cx, y1: cy, x2: ex, y2: ey, stroke: 'rgba(100,116,139,0.25)', strokeWidth: 0.5 });
-        }),
-        // value polygon
-        hh('polygon', { points: polyPts, fill: 'rgba(168,85,247,0.20)', stroke: '#a855f7', strokeWidth: 1.5, strokeLinejoin: 'round', style: { filter: 'drop-shadow(0 0 3px rgba(168,85,247,0.45))' } }),
-        // dots + labels
-        pts.map(function(p, i) {
-          var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-          var lx = cx + (size / 2 - 12) * Math.cos(angle);
-          var ly = cy + (size / 2 - 12) * Math.sin(angle);
-          return hh('g', { key: 'pt-' + i },
-            hh('circle', { cx: p.x, cy: p.y, r: 3, fill: p.color, stroke: '#0f172a', strokeWidth: 1 }),
-            hh('text', { x: lx, y: ly, fontSize: 9, fill: p.color, textAnchor: 'middle', dominantBaseline: 'middle' }, p.icon)
-          );
-        })
+    }
+    function ratedDetails(ratings) { ratings = ratings || {}; return DIMENSIONS.map(function(dimension) { var value = normalizedRating(ratings[dimension.id]); return value == null ? null : { id: dimension.id, label: dimension.label, value: value }; }).filter(Boolean); }
+    function makeRadar(ratings, size) {
+      var details = ratedDetails(ratings); if (details.length !== DIMENSIONS.length) return null;
+      var cx = size / 2, cy = size / 2, n = DIMENSIONS.length;
+      var points = DIMENSIONS.map(function(dimension, index) { var angle = (index / n) * Math.PI * 2 - Math.PI / 2; var radius = (normalizedRating(ratings[dimension.id]) / 10) * (size / 2 - 30); return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle), color: dimension.color, icon: dimension.icon }; });
+      return hh('svg', { viewBox: '0 0 ' + size + ' ' + size, 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' } },
+        [2, 4, 6, 8, 10].map(function(level) { return hh('circle', { key: 'grid-' + level, cx: cx, cy: cy, r: (level / 10) * (size / 2 - 30), fill: 'none', stroke: '#64748b', strokeWidth: 0.5 }); }),
+        DIMENSIONS.map(function(dimension, index) { var angle = (index / n) * Math.PI * 2 - Math.PI / 2; return hh('line', { key: 'axis-' + index, x1: cx, y1: cy, x2: cx + (size / 2 - 30) * Math.cos(angle), y2: cy + (size / 2 - 30) * Math.sin(angle), stroke: '#64748b', strokeWidth: 0.5 }); }),
+        hh('polygon', { points: points.map(function(point) { return point.x + ',' + point.y; }).join(' '), fill: 'rgba(168,85,247,0.20)', stroke: '#d8b4fe', strokeWidth: 2 }),
+        points.map(function(point, index) { return hh('circle', { key: 'point-' + index, cx: point.x, cy: point.y, r: 4, fill: point.color, stroke: '#0f172a', strokeWidth: 1 }); })
       );
     }
 
+    var snapshots = data.snapshots || [];
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '8px 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' };
+    var currentDetails = ratedDetails(selectedRatings());
+
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🗺', 'Life Map', '8-dimension life snapshot. Rate each from 0-10. Visualize where you are. Notice what needs attention.', '#a855f7'),
-
-      tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '🗺 Rate each dimension (0 = struggling, 10 = thriving)'),
-          DIMENSIONS.map(function(d) {
-            var v = form[d.id] || 5;
-            return hh('div', { key: 'lm-' + d.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, padding: 6, borderRadius: 4, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + d.color } },
-              hh('div', { style: { fontSize: 16, flexShrink: 0 } }, d.icon),
-              hh('strong', { style: { fontSize: 11, color: d.color, flex: 1 } }, d.label),
-              hh('input', { type: 'range', min: 0, max: 10, step: 1, value: v,
-                onChange: function(e) { setRating(d.id, parseInt(e.target.value, 10)); },
-                style: { width: 100, accentColor: d.color }
-              }),
-              hh('strong', { style: { width: 30, textAlign: 'right', color: d.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, v)
-            );
-          }),
-          allRated ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)' } },
-            makeRadar(form, 280)
-          ) : null,
-          hh('div', { style: { marginTop: 10, textAlign: 'right' } },
-            tkBtn('💾 Save snapshot', save, 'primary')
-          )
-        )
+      tkSectionHeader('🗺️', 'Life Map', 'Create an optional snapshot using areas and ratings that you choose.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-life-map-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-life-map-about-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13 } }, 'Personal reflection, not an assessment'),
+        hh('p', { style: { margin: 0 } }, 'You decide what 0 through 10 means. Exclude any area that does not fit your life or that you do not want to rate. This tool does not evaluate health, success, or quality of life.')
       ),
-
-      snapshots.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past snapshots'),
-        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          snapshots.slice(0, 8).map(function(s) {
-            var avg = DIMENSIONS.reduce(function(sum, d) { return sum + (s.ratings[d.id] || 0); }, 0) / DIMENSIONS.length;
-            return hh('div', { key: 'ss-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, s.date),
-                hh('div', null,
-                  hh('span', { style: { fontSize: 11, color: '#a855f7', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, 'avg ' + avg.toFixed(1)),
-                  hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              makeRadar(s.ratings, 160)
-            );
-          })
-        )
-      ) : null
+      tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-life-map-heading', 'aria-describedby': 'learning-lab-life-map-privacy-note' },
+        hh('h2', { id: 'learning-lab-life-map-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 15 } }, 'Rate selected areas'),
+        hh('p', { id: 'learning-lab-life-map-privacy-note', style: helpStyle }, 'Snapshots save in this browser. Avoid private health or relationship details if other people use this device.'),
+        hh('fieldset', { style: { margin: 0, padding: 0, border: 0 } }, hh('legend', { style: { marginBottom: 8, color: '#e9d5ff', fontSize: 12, fontWeight: 800 } }, 'Areas to include and rate'),
+          hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, DIMENSIONS.map(function(dimension) { var includeId = 'learning-lab-life-map-include-' + dimension.id; var rangeId = 'learning-lab-life-map-rating-' + dimension.id; var value = normalizedRating(form[dimension.id]); return hh('li', { key: dimension.id, style: { padding: 10, borderRadius: 8, border: '1px solid ' + dimension.color, background: 'rgba(15,23,42,0.62)' } },
+            hh('label', { htmlFor: includeId, style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, hh('input', { id: includeId, type: 'checkbox', checked: !!included[dimension.id], onChange: function(event) { toggleIncluded(dimension.id, event.target.checked); }, style: { width: 22, height: 22 } }), hh('span', { 'aria-hidden': 'true' }, dimension.icon + ' '), 'Include ' + dimension.label),
+            hh('label', { htmlFor: rangeId, style: { display: 'block', margin: '4px 0', color: included[dimension.id] ? '#f8fafc' : '#cbd5e1', fontSize: 11, fontWeight: 800 } }, dimension.label + ' rating: ' + value + ' out of 10'),
+            hh('input', { id: rangeId, type: 'range', min: 0, max: 10, step: 1, value: value, disabled: !included[dimension.id], onChange: function(event) { setRating(dimension.id, Number(event.target.value)); }, 'aria-describedby': 'learning-lab-life-map-scale-help', style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: dimension.color } }),
+            hh('output', { htmlFor: rangeId, style: { display: 'block', color: '#f8fafc', fontSize: 11 } }, included[dimension.id] ? value + ' out of 10' : 'Not included')
+          ); }))
+        ),
+        hh('p', { id: 'learning-lab-life-map-scale-help', style: helpStyle }, 'Use whole numbers from 0 through 10 according to your own meaning.'),
+        saveError ? hh('p', { id: 'learning-lab-life-map-error', role: 'alert', style: errorStyle }, saveError) : null,
+        currentDetails.length === DIMENSIONS.length ? hh('figure', { style: { margin: '12px 0' } }, makeRadar(selectedRatings(), 280), hh('figcaption', { style: helpStyle }, 'Optional visual summary. The complete text values are listed with each control above.')) : null,
+        hh('button', { type: 'submit', 'aria-describedby': saveError ? 'learning-lab-life-map-error' : undefined, style: buttonStyle }, 'Save snapshot')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-life-map-history-heading' }, hh('h2', { id: 'learning-lab-life-map-history-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#e9d5ff', fontSize: 15 } }, 'Saved snapshots'),
+        snapshots.length > 8 ? hh('p', { style: helpStyle }, 'Showing the 8 most recent snapshots out of ' + snapshots.length + '.') : null,
+        snapshots.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No Life Map snapshots saved yet.') : hh('ul', { 'aria-label': 'Most recent Life Map snapshots', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } }, snapshots.slice(0, 8).map(function(snapshot) { var details = ratedDetails(snapshot.ratings); var headingId = 'learning-lab-life-map-snapshot-' + snapshot.id; return hh('li', { key: snapshot.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.62)' } },
+          hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#e9d5ff', fontSize: 13 } }, details.length + (details.length === 1 ? ' rated area' : ' rated areas')), hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: snapshot.date || undefined }, relDate(snapshot.date)))), hh('button', { type: 'button', onClick: function() { removeSnapshot(snapshot); }, 'aria-label': 'Remove Life Map snapshot with ' + details.length + ' rated areas', style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')),
+          hh('dl', { 'aria-label': 'Snapshot ratings', style: { display: 'grid', gridTemplateColumns: '1fr max-content', gap: 6, margin: '10px 0', color: '#f1f5f9', fontSize: 11 } }, details.map(function(detail) { return hh('div', { key: detail.id, style: { display: 'contents' } }, hh('dt', null, detail.label), hh('dd', { style: { margin: 0, fontWeight: 800 } }, detail.value + ' out of 10')); })),
+          details.length === DIMENSIONS.length ? hh('figure', { style: { margin: 0 } }, makeRadar(snapshot.ratings, 180), hh('figcaption', { style: helpStyle }, 'Optional visual summary; text ratings are listed above.')) : null
+        )); }))
+      )
     );
   }
 
-  // ── TTT. PERSONAL OPEN LETTER (Wave 14) ──
-  // Write a letter to anyone. Don't send. The writing IS the work.
   function PersonalOpenLetter(props) {
     if (!R) return null;
     var data = props.data || { letters: [] };
