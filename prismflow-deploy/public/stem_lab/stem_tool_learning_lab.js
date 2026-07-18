@@ -16674,57 +16674,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { plans: [] };
     var setData = props.setData;
-    var fs = R.useState({ wins: '', focus: '', deadlines: '', selfcare: '', hopes: '' });
-    var form = fs[0]; var setForm = fs[1];
-
-    function save() {
-      var p = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ plans: [p].concat(data.plans || []) });
-      setForm({ wins: '', focus: '', deadlines: '', selfcare: '', hopes: '' });
-    }
-    function remove(id) { setData({ plans: (data.plans || []).filter(function(p) { return p.id !== id; }) }); }
+    var emptyForm = { wins: '', focus: '', deadlines: '', selfcare: '', hopes: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
 
     var SECTIONS = [
-      { id: 'wins',      label: '✨ Last week\'s wins (anything)', placeholder: 'What worked? What did I do that I\'m proud of?' },
-      { id: 'focus',     label: '🎯 This week\'s ONE main focus',  placeholder: 'If I only do one thing well this week, what is it?' },
-      { id: 'deadlines', label: '📅 Deadlines + commitments',     placeholder: 'What\'s due? What can\'t slip?' },
-      { id: 'selfcare',  label: '🧘 Self-care non-negotiables',   placeholder: 'Sleep, meals, exercise, social time, alone time.' },
-      { id: 'hopes',     label: '🌅 What I\'m hoping for',         placeholder: 'Not the same as a goal. A wish for how the week feels.' }
+      { id: 'wins', icon: '✨', label: 'What went well last week?', help: 'Anything that worked or that you feel proud of.' },
+      { id: 'focus', icon: '🎯', label: 'Main focus for this week', help: 'If one thing deserves your attention, what is it?' },
+      { id: 'deadlines', icon: '📅', label: 'Deadlines and commitments', help: 'Record anything due or time-sensitive.' },
+      { id: 'selfcare', icon: '🧘', label: 'Care and access needs', help: 'For example: sleep, meals, movement, social time, quiet time, medication, or accommodations.' },
+      { id: 'hopes', icon: '🌅', label: 'What are you hoping for?', help: 'This can be a wish for how the week feels rather than a goal.' }
     ];
 
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function save() {
+      var answers = {};
+      SECTIONS.forEach(function(section) { answers[section.id] = String(form[section.id] || '').trim(); });
+      var hasAnswer = SECTIONS.some(function(section) { return !!answers[section.id]; });
+      if (!hasAnswer) { setFormError('Add a response to at least one prompt before saving.'); llAnnounce('Weekly plan not saved. Add a response first.'); focusById('learning-lab-weekly-plan-wins'); return; }
+      var plan = Object.assign({ id: tkId(), date: todayISO() }, answers);
+      setData(Object.assign({}, data, { plans: [plan].concat(data.plans || []) }));
+      setForm(emptyForm); setFormError(''); llAnnounce('Weekly plan saved in this browser.'); focusById('learning-lab-weekly-plan-wins');
+    }
+    function remove(plan) {
+      askLearningLabConfirmation('Remove the saved weekly plan from ' + String(plan.date || 'an unknown date') + '? This cannot be undone.', { title: 'Remove this weekly plan?', confirmText: 'Remove plan' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { plans: (data.plans || []).filter(function(item) { return item.id !== plan.id; }) }));
+        llAnnounce('Saved weekly plan removed.'); focusById('learning-lab-weekly-plan-history-heading');
+      });
+    }
+    function savedAnswers(plan) {
+      return SECTIONS.map(function(section) { return { id: section.id, label: section.label, value: String(plan[section.id] || '').trim() }; }).filter(function(answer) { return !!answer.value; });
+    }
+
     var plans = data.plans || [];
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#bfdbfe', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 88, borderRadius: 7, border: '1px solid #60a5fa', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12, lineHeight: 1.5, resize: 'vertical' };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📋', 'Sunday Plan', '15-minute ritual to set up your week. Best done Sunday evening (or whenever your week starts).', '#3b82f6'),
-
+      tkSectionHeader('📋', 'Sunday Plan', 'A flexible weekly reflection for whenever your week begins.', '#3b82f6'),
       tkCard('#3b82f6',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '📋 This week\'s plan'),
-          SECTIONS.map(function(s) {
-            return hh('div', { key: 'sp-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
-              hh('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 4 } }, s.label),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, s.placeholder),
-              tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
-            );
-          }),
-          tkBtn('💾 Save plan', save, 'primary')
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-weekly-plan-form-heading', 'aria-describedby': 'learning-lab-weekly-plan-privacy' },
+          hh('h2', { id: 'learning-lab-weekly-plan-form-heading', style: { margin: '0 0 6px', color: '#bfdbfe', fontSize: 15 } }, 'Plan the week in your own way'),
+          hh('p', { id: 'learning-lab-weekly-plan-privacy', style: helpStyle }, 'Plans save in this browser and may contain sensitive information. Avoid names or private details if other people use this device.'),
+          formError ? hh('p', { id: 'learning-lab-weekly-plan-error', role: 'alert', style: { margin: '8px 0', padding: '8px 10px', borderRadius: 7, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formError) : null,
+          SECTIONS.map(function(section, index) { var inputId = 'learning-lab-weekly-plan-' + section.id; var helpId = inputId + '-help'; return hh('div', { key: section.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #60a5fa', marginBottom: 10 } },
+            hh('label', { htmlFor: inputId, style: labelStyle }, hh('span', { 'aria-hidden': 'true' }, section.icon + ' '), section.label),
+            hh('p', { id: helpId, style: helpStyle }, section.help),
+            hh('textarea', { id: inputId, value: form[section.id] || '', rows: 3, maxLength: 6000, onChange: function(event) { var update = {}; update[section.id] = event.target.value; setForm(Object.assign({}, form, update)); if (formError) setFormError(''); }, 'aria-describedby': helpId + (index === 0 && formError ? ' learning-lab-weekly-plan-error' : ''), 'aria-invalid': index === 0 && formError ? 'true' : undefined, style: fieldStyle })
+          ); }),
+          hh('button', { type: 'submit', style: buttonStyle }, 'Save weekly plan')
         )
       ),
-
-      plans.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past plans'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          plans.slice(0, 10).map(function(p) {
-            return hh('div', { key: 'pp-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #3b82f6' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 11, color: '#60a5fa' } }, '📋 Week of ' + p.date),
-                hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              p.focus ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, hh('strong', { style: { color: '#60a5fa' } }, '🎯 Focus: '), p.focus) : null
-            );
-          })
-        )
-      ) : null
+      hh('section', { 'aria-labelledby': 'learning-lab-weekly-plan-history-heading' },
+        hh('h2', { id: 'learning-lab-weekly-plan-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#bfdbfe', fontSize: 15 } }, 'Saved weekly plans'),
+        plans.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No weekly plans saved yet.') :
+        hh('ul', { 'aria-label': 'Saved weekly plans, newest first', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, plans.map(function(plan) { var headingId = 'learning-lab-weekly-plan-heading-' + plan.id; var answers = savedAnswers(plan); return hh('li', { key: plan.id },
+          hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid #60a5fa' } },
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+              hh('h3', { id: headingId, style: { margin: 0, color: '#bfdbfe', fontSize: 13 } }, 'Plan from ', hh('time', { dateTime: plan.date || undefined }, plan.date || 'date unavailable')),
+              hh('button', { type: 'button', onClick: function() { remove(plan); }, 'aria-label': 'Remove weekly plan from ' + String(plan.date || 'date unavailable'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+            ),
+            hh('details', { style: { marginTop: 7 } },
+              hh('summary', { style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#bfdbfe', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Review complete plan'),
+              answers.length ? hh('dl', { 'aria-label': 'Weekly plan responses', style: { margin: '5px 0 0' } }, answers.map(function(answer) { return hh('div', { key: answer.id, style: { marginTop: 8 } }, hh('dt', { style: { color: '#bfdbfe', fontSize: 11, fontWeight: 800 } }, answer.label), hh('dd', { style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, answer.value)); })) : hh('p', { style: helpStyle }, 'No responses are available in this saved plan.')
+            )
+          )
+        ); }))
+      )
     );
   }
 
