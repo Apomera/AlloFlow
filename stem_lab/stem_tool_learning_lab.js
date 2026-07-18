@@ -15928,83 +15928,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { entries: [] };
     var setData = props.setData;
-    var fs = R.useState({ slept: '', ate: '', moved: '', connected: '', accomplished: '', rating: 7 });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { slept: '', ate: '', moved: '', connected: '', accomplished: '', rating: 5 };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var ratingError = es[0]; var setRatingError = es[1];
 
-    function save() {
-      var e = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ entries: [e].concat(data.entries || []) });
-      setForm({ slept: '', ate: '', moved: '', connected: '', accomplished: '', rating: 7 });
+    var PROMPTS = [
+      { id: 'slept', label: 'Rest or sleep (optional)', help: 'Record anything about rest, sleep, or energy that feels relevant.' },
+      { id: 'ate', label: 'Food or drink (optional)', help: 'Skip this or note only what feels useful and appropriate for you.' },
+      { id: 'moved', label: 'Movement, stillness, or physical comfort (optional)', help: 'Any kind of movement, rest, position, or body experience can belong here.' },
+      { id: 'connected', label: 'Connection or time alone (optional)', help: 'Include people, animals, community, solitude, or another experience if relevant.' },
+      { id: 'accomplished', label: 'Something meaningful, difficult, or noteworthy (optional)', help: 'This does not need to be an accomplishment or productivity measure.' }
+    ];
+
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
     }
-    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
+    function normalizedRating(value) {
+      var number = Number(value);
+      return Number.isInteger(number) && number >= 1 && number <= 10 ? number : null;
+    }
+    function save() {
+      var rating = normalizedRating(form.rating);
+      if (rating == null) {
+        setRatingError('Choose a whole-number rating from 1 through 10.');
+        llAnnounce('Day reflection not saved. Choose a rating from 1 through 10.');
+        focusById('learning-lab-day-pattern-rating');
+        return;
+      }
+      var entry = { id: tkId(), date: todayISO(), rating: rating, slept: form.slept.trim(), ate: form.ate.trim(), moved: form.moved.trim(), connected: form.connected.trim(), accomplished: form.accomplished.trim() };
+      setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
+      setForm(emptyForm); setRatingError('');
+      llAnnounce('Day pattern reflection saved with a rating of ' + rating + ' out of 10.');
+      focusById('learning-lab-day-pattern-rating');
+    }
+    function removeEntry(entry) {
+      askLearningLabConfirmation('Remove this saved day reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Saved day reflection removed.'); focusById('learning-lab-day-pattern-history-heading');
+      });
+    }
+    function entryDetails(entry) {
+      return PROMPTS.map(function(prompt) { return { id: prompt.id, label: prompt.label.replace(' (optional)', ''), value: String(entry[prompt.id] || '').trim() }; }).filter(function(detail) { return detail.value; });
+    }
 
     var entries = data.entries || [];
-    var greatEntries = entries.filter(function(e) { return e.rating >= 8; });
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('☀', 'Great-Day Pattern', 'What made today great? Track the ingredients. Find YOUR formula.', '#fbbf24'),
-
+      tkSectionHeader('☀️', 'Day Pattern Reflection', 'Record a personal rating and any details you want to compare over time.', '#fbbf24'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-day-pattern-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, background: 'rgba(161,98,7,0.20)', border: '1px solid #fbbf24', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-day-pattern-about-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 13 } }, 'Your scale, your interpretation'),
+        hh('p', { style: { margin: 0 } }, 'You decide what each rating means. A lower number is not a failure, and the optional prompts are not a formula, health assessment, or measure of productivity.')
+      ),
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, '☀ Today\'s ingredients'),
-            hh('div', null,
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Day rating:'),
-              hh('strong', { style: { fontSize: 16, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.rating + '/10')
-            )
-          ),
-          hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.rating,
-            onChange: function(e) { setForm(Object.assign({}, form, { rating: parseInt(e.target.value, 10) })); },
-            style: { width: '100%', accentColor: '#fbbf24', marginBottom: 12 }
-          }),
-          [
-            { id: 'slept',        label: '😴 How did I sleep?',           placeholder: 'e.g., "7.5h, slept through"' },
-            { id: 'ate',          label: '🍽 How did I eat?',             placeholder: 'e.g., "had breakfast, real lunch"' },
-            { id: 'moved',        label: '🏃 How did I move my body?',     placeholder: 'e.g., "walked to school + back"' },
-            { id: 'connected',    label: '🤝 Who did I connect with?',     placeholder: 'e.g., "actually talked to mom at dinner"' },
-            { id: 'accomplished', label: '✓ What did I accomplish?',       placeholder: 'e.g., "finished biology lab"' }
-          ].map(function(f) {
-            return hh('div', { key: 'gd-' + f.id, style: { marginBottom: 8 } },
-              hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, f.label),
-              tkInput(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, f.placeholder)
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-day-pattern-form-heading', 'aria-describedby': 'learning-lab-day-pattern-privacy-note learning-lab-day-pattern-rating-help' },
+          hh('h2', { id: 'learning-lab-day-pattern-form-heading', style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15 } }, 'Add a day reflection'),
+          hh('p', { id: 'learning-lab-day-pattern-privacy-note', style: helpStyle }, 'Ratings and notes save in this browser. Avoid private details if other people use this device.'),
+          hh('label', { htmlFor: 'learning-lab-day-pattern-rating', style: labelStyle }, 'Personal day rating: ' + form.rating + ' out of 10'),
+          hh('input', { id: 'learning-lab-day-pattern-rating', type: 'range', min: 1, max: 10, step: 1, value: form.rating, onChange: function(event) { setForm(Object.assign({}, form, { rating: Number(event.target.value) })); if (ratingError) setRatingError(''); }, 'aria-invalid': ratingError ? 'true' : undefined, 'aria-describedby': 'learning-lab-day-pattern-rating-help' + (ratingError ? ' learning-lab-day-pattern-rating-error' : ''), style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#fbbf24', marginBottom: 2 } }),
+          hh('output', { htmlFor: 'learning-lab-day-pattern-rating', 'aria-live': 'polite', style: { display: 'block', marginBottom: 4, color: '#fef3c7', fontSize: 12, fontWeight: 800 } }, form.rating + ' out of 10'),
+          hh('p', { id: 'learning-lab-day-pattern-rating-help', style: helpStyle }, 'Use 1 through 10. There are no predefined labels for the ends of the scale.'),
+          ratingError ? hh('p', { id: 'learning-lab-day-pattern-rating-error', role: 'alert', style: errorStyle }, ratingError) : null,
+          PROMPTS.map(function(prompt) {
+            var inputId = 'learning-lab-day-pattern-' + prompt.id;
+            var helpId = inputId + '-help';
+            return hh('div', { key: 'gd-' + prompt.id, style: { marginBottom: 10 } },
+              hh('label', { htmlFor: inputId, style: labelStyle }, prompt.label),
+              hh('input', { id: inputId, type: 'text', value: form[prompt.id], maxLength: 2000, onChange: function(event) { var next = Object.assign({}, form); next[prompt.id] = event.target.value; setForm(next); }, 'aria-describedby': helpId, style: fieldStyle }),
+              hh('p', { id: helpId, style: helpStyle }, prompt.help)
             );
           }),
-          tkBtn('💾 Log today', save, 'primary')
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { border: '1px solid #fde68a', background: '#a16207' }) }, 'Save day reflection')
         )
       ),
-
-      greatEntries.length > 0 ? hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.40)', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '☀ ' + greatEntries.length + ' great days logged (rating 8+)'),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } }, 'Browse the patterns below — what shows up most often in your great days?')
-      ) : null,
-
-      entries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past days'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          entries.slice(0, 14).map(function(e) {
-            var col = e.rating >= 8 ? '#22c55e' : e.rating >= 6 ? '#fbbf24' : '#ef4444';
-            return hh('div', { key: 'ge-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('span', { style: { fontSize: 11, color: col, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + e.rating + '/10'),
-                hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-                e.slept ? hh('div', null, '😴 ', e.slept) : null,
-                e.ate ? hh('div', null, '🍽 ', e.ate) : null,
-                e.moved ? hh('div', null, '🏃 ', e.moved) : null,
-                e.connected ? hh('div', null, '🤝 ', e.connected) : null,
-                e.accomplished ? hh('div', null, '✓ ', e.accomplished) : null
-              )
-            );
-          })
-        )
-      ) : null
+      hh('section', { 'aria-labelledby': 'learning-lab-day-pattern-history-heading' },
+        hh('h2', { id: 'learning-lab-day-pattern-history-heading', tabIndex: -1, style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15 } }, 'Saved day reflections'),
+        hh('p', { style: helpStyle }, entries.length + (entries.length === 1 ? ' reflection is saved. ' : ' reflections are saved. ') + 'Compare entries only if that feels useful; ratings do not have a fixed interpretation.'),
+        entries.length > 14 ? hh('p', { style: helpStyle }, 'Showing the 14 most recent reflections out of ' + entries.length + '.') : null,
+        entries.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No day reflections saved yet.')
+          : hh('ul', { 'aria-label': 'Most recent day reflections', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } },
+              entries.slice(0, 14).map(function(entry) {
+                var rating = normalizedRating(entry.rating) || 1;
+                var details = entryDetails(entry);
+                var headingId = 'learning-lab-day-pattern-entry-heading-' + entry.id;
+                return hh('li', { key: 'ge-' + entry.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #fbbf24' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#fef3c7', fontSize: 13 } }, 'Day rated ' + rating + ' out of 10'),
+                        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 11 } }, 'Saved ', hh('time', { dateTime: entry.date || undefined }, relDate(entry.date)))
+                      ),
+                      hh('button', { type: 'button', onClick: function() { removeEntry(entry); }, 'aria-label': 'Remove day reflection rated ' + rating + ' out of 10', style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                    ),
+                    details.length === 0 ? hh('p', { style: helpStyle }, 'No optional notes were saved with this rating.')
+                      : hh('dl', { 'aria-label': 'Optional notes for this day reflection', style: { display: 'grid', gridTemplateColumns: 'minmax(120px, max-content) 1fr', gap: 7, margin: '10px 0 0', color: '#f1f5f9', fontSize: 11 } },
+                          details.map(function(detail) { return hh('div', { key: detail.id, style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, detail.label), hh('dd', { style: { margin: 0, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } }, detail.value)); })
+                        )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
-  // ── QQQ. PERSONAL SENSORY PROFILE (Wave 14) ──
-  // Track sensory environment preferences. Light, sound, touch, smell.
-  // Especially valuable for autistic + ADHD + SPD students.
   function PersonalSensoryProfile(props) {
     if (!R) return null;
     var data = props.data || { profile: {}, observations: [] };
