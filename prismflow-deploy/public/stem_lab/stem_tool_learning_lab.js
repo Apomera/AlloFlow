@@ -16835,7 +16835,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { selected: [], top10: [], top5: [], top3: [], reasoning: {} };
     var setData = props.setData;
-    var vs = R.useState('sort');                       var view = vs[0]; var setView = vs[1];
+    var vs = R.useState('sort'); var view = vs[0]; var setView = vs[1];
+    var ns = R.useState(''); var notice = ns[0]; var setNotice = ns[1];
 
     var VALUES = [
       'Adventure', 'Authenticity', 'Beauty', 'Belonging', 'Challenge', 'Compassion',
@@ -16845,92 +16846,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       'Knowledge', 'Loyalty', 'Mastery', 'Order', 'Peace', 'Perseverance',
       'Privacy', 'Purpose', 'Recognition', 'Service', 'Spirituality', 'Tradition'
     ];
+    var TABS = [
+      { id: 'sort', label: '1. Choose up to 10' },
+      { id: 'narrow5', label: '2. Narrow to 5' },
+      { id: 'narrow3', label: '3. Narrow to 3' },
+      { id: 'why', label: '4. Reflect' }
+    ];
 
-    function toggleSelected(v) {
-      var s = (data.selected || []).slice();
-      var i = s.indexOf(v);
-      if (i >= 0) s.splice(i, 1);
-      else if (s.length < 10) s.push(v);
-      else { alert('Pick only your top 10. Remove one first.'); return; }
-      setData(Object.assign({}, data, { selected: s }));
-    }
-    function moveTo(level, v) {
-      var current = data[level] || [];
-      var i = current.indexOf(v);
-      if (i >= 0) { var newC = current.filter(function(x) { return x !== v; }); setData(Object.assign({}, data, (function() { var o = {}; o[level] = newC; return o; })())); }
-      else {
-        var maxLevel = level === 'top10' ? 10 : level === 'top5' ? 5 : 3;
-        if (current.length >= maxLevel) { alert('Pick only ' + maxLevel + ' at this level.'); return; }
-        var newC = current.concat([v]);
-        setData(Object.assign({}, data, (function() { var o = {}; o[level] = newC; return o; })()));
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function showLimit(max) { var message = 'You can select up to ' + max + ' values in this step. Remove one before adding another.'; setNotice(message); llAnnounce(message); }
+    function toggleSelected(value) {
+      var selected = (data.selected || []).slice(); var index = selected.indexOf(value);
+      if (index >= 0) {
+        selected.splice(index, 1); setData(Object.assign({}, data, { selected: selected, top5: (data.top5 || []).filter(function(item) { return item !== value; }), top3: (data.top3 || []).filter(function(item) { return item !== value; }) })); setNotice(''); return;
       }
+      if (selected.length >= 10) { showLimit(10); return; }
+      selected.push(value); setData(Object.assign({}, data, { selected: selected })); setNotice('');
     }
-    function updateReasoning(v, text) {
-      setData(Object.assign({}, data, { reasoning: Object.assign({}, data.reasoning || {}, (function() { var o = {}; o[v] = text; return o; })()) }));
+    function moveTo(level, value) {
+      var current = (data[level] || []).slice(); var index = current.indexOf(value); var max = level === 'top5' ? 5 : 3; var update = {};
+      if (index >= 0) {
+        update[level] = current.filter(function(item) { return item !== value; });
+        if (level === 'top5') update.top3 = (data.top3 || []).filter(function(item) { return item !== value; });
+        setData(Object.assign({}, data, update)); setNotice(''); return;
+      }
+      if (current.length >= max) { showLimit(max); return; }
+      current.push(value); update[level] = current; setData(Object.assign({}, data, update)); setNotice('');
+    }
+    function updateReasoning(value, text) {
+      var update = {}; update[value] = text;
+      setData(Object.assign({}, data, { reasoning: Object.assign({}, data.reasoning || {}, update) }));
+    }
+    function changeTab(id) { setView(id); setNotice(''); }
+    function handleTabKey(event, index) {
+      var next = index;
+      if (event.key === 'ArrowRight') next = (index + 1) % TABS.length;
+      else if (event.key === 'ArrowLeft') next = (index - 1 + TABS.length) % TABS.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = TABS.length - 1;
+      else return;
+      event.preventDefault(); changeTab(TABS[next].id); focusById('learning-lab-values-tab-' + TABS[next].id);
+    }
+    function choiceGrid(values, selected, toggle, label, describedBy) {
+      if (!values.length) return hh('p', { style: { margin: '8px 0', color: '#e2e8f0', fontSize: 11 } }, 'No values are available here yet. Return to the previous step to make selections.');
+      return hh('div', { role: 'group', 'aria-label': label, 'aria-describedby': describedBy, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 7 } }, values.map(function(value) {
+        var on = selected.indexOf(value) >= 0;
+        return hh('button', { key: label + '-' + value, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function() { toggle(value); }, style: { minWidth: 44, minHeight: 44, padding: '10px 12px', borderRadius: 8, background: on ? 'rgba(126,34,206,0.72)' : 'rgba(15,23,42,0.72)', color: '#f8fafc', border: '2px solid ' + (on ? '#d8b4fe' : '#64748b'), fontSize: 12, fontWeight: on ? 800 : 600, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, on ? '✓ ' : ''), value);
+      }));
+    }
+
+    var activeTab = TABS.filter(function(tab) { return tab.id === view; })[0] || TABS[0];
+    var instructionId = 'learning-lab-values-instruction-' + activeTab.id;
+    var countId = 'learning-lab-values-count-' + activeTab.id;
+    var describedBy = instructionId + ' ' + countId + (notice ? ' learning-lab-values-notice' : '');
+    var panelContent;
+    if (view === 'sort') {
+      panelContent = hh('div', null,
+        hh('p', { id: instructionId, style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55 } }, 'Select up to 10 values that feel important to you right now. You can change them at any time.'),
+        hh('p', { id: countId, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 10px', color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, (data.selected || []).length + ' of 10 selected.'),
+        choiceGrid(VALUES, data.selected || [], toggleSelected, 'Values to consider', describedBy)
+      );
+    } else if (view === 'narrow5') {
+      panelContent = hh('div', null,
+        hh('p', { id: instructionId, style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55 } }, 'From the values selected in step 1, choose up to 5 to explore further.'),
+        hh('p', { id: countId, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 10px', color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, (data.top5 || []).length + ' of 5 selected.'),
+        choiceGrid(data.selected || [], data.top5 || [], function(value) { moveTo('top5', value); }, 'Values selected for the top five', describedBy)
+      );
+    } else if (view === 'narrow3') {
+      panelContent = hh('div', null,
+        hh('p', { id: instructionId, style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55 } }, 'From step 2, choose up to 3 values you want to reflect on now.'),
+        hh('p', { id: countId, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 10px', color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, (data.top3 || []).length + ' of 3 selected.'),
+        choiceGrid(data.top5 || [], data.top3 || [], function(value) { moveTo('top3', value); }, 'Values selected for reflection', describedBy)
+      );
+    } else {
+      panelContent = hh('div', null,
+        hh('p', { id: instructionId, style: { margin: '0 0 10px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55 } }, 'Optionally describe what each selected value means to you. There is no required or correct response.'),
+        hh('span', { id: countId, style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' } }, (data.top3 || []).length + ' values available for reflection.'),
+        (data.top3 || []).length === 0 ? hh('p', { style: { margin: '8px 0', color: '#e2e8f0', fontSize: 11 } }, 'No values are selected for reflection yet. Return to step 3 to choose values.') :
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } }, (data.top3 || []).map(function(value) { var inputId = 'learning-lab-values-reasoning-' + value.toLowerCase().replace(/[^a-z0-9]+/g, '-'); var helpId = inputId + '-help'; return hh('section', { key: value, 'aria-labelledby': inputId + '-label', style: { padding: 12, borderRadius: 10, background: 'rgba(88,28,135,0.34)', border: '2px solid #c084fc' } },
+          hh('label', { id: inputId + '-label', htmlFor: inputId, style: { display: 'block', marginBottom: 5, color: '#f3e8ff', fontSize: 13, fontWeight: 800 } }, hh('span', { 'aria-hidden': 'true' }, '⭐ '), value + ' reflection'),
+          hh('p', { id: helpId, style: { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 } }, 'What does this value mean to you, and how might it appear in your choices?'),
+          hh('textarea', { id: inputId, value: (data.reasoning || {})[value] || '', rows: 4, maxLength: 6000, onChange: function(event) { updateReasoning(value, event.target.value); }, 'aria-describedby': helpId, style: { boxSizing: 'border-box', width: '100%', minHeight: 110, borderRadius: 7, border: '1px solid #d8b4fe', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12, lineHeight: 1.5, resize: 'vertical' } })
+        ); }))
+      );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧭', 'Values Compass', 'Sort 36 values → top 10 → top 5 → top 3. Forces clarity. ACT-aligned (Hayes 1999).', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🧭 Acceptance + Commitment Therapy: '),
-        'Hayes 1999. Values aren\'t goals — they\'re directions. "Honesty" isn\'t completed; you just keep moving in that direction. Knowing your top 3 lets you choose actions that move toward them, especially in hard moments.'
+      tkSectionHeader('🧭', 'Values Compass', 'Explore and narrow values at your own pace.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-values-context-heading', style: { padding: 11, borderRadius: 8, background: 'rgba(88,28,135,0.28)', border: '1px solid #c084fc', color: '#f8fafc', fontSize: 11, lineHeight: 1.6, marginBottom: 12 } },
+        hh('h2', { id: 'learning-lab-values-context-heading', style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 13 } }, 'A personal reflection, not an assessment'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'This activity is inspired by values exercises used in Acceptance and Commitment Therapy. Values can be directions rather than tasks to complete, and your priorities may change across settings and over time.'),
+        hh('p', { style: { margin: 0 } }, 'The tool does not evaluate your character, diagnose a condition, or determine which values you should choose. Selections and reflections save in this browser; avoid sensitive details on a shared device.')
       ),
-
-      hh('div', { role: 'tablist', style: { display: 'flex', gap: 4, marginBottom: 14, flexWrap: 'wrap' } },
-        [{ id: 'sort', label: '1. Pick top 10' }, { id: 'narrow5', label: '2. Narrow to 5' }, { id: 'narrow3', label: '3. Narrow to 3' }, { id: 'why', label: '4. Why?' }].map(function(t) {
-          var active = view === t.id;
-          return hh('button', { key: 'vt-' + t.id,
-            onClick: function() { setView(t.id); },
-            style: { padding: '8px 14px', borderRadius: 6, background: active ? '#a855f7' : 'rgba(168,85,247,0.10)', color: active ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-          }, t.label);
-        })
-      ),
-
-      view === 'sort' ? hh('div', null,
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'Tap to pick your top 10 values. ' + ((data.selected || []).length) + '/10 selected.'),
-        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
-          VALUES.map(function(v) {
-            var on = (data.selected || []).indexOf(v) >= 0;
-            return hh('button', { key: 'vl-' + v,
-              onClick: function() { toggleSelected(v); },
-              style: { padding: '10px 12px', borderRadius: 8, background: on ? 'rgba(168,85,247,0.30)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#cbd5e1', border: '1.5px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 12, fontWeight: on ? 800 : 600, cursor: 'pointer' }
-            }, (on ? '✓ ' : '') + v);
-          })
-        )
-      ) : view === 'narrow5' ? hh('div', null,
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'From your top 10, pick the 5 that matter most. ' + ((data.top5 || []).length) + '/5 selected.'),
-        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
-          (data.selected || []).map(function(v) {
-            var on = (data.top5 || []).indexOf(v) >= 0;
-            return hh('button', { key: 'v5-' + v,
-              onClick: function() { moveTo('top5', v); },
-              style: { padding: '10px 12px', borderRadius: 8, background: on ? 'rgba(168,85,247,0.30)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#cbd5e1', border: '1.5px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 12, fontWeight: on ? 800 : 600, cursor: 'pointer' }
-            }, (on ? '✓ ' : '') + v);
-          })
-        )
-      ) : view === 'narrow3' ? hh('div', null,
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'From your top 5, pick THE 3 that you live by. ' + ((data.top3 || []).length) + '/3 selected.'),
-        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
-          (data.top5 || []).map(function(v) {
-            var on = (data.top3 || []).indexOf(v) >= 0;
-            return hh('button', { key: 'v3-' + v,
-              onClick: function() { moveTo('top3', v); },
-              style: { padding: '14px 16px', borderRadius: 10, background: on ? 'rgba(168,85,247,0.40)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#cbd5e1', border: '2px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 14, fontWeight: on ? 900 : 600, cursor: 'pointer' }
-            }, (on ? '⭐ ' : '') + v);
-          })
-        )
-      ) : hh('div', null,
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'For each of your top 3 — why does this matter? What does living it look like in practice?'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          (data.top3 || []).map(function(v) {
-            return hh('div', { key: 'vy-' + v, style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.15)', border: '2px solid #a855f7' } },
-              hh('div', { style: { fontSize: 16, fontWeight: 900, color: '#c084fc', marginBottom: 8 } }, '⭐ ' + v),
-              tkTextarea((data.reasoning || {})[v], function(t) { updateReasoning(v, t); }, 'Why this matters + what living it looks like in practice', 4)
-            );
-          })
-        )
-      )
+      hh('div', { role: 'tablist', 'aria-label': 'Values Compass steps', style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } }, TABS.map(function(tab, index) { var active = view === tab.id; return hh('button', { key: tab.id, id: 'learning-lab-values-tab-' + tab.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'learning-lab-values-panel', tabIndex: active ? 0 : -1, onClick: function() { changeTab(tab.id); }, onKeyDown: function(event) { handleTabKey(event, index); }, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, background: active ? '#7e22ce' : 'rgba(15,23,42,0.72)', color: '#f8fafc', border: '2px solid ' + (active ? '#e9d5ff' : '#64748b'), fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, tab.label); })),
+      notice ? hh('p', { id: 'learning-lab-values-notice', role: 'alert', style: { margin: '0 0 10px', padding: '8px 10px', borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(120,53,15,0.34)', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, notice) : null,
+      hh('div', { id: 'learning-lab-values-panel', role: 'tabpanel', 'aria-labelledby': 'learning-lab-values-tab-' + activeTab.id, tabIndex: 0 }, panelContent)
     );
   }
 
