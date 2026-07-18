@@ -16309,57 +16309,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { letters: [] };
     var setData = props.setData;
-    var fs = R.useState({ to: '', body: '', context: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { to: '', body: '', context: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var bodyError = es[0]; var setBodyError = es[1];
 
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
     function save() {
-      if (!form.body.trim()) { alert('Need letter text.'); return; }
-      var l = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ letters: [l].concat(data.letters || []) });
-      setForm({ to: '', body: '', context: '' });
+      var body = form.body.trim();
+      if (!body) { setBodyError('Enter letter text before saving.'); llAnnounce('Letter not saved. Enter some letter text first.'); focusById('learning-lab-open-letter-body'); return; }
+      var letter = { id: tkId(), date: todayISO(), to: form.to.trim(), context: form.context.trim(), body: body };
+      setData(Object.assign({}, data, { letters: [letter].concat(data.letters || []) }));
+      setForm(emptyForm); setBodyError(''); llAnnounce('Unsent letter saved in this browser.'); focusById('learning-lab-open-letter-to');
     }
-    function remove(id) { setData({ letters: (data.letters || []).filter(function(l) { return l.id !== id; }) }); }
+    function removeLetter(letter) {
+      askLearningLabConfirmation('Remove this saved unsent letter? This cannot be undone.', { title: 'Remove this letter?', confirmText: 'Remove letter' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { letters: (data.letters || []).filter(function(item) { return item.id !== letter.id; }) }));
+        llAnnounce('Saved unsent letter removed.'); focusById('learning-lab-open-letter-history-heading');
+      });
+    }
 
     var letters = data.letters || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fce7f3', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #f472b6', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('✉', 'Unsent Letters', 'Write a letter to ANYONE — alive, gone, fictional, future you. Don\'t send. The writing IS the work.', '#ec4899'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.10)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#ec4899' } }, '✉ Therapeutic letter-writing: '),
-        'Pennebaker 1986 — expressive writing about emotional experiences has measurable health + mood benefits. The letter doesn\'t have to be sent. The processing happens in the writing.'
+      tkSectionHeader('✉️', 'Unsent Letters', 'Write a letter for personal reflection without sending it from this tool.', '#ec4899'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-open-letter-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #f472b6', background: 'rgba(131,24,67,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-open-letter-about-heading', style: { margin: '0 0 5px', color: '#fce7f3', fontSize: 13 } }, 'Reflection text only'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'This tool does not address, deliver, or monitor letters. Writing may or may not feel useful, and it is not a substitute for health or crisis support.'),
+        hh('p', { style: { margin: 0 } }, 'Saved letters remain in this browser and are not encrypted as a private journal. Anyone with access to this browser profile may be able to read them.')
       ),
-
-      tkCard('#ec4899',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '✉ Write a letter'),
-          tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'To... (a person, a younger you, future you, anyone)', { marginBottom: 8 }),
-          tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Optional context (private to you)', { marginBottom: 8 }),
-          tkTextarea(form.body, function(v) { setForm(Object.assign({}, form, { body: v })); }, 'Dear...\n\nWhat do you wish you could say? What never got said? What needs to be said even if no one will hear it?', 12, { fontFamily: 'Georgia, serif', marginBottom: 10 }),
-          tkBtn('💾 Save (private)', save, 'primary')
-        )
-      ),
-
-      letters.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Letters'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          letters.map(function(l) {
-            return hh('div', { key: 'ol-' + l.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #ec4899' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('strong', { style: { fontSize: 12, color: '#f472b6', fontFamily: 'Georgia, serif' } }, 'Dear ' + (l.to || 'whoever'),','),
-                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, l.body),
-              hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date)
-            );
-          })
-        )
-      ) : null
+      tkCard('#ec4899', hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-open-letter-form-heading', 'aria-describedby': 'learning-lab-open-letter-storage-note' },
+        hh('h2', { id: 'learning-lab-open-letter-form-heading', style: { margin: '0 0 8px', color: '#fce7f3', fontSize: 15 } }, 'Write an unsent letter'),
+        hh('p', { id: 'learning-lab-open-letter-storage-note', style: helpStyle }, 'Save only text you are comfortable storing on this device. You may use a nickname or leave the recipient blank.'),
+        hh('label', { htmlFor: 'learning-lab-open-letter-to', style: labelStyle }, 'Recipient or description (optional)'),
+        hh('input', { id: 'learning-lab-open-letter-to', type: 'text', value: form.to, maxLength: 500, onChange: function(event) { setForm(Object.assign({}, form, { to: event.target.value })); }, style: fieldStyle }),
+        hh('label', { htmlFor: 'learning-lab-open-letter-context', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'Context for yourself (optional)'),
+        hh('input', { id: 'learning-lab-open-letter-context', type: 'text', value: form.context, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { context: event.target.value })); }, style: fieldStyle }),
+        hh('label', { htmlFor: 'learning-lab-open-letter-body', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'Letter text (required)'),
+        hh('textarea', { id: 'learning-lab-open-letter-body', value: form.body, rows: 12, required: true, maxLength: 20000, onChange: function(event) { setForm(Object.assign({}, form, { body: event.target.value })); if (bodyError) setBodyError(''); }, 'aria-invalid': bodyError ? 'true' : undefined, 'aria-describedby': 'learning-lab-open-letter-body-help' + (bodyError ? ' learning-lab-open-letter-body-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 260, resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.6 }) }),
+        hh('p', { id: 'learning-lab-open-letter-body-help', style: helpStyle }, 'Use any format or tone that fits. Review the text before deciding whether to keep it.'),
+        bodyError ? hh('p', { id: 'learning-lab-open-letter-body-error', role: 'alert', style: errorStyle }, bodyError) : null,
+        hh('button', { type: 'submit', style: buttonStyle }, 'Save unsent letter')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-open-letter-history-heading' },
+        hh('h2', { id: 'learning-lab-open-letter-history-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#fce7f3', fontSize: 15 } }, 'Saved unsent letters'),
+        letters.length > 20 ? hh('p', { style: helpStyle }, 'Showing the 20 most recent letters out of ' + letters.length + '.') : null,
+        letters.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No unsent letters saved yet.') : hh('ul', { 'aria-label': 'Most recent saved unsent letters', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, letters.slice(0, 20).map(function(letter) { var recipient = String(letter.to || 'No recipient specified'); var headingId = 'learning-lab-open-letter-heading-' + letter.id; return hh('li', { key: 'ol-' + letter.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 9, background: 'rgba(15,23,42,0.62)', border: '1px solid #f472b6' } },
+          hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#fce7f3', fontSize: 13 } }, 'Letter to: ' + recipient), hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: letter.date || undefined }, relDate(letter.date)))), hh('button', { type: 'button', onClick: function() { removeLetter(letter); }, 'aria-label': 'Remove unsent letter to ' + recipient, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')),
+          letter.context ? hh('p', { style: { margin: '8px 0 0', color: '#fbcfe8', fontSize: 11 } }, 'Context: ' + String(letter.context)) : null,
+          hh('details', { style: { marginTop: 8 } }, hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#fce7f3', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Review full letter'), hh('p', { style: { margin: '8px 0 0', color: '#f1f5f9', fontSize: 11, lineHeight: 1.7, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'Georgia, serif' } }, String(letter.body || 'Empty letter')))
+        )); }))
+      )
     );
   }
 
-  // ── UUU. PERSONAL DAILY HIGHLIGHTS (Wave 14) ──
-  // 5-minute end-of-day highlight reel. What were the brightest moments?
   function PersonalHighlights(props) {
     if (!R) return null;
     var data = props.data || { highlights: [] };
