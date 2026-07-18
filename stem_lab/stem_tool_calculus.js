@@ -47,9 +47,49 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     return estimateNumber > exactNumber ? 'over' : 'under';
   }
 
+  function clampCalculusNumber(value, min, max, fallback) {
+    var number = Number(value);
+    if (!Number.isFinite(number)) number = fallback;
+    return Math.max(min, Math.min(max, number));
+  }
+
+  function calculusChallengeAnswerIsCorrect(mode, chosen, answer) {
+    if (mode === 'exact') {
+      var chosenNumber = Number(chosen);
+      var answerNumber = Number(answer);
+      return Number.isFinite(chosenNumber) && Number.isFinite(answerNumber) &&
+        Math.abs(chosenNumber - answerNumber) <= 0.00051;
+    }
+    if (mode === 'minN') return Number(chosen) === Number(answer);
+    return chosen === answer;
+  }
+
+  function leftRiemannEstimate(a, b, c, xMax, subdivisions) {
+    var n = Math.max(1, Math.round(Number(subdivisions)));
+    var dx = xMax / n;
+    var estimate = 0;
+    for (var i = 0; i < n; i++) {
+      var x = i * dx;
+      estimate += (a * x * x + b * x + c) * dx;
+    }
+    return estimate;
+  }
+
+  function minimumLeftRiemannSubdivisions(a, b, c, xMax, threshold, maxN) {
+    var exactValue = (a / 3) * xMax * xMax * xMax + (b / 2) * xMax * xMax + c * xMax;
+    for (var n = 2; n <= maxN; n++) {
+      if (Math.abs(leftRiemannEstimate(a, b, c, xMax, n) - exactValue) < threshold) return n;
+    }
+    return null;
+  }
+
   window.__CalculusCore = Object.assign({}, window.__CalculusCore || {}, {
     normalizeSubdivisions: normalizeCalculusSubdivisions,
-    classifyApproximation: classifyCalculusApproximation
+    classifyApproximation: classifyCalculusApproximation,
+    clampNumber: clampCalculusNumber,
+    challengeAnswerIsCorrect: calculusChallengeAnswerIsCorrect,
+    leftRiemannEstimate: leftRiemannEstimate,
+    minimumLeftSubdivisions: minimumLeftRiemannSubdivisions
   });
 
   window.StemLab.registerTool('calculus', {
@@ -1639,7 +1679,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var mode = d.mode || 'left';
         var nRects = normalizeCalculusSubdivisions(finiteNum(d.n, 20), mode);
         var tab = d.tab || 'integral';
-        var x0 = finiteNum(d.x0, Math.round((xMin + xMax2) / 2 * 10) / 10);
+        var x0 = clampCalculusNumber(d.x0, xMin - 1, xMax2 + 1, Math.round((xMin + xMax2) / 2 * 10) / 10);
         var exact = evalAntiAt(fa, fb, fc, xMax2) - evalAntiAt(fa, fb, fc, xMin);
 
         var sampleY = Array.from({ length: 60 }, function(_, i) { return evalF(xMin + i / 59 * (xMax2 - xMin)); }).filter(finiteCoord);
@@ -1718,7 +1758,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var p2 = svgPoint(tr, slope * (tr - x0) + fy0);
           return p1 && p2 ? p1 + ' ' + p2 : '';
         })();
-        var dh = d.secantH !== undefined ? d.secantH : 1.0;
+        var dh = clampCalculusNumber(d.secantH, 0.02, 2, 1.0);
         var secantSlope = dh > 0.001 ? (evalF(x0 + dh) - evalF(x0)) / dh : slope;
         var secantPts = (function() {
           var sl = Math.max(xR.min, x0 - 0.5), sr = Math.min(xR.max, x0 + dh + 0.5);
@@ -1806,20 +1846,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var qa=[1,2,-1,-2][Math.floor(Math.random()*4)];
           var qb=[0,1,-1][Math.floor(Math.random()*3)];
           var qxMax=[2,3][Math.floor(Math.random()*2)];
+          var qn=[4,6,8][Math.floor(Math.random()*3)];
           var qMode=['left','right'][Math.floor(Math.random()*2)];
-          var isInc = evalAntiAt(qa,qb,0,qxMax) - evalAntiAt(qa,qb,0,0) > 0 ? (qa*qxMax + qb > qa*0 + qb) : false;
-          // simpler: f increasing if f(xMax) > f(0)
-          var fAtEnd = qa*qxMax*qxMax + qb*qxMax;
-          var fAtStart = 0;
-          var inc = fAtEnd > fAtStart;
-          var correct = (qMode==='left' && inc) ? 'under' : (qMode==='left' && !inc) ? 'over' : (qMode==='right' && inc) ? 'over' : 'under';
-          var why = qMode==='left'
-            ? (inc ? 'Left endpoints are on the rising part of the curve, so rectangles miss the area above each left corner.'
-                   : 'Left endpoints are on the falling part, so rectangles extend beyond the curve.')
-            : (inc ? 'Right endpoints are on the rising part, so rectangles overshoot the curve.'
-                   : 'Right endpoints are on the falling part, so rectangles miss area.');
-          return {mode:'overunder',a:qa,b:qb,c:0,xMin:0,xMax:qxMax,ruleMode:qMode,answer:correct,why:why,answered:false,
-            question:'For f(x)='+buildFStr(qa,qb,0)+' using '+qMode.charAt(0).toUpperCase()+qMode.slice(1)+' Riemann sums [0,'+qxMax+']: is the approximation an OVERestimate or UNDERestimate?'};
+          var qdx=qxMax/qn, qApprox=0;
+          for(var qi=0;qi<qn;qi++){
+            var qSample=qMode==='right'?(qi+1)*qdx:qi*qdx;
+            qApprox+=(qa*qSample*qSample+qb*qSample)*qdx;
+          }
+          var qExact=evalAntiAt(qa,qb,0,qxMax)-evalAntiAt(qa,qb,0,0);
+          var correct=classifyCalculusApproximation(qApprox,qExact);
+          var why=correct==='exact'
+            ? 'At n = '+qn+', the positive and negative rectangle errors cancel: the sum and exact integral are both '+qExact.toFixed(3)+'.'
+            : 'The '+qMode+' sum is '+qApprox.toFixed(3)+', while the exact integral is '+qExact.toFixed(3)+'. The signed comparison makes this an '+correct.toUpperCase()+'estimate.';
+          return {mode:'overunder',a:qa,b:qb,c:0,xMin:0,xMax:qxMax,n:qn,ruleMode:qMode,answer:correct,why:why,answered:false,
+            question:'For f(x)='+buildFStr(qa,qb,0)+' using '+qMode.charAt(0).toUpperCase()+qMode.slice(1)+' Riemann sums with n='+qn+' on [0,'+qxMax+'], is the approximation over, exact, or under?'};
         }
         function makeMethodQuiz() {
           var qa=[1,-1,2][Math.floor(Math.random()*3)], qb=[0,1,-1][Math.floor(Math.random()*3)], qc=[0,1][Math.floor(Math.random()*2)];
@@ -1842,12 +1882,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         }
         function makeMinNQuiz() {
           var qa=[1,-1,2][Math.floor(Math.random()*3)], qb=[0,1][Math.floor(Math.random()*2)];
-          var qxMax=[2,3][Math.floor(Math.random()*2)], thr=[0.5,0.1,0.05][Math.floor(Math.random()*3)];
-          var qExact=evalAntiAt(qa,qb,0,qxMax)-evalAntiAt(qa,qb,0,0);
-          var minN=2;
-          for(var tn=2;tn<=100;tn++){var tdx=qxMax/tn,ta=0;for(var ti=0;ti<tn;ti++){var txi=ti*tdx;ta+=(qa*txi*txi+qb*txi)*tdx;}if(Math.abs(ta-qExact)<thr){minN=tn;break;}}
-          if(minN>50){minN=50;thr=0.5;}
-          var opts=[minN],cands=[minN-4,minN-2,minN+2,minN+4,minN*2].filter(function(v){return v>=2&&v<=100&&v!==minN;});
+          var qxMax=[2,3][Math.floor(Math.random()*2)], thr=[1,0.5,0.25][Math.floor(Math.random()*3)];
+          var minN=minimumLeftRiemannSubdivisions(qa,qb,0,qxMax,thr,200);
+          if(minN===null){thr=0.5;minN=minimumLeftRiemannSubdivisions(qa,qb,0,qxMax,thr,200);}
+          var opts=[minN],cands=[minN-5,minN-3,minN-2,minN-1,minN+1,minN+2,minN+3,minN+5,Math.ceil(minN*1.5),Math.min(200,minN*2)].filter(function(v,i,arr){return v>=2&&v<=200&&v!==minN&&arr.indexOf(v)===i;});
           while(opts.length<4&&cands.length>0){var ci=Math.floor(Math.random()*cands.length);opts.push(cands.splice(ci,1)[0]);}
           opts.sort(function(a,b){return a-b;});
           return {mode:'minN',a:qa,b:qb,c:0,xMin:0,xMax:qxMax,answer:minN,threshold:thr,opts:opts,answered:false,
@@ -1886,9 +1924,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           stemBeep && stemBeep('click');
         }
         function checkCalcAnswer(chosen) {
-          var correct = cMode==='method'?chosen===cq.answer:cMode==='minN'?chosen<=cq.answer+2&&chosen>=cq.answer:cMode==='exact'?Math.abs(parseFloat(chosen)-cq.answer)<0.05:cMode==='overunder'?chosen===cq.answer:cMode==='deriv'?chosen===cq.answer:chosen===cq.answer;
+          var correct = calculusChallengeAnswerIsCorrect(cMode, chosen, cq.answer);
           var newStreak=correct?cStreak+1:0;
-          var hintMsg = correct ? '' : cMode==='method'?'Best was '+cq.answerLabel+". Simpson\u2019s is exact for polynomials \u2264 degree 3!":cMode==='minN'?'Min n = '+cq.answer+'. More subdivisions \u2192 smaller error.':cMode==='overunder'?cq.why:cMode==='deriv'?'Power rule: f\u2032(x) = '+buildDerivStr(cq.a,cq.b)+', so f\u2032('+cq.x0+') = '+cq.answer+'. (Differentiate each term: d/dx[ax\u00B2] = 2ax, d/dx[bx] = b)':'Answer: '+cq.answer+'. Apply the power rule: \u222B x\u207F = x\u207F\u207A\u00B9/(n+1)';
+          var hintMsg = correct ? '' : cMode==='method'?'Best was '+cq.answerLabel+". Simpson\u2019s is exact for polynomials \u2264 degree 3!":cMode==='minN'?(Number(chosen)>cq.answer?'n = '+chosen+' reaches the target, but the question asks for the smallest n. The first value that works is '+cq.answer+'.':'Min n = '+cq.answer+'. Values below it do not reach the error target.'):cMode==='overunder'?cq.why:cMode==='deriv'?'Power rule: f\u2032(x) = '+buildDerivStr(cq.a,cq.b)+', so f\u2032('+cq.x0+') = '+cq.answer+'. (Differentiate each term: d/dx[ax\u00B2] = 2ax, d/dx[bx] = b)':'Answer: '+cq.answer+'. Apply the power rule: \u222B x\u207F = x\u207F\u207A\u00B9/(n+1)';
           setLabToolData(function(prev){
             return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{
               calcQuiz:Object.assign({},prev.calculus.calcQuiz,{answered:true,chosen:chosen,correct:correct}),
@@ -2334,7 +2372,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             h('div',{ className:'flex flex-wrap gap-1.5 mb-2'},
               CALC_CHALLENGES.map(function(cm){
-                return h('button',{ "aria-label": "Start Calc Challenge",key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?'bg-'+cm.color+'-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
+                return h('button',{ "aria-label": "Start "+cm.label+" challenge",'aria-pressed':cMode===cm.id,key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?'bg-'+cm.color+'-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
               })
             ),
             h('p',{className:'text-[11px] text-slate-600 italic mb-3'},
@@ -2346,12 +2384,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               'Apply the power rule: compute f\u2032(x\u2080).'
             ),
             h('button',{ onClick:startCalcChallenge,className:'px-4 py-2 rounded-lg text-xs font-bold mb-3 transition-all '+(cq?'bg-slate-100 text-slate-600 hover:bg-slate-200':'bg-red-600 text-white hover:bg-red-700 shadow-md')},cq?'\uD83D\uDD04 New Challenge':'\uD83D\uDE80 Start Challenge'),
-            cq && h('div',{ className:'mb-3'},svgGraph(cMode==='deriv',cMode!=='deriv'&&cMode!=='overunder')),
+            cq && h('div',{ className:'mb-3'},svgGraph(cMode==='deriv',cMode!=='deriv')),
             cq && !cq.answered && cMode!=='exact' && h('div',{ className:'bg-red-50 rounded-xl p-4 border border-red-200 animate-in fade-in'},
               h('p',{className:'text-sm font-bold text-red-800 mb-3'},cq.question),
               h('div',{className:'grid grid-cols-2 gap-2'},
                 (cMode==='overunder'
-                  ? [{id:'over',label:'\u2B06 OVERestimate'},{id:'under',label:'\u2B07 UNDERestimate'}]
+                  ? [{id:'over',label:'\u2B06 OVERestimate'},{id:'exact',label:'\u2713 EXACT'},{id:'under',label:'\u2B07 UNDERestimate'}]
                   : cMode==='method'?cq.opts:cq.opts.map(function(o){return{id:o,label:cMode==='minN'?'n = '+o:String(o)};})
                 ).map(function(opt){
                   return h('button',{ key:String(opt.id),onClick:function(){checkCalcAnswer(opt.id);stemBeep&&stemBeep('click');},className:'px-3 py-2.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all'},opt.label);
@@ -2360,7 +2398,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             cq && !cq.answered && cMode==='exact' && h('div',{className:'bg-emerald-50 rounded-xl p-4 border border-emerald-200'},
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
-              h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C'),
+              h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C. Enter a decimal; round to 3 places when needed.'),
               h('div',{className:'flex gap-2'},
                 h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-500'}),
                 h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-600'},'Check \u2192')
