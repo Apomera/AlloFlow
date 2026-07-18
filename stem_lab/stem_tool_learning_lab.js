@@ -12884,142 +12884,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { worries: [], settings: { worryHour: 17 } };
     var setData = props.setData;
-    var fs = R.useState('');                       var newWorry = fs[0]; var setNewWorry = fs[1];
-    var ws = R.useState(null);                     var working = ws[0]; var setWorking = ws[1];
-    var ts = R.useState(15 * 60);                  var secsLeft = ts[0]; var setSecsLeft = ts[1];
-    var rs = R.useState(false);                    var running = rs[0]; var setRunning = rs[1];
-    var ks = R.useState({});                       var thinking = ks[0]; var setThinking = ks[1];
+    var fs = R.useState(''); var newWorry = fs[0]; var setNewWorry = fs[1];
+    var es = R.useState(''); var worryError = es[0]; var setWorryError = es[1];
+    var ws = R.useState(null); var working = ws[0]; var setWorking = ws[1];
+    var ts = R.useState(15 * 60); var secsLeft = ts[0]; var setSecsLeft = ts[1];
+    var rs = R.useState(false); var running = rs[0]; var setRunning = rs[1];
+    var ks = R.useState({}); var thinking = ks[0]; var setThinking = ks[1];
 
     function addWorry() {
-      if (!newWorry.trim()) return;
-      var w = { id: tkId(), text: newWorry.trim(), createdAt: Date.now(), resolved: false, action: '' };
-      setData(Object.assign({}, data, { worries: [w].concat(data.worries || []) }));
+      var text = newWorry.trim();
+      if (!text) {
+        setWorryError('Write the worry you want to save for later.');
+        llAnnounce('Worry was not saved. Enter the worry first.');
+        focusById('learning-lab-worry-input');
+        return;
+      }
+      var worry = { id: tkId(), text: text, createdAt: Date.now(), resolved: false, action: '' };
+      setData(Object.assign({}, data, { worries: [worry].concat(data.worries || []) }));
       setNewWorry('');
+      setWorryError('');
+      llAnnounce('Worry saved for worry time.');
+      focusById('learning-lab-worry-input');
     }
-    function removeWorry(id) {
-      setData(Object.assign({}, data, { worries: (data.worries || []).filter(function(w) { return w.id !== id; }) }));
+    async function removeWorry(worry) {
+      var label = worry.text || 'this worry';
+      if (label.length > 80) label = label.slice(0, 77) + '...';
+      if (!(await askLearningLabConfirmation('This permanently removes “' + label + '”.', {
+        title: 'Remove this worry?', confirmText: 'Remove worry'
+      }))) return;
+      setData(Object.assign({}, data, { worries: (data.worries || []).filter(function(item) { return item.id !== worry.id; }) }));
+      if (working === worry.id) setWorking(null);
+      llAnnounce('Worry removed.');
+      focusById('learning-lab-worry-input');
     }
-    function processWorry(id, status, action) {
+    function updateThinking(worryId, patch) {
+      var current = thinking[worryId] || { status: '', action: '' };
+      var next = {}; next[worryId] = Object.assign({}, current, patch);
+      setThinking(Object.assign({}, thinking, next));
+    }
+    function processWorry(worry, status, action) {
       setData(Object.assign({}, data, {
-        worries: (data.worries || []).map(function(w) { return w.id === id ? Object.assign({}, w, { resolved: true, status: status, action: action, processedAt: Date.now() }) : w; })
+        worries: (data.worries || []).map(function(item) {
+          return item.id === worry.id ? Object.assign({}, item, { resolved: true, status: status, action: (action || '').trim(), processedAt: Date.now() }) : item;
+        })
       }));
+      setWorking(null);
+      llAnnounce('Worry processed as ' + status.replace(/([A-Z])/g, ' $1').toLowerCase() + '.');
+      focusById(openWorries.length > 1 ? 'learning-lab-worry-open-heading' : 'learning-lab-worry-input');
+    }
+    function openProcessor(worry) {
+      setWorking(worry.id);
+      var initial = {}; initial[worry.id] = thinking[worry.id] || { status: '', action: '' };
+      setThinking(Object.assign({}, thinking, initial));
+      llAnnounce('Worry processor opened. Choose how much control you have.');
+      focusById('learning-lab-worry-processor-heading');
+    }
+    function closeProcessor(worryId) {
+      setWorking(null);
+      llAnnounce('Returned to open worries without processing.');
+      focusById('learning-lab-worry-process-' + worryId);
+    }
+    function toggleTimer() {
+      if (running) {
+        setRunning(false);
+        llAnnounce('Worry-time timer paused with ' + Math.ceil(secsLeft / 60) + ' minutes remaining.');
+      } else {
+        if (secsLeft <= 0) setSecsLeft(15 * 60);
+        setRunning(true);
+        llAnnounce('Worry-time timer started for ' + (secsLeft <= 0 ? 15 : Math.ceil(secsLeft / 60)) + ' minutes.');
+      }
+    }
+    function resetTimer() {
+      setSecsLeft(15 * 60);
+      setRunning(false);
+      llAnnounce('Worry-time timer reset to 15 minutes.');
+      focusById('learning-lab-worry-timer-toggle');
     }
 
     R.useEffect(function() {
       if (!running) return;
-      if (secsLeft <= 0) { setRunning(false); return; }
-      var t = setTimeout(function() { setSecsLeft(secsLeft - 1); }, 1000);
-      return function() { clearTimeout(t); };
+      if (secsLeft <= 0) {
+        setRunning(false);
+        llAnnounce('Worry time is complete. Pause, ground yourself, and return to the rest of your day.');
+        focusById('learning-lab-worry-timer-toggle');
+        return;
+      }
+      var timer = setTimeout(function() { setSecsLeft(secsLeft - 1); }, 1000);
+      return function() { clearTimeout(timer); };
     }, [running, secsLeft]);
 
-    var openWorries = (data.worries || []).filter(function(w) { return !w.resolved; });
-    var resolvedWorries = (data.worries || []).filter(function(w) { return w.resolved; });
+    var openWorries = (data.worries || []).filter(function(worry) { return !worry.resolved; });
+    var resolvedWorries = (data.worries || []).filter(function(worry) { return worry.resolved; });
+    var workingWorry = openWorries.filter(function(worry) { return worry.id === working; })[0] || null;
+    var minutes = Math.floor(secsLeft / 60);
+    var seconds = secsLeft % 60;
+    var buttonStyle = { minHeight: 44, padding: '9px 13px', borderRadius: 8, border: '1px solid #c4b5fd', background: '#6d28d9', color: '#fff', fontWeight: 800, cursor: 'pointer' };
+    var secondaryButtonStyle = { minHeight: 44, padding: '9px 13px', borderRadius: 8, border: '1px solid #c4b5fd', background: 'rgba(76,29,149,0.35)', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(196,181,253,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
 
-    var mm = Math.floor(secsLeft / 60);
-    var ss = secsLeft % 60;
-
-    if (working) {
-      var w = openWorries.filter(function(x) { return x.id === working; })[0];
-      if (!w) { setWorking(null); return null; }
-      var t = thinking[w.id] || { status: 'consider', action: '' };
+    if (workingWorry) {
+      var currentThinking = thinking[workingWorry.id] || { status: '', action: '' };
+      var CONTROL_OPTIONS = [
+        { id: 'inMyControl', label: 'In my control — I can act' },
+        { id: 'partlyControl', label: 'Partly in my control' },
+        { id: 'notControl', label: 'Not in my control right now' }
+      ];
+      var selectedStatus = currentThinking.status;
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🤔', 'Worry processor', 'Process one worry at a time. Then move on.', '#3b82f6'),
-        hh('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '2px solid #3b82f6', marginBottom: 14 } },
-          hh('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8 } }, 'The worry'),
-          hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 12 } }, '"' + w.text + '"')
+        tkSectionHeader('🤔', 'Worry processor', 'Consider one worry, identify what you can influence, and choose whether to make a small plan.', '#3b82f6'),
+        hh('section', { 'aria-labelledby': 'learning-lab-worry-processor-heading', style: { padding: 18, borderRadius: 12, background: 'rgba(30,64,175,0.28)', border: '2px solid #93c5fd', marginBottom: 14 } },
+          hh('h3', { id: 'learning-lab-worry-processor-heading', tabIndex: -1, style: { fontSize: 12, color: '#bfdbfe', fontWeight: 800, margin: '0 0 8px' } }, 'Worry to consider'),
+          hh('blockquote', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, margin: 0 } }, workingWorry.text)
         ),
         tkCard('#3b82f6',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, color: '#60a5fa', fontWeight: 800, marginBottom: 8 } }, '🤔 Process it'),
-            hh('div', { style: { display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' } },
-              [
-                { id: 'inMyControl', label: '✓ In my control — I can act', color: '#10b981' },
-                { id: 'partlyControl', label: '~ Partly in my control', color: '#fbbf24' },
-                { id: 'notControl',   label: '✗ Not in my control', color: '#ef4444' }
-              ].map(function(o) {
-                var on = t.status === o.id;
-                return hh('button', { key: 'os-' + o.id,
-                  onClick: function() { setThinking(Object.assign({}, thinking, (function() { var x = {}; x[w.id] = Object.assign({}, t, { status: o.id }); return x; })())); },
-                  style: { padding: '8px 12px', borderRadius: 6, background: on ? o.color + '30' : 'rgba(15,23,42,0.5)', color: on ? o.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? o.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                }, o.label);
-              })
+          hh('form', { onSubmit: function(event) { event.preventDefault(); if (selectedStatus) processWorry(workingWorry, selectedStatus, currentThinking.action); }, 'aria-labelledby': 'learning-lab-worry-control-heading' },
+            hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 10px' } },
+              hh('legend', { id: 'learning-lab-worry-control-heading', style: { fontSize: 12, color: '#bfdbfe', fontWeight: 800, marginBottom: 8 } }, 'How much control do you have?'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
+                CONTROL_OPTIONS.map(function(option) {
+                  var optionId = 'learning-lab-worry-control-' + option.id;
+                  var selected = selectedStatus === option.id;
+                  return hh('label', { key: 'os-' + option.id, htmlFor: optionId, style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '8px 10px', borderRadius: 8, background: selected ? 'rgba(30,64,175,0.72)' : 'rgba(2,6,23,0.5)', color: selected ? '#fff' : 'var(--allo-stem-text, #e2e8f0)', border: selected ? '2px solid #bfdbfe' : '1px solid rgba(191,219,254,0.45)', fontSize: 11, fontWeight: 800, cursor: 'pointer' } },
+                    hh('input', { id: optionId, type: 'radio', name: 'learning-lab-worry-control', value: option.id, checked: selected, onChange: function() { updateThinking(workingWorry.id, { status: option.id }); }, 'data-ll-focusable': true, style: { width: 20, height: 20, margin: 0, accentColor: '#3b82f6' } }),
+                    hh('span', null, option.label)
+                  );
+                })
+              )
             ),
-            t.status === 'inMyControl' || t.status === 'partlyControl' ? hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'What\'s the smallest next action?'),
-              tkTextarea(t.action, function(v) { setThinking(Object.assign({}, thinking, (function() { var x = {}; x[w.id] = Object.assign({}, t, { action: v }); return x; })())); }, 'Specific. Doable. Small.', 2, { marginBottom: 8 })
-            ) : t.status === 'notControl' ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 8 } },
-              hh('strong', { style: { color: '#ef4444' } }, '✗ Not in your control. '),
-              'The worry is real, but you can\'t solve it through worrying about it. Acknowledge: "I notice my brain is asking me to control this. I cannot." Practice tolerating uncertainty. The Serenity Prayer was written for this exact category.'
-            ) : null
+            selectedStatus === 'inMyControl' || selectedStatus === 'partlyControl' ? hh('div', { style: { marginBottom: 10 } },
+              hh('label', { htmlFor: 'learning-lab-worry-next-action', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#bfdbfe', textTransform: 'uppercase', marginBottom: 4 } }, 'Small next action (optional)'),
+              hh('textarea', { id: 'learning-lab-worry-next-action', value: currentThinking.action, rows: 3, maxLength: 2000, placeholder: 'A specific, realistic action you could take', onChange: function(event) { updateThinking(workingWorry.id, { action: event.target.value }); }, style: Object.assign({}, fieldStyle, { minHeight: 82, resize: 'vertical' }) })
+            ) : selectedStatus === 'notControl' ? hh('aside', { 'aria-label': 'Not in my control guidance', style: { padding: 10, borderRadius: 8, background: 'rgba(127,29,29,0.38)', border: '1px solid #fca5a5', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10 } }, 'You have identified that this is not something you can change right now. You might acknowledge the worry, shift attention to the present, or talk with someone you trust.') : null,
+            hh('div', { role: 'group', 'aria-label': 'Worry processing actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              hh('button', { type: 'button', onClick: function() { closeProcessor(workingWorry.id); }, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Back to worries'),
+              hh('button', { type: 'submit', disabled: !selectedStatus, 'aria-describedby': 'learning-lab-worry-control-heading', 'data-ll-focusable': true, style: Object.assign({}, buttonStyle, { opacity: selectedStatus ? 1 : 0.65, cursor: selectedStatus ? 'pointer' : 'not-allowed' }) }, 'Mark worry processed')
+            )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Back', function() { setWorking(null); }, 'ghost'),
-          tkBtn('✓ Processed — move on', function() {
-            processWorry(w.id, t.status, t.action);
-            setWorking(null);
-          }, 'good')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⏰', 'Worry Time', 'Catch worries throughout the day. Process them at a scheduled "worry time." Borkovec 1983.', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🎓 Why scheduled worry time works: '),
-        'Borkovec 1983 — instead of worrying all day, designate 15 minutes daily for worry. When a worry pops up: write it down, tell yourself "I\'ll think about that at worry time," release it. At worry time: process the list. Most worries lose intensity when contained.'
+      tkSectionHeader('⏰', 'Worry Time', 'Write worries down, then revisit them during a short scheduled period.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-worry-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.30)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-worry-guidance-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '💡 '), 'A self-help practice, not crisis support'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'Some people find it useful to write worries down, set aside 10 to 15 minutes to review them, and distinguish actionable problems from worries they cannot change right now.'),
+        hh('p', { style: { margin: 0 } }, 'Worries save in this browser and may be private. Use a device and account you trust. If anxiety feels overwhelming, interferes with daily life, or involves immediate safety, contact a qualified professional or appropriate crisis service.')
       ),
 
-      // Quick add
       tkCard('#9333ea',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Capture a worry'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkInput(newWorry, setNewWorry, 'Type the worry — don\'t process it yet', { flex: 1 }),
-            tkBtn('Save for worry time', addWorry, 'primary')
+        hh('form', { onSubmit: function(event) { event.preventDefault(); addWorry(); }, 'aria-labelledby': 'learning-lab-worry-capture-heading' },
+          hh('h3', { id: 'learning-lab-worry-capture-heading', style: { fontSize: 12, fontWeight: 800, color: '#ddd6fe', margin: '0 0 4px' } }, 'Capture a worry'),
+          hh('label', { htmlFor: 'learning-lab-worry-input', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 } }, 'Worry (required)'),
+          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start', flexWrap: 'wrap' } },
+            hh('div', { style: { flex: '1 1 240px' } },
+              hh('input', { id: 'learning-lab-worry-input', type: 'text', value: newWorry, maxLength: 2000, placeholder: 'Write the worry without trying to solve it yet', 'aria-invalid': worryError ? 'true' : undefined, 'aria-describedby': worryError ? 'learning-lab-worry-input-help learning-lab-worry-input-error' : 'learning-lab-worry-input-help', onChange: function(event) { setNewWorry(event.target.value); if (worryError) setWorryError(''); }, style: fieldStyle }),
+              hh('p', { id: 'learning-lab-worry-input-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '4px 0 0' } }, 'You can return to it during worry time.'),
+              hh('div', { id: 'learning-lab-worry-input-error', role: 'alert', style: { minHeight: worryError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: worryError ? 4 : 0 } }, worryError)
+            ),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: buttonStyle }, 'Save for worry time')
           )
         )
       ),
 
-      // Worry time timer
       tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '⏰ Worry-time session (15 min)'),
-          running || secsLeft < 15 * 60 ? hh('div', { style: { textAlign: 'center', marginBottom: 10 } },
-            hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#a855f7', fontFamily: 'ui-monospace, Menlo, monospace' } }, String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0'))
-          ) : null,
-          hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-            tkBtn(running ? '⏸ Pause' : '▶ Start worry time', function() { if (!running && secsLeft === 0) setSecsLeft(15 * 60); setRunning(!running); }, 'primary'),
-            secsLeft !== 15 * 60 ? tkBtn('↺ Reset', function() { setSecsLeft(15 * 60); setRunning(false); }, 'ghost') : null
+        hh('section', { 'aria-labelledby': 'learning-lab-worry-timer-heading' },
+          hh('h3', { id: 'learning-lab-worry-timer-heading', style: { fontSize: 12, fontWeight: 800, color: '#ddd6fe', margin: '0 0 8px' } }, '15-minute worry-time session'),
+          hh('time', { role: 'timer', 'aria-live': 'off', 'aria-label': minutes + ' minutes and ' + seconds + ' seconds remaining', style: { display: 'block', textAlign: 'center', fontSize: 32, fontWeight: 900, color: '#ddd6fe', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 10 } }, String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0')),
+          hh('div', { role: 'group', 'aria-label': 'Worry-time timer controls', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+            hh('button', { id: 'learning-lab-worry-timer-toggle', type: 'button', onClick: toggleTimer, 'aria-pressed': running ? 'true' : 'false', 'data-ll-focusable': true, style: buttonStyle }, running ? 'Pause timer' : secsLeft < 15 * 60 && secsLeft > 0 ? 'Resume timer' : 'Start worry time'),
+            hh('button', { type: 'button', onClick: resetTimer, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Reset timer')
           )
         )
       ),
 
-      // Open worries
-      openWorries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '🤔 Open worries to process'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          openWorries.map(function(w) {
-            return hh('div', { key: 'ow-' + w.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7', display: 'flex', justifyContent: 'space-between', gap: 8 } },
-              hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, w.text),
-              hh('div', { style: { display: 'flex', gap: 4 } },
-                tkBtn('Process', function() { setWorking(w.id); }, 'primary', { padding: '4px 10px', fontSize: 10 }),
-                hh('button', { onClick: function() { removeWorry(w.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+      openWorries.length ? hh('section', { 'aria-labelledby': 'learning-lab-worry-open-heading' },
+        hh('h3', { id: 'learning-lab-worry-open-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#ddd6fe', margin: '0 0 8px' } }, 'Open worries to process'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+          openWorries.map(function(worry) {
+            var headingId = 'learning-lab-worry-open-' + worry.id;
+            return hh('li', { key: 'ow-' + worry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #a855f7' } },
+              hh('article', { 'aria-labelledby': headingId },
+                hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, margin: '0 0 7px' } }, worry.text),
+                hh('div', { role: 'group', 'aria-label': 'Actions for worry: ' + worry.text, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  hh('button', { id: 'learning-lab-worry-process-' + worry.id, type: 'button', onClick: function() { openProcessor(worry); }, 'data-ll-focusable': true, style: buttonStyle }, 'Process worry'),
+                  hh('button', { type: 'button', 'aria-label': 'Remove worry: ' + worry.text, onClick: function() { removeWorry(worry); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { minWidth: 44 }) }, 'Remove')
+                )
               )
             );
           })
         )
       ) : tkEmptyState('🤔', 'No open worries right now.', null, null),
 
-      // Processed worries
-      resolvedWorries.length > 0 ? hh('div', { style: { marginTop: 14 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', marginBottom: 8 } }, '✓ Processed worries'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          resolvedWorries.slice(0, 10).map(function(w) {
-            return hh('div', { key: 'rw-' + w.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981', opacity: 0.7 } },
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: 'line-through' } }, w.text),
-              w.action ? hh('div', { style: { fontSize: 10, color: '#10b981', marginTop: 4, fontStyle: 'italic' } }, '→ ' + w.action) : null
+      resolvedWorries.length ? hh('section', { 'aria-labelledby': 'learning-lab-worry-processed-heading', style: { marginTop: 14 } },
+        hh('h3', { id: 'learning-lab-worry-processed-heading', style: { fontSize: 12, fontWeight: 800, color: '#a7f3d0', margin: '0 0 8px' } }, 'Processed worries'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+          resolvedWorries.slice(0, 10).map(function(worry) {
+            var headingId = 'learning-lab-worry-processed-' + worry.id;
+            var statusLabels = { inMyControl: 'In my control', partlyControl: 'Partly in my control', notControl: 'Not in my control right now' };
+            return hh('li', { key: 'rw-' + worry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #10b981' } },
+              hh('article', { 'aria-labelledby': headingId },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                  hh('h4', { id: headingId, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, worry.text),
+                  hh('button', { type: 'button', 'aria-label': 'Remove processed worry: ' + worry.text, onClick: function() { removeWorry(worry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', cursor: 'pointer' } }, '×')
+                ),
+                hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', margin: '6px 0 0', fontSize: 10 } },
+                  hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, 'Control'),
+                  hh('dd', { style: { margin: 0, color: '#a7f3d0' } }, statusLabels[worry.status] || 'Processed'),
+                  worry.action ? hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, 'Next action') : null,
+                  worry.action ? hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, worry.action) : null
+                )
+              )
             );
           })
         )
