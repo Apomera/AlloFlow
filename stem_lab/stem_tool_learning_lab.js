@@ -16754,77 +16754,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { friends: [] };
     var setData = props.setData;
-    var fs = R.useState({ name: '', relationship: '', cadence: 'weekly' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { name: '', relationship: '', cadence: 'weekly' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var nameError = es[0]; var setNameError = es[1];
 
     var CADENCES = [
-      { id: 'daily',   label: 'Daily', days: 1, color: '#ef4444' },
-      { id: 'weekly',  label: 'Weekly', days: 7, color: '#fbbf24' },
-      { id: 'biweekly',label: 'Biweekly', days: 14, color: '#10b981' },
-      { id: 'monthly', label: 'Monthly', days: 30, color: '#3b82f6' },
-      { id: 'quarterly',label: 'Quarterly', days: 90, color: '#a855f7' }
+      { id: 'daily', label: 'Daily', days: 1 },
+      { id: 'weekly', label: 'Weekly', days: 7 },
+      { id: 'biweekly', label: 'Every two weeks', days: 14 },
+      { id: 'monthly', label: 'Monthly', days: 30 },
+      { id: 'quarterly', label: 'Every three months', days: 90 }
     ];
 
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function cadenceFor(id) { return CADENCES.filter(function(cadence) { return cadence.id === id; })[0] || CADENCES[1]; }
     function add() {
-      if (!form.name.trim()) { alert('Need a name.'); return; }
-      var f = Object.assign({ id: tkId(), addedAt: todayISO(), lastContact: todayISO() }, form);
-      setData({ friends: [f].concat(data.friends || []) });
-      setForm({ name: '', relationship: '', cadence: 'weekly' });
+      var name = form.name.trim();
+      if (!name) { setNameError('Enter a name before saving.'); llAnnounce('Person not saved. Enter a name first.'); focusById('learning-lab-friend-name'); return; }
+      var friend = { id: tkId(), addedAt: todayISO(), lastContact: todayISO(), name: name, relationship: form.relationship.trim(), cadence: cadenceFor(form.cadence).id };
+      setData(Object.assign({}, data, { friends: [friend].concat(data.friends || []) }));
+      setForm(emptyForm); setNameError(''); llAnnounce('Check-in reminder saved for ' + name + '.'); focusById('learning-lab-friend-name');
     }
-    function logContact(id) {
-      setData({ friends: (data.friends || []).map(function(f) { return f.id === id ? Object.assign({}, f, { lastContact: todayISO() }) : f; }) });
+    function logContact(friend) {
+      setData(Object.assign({}, data, { friends: (data.friends || []).map(function(item) { return item.id === friend.id ? Object.assign({}, item, { lastContact: todayISO() }) : item; }) }));
+      llAnnounce('Last contact updated to today for ' + String(friend.name || 'this person') + '.'); focusById('learning-lab-friend-contact-' + friend.id);
     }
-    function remove(id) { setData({ friends: (data.friends || []).filter(function(f) { return f.id !== id; }) }); }
+    function remove(friend) {
+      askLearningLabConfirmation('Remove the reminder for “' + String(friend.name || 'this person') + '”? This cannot be undone.', { title: 'Remove this check-in reminder?', confirmText: 'Remove reminder' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { friends: (data.friends || []).filter(function(item) { return item.id !== friend.id; }) }));
+        llAnnounce('Check-in reminder removed.'); focusById('learning-lab-friend-list-heading');
+      });
+    }
 
     var friends = data.friends || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fbcfe8', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #f472b6', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🤝', 'Friendship Tracker', 'Combat relational drift. Track who you owe a check-in to. Especially helpful when life gets busy.', '#ec4899'),
-
+      tkSectionHeader('🤝', 'Friendship Tracker', 'Remember people and the check-in rhythms you choose.', '#ec4899'),
       tkCard('#ec4899',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '+ Add someone'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 8 } },
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
-            tkInput(form.relationship, function(v) { setForm(Object.assign({}, form, { relationship: v })); }, 'Relationship (best friend, mom, cousin)')
+        hh('form', { onSubmit: function(event) { event.preventDefault(); add(); }, 'aria-labelledby': 'learning-lab-friend-form-heading', 'aria-describedby': 'learning-lab-friend-privacy learning-lab-friend-cadence-note' },
+          hh('h2', { id: 'learning-lab-friend-form-heading', style: { margin: '0 0 6px', color: '#fbcfe8', fontSize: 15 } }, 'Add a check-in reminder'),
+          hh('p', { id: 'learning-lab-friend-cadence-note', style: helpStyle }, 'Cadences are optional reminders you choose, not judgments or obligations. This tracker does not send messages or notify anyone.'),
+          hh('p', { id: 'learning-lab-friend-privacy', style: helpStyle }, 'Names and contact patterns save in this browser. Avoid private details if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 } },
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-friend-name', style: labelStyle }, 'Person’s name (required)'), hh('input', { id: 'learning-lab-friend-name', type: 'text', value: form.name, required: true, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { name: event.target.value })); if (nameError) setNameError(''); }, 'aria-invalid': nameError ? 'true' : undefined, 'aria-describedby': nameError ? 'learning-lab-friend-name-error' : undefined, style: fieldStyle }), nameError ? hh('p', { id: 'learning-lab-friend-name-error', role: 'alert', style: { margin: '5px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, nameError) : null),
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-friend-relationship', style: labelStyle }, 'Relationship or context (optional)'), hh('input', { id: 'learning-lab-friend-relationship', type: 'text', value: form.relationship, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { relationship: event.target.value })); }, style: fieldStyle })),
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-friend-cadence', style: labelStyle }, 'Preferred check-in cadence'), hh('select', { id: 'learning-lab-friend-cadence', value: form.cadence, onChange: function(event) { setForm(Object.assign({}, form, { cadence: event.target.value })); }, style: fieldStyle }, CADENCES.map(function(cadence) { return hh('option', { key: cadence.id, value: cadence.id }, cadence.label); })))
           ),
-          hh('div', { style: { fontSize: 11, color: '#f472b6', marginBottom: 4 } }, 'Ideal cadence:'),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
-            CADENCES.map(function(c) {
-              var on = form.cadence === c.id;
-              return hh('button', { key: 'cd-' + c.id,
-                onClick: function() { setForm(Object.assign({}, form, { cadence: c.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-              }, c.label);
-            })
-          ),
-          tkBtn('+ Add', add, 'primary')
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Save check-in reminder')
         )
       ),
-
-      friends.length === 0 ? tkEmptyState('🤝', 'No friends tracked yet.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          friends.map(function(f) {
-            var c = CADENCES.filter(function(x) { return x.id === f.cadence; })[0] || CADENCES[1];
-            var since = daysAgo(f.lastContact);
-            var overdue = since >= c.days;
-            var color = overdue ? '#ef4444' : '#10b981';
-            return hh('div', { key: 'fr-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + color } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('div', null,
-                  hh('strong', { style: { fontSize: 13, color: '#f472b6' } }, '🤝 ' + f.name),
-                  f.relationship ? hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6 } }, '— ' + f.relationship) : null
-                ),
-                hh('div', null,
-                  hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: color + '20', color: color, fontSize: 11, fontWeight: 800, marginRight: 6 } }, overdue ? '⚠ Overdue' : '✓ On track'),
-                  hh('button', { onClick: function() { remove(f.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } }, 'Cadence: ' + c.label + ' · last contact: ' + relDate(f.lastContact) + (overdue ? ' (' + since + 'd ago)' : '')),
-              tkBtn('📞 Mark contacted today', function() { logContact(f.id); }, 'good', { padding: '4px 12px', fontSize: 10 })
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-friend-list-heading' },
+        hh('h2', { id: 'learning-lab-friend-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fbcfe8', fontSize: 15 } }, 'Saved check-in reminders'),
+        friends.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No check-in reminders saved yet.') :
+        hh('ul', { 'aria-label': 'Saved check-in reminders', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, friends.map(function(friend) {
+          var cadence = cadenceFor(friend.cadence); var since = daysAgo(friend.lastContact); var due = typeof since === 'number' && isFinite(since) && since >= cadence.days; var color = due ? '#fca5a5' : '#86efac'; var headingId = 'learning-lab-friend-heading-' + friend.id;
+          return hh('li', { key: friend.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid ' + color } },
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+              hh('div', { style: { minWidth: 0 } }, hh('h3', { id: headingId, style: { margin: 0, color: '#fbcfe8', fontSize: 13, overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, '🤝 '), String(friend.name || 'Unnamed person')), friend.relationship ? hh('p', { style: { margin: '4px 0 0', color: '#e2e8f0', fontSize: 11, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, friend.relationship) : null),
+              hh('button', { type: 'button', onClick: function() { remove(friend); }, 'aria-label': 'Remove check-in reminder for ' + String(friend.name || 'unnamed person'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+            ),
+            hh('p', { style: { margin: '8px 0 3px', color: color, fontSize: 11, fontWeight: 800 } }, due ? 'Check-in reminder: due based on your chosen cadence.' : 'Check-in reminder: within your chosen cadence.'),
+            hh('p', { style: { margin: '0 0 7px', color: '#e2e8f0', fontSize: 11 } }, 'Cadence: ' + cadence.label + '. Last contact: ', hh('time', { dateTime: friend.lastContact || undefined }, relDate(friend.lastContact)), due ? ' (' + since + ' days ago).' : '.'),
+            friend.addedAt ? hh('p', { style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 10 } }, 'Reminder added ', hh('time', { dateTime: friend.addedAt }, relDate(friend.addedAt)), '.') : null,
+            hh('button', { id: 'learning-lab-friend-contact-' + friend.id, type: 'button', onClick: function() { logContact(friend); }, 'aria-label': 'Mark contacted today: ' + String(friend.name || 'unnamed person'), style: buttonStyle }, 'Mark contacted today')
+          ));
+        }))
+      )
     );
   }
 
