@@ -14495,53 +14495,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { models: [] };
     var setData = props.setData;
-    var fs = R.useState({ name: '', who: '', admire: '', icon: '🌟' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { name: '', who: '', admire: '', icon: '🌟' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var nameError = es[0]; var setNameError = es[1];
 
-    function save() {
-      if (!form.name.trim()) { alert('Need a name.'); return; }
-      var m = Object.assign({ id: tkId(), addedAt: todayISO() }, form);
-      setData({ models: [m].concat(data.models || []) });
-      setForm({ name: '', who: '', admire: '', icon: '🌟' });
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
     }
-    function remove(id) { setData({ models: (data.models || []).filter(function(m) { return m.id !== id; }) }); }
+    function save() {
+      var name = form.name.trim();
+      if (!name) {
+        setNameError('Enter the role model’s name or character name.');
+        llAnnounce('Role model not saved. Enter a name first.');
+        focusById('learning-lab-role-model-name');
+        return;
+      }
+      var entry = {
+        id: tkId(), addedAt: todayISO(), name: name,
+        who: form.who.trim(), admire: form.admire.trim(), icon: form.icon.trim() || '🌟'
+      };
+      setData(Object.assign({}, data, { models: [entry].concat(data.models || []) }));
+      setForm(emptyForm); setNameError('');
+      llAnnounce('Role model saved: ' + name);
+      focusById('learning-lab-role-model-name');
+    }
+    function removeModel(entry) {
+      askLearningLabConfirmation('Remove “' + String(entry.name || 'this role model') + '”? This cannot be undone.', {
+        title: 'Remove this role model?', confirmText: 'Remove role model'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { models: (data.models || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Role model removed.');
+        focusById('learning-lab-role-model-history-heading');
+      });
+    }
 
     var models = data.models || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌟', 'Role Models', 'People (real, fictional, historical) whose qualities you want to grow. What you admire shows you what you value.', '#fbbf24'),
-
+      tkSectionHeader('🌟', 'Role Models', 'Record people or characters and the qualities you appreciate in them.', '#fbbf24'),
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Add a role model'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '60px 2fr 2fr', gap: 6, marginBottom: 8 } },
-            tkInput(form.icon, function(v) { setForm(Object.assign({}, form, { icon: v })); }, '🌟', { textAlign: 'center', fontSize: 18 }),
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
-            tkInput(form.who, function(v) { setForm(Object.assign({}, form, { who: v })); }, 'Who are they? (1 phrase)')
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-role-model-form-heading', 'aria-describedby': 'learning-lab-role-model-privacy-note' },
+          hh('h2', { id: 'learning-lab-role-model-form-heading', style: { margin: '0 0 8px', color: '#fde68a', fontSize: 15 } }, 'Add a role model'),
+          hh('p', { id: 'learning-lab-role-model-privacy-note', style: helpStyle }, 'Role models and reflections save in this browser. Avoid private details about real people if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-role-model-icon', style: labelStyle }, 'Symbol (optional)'),
+              hh('input', { id: 'learning-lab-role-model-icon', type: 'text', value: form.icon, maxLength: 12, onChange: function(event) { setForm(Object.assign({}, form, { icon: event.target.value })); }, style: fieldStyle })
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-role-model-name', style: labelStyle }, 'Name (required)'),
+              hh('input', {
+                id: 'learning-lab-role-model-name', type: 'text', value: form.name, required: true, maxLength: 300,
+                onChange: function(event) { setForm(Object.assign({}, form, { name: event.target.value })); if (nameError) setNameError(''); },
+                'aria-invalid': nameError ? 'true' : undefined, 'aria-describedby': nameError ? 'learning-lab-role-model-name-error' : undefined, style: fieldStyle
+              }),
+              nameError ? hh('p', { id: 'learning-lab-role-model-name-error', role: 'alert', style: errorStyle }, nameError) : null
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-role-model-who', style: labelStyle }, 'Description (optional)'),
+              hh('input', { id: 'learning-lab-role-model-who', type: 'text', value: form.who, maxLength: 500, onChange: function(event) { setForm(Object.assign({}, form, { who: event.target.value })); }, style: fieldStyle })
+            )
           ),
-          tkTextarea(form.admire, function(v) { setForm(Object.assign({}, form, { admire: v })); }, 'What specifically do you admire? (Quality, behavior, way of being)', 3, { marginBottom: 8 }),
-          tkBtn('💾 Add', save, 'primary')
+          hh('label', { htmlFor: 'learning-lab-role-model-admire', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'Qualities or actions you appreciate (optional)'),
+          hh('textarea', { id: 'learning-lab-role-model-admire', value: form.admire, rows: 3, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { admire: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+          hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, marginTop: 12, padding: '9px 14px', borderRadius: 7, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Save role model')
         )
       ),
-
-      models.length === 0 ? tkEmptyState('🌟', 'No role models added yet.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          models.map(function(m) {
-            return hh('div', { key: 'rm-' + m.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('div', null,
-                  hh('div', { style: { fontSize: 26, marginBottom: 4 } }, m.icon || '🌟'),
-                  hh('strong', { style: { fontSize: 13, color: '#fbbf24' } }, m.name)
-                ),
-                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
-              ),
-              m.who ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, m.who) : null,
-              m.admire ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
-                hh('strong', { style: { color: '#fbbf24' } }, '💡 What I admire: '), m.admire
-              ) : null
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-role-model-history-heading' },
+        hh('h2', { id: 'learning-lab-role-model-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 15 } }, 'Saved role models'),
+        models.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No role models saved yet.')
+          : hh('ul', { 'aria-label': models.length + (models.length === 1 ? ' saved role model' : ' saved role models'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              models.map(function(entry) {
+                var headingId = 'learning-lab-role-model-heading-' + entry.id;
+                return hh('li', { key: 'rm-' + entry.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { boxSizing: 'border-box', height: '100%', padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.68)', border: '1px solid #a16207' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 26, marginBottom: 4 } }, entry.icon || '🌟'),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#fde68a', fontSize: 14 } }, String(entry.name || 'Unnamed role model'))
+                      ),
+                      hh('button', { type: 'button', onClick: function() { removeModel(entry); }, 'aria-label': 'Remove role model: ' + String(entry.name || 'Unnamed role model'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                    ),
+                    hh('dl', { 'aria-label': 'Role model details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0 0', color: '#e2e8f0', fontSize: 11 } },
+                      entry.who ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Description'), hh('dd', { style: { margin: 0 } }, entry.who)) : null,
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Added'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.addedAt || undefined }, relDate(entry.addedAt))))
+                    ),
+                    entry.admire ? hh('section', { 'aria-label': 'Qualities or actions I appreciate', style: { marginTop: 10, padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.48)' } }, hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 11 } }, 'What I appreciate'), hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, entry.admire)) : null
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
