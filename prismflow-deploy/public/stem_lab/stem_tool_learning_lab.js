@@ -17151,76 +17151,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { days: {} };
     var setData = props.setData;
     var today = todayISO();
-    var todayDay = (data.days || {})[today] || { items: ['', '', ''], done: [false, false, false], reflection: '' };
-    var fs = R.useState(todayDay);                     var form = fs[0]; var setForm = fs[1];
 
+    function normalizeDay(day) {
+      var source = day || {}; var sourceItems = Array.isArray(source.items) ? source.items : []; var sourceDone = Array.isArray(source.done) ? source.done : [];
+      var items = [0, 1, 2].map(function(index) { return String(sourceItems[index] || ''); });
+      var done = [0, 1, 2].map(function(index) { return !!sourceDone[index] && !!items[index].trim(); });
+      return Object.assign({}, source, { items: items, done: done, reflection: String(source.reflection || '') });
+    }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+
+    var todayDay = normalizeDay((data.days || {})[today]);
+    var fs = R.useState(todayDay); var form = fs[0]; var setForm = fs[1];
     function update(patch) {
-      var newForm = Object.assign({}, form, patch);
-      setForm(newForm);
-      setData({ days: Object.assign({}, data.days || {}, (function() { var o = {}; o[today] = newForm; return o; })()) });
+      var newForm = Object.assign({}, form, patch); var dayUpdate = {}; dayUpdate[today] = newForm;
+      setForm(newForm); setData(Object.assign({}, data, { days: Object.assign({}, data.days || {}, dayUpdate) }));
     }
-    function setItem(i, v) {
-      var items = form.items.slice(); items[i] = v;
-      update({ items: items });
+    function setItem(index, value) {
+      var items = form.items.slice(); var done = form.done.slice(); items[index] = value; if (!String(value || '').trim()) done[index] = false; update({ items: items, done: done });
     }
-    function toggleDone(i) {
-      var done = form.done.slice(); done[i] = !done[i];
-      update({ done: done });
+    function toggleDone(index) {
+      var done = form.done.slice(); done[index] = !done[index]; update({ done: done });
+      llAnnounce('Priority ' + (index + 1) + (done[index] ? ' marked complete.' : ' marked not complete.')); focusById('learning-lab-daily3-toggle-' + index);
     }
 
     var days = data.days || {};
     var allDates = Object.keys(days).sort().reverse();
-    var done = form.done.filter(function(d) { return d; }).length;
+    var pastDates = allDates.filter(function(date) { return date !== today; });
+    var filledCount = form.items.filter(function(item) { return !!String(item || '').trim(); }).length;
+    var doneCount = form.items.reduce(function(count, item, index) { return count + (String(item || '').trim() && form.done[index] ? 1 : 0); }, 0);
+    var progressText = filledCount ? doneCount + ' of ' + filledCount + ' listed priorities marked complete.' : 'No priorities entered yet.';
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#fecaca', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fca5a5', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎯', 'Daily 3', 'Pick THE 3 most important things to do today. Just three. Resist the urge for more.', '#ef4444'),
-
-      hh('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.18), rgba(15,23,42,0.7))', border: '2px solid #ef4444', marginBottom: 14 } },
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 10 } },
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5' } }, '🎯 Today (' + new Date().toLocaleDateString() + ')'),
-          hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(239,68,68,0.20)', color: '#ef4444', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/3')
-        ),
-        [0, 1, 2].map(function(i) {
-          var d = form.done[i];
-          return hh('div', { key: 'd3-' + i, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid ' + (d ? '#10b981' : '#ef4444') } },
-            hh('button', { onClick: function() { toggleDone(i); },
-              style: { width: 24, height: 24, borderRadius: 6, background: d ? '#10b981' : 'transparent', color: '#0f172a', border: '2px solid ' + (d ? '#10b981' : '#ef4444'), fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
-            }, d ? '✓' : ''),
-            hh('div', { style: { flex: 1 } },
-              tkInput(form.items[i], function(v) { setItem(i, v); }, 'Priority ' + (i + 1), { fontSize: 13, textDecoration: d ? 'line-through' : 'none', opacity: d ? 0.6 : 1 })
-            )
-          );
-        }),
-        hh('div', { style: { marginTop: 10 } },
-          hh('label', { style: { fontSize: 11, color: '#fca5a5', display: 'block', marginBottom: 4 } }, 'End-of-day reflection (optional)'),
-          tkTextarea(form.reflection, function(v) { update({ reflection: v }); }, 'What got done? What didn\'t? Why?', 2)
-        )
+      tkSectionHeader('🎯', 'Daily 3', 'Use up to three optional slots for today; plans can change.', '#ef4444'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-daily3-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-daily3-context-heading', style: { margin: '0 0 5px', color: '#fecaca', fontSize: 13 } }, 'Three slots, not a requirement'),
+        hh('p', { style: { margin: 0 } }, 'A short list can reduce cognitive load, but you may use zero, one, two, or three slots. Unfinished items and changed plans are information, not failure.')
       ),
-
-      allDates.length > 1 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past days'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          allDates.filter(function(d) { return d !== today; }).slice(0, 14).map(function(date) {
-            var day = days[date];
-            var dones = (day.done || []).filter(function(d) { return d; }).length;
-            return hh('div', { key: 'pd-' + date, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ef4444' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 11, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, date),
-                hh('span', { style: { fontSize: 11, color: dones === 3 ? '#10b981' : dones >= 2 ? '#fbbf24' : '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace' } }, dones + '/3')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                (day.items || []).filter(function(x) { return x; }).map(function(item, i) {
-                  return (day.done && day.done[i]) ? '✓ ' + item : '○ ' + item;
-                }).join(' · ')
-              )
-            );
-          })
-        )
-      ) : null,
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#ef4444' } }, '🎯 Why just 3: '),
-        'Too many priorities = no priority. Three is the sweet spot — enough to feel ambitious, few enough to actually finish. If you regularly hit all 3, increase your scope. If you regularly miss them, shrink them.'
+      hh('section', { 'aria-labelledby': 'learning-lab-daily3-today-heading', 'aria-describedby': 'learning-lab-daily3-autosave', style: { padding: 12, borderRadius: 12, background: 'rgba(127,29,29,0.22)', border: '2px solid #fca5a5', marginBottom: 14 } },
+        hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 } },
+          hh('h2', { id: 'learning-lab-daily3-today-heading', style: { margin: 0, color: '#fecaca', fontSize: 15 } }, hh('span', { 'aria-hidden': 'true' }, '🎯 '), 'Today, ', hh('time', { dateTime: today }, today)),
+          hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: 0, padding: '5px 9px', borderRadius: 999, background: 'rgba(15,23,42,0.72)', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, progressText)
+        ),
+        hh('p', { id: 'learning-lab-daily3-autosave', style: helpStyle }, 'Changes save automatically in this browser. Avoid sensitive details if other people use this device.'),
+        [0, 1, 2].map(function(index) { var inputId = 'learning-lab-daily3-priority-' + index; var helpId = inputId + '-help'; var hasText = !!String(form.items[index] || '').trim(); var isDone = hasText && !!form.done[index]; return hh('div', { key: index, style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 9, alignItems: 'end', marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.5)', borderLeft: '4px solid ' + (isDone ? '#86efac' : '#fca5a5') } },
+          hh('div', null,
+            hh('label', { htmlFor: inputId, style: labelStyle }, 'Priority slot ' + (index + 1) + ' (optional)'),
+            hh('p', { id: helpId, style: helpStyle }, 'Enter something you would like to remember or consider today.'),
+            hh('input', { id: inputId, type: 'text', value: form.items[index], maxLength: 2000, onChange: function(event) { setItem(index, event.target.value); }, 'aria-describedby': helpId + ' learning-lab-daily3-autosave', style: inputStyle })
+          ),
+          hh('button', { id: 'learning-lab-daily3-toggle-' + index, type: 'button', disabled: !hasText, 'aria-pressed': isDone ? 'true' : 'false', 'aria-label': (isDone ? 'Mark not complete: ' : 'Mark complete: ') + (hasText ? form.items[index] : 'empty priority slot ' + (index + 1)), onClick: function() { toggleDone(index); }, style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '2px solid ' + (isDone ? '#86efac' : '#fca5a5'), background: isDone ? '#166534' : 'rgba(15,23,42,0.75)', color: '#f8fafc', fontSize: 11, fontWeight: 800, cursor: hasText ? 'pointer' : 'not-allowed', opacity: hasText ? 1 : 0.65 } }, isDone ? 'Completed' : 'Mark complete')
+        ); }),
+        hh('label', { htmlFor: 'learning-lab-daily3-reflection', style: labelStyle }, 'End-of-day reflection (optional)'),
+        hh('p', { id: 'learning-lab-daily3-reflection-help', style: helpStyle }, 'Optionally note what changed, what helped, or what you want to remember. There is no required outcome.'),
+        hh('textarea', { id: 'learning-lab-daily3-reflection', value: form.reflection, rows: 3, maxLength: 6000, onChange: function(event) { update({ reflection: event.target.value }); }, 'aria-describedby': 'learning-lab-daily3-reflection-help learning-lab-daily3-autosave', style: Object.assign({}, inputStyle, { minHeight: 88, resize: 'vertical', lineHeight: 1.5 }) })
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-daily3-history-heading' },
+        hh('h2', { id: 'learning-lab-daily3-history-heading', style: { margin: '0 0 8px', color: '#fecaca', fontSize: 15 } }, 'Past Daily 3 entries'),
+        pastDates.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No past Daily 3 entries saved yet.') :
+        hh('ul', { 'aria-label': 'Past Daily 3 entries, newest first', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } }, pastDates.map(function(date) { var day = normalizeDay(days[date]); var entries = day.items.map(function(item, index) { return { text: String(item || '').trim(), done: !!day.done[index] }; }).filter(function(item) { return !!item.text; }); var completed = entries.filter(function(item) { return item.done; }).length; var headingId = 'learning-lab-daily3-history-' + date; return hh('li', { key: date }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid #fca5a5' } },
+          hh('h3', { id: headingId, style: { margin: 0, color: '#fecaca', fontSize: 13 } }, 'Daily 3 from ', hh('time', { dateTime: date }, date)),
+          hh('p', { style: { margin: '5px 0', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, entries.length ? completed + ' of ' + entries.length + ' listed priorities marked complete.' : 'No priorities were listed.'),
+          entries.length ? hh('ol', { 'aria-label': 'Priorities and completion status', style: { margin: '6px 0 0', paddingLeft: 22, color: '#f8fafc', fontSize: 11 } }, entries.map(function(item, index) { return hh('li', { key: index, style: { marginTop: 4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('strong', { style: { color: item.done ? '#86efac' : '#fecaca' } }, item.done ? 'Marked complete: ' : 'Not marked complete: '), item.text); })) : null,
+          day.reflection.trim() ? hh('details', { style: { marginTop: 7 } }, hh('summary', { style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Review reflection'), hh('p', { style: { margin: '4px 0 0', color: '#f8fafc', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, day.reflection)) : null
+        )); }))
       )
     );
   }
