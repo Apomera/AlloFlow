@@ -2994,6 +2994,74 @@ window.StemLab = window.StemLab || {
         announceToSR((correct ? 'Prediction correct. ' : 'Prediction review. ') + 'The result is ' + opResultSign + '.');
       }
 
+      var renderSignedOperationNumberLine = function() {
+        if (!signedFractions || !signReveal || opUndefined) return null;
+        var resultValue = opSimplified[0] / opSimplified[1];
+        var values = [val1, val2, resultValue];
+        var bound = Math.max(1, Math.ceil(Math.max.apply(Math, values.map(function(value) { return Math.abs(value); }))));
+        var width = 620, height = 176, margin = 44, lineY = 106;
+        var xFor = function(value) { return margin + ((value + bound) / (bound * 2)) * (width - margin * 2); };
+        var axisLabel = function(value) { return Number.isInteger(value) ? String(value) : value.toFixed(1).replace(/\.0$/, ''); };
+        var elements = [];
+        elements.push(h('line', { key: 'axis', x1: margin, y1: lineY, x2: width - margin, y2: lineY, stroke: '#334155', strokeWidth: 2 }));
+        elements.push(h('polygon', { key: 'left-arrow', points: margin + ',' + lineY + ' ' + (margin + 8) + ',' + (lineY - 5) + ' ' + (margin + 8) + ',' + (lineY + 5), fill: '#334155' }));
+        elements.push(h('polygon', { key: 'right-arrow', points: (width - margin) + ',' + lineY + ' ' + (width - margin - 8) + ',' + (lineY - 5) + ' ' + (width - margin - 8) + ',' + (lineY + 5), fill: '#334155' }));
+
+        var ticks = bound <= 5
+          ? Array.from({ length: bound * 2 + 1 }, function(_, index) { return index - bound; })
+          : [-bound, -bound / 2, 0, bound / 2, bound];
+        ticks.forEach(function(tick, index) {
+          var tx = xFor(tick);
+          elements.push(h('line', { key: 'tick-' + index, x1: tx, y1: lineY - 6, x2: tx, y2: lineY + 6, stroke: tick === 0 ? '#0f172a' : '#94a3b8', strokeWidth: tick === 0 ? 2.5 : 1.5 }));
+          elements.push(h('text', { key: 'tick-label-' + index, x: tx, y: lineY + 22, textAnchor: 'middle', fontSize: 11, fontWeight: tick === 0 ? 'bold' : 'normal', fill: '#475569' }, axisLabel(tick)));
+        });
+
+        var points = [
+          { key: 'a', label: 'A', fraction: num1 + '/' + den1, value: val1, color: '#1d4ed8', pinY: 74 },
+          { key: 'b', label: 'B', fraction: num2 + '/' + den2, value: val2, color: '#b91c1c', pinY: 52 },
+          { key: 'r', label: 'Result', fraction: opSimplified[0] + '/' + opSimplified[1], value: resultValue, color: '#047857', pinY: 30 }
+        ];
+        points.forEach(function(point) {
+          var px = xFor(point.value);
+          var anchor = px < margin + 34 ? 'start' : px > width - margin - 34 ? 'end' : 'middle';
+          elements.push(h('line', { key: point.key + '-pin', x1: px, y1: point.pinY + 7, x2: px, y2: lineY, stroke: point.color, strokeWidth: 1.5, strokeDasharray: '3,3' }));
+          elements.push(h('circle', { key: point.key + '-dot', cx: px, cy: lineY, r: point.key === 'r' ? 5.5 : 4.5, fill: point.color, stroke: '#fff', strokeWidth: 2 }));
+          elements.push(h('text', { key: point.key + '-label', x: px, y: point.pinY, textAnchor: anchor, fontSize: 11, fontWeight: 'bold', fill: point.color }, point.label + ' ' + point.fraction));
+        });
+
+        var movementText = '';
+        if (opMode === 'add' || opMode === 'sub') {
+          var moveValue = opMode === 'add' ? val2 : -val2;
+          var startX = xFor(val1), endX = xFor(resultValue), moveY = 151;
+          var direction = moveValue < 0 ? 'left' : moveValue > 0 ? 'right' : 'nowhere';
+          movementText = opMode === 'add'
+            ? 'Start at A. Adding B moves ' + direction + ' by ' + Math.abs(num2) + '/' + den2 + ' to the result.'
+            : 'Start at A. Subtracting B means adding its opposite, so move ' + direction + ' by ' + Math.abs(num2) + '/' + den2 + ' to the result.';
+          elements.push(h('line', { key: 'move', x1: startX, y1: moveY, x2: endX, y2: moveY, stroke: '#c2410c', strokeWidth: 3 }));
+          if (Math.abs(endX - startX) > 3) {
+            var arrowDirection = endX > startX ? -1 : 1;
+            elements.push(h('polygon', { key: 'move-arrow', points: endX + ',' + moveY + ' ' + (endX + arrowDirection * 9) + ',' + (moveY - 5) + ' ' + (endX + arrowDirection * 9) + ',' + (moveY + 5), fill: '#c2410c' }));
+          } else {
+            elements.push(h('circle', { key: 'no-move', cx: endX, cy: moveY, r: 4, fill: '#c2410c' }));
+          }
+        } else if (opResultSign === 'zero') {
+          movementText = 'A zero numerator makes this ' + (opMode === 'mul' ? 'product' : 'quotient') + ' land at zero.';
+        } else {
+          var sameSign = (num1 < 0) === (num2 < 0);
+          movementText = 'The operands have ' + (sameSign ? 'the same' : 'different') + ' signs, so the ' + (opMode === 'mul' ? 'product' : 'quotient') + ' is ' + opResultSign + '.';
+        }
+
+        var chartLabel = 'Signed number line. Fraction A is ' + num1 + ' over ' + den1 + '. Fraction B is ' + num2 + ' over ' + den2 + '. The result is ' + opSimplified[0] + ' over ' + opSimplified[1] + ', ' + opResultSign + '.';
+        return h('section', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-3', 'aria-labelledby': 'signed-number-line-title' },
+          h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 mb-1' },
+            h('h3', { id: 'signed-number-line-title', className: 'text-xs font-black text-slate-800' }, 'Signed position map'),
+            h('span', { className: 'text-[11px] font-bold text-slate-500' }, 'Auto-scaled from -' + axisLabel(bound) + ' to ' + axisLabel(bound))
+          ),
+          h('svg', { viewBox: '0 0 ' + width + ' ' + height, width: '100%', height: height, role: 'img', 'aria-label': chartLabel, className: 'block mx-auto', style: { maxWidth: width + 'px' } }, elements),
+          h('p', { className: 'text-xs text-slate-700 text-center font-semibold' }, movementText)
+        );
+      };
+
       // Area model for multiplication
       var renderAreaModel = function() {
         if (opMode !== 'mul' || signedFractions) return null;
@@ -3068,12 +3136,12 @@ window.StemLab = window.StemLab || {
             }, op[1]);
           })
         ),
-        signedFractions && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3', disabled: opUndefined },
+        signedFractions && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3' },
           h('legend', { className: 'px-1 text-xs font-black text-violet-800' }, 'Sign Detective: predict the result'),
           opUndefined ? h('p', { role: 'status', className: 'text-xs text-red-700' }, 'The second fraction is zero, so division is undefined and has no sign.') : h(React.Fragment, null,
             h('div', { className: 'grid grid-cols-3 gap-2' }, ['positive', 'zero', 'negative'].map(function(choice) {
               return h('label', { key: choice, className: 'flex items-center justify-center gap-2 rounded-lg border px-2 py-2 text-xs font-bold cursor-pointer ' + (signPrediction === choice ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200') },
-                h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: signReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
+                h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: opUndefined || signReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
                 choice.charAt(0).toUpperCase() + choice.slice(1)
               );
             })),
@@ -3122,6 +3190,7 @@ window.StemLab = window.StemLab || {
             opUndefined || !signReveal ? null : drawResultBars(opSimplified[0], opSimplified[1], '#22c55e')
           )
         ),
+        renderSignedOperationNumberLine(),
         // Area model (multiplication only)
         renderAreaModel()
       );

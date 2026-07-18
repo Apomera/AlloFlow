@@ -52,6 +52,42 @@ describe('Fractions Lab signed operations', () => {
     expect(html).toContain('aria-live="polite"');
   });
 
+  it('plots signed operands and subtraction movement on an accessible number line', () => {
+    const html = renderFractions({
+      tab: 'operations',
+      signedFractions: true,
+      num1: -1,
+      den1: 2,
+      num2: -3,
+      den2: 4,
+      opMode: 'sub',
+      signPrediction: 'positive',
+      signFeedback: { key: 'sub|-1|2|-3|4', correct: true, actual: 'positive' }
+    });
+    expect(html).toContain('Signed position map');
+    expect(html).toContain('Auto-scaled from -1 to 1');
+    expect(html).toContain('role="img"');
+    expect(html).toContain('The result is 1 over 4, positive.');
+    expect(html).toContain('Subtracting B means adding its opposite, so move right by 3/4 to the result.');
+  });
+
+  it('explains multiplication sign rules without implying additive movement', () => {
+    const html = renderFractions({
+      tab: 'operations',
+      signedFractions: true,
+      num1: -8,
+      den1: 3,
+      num2: -9,
+      den2: 4,
+      opMode: 'mul',
+      signPrediction: 'positive',
+      signFeedback: { key: 'mul|-8|3|-9|4', correct: true, actual: 'positive' }
+    });
+    expect(html).toContain('Auto-scaled from -6 to 6');
+    expect(html).toContain('The operands have the same signs, so the product is positive.');
+    expect(html).not.toContain('Start at A. Adding B');
+  });
+
   it('keeps signed controls bounded and invalidates stale predictions', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fractions.js', 'utf8');
     expect(source).toContain("min: signedFractions ? -20 : 0");
