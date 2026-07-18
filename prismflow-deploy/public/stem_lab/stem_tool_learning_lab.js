@@ -17305,79 +17305,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { hopes: [] };
     var setData = props.setData;
-    var fs = R.useState({ text: '', category: 'experience' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { text: '', category: 'experience' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var textError = es[0]; var setTextError = es[1];
+    var featuredState = R.useState(null); var featuredId = featuredState[0]; var setFeaturedId = featuredState[1];
 
     var CATS = [
-      { id: 'place',      label: 'A place I want to go', icon: '🌍', color: '#06b6d4' },
-      { id: 'experience', label: 'An experience I want', icon: '✨', color: '#fbbf24' },
-      { id: 'skill',      label: 'A skill I want to learn', icon: '🛠', color: '#10b981' },
-      { id: 'person',     label: 'A person I want to meet/know', icon: '🤝', color: '#ec4899' },
-      { id: 'thing',      label: 'Something I want to make', icon: '🎨', color: '#a855f7' },
-      { id: 'become',     label: 'A way I want to BE', icon: '🌟', color: '#fb923c' }
+      { id: 'place', label: 'Place', icon: '🌍', color: '#67e8f9' },
+      { id: 'experience', label: 'Experience', icon: '✨', color: '#fde68a' },
+      { id: 'skill', label: 'Skill or knowledge', icon: '🛠', color: '#6ee7b7' },
+      { id: 'person', label: 'Person or relationship', icon: '🤝', color: '#f9a8d4' },
+      { id: 'thing', label: 'Something to make', icon: '🎨', color: '#d8b4fe' },
+      { id: 'become', label: 'Way of being', icon: '🌟', color: '#fdba74' }
     ];
 
+    function safeDomId(value) { return String(value || 'hope').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[1]; }
     function add() {
-      if (!form.text.trim()) return;
-      var h = Object.assign({ id: tkId(), addedAt: todayISO() }, form);
-      setData({ hopes: [h].concat(data.hopes || []) });
-      setForm({ text: '', category: 'experience' });
+      var text = form.text.trim();
+      if (!text) { setTextError('Describe a hope before saving.'); llAnnounce('Hope not saved. Add a description first.'); focusById('learning-lab-hope-text'); return; }
+      var hope = { id: tkId(), addedAt: todayISO(), text: text, category: categoryFor(form.category).id, done: false };
+      setData(Object.assign({}, data, { hopes: [hope].concat(data.hopes || []) }));
+      setForm(emptyForm); setTextError(''); setFeaturedId(hope.id); llAnnounce('Hope saved in this browser.'); focusById('learning-lab-hope-text');
     }
-    function remove(id) { setData({ hopes: (data.hopes || []).filter(function(h) { return h.id !== id; }) }); }
-    function markDone(id) {
-      setData({ hopes: (data.hopes || []).map(function(h) { return h.id === id ? Object.assign({}, h, { done: !h.done, doneAt: !h.done ? todayISO() : null }) : h; }) });
+    function showAnother(unfinished, current) {
+      if (unfinished.length < 2) { llAnnounce('There is only one active hope to feature.'); return; }
+      var index = unfinished.indexOf(current); var next = unfinished[(index + 1) % unfinished.length]; setFeaturedId(next.id); llAnnounce('Showing another saved hope.'); focusById('learning-lab-hope-feature-next');
+    }
+    function markDone(hope) {
+      var nextDone = !hope.done;
+      setData(Object.assign({}, data, { hopes: (data.hopes || []).map(function(item) { return item.id === hope.id ? Object.assign({}, item, { done: nextDone, doneAt: nextDone ? todayISO() : null }) : item; }) }));
+      llAnnounce((nextDone ? 'Hope marked fulfilled: ' : 'Hope returned to active: ') + String(hope.text || 'untitled hope')); focusById('learning-lab-hope-state-' + safeDomId(hope.id));
+    }
+    function remove(hope) {
+      askLearningLabConfirmation('Remove “' + String(hope.text || 'this hope') + '”? This cannot be undone.', { title: 'Remove this saved hope?', confirmText: 'Remove hope' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { hopes: (data.hopes || []).filter(function(item) { return item.id !== hope.id; }) }));
+        if (featuredId === hope.id) setFeaturedId(null); llAnnounce('Saved hope removed.'); focusById('learning-lab-hope-list-heading');
+      });
     }
 
     var hopes = data.hopes || [];
-    var random = hopes.filter(function(h) { return !h.done; }).length > 0 ? hopes.filter(function(h) { return !h.done; })[Math.floor(Math.random() * hopes.filter(function(h) { return !h.done; }).length)] : null;
+    var unfinished = hopes.filter(function(hope) { return !hope.done; });
+    var featured = unfinished.filter(function(hope) { return hope.id === featuredId; })[0] || unfinished[0] || null;
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#ffedd5', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fb923c', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fdba74', background: '#c2410c', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌅', 'Hope Library', 'Places, experiences, skills, people, things, ways of being you hope for. For hard days when you need to remember life is bigger.', '#fb923c'),
-
-      random ? hh('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,146,60,0.25), rgba(15,23,42,0.7))', border: '2px solid #fb923c', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 10, color: '#fb923c', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '🌅 Random hope'),
-        hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 4 } }, random.text),
-        hh('div', { style: { fontSize: 10, color: '#fb923c' } }, (CATS.filter(function(c) { return c.id === random.category; })[0] || { label: '' }).label)
+      tkSectionHeader('🌅', 'Hope Library', 'Keep optional reminders of things you may want to explore, make, learn, or experience.', '#fb923c'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-hope-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #fb923c', background: 'rgba(124,45,18,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-hope-context-heading', style: { margin: '0 0 5px', color: '#ffedd5', fontSize: 13 } }, 'An inspiration list, not a safety plan'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'Hopes can be small, uncertain, practical, private, or change over time. You do not need to feel positive or complete an item for it to belong here.'),
+        hh('p', { style: { margin: 0 } }, 'This tool does not assess wellbeing, monitor safety, contact anyone, or replace emergency or crisis support. For immediate or life-threatening danger, contact the emergency service or crisis resource appropriate for your location.')
+      ),
+      featured ? hh('section', { 'aria-labelledby': 'learning-lab-hope-feature-heading', style: { padding: 14, borderRadius: 12, background: 'rgba(124,45,18,0.28)', border: '2px solid #fb923c', marginBottom: 14 } },
+        hh('h2', { id: 'learning-lab-hope-feature-heading', style: { margin: '0 0 6px', color: '#ffedd5', fontSize: 13 } }, 'Featured active hope'),
+        hh('p', { style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 15, lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, featured.text),
+        hh('p', { style: { margin: '0 0 8px', color: '#fed7aa', fontSize: 11 } }, 'Category: ' + categoryFor(featured.category).label),
+        unfinished.length > 1 ? hh('button', { id: 'learning-lab-hope-feature-next', type: 'button', onClick: function() { showAnother(unfinished, featured); }, style: buttonStyle }, 'Show another active hope') : null
       ) : null,
-
       tkCard('#fb923c',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fb923c', marginBottom: 8 } }, '+ Add a hope'),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
-            CATS.map(function(c) {
-              var on = form.category === c.id;
-              return hh('button', { key: 'hc-' + c.id,
-                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-              }, c.icon + ' ' + c.label);
-            })
+        hh('form', { onSubmit: function(event) { event.preventDefault(); add(); }, 'aria-labelledby': 'learning-lab-hope-form-heading', 'aria-describedby': 'learning-lab-hope-privacy' },
+          hh('h2', { id: 'learning-lab-hope-form-heading', style: { margin: '0 0 6px', color: '#ffedd5', fontSize: 15 } }, 'Add a hope'),
+          hh('p', { id: 'learning-lab-hope-privacy', style: helpStyle }, 'Saved hopes stay in this browser. Avoid names or private details if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) minmax(0, 2fr)', gap: 10 } },
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-hope-category', style: labelStyle }, 'Category'), hh('select', { id: 'learning-lab-hope-category', value: form.category, onChange: function(event) { setForm(Object.assign({}, form, { category: event.target.value })); }, style: fieldStyle }, CATS.map(function(category) { return hh('option', { key: category.id, value: category.id }, category.label); }))),
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-hope-text', style: labelStyle }, 'Hope description (required)'), hh('textarea', { id: 'learning-lab-hope-text', value: form.text, rows: 3, required: true, maxLength: 4000, onChange: function(event) { setForm(Object.assign({}, form, { text: event.target.value })); if (textError) setTextError(''); }, 'aria-invalid': textError ? 'true' : undefined, 'aria-describedby': textError ? 'learning-lab-hope-text-error' : undefined, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical', lineHeight: 1.5 }) }), textError ? hh('p', { id: 'learning-lab-hope-text-error', role: 'alert', style: { margin: '5px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, textError) : null)
           ),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'Describe the hope', { flex: 1 }),
-            tkBtn('+ Add', add, 'primary', { padding: '8px 14px' })
-          )
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Save hope')
         )
       ),
-
-      hopes.length === 0 ? tkEmptyState('🌅', 'Your library is empty. Add 5 things — small or huge.', null, null)
-      : CATS.map(function(cat) {
-          var inCat = hopes.filter(function(h) { return h.category === cat.id; });
-          if (inCat.length === 0) return null;
-          return hh('div', { key: 'hc-' + cat.id, style: { marginBottom: 14 } },
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '4px 10px', background: cat.color + '15', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-              inCat.map(function(h) {
-                return hh('div', { key: 'hp-' + h.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + cat.color, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
-                  hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: h.done ? 'line-through' : 'none', opacity: h.done ? 0.6 : 1 } }, (h.done ? '✓ ' : '') + h.text),
-                  hh('div', { style: { display: 'flex', gap: 4 } },
-                    tkBtn(h.done ? '↺' : '✓', function() { markDone(h.id); }, h.done ? 'ghost' : 'good', { padding: '4px 10px', fontSize: 10 }),
-                    hh('button', { onClick: function() { remove(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                  )
-                );
-              })
-            )
-          );
-        }).filter(Boolean)
+      hh('section', { 'aria-labelledby': 'learning-lab-hope-list-heading' },
+        hh('h2', { id: 'learning-lab-hope-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#ffedd5', fontSize: 15 } }, 'Saved hopes'),
+        hopes.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No hopes saved yet. Add one if it feels useful.') :
+        CATS.map(function(category) { var inCategory = hopes.filter(function(hope) { return categoryFor(hope.category).id === category.id; }); if (!inCategory.length) return null; var categoryHeadingId = 'learning-lab-hope-category-' + category.id; return hh('section', { key: category.id, 'aria-labelledby': categoryHeadingId, style: { marginBottom: 14 } },
+          hh('h3', { id: categoryHeadingId, style: { margin: '0 0 7px', color: category.color, fontSize: 13 } }, hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label),
+          hh('ul', { 'aria-label': category.label + ' hopes', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } }, inCategory.map(function(hope) { var domId = safeDomId(hope.id); var headingId = 'learning-lab-hope-heading-' + domId; return hh('li', { key: hope.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid ' + category.color } },
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+              hh('div', { style: { minWidth: 0 } }, hh('p', { style: { margin: '0 0 3px', color: hope.done ? '#a7f3d0' : '#fed7aa', fontSize: 10, fontWeight: 800 } }, hope.done ? 'Marked fulfilled' : 'Active hope'), hh('h4', { id: headingId, style: { margin: 0, color: '#f8fafc', fontSize: 12, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(hope.text || 'Untitled hope'))),
+              hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                hh('button', { id: 'learning-lab-hope-state-' + domId, type: 'button', 'aria-pressed': hope.done ? 'true' : 'false', onClick: function() { markDone(hope); }, 'aria-label': (hope.done ? 'Return to active: ' : 'Mark fulfilled: ') + String(hope.text || 'untitled hope'), style: buttonStyle }, hope.done ? 'Return to active' : 'Mark fulfilled'),
+                hh('button', { type: 'button', onClick: function() { remove(hope); }, 'aria-label': 'Remove saved hope: ' + String(hope.text || 'untitled hope'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+              )
+            ),
+            hh('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Added ', hh('time', { dateTime: hope.addedAt || undefined }, relDate(hope.addedAt)), hope.done && hope.doneAt ? hh('span', null, '. Marked fulfilled ', hh('time', { dateTime: hope.doneAt }, relDate(hope.doneAt))) : null)
+          )); }))
+        ); }).filter(Boolean)
+      )
     );
   }
 
