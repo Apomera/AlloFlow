@@ -1,0 +1,27 @@
+{
+  "turkish": {
+    "minimum_value": "En küçük değer",
+    "maximum_value": "En büyük değer",
+    "marker_color": "İşaretçi rengi",
+    "focus_explore_label": "Keşfet",
+    "focus_explore_body": "Aralığı ayarla, işaretçiler ekle ve mesafeleri karşılaştır.",
+    "focus_challenges_label": "Meydan Okuma",
+    "focus_challenges_body": "Tahmin etme, yuvarlama ve değerleri bulma alıştırması yap.",
+    "focus_skip_label": "Atlayarak Sayma",
+    "focus_frac_label": "Kesir/Ondalık",
+    "focus_frac_body": "Kesirleri, ondalıkları, yüzdeleri ve alan modellerini bağla.",
+    "focus_compare_label": "Karşılaştır",
+    "focus_compare_metric": "A vs B",
+    "focus_compare_body": "Puan olmadan kesirler arasındaki büyüklük ilişkilerini test et.",
+    "number_line_workspace": "Sayı doğrusu çalışma alanı",
+    "number_line_workspace_label": "Sayı Doğrusu Çalışma Alanı",
+    "make_magnitude_visible": "büyüklüğü görünür kıl",
+    "focus_summary": "Değerleri bulmak, sıçramaları göstermek ve eşdeğer biçimleri bağlamak için tek bir doğru kullan.",
+    "range": "Aralık",
+    "accuracy": "Doğruluk",
+    "badges": "Rozetler",
+    "integer_lab_summary": "Negatif sayılar odak noktası olduğunda mini laboratuvarı aç.",
+    "hide_integer_lab": "Mini laboratuvarı gizle",
+    "open_integer_lab": "Mini laboratuvarı aç"
+  }
+}
