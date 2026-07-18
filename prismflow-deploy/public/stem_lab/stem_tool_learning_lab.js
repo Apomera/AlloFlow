@@ -16372,62 +16372,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { highlights: [] };
     var setData = props.setData;
-    var fs = R.useState({ moments: ['', '', ''], lesson: '', tomorrow: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { moments: ['', '', ''], lesson: '', tomorrow: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
 
-    function setMoment(i, v) {
-      var m = form.moments.slice(); m[i] = v;
-      setForm(Object.assign({}, form, { moments: m }));
-    }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function setMoment(index, value) { var moments = form.moments.slice(); moments[index] = value; setForm(Object.assign({}, form, { moments: moments })); if (formError) setFormError(''); }
+    function hasContent() { return form.moments.some(function(moment) { return moment.trim(); }) || form.lesson.trim() || form.tomorrow.trim(); }
     function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ highlights: [entry].concat(data.highlights || []) });
-      setForm({ moments: ['', '', ''], lesson: '', tomorrow: '' });
+      if (!hasContent()) { setFormError('Enter at least one moment, note, or thought before saving.'); llAnnounce('Daily reflection not saved. Enter at least one note first.'); focusById('learning-lab-daily-moment-1'); return; }
+      var entry = { id: tkId(), date: todayISO(), moments: form.moments.map(function(moment) { return moment.trim(); }), lesson: form.lesson.trim(), tomorrow: form.tomorrow.trim() };
+      setData(Object.assign({}, data, { highlights: [entry].concat(data.highlights || []) }));
+      setForm(emptyForm); setFormError(''); llAnnounce('Daily reflection saved in this browser.'); focusById('learning-lab-daily-moment-1');
+    }
+    function removeEntry(entry) {
+      askLearningLabConfirmation('Remove this saved daily reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { highlights: (data.highlights || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Saved daily reflection removed.'); focusById('learning-lab-daily-history-heading');
+      });
     }
 
     var highlights = data.highlights || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '8px 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('✨', 'Daily Highlights', '5-minute end-of-day reel. Compresses the day to its highest-value moments.', '#fbbf24'),
-
-      tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '✨ Today\'s 3 brightest moments'),
-          form.moments.map(function(m, i) {
-            return hh('div', { key: 'mh-' + i, style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 } },
-              hh('span', { style: { color: '#fbbf24', fontWeight: 800, minWidth: 16, fontSize: 14 } }, '✦'),
-              tkInput(m, function(v) { setMoment(i, v); }, 'Bright moment ' + (i + 1), { flex: 1 })
-            );
-          }),
-          hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'block', marginTop: 10, marginBottom: 4 } }, '🎓 One thing I learned today (about anything)'),
-          tkInput(form.lesson, function(v) { setForm(Object.assign({}, form, { lesson: v })); }, 'Even a tiny lesson counts', { marginBottom: 10 }),
-          hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, '🌅 One thing I want for tomorrow'),
-          tkInput(form.tomorrow, function(v) { setForm(Object.assign({}, form, { tomorrow: v })); }, 'Specific. Achievable.', { marginBottom: 10 }),
-          tkBtn('💾 Save', save, 'primary')
-        )
+      tkSectionHeader('✨', 'Daily Moments', 'Record any moments or thoughts you want to remember from the day.', '#fbbf24'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-daily-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(161,98,7,0.20)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-daily-about-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 13 } }, 'Any kind of day can be recorded'),
+        hh('p', { style: { margin: 0 } }, 'Moments can be positive, difficult, neutral, unfinished, ordinary, or mixed. Every prompt is optional, and this reflection is not a measure of gratitude, productivity, or success.')
       ),
-
-      highlights.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past highlights'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          highlights.slice(0, 15).map(function(h) {
-            return hh('div', { key: 'hl-' + h.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24' } },
-              hh('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, h.date),
-              h.moments.filter(function(m) { return m; }).map(function(m, i) {
-                return hh('div', { key: 'hm-' + i, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, '✦ ' + m);
-              }),
-              h.lesson ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎓 '), h.lesson) : null,
-              h.tomorrow ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🌅 '), h.tomorrow) : null
-            );
-          })
-        )
-      ) : null
+      tkCard('#fbbf24', hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-daily-form-heading', 'aria-describedby': 'learning-lab-daily-privacy-note' },
+        hh('h2', { id: 'learning-lab-daily-form-heading', style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15 } }, 'Add a daily reflection'),
+        hh('p', { id: 'learning-lab-daily-privacy-note', style: helpStyle }, 'Daily notes save in this browser. Avoid private details if other people use this device.'),
+        hh('fieldset', { style: { margin: 0, padding: 0, border: 0 } },
+          hh('legend', { style: labelStyle }, 'Up to three moments (optional)'),
+          form.moments.map(function(moment, index) { var inputId = 'learning-lab-daily-moment-' + (index + 1); return hh('div', { key: inputId, style: { marginBottom: 9 } }, hh('label', { htmlFor: inputId, style: labelStyle }, 'Moment ' + (index + 1)), hh('input', { id: inputId, type: 'text', value: moment, maxLength: 2000, onChange: function(event) { setMoment(index, event.target.value); }, style: fieldStyle })); })
+        ),
+        hh('label', { htmlFor: 'learning-lab-daily-note', style: labelStyle }, 'Something I noticed or learned (optional)'),
+        hh('input', { id: 'learning-lab-daily-note', type: 'text', value: form.lesson, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { lesson: event.target.value })); if (formError) setFormError(''); }, style: fieldStyle }),
+        hh('label', { htmlFor: 'learning-lab-daily-tomorrow', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'A thought about tomorrow (optional)'),
+        hh('input', { id: 'learning-lab-daily-tomorrow', type: 'text', value: form.tomorrow, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { tomorrow: event.target.value })); if (formError) setFormError(''); }, style: fieldStyle }),
+        formError ? hh('p', { id: 'learning-lab-daily-error', role: 'alert', style: errorStyle }, formError) : null,
+        hh('button', { type: 'submit', 'aria-describedby': formError ? 'learning-lab-daily-error' : undefined, style: Object.assign({}, buttonStyle, { marginTop: 12 }) }, 'Save daily reflection')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-daily-history-heading' },
+        hh('h2', { id: 'learning-lab-daily-history-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#fef3c7', fontSize: 15 } }, 'Saved daily reflections'),
+        highlights.length > 15 ? hh('p', { style: helpStyle }, 'Showing the 15 most recent reflections out of ' + highlights.length + '.') : null,
+        highlights.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No daily reflections saved yet.') : hh('ul', { 'aria-label': 'Most recent daily reflections', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, highlights.slice(0, 15).map(function(entry) { var moments = (entry.moments || []).filter(function(moment) { return String(moment || '').trim(); }); var headingId = 'learning-lab-daily-entry-' + entry.id; return hh('li', { key: 'hl-' + entry.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #fbbf24' } },
+          hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#fef3c7', fontSize: 13 } }, moments.length + (moments.length === 1 ? ' saved moment' : ' saved moments')), hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: entry.date || undefined }, relDate(entry.date)))), hh('button', { type: 'button', onClick: function() { removeEntry(entry); }, 'aria-label': 'Remove daily reflection with ' + moments.length + ' moments', style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')),
+          moments.length ? hh('section', { 'aria-label': 'Recorded moments', style: { marginTop: 8 } }, hh('h4', { style: { margin: '0 0 4px', color: '#fef3c7', fontSize: 11 } }, 'Moments'), hh('ul', { style: { margin: 0, paddingLeft: 22, color: '#f1f5f9', fontSize: 11, lineHeight: 1.6 } }, moments.map(function(moment, index) { return hh('li', { key: index, style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(moment)); }))) : null,
+          entry.lesson ? hh('p', { style: { margin: '8px 0 0', color: '#f1f5f9', fontSize: 11, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('strong', null, 'Noticed or learned: '), String(entry.lesson)) : null,
+          entry.tomorrow ? hh('p', { style: { margin: '6px 0 0', color: '#f1f5f9', fontSize: 11, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('strong', null, 'Thought about tomorrow: '), String(entry.tomorrow)) : null
+        )); }))
+      )
     );
   }
 
-  // ── VVV. PERSONAL LIFE SKILLS TRACKER (Wave 15) ──
-  // Track development of practical adult skills students rarely get
-  // direct instruction in. Skill tree across 6 categories.
   function PersonalLifeSkills(props) {
     if (!R) return null;
     var data = props.data || { skills: {} };
