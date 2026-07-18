@@ -14736,114 +14736,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { contracts: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var fs = R.useState({ title: '', commitments: [''], rewards: '', accountability: '', startDate: todayISO(), endDate: '' });
-    var form = fs[0]; var setForm = fs[1];
+    function newContractForm() {
+      return { title: '', commitments: [{ id: tkId(), text: '' }], rewards: '', accountability: '', startDate: todayISO(), endDate: '' };
+    }
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var fs = R.useState(newContractForm()); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState({ title: '', commitments: '', startDate: '', endDate: '' }); var errors = es[0]; var setErrors = es[1];
 
-    function addCommit() {
-      setForm(Object.assign({}, form, { commitments: form.commitments.concat(['']) }));
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
     }
-    function updateCommit(i, v) {
-      var c = form.commitments.slice(); c[i] = v;
-      setForm(Object.assign({}, form, { commitments: c }));
+    function addCommitment() {
+      if (form.commitments.length >= 20) { llAnnounce('A contract can contain up to 20 commitments.'); return; }
+      var entry = { id: tkId(), text: '' };
+      setForm(Object.assign({}, form, { commitments: form.commitments.concat([entry]) }));
+      llAnnounce('Commitment field added.');
+      focusById('learning-lab-contract-commitment-' + entry.id);
     }
-    function removeCommit(i) {
-      setForm(Object.assign({}, form, { commitments: form.commitments.filter(function(_, j) { return j !== i; }) }));
+    function updateCommitment(id, value) {
+      setForm(Object.assign({}, form, { commitments: form.commitments.map(function(entry) { return entry.id === id ? Object.assign({}, entry, { text: value }) : entry; }) }));
+      if (errors.commitments && value.trim()) setErrors(Object.assign({}, errors, { commitments: '' }));
+    }
+    function removeCommitment(entry) {
+      var next = form.commitments.filter(function(item) { return item.id !== entry.id; });
+      if (next.length === 0) next = [{ id: tkId(), text: '' }];
+      setForm(Object.assign({}, form, { commitments: next }));
+      llAnnounce('Commitment field removed.');
+      focusById(next.length ? 'learning-lab-contract-commitment-' + next[Math.max(0, next.length - 1)].id : 'learning-lab-contract-add-commitment');
+    }
+    function validate() {
+      var next = { title: '', commitments: '', startDate: '', endDate: '' };
+      if (!form.title.trim()) next.title = 'Enter a title for this learning contract.';
+      if (!form.commitments.some(function(entry) { return entry.text.trim(); })) next.commitments = 'Enter at least one commitment.';
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(form.startDate || '')) next.startDate = 'Choose a valid start date.';
+      if (form.endDate && !/^\d{4}-\d{2}-\d{2}$/.test(form.endDate)) next.endDate = 'Choose a valid review date or leave it blank.';
+      else if (form.endDate && form.startDate && form.endDate < form.startDate) next.endDate = 'Choose a review date on or after the start date.';
+      return next;
     }
     function save() {
-      if (!form.title.trim()) { alert('Need a title.'); return; }
-      var c = Object.assign({ id: tkId(), signed: false }, form);
-      setData({ contracts: [c].concat(data.contracts || []) });
-      setForm({ title: '', commitments: [''], rewards: '', accountability: '', startDate: todayISO(), endDate: '' });
-      setView('list');
+      var nextErrors = validate();
+      if (Object.keys(nextErrors).some(function(key) { return !!nextErrors[key]; })) {
+        setErrors(nextErrors); llAnnounce('Contract not saved. Review the highlighted fields.');
+        focusById(nextErrors.title ? 'learning-lab-contract-title' : nextErrors.commitments ? 'learning-lab-contract-commitment-' + form.commitments[0].id : nextErrors.startDate ? 'learning-lab-contract-start' : 'learning-lab-contract-end');
+        return;
+      }
+      var entry = {
+        id: tkId(), signed: false, title: form.title.trim(),
+        commitments: form.commitments.map(function(item) { return item.text.trim(); }).filter(Boolean),
+        rewards: form.rewards.trim(), accountability: form.accountability.trim(),
+        startDate: form.startDate, endDate: form.endDate
+      };
+      setData(Object.assign({}, data, { contracts: [entry].concat(data.contracts || []) }));
+      setForm(newContractForm()); setErrors({ title: '', commitments: '', startDate: '', endDate: '' }); setView('list');
+      llAnnounce('Unsigned learning contract saved: ' + entry.title);
+      focusById('learning-lab-contract-heading-' + entry.id);
     }
-    function sign(id) {
-      setData({ contracts: (data.contracts || []).map(function(c) { return c.id === id ? Object.assign({}, c, { signed: true, signedAt: todayISO() }) : c; }) });
+    function formIsDirty() {
+      return !!(form.title.trim() || form.rewards.trim() || form.accountability.trim() || form.endDate || form.startDate !== todayISO() || form.commitments.some(function(entry) { return entry.text.trim(); }));
     }
-    function remove(id) {
-      if (!confirm('Delete this contract?')) return;
-      setData({ contracts: (data.contracts || []).filter(function(c) { return c.id !== id; }) });
+    function cancelEditor() {
+      if (!formIsDirty()) { setView('list'); focusById('learning-lab-contract-new'); return; }
+      askLearningLabConfirmation('Return to the contract list and discard this unsaved draft?', { title: 'Discard this contract draft?', confirmText: 'Discard draft' }).then(function(accepted) {
+        if (!accepted) return;
+        setForm(newContractForm()); setErrors({ title: '', commitments: '', startDate: '', endDate: '' }); setView('list');
+        llAnnounce('Unsaved contract draft discarded.'); focusById('learning-lab-contract-new');
+      });
     }
+    function signContract(entry) {
+      askLearningLabConfirmation('Mark “' + String(entry.title || 'this contract') + '” as signed? The signed date will be recorded.', { title: 'Sign this learning contract?', confirmText: 'Sign contract' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { contracts: (data.contracts || []).map(function(item) { return item.id === entry.id ? Object.assign({}, item, { signed: true, signedAt: todayISO() }) : item; }) }));
+        llAnnounce('Learning contract signed: ' + entry.title); focusById('learning-lab-contract-heading-' + entry.id);
+      });
+    }
+    function removeContract(entry) {
+      askLearningLabConfirmation('Delete “' + String(entry.title || 'this contract') + '”? This cannot be undone.', { title: 'Delete this learning contract?', confirmText: 'Delete contract' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { contracts: (data.contracts || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Learning contract deleted.'); focusById('learning-lab-contract-list-heading');
+      });
+    }
+
+    var contracts = data.contracts || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#cffafe', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #22d3ee', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📜', 'New learning contract', 'A formal agreement with yourself. Specific. Time-bound.', '#06b6d4'),
+        tkSectionHeader('📜', 'New learning contract', 'Write a personal plan you can review and change over time.', '#06b6d4'),
         tkCard('#06b6d4',
-          hh('div', null,
-            tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'Contract title (e.g., "First-quarter writing focus")', { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, '📋 My commitments'),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 } },
-              form.commitments.map(function(c, i) {
-                return hh('div', { key: 'cm-' + i, style: { display: 'flex', gap: 4 } },
-                  hh('span', { style: { color: '#67e8f9', fontWeight: 800, minWidth: 16 } }, (i + 1) + '.'),
-                  tkInput(c, function(v) { updateCommit(i, v); }, 'I will...', { flex: 1, fontSize: 11 }),
-                  hh('button', { onClick: function() { removeCommit(i); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+          hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-contract-editor-heading', 'aria-describedby': 'learning-lab-contract-privacy-note' },
+            hh('h2', { id: 'learning-lab-contract-editor-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#67e8f9', fontSize: 15 } }, 'Contract details'),
+            hh('p', { id: 'learning-lab-contract-privacy-note', style: helpStyle }, 'Contracts save in this browser. Avoid private details about yourself or another person if other people use this device.'),
+            hh('label', { htmlFor: 'learning-lab-contract-title', style: labelStyle }, 'Contract title (required)'),
+            hh('input', { id: 'learning-lab-contract-title', type: 'text', value: form.title, required: true, maxLength: 500, onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (errors.title) setErrors(Object.assign({}, errors, { title: '' })); }, 'aria-invalid': errors.title ? 'true' : undefined, 'aria-describedby': errors.title ? 'learning-lab-contract-title-error' : undefined, style: fieldStyle }),
+            errors.title ? hh('p', { id: 'learning-lab-contract-title-error', role: 'alert', style: errorStyle }, errors.title) : null,
+            hh('fieldset', { 'aria-describedby': errors.commitments ? 'learning-lab-contract-commitments-error' : undefined, style: { margin: '12px 0', padding: 0, border: 0 } },
+              hh('legend', { style: labelStyle }, 'Commitments (at least one required)'),
+              form.commitments.map(function(entry, index) {
+                var inputId = 'learning-lab-contract-commitment-' + entry.id;
+                return hh('div', { key: entry.id, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, marginBottom: 8 } },
+                  hh('div', null,
+                    hh('label', { htmlFor: inputId, style: { display: 'block', marginBottom: 4, color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, 'Commitment ' + (index + 1)),
+                    hh('input', { id: inputId, type: 'text', value: entry.text, maxLength: 1000, onChange: function(event) { updateCommitment(entry.id, event.target.value); }, style: fieldStyle })
+                  ),
+                  hh('button', { type: 'button', onClick: function() { removeCommitment(entry); }, 'aria-label': 'Remove commitment ' + (index + 1), style: { alignSelf: 'end', minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
                 );
-              })
+              }),
+              errors.commitments ? hh('p', { id: 'learning-lab-contract-commitments-error', role: 'alert', style: errorStyle }, errors.commitments) : null,
+              hh('button', { id: 'learning-lab-contract-add-commitment', type: 'button', onClick: addCommitment, style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid #67e8f9', background: '#155e75', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Add commitment')
             ),
-            tkBtn('+ Add commitment', addCommit, 'secondary', { fontSize: 10, padding: '6px 12px', marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, '🎁 What I\'ll reward myself with for keeping these'),
-            tkTextarea(form.rewards, function(v) { setForm(Object.assign({}, form, { rewards: v })); }, 'Small + meaningful. Not "scrolling for 4 hours" — something restorative.', 2, { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, '🤝 Who can hold me accountable?'),
-            tkTextarea(form.accountability, function(v) { setForm(Object.assign({}, form, { accountability: v })); }, 'Name + how they\'ll check in', 2, { marginBottom: 10 }),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            hh('label', { htmlFor: 'learning-lab-contract-rewards', style: labelStyle }, 'Optional reward or encouragement'),
+            hh('textarea', { id: 'learning-lab-contract-rewards', value: form.rewards, rows: 3, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { rewards: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+            hh('label', { htmlFor: 'learning-lab-contract-accountability', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'Optional support or check-in person'),
+            hh('textarea', { id: 'learning-lab-contract-accountability', value: form.accountability, rows: 3, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { accountability: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, marginTop: 12 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, 'Start'),
-                hh('input', { type: 'date', value: form.startDate,
-                  onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); },
-                  style: { width: '100%', padding: '8px 10px', fontSize: 11, color: '#06b6d4', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 6, boxSizing: 'border-box' }
-                })
+                hh('label', { htmlFor: 'learning-lab-contract-start', style: labelStyle }, 'Start date (required)'),
+                hh('input', { id: 'learning-lab-contract-start', type: 'date', value: form.startDate, required: true, onChange: function(event) { setForm(Object.assign({}, form, { startDate: event.target.value })); if (errors.startDate || errors.endDate) setErrors(Object.assign({}, errors, { startDate: '', endDate: '' })); }, 'aria-invalid': errors.startDate ? 'true' : undefined, 'aria-describedby': errors.startDate ? 'learning-lab-contract-start-error' : undefined, style: fieldStyle }),
+                errors.startDate ? hh('p', { id: 'learning-lab-contract-start-error', role: 'alert', style: errorStyle }, errors.startDate) : null
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', display: 'block', marginBottom: 4 } }, 'End (review date)'),
-                hh('input', { type: 'date', value: form.endDate,
-                  onChange: function(e) { setForm(Object.assign({}, form, { endDate: e.target.value })); },
-                  style: { width: '100%', padding: '8px 10px', fontSize: 11, color: '#06b6d4', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 6, boxSizing: 'border-box' }
-                })
+                hh('label', { htmlFor: 'learning-lab-contract-end', style: labelStyle }, 'Review date (optional)'),
+                hh('input', { id: 'learning-lab-contract-end', type: 'date', value: form.endDate, min: form.startDate || undefined, onChange: function(event) { setForm(Object.assign({}, form, { endDate: event.target.value })); if (errors.endDate) setErrors(Object.assign({}, errors, { endDate: '' })); }, 'aria-invalid': errors.endDate ? 'true' : undefined, 'aria-describedby': errors.endDate ? 'learning-lab-contract-end-error' : undefined, style: fieldStyle }),
+                errors.endDate ? hh('p', { id: 'learning-lab-contract-end-error', role: 'alert', style: errorStyle }, errors.endDate) : null
               )
+            ),
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10, marginTop: 14 } },
+              hh('button', { type: 'button', onClick: cancelEditor, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #94a3b8', background: '#334155', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Cancel'),
+              hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save unsigned contract')
             )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
-          tkBtn('💾 Save (unsigned)', save, 'primary')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📜', 'Learning Contracts', 'Formal agreements with yourself. 60+ years of behavioral-contracting research support.', '#06b6d4'),
-
-      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ New contract', function() { setForm({ title: '', commitments: [''], rewards: '', accountability: '', startDate: todayISO(), endDate: '' }); setView('new'); }, 'primary')
+      tkSectionHeader('📜', 'Learning Contracts', 'Write a personal plan with commitments, dates, and optional support.', '#06b6d4'),
+      hh('div', { style: { marginBottom: 12 } },
+        hh('button', { id: 'learning-lab-contract-new', type: 'button', onClick: function() { setForm(newContractForm()); setErrors({ title: '', commitments: '', startDate: '', endDate: '' }); setView('new'); focusById('learning-lab-contract-editor-heading'); }, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'New contract')
       ),
-
-      (data.contracts || []).length === 0 ? tkEmptyState('📜', 'No contracts yet.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          (data.contracts || []).map(function(c) {
-            return hh('div', { key: 'lc-' + c.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('strong', { style: { fontSize: 14, color: '#67e8f9' } }, '📜 ' + c.title),
-                c.signed ? hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 10, fontWeight: 800 } }, '✓ Signed') : null
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, c.startDate + ' → ' + (c.endDate || 'open')),
-              c.commitments && c.commitments.filter(function(x) { return x; }).length > 0 ? hh('div', { style: { marginBottom: 8 } },
-                hh('div', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 700, marginBottom: 4 } }, 'I commit to:'),
-                hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
-                  c.commitments.filter(function(x) { return x; }).map(function(co, i) {
-                    return hh('li', { key: 'co-' + i }, co);
-                  })
-                )
-              ) : null,
-              c.rewards ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, hh('strong', { style: { color: '#fbbf24' } }, '🎁 Reward: '), c.rewards) : null,
-              c.accountability ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, hh('strong', { style: { color: '#10b981' } }, '🤝 Accountability: '), c.accountability) : null,
-              hh('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6 } },
-                !c.signed ? tkBtn('✓ Sign it', function() { sign(c.id); }, 'good', { padding: '4px 12px', fontSize: 11 }) : null,
-                tkBtn('🗑 Delete', function() { remove(c.id); }, 'bad', { padding: '4px 10px', fontSize: 10 })
-              )
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-contract-list-heading' },
+        hh('h2', { id: 'learning-lab-contract-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#cffafe', fontSize: 15 } }, 'Saved learning contracts'),
+        contracts.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No learning contracts saved yet.')
+          : hh('ul', { 'aria-label': contracts.length + (contracts.length === 1 ? ' saved learning contract' : ' saved learning contracts'), style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              contracts.map(function(entry) {
+                var headingId = 'learning-lab-contract-heading-' + entry.id;
+                var commitments = (entry.commitments || []).filter(function(item) { return String(item || '').trim(); });
+                return hh('li', { key: 'lc-' + entry.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.68)', border: '1px solid #22d3ee' } },
+                    hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('p', { style: { margin: '0 0 4px', color: entry.signed ? '#6ee7b7' : '#fde68a', fontSize: 11, fontWeight: 800 } }, entry.signed ? 'Signed contract' : 'Unsigned contract'),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, String(entry.title || 'Untitled contract'))
+                      ),
+                      hh('button', { type: 'button', onClick: function() { removeContract(entry); }, 'aria-label': 'Delete learning contract: ' + String(entry.title || 'Untitled contract'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                    ),
+                    hh('dl', { 'aria-label': 'Contract dates and status', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0', color: '#e2e8f0', fontSize: 11 } },
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Start'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.startDate || undefined }, relDate(entry.startDate)))),
+                      entry.endDate ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Review'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.endDate }, relDate(entry.endDate)))) : null,
+                      entry.signedAt ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Signed'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.signedAt }, relDate(entry.signedAt)))) : null
+                    ),
+                    commitments.length ? hh('section', { 'aria-label': 'Commitments' }, hh('h4', { style: { margin: '0 0 5px', color: '#67e8f9', fontSize: 12 } }, 'Commitments'), hh('ul', { style: { margin: 0, paddingLeft: 20, color: '#f1f5f9', fontSize: 11, lineHeight: 1.6 } }, commitments.map(function(text, index) { return hh('li', { key: 'co-' + index }, text); }))) : hh('p', { style: helpStyle }, 'No commitments were recorded in this legacy contract.'),
+                    entry.rewards ? hh('section', { 'aria-label': 'Reward or encouragement', style: { marginTop: 9 } }, hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 11 } }, 'Reward or encouragement'), hh('p', { style: { margin: 0, color: '#f1f5f9', whiteSpace: 'pre-wrap', fontSize: 11 } }, entry.rewards)) : null,
+                    entry.accountability ? hh('section', { 'aria-label': 'Support or check-in person', style: { marginTop: 9 } }, hh('h4', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 11 } }, 'Support or check-in'), hh('p', { style: { margin: 0, color: '#f1f5f9', whiteSpace: 'pre-wrap', fontSize: 11 } }, entry.accountability)) : null,
+                    !entry.signed ? hh('button', { type: 'button', onClick: function() { signContract(entry); }, style: { minWidth: 44, minHeight: 44, marginTop: 10, padding: '8px 12px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Sign contract') : null
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
