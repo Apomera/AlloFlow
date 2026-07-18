@@ -12206,110 +12206,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { saved: [], notes: '' };
     var setData = props.setData;
-    var vs = R.useState('quiz');                       var view = vs[0]; var setView = vs[1];
-    var fs = R.useState({});                            var answers = fs[0]; var setAnswers = fs[1];
+    var vs = R.useState('quiz'); var view = vs[0]; var setView = vs[1];
+    var fs = R.useState({}); var answers = fs[0]; var setAnswers = fs[1];
 
     var QUESTIONS = [
-      { id: 'q1', text: 'I prefer working with...', options: [{ v: 'people', label: 'People + ideas' }, { v: 'data', label: 'Data + systems' }, { v: 'things', label: 'Things + tools' }] },
-      { id: 'q2', text: 'My ideal pace is...', options: [{ v: 'steady', label: 'Steady + predictable' }, { v: 'varied', label: 'Varied + project-based' }, { v: 'fast', label: 'Fast + responsive' }] },
-      { id: 'q3', text: 'When I solve a problem, I prefer...', options: [{ v: 'structured', label: 'Following a known method' }, { v: 'creative', label: 'Inventing something new' }, { v: 'collaborate', label: 'Working it out with others' }] },
-      { id: 'q4', text: 'Most rewarding to me would be...', options: [{ v: 'help', label: 'Helping someone directly' }, { v: 'build', label: 'Building something that lasts' }, { v: 'discover', label: 'Discovering something true' }, { v: 'create', label: 'Creating something beautiful' }] },
-      { id: 'q5', text: 'I am most comfortable...', options: [{ v: 'outside', label: 'Working outdoors / physical' }, { v: 'office', label: 'In an office or lab' }, { v: 'hybrid', label: 'Mixed indoor/outdoor' }, { v: 'remote', label: 'From wherever I want' }] }
+      { id: 'q1', text: 'I prefer working with…', options: [{ v: 'people', label: 'People and ideas' }, { v: 'data', label: 'Data and systems' }, { v: 'things', label: 'Things and tools' }] },
+      { id: 'q2', text: 'My ideal pace is…', options: [{ v: 'steady', label: 'Steady and predictable' }, { v: 'varied', label: 'Varied and project-based' }, { v: 'fast', label: 'Fast and responsive' }] },
+      { id: 'q3', text: 'When I solve a problem, I prefer…', options: [{ v: 'structured', label: 'Following a known method' }, { v: 'creative', label: 'Inventing something new' }, { v: 'collaborate', label: 'Working it out with others' }] },
+      { id: 'q4', text: 'Most rewarding to me would be…', options: [{ v: 'help', label: 'Helping someone directly' }, { v: 'build', label: 'Building something that lasts' }, { v: 'discover', label: 'Discovering something true' }, { v: 'create', label: 'Creating something beautiful' }] },
+      { id: 'q5', text: 'I am most comfortable…', options: [{ v: 'outside', label: 'Working outdoors or physically' }, { v: 'office', label: 'In an office or lab' }, { v: 'hybrid', label: 'Mixed indoor and outdoor work' }, { v: 'remote', label: 'Working from different locations' }] }
     ];
 
     var CAREERS = [
-      { id: 'teach', label: 'Teacher / Educator', icon: '🍎', match: ['help', 'people', 'collaborate'], desc: 'K-12 teaching, special ed, college instruction' },
-      { id: 'nurse', label: 'Nurse / Healthcare', icon: '🩺', match: ['help', 'people', 'fast'], desc: 'RN, BSN, NP, PA — direct patient care' },
-      { id: 'engineer', label: 'Engineer', icon: '⚙', match: ['data', 'things', 'structured'], desc: 'Mechanical, electrical, civil, software' },
-      { id: 'designer', label: 'Designer', icon: '🎨', match: ['create', 'creative', 'people'], desc: 'Graphic, UX, industrial, fashion' },
-      { id: 'data', label: 'Data scientist', icon: '📊', match: ['data', 'discover', 'structured'], desc: 'Statistics + programming + domain expertise' },
-      { id: 'mh', label: 'Mental-health professional', icon: '💭', match: ['help', 'people', 'discover'], desc: 'Therapist, social worker, school psychologist' },
-      { id: 'doctor', label: 'Physician', icon: '⚕', match: ['help', 'discover', 'fast'], desc: 'MD/DO — primary care, specialty' },
-      { id: 'trade', label: 'Skilled trades', icon: '🔧', match: ['things', 'structured', 'outside'], desc: 'Electrician, plumber, welder, carpenter' },
-      { id: 'farm', label: 'Agriculture / farming', icon: '🌾', match: ['things', 'outside', 'steady'], desc: 'Farming, ag-science, food systems' },
-      { id: 'cook', label: 'Culinary / hospitality', icon: '🍳', match: ['create', 'fast', 'people'], desc: 'Chef, restaurant management, food service' },
-      { id: 'sci', label: 'Scientific researcher', icon: '🔬', match: ['discover', 'data', 'structured'], desc: 'Bench, field, or computational science' },
-      { id: 'art', label: 'Artist / musician / writer', icon: '🎭', match: ['create', 'creative'], desc: 'Performance + production + studio work' },
-      { id: 'law', label: 'Law / public policy', icon: '⚖', match: ['help', 'people', 'data'], desc: 'Lawyer, paralegal, policy analyst' },
-      { id: 'business', label: 'Business / entrepreneurship', icon: '💼', match: ['build', 'varied', 'collaborate'], desc: 'Starting + running a company' },
-      { id: 'tech', label: 'Tech / software', icon: '💻', match: ['data', 'creative', 'remote'], desc: 'Developer, ML engineer, IT, security' },
-      { id: 'environ', label: 'Environmental science', icon: '🌳', match: ['discover', 'outside', 'data'], desc: 'Ecology, climate, conservation' },
-      { id: 'social', label: 'Social work', icon: '🤝', match: ['help', 'people', 'collaborate'], desc: 'Working with families, kids, communities' },
-      { id: 'sports', label: 'Athletics / coaching', icon: '🏀', match: ['help', 'fast', 'outside'], desc: 'PE, coach, athletic training, sports med' }
+      { id: 'teach', label: 'Teacher or educator', icon: '🍎', match: ['help', 'people', 'collaborate'], desc: 'K–12 teaching, special education, or college instruction' },
+      { id: 'nurse', label: 'Nurse or health care professional', icon: '🩺', match: ['help', 'people', 'fast'], desc: 'Nursing, advanced practice, or direct patient care' },
+      { id: 'engineer', label: 'Engineer', icon: '⚙', match: ['data', 'things', 'structured'], desc: 'Mechanical, electrical, civil, or software engineering' },
+      { id: 'designer', label: 'Designer', icon: '🎨', match: ['create', 'creative', 'people'], desc: 'Graphic, user experience, industrial, or fashion design' },
+      { id: 'data', label: 'Data scientist', icon: '📊', match: ['data', 'discover', 'structured'], desc: 'Statistics, programming, and domain expertise' },
+      { id: 'mh', label: 'Mental health professional', icon: '💭', match: ['help', 'people', 'discover'], desc: 'Therapy, social work, or school psychology' },
+      { id: 'doctor', label: 'Physician', icon: '⚕', match: ['help', 'discover', 'fast'], desc: 'Primary care or medical specialties' },
+      { id: 'trade', label: 'Skilled trades professional', icon: '🔧', match: ['things', 'structured', 'outside'], desc: 'Electrical, plumbing, welding, or carpentry work' },
+      { id: 'farm', label: 'Agriculture or farming professional', icon: '🌾', match: ['things', 'outside', 'steady'], desc: 'Farming, agricultural science, or food systems' },
+      { id: 'cook', label: 'Culinary or hospitality professional', icon: '🍳', match: ['create', 'fast', 'people'], desc: 'Cooking, restaurant management, or food service' },
+      { id: 'sci', label: 'Scientific researcher', icon: '🔬', match: ['discover', 'data', 'structured'], desc: 'Laboratory, field, or computational research' },
+      { id: 'art', label: 'Artist, musician, or writer', icon: '🎭', match: ['create', 'creative'], desc: 'Performance, production, studio, or writing work' },
+      { id: 'law', label: 'Law or public policy professional', icon: '⚖', match: ['help', 'people', 'data'], desc: 'Law, paralegal work, or policy analysis' },
+      { id: 'business', label: 'Business owner or entrepreneur', icon: '💼', match: ['build', 'varied', 'collaborate'], desc: 'Starting, organizing, and running an organization' },
+      { id: 'tech', label: 'Technology or software professional', icon: '💻', match: ['data', 'creative', 'remote'], desc: 'Software development, machine learning, IT, or security' },
+      { id: 'environ', label: 'Environmental scientist', icon: '🌳', match: ['discover', 'outside', 'data'], desc: 'Ecology, climate, or conservation work' },
+      { id: 'social', label: 'Social worker', icon: '🤝', match: ['help', 'people', 'collaborate'], desc: 'Working with families, children, or communities' },
+      { id: 'sports', label: 'Athletics or coaching professional', icon: '🏀', match: ['help', 'fast', 'outside'], desc: 'Physical education, coaching, athletic training, or sports medicine' }
     ];
 
     function answer(qid, val) {
-      setAnswers(Object.assign({}, answers, (function() { var o = {}; o[qid] = val; return o; })()));
+      var patch = {}; patch[qid] = val;
+      setAnswers(Object.assign({}, answers, patch));
     }
     function results() {
-      var vals = Object.keys(answers).map(function(k) { return answers[k]; });
-      var scored = CAREERS.map(function(c) {
-        var score = c.match.filter(function(m) { return vals.indexOf(m) >= 0; }).length;
-        return Object.assign({}, c, { score: score });
-      }).filter(function(c) { return c.score > 0; }).sort(function(a, b) { return b.score - a.score; });
-      return scored.slice(0, 8);
+      var vals = Object.keys(answers).map(function(key) { return answers[key]; });
+      return CAREERS.map(function(career) {
+        var score = career.match.filter(function(theme) { return vals.indexOf(theme) >= 0; }).length;
+        return Object.assign({}, career, { score: score });
+      }).filter(function(career) { return career.score > 0; }).sort(function(a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.label.localeCompare(b.label);
+      }).slice(0, 8);
     }
-    function saveCareer(c) {
-      var saved = (data.saved || []).concat([{ id: c.id, savedAt: todayISO() }]);
+    function showResults(event) {
+      event.preventDefault();
+      if (!completed) {
+        llAnnounce('Answer all five questions before viewing career suggestions.');
+        return;
+      }
+      setView('results');
+      llAnnounce('Career suggestions ready. Showing your top matches.');
+      focusById('learning-lab-career-results-heading');
+    }
+    function retakeQuiz() {
+      setAnswers({});
+      setView('quiz');
+      llAnnounce('Career quiz reset. Five questions are ready.');
+      focusById('learning-lab-career-q1-people');
+    }
+    function toggleCareer(career, isSaved) {
+      var saved = data.saved || [];
+      if (isSaved) {
+        saved = saved.filter(function(item) { return item.id !== career.id; });
+        llAnnounce(career.label + ' removed from careers to explore.');
+      } else {
+        if (!saved.some(function(item) { return item.id === career.id; })) {
+          saved = saved.concat([{ id: career.id, savedAt: todayISO() }]);
+        }
+        llAnnounce(career.label + ' saved to careers to explore.');
+      }
       setData(Object.assign({}, data, { saved: saved }));
     }
-    function unsaveCareer(id) {
-      setData(Object.assign({}, data, { saved: (data.saved || []).filter(function(s) { return s.id !== id; }) }));
-    }
 
-    var completed = QUESTIONS.every(function(q) { return answers[q.id]; });
+    var answeredCount = QUESTIONS.filter(function(question) { return !!answers[question.id]; }).length;
+    var completed = answeredCount === QUESTIONS.length;
+    var matches = results();
+    var savedCareers = (data.saved || []).map(function(saved) {
+      var career = CAREERS.filter(function(item) { return item.id === saved.id; })[0];
+      return career ? { career: career, savedAt: saved.savedAt } : null;
+    }).filter(Boolean);
+    var primaryButtonStyle = { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: completed ? '#047857' : 'rgba(71,85,105,0.55)', color: completed ? '#fff' : '#cbd5e1', fontWeight: 800, cursor: completed ? 'pointer' : 'not-allowed' };
+    var secondaryButtonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #a7f3d0', background: 'rgba(6,78,59,0.45)', color: '#d1fae5', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎯', 'Career Explorer', '5-question quick interest inventory → curated career suggestions. Not a destination, just a starting map.', '#10b981'),
+      tkSectionHeader('🎯', 'Career Explorer', 'Five-question interest inventory with career suggestions. Use it as a starting point, not a decision or prediction.', '#10b981'),
 
-      view === 'quiz' ? hh('div', null,
+      view === 'quiz' ? hh('form', { onSubmit: showResults, 'aria-labelledby': 'learning-lab-career-quiz-heading' },
         tkCard('#10b981',
           hh('div', null,
-            QUESTIONS.map(function(q, qi) {
-              return hh('div', { key: 'qq-' + q.id, style: { marginBottom: 14 } },
-                hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 6 } }, (qi + 1) + '. ' + q.text),
-                hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                  q.options.map(function(o) {
-                    var on = answers[q.id] === o.v;
-                    return hh('button', { key: 'op-' + o.v,
-                      onClick: function() { answer(q.id, o.v); },
-                      style: { padding: '8px 12px', borderRadius: 6, background: on ? '#10b981' : 'rgba(16,185,129,0.10)', color: on ? '#fff' : '#10b981', border: '1px solid rgba(16,185,129,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                    }, o.label);
+            hh('h3', { id: 'learning-lab-career-quiz-heading', style: { fontSize: 14, color: '#a7f3d0', margin: '0 0 4px' } }, 'Career interest questions'),
+            hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 8px' } }, 'Choose one answer for each question. There are no right or wrong answers.'),
+            hh('p', { id: 'learning-lab-career-progress', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 11, color: '#d1fae5', fontWeight: 800, margin: '0 0 14px' } }, answeredCount + ' of ' + QUESTIONS.length + ' questions answered.'),
+            QUESTIONS.map(function(question, questionIndex) {
+              return hh('fieldset', { key: 'qq-' + question.id, style: { border: '1px solid rgba(167,243,208,0.45)', borderRadius: 10, padding: 10, margin: '0 0 14px' } },
+                hh('legend', { style: { padding: '0 5px', fontSize: 12, fontWeight: 800, color: '#a7f3d0' } }, (questionIndex + 1) + '. ' + question.text),
+                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 6 } },
+                  question.options.map(function(option) {
+                    var optionId = 'learning-lab-career-' + question.id + '-' + option.v;
+                    var selected = answers[question.id] === option.v;
+                    return hh('label', { key: 'op-' + option.v, htmlFor: optionId, style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '8px 10px', borderRadius: 8, background: selected ? 'rgba(6,95,70,0.75)' : 'rgba(6,78,59,0.25)', color: selected ? '#fff' : '#d1fae5', border: selected ? '2px solid #a7f3d0' : '1px solid rgba(167,243,208,0.55)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                      hh('input', { id: optionId, type: 'radio', name: 'learning-lab-career-' + question.id, value: option.v, checked: selected, onChange: function() { answer(question.id, option.v); }, 'data-ll-focusable': true, style: { width: 20, height: 20, margin: 0, accentColor: '#10b981', flex: '0 0 auto' } }),
+                      hh('span', null, option.label)
+                    );
                   })
                 )
               );
             })
           )
         ),
-        completed ? tkBtn('🎯 See suggestions', function() { setView('results'); }, 'primary', { padding: '12px 28px', fontSize: 12 }) : hh('div', { style: { padding: 12, textAlign: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Answer all 5 questions to see suggestions.')
-      ) : hh('div', null,
-        tkBtn('← Re-take quiz', function() { setAnswers({}); setView('quiz'); }, 'ghost'),
-        hh('div', { style: { marginTop: 12, marginBottom: 8 } },
-          hh('strong', { style: { fontSize: 13, color: '#10b981' } }, '🎯 Your top matches')
-        ),
-        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          results().map(function(c) {
-            var isSaved = (data.saved || []).some(function(s) { return s.id === c.id; });
-            return hh('div', { key: 'cr-' + c.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #10b981' } },
-              hh('div', { style: { fontSize: 22, marginBottom: 4 } }, c.icon),
-              hh('strong', { style: { fontSize: 13, color: '#10b981' } }, c.label),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4 } }, c.desc),
-              hh('div', { style: { marginTop: 6, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'match: ' + c.score + ' / 5'),
-              hh('div', { style: { marginTop: 8 } },
-                isSaved
-                  ? tkBtn('✓ Saved · remove', function() { unsaveCareer(c.id); }, 'good', { padding: '4px 10px', fontSize: 10 })
-                  : tkBtn('💾 Save to explore', function() { saveCareer(c); }, 'secondary', { padding: '4px 10px', fontSize: 10 })
+        hh('button', { type: 'submit', disabled: !completed, 'aria-describedby': 'learning-lab-career-progress', 'data-ll-focusable': true, style: primaryButtonStyle }, hh('span', { 'aria-hidden': 'true' }, '🎯 '), 'See career suggestions')
+      ) : hh('section', { 'aria-labelledby': 'learning-lab-career-results-heading' },
+        hh('button', { type: 'button', onClick: retakeQuiz, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Retake career quiz'),
+        hh('h3', { id: 'learning-lab-career-results-heading', tabIndex: -1, style: { fontSize: 14, color: '#a7f3d0', margin: '14px 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🎯 '), 'Your top career matches'),
+        hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'These suggestions reflect overlapping themes in your answers. They are ideas to investigate, not a measure of ability or a recommendation to choose a specific career.'),
+        hh('ul', { 'aria-label': 'Career suggestions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+          matches.map(function(career) {
+            var isSaved = (data.saved || []).some(function(saved) { return saved.id === career.id; });
+            var headingId = 'learning-lab-career-match-' + career.id;
+            return hh('li', { key: 'cr-' + career.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #10b981' } },
+              hh('article', { 'aria-labelledby': headingId },
+                hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, career.icon),
+                hh('h4', { id: headingId, style: { fontSize: 13, color: '#a7f3d0', margin: 0 } }, career.label),
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '4px 0 0' } }, career.desc),
+                hh('p', { style: { margin: '6px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Matched ' + career.score + ' of ' + career.match.length + ' career themes.'),
+                hh('button', { type: 'button', 'aria-pressed': isSaved ? 'true' : 'false', 'aria-label': (isSaved ? 'Remove ' : 'Save ') + career.label + (isSaved ? ' from careers to explore' : ' to careers to explore'), onClick: function() { toggleCareer(career, isSaved); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { marginTop: 8, width: '100%' }) }, isSaved ? 'Saved — remove' : 'Save to explore')
               )
             );
           })
         ),
-        (data.saved || []).length > 0 ? hh('div', { style: { marginTop: 14 } },
-          hh('strong', { style: { fontSize: 12, color: '#10b981' } }, '💾 Careers to explore further'),
-          hh('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
-            (data.saved || []).map(function(s) {
-              var c = CAREERS.filter(function(x) { return x.id === s.id; })[0];
-              return c ? c.icon + ' ' + c.label : null;
-            }).filter(Boolean).join(' · ')
+        savedCareers.length ? hh('section', { 'aria-labelledby': 'learning-lab-career-saved-heading', style: { marginTop: 14 } },
+          hh('h3', { id: 'learning-lab-career-saved-heading', style: { fontSize: 12, color: '#a7f3d0', margin: '0 0 6px' } }, 'Careers saved to explore further'),
+          hh('ul', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
+            savedCareers.map(function(item) {
+              return hh('li', { key: 'saved-' + item.career.id }, hh('span', { 'aria-hidden': 'true' }, item.career.icon + ' '), item.career.label, item.savedAt ? hh('span', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, ' — saved ', hh('time', { dateTime: item.savedAt }, item.savedAt)) : null);
+            })
           )
         ) : null
       )
