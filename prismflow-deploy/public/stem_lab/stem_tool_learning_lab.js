@@ -14154,71 +14154,177 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { achievements: [] };
     var setData = props.setData;
-    var fs = R.useState({ title: '', category: 'academic', date: todayISO(), reflection: '' });
+    var emptyForm = { title: '', category: 'academic', date: todayISO(), reflection: '' };
+    var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState({ title: '', date: '' });
+    var errors = es[0]; var setErrors = es[1];
 
     var CATS = [
-      { id: 'academic',  label: 'Academic',  icon: '📚', color: '#3b82f6' },
-      { id: 'personal',  label: 'Personal growth', icon: '🌱', color: '#10b981' },
-      { id: 'creative',  label: 'Creative',  icon: '🎨', color: '#a855f7' },
-      { id: 'social',    label: 'Social + relational', icon: '🤝', color: '#ec4899' },
-      { id: 'athletic',  label: 'Athletic',  icon: '🏃', color: '#fbbf24' },
-      { id: 'service',   label: 'Service',   icon: '💛', color: '#06b6d4' },
-      { id: 'overcome',  label: 'Things I overcame', icon: '⛰', color: '#ef4444' }
+      { id: 'academic', label: 'Academic', icon: '📚', color: '#93c5fd' },
+      { id: 'personal', label: 'Personal growth', icon: '🌱', color: '#6ee7b7' },
+      { id: 'creative', label: 'Creative', icon: '🎨', color: '#d8b4fe' },
+      { id: 'social', label: 'Social and relational', icon: '🤝', color: '#f9a8d4' },
+      { id: 'athletic', label: 'Athletic', icon: '🏃', color: '#fde68a' },
+      { id: 'service', label: 'Service', icon: '💛', color: '#67e8f9' },
+      { id: 'overcome', label: 'Something I overcame', icon: '⛰', color: '#fca5a5' }
     ];
 
-    function save() {
-      if (!form.title.trim()) { alert('Need a title.'); return; }
-      var a = Object.assign({ id: tkId() }, form);
-      setData({ achievements: [a].concat(data.achievements || []) });
-      setForm({ title: '', category: 'academic', date: todayISO(), reflection: '' });
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
     }
-    function remove(id) { setData({ achievements: (data.achievements || []).filter(function(a) { return a.id !== id; }) }); }
+    function categoryFor(id) {
+      return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0];
+    }
+    function save() {
+      var title = form.title.trim();
+      var nextErrors = { title: '', date: '' };
+      if (!title) nextErrors.title = 'Describe the achievement you want to record.';
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date || '')) nextErrors.date = 'Choose a valid achievement date.';
+      else if (form.date > todayISO()) nextErrors.date = 'Choose today or an earlier date.';
+      if (nextErrors.title || nextErrors.date) {
+        setErrors(nextErrors);
+        llAnnounce('Achievement not saved. Review the highlighted field' + (nextErrors.title && nextErrors.date ? 's.' : '.'));
+        focusById(nextErrors.title ? 'learning-lab-achievement-title' : 'learning-lab-achievement-date');
+        return;
+      }
+      var entry = {
+        id: tkId(), title: title, category: form.category, date: form.date,
+        reflection: form.reflection.trim()
+      };
+      setData(Object.assign({}, data, { achievements: [entry].concat(data.achievements || []) }));
+      setForm({ title: '', category: 'academic', date: todayISO(), reflection: '' });
+      setErrors({ title: '', date: '' });
+      llAnnounce('Achievement saved: ' + title);
+      focusById('learning-lab-achievement-title');
+    }
+    function removeAchievement(entry) {
+      var shortTitle = String(entry.title || 'this achievement');
+      if (shortTitle.length > 160) shortTitle = shortTitle.slice(0, 157) + '...';
+      askLearningLabConfirmation('Remove “' + shortTitle + '”? This cannot be undone.', {
+        title: 'Remove this achievement?', confirmText: 'Remove achievement'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { achievements: (data.achievements || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Achievement removed.');
+        focusById('learning-lab-achievement-history-heading');
+      });
+    }
 
     var achievements = data.achievements || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🏆', 'Achievement Wall', 'YOUR gallery of accomplishments. Visual record that counters imposter syndrome.', '#fbbf24'),
-
+      tkSectionHeader('🏆', 'Achievement Wall', 'Keep a personal record of accomplishments that matter to you.', '#fbbf24'),
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '🏆 Add an achievement'),
-          tkInput(form.title, function(v) { setForm(Object.assign({}, form, { title: v })); }, 'What did you do? (e.g., "Got into AP Bio", "Made varsity team", "Finished first novel")', { marginBottom: 8 }),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
-            CATS.map(function(c) {
-              var on = form.category === c.id;
-              return hh('button', { key: 'ac-' + c.id,
-                onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-              }, c.icon + ' ' + c.label);
-            })
-          ),
-          hh('input', { type: 'date', value: form.date,
-            onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); },
-            style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 8 }
+        hh('form', {
+          onSubmit: function(event) { event.preventDefault(); save(); },
+          'aria-labelledby': 'learning-lab-achievement-form-heading',
+          'aria-describedby': 'learning-lab-achievement-privacy-note'
+        },
+          hh('h2', { id: 'learning-lab-achievement-form-heading', style: { margin: '0 0 8px', color: '#fde68a', fontSize: 15 } }, 'Add an achievement'),
+          hh('p', { id: 'learning-lab-achievement-privacy-note', style: helpStyle }, 'Achievements save in this browser. Avoid private details if other people use this device.'),
+          hh('label', { htmlFor: 'learning-lab-achievement-title', style: labelStyle }, 'Achievement (required)'),
+          hh('input', {
+            id: 'learning-lab-achievement-title', type: 'text', value: form.title, required: true, maxLength: 500,
+            onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (errors.title) setErrors(Object.assign({}, errors, { title: '' })); },
+            'aria-invalid': errors.title ? 'true' : undefined,
+            'aria-describedby': 'learning-lab-achievement-title-help' + (errors.title ? ' learning-lab-achievement-title-error' : ''),
+            style: fieldStyle
           }),
-          tkTextarea(form.reflection, function(v) { setForm(Object.assign({}, form, { reflection: v })); }, 'Reflection: what did this take? What did you learn?', 2, { marginBottom: 8 }),
-          tkBtn('💾 Add', save, 'primary')
+          hh('p', { id: 'learning-lab-achievement-title-help', style: helpStyle }, 'Use your own definition of achievement; large and small accomplishments are welcome.'),
+          errors.title ? hh('p', { id: 'learning-lab-achievement-title-error', role: 'alert', style: errorStyle }, errors.title) : null,
+
+          hh('fieldset', { style: { margin: '0 0 12px', padding: 0, border: 0 } },
+            hh('legend', { style: labelStyle }, 'Category'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+              CATS.map(function(category) {
+                var selected = form.category === category.id;
+                return hh('label', {
+                  key: 'ac-' + category.id, htmlFor: 'learning-lab-achievement-category-' + category.id,
+                  style: { boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: 7, minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid ' + (selected ? category.color : '#64748b'), background: selected ? 'rgba(120,53,15,0.28)' : 'rgba(15,23,42,0.45)', color: '#f8fafc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                },
+                  hh('input', {
+                    id: 'learning-lab-achievement-category-' + category.id, type: 'radio', name: 'learning-lab-achievement-category', value: category.id,
+                    checked: selected, onChange: function() { setForm(Object.assign({}, form, { category: category.id })); }
+                  }),
+                  hh('span', { 'aria-hidden': 'true' }, category.icon), category.label
+                );
+              })
+            )
+          ),
+
+          hh('label', { htmlFor: 'learning-lab-achievement-date', style: labelStyle }, 'Achievement date (required)'),
+          hh('input', {
+            id: 'learning-lab-achievement-date', type: 'date', value: form.date, required: true, max: todayISO(),
+            onChange: function(event) { setForm(Object.assign({}, form, { date: event.target.value })); if (errors.date) setErrors(Object.assign({}, errors, { date: '' })); },
+            'aria-invalid': errors.date ? 'true' : undefined,
+            'aria-describedby': errors.date ? 'learning-lab-achievement-date-error' : undefined,
+            style: Object.assign({}, fieldStyle, { marginBottom: errors.date ? 0 : 10 })
+          }),
+          errors.date ? hh('p', { id: 'learning-lab-achievement-date-error', role: 'alert', style: errorStyle }, errors.date) : null,
+
+          hh('label', { htmlFor: 'learning-lab-achievement-reflection', style: labelStyle }, 'Reflection (optional)'),
+          hh('textarea', {
+            id: 'learning-lab-achievement-reflection', value: form.reflection, rows: 3, maxLength: 2000,
+            onChange: function(event) { setForm(Object.assign({}, form, { reflection: event.target.value })); },
+            'aria-describedby': 'learning-lab-achievement-reflection-help',
+            style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' })
+          }),
+          hh('p', { id: 'learning-lab-achievement-reflection-help', style: helpStyle }, 'Optional: describe what the achievement took or what you learned.'),
+          hh('button', {
+            type: 'submit',
+            style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+          }, 'Save achievement')
         )
       ),
 
-      achievements.length === 0 ? tkEmptyState('🏆', 'No achievements yet. Add your first — anything counts.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          achievements.map(function(a) {
-            var c = CATS.filter(function(x) { return x.id === a.category; })[0] || CATS[0];
-            return hh('div', { key: 'av-' + a.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + c.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + c.color + '40', borderLeft: '4px solid ' + c.color } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
-                hh('div', null,
-                  hh('div', { style: { fontSize: 24, marginBottom: 4 } }, c.icon),
-                  hh('strong', { style: { fontSize: 13, color: c.color, lineHeight: 1.4 } }, a.title)
-                ),
-                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, a.date + ' · ' + c.label),
-              a.reflection ? hh('div', { style: { marginTop: 8, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, a.reflection) : null
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-achievement-history-heading' },
+        hh('h2', { id: 'learning-lab-achievement-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 15 } }, 'Achievement history'),
+        achievements.length === 0
+          ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No achievements saved yet.')
+          : hh('ul', { 'aria-label': achievements.length + (achievements.length === 1 ? ' saved achievement' : ' saved achievements'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              achievements.map(function(entry) {
+                var category = categoryFor(entry.category);
+                var headingId = 'learning-lab-achievement-heading-' + entry.id;
+                return hh('li', { key: 'av-' + entry.id },
+                  hh('article', {
+                    'aria-labelledby': headingId,
+                    style: { boxSizing: 'border-box', height: '100%', padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.68)', border: '1px solid #a16207', borderLeft: '4px solid ' + category.color }
+                  },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('p', { style: { margin: '0 0 5px', color: '#fde68a', fontSize: 11, fontWeight: 800 } },
+                          hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label
+                        ),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14, lineHeight: 1.5 } }, String(entry.title || 'Untitled achievement'))
+                      ),
+                      hh('button', {
+                        type: 'button', onClick: function() { removeAchievement(entry); },
+                        'aria-label': 'Remove achievement: ' + String(entry.title || 'Untitled achievement'),
+                        style: { flex: '0 0 auto', minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                      }, 'Remove')
+                    ),
+                    hh('dl', { 'aria-label': 'Achievement details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '10px 0 0', color: '#e2e8f0', fontSize: 11 } },
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Category'), hh('dd', { style: { margin: 0 } }, category.label)),
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Date'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.date || undefined }, relDate(entry.date))))
+                    ),
+                    entry.reflection ? hh('section', { 'aria-label': 'Reflection', style: { marginTop: 10, padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.48)' } },
+                      hh('h4', { style: { margin: '0 0 4px', color: '#fde68a', fontSize: 11 } }, 'Reflection'),
+                      hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, entry.reflection)
+                    ) : null
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
