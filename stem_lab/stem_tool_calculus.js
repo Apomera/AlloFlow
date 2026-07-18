@@ -32,6 +32,26 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   })();
 
 
+  function normalizeCalculusSubdivisions(value, mode) {
+    var count = Math.max(1, Math.min(200, Math.round(Number.isFinite(Number(value)) ? Number(value) : 20)));
+    if (mode === 'simpson' && count % 2 !== 0) count = count >= 200 ? 198 : count + 1;
+    return count;
+  }
+
+  function classifyCalculusApproximation(estimate, exactValue) {
+    var estimateNumber = Number(estimate);
+    var exactNumber = Number(exactValue);
+    if (!Number.isFinite(estimateNumber) || !Number.isFinite(exactNumber)) return 'undefined';
+    var tolerance = Math.max(1e-9, Math.abs(exactNumber) * 1e-9);
+    if (Math.abs(estimateNumber - exactNumber) <= tolerance) return 'exact';
+    return estimateNumber > exactNumber ? 'over' : 'under';
+  }
+
+  window.__CalculusCore = Object.assign({}, window.__CalculusCore || {}, {
+    normalizeSubdivisions: normalizeCalculusSubdivisions,
+    classifyApproximation: classifyCalculusApproximation
+  });
+
   window.StemLab.registerTool('calculus', {
     icon: '\u222B',
     label: 'Calculus',
@@ -1616,8 +1636,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         if (Math.abs(rawXMax - rawXMin) < 0.0001) rawXMax = rawXMin + 1;
         var xMin = Math.min(rawXMin, rawXMax);
         var xMax2 = Math.max(rawXMin, rawXMax);
-        var nRects = Math.max(1, Math.min(200, Math.round(finiteNum(d.n, 20))));
         var mode = d.mode || 'left';
+        var nRects = normalizeCalculusSubdivisions(finiteNum(d.n, 20), mode);
         var tab = d.tab || 'integral';
         var x0 = finiteNum(d.x0, Math.round((xMin + xMax2) / 2 * 10) / 10);
         var exact = evalAntiAt(fa, fb, fc, xMax2) - evalAntiAt(fa, fb, fc, xMin);
@@ -1739,20 +1759,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var overUnderGuess = d.overUnderGuess || null;   // 'over' | 'under' | null
         var overUnderChecked = d.overUnderChecked || false;
 
-        // Is the sum actually an over or underestimate?
-        // Left/Right Riemann sums only go CONSISTENTLY over or under when f is MONOTONIC on the
-        // interval. For this quadratic that means the vertex (x = -b/2a) lies OUTSIDE (xMin, xMax2).
-        // If the vertex is inside (e.g. the default preset -x²+4 on [-2,2]), the endpoint-slope rule
-        // is invalid — the curve rises then falls — so we report 'neither' instead of a wrong verdict.
+        // Compare the computed estimate with the exact integral. Monotonicity still
+        // supplies the conceptual explanation, while non-monotonic curves use the signed error.
         var fVertex = fa !== 0 ? (-fb / (2 * fa)) : null;
         var fMonotonic = (fa === 0) || fVertex <= xMin || fVertex >= xMax2;
         var fIsIncreasing = evalF(xMax2) > evalF(xMin);
-        var actualOverUnder = !fMonotonic ? 'neither'
-          : (mode === 'left' && fIsIncreasing) ? 'under'
-          : (mode === 'left' && !fIsIncreasing) ? 'over'
-          : (mode === 'right' && fIsIncreasing) ? 'over'
-          : (mode === 'right' && !fIsIncreasing) ? 'under'
-          : 'neither';  // midpoint/trapezoid/simpson don't have consistent direction
+        var actualOverUnder = classifyCalculusApproximation(area, exact);
 
         var derivInputChecked = d.derivInputChecked || false;
         var derivInput1 = d.derivInput1 || '';
@@ -1891,7 +1903,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         // ── SHARED SVG GRAPH ─────────────────────────────────────────────
         var svgGraph = function(showTangent, showRects) {
-          return h('svg', { viewBox: '0 0 '+W+' '+H, className: 'w-full bg-white rounded-xl border-2 border-red-200 shadow-sm', style:{maxHeight:'280px'} },
+          var graphLabel = showTangent
+            ? 'Graph of ' + fStr + '. Tangent at x ' + x0 + ' has slope ' + (finiteCoord(slope) ? slope.toFixed(3) : 'not available') + '. Secant gap h is ' + finiteNum(dh, 0).toFixed(2) + '.'
+            : 'Graph of ' + fStr + ' from ' + xMin + ' to ' + xMax2 + ' using ' + nRects + ' ' + mode + ' subdivisions. Estimate ' + area.toFixed(4) + ', exact integral ' + exact.toFixed(4) + ', absolute error ' + err.toFixed(4) + '.';
+          return h('svg', { viewBox: '0 0 '+W+' '+H, className: 'w-full bg-white rounded-xl border-2 border-red-200 shadow-sm', style:{maxHeight:'280px'}, role:'img', 'aria-label':graphLabel },
             (function(){var gs=[];for(var gx=Math.ceil(xR.min);gx<=xR.max;gx++){var gsx=toSX(gx);if(gsx>pad&&gsx<W-pad)gs.push(h('line',{key:'g'+gx,x1:gsx,y1:pad,x2:gsx,y2:H-pad,stroke:'#f1f5f9',strokeWidth:0.5}));}return gs;})(),
             h('line',{x1:pad,y1:toSY(0),x2:W-pad,y2:toSY(0),stroke:'#94a3b8',strokeWidth:1.5}),
             h('line',{x1:toSX(0),y1:pad,x2:toSX(0),y2:H-pad,stroke:'#94a3b8',strokeWidth:1.5}),
@@ -1982,7 +1997,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ── Topic-accent hero band per tab ──
           (function() {
             var TAB_META = {
-              integral:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 area under the curve',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit becomes the exact area. Simpson\'s rule converges fastest \u2014 odd polynomials integrate exactly.' },
+              integral:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 area under the curve',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit becomes the exact area. For smooth curves, Simpson\'s rule often converges fastest here and integrates every polynomial through degree 3 exactly when n is even.' },
               derivative: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Power rule + chain rule + product rule + quotient rule cover ~95% of AP Calc problems.' },
               visualize:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Calculus that looked abstract on paper becomes obvious in motion.' },
               challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',       hint: 'AP Calc AB / BC items with step-by-step feedback. Common traps: sign errors in chain rule, forgetting the +C in indefinite integrals, mixing up [f(x)]\u00b2 vs f(x\u00b2).' },
@@ -2016,7 +2031,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // Method selector
             h('div', { className: 'flex flex-wrap gap-1 mb-3' },
               MODES.map(function(m){
-                return h('button',{ key:m.id,onClick:function(){upd('mode',m.id);upd('methodsUsed',Object.assign({},d.methodsUsed,{[m.id]:true}));if(m.id==='simpson'&&nRects%2!==0)upd('n',nRects+1);},className:'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-red-50')},m.label);
+                return h('button',{ key:m.id, 'aria-pressed':mode===m.id, onClick:function(){upd('mode',m.id);upd('methodsUsed',Object.assign({},d.methodsUsed,{[m.id]:true}));if(m.id==='simpson'&&nRects%2!==0)upd('n',nRects+1);},className:'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-red-50')},m.label);
               })
             ),
 
@@ -2025,7 +2040,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // ── OVER/UNDER PREDICTION (active learning) ──────────────────
             (mode === 'left' || mode === 'right') && h('div', { className: 'mt-2 bg-slate-50 rounded-xl border p-3', style:{animation:'calcFade 0.3s ease'} },
               h('p', { className: 'text-xs font-bold text-slate-700 mb-2' },
-                '\uD83E\uDD14 Before checking — is this ' + mode + ' Riemann sum an OVERestimate or UNDERestimate?'
+                '\uD83E\uDD14 Compare this ' + mode + ' Riemann sum with the exact integral: is it OVER, EXACT, or UNDER?'
               ),
               !overUnderChecked && h('div', { className: 'flex gap-2' },
                 h('button', { "aria-label": "OVERestimate",
@@ -2036,23 +2051,27 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   onClick: function(){ upd('overUnderGuess','under'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
                   className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all border-2 border-blue-600'
                 }, '\u2B07 UNDERestimate'),
-                h('button', { onClick: function(){ upd('overUnderGuess','neither'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
-                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all border-2 border-slate-200'
-                }, '\u2194 Can\'t tell')
+                h('button', { 'aria-label': 'Exact estimate', onClick: function(){ upd('overUnderGuess','exact'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
+                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-all border-2 border-emerald-600'
+                }, '= EXACT')
               ),
               overUnderChecked && (function(){
-                var correct = overUnderGuess === actualOverUnder || (actualOverUnder === 'neither' && overUnderGuess === 'neither');
+                var correct = overUnderGuess === actualOverUnder;
                 var isOver = actualOverUnder === 'over';
-                var isNeither = actualOverUnder === 'neither';
+                var isExact = actualOverUnder === 'exact';
+                var comparisonText = isExact ? 'The estimate is EXACT at this resolution.' : isOver ? 'It is an OVERestimate.' : 'It is an UNDERestimate.';
+                var reasoningText = isExact
+                  ? 'The numerical error is effectively zero: ' + area.toFixed(4) + ' matches ' + exact.toFixed(4) + '.'
+                  : fMonotonic
+                    ? (mode==='left'
+                      ? (fIsIncreasing ? 'The function is rising, so left endpoints miss area above the rectangles.' : 'The function is falling, so left endpoints make the rectangles overshoot.')
+                      : (fIsIncreasing ? 'The function is rising, so right endpoints make the rectangles overshoot.' : 'The function is falling, so right endpoints miss area above the rectangles.'))
+                    : 'The curve changes direction on this interval, so an endpoint rule alone cannot predict the result. Compare the estimate ' + area.toFixed(4) + ' with the exact value ' + exact.toFixed(4) + '.';
                 return h('div', { style:{animation:'calcPop 0.3s ease'}},
-                  h('p', { className: 'text-sm font-bold mb-1 ' + (correct?'text-emerald-600':'text-red-600') },
-                    (correct?'\u2705 Correct! ':'❌ Not quite — ') + (isNeither ? (((mode === 'left' || mode === 'right') && !fMonotonic) ? 'This curve rises then falls here, so left/right rectangles overshoot in one part and undershoot in the other; there is no single direction. Try an interval where it only rises or only falls.' : 'Midpoint/Trapezoid/Simpson\u2019s don\u2019t always go one way.') : isOver ? 'It\u2019s an OVERestimate.' : 'It\u2019s an UNDERestimate.')
+                  h('p', { role:'status', 'aria-live':'polite', className: 'text-sm font-bold mb-1 ' + (correct?'text-emerald-600':'text-red-600') },
+                    (correct?'✅ Correct! ':'Not quite - ') + comparisonText
                   ),
-                  !isNeither && h('p', { className: 'text-xs text-slate-600' },
-                    '\uD83D\uDCA1 ' + (mode==='left'
-                      ? (fIsIncreasing ? 'The function is rising, so each left endpoint is below where the curve ends up — rectangles miss area above them.' : 'The function is falling, so each left endpoint is above where the curve goes — rectangles overshoot.')
-                      : (fIsIncreasing ? 'The function is rising, so each right endpoint is at the highest point — rectangles overshoot the curve.' : 'The function is falling, so each right endpoint is at the lowest point — rectangles miss area.'))
-                  ),
+                  h('p', { className: 'text-xs text-slate-600' }, '💡 ' + reasoningText),
                   h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'transition-colors mt-1 text-[11px] text-slate-600 hover:text-slate-800 font-bold' }, '\u21BA Reset')
                 );
               })()
@@ -2183,8 +2202,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('div', { className: 'grid grid-cols-2 gap-2 mt-3' },
               [{k:'a',label:'a (x\u00B2)',min:-3,max:3,step:0.5},{k:'b',label:'b (x)',min:-5,max:5,step:0.5},{k:'c',label:'c (const)',min:-5,max:5,step:0.5},{k:'xMin',label:'Lower a',min:-3,max:4,step:0.5},{k:'xMax',label:'Upper b',min:1,max:10,step:0.5},{k:'n',label:'n (subdivisions)',min:2,max:50,step:mode==='simpson'?2:1}].map(function(s){
                 return h('div',{ key:s.k,className:'text-center bg-slate-50 rounded-lg p-2 border'},
-                  h('label',{className:'text-[11px] font-bold text-red-600'},s.label+': '+d[s.k]),
-                  h('input',{type:'range',min:s.min,max:s.max,step:s.step,value:d[s.k],'aria-label':s.label,onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('overUnderChecked',false);upd('predictSubmitted',false);upd('antiChecked',false);},className:'w-full accent-red-600'})
+                  h('label',{className:'text-[11px] font-bold text-red-600'},s.label+': '+(s.k==='n'?nRects:d[s.k])),
+                  h('input',{type:'range',min:s.min,max:s.max,step:s.step,value:s.k==='n'?nRects:d[s.k],'aria-label':s.label,onChange:function(e){upd(s.k,parseFloat(e.target.value));upd('overUnderChecked',false);upd('predictSubmitted',false);upd('antiChecked',false);},className:'w-full accent-red-600'})
                 );
               })
             ),
@@ -2504,7 +2523,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 ),
                 step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Predict before you test'),
-                  h('button',{"aria-label":"Load f(x) = x [0,3], n=6",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:6,mode:'left',tab:'discover'})});});addToast('Loaded for Method Showdown','success');},className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=6'),
+                  h('button',{"aria-label":"Load f(x) = x squared on 0 to 3 with 6 subdivisions",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:6,mode:'left',tab:'discover'})});});addToast('Loaded for Method Showdown','success');},className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=6'),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'At n=6, which method do you predict will be MOST accurate?'),
                   h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
                     ['Left Riemann','Right Riemann','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
@@ -2566,7 +2585,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 ),
                 step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Set up and measure'),
-                  h('button',{"aria-label":"Load f(x) = x, x=1",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:-1,xMax:4,n:20,mode:'left',x0:1,secantH:0.1,tab:'discover'})});});addToast('Loaded f(x) = x\u00B2','success');},className:'transition-colors px-4 py-2 bg-violet-700 text-white rounded-lg text-xs font-bold hover:bg-violet-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2, x\u2080=1'),
+                  h('button',{"aria-label":"Load f(x) = x squared with x zero equal to 1",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:-1,xMax:4,n:20,mode:'left',x0:1,secantH:0.1,tab:'discover'})});});addToast('Loaded f(x) = x\u00B2','success');},className:'transition-colors px-4 py-2 bg-violet-700 text-white rounded-lg text-xs font-bold hover:bg-violet-600 mb-3 block'},'\u25B6 Load f(x) = x\u00B2, x\u2080=1'),
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Derivative tab. Drag h close to 0. The slope shown is f\u2032(1). Record it:'),
                   h('div',{ className:'space-y-2'},
                     [['1','slope1'],['2','slope2'],['3','slope3']].map(function(item){
