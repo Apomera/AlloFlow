@@ -15626,82 +15626,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { recoveries: [] };
     var setData = props.setData;
-    var as = R.useState({});                          var checks = as[0]; var setChecks = as[1];
+    var as = R.useState({}); var checks = as[0]; var setChecks = as[1];
+    var es = R.useState(''); var saveError = es[0]; var setSaveError = es[1];
 
     var STEPS = [
-      { id: 'hydrate',   label: 'Water + something to eat',     icon: '💧', why: 'Your nervous system needs fuel. Don\'t skip.' },
-      { id: 'breathe',   label: 'Box breathing (4-4-4-4) × 4',  icon: '🌬', why: 'Reset the parasympathetic system.' },
-      { id: 'move',      label: 'Move the body for 5 min',      icon: '🚶', why: 'Walk, stretch, shake it out. Discharge stress hormones.' },
-      { id: 'shower',    label: 'Shower / wash face',           icon: '🚿', why: 'Symbolic reset + sensory regulation.' },
-      { id: 'comfort',   label: 'One small comfort',            icon: '🫖', why: 'Tea, music, fuzzy blanket, soft clothes, comfort food (real food, not stress food).' },
-      { id: 'connect',   label: 'Text one safe person',         icon: '💬', why: 'Even just "today was rough." You don\'t need to explain.' },
-      { id: 'note',      label: 'Write 1 line about today',     icon: '📝', why: 'Process — even briefly. "Today was hard because X."' },
-      { id: 'sleep',     label: 'Sleep — don\'t push through',  icon: '😴', why: 'Memory consolidation. Mood regulation. Recovery happens here.' }
+      { id: 'water-food', label: 'Have water or food if that would help', icon: '💧', why: 'Choose what fits your needs, access, health guidance, and preferences.' },
+      { id: 'breathe', label: 'Try slower breathing if it feels comfortable', icon: '🌬️', why: 'Pause or choose another idea if focusing on breathing feels uncomfortable.' },
+      { id: 'move-rest', label: 'Choose gentle movement or physical rest', icon: '🚶', why: 'Walking, stretching, changing position, or resting are all valid options.' },
+      { id: 'wash', label: 'Wash your face, shower, or change clothes', icon: '🚿', why: 'A sensory change may feel useful; skip it if it does not.' },
+      { id: 'comfort', label: 'Choose one accessible comfort', icon: '🫖', why: 'For example, music, a familiar object, a preferred texture, or quiet time.' },
+      { id: 'connect', label: 'Contact someone you trust if you want to', icon: '💬', why: 'You decide whom to contact, what to share, and whether now is the right time.' },
+      { id: 'note', label: 'Write or record a short reflection', icon: '📝', why: 'Text, speech, symbols, or no reflection are all options.' },
+      { id: 'rest-plan', label: 'Make a rest or sleep plan that fits your situation', icon: '😴', why: 'Consider your needs and any health guidance you already follow.' }
     ];
 
-    function toggle(id) { setChecks(Object.assign({}, checks, (function() { var o = {}; o[id] = !checks[id]; return o; })())); }
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function stepFor(id) { return STEPS.filter(function(step) { return step.id === id; })[0] || null; }
+    function completedIds() { return STEPS.filter(function(step) { return !!checks[step.id]; }).map(function(step) { return step.id; }); }
+    function toggle(id, checked) {
+      var next = Object.assign({}, checks); next[id] = checked; setChecks(next);
+      if (saveError) setSaveError('');
+    }
     function logSession() {
-      var done = Object.keys(checks).filter(function(k) { return checks[k]; });
+      var done = completedIds();
+      if (done.length === 0) {
+        setSaveError('Select at least one idea before saving this reflection.');
+        llAnnounce('Reflection not saved. Select at least one idea first.');
+        focusById('learning-lab-recovery-step-water-food');
+        return;
+      }
       var entry = { id: tkId(), date: todayISO(), time: Date.now(), completed: done };
-      setData({ recoveries: [entry].concat(data.recoveries || []) });
-      setChecks({});
+      setData(Object.assign({}, data, { recoveries: [entry].concat(data.recoveries || []) }));
+      setChecks({}); setSaveError('');
+      llAnnounce('Recovery reflection saved with ' + done.length + (done.length === 1 ? ' selected idea.' : ' selected ideas.'));
+      focusById('learning-lab-recovery-history-heading');
+    }
+    function removeRecovery(entry) {
+      askLearningLabConfirmation('Remove this saved recovery reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { recoveries: (data.recoveries || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Saved recovery reflection removed.');
+        focusById('learning-lab-recovery-history-heading');
+      });
+    }
+    function entryDateTime(entry) {
+      var timestamp = Number(entry.time);
+      if (Number.isFinite(timestamp)) return new Date(timestamp).toISOString();
+      return entry.date || undefined;
+    }
+    function entryDateLabel(entry) {
+      var timestamp = Number(entry.time);
+      if (Number.isFinite(timestamp)) return relDate(entry.date) + ' at ' + new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      return relDate(entry.date);
     }
 
     var recoveries = data.recoveries || [];
-    var doneCount = Object.keys(checks).filter(function(k) { return checks[k]; }).length;
+    var doneCount = completedIds().length;
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '8px 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌧', 'Recovery Kit', 'Post-hard-day reset checklist. You don\'t need to do all 8. Even 2 helps.', '#06b6d4'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#06b6d4' } }, '🌧 If today was hard: '),
-        'You\'re not alone. Hard days are part of life — they don\'t mean you\'re broken. Walk through the kit. Even partial credit counts.'
+      tkSectionHeader('🌧️', 'Recovery Kit', 'Choose any ideas that feel useful after a difficult or tiring day.', '#06b6d4'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-recovery-about-heading', style: { marginBottom: 14, padding: 11, borderRadius: 8, background: 'rgba(8,145,178,0.18)', border: '1px solid #67e8f9', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-recovery-about-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 13 } }, 'Optional reflection ideas'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'There is no required number or order. Skip or adapt any idea based on your needs, culture, access, disability, and health guidance.'),
+        hh('p', { style: { margin: 0 } }, 'This checklist does not provide health care or monitor your safety. If you are in immediate danger or may harm yourself or someone else, contact local emergency or crisis services now.')
       ),
-
       tkCard('#06b6d4',
-        hh('div', null,
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9' } }, '✓ Walk the kit'),
-            hh('span', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(6,182,212,0.20)', color: '#06b6d4', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + STEPS.length)
-          ),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            STEPS.map(function(s) {
-              var on = checks[s.id];
-              return hh('button', { key: 'rk-' + s.id,
-                onClick: function() { toggle(s.id); },
-                style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: on ? 'rgba(6,182,212,0.20)' : 'rgba(15,23,42,0.5)', border: '1.5px solid ' + (on ? '#06b6d4' : 'rgba(100,116,139,0.30)'), borderLeft: '3px solid #06b6d4', cursor: 'pointer', opacity: on ? 1 : 0.85 }
-              },
-                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  hh('div', { style: { width: 22, height: 22, borderRadius: 4, background: on ? '#06b6d4' : 'rgba(15,23,42,0.7)', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, border: '1px solid #06b6d4', flexShrink: 0 } }, on ? '✓' : ''),
-                  hh('div', { style: { flex: 1 } },
-                    hh('div', { style: { fontSize: 12, fontWeight: 700, color: on ? '#06b6d4' : '#e2e8f0' } }, s.icon + ' ' + s.label),
-                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, s.why)
+        hh('form', { onSubmit: function(event) { event.preventDefault(); logSession(); }, 'aria-labelledby': 'learning-lab-recovery-checklist-heading', 'aria-describedby': 'learning-lab-recovery-privacy-note' },
+          hh('h2', { id: 'learning-lab-recovery-checklist-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 15 } }, 'Ideas to consider'),
+          hh('p', { id: 'learning-lab-recovery-privacy-note', style: helpStyle }, 'Selected ideas and save times stay in this browser. Avoid private details and remove history you no longer need on a shared device.'),
+          hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 10px', color: '#cffafe', fontSize: 11, fontWeight: 800 } }, doneCount + (doneCount === 1 ? ' idea selected out of ' : ' ideas selected out of ') + STEPS.length + '.'),
+          hh('fieldset', { style: { margin: 0, padding: 0, border: 0 } },
+            hh('legend', { style: { marginBottom: 8, color: '#cffafe', fontSize: 12, fontWeight: 800 } }, 'Select any ideas you want to remember'),
+            hh('ul', { 'aria-label': 'Optional recovery ideas', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } },
+              STEPS.map(function(step, index) {
+                var on = !!checks[step.id];
+                var inputId = 'learning-lab-recovery-step-' + step.id;
+                var helpId = inputId + '-help';
+                return hh('li', { key: 'rk-' + step.id },
+                  hh('label', { htmlFor: inputId, style: { boxSizing: 'border-box', display: 'flex', alignItems: 'flex-start', gap: 10, width: '100%', minHeight: 44, padding: 10, borderRadius: 8, background: on ? 'rgba(8,145,178,0.28)' : 'rgba(15,23,42,0.58)', color: '#f8fafc', border: '2px solid ' + (on ? '#67e8f9' : '#64748b'), cursor: 'pointer' } },
+                    hh('input', { id: inputId, type: 'checkbox', checked: on, onChange: function(event) { toggle(step.id, event.target.checked); }, 'aria-describedby': helpId, style: { width: 22, height: 22, flex: '0 0 auto', margin: 0 } }),
+                    hh('span', { style: { flex: 1 } },
+                      hh('strong', { style: { display: 'block', color: '#f8fafc', fontSize: 12 } }, hh('span', { 'aria-hidden': 'true' }, step.icon + ' '), step.label),
+                      hh('span', { id: helpId, style: { display: 'block', marginTop: 4, color: '#e2e8f0', fontSize: 10, lineHeight: 1.5 } }, step.why)
+                    )
                   )
-                )
-              );
-            })
+                );
+              })
+            )
           ),
-          doneCount > 0 ? hh('div', { style: { marginTop: 12, textAlign: 'center' } },
-            tkBtn('💾 Log this recovery', logSession, 'primary')
-          ) : null
+          saveError ? hh('p', { id: 'learning-lab-recovery-save-error', role: 'alert', style: errorStyle }, saveError) : null,
+          hh('button', { type: 'submit', 'aria-describedby': saveError ? 'learning-lab-recovery-save-error' : undefined, style: Object.assign({}, buttonStyle, { marginTop: 12, border: '1px solid #67e8f9', background: '#0e7490' }) }, 'Save selected ideas')
         )
       ),
-
-      recoveries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#06b6d4', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past recoveries'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          recoveries.slice(0, 10).map(function(r) {
-            return hh('div', { key: 're-' + r.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #06b6d4' } },
-              hh('div', { style: { fontSize: 10, color: '#67e8f9', fontFamily: 'ui-monospace, Menlo, monospace' } }, r.date + ' · ' + new Date(r.time).toLocaleTimeString() + ' · ' + r.completed.length + '/' + STEPS.length + ' steps')
-            );
-          })
-        )
-      ) : null
+      hh('section', { 'aria-labelledby': 'learning-lab-recovery-history-heading' },
+        hh('h2', { id: 'learning-lab-recovery-history-heading', tabIndex: -1, style: { margin: '14px 0 6px', color: '#cffafe', fontSize: 15 } }, 'Saved reflections'),
+        recoveries.length > 10 ? hh('p', { style: helpStyle }, 'Showing the 10 most recent reflections out of ' + recoveries.length + '.') : null,
+        recoveries.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No recovery reflections saved yet.')
+          : hh('ul', { 'aria-label': 'Most recent recovery reflections', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } },
+              recoveries.slice(0, 10).map(function(entry) {
+                var knownSteps = (entry.completed || []).map(stepFor).filter(Boolean);
+                var headingId = 'learning-lab-recovery-entry-heading-' + entry.id;
+                return hh('li', { key: 're-' + entry.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #67e8f9' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#cffafe', fontSize: 13 } }, 'Recovery reflection'),
+                        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 11 } }, hh('time', { dateTime: entryDateTime(entry) }, entryDateLabel(entry)), ' — ', knownSteps.length + (knownSteps.length === 1 ? ' selected idea' : ' selected ideas'))
+                      ),
+                      hh('button', { type: 'button', onClick: function() { removeRecovery(entry); }, 'aria-label': 'Remove recovery reflection from ' + entryDateLabel(entry), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                    ),
+                    hh('details', { style: { marginTop: 8 } },
+                      hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#cffafe', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Review selected ideas'),
+                      knownSteps.length === 0 ? hh('p', { style: helpStyle }, 'No current idea labels match this older saved reflection.')
+                        : hh('ul', { style: { margin: '6px 0 0', paddingLeft: 22, color: '#f1f5f9', fontSize: 11, lineHeight: 1.55 } }, knownSteps.map(function(step) { return hh('li', { key: 'saved-' + step.id }, step.label); }))
+                    )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
-  // ── OOO. PERSONAL READING TRACKER (Wave 13) ──
-  // Track current reading position across multiple books.
   function PersonalCurrentReading(props) {
     if (!R) return null;
     var data = props.data || { books: [] };
