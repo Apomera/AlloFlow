@@ -15267,83 +15267,139 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var fs = R.useState({ text: '', quadrant: 'q2' });
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
+    var ms = R.useState({}); var moveDrafts = ms[0]; var setMoveDrafts = ms[1];
 
     var QUADRANTS = [
-      { id: 'q1', label: 'Q1: Urgent + Important', icon: '🔥', color: '#ef4444', advice: 'DO NOW. Crisis mode. Goal: stop living here.' },
-      { id: 'q2', label: 'Q2: Important, Not Urgent', icon: '⭐', color: '#10b981', advice: 'INVEST. The "live here" zone. Studying ahead, exercise, deep relationships, growth.' },
-      { id: 'q3', label: 'Q3: Urgent, Not Important', icon: '📞', color: '#fbbf24', advice: 'DELEGATE or batch. Most interruptions. Other people\'s urgencies.' },
-      { id: 'q4', label: 'Q4: Not Urgent, Not Important', icon: '📺', color: 'var(--allo-stem-text-soft, #94a3b8)', advice: 'AVOID. Mindless scrolling, busywork, time-wasters. Conscious choice only.' }
+      { id: 'q1', label: 'Q1: Urgent and important', color: '#fca5a5', description: 'Time-sensitive tasks that matter to you. Consider what needs attention now.' },
+      { id: 'q2', label: 'Q2: Important, not urgent', color: '#6ee7b7', description: 'Meaningful tasks with more scheduling flexibility. Consider when you want to work on them.' },
+      { id: 'q3', label: 'Q3: Urgent, not important', color: '#fde68a', description: 'Time-sensitive tasks with lower personal importance. Consider whether to do, share, or reschedule them.' },
+      { id: 'q4', label: 'Q4: Not urgent or important', color: '#cbd5e1', description: 'Lower-priority tasks. Consider whether they still belong on your list.' }
     ];
 
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function quadrantFor(id) {
+      return QUADRANTS.filter(function(quadrant) { return quadrant.id === id; })[0] || QUADRANTS[1];
+    }
+    function setMoveDraft(id, quadrant) {
+      var nextDrafts = Object.assign({}, moveDrafts);
+      nextDrafts[id] = quadrant;
+      setMoveDrafts(nextDrafts);
+    }
     function add() {
-      if (!form.text.trim()) return;
-      var t = Object.assign({ id: tkId(), createdAt: todayISO() }, form);
-      setData({ tasks: [t].concat(data.tasks || []) });
-      setForm({ text: '', quadrant: 'q2' });
+      var text = form.text.trim();
+      if (!text) {
+        setFormError('Enter a task name before adding it.');
+        llAnnounce('Task not added. Enter a task name first.');
+        focusById('learning-lab-priorities-task');
+        return;
+      }
+      var task = { id: tkId(), createdAt: todayISO(), text: text, quadrant: quadrantFor(form.quadrant).id };
+      setData(Object.assign({}, data, { tasks: [task].concat(data.tasks || []) }));
+      setForm({ text: '', quadrant: 'q2' }); setFormError('');
+      llAnnounce('Task added to ' + quadrantFor(task.quadrant).label + ': ' + text);
+      focusById('learning-lab-priorities-task');
     }
-    function moveTask(id, quadrant) {
-      setData({ tasks: (data.tasks || []).map(function(t) { return t.id === id ? Object.assign({}, t, { quadrant: quadrant }) : t; }) });
+    function moveTask(task, quadrant) {
+      var target = quadrantFor(quadrant);
+      var current = quadrantFor(task.quadrant);
+      if (target.id === current.id) {
+        llAnnounce('Task is already in ' + target.label + '.');
+        return;
+      }
+      setData(Object.assign({}, data, { tasks: (data.tasks || []).map(function(item) { return item.id === task.id ? Object.assign({}, item, { quadrant: target.id }) : item; }) }));
+      setMoveDraft(task.id, target.id);
+      llAnnounce('Task moved to ' + target.label + ': ' + String(task.text || 'Untitled task'));
+      focusById('learning-lab-priorities-heading-' + target.id);
     }
-    function remove(id) { setData({ tasks: (data.tasks || []).filter(function(t) { return t.id !== id; }) }); }
+    function removeTask(task) {
+      askLearningLabConfirmation('Remove “' + String(task.text || 'Untitled task') + '” from the priorities matrix? This cannot be undone.', { title: 'Remove this task?', confirmText: 'Remove task' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { tasks: (data.tasks || []).filter(function(item) { return item.id !== task.id; }) }));
+        llAnnounce('Task removed from the priorities matrix.');
+        focusById('learning-lab-priorities-matrix-heading');
+      });
+    }
 
     var tasks = data.tasks || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 12px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📊', 'Priorities Matrix', 'Eisenhower matrix. 4 quadrants. Goal: spend more time in Q2 (Important, Not Urgent).', '#a855f7'),
-
+      tkSectionHeader('📊', 'Priorities Matrix', 'Sort tasks by urgency and importance using categories you can change at any time.', '#a855f7'),
       tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Add a task'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'Task name', { flex: 1 }),
-            hh('select', { value: form.quadrant,
-              onChange: function(e) { setForm(Object.assign({}, form, { quadrant: e.target.value })); },
-              style: { padding: '8px 10px', fontSize: 11, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6 }
-            }, QUADRANTS.map(function(q) { return hh('option', { key: 'op-' + q.id, value: q.id }, q.label); })),
-            tkBtn('+', add, 'primary', { padding: '8px 14px' })
-          )
+        hh('form', { onSubmit: function(event) { event.preventDefault(); add(); }, 'aria-labelledby': 'learning-lab-priorities-form-heading', 'aria-describedby': 'learning-lab-priorities-privacy-note' },
+          hh('h2', { id: 'learning-lab-priorities-form-heading', style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Add a task'),
+          hh('p', { id: 'learning-lab-priorities-privacy-note', style: helpStyle }, 'Tasks save in this browser. Avoid private details if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10, alignItems: 'start' } },
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-priorities-task', style: labelStyle }, 'Task name (required)'),
+              hh('input', { id: 'learning-lab-priorities-task', type: 'text', value: form.text, required: true, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { text: event.target.value })); if (formError) setFormError(''); }, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-priorities-task-error' : undefined, style: fieldStyle }),
+              formError ? hh('p', { id: 'learning-lab-priorities-task-error', role: 'alert', style: errorStyle }, formError) : null
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-priorities-quadrant', style: labelStyle }, 'Starting category'),
+              hh('select', { id: 'learning-lab-priorities-quadrant', value: form.quadrant, onChange: function(event) { setForm(Object.assign({}, form, { quadrant: event.target.value })); }, style: fieldStyle },
+                QUADRANTS.map(function(quadrant) { return hh('option', { key: 'op-' + quadrant.id, value: quadrant.id }, quadrant.label); })
+              )
+            )
+          ),
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Add task')
         )
       ),
-
-      // 2x2 grid
-      hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-        QUADRANTS.map(function(q) {
-          var qTasks = tasks.filter(function(t) { return t.quadrant === q.id; });
-          return hh('div', { key: 'qd-' + q.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + q.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + q.color + '40', minHeight: 200 } },
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: q.color, marginBottom: 4 } }, q.icon + ' ' + q.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8, lineHeight: 1.5 } }, q.advice),
-            qTasks.length === 0 ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #475569)', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'empty')
-            : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-                qTasks.map(function(t) {
-                  return hh('div', { key: 't-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '2px solid ' + q.color } },
-                    hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, t.text),
-                    hh('div', { style: { display: 'flex', gap: 2, flexWrap: 'wrap' } },
-                      QUADRANTS.filter(function(qq) { return qq.id !== q.id; }).map(function(other) {
-                        return hh('button', { key: 'mv-' + other.id,
-                          onClick: function() { moveTask(t.id, other.id); },
-                          title: 'Move to ' + other.label,
-                          style: { padding: '2px 6px', borderRadius: 3, background: other.color + '20', color: other.color, border: '1px solid ' + other.color + '40', fontSize: 9, cursor: 'pointer', fontWeight: 700 }
-                        }, '→' + other.id.toUpperCase());
-                      }),
-                      hh('button', { onClick: function() { remove(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, cursor: 'pointer' } }, '✕')
-                    )
-                  );
-                })
-              )
-          );
-        })
+      hh('section', { 'aria-labelledby': 'learning-lab-priorities-matrix-heading' },
+        hh('h2', { id: 'learning-lab-priorities-matrix-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 15 } }, 'Saved tasks by category'),
+        hh('p', { style: helpStyle }, tasks.length + (tasks.length === 1 ? ' task is saved. ' : ' tasks are saved. ') + 'Urgency and importance are personal judgments; use the categories in the way that supports your planning.'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+          QUADRANTS.map(function(quadrant) {
+            var quadrantTasks = tasks.filter(function(task) { return quadrantFor(task.quadrant).id === quadrant.id; });
+            var headingId = 'learning-lab-priorities-heading-' + quadrant.id;
+            return hh('section', { key: 'qd-' + quadrant.id, 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.72)', border: '2px solid ' + quadrant.color, minHeight: 200 } },
+              hh('h3', { id: headingId, tabIndex: -1, style: { margin: '0 0 4px', color: quadrant.color, fontSize: 13 } }, quadrant.label),
+              hh('p', { style: helpStyle }, quadrant.description + ' ' + quadrantTasks.length + (quadrantTasks.length === 1 ? ' task.' : ' tasks.')),
+              quadrantTasks.length === 0 ? hh('p', { style: { padding: 12, borderRadius: 7, border: '1px solid #64748b', color: '#e2e8f0', fontSize: 11 } }, 'No tasks in this category.')
+                : hh('ul', { 'aria-label': quadrant.label + ' tasks', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } },
+                    quadrantTasks.map(function(task) {
+                      var taskText = String(task.text || 'Untitled task');
+                      var taskHeadingId = 'learning-lab-priorities-task-heading-' + task.id;
+                      var moveId = 'learning-lab-priorities-move-' + task.id;
+                      var moveValue = moveDrafts[task.id] || quadrant.id;
+                      return hh('li', { key: 't-' + task.id },
+                        hh('article', { 'aria-labelledby': taskHeadingId, style: { padding: 10, borderRadius: 7, background: 'rgba(2,6,23,0.58)', border: '1px solid #64748b', borderLeft: '4px solid ' + quadrant.color } },
+                          hh('h4', { id: taskHeadingId, style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 12, overflowWrap: 'anywhere' } }, taskText),
+                          task.createdAt ? hh('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 10 } }, 'Added ', hh('time', { dateTime: task.createdAt }, relDate(task.createdAt))) : null,
+                          hh('form', { onSubmit: function(event) { event.preventDefault(); moveTask(task, moveValue); }, 'aria-label': 'Move task: ' + taskText },
+                            hh('label', { htmlFor: moveId, style: labelStyle }, 'Move task to a different category'),
+                            hh('select', { id: moveId, value: moveValue, onChange: function(event) { setMoveDraft(task.id, event.target.value); }, style: fieldStyle },
+                              QUADRANTS.map(function(target) { return hh('option', { key: 'target-' + target.id, value: target.id }, target.label); })
+                            ),
+                            hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 8 }) }, 'Move task')
+                          ),
+                          hh('button', { type: 'button', onClick: function() { removeTask(task); }, 'aria-label': 'Remove task: ' + taskText, style: { minWidth: 44, minHeight: 44, marginTop: 8, padding: '9px 12px', borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.42)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Remove task')
+                        )
+                      );
+                    })
+                  )
+            );
+          })
+        )
       ),
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🎓 The Q2 life: '),
-        'Covey 1989. Most people live in Q1 (firefighting). The high-leverage shift is to spend MORE time in Q2 (important, not urgent) — exercise, deep work, relationships, planning. Q2 work BECOMES Q1 when neglected long enough. Investing in Q2 prevents Q1 crises.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-priorities-about-heading', style: { marginTop: 14, padding: 11, borderRadius: 8, background: 'rgba(88,28,135,0.24)', border: '1px solid #c084fc', color: '#f1f5f9', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-priorities-about-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13 } }, 'About this planning method'),
+        hh('p', { style: { margin: 0 } }, 'The four-category matrix is a reflection aid, not a rule or assessment. A task’s urgency and importance can change, and different people may categorize the same task differently.')
       )
     );
   }
 
-  // ── MMM. PERSONAL PARENT MESSAGE BUILDER (Wave 13) ──
-  // Templates for hard conversations with parents/guardians about
-  // school, mental health, accommodations, future plans.
   function PersonalParentMessage(props) {
     if (!R) return null;
     var data = props.data || { drafts: [] };
