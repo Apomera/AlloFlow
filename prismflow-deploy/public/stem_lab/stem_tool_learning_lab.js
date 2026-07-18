@@ -14605,70 +14605,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { assessments: [] };
     var setData = props.setData;
-    var as = R.useState({}); var ans = as[0]; var setAns = as[1];
+    var as = R.useState({}); var answers = as[0]; var setAnswers = as[1];
+    var ms = R.useState([]); var missingIds = ms[0]; var setMissingIds = ms[1];
 
-    var Q = [
-      { id: 'q1',  text: 'I learn best when I can...', options: ['see it', 'hear it', 'do it', 'discuss it'] },
-      { id: 'q2',  text: 'My most productive time of day is...', options: ['Early morning', 'Mid-morning', 'Afternoon', 'Evening/night'] },
-      { id: 'q3',  text: 'When I\'m stuck on something, I usually...', options: ['Try harder alone', 'Take a break', 'Ask for help right away', 'Avoid it'] },
-      { id: 'q4',  text: 'I retain information best when...', options: ['I re-read', 'I quiz myself', 'I teach someone else', 'I make a visual'] },
-      { id: 'q5',  text: 'The biggest barrier to my learning is...', options: ['Anxiety', 'Distractions', 'Boredom / disengagement', 'Not knowing where to start'] },
-      { id: 'q6',  text: 'I do my best work when the environment is...', options: ['Silent', 'Low background noise', 'Music playing', 'Full of activity'] },
-      { id: 'q7',  text: 'I feel most confident in school when...', options: ['I\'m getting praise', 'I understand the material', 'I\'m helping someone else', 'I\'m connecting it to my life'] },
-      { id: 'q8',  text: 'My biggest strength as a student is...', options: ['Memory', 'Asking questions', 'Effort + persistence', 'Creative thinking'] },
-      { id: 'q9',  text: 'I struggle most with...', options: ['Starting things', 'Finishing things', 'Following directions', 'Speaking up'] },
-      { id: 'q10', text: 'I learn most from teachers who...', options: ['Explain step by step', 'Tell stories', 'Push me to think harder', 'Treat me like a peer'] },
-      { id: 'q11', text: 'When I\'m overwhelmed I want...', options: ['Quiet space', 'Someone to talk to', 'A specific plan', 'Reassurance'] },
-      { id: 'q12', text: 'In 5 years I want to be someone who...', options: ['Knows their craft deeply', 'Helps others', 'Builds new things', 'Has a balanced life'] }
+    var QUESTIONS = [
+      { id: 'q1', text: 'A way I often like to explore new information is…', options: ['Looking at examples or visuals', 'Listening to an explanation', 'Trying it myself', 'Discussing it with someone'] },
+      { id: 'q2', text: 'A time when I often feel most ready to work is…', options: ['Early morning', 'Mid-morning', 'Afternoon', 'Evening or night'] },
+      { id: 'q3', text: 'When I get stuck, my first response is often…', options: ['Keep trying on my own', 'Take a break', 'Ask for help', 'Put it aside'] },
+      { id: 'q4', text: 'A study action I currently use most is…', options: ['Reviewing notes', 'Quizzing myself', 'Explaining it to someone', 'Making a visual'] },
+      { id: 'q5', text: 'A barrier that affects my learning lately is…', options: ['Worry or stress', 'Distractions', 'Low interest', 'Not knowing where to start'] },
+      { id: 'q6', text: 'An environment I often prefer for focused work is…', options: ['Quiet', 'Low background noise', 'Music', 'Activity around me'] },
+      { id: 'q7', text: 'I often feel more confident at school when…', options: ['Someone recognizes my effort', 'I understand the material', 'I help someone else', 'I connect it to my life'] },
+      { id: 'q8', text: 'A strength I notice in myself as a learner is…', options: ['Remembering information', 'Asking questions', 'Persistence', 'Creative thinking'] },
+      { id: 'q9', text: 'A task step that is often difficult lately is…', options: ['Starting', 'Finishing', 'Following several directions', 'Speaking up'] },
+      { id: 'q10', text: 'A teacher action I often find useful is…', options: ['Explaining step by step', 'Using stories or examples', 'Asking challenging questions', 'Inviting collaboration'] },
+      { id: 'q11', text: 'When I feel overwhelmed, something I may want is…', options: ['A quieter space', 'Someone to talk with', 'A specific plan', 'Reassurance'] },
+      { id: 'q12', text: 'A direction that matters to me right now is…', options: ['Deepening a skill', 'Helping others', 'Building or creating', 'Making room for balance'] }
     ];
 
-    function pick(qid, val) { setAns(Object.assign({}, ans, (function() { var o = {}; o[qid] = val; return o; })())); }
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function pick(questionId, value) {
+      var next = Object.assign({}, answers); next[questionId] = value; setAnswers(next);
+      if (missingIds.indexOf(questionId) >= 0) setMissingIds(missingIds.filter(function(id) { return id !== questionId; }));
+    }
     function save() {
-      var entry = { id: tkId(), date: todayISO(), answers: ans };
-      setData({ assessments: [entry].concat(data.assessments || []) });
-      setAns({});
+      var missing = QUESTIONS.filter(function(question) { return !answers[question.id]; }).map(function(question) { return question.id; });
+      if (missing.length > 0) {
+        setMissingIds(missing);
+        llAnnounce('Snapshot not saved. Answer all 12 questions. ' + missing.length + ' remaining.');
+        focusById('learning-lab-assessment-question-' + missing[0]);
+        return;
+      }
+      var entry = { id: tkId(), date: todayISO(), answers: Object.assign({}, answers) };
+      setData(Object.assign({}, data, { assessments: [entry].concat(data.assessments || []) }));
+      setAnswers({}); setMissingIds([]);
+      llAnnounce('Learning reflection snapshot saved.');
+      focusById('learning-lab-assessment-history-heading');
+    }
+    function removeAssessment(entry) {
+      askLearningLabConfirmation('Remove the learning reflection from ' + String(entry.date || 'this date') + '? This cannot be undone.', {
+        title: 'Remove this reflection snapshot?', confirmText: 'Remove snapshot'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { assessments: (data.assessments || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Learning reflection snapshot removed.');
+        focusById('learning-lab-assessment-history-heading');
+      });
     }
 
     var assessments = data.assessments || [];
-    var done = Object.keys(ans).length === Q.length;
+    var recentAssessments = assessments.slice(0, 20);
+    var answeredCount = QUESTIONS.filter(function(question) { return !!answers[question.id]; }).length;
+    var progressText = answeredCount + ' of ' + QUESTIONS.length + ' questions answered.';
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var legendStyle = { padding: 0, color: '#e9d5ff', fontSize: 12, fontWeight: 800, lineHeight: 1.5 };
+    var errorStyle = { margin: '7px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🔍', 'Self-Assessment', '12 questions about how YOU learn. No right answers. Just self-knowledge.', '#a855f7'),
-
+      tkSectionHeader('🔍', 'Learning Reflection', 'A 12-question snapshot of current preferences and patterns. There are no right answers.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-assessment-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f3e8ff', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-assessment-about-heading', style: { margin: '0 0 5px', fontSize: 13 } }, 'A reflection, not a test or diagnosis'),
+        hh('p', { style: { margin: 0 } }, 'Preferences and needs can change by task, setting, and day. This snapshot does not assign a learning style, score, or label.')
+      ),
       tkCard('#a855f7',
-        hh('div', null,
-          Q.map(function(q, qi) {
-            return hh('div', { key: 'q-' + q.id, style: { marginBottom: 12 } },
-              hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 6 } }, (qi + 1) + '. ' + q.text),
-              hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                q.options.map(function(o) {
-                  var on = ans[q.id] === o;
-                  return hh('button', { key: 'qo-' + o,
-                    onClick: function() { pick(q.id, o); },
-                    style: { padding: '6px 10px', borderRadius: 6, background: on ? '#a855f7' : 'rgba(168,85,247,0.10)', color: on ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                  }, o);
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-assessment-form-heading', 'aria-describedby': 'learning-lab-assessment-privacy-note' },
+          hh('h2', { id: 'learning-lab-assessment-form-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 15 } }, 'Current learning reflection'),
+          hh('p', { id: 'learning-lab-assessment-privacy-note', style: helpStyle }, 'Snapshots save in this browser. Avoid choosing or saving private information if other people use this device.'),
+          hh('div', { style: { marginBottom: 14 } },
+            hh('label', { htmlFor: 'learning-lab-assessment-progress', style: { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 } }, progressText),
+            hh('progress', { id: 'learning-lab-assessment-progress', value: answeredCount, max: QUESTIONS.length, style: { width: '100%', minHeight: 24, accentColor: '#a855f7' } }, progressText)
+          ),
+          missingIds.length > 0 ? hh('div', { role: 'alert', style: errorStyle }, 'Answer all questions before saving. ' + missingIds.length + (missingIds.length === 1 ? ' question remains.' : ' questions remain.')) : null,
+          QUESTIONS.map(function(question, questionIndex) {
+            var missing = missingIds.indexOf(question.id) >= 0;
+            var questionId = 'learning-lab-assessment-question-' + question.id;
+            return hh('fieldset', { key: 'q-' + question.id, id: questionId, tabIndex: -1, 'aria-invalid': missing ? 'true' : undefined, 'aria-describedby': missing ? questionId + '-error' : undefined, style: { margin: '12px 0 0', padding: 11, borderRadius: 8, border: '1px solid ' + (missing ? '#fca5a5' : '#7e22ce') } },
+              hh('legend', { style: legendStyle }, (questionIndex + 1) + '. ' + question.text),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginTop: 7 } },
+                question.options.map(function(option, optionIndex) {
+                  var selected = answers[question.id] === option;
+                  var optionId = 'learning-lab-assessment-' + question.id + '-option-' + optionIndex;
+                  return hh('label', { key: optionId, htmlFor: optionId, style: { boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: 7, minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid ' + (selected ? '#d8b4fe' : '#64748b'), background: selected ? '#6b21a8' : 'rgba(15,23,42,0.45)', color: '#f8fafc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                    hh('input', { id: optionId, type: 'radio', name: 'learning-lab-assessment-' + question.id, value: option, required: true, checked: selected, onChange: function() { pick(question.id, option); } }), option
+                  );
                 })
-              )
+              ),
+              missing ? hh('p', { id: questionId + '-error', style: errorStyle }, 'Choose one response for this question.') : null
             );
-          })
+          }),
+          hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, marginTop: 14, padding: '10px 16px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#7e22ce', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Save reflection snapshot')
         )
       ),
-
-      done ? hh('div', { style: { textAlign: 'center', marginBottom: 14 } },
-        tkBtn('💾 Save this snapshot', save, 'primary', { padding: '12px 24px', fontSize: 12 })
-      ) : null,
-
-      assessments.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past snapshots'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          assessments.map(function(a) {
-            return hh('div', { key: 'sa-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
-              hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700 } }, a.date + ' · ' + relDate(a.date)),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Top: ' + (a.answers.q4 || '?') + ' · ' + (a.answers.q5 || '?') + ' · ' + (a.answers.q8 || '?'))
-            );
-          })
-        )
-      ) : null
+      hh('section', { 'aria-labelledby': 'learning-lab-assessment-history-heading' },
+        hh('h2', { id: 'learning-lab-assessment-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Past reflection snapshots'),
+        assessments.length > 20 ? hh('p', { style: helpStyle }, 'Showing the 20 most recent snapshots out of ' + assessments.length + '.') : null,
+        recentAssessments.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No reflection snapshots saved yet.')
+          : hh('ul', { 'aria-label': 'Most recent learning reflection snapshots', style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              recentAssessments.map(function(entry) {
+                var headingId = 'learning-lab-assessment-snapshot-heading-' + entry.id;
+                return hh('li', { key: 'sa-' + entry.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #a855f7' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('h3', { id: headingId, style: { margin: 0, color: '#e9d5ff', fontSize: 13 } }, 'Reflection from ', hh('time', { dateTime: entry.date || undefined }, relDate(entry.date))),
+                      hh('button', { type: 'button', onClick: function() { removeAssessment(entry); }, 'aria-label': 'Remove learning reflection from ' + String(entry.date || 'unknown date'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                    ),
+                    hh('details', { style: { marginTop: 8, color: '#e2e8f0' } },
+                      hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#e9d5ff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review all responses'),
+                      hh('dl', { 'aria-label': 'Learning reflection responses', style: { margin: '8px 0 0', fontSize: 11 } },
+                        QUESTIONS.map(function(question) { return hh('div', { key: 'answer-' + entry.id + '-' + question.id, style: { marginBottom: 9 } }, hh('dt', { style: { color: '#d8b4fe', fontWeight: 800 } }, question.text), hh('dd', { style: { margin: '2px 0 0', color: '#f1f5f9' } }, (entry.answers || {})[question.id] || 'No response recorded')); })
+                      )
+                    )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
