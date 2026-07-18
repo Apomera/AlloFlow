@@ -16586,92 +16586,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { resources: [] };
     var setData = props.setData;
-    var fs = R.useState({ name: '', cat: 'crisis', contact: '', notes: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { name: '', cat: 'community', contact: '', notes: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var nameError = es[0]; var setNameError = es[1];
 
-    var CATS = [
-      { id: 'crisis',     label: 'Crisis / safety', icon: '🚨', color: '#ef4444' },
-      { id: 'mh',         label: 'Mental health',   icon: '💭', color: '#a855f7' },
-      { id: 'medical',    label: 'Medical',         icon: '⚕', color: '#3b82f6' },
-      { id: 'food',       label: 'Food + basic needs', icon: '🍞', color: '#fbbf24' },
-      { id: 'legal',      label: 'Legal + advocacy', icon: '⚖', color: '#06b6d4' },
-      { id: 'education',  label: 'Education + tutoring', icon: '📚', color: '#10b981' },
-      { id: 'community',  label: 'Community groups', icon: '🤝', color: '#ec4899' },
-      { id: 'specialty',  label: 'Disability / specialty', icon: '🪪', color: '#f97316' }
+    var CATEGORIES = [
+      { id: 'crisis', label: 'Crisis or safety', icon: '🚨', color: '#fca5a5' },
+      { id: 'mh', label: 'Mental health or substance use', icon: '💬', color: '#d8b4fe' },
+      { id: 'medical', label: 'Medical or health care', icon: '⚕️', color: '#93c5fd' },
+      { id: 'food', label: 'Food or basic needs', icon: '🍞', color: '#fde68a' },
+      { id: 'legal', label: 'Legal help or advocacy', icon: '⚖️', color: '#67e8f9' },
+      { id: 'education', label: 'Education or tutoring', icon: '📚', color: '#6ee7b7' },
+      { id: 'community', label: 'Community or peer support', icon: '🤝', color: '#f9a8d4' },
+      { id: 'specialty', label: 'Disability or specialized support', icon: '♿', color: '#fdba74' }
     ];
-
-    // Pre-seed with universal resources (the safety net)
     var BUILTIN = [
-      { id: 'b1', name: '988 Suicide & Crisis Lifeline', cat: 'crisis', contact: 'Call or text 988', notes: '24/7, free, confidential. US only.' },
-      { id: 'b2', name: 'Crisis Text Line', cat: 'crisis', contact: 'Text HOME to 741741', notes: '24/7 text-based crisis support.' },
-      { id: 'b3', name: 'Maine Mobile Crisis (kids + adults)', cat: 'crisis', contact: '1-888-568-1112', notes: 'Statewide Maine. Mobile response.' },
-      { id: 'b4', name: 'Trevor Project (LGBTQ+ youth)', cat: 'crisis', contact: '1-866-488-7386 or text START to 678-678', notes: '24/7 for LGBTQ+ young people.' },
-      { id: 'b5', name: 'SAMHSA Helpline (substance use)', cat: 'mh', contact: '1-800-662-HELP (4357)', notes: '24/7 referral service, free.' },
-      { id: 'b6', name: 'NAMI Maine HelpLine', cat: 'mh', contact: '1-800-464-5767', notes: 'Maine mental-health resource navigation.' },
-      { id: 'b7', name: 'RAINN National Sexual Assault', cat: 'crisis', contact: '1-800-656-HOPE (4673)', notes: '24/7, confidential.' },
-      { id: 'b8', name: 'Maine 211', cat: 'community', contact: 'Dial 211 or 211maine.org', notes: 'Statewide social-services info.' }
+      { id: '988', name: '988 Suicide & Crisis Lifeline', cat: 'crisis', contact: 'Call or text 988; chat at 988lifeline.org', notes: 'United States and territories. Free support; service options and confidentiality limits are explained on the official site.', url: 'https://988lifeline.org/get-help/', verifiedOn: '2026-07-18' },
+      { id: 'crisis-text', name: 'Crisis Text Line', cat: 'crisis', contact: 'In the US, text HOME to 741741', notes: 'Free 24/7 text support in the US; carrier, shortcode, privacy, and safety limitations may apply.', url: 'https://www.crisistextline.org/about-us/faq/', verifiedOn: '2026-07-18' },
+      { id: 'maine-crisis', name: 'Maine Crisis Line', cat: 'crisis', contact: 'Call 1-888-568-1112', notes: 'Statewide Maine crisis contact. Confirm available services with the provider.', url: 'https://www.maine.gov/dvem/', verifiedOn: '2026-07-18' },
+      { id: 'trevor', name: 'The Trevor Project crisis services', cat: 'crisis', contact: 'Call 1-866-488-7386; text START to 678678; or use online chat', notes: 'US crisis support for LGBTQ+ young people. Review the official terms for scope and privacy limits.', url: 'https://www.thetrevorproject.org/get-help/', verifiedOn: '2026-07-18' },
+      { id: 'samhsa', name: 'SAMHSA National Helpline', cat: 'mh', contact: 'Call 1-800-662-HELP (4357)', notes: 'US treatment referral and information for mental health and substance use; free, confidential, and available 24/7.', url: 'https://www.samhsa.gov/find-help/helplines/national-helpline', verifiedOn: '2026-07-18' },
+      { id: 'nami-maine', name: 'NAMI Maine Helpline', cat: 'mh', contact: 'Call 1-800-464-5767 and press 1', notes: 'Non-crisis Maine information and resource support, Monday through Friday, 8 a.m. to 4 p.m. Eastern.', url: 'https://namimaine.org/', verifiedOn: '2026-07-18' },
+      { id: 'rainn', name: 'RAINN National Sexual Assault Hotline', cat: 'crisis', contact: 'Call 1-800-656-HOPE (4673) or use hotline.rainn.org', notes: 'US sexual assault support. Review official safety and confidentiality information before using online services.', url: 'https://hotline.rainn.org/', verifiedOn: '2026-07-18' },
+      { id: 'maine-211', name: '211 Maine', cat: 'community', contact: 'Dial 211; text your ZIP code to 898-211; or visit 211maine.org', notes: 'Maine health and human-services information. In an emergency, use the appropriate emergency service instead.', url: 'https://211maine.org/contact/', verifiedOn: '2026-07-18' }
     ];
 
-    function add() {
-      if (!form.name.trim()) { alert('Need a name.'); return; }
-      var r = Object.assign({ id: tkId(), createdAt: todayISO() }, form);
-      setData({ resources: [r].concat(data.resources || []) });
-      setForm({ name: '', cat: 'crisis', contact: '', notes: '' });
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function categoryFor(id) { return CATEGORIES.filter(function(category) { return category.id === id; })[0] || CATEGORIES[6]; }
+    function addResource() {
+      var name = form.name.trim();
+      if (!name) { setNameError('Enter a resource name.'); llAnnounce('Resource not saved. Enter a name first.'); focusById('learning-lab-resource-name'); return; }
+      var resource = { id: tkId(), createdAt: todayISO(), name: name, cat: categoryFor(form.cat).id, contact: form.contact.trim(), notes: form.notes.trim() };
+      setData(Object.assign({}, data, { resources: [resource].concat(data.resources || []) }));
+      setForm(emptyForm); setNameError(''); llAnnounce('Community resource saved: ' + name); focusById('learning-lab-resource-name');
     }
-    function remove(id) { setData({ resources: (data.resources || []).filter(function(r) { return r.id !== id; }) }); }
+    function removeResource(resource) {
+      askLearningLabConfirmation('Remove “' + String(resource.name || 'this resource') + '” from your personal list? This cannot be undone.', { title: 'Remove this resource?', confirmText: 'Remove resource' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { resources: (data.resources || []).filter(function(item) { return item.id !== resource.id; }) }));
+        llAnnounce('Personal community resource removed.'); focusById('learning-lab-resource-list-heading');
+      });
+    }
 
-    var all = BUILTIN.concat(data.resources || []);
+    var customResources = data.resources || [];
+    var allResources = BUILTIN.map(function(resource) { return Object.assign({}, resource, { builtin: true }); }).concat(customResources);
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #34d399', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🛟', 'Community Resources', 'Universal crisis lines + your personal list. Save what works in your community.', '#ef4444'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#ef4444' } }, '🛟 Built-in crisis resources are listed below. '),
-        'Add your own: a school counselor, local therapist, doctor, food bank, advocacy org, study buddy line, etc.'
+      tkSectionHeader('🛟', 'Community Resources', 'Keep a reference list and review provider details before relying on them.', '#ef4444'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-resource-safety-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '2px solid #fca5a5', background: 'rgba(127,29,29,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-resource-safety-heading', style: { margin: '0 0 5px', color: '#fecaca', fontSize: 13 } }, 'Check current details and use emergency services when needed'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'This tool does not contact providers, verify availability in real time, guarantee eligibility, or endorse a service. Phone numbers, hours, coverage, cost, and privacy practices can change; open the official provider site before relying on a listing.'),
+        hh('p', { style: { margin: 0 } }, 'For immediate or life-threatening danger, contact the emergency service for your location. Built-in references are primarily for the United States, and some are Maine-specific.')
       ),
-
-      tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add a personal resource'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 6, marginBottom: 6 } },
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Name'),
-            hh('select', { value: form.cat,
-              onChange: function(e) { setForm(Object.assign({}, form, { cat: e.target.value })); },
-              style: { padding: '8px 10px', fontSize: 11, color: '#10b981', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(16,185,129,0.40)', borderRadius: 6 }
-            }, CATS.map(function(c) { return hh('option', { key: 'opc-' + c.id, value: c.id }, c.label); })),
-            tkInput(form.contact, function(v) { setForm(Object.assign({}, form, { contact: v })); }, 'Phone / web / address')
-          ),
-          tkInput(form.notes, function(v) { setForm(Object.assign({}, form, { notes: v })); }, 'Notes (hours, what they help with)', { marginBottom: 8 }),
-          tkBtn('+ Add', add, 'primary')
-        )
-      ),
-
-      CATS.map(function(cat) {
-        var inCat = all.filter(function(r) { return r.cat === cat.id; });
-        if (inCat.length === 0) return null;
-        return hh('div', { key: 'rc-' + cat.id, style: { marginBottom: 14 } },
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: cat.color, marginBottom: 8, padding: '4px 10px', background: cat.color + '15', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            inCat.map(function(r) {
-              return hh('div', { key: 'rs-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + cat.color } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
-                  hh('div', null,
-                    hh('strong', { style: { fontSize: 12, color: cat.color } }, r.name),
-                    r.contact ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, r.contact) : null,
-                    r.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, r.notes) : null
-                  ),
-                  !r.id.startsWith('b') ? hh('button', { onClick: function() { remove(r.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕') : null
-                )
-              );
-            })
-          )
-        );
-      }).filter(Boolean)
+      tkCard('#10b981', hh('form', { onSubmit: function(event) { event.preventDefault(); addResource(); }, 'aria-labelledby': 'learning-lab-resource-form-heading', 'aria-describedby': 'learning-lab-resource-privacy-note' },
+        hh('h2', { id: 'learning-lab-resource-form-heading', style: { margin: '0 0 6px', color: '#d1fae5', fontSize: 15 } }, 'Add a personal resource'),
+        hh('p', { id: 'learning-lab-resource-privacy-note', style: helpStyle }, 'Personal listings save in this browser. Avoid names or private details if other people use this device.'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 } },
+          hh('div', null, hh('label', { htmlFor: 'learning-lab-resource-name', style: labelStyle }, 'Resource name (required)'), hh('input', { id: 'learning-lab-resource-name', type: 'text', value: form.name, required: true, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { name: event.target.value })); if (nameError) setNameError(''); }, 'aria-invalid': nameError ? 'true' : undefined, 'aria-describedby': nameError ? 'learning-lab-resource-name-error' : undefined, style: fieldStyle }), nameError ? hh('p', { id: 'learning-lab-resource-name-error', role: 'alert', style: errorStyle }, nameError) : null),
+          hh('div', null, hh('label', { htmlFor: 'learning-lab-resource-category', style: labelStyle }, 'Category'), hh('select', { id: 'learning-lab-resource-category', value: form.cat, onChange: function(event) { setForm(Object.assign({}, form, { cat: event.target.value })); }, style: fieldStyle }, CATEGORIES.map(function(category) { return hh('option', { key: category.id, value: category.id }, category.label); }))),
+          hh('div', null, hh('label', { htmlFor: 'learning-lab-resource-contact', style: labelStyle }, 'Contact information (optional)'), hh('input', { id: 'learning-lab-resource-contact', type: 'text', value: form.contact, maxLength: 2000, onChange: function(event) { setForm(Object.assign({}, form, { contact: event.target.value })); }, style: fieldStyle }))
+        ),
+        hh('label', { htmlFor: 'learning-lab-resource-notes', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'Notes such as hours, eligibility, or access needs (optional)'),
+        hh('textarea', { id: 'learning-lab-resource-notes', value: form.notes, rows: 3, maxLength: 4000, onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+        hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Save personal resource')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-resource-list-heading' },
+        hh('h2', { id: 'learning-lab-resource-list-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 15 } }, 'Resource reference list'),
+        CATEGORIES.map(function(category) { var categoryResources = allResources.filter(function(resource) { return categoryFor(resource.cat).id === category.id; }); if (!categoryResources.length) return null; var headingId = 'learning-lab-resource-category-' + category.id; return hh('section', { key: category.id, 'aria-labelledby': headingId, style: { marginBottom: 15 } },
+          hh('h3', { id: headingId, style: { margin: '0 0 7px', color: category.color, fontSize: 13 } }, hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label),
+          hh('ul', { 'aria-label': category.label + ' resources', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } }, categoryResources.map(function(resource) { var resourceHeadingId = 'learning-lab-resource-heading-' + (resource.builtin ? 'builtin-' : 'custom-') + resource.id; return hh('li', { key: (resource.builtin ? 'builtin-' : 'custom-') + resource.id }, hh('article', { 'aria-labelledby': resourceHeadingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid ' + category.color } },
+            hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('p', { style: { margin: '0 0 3px', color: category.color, fontSize: 10, fontWeight: 800 } }, resource.builtin ? 'Built-in reference' : 'Personal resource'), hh('h4', { id: resourceHeadingId, style: { margin: 0, color: '#f8fafc', fontSize: 13 } }, String(resource.name || 'Unnamed resource'))), resource.builtin ? null : hh('button', { type: 'button', onClick: function() { removeResource(resource); }, 'aria-label': 'Remove personal resource: ' + String(resource.name || 'Unnamed resource'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')),
+            resource.contact ? hh('p', { style: { margin: '8px 0 0', color: '#f8fafc', fontSize: 11, fontWeight: 800, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, resource.contact) : null,
+            resource.notes ? hh('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, resource.notes) : null,
+            resource.builtin ? hh('p', { style: { margin: '7px 0 0', color: '#e2e8f0', fontSize: 10 } }, 'Contact details checked ', hh('time', { dateTime: resource.verifiedOn }, resource.verifiedOn), '. ', hh('a', { href: resource.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#bfdbfe', textDecoration: 'underline', fontWeight: 800 } }, 'Open official provider site (new tab)')) : hh('p', { style: { margin: '7px 0 0', color: '#e2e8f0', fontSize: 10 } }, 'Added ', hh('time', { dateTime: resource.createdAt || undefined }, relDate(resource.createdAt)))
+          )); })),
+        ); }).filter(Boolean)
+      )
     );
   }
 
-  // ── YYY. PERSONAL SUNDAY PLANNING (Wave 15) ──
-  // Sunday-evening planning ritual. 5 sections. Sets the week up.
   function PersonalSundayPlan(props) {
     if (!R) return null;
     var data = props.data || { plans: [] };
