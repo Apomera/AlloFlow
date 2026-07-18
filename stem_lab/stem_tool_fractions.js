@@ -99,6 +99,30 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  function normalizeFractionPair(n, d) {
+    n = Number(n) || 0;
+    d = Number(d) || 0;
+    if (d === 0) return [n, 1];
+    if (n === 0) return [0, 1];
+    var an = Math.abs(n), ad = Math.abs(d);
+    while (ad) { var tmp = ad; ad = an % tmp; an = tmp; }
+    var gcdValue = an || 1;
+    var sign = d < 0 ? -1 : 1;
+    return [(n / gcdValue) * sign, Math.abs(d) / gcdValue];
+  }
+
+  function classifyFractionResultSign(numerator, isUndefined) {
+    if (isUndefined) return 'undefined';
+    var value = Number(numerator);
+    if (!Number.isFinite(value)) return 'undefined';
+    return value > 0 ? 'positive' : value < 0 ? 'negative' : 'zero';
+  }
+
+  window.__FractionsCore = Object.assign({}, window.__FractionsCore || {}, {
+    normalizeFractionPair: normalizeFractionPair,
+    classifyFractionResultSign: classifyFractionResultSign
+  });
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -1656,6 +1680,10 @@ window.StemLab = window.StemLab || {
     var streak = _f.streak || 0;
     var bestStreak = _f.bestStreak || 0;
     var badges = _f.badges || {};
+    var signedFractions = !!_f.signedFractions;
+    var signPrediction = _f.signPrediction || null;
+    var signFeedback = _f.signFeedback || null;
+    var signChecks = _f.signChecks || {};
 
     // Practice state
     var pieces = _f.pieces || { numerator: 3, denominator: 8 };
@@ -1706,7 +1734,7 @@ window.StemLab = window.StemLab || {
     // ── Math helpers ──
     var gcd = function(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var tmp = b; b = a % tmp; a = tmp; } return a; };
     var lcm = function(a, b) { return a * b / gcd(a, b); };
-    var simplify = function(n, d) { if (d === 0) return [n, 1]; var g = gcd(Math.abs(n), Math.abs(d)); return [n / g, d / g]; };
+    var simplify = function(n, d) { return normalizeFractionPair(n, d); };
     var val1 = den1 > 0 ? num1 / den1 : 0;
     var val2 = den2 > 0 ? num2 / den2 : 0;
     var s1 = simplify(num1, den1);
@@ -2247,6 +2275,9 @@ window.StemLab = window.StemLab || {
     var opSimplified = simplify(opResult[0], opResult[1]);
     var opSymbols = { add: '+', sub: '\u2212', mul: '\u00D7', div: '\u00F7' };
     var opUndefined = (opMode === 'div' && num2 === 0); // dividing by a zero fraction is undefined; guard before simplify masks the 0 denominator
+    var opResultSign = classifyFractionResultSign(opSimplified[0], opUndefined);
+    var signExpressionKey = [opMode, num1, den1, num2, den2].join('|');
+    var signReveal = !signedFractions || !!(signFeedback && signFeedback.key === signExpressionKey);
 
     // ═══════════════════════════════════════════════════════════════
     // ═══ v3 STEP-BY-STEP VISUALIZERS ═══════════════════════════════
@@ -2947,9 +2978,25 @@ window.StemLab = window.StemLab || {
 
     // ═══ TAB: OPERATIONS ═══
     var renderOperations = function() {
+      function checkSignPrediction() {
+        if (!signPrediction || opUndefined) return;
+        var correct = signPrediction === opResultSign;
+        var alreadyChecked = !!signChecks[signExpressionKey];
+        var nextChecks = Object.assign({}, signChecks);
+        if (correct) nextChecks[signExpressionKey] = true;
+        upd({ signFeedback: { key: signExpressionKey, correct: correct, actual: opResultSign }, signChecks: nextChecks });
+        if (correct) {
+          sfxCorrect();
+          if (!alreadyChecked) awardXP('fractionViz', 3, 'signed fraction sign prediction');
+        } else {
+          sfxWrong();
+        }
+        announceToSR((correct ? 'Prediction correct. ' : 'Prediction review. ') + 'The result is ' + opResultSign + '.');
+      }
+
       // Area model for multiplication
       var renderAreaModel = function() {
-        if (opMode !== 'mul') return null;
+        if (opMode !== 'mul' || signedFractions) return null;
         var cellW = 28, cellH = 28;
         var totalW = den2 * cellW + 2;
         var totalH = den1 * cellH + 2;
@@ -2976,6 +3023,16 @@ window.StemLab = window.StemLab || {
       };
 
       return h('div', { className: 'space-y-3' },
+        h('div', { role: 'note', className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex flex-wrap items-center gap-3' },
+          h('div', { className: 'flex-1 min-w-[220px]' },
+            h('p', { className: 'text-xs font-black text-indigo-800' }, 'Signed fractions'),
+            h('p', { className: 'text-[11px] text-indigo-700 mt-0.5' }, signedFractions ? 'Sign Detective is active. Predict positive, zero, or negative before the exact result is revealed.' : 'Enable negative numerators to practice Grade 7 rational-number sign rules.')
+          ),
+          h('button', { type: 'button', role: 'switch', 'aria-checked': signedFractions, 'aria-label': 'Signed fraction mode',
+            onClick: function() { var next = !signedFractions; upd({ signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null }); },
+            className: 'px-3 py-2 rounded-lg text-xs font-black transition-all ' + (signedFractions ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300')
+          }, signedFractions ? 'Signed mode on' : 'Enable signed mode')
+        ),
         // Fraction inputs (compact)
         h('div', { className: 'grid grid-cols-2 gap-4' },
           [{ label: 'A', n: num1, d: den1, nk: 'num1', dk: 'den1', color: '#3b82f6' },
@@ -2985,9 +3042,9 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-xs font-bold text-slate-600' }, 'Fraction ' + frac.label),
               h('div', { className: 'flex items-center justify-center gap-1 mt-1' },
                 h('input', {
-                  type: 'number', min: 0, max: 20, value: frac.n,
-                  'aria-label': 'Fraction ' + frac.label + ' numerator',
-                  onChange: function(e) { var o = {}; o[frac.nk] = Math.max(0, parseInt(e.target.value) || 0); upd(o); },
+                  type: 'number', min: signedFractions ? -20 : 0, max: 20, value: frac.n,
+                  'aria-label': 'Fraction ' + frac.label + ' numerator' + (signedFractions ? ', signed values allowed' : ''),
+                  onChange: function(e) { var o = {}; var parsed = parseInt(e.target.value); o[frac.nk] = Math.max(signedFractions ? -20 : 0, Math.min(20, isNaN(parsed) ? 0 : parsed)); o.signPrediction = null; o.signFeedback = null; upd(o); },
                   className: 'w-12 text-center text-lg font-bold border-b-2 outline-none focus:ring-2 focus:ring-blue-400', style: { borderColor: frac.color }
                 }),
                 h('span', { className: 'text-xl font-bold text-slate-600 mx-1' }, '/'),
@@ -3005,11 +3062,26 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-2 justify-center' },
           [['add', '+', 'Add'], ['sub', '\u2212', 'Subtract'], ['mul', '\u00D7', 'Multiply'], ['div', '\u00F7', 'Divide']].map(function(op) {
             return h('button', { key: op[0], 'aria-pressed': opMode === op[0], 'aria-label': op[2],
-              onClick: function() { sfxClick(); upd({ opMode: op[0] }); },
+              onClick: function() { sfxClick(); upd({ opMode: op[0], signPrediction: null, signFeedback: null }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
                 (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-1'
             }, op[1]);
           })
+        ),
+        signedFractions && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3', disabled: opUndefined },
+          h('legend', { className: 'px-1 text-xs font-black text-violet-800' }, 'Sign Detective: predict the result'),
+          opUndefined ? h('p', { role: 'status', className: 'text-xs text-red-700' }, 'The second fraction is zero, so division is undefined and has no sign.') : h(React.Fragment, null,
+            h('div', { className: 'grid grid-cols-3 gap-2' }, ['positive', 'zero', 'negative'].map(function(choice) {
+              return h('label', { key: choice, className: 'flex items-center justify-center gap-2 rounded-lg border px-2 py-2 text-xs font-bold cursor-pointer ' + (signPrediction === choice ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200') },
+                h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: signReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
+                choice.charAt(0).toUpperCase() + choice.slice(1)
+              );
+            })),
+            !signReveal && h('button', { type: 'button', onClick: checkSignPrediction, disabled: !signPrediction, className: 'mt-2 w-full py-2 rounded-lg text-xs font-black ' + (signPrediction ? 'bg-violet-700 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed') }, 'Check sign and reveal'),
+            signFeedback && signFeedback.key === signExpressionKey && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-xs font-bold ' + (signFeedback.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900') },
+              (signFeedback.correct ? 'Prediction confirmed. ' : 'Prediction review. ') + 'The exact result is ' + opSimplified[0] + '/' + opSimplified[1] + ', which is ' + opResultSign + '.'
+            )
+          )
         ),
         // Result
         h('div', { role: 'status', 'aria-live': 'polite', className: 'bg-white rounded-xl border-2 border-orange-200 p-4 text-center' },
@@ -3018,18 +3090,18 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'mx-3 text-orange-600' }, opSymbols[opMode]),
             h('span', { className: 'text-red-600' }, num2 + '/' + den2),
             h('span', { className: 'mx-3 text-slate-600' }, '='),
-            h('span', { className: 'text-emerald-600' }, opUndefined ? 'undefined' : opSimplified[0] + '/' + opSimplified[1])
+            h('span', { className: 'text-emerald-600' }, opUndefined ? 'undefined' : signReveal ? opSimplified[0] + '/' + opSimplified[1] : '?')
           ),
           // Mixed number result
-          (!opUndefined && Math.abs(opSimplified[0]) > opSimplified[1]) && h('p', { className: 'text-sm font-bold text-orange-600 mb-2' },
+          (signReveal && !opUndefined && Math.abs(opSimplified[0]) > opSimplified[1]) && h('p', { className: 'text-sm font-bold text-orange-600 mb-2' },
             '\uD83D\uDCE6 Mixed: ' + toMixed(opSimplified[0], opSimplified[1])
           ),
           // Decimal result
           h('p', { className: 'text-xs text-slate-600 mb-3' },
-            opUndefined ? 'Division by 0 is undefined. Pick a nonzero second fraction.' : '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
+            opUndefined ? 'Division by 0 is undefined. Pick a nonzero second fraction.' : !signReveal ? 'Predict the sign before revealing the exact value.' : '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
           ),
           // Step-by-step
-          h('div', { className: 'bg-orange-50 rounded-lg p-3 text-xs text-orange-800 space-y-1 text-left' },
+          signReveal && h('div', { className: 'bg-orange-50 rounded-lg p-3 text-xs text-orange-800 space-y-1 text-left' },
             h('p', { className: 'font-bold' }, __alloT('stem.fractions.step_by_step', '\uD83D\uDCA1 Step by step:')),
             (opMode === 'add' || opMode === 'sub')
               ? h(React.Fragment, null,
@@ -3047,7 +3119,7 @@ window.StemLab = window.StemLab || {
           ),
           // Result bar
           h('div', { className: 'mt-3 flex justify-center' },
-            opUndefined ? null : drawResultBars(opSimplified[0], opSimplified[1], '#22c55e')
+            opUndefined || !signReveal ? null : drawResultBars(opSimplified[0], opSimplified[1], '#22c55e')
           )
         ),
         // Area model (multiplication only)
