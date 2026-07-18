@@ -13250,74 +13250,252 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { questions: [] };
     var setData = props.setData;
-    var fs = R.useState({ text: '', subject: '', context: '' });
+    var emptyForm = { text: '', subject: '', context: '' };
+    var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
     var ft = R.useState('open'); var filter = ft[0]; var setFilter = ft[1];
+    var fe = R.useState(''); var formError = fe[0]; var setFormError = fe[1];
+    var ad = R.useState({}); var answerDrafts = ad[0]; var setAnswerDrafts = ad[1];
+    var ae = R.useState({}); var answerErrors = ae[0]; var setAnswerErrors = ae[1];
+
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
 
     function save() {
-      if (!form.text.trim()) return;
-      var q = Object.assign({ id: tkId(), createdAt: todayISO(), answered: false, answer: '' }, form);
-      setData({ questions: [q].concat(data.questions || []) });
-      setForm({ text: '', subject: '', context: '' });
+      var questionText = form.text.trim();
+      if (!questionText) {
+        setFormError('Enter the question you want to remember.');
+        llAnnounce('Question not saved. Enter the question you want to remember.');
+        focusById('learning-lab-question-text');
+        return;
+      }
+      var q = {
+        id: tkId(),
+        createdAt: todayISO(),
+        answered: false,
+        answer: '',
+        text: questionText,
+        subject: form.subject.trim(),
+        context: form.context.trim()
+      };
+      setData(Object.assign({}, data, { questions: [q].concat(data.questions || []) }));
+      setForm(emptyForm);
+      setFormError('');
+      llAnnounce('Question saved: ' + questionText);
+      focusById('learning-lab-question-text');
     }
-    function answer(id, ans) {
-      setData({ questions: (data.questions || []).map(function(q) { return q.id === id ? Object.assign({}, q, { answered: true, answer: ans, answeredAt: todayISO() }) : q; }) });
+
+    function answerQuestion(q) {
+      var answerText = String(answerDrafts[q.id] || '').trim();
+      if (!answerText) {
+        setAnswerErrors(Object.assign({}, answerErrors, { [q.id]: 'Enter the answer before marking this question answered.' }));
+        llAnnounce('Question not marked answered. Enter the answer first.');
+        focusById('learning-lab-question-answer-' + q.id);
+        return;
+      }
+      setData(Object.assign({}, data, { questions: (data.questions || []).map(function(item) {
+        return item.id === q.id ? Object.assign({}, item, { answered: true, answer: answerText, answeredAt: todayISO() }) : item;
+      }) }));
+      setAnswerDrafts(function(current) {
+        var next = Object.assign({}, current); delete next[q.id]; return next;
+      });
+      setAnswerErrors(function(current) {
+        var next = Object.assign({}, current); delete next[q.id]; return next;
+      });
+      llAnnounce('Question marked answered: ' + q.text);
+      focusById(filter === 'open' ? 'learning-lab-question-results-heading' : 'learning-lab-question-heading-' + q.id);
     }
-    function remove(id) { setData({ questions: (data.questions || []).filter(function(q) { return q.id !== id; }) }); }
+
+    function removeQuestion(q) {
+      var shortQuestion = String(q.text || 'this question');
+      if (shortQuestion.length > 160) shortQuestion = shortQuestion.slice(0, 157) + '...';
+      askLearningLabConfirmation('Remove “' + shortQuestion + '”? This cannot be undone.', {
+        title: 'Remove this question?', confirmText: 'Remove question'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { questions: (data.questions || []).filter(function(item) { return item.id !== q.id; }) }));
+        setAnswerDrafts(function(current) {
+          var next = Object.assign({}, current); delete next[q.id]; return next;
+        });
+        setAnswerErrors(function(current) {
+          var next = Object.assign({}, current); delete next[q.id]; return next;
+        });
+        llAnnounce('Question removed.');
+        focusById('learning-lab-question-results-heading');
+      });
+    }
 
     var questions = data.questions || [];
-    var filtered = filter === 'open' ? questions.filter(function(q) { return !q.answered; })
-      : filter === 'answered' ? questions.filter(function(q) { return q.answered; })
-      : questions;
+    function questionsFor(nextFilter) {
+      if (nextFilter === 'open') return questions.filter(function(q) { return !q.answered; });
+      if (nextFilter === 'answered') return questions.filter(function(q) { return q.answered; });
+      return questions;
+    }
+    function filterName(nextFilter) {
+      return nextFilter === 'open' ? 'open' : nextFilter === 'answered' ? 'answered' : 'all';
+    }
+    function changeFilter(nextFilter) {
+      setFilter(nextFilter);
+      var count = questionsFor(nextFilter).length;
+      llAnnounce('Showing ' + count + ' ' + filterName(nextFilter) + (count === 1 ? ' question.' : ' questions.'));
+    }
+    var filtered = questionsFor(filter);
+    var resultText = 'Showing ' + filtered.length + ' ' + filterName(filter) + (filtered.length === 1 ? ' question.' : ' questions.');
+
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#cffafe', marginBottom: 5 };
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid rgba(103,232,249,0.55)', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', fontSize: 11, lineHeight: 1.5, color: 'var(--allo-stem-text, #cbd5e1)' };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('❓', 'Question Log', 'Questions you want to ask but didn\'t. Capture now, ask later.', '#06b6d4'),
+      tkSectionHeader('❓', 'Question Log', 'Questions you want to ask but did not. Capture them now and answer them later.', '#06b6d4'),
 
       tkCard('#06b6d4',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '❓ Capture a question'),
-          tkInput(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'Your question (specific)', { marginBottom: 6 }),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 } },
-            tkInput(form.subject, function(v) { setForm(Object.assign({}, form, { subject: v })); }, 'Subject / class'),
-            tkInput(form.context, function(v) { setForm(Object.assign({}, form, { context: v })); }, 'Context (where this came up)')
+        hh('form', {
+          onSubmit: function(event) { event.preventDefault(); save(); },
+          'aria-labelledby': 'learning-lab-question-form-heading',
+          'aria-describedby': 'learning-lab-question-privacy-note'
+        },
+          hh('h2', { id: 'learning-lab-question-form-heading', style: { margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: '#67e8f9' } }, 'Capture a question'),
+          hh('p', { id: 'learning-lab-question-privacy-note', style: helpStyle }, 'Questions and answers save in this browser. Avoid including private information if other people use this device.'),
+
+          hh('label', { htmlFor: 'learning-lab-question-text', style: labelStyle }, 'Question (required)'),
+          hh('textarea', {
+            id: 'learning-lab-question-text', value: form.text, required: true, rows: 3, maxLength: 1000,
+            onChange: function(event) {
+              setForm(Object.assign({}, form, { text: event.target.value }));
+              if (formError) setFormError('');
+            },
+            'aria-invalid': formError ? 'true' : undefined,
+            'aria-describedby': 'learning-lab-question-text-help' + (formError ? ' learning-lab-question-text-error' : ''),
+            style: Object.assign({}, inputStyle, { resize: 'vertical', minHeight: 88 })
+          }),
+          hh('p', { id: 'learning-lab-question-text-help', style: helpStyle }, 'Write the specific question you want to ask or research.'),
+          formError ? hh('p', { id: 'learning-lab-question-text-error', role: 'alert', style: errorStyle }, formError) : null,
+
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 } },
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-question-subject', style: labelStyle }, 'Subject or class (optional)'),
+              hh('input', {
+                id: 'learning-lab-question-subject', type: 'text', value: form.subject, maxLength: 200,
+                onChange: function(event) { setForm(Object.assign({}, form, { subject: event.target.value })); },
+                style: inputStyle
+              })
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-question-context', style: labelStyle }, 'Context (optional)'),
+              hh('input', {
+                id: 'learning-lab-question-context', type: 'text', value: form.context, maxLength: 500,
+                onChange: function(event) { setForm(Object.assign({}, form, { context: event.target.value })); },
+                style: inputStyle
+              })
+            )
           ),
-          tkBtn('💾 Save question', save, 'primary')
+          hh('button', {
+            type: 'submit',
+            style: { minWidth: 44, minHeight: 44, marginTop: 12, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+          }, 'Save question')
         )
       ),
 
-      hh('div', { style: { display: 'flex', gap: 4, marginBottom: 12 } },
-        [{ id: 'open', label: 'Open' }, { id: 'answered', label: 'Answered' }, { id: 'all', label: 'All' }].map(function(f) {
-          var active = filter === f.id;
-          return hh('button', { key: 'qf-' + f.id,
-            onClick: function() { setFilter(f.id); },
-            style: { padding: '6px 12px', borderRadius: 6, background: active ? 'rgba(6,182,212,0.20)' : 'transparent', color: active ? '#06b6d4' : '#94a3b8', border: '1px solid ' + (active ? 'rgba(6,182,212,0.50)' : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-          }, f.label);
-        })
-      ),
-
-      filtered.length === 0 ? tkEmptyState('❓', 'No questions in this view.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          filtered.map(function(q) {
-            return hh('div', { key: 'q-' + q.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + (q.answered ? '#10b981' : '#06b6d4') } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 12, color: q.answered ? '#10b981' : '#67e8f9' } }, (q.answered ? '✓ ' : '❓ ') + q.text),
-                hh('button', { onClick: function() { remove(q.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 6 } },
-                (q.subject ? '📚 ' + q.subject + ' · ' : '') + (q.context ? q.context + ' · ' : '') + relDate(q.createdAt)
-              ),
-              q.answered ? hh('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-                hh('strong', { style: { color: '#10b981' } }, '✓ Answered: '), q.answer
-              ) : hh('div', null,
-                (function() {
-                  var fs2 = R.useState('');
-                  return tkInput(fs2[0], fs2[1], 'Answer (when you find out)', { marginBottom: 4, fontSize: 10 });
-                })(),
-                tkBtn('Mark answered', function() { var ans = prompt('Answer:'); if (ans) answer(q.id, ans); }, 'good', { padding: '4px 10px', fontSize: 10 })
-              )
+      hh('fieldset', { style: { margin: '0 0 12px', padding: 0, border: 0 } },
+        hh('legend', { style: { marginBottom: 7, fontSize: 12, fontWeight: 800, color: '#cffafe' } }, 'Filter questions'),
+        hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          [
+            { id: 'open', label: 'Open', count: questionsFor('open').length },
+            { id: 'answered', label: 'Answered', count: questionsFor('answered').length },
+            { id: 'all', label: 'All', count: questions.length }
+          ].map(function(option) {
+            var active = filter === option.id;
+            return hh('label', {
+              key: 'qf-' + option.id, htmlFor: 'learning-lab-question-filter-' + option.id,
+              style: { boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: 7, minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 7, background: active ? 'rgba(6,182,212,0.20)' : 'rgba(15,23,42,0.45)', color: active ? '#67e8f9' : '#e2e8f0', border: '1px solid ' + (active ? '#22d3ee' : '#64748b'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+            },
+              hh('input', {
+                id: 'learning-lab-question-filter-' + option.id, type: 'radio', name: 'learning-lab-question-filter', value: option.id,
+                checked: active, onChange: function() { changeFilter(option.id); }
+              }),
+              option.label + ' (' + option.count + ')'
             );
           })
         )
+      ),
+
+      hh('section', { 'aria-labelledby': 'learning-lab-question-results-heading' },
+        hh('h2', { id: 'learning-lab-question-results-heading', tabIndex: -1, style: { margin: '0 0 4px', fontSize: 15, color: '#cffafe' } }, 'Question history'),
+        hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 12px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, resultText),
+        filtered.length === 0
+          ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No questions in this view.')
+          : hh('ul', { 'aria-label': resultText, style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              filtered.map(function(q) {
+                var headingId = 'learning-lab-question-heading-' + q.id;
+                var answerId = 'learning-lab-question-answer-' + q.id;
+                var answerHelpId = answerId + '-help';
+                var answerErrorId = answerId + '-error';
+                var answerError = answerErrors[q.id] || '';
+                return hh('li', { key: 'q-' + q.id },
+                  hh('article', {
+                    'aria-labelledby': headingId,
+                    style: { padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid ' + (q.answered ? '#34d399' : '#22d3ee') }
+                  },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 } },
+                      hh('div', null,
+                        hh('p', { style: { margin: '0 0 4px', color: q.answered ? '#6ee7b7' : '#67e8f9', fontSize: 11, fontWeight: 800 } }, q.answered ? 'Answered question' : 'Open question'),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, fontSize: 14, lineHeight: 1.5, color: '#f8fafc' } }, q.text)
+                      ),
+                      hh('button', {
+                        type: 'button', onClick: function() { removeQuestion(q); },
+                        'aria-label': 'Remove question: ' + q.text,
+                        style: { flex: '0 0 auto', minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                      }, 'Remove')
+                    ),
+                    hh('dl', { 'aria-label': 'Question details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 8, rowGap: 4, margin: '0 0 10px', fontSize: 11, color: '#e2e8f0' } },
+                      q.subject ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Subject'), hh('dd', { style: { margin: 0 } }, q.subject)) : null,
+                      q.context ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Context'), hh('dd', { style: { margin: 0 } }, q.context)) : null,
+                      hh('div', { style: { display: 'contents' } },
+                        hh('dt', { style: { fontWeight: 800 } }, 'Recorded'),
+                        hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: q.createdAt || undefined }, relDate(q.createdAt)))
+                      )
+                    ),
+                    q.answered
+                      ? hh('section', { 'aria-label': 'Answer', style: { padding: 10, borderRadius: 7, background: 'rgba(16,185,129,0.12)', border: '1px solid #34d399' } },
+                          hh('h4', { style: { margin: '0 0 5px', color: '#6ee7b7', fontSize: 12 } }, 'Answer'),
+                          hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, String(q.answer || 'No answer recorded.')),
+                          q.answeredAt ? hh('p', { style: { margin: '7px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Answered ', hh('time', { dateTime: q.answeredAt }, relDate(q.answeredAt))) : null
+                        )
+                      : hh('form', {
+                          onSubmit: function(event) { event.preventDefault(); answerQuestion(q); },
+                          'aria-labelledby': headingId,
+                          style: { paddingTop: 4 }
+                        },
+                          hh('label', { htmlFor: answerId, style: labelStyle }, 'Answer (required to mark answered)'),
+                          hh('textarea', {
+                            id: answerId, value: answerDrafts[q.id] || '', rows: 3, maxLength: 2000, required: true,
+                            onChange: function(event) {
+                              var nextDrafts = Object.assign({}, answerDrafts); nextDrafts[q.id] = event.target.value; setAnswerDrafts(nextDrafts);
+                              if (answerError) { var nextErrors = Object.assign({}, answerErrors); delete nextErrors[q.id]; setAnswerErrors(nextErrors); }
+                            },
+                            'aria-invalid': answerError ? 'true' : undefined,
+                            'aria-describedby': answerHelpId + (answerError ? ' ' + answerErrorId : ''),
+                            style: Object.assign({}, inputStyle, { minHeight: 88, resize: 'vertical' })
+                          }),
+                          hh('p', { id: answerHelpId, style: helpStyle }, 'Record what you learned before changing this question’s status.'),
+                          answerError ? hh('p', { id: answerErrorId, role: 'alert', style: errorStyle }, answerError) : null,
+                          hh('button', {
+                            type: 'submit',
+                            style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                          }, 'Mark answered')
+                        )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
