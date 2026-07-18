@@ -16951,114 +16951,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { habits: [], logs: {} };
     var setData = props.setData;
-    var fs = R.useState({ label: '', color: '#10b981' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { label: '', color: '#10b981' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var labelError = es[0]; var setLabelError = es[1];
 
-    var COLORS = ['#10b981', '#3b82f6', '#a855f7', '#ec4899', '#fbbf24', '#ef4444', '#06b6d4', '#f97316'];
+    var COLORS = [
+      { value: '#10b981', label: 'Green' }, { value: '#3b82f6', label: 'Blue' },
+      { value: '#a855f7', label: 'Purple' }, { value: '#ec4899', label: 'Pink' },
+      { value: '#fbbf24', label: 'Gold' }, { value: '#ef4444', label: 'Red' },
+      { value: '#06b6d4', label: 'Cyan' }, { value: '#f97316', label: 'Orange' }
+    ];
+
+    function safeDomId(value) { return String(value || 'item').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function colorFor(value) { return COLORS.filter(function(color) { return color.value === value; })[0] || COLORS[0]; }
+    function localISO(date) { var year = date.getFullYear(); var month = String(date.getMonth() + 1).padStart(2, '0'); var day = String(date.getDate()).padStart(2, '0'); return year + '-' + month + '-' + day; }
+    function dateLabel(iso) { var date = new Date(iso + 'T12:00:00'); return isNaN(date.getTime()) ? iso : date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
+    function gridDays() { var result = []; for (var i = 83; i >= 0; i--) { var date = new Date(); date.setHours(12, 0, 0, 0); date.setDate(date.getDate() - i); result.push({ date: localISO(date), dayOfWeek: date.getDay() }); } return result; }
 
     function addHabit() {
-      if (!form.label.trim()) return;
-      var h = Object.assign({ id: tkId(), createdAt: todayISO() }, form);
-      setData(Object.assign({}, data, { habits: (data.habits || []).concat([h]) }));
-      setForm({ label: '', color: '#10b981' });
+      var label = form.label.trim();
+      if (!label) { setLabelError('Enter a habit or activity name before saving.'); llAnnounce('Momentum item not saved. Enter a name first.'); focusById('learning-lab-momentum-label'); return; }
+      var habit = { id: tkId(), createdAt: todayISO(), label: label, color: colorFor(form.color).value };
+      setData(Object.assign({}, data, { habits: (data.habits || []).concat([habit]) }));
+      setForm(emptyForm); setLabelError(''); llAnnounce('Momentum item saved: ' + label); focusById('learning-lab-momentum-label');
     }
-    function removeHabit(id) {
-      if (!confirm('Remove this habit + all its logs?')) return;
-      var logs = Object.assign({}, data.logs || {});
-      delete logs[id];
-      setData({ habits: (data.habits || []).filter(function(h) { return h.id !== id; }), logs: logs });
+    function removeHabit(habit) {
+      askLearningLabConfirmation('Remove “' + String(habit.label || 'this item') + '” and its marked dates? This cannot be undone.', { title: 'Remove this momentum item?', confirmText: 'Remove item' }).then(function(accepted) {
+        if (!accepted) return;
+        var nextLogs = Object.assign({}, data.logs || {}); delete nextLogs[habit.id];
+        setData(Object.assign({}, data, { habits: (data.habits || []).filter(function(item) { return item.id !== habit.id; }), logs: nextLogs }));
+        llAnnounce('Momentum item and its marked dates removed.'); focusById('learning-lab-momentum-list-heading');
+      });
     }
-    function toggleDay(habitId, day) {
-      var logs = Object.assign({}, data.logs || {});
-      logs[habitId] = logs[habitId] || [];
-      if (logs[habitId].indexOf(day) >= 0) logs[habitId] = logs[habitId].filter(function(d) { return d !== day; });
-      else logs[habitId] = logs[habitId].concat([day]);
-      setData(Object.assign({}, data, { logs: logs }));
+    function toggleDay(habit, day, wasMarked) {
+      var nextLogs = Object.assign({}, data.logs || {}); var current = Array.isArray(nextLogs[habit.id]) ? nextLogs[habit.id].slice() : [];
+      nextLogs[habit.id] = wasMarked ? current.filter(function(date) { return date !== day; }) : current.concat([day]);
+      setData(Object.assign({}, data, { logs: nextLogs }));
+      llAnnounce((wasMarked ? 'Cleared ' : 'Marked ') + dateLabel(day) + ' for ' + String(habit.label || 'this item') + '.');
+      focusById('learning-lab-momentum-day-' + safeDomId(habit.id) + '-' + day);
     }
 
     var habits = data.habits || [];
     var logs = data.logs || {};
-
-    // 84-day grid (12 weeks)
-    function gridDays() {
-      var days = [];
-      for (var i = 83; i >= 0; i--) {
-        var dt = new Date(); dt.setDate(dt.getDate() - i);
-        days.push({ date: dt.toISOString().slice(0, 10), dayOfWeek: dt.getDay() });
-      }
-      return days;
-    }
     var days = gridDays();
+    var weeks = []; for (var weekIndex = 0; weekIndex < 12; weekIndex++) weeks.push(days.slice(weekIndex * 7, weekIndex * 7 + 7));
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #34d399', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📆', 'Momentum Calendar', '12-week grid per habit. Seinfeld "don\'t break the chain" — flexible version.', '#10b981'),
-
+      tkSectionHeader('📆', 'Momentum Calendar', 'Mark days using your own definition of progress.', '#10b981'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-momentum-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #34d399', background: 'rgba(6,78,59,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-momentum-context-heading', style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 13 } }, 'A neutral record, not a score'),
+        hh('p', { style: { margin: 0 } }, 'Choose what a marked day means to you. Missed or unmarked days do not erase progress, reset a score, or indicate failure.')
+      ),
       tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add a habit to track'),
-          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 } },
-            tkInput(form.label, function(v) { setForm(Object.assign({}, form, { label: v })); }, 'Habit name (e.g., "Read 30 min")', { flex: 1 }),
-            hh('div', { style: { display: 'flex', gap: 2 } },
-              COLORS.map(function(c) {
-                var on = form.color === c;
-                return hh('button', { key: 'cl-' + c,
-                  onClick: function() { setForm(Object.assign({}, form, { color: c })); },
-                  style: { width: 24, height: 24, borderRadius: '50%', background: c, border: on ? '2px solid #fff' : '1px solid rgba(0,0,0,0.3)', cursor: 'pointer' }
-                });
-              })
-            ),
-            tkBtn('+', addHabit, 'primary', { padding: '8px 14px' })
-          )
+        hh('form', { onSubmit: function(event) { event.preventDefault(); addHabit(); }, 'aria-labelledby': 'learning-lab-momentum-form-heading', 'aria-describedby': 'learning-lab-momentum-privacy learning-lab-momentum-color-note' },
+          hh('h2', { id: 'learning-lab-momentum-form-heading', style: { margin: '0 0 6px', color: '#d1fae5', fontSize: 15 } }, 'Add a habit or activity'),
+          hh('p', { id: 'learning-lab-momentum-privacy', style: helpStyle }, 'Names and marked dates save in this browser. Avoid sensitive details if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(150px, 1fr)', gap: 10 } },
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-momentum-label', style: labelStyle }, 'Habit or activity name (required)'), hh('input', { id: 'learning-lab-momentum-label', type: 'text', value: form.label, required: true, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { label: event.target.value })); if (labelError) setLabelError(''); }, 'aria-invalid': labelError ? 'true' : undefined, 'aria-describedby': labelError ? 'learning-lab-momentum-label-error' : undefined, style: fieldStyle }), labelError ? hh('p', { id: 'learning-lab-momentum-label-error', role: 'alert', style: { margin: '5px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, labelError) : null),
+            hh('div', null, hh('label', { htmlFor: 'learning-lab-momentum-color', style: labelStyle }, 'Calendar color'), hh('select', { id: 'learning-lab-momentum-color', value: form.color, onChange: function(event) { setForm(Object.assign({}, form, { color: event.target.value })); }, style: fieldStyle }, COLORS.map(function(color) { return hh('option', { key: color.value, value: color.value }, color.label); })), hh('p', { id: 'learning-lab-momentum-color-note', style: helpStyle }, 'Color is a visual preference only; marked state is also shown in text.'))
+          ),
+          hh('button', { type: 'submit', style: buttonStyle }, 'Save habit or activity')
         )
       ),
-
-      habits.length === 0 ? tkEmptyState('📆', 'No habits tracked yet.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
-          habits.map(function(h) {
-            var habitLogs = logs[h.id] || [];
-            var streak = (function() {
-              var s = 0;
-              for (var i = 0; i < 84; i++) {
-                var dt = new Date(); dt.setDate(dt.getDate() - i);
-                var iso = dt.toISOString().slice(0, 10);
-                if (habitLogs.indexOf(iso) >= 0) s++;
-                else if (i > 0) break;
-              }
-              return s;
-            })();
-            return hh('div', { key: 'mh-' + h.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + h.color } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
-                hh('strong', { style: { fontSize: 13, color: h.color } }, h.label),
-                hh('div', null,
-                  hh('span', { style: { fontSize: 14, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, marginRight: 8 } }, '🔥 ' + streak + 'd'),
-                  hh('button', { onClick: function() { removeHabit(h.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 12, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              // 12 weeks × 7 days grid
-              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 } },
-                (function() {
-                  var weeks = []; for (var w = 0; w < 12; w++) weeks.push(w);
-                  return weeks.map(function(w) {
-                    return hh('div', { key: 'wk-' + w, style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-                      [0, 1, 2, 3, 4, 5, 6].map(function(d) {
-                        var dayIdx = w * 7 + d;
-                        var day = days[dayIdx];
-                        if (!day) return hh('div', { key: 'em-' + d, style: { height: 12 } });
-                        var done = habitLogs.indexOf(day.date) >= 0;
-                        return hh('button', { key: 'cd-' + day.date,
-                          onClick: function() { toggleDay(h.id, day.date); },
-                          title: day.date + (done ? ' ✓' : ''),
-                          style: { height: 12, background: done ? h.color : 'rgba(100,116,139,0.15)', border: 'none', borderRadius: 2, cursor: 'pointer' }
-                        });
-                      })
-                    );
-                  });
-                })()
-              ),
-              hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, textAlign: 'right', fontFamily: 'ui-monospace, Menlo, monospace' } }, habitLogs.length + ' days total in last 12 weeks')
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-momentum-list-heading' },
+        hh('h2', { id: 'learning-lab-momentum-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#d1fae5', fontSize: 15 } }, 'Saved momentum calendars'),
+        habits.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No momentum calendars saved yet.') :
+        hh('ul', { 'aria-label': 'Saved momentum calendars', style: { display: 'flex', flexDirection: 'column', gap: 12, margin: 0, padding: 0, listStyle: 'none' } }, habits.map(function(habit) {
+          var domId = safeDomId(habit.id); var habitLogs = Array.isArray(logs[habit.id]) ? logs[habit.id] : []; var visibleCount = days.filter(function(day) { return habitLogs.indexOf(day.date) >= 0; }).length; var color = colorFor(habit.color).value; var headingId = 'learning-lab-momentum-heading-' + domId; var instructionsId = 'learning-lab-momentum-instructions-' + domId;
+          return hh('li', { key: habit.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid ' + color } },
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+              hh('div', { style: { minWidth: 0 } }, hh('h3', { id: headingId, style: { margin: 0, color: '#d1fae5', fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(habit.label || 'Unnamed item')), hh('p', { style: { margin: '4px 0 0', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, visibleCount + ' of 84 days marked in this calendar.'), habit.createdAt ? hh('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Added ', hh('time', { dateTime: habit.createdAt }, relDate(habit.createdAt)), '.') : null),
+              hh('button', { type: 'button', onClick: function() { removeHabit(habit); }, 'aria-label': 'Remove momentum calendar: ' + String(habit.label || 'unnamed item'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+            ),
+            hh('details', { style: { marginTop: 8 } },
+              hh('summary', { style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#a7f3d0', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Review or edit 12-week calendar'),
+              hh('p', { id: instructionsId, style: { margin: '5px 0 8px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 } }, 'Each button represents one date. Press a date to switch between marked and not marked. The grid may scroll horizontally on a small screen.'),
+              hh('div', { role: 'group', 'aria-label': '84-day calendar for ' + String(habit.label || 'unnamed item'), 'aria-describedby': instructionsId, style: { display: 'grid', gridTemplateColumns: 'repeat(12, 28px)', gap: 4, overflowX: 'auto', padding: '2px 2px 7px' } }, weeks.map(function(week, index) { var first = week[0]; var last = week[week.length - 1]; return hh('div', { key: 'week-' + index, role: 'group', 'aria-label': 'Week ' + (index + 1) + ': ' + dateLabel(first.date) + ' through ' + dateLabel(last.date), style: { display: 'flex', flexDirection: 'column', gap: 4 } }, week.map(function(day) { var marked = habitLogs.indexOf(day.date) >= 0; var accessibleLabel = dateLabel(day.date) + ': ' + (marked ? 'marked' : 'not marked') + ' for ' + String(habit.label || 'this item'); return hh('button', { key: day.date, id: 'learning-lab-momentum-day-' + domId + '-' + day.date, type: 'button', 'aria-label': accessibleLabel, 'aria-pressed': marked ? 'true' : 'false', title: accessibleLabel, onClick: function() { toggleDay(habit, day.date, marked); }, style: { boxSizing: 'border-box', minWidth: 28, minHeight: 28, width: 28, height: 28, padding: 0, borderRadius: 4, border: '2px solid ' + (marked ? '#f8fafc' : '#64748b'), background: marked ? color : 'rgba(15,23,42,0.75)', color: marked ? '#0f172a' : '#f8fafc', fontSize: 9, fontWeight: 800, cursor: 'pointer' } }, String(Number(day.date.slice(8)))); })); }))
+            )
+          ));
+        }))
+      )
     );
   }
 
