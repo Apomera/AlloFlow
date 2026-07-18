@@ -13109,92 +13109,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { logs: [] };
     var setData = props.setData;
-    var fs = R.useState({ hour: new Date().getHours(), level: 5, what: '' });
+    var emptyForm = function() { return { hour: new Date().getHours(), level: 5, what: '' }; };
+    var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var hourError = es[0]; var setHourError = es[1];
 
-    function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData({ logs: [entry].concat(data.logs || []) });
-      setForm({ hour: new Date().getHours(), level: 5, what: '' });
+    function formatHour(hour) {
+      var normalized = Number(hour);
+      var suffix = normalized < 12 ? 'AM' : 'PM';
+      var display = normalized % 12;
+      if (display === 0) display = 12;
+      return display + ':00 ' + suffix;
     }
-    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+    function save() {
+      var hour = parseInt(form.hour, 10);
+      if (!Number.isFinite(hour) || hour < 0 || hour > 23) {
+        setHourError('Enter an hour from 0 through 23.');
+        llAnnounce('Energy log was not saved. Enter a valid hour from 0 through 23.');
+        focusById('learning-lab-energy-hour');
+        return;
+      }
+      var entry = { id: tkId(), date: todayISO(), time: Date.now(), hour: hour, level: form.level, what: form.what.trim() };
+      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setForm(emptyForm());
+      setHourError('');
+      llAnnounce('Energy log saved for ' + formatHour(entry.hour) + ': ' + entry.level + ' out of 10.');
+      focusById('learning-lab-energy-hour');
+    }
+    async function remove(log) {
+      if (!(await askLearningLabConfirmation('This permanently removes the energy log from ' + log.date + ' at ' + formatHour(log.hour) + '.', {
+        title: 'Remove this energy log?', confirmText: 'Remove log'
+      }))) return;
+      setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== log.id; }) }));
+      llAnnounce('Energy log removed.');
+      focusById('learning-lab-energy-history-heading');
+    }
 
     var logs = data.logs || [];
-    // By hour of day, averaged
     var byHour = {};
-    logs.forEach(function(l) {
-      byHour[l.hour] = byHour[l.hour] || [];
-      byHour[l.hour].push(l.level);
+    logs.forEach(function(log) {
+      var hour = Number(log.hour);
+      if (!Number.isFinite(hour) || hour < 0 || hour > 23) return;
+      byHour[hour] = byHour[hour] || [];
+      byHour[hour].push(Number(log.level) || 0);
     });
     var hourlyAvg = [];
-    for (var h = 6; h <= 23; h++) {
-      var arr = byHour[h] || [];
-      hourlyAvg.push({ hour: h, avg: arr.length > 0 ? arr.reduce(function(s, x) { return s + x; }, 0) / arr.length : 0, count: arr.length });
+    for (var hour = 0; hour <= 23; hour++) {
+      var values = byHour[hour] || [];
+      hourlyAvg.push({ hour: hour, avg: values.length ? values.reduce(function(total, value) { return total + value; }, 0) / values.length : 0, count: values.length });
     }
-    var bestHour = hourlyAvg.reduce(function(b, h) { return h.avg > b.avg ? h : b; }, hourlyAvg[0]);
+    var bestHour = hourlyAvg.reduce(function(best, item) { return item.avg > best.avg ? item : best; }, hourlyAvg[0]);
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(253,230,138,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fde68a', textTransform: 'uppercase', marginBottom: 4 };
+    var buttonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#92400e', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⚡', 'Energy Tracker', 'Log energy throughout the day. Reveals YOUR peak windows for hard cognitive work.', '#fbbf24'),
+      tkSectionHeader('⚡', 'Energy Tracker', 'Record energy throughout the day and look for patterns in your own logs.', '#fbbf24'),
 
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚡ Log energy right now'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-energy-form-heading' },
+          hh('h3', { id: 'learning-lab-energy-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 4px' } }, 'Log energy now'),
+          hh('p', { id: 'learning-lab-energy-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Energy logs save in this browser. Use a device and account you trust if your activity notes are private.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, marginBottom: 10 } },
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, 'Hour (24h)'),
-              hh('input', { type: 'number', min: 0, max: 23, value: form.hour,
-                onChange: function(e) { setForm(Object.assign({}, form, { hour: parseInt(e.target.value, 10) })); },
-                style: { width: '100%', padding: '10px 12px', fontSize: 14, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800, textAlign: 'center' }
-              })
+              hh('label', { htmlFor: 'learning-lab-energy-hour', style: labelStyle }, 'Hour of day (required)'),
+              hh('p', { id: 'learning-lab-energy-hour-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 4px' } }, 'Use 24-hour time: 0 is midnight, 12 is noon, and 23 is 11 PM.'),
+              hh('input', { id: 'learning-lab-energy-hour', type: 'number', min: 0, max: 23, step: 1, inputMode: 'numeric', value: form.hour, 'aria-invalid': hourError ? 'true' : undefined, 'aria-describedby': hourError ? 'learning-lab-energy-hour-help learning-lab-energy-hour-error' : 'learning-lab-energy-hour-help', onChange: function(event) { setForm(Object.assign({}, form, { hour: event.target.value })); if (hourError) setHourError(''); }, style: Object.assign({}, fieldStyle, { fontWeight: 800, textAlign: 'center' }) }),
+              hh('div', { id: 'learning-lab-energy-hour-error', role: 'alert', style: { minHeight: hourError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: hourError ? 4 : 0 } }, hourError)
             ),
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, 'Energy level'),
-              hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.level + '/10'),
-              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.level,
-                onChange: function(e) { setForm(Object.assign({}, form, { level: parseInt(e.target.value, 10) })); },
-                style: { width: '100%', accentColor: '#fbbf24' }
-              })
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+                hh('label', { htmlFor: 'learning-lab-energy-level', style: Object.assign({}, labelStyle, { marginBottom: 0 }) }, 'Energy level'),
+                hh('output', { htmlFor: 'learning-lab-energy-level', style: { color: '#fde68a', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 900 } }, form.level + ' / 10')
+              ),
+              hh('input', { id: 'learning-lab-energy-level', type: 'range', min: 1, max: 10, step: 1, value: form.level, 'aria-valuetext': form.level + ' out of 10, from very low energy to very high energy', onChange: function(event) { setForm(Object.assign({}, form, { level: parseInt(event.target.value, 10) })); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#fbbf24', cursor: 'pointer' } })
             )
           ),
-          tkInput(form.what, function(v) { setForm(Object.assign({}, form, { what: v })); }, 'Activity (optional, e.g., "studying", "after lunch")', { marginBottom: 8 }),
-          tkBtn('💾 Save', save, 'primary')
+          hh('div', { style: { marginBottom: 10 } },
+            hh('label', { htmlFor: 'learning-lab-energy-activity', style: labelStyle }, 'Activity or context (optional)'),
+            hh('input', { id: 'learning-lab-energy-activity', type: 'text', value: form.what, maxLength: 500, placeholder: 'For example: studying, commuting, or after lunch', 'aria-describedby': 'learning-lab-energy-privacy-note', onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); }, style: fieldStyle })
+          ),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: buttonStyle }, 'Save energy log')
         )
       ),
 
-      // Hourly heatmap
-      logs.length > 0 ? hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📊 Energy by hour of day (averaged across logs)'),
-        hh('div', { style: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 80 } },
-          hourlyAvg.map(function(h) {
-            var pct = (h.avg / 10) * 100;
-            var col = h.avg >= 7 ? '#10b981' : h.avg >= 5 ? '#fbbf24' : h.avg > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
-            return hh('div', { key: 'eh-' + h.hour, style: { flex: 1, textAlign: 'center' },
-              title: h.hour + ':00 — ' + (h.avg > 0 ? 'avg ' + h.avg.toFixed(1) + ' (' + h.count + ' logs)' : 'no data')
-            },
-              hh('div', { style: { height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 2, position: 'relative', overflow: 'hidden', marginBottom: 2 } },
-                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+      logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-energy-chart-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-energy-chart-heading', style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 4px' } }, 'Average energy by hour'),
+        hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 8px' } }, 'Every hour includes a numeric average and log count. Color is only an additional cue.'),
+        hh('ul', { 'aria-label': 'Average energy across all 24 hours', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 4, alignItems: 'stretch', overflowX: 'auto' } },
+          hourlyAvg.map(function(item) {
+            var percent = (item.avg / 10) * 100;
+            var color = item.avg >= 7 ? '#4ade80' : item.avg >= 5 ? '#facc15' : item.avg > 0 ? '#f87171' : 'rgba(100,116,139,0.28)';
+            var averageText = item.avg > 0 ? item.avg.toFixed(1) : '—';
+            return hh('li', { key: 'eh-' + item.hour, style: { flex: '1 0 42px', minWidth: 42, textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)' } },
+              hh('span', { 'aria-label': formatHour(item.hour), style: { display: 'block', fontSize: 9, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 3 } }, String(item.hour).padStart(2, '0')),
+              hh('div', { 'aria-hidden': 'true', style: { height: 56, background: 'rgba(15,23,42,0.65)', borderRadius: 4, position: 'relative', overflow: 'hidden', border: '1px solid rgba(148,163,184,0.25)' } },
+                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: percent + '%', background: color } })
               ),
-              hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, h.hour)
+              hh('span', { 'aria-label': item.count ? 'Average energy ' + averageText + ' out of 10 from ' + item.count + (item.count === 1 ? ' log' : ' logs') : 'No energy logs', style: { display: 'block', minHeight: 18, fontSize: 9, fontWeight: 800, color: item.count ? '#fff' : 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 3 } }, averageText),
+              hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 8, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, item.count ? item.count + '×' : '')
             );
           })
         ),
-        bestHour && bestHour.avg > 0 ? hh('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          hh('strong', { style: { color: '#10b981' } }, '⭐ Your peak hour: '), bestHour.hour + ':00 (avg ' + bestHour.avg.toFixed(1) + '/10). ',
-          'Try scheduling hard cognitive work in this window.'
+        bestHour && bestHour.avg > 0 ? hh('aside', { 'aria-labelledby': 'learning-lab-energy-peak-heading', style: { marginTop: 10, padding: 8, borderRadius: 6, background: 'rgba(20,83,45,0.40)', border: '1px solid #86efac', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
+          hh('h4', { id: 'learning-lab-energy-peak-heading', style: { color: '#bbf7d0', fontSize: 11, margin: '0 0 3px' } }, 'Highest logged hourly average'),
+          hh('p', { style: { margin: 0 } }, formatHour(bestHour.hour) + ': ' + bestHour.avg.toFixed(1) + ' out of 10 across ' + bestHour.count + (bestHour.count === 1 ? ' log.' : ' logs.'), ' Treat this as an observation from the data you entered, not a fixed prescription.')
         ) : null
       ) : null,
 
-      logs.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          logs.slice(0, 20).map(function(l) {
-            var col = l.level >= 7 ? '#10b981' : l.level >= 5 ? '#fbbf24' : '#ef4444';
-            return hh('div', { key: 'el-' + l.id, style: { padding: 6, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col, display: 'flex', justifyContent: 'space-between' } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                l.date + ' @ ' + l.hour + ':00 — ', hh('strong', { style: { color: col } }, l.level + '/10'),
-                l.what ? hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6, fontStyle: 'italic' } }, l.what) : null
-              ),
-              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+      logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-energy-history-heading' },
+        hh('h3', { id: 'learning-lab-energy-history-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 8px' } }, 'Recent energy logs'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+          logs.slice(0, 20).map(function(log) {
+            var headingId = 'learning-lab-energy-log-' + log.id;
+            var dateTime = log.date + 'T' + String(log.hour).padStart(2, '0') + ':00:00';
+            return hh('li', { key: 'el-' + log.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #fbbf24' } },
+              hh('article', { 'aria-labelledby': headingId, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                hh('div', { style: { flex: 1 } },
+                  hh('h4', { id: headingId, style: { fontSize: 11, color: '#fde68a', margin: '0 0 4px' } }, 'Energy log for ', hh('time', { dateTime: dateTime }, log.date + ' at ' + formatHour(log.hour))),
+                  hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 7px', margin: 0, fontSize: 11 } },
+                    hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Energy'),
+                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.level + ' out of 10'),
+                    log.what ? hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Activity or context') : null,
+                    log.what ? hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.what) : null
+                  )
+                ),
+                hh('button', { type: 'button', 'aria-label': 'Remove energy log from ' + log.date + ' at ' + formatHour(log.hour), onClick: function() { remove(log); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+              )
             );
           })
         )
