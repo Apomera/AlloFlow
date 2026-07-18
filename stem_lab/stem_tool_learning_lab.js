@@ -12815,47 +12815,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
 
     var PLAYLISTS = [
-      { id: 'lofi',       label: 'Lo-fi beats',        icon: '🎧', color: '#9333ea', desc: 'Calm hip-hop instrumentals. Try Lofi Girl on YouTube, Spotify chillhop playlists.' },
-      { id: 'classical',  label: 'Classical (no lyrics)', icon: '🎼', color: '#fbbf24', desc: 'Mozart, Bach, Chopin instrumental works. Spotify "Deep Focus" or "Classical Focus".' },
-      { id: 'cinematic',  label: 'Cinematic / soundtracks', icon: '🎬', color: '#3b82f6', desc: 'Movie + game scores. Interstellar, LOTR, Studio Ghibli, BioShock — instrumental and emotive.' },
-      { id: 'nature',     label: 'Nature sounds',      icon: '🌧', color: '#10b981', desc: 'Rain, ocean, forest, fire. Apps: Calm, Noisli, A Soft Murmur. No music, no distraction.' },
-      { id: 'ambient',    label: 'Ambient electronic', icon: '🌌', color: '#06b6d4', desc: 'Brian Eno, Tycho, Boards of Canada. Slow, textural, repetitive.' },
-      { id: 'baroque',    label: 'Baroque (~60bpm)',   icon: '🎻', color: '#f97316', desc: 'Bach\'s Goldberg Variations, Vivaldi. ~60bpm matches resting heart rate. Research-favored for study.' },
-      { id: 'whitenoise', label: 'White / brown noise', icon: '📻', color: 'var(--allo-stem-text-soft, #94a3b8)', desc: 'mynoise.net is free + customizable. Brown noise (deeper than white) helps many ADHD students.' },
-      { id: 'silence',    label: 'Silence',            icon: '🤫', color: 'var(--allo-stem-text-soft, #475569)', desc: 'Underrated. Some students focus best with no audio at all. Try it for a week.' }
+      { id: 'lofi', label: 'Lo-fi beats', icon: '🎧', borderColor: '#9333ea', textColor: '#ddd6fe', desc: 'Calm hip-hop instrumentals and chillhop-style playlists.' },
+      { id: 'classical', label: 'Classical music without lyrics', icon: '🎼', borderColor: '#fbbf24', textColor: '#fde68a', desc: 'Instrumental works such as Mozart, Bach, or Chopin.' },
+      { id: 'cinematic', label: 'Cinematic or soundtrack music', icon: '🎬', borderColor: '#3b82f6', textColor: '#bfdbfe', desc: 'Instrumental movie, television, and game scores.' },
+      { id: 'nature', label: 'Nature sounds', icon: '🌧', borderColor: '#10b981', textColor: '#a7f3d0', desc: 'Rain, ocean, forest, fire, or other environmental recordings.' },
+      { id: 'ambient', label: 'Ambient electronic music', icon: '🌌', borderColor: '#06b6d4', textColor: '#a5f3fc', desc: 'Slow, textural, or repetitive electronic sound.' },
+      { id: 'baroque', label: 'Baroque instrumental music', icon: '🎻', borderColor: '#f97316', textColor: '#fed7aa', desc: 'Instrumental works such as Bach, Handel, or Vivaldi.' },
+      { id: 'whitenoise', label: 'White or brown noise', icon: '📻', borderColor: '#64748b', textColor: '#e2e8f0', desc: 'Steady broadband sound with a lighter or deeper tone.' },
+      { id: 'silence', label: 'Silence', icon: '🤫', borderColor: '#94a3b8', textColor: '#e2e8f0', desc: 'No background audio. This can be useful to compare with other conditions.' }
     ];
 
-    function rate(id, val) {
-      setData({ ratings: Object.assign({}, data.ratings || {}, (function() { var o = {}; o[id] = val; return o; })()) });
+    function rate(playlist, value) {
+      var patch = {}; patch[playlist.id] = value;
+      setData(Object.assign({}, data, { ratings: Object.assign({}, data.ratings || {}, patch) }));
+      llAnnounce(value ? playlist.label + ' rated ' + value + ' out of 5.' : playlist.label + ' rating cleared.');
     }
 
     var ratings = data.ratings || {};
+    var ratingValues = [0, 1, 2, 3, 4, 5];
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎧', 'Focus Audio', '8 categories. Rate what works for YOU. The best background depends on the task + the person.', '#a855f7'),
+      tkSectionHeader('🎧', 'Focus Audio', 'Try different background-audio conditions and record what works for you.', '#a855f7'),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-        PLAYLISTS.map(function(p) {
-          var r = ratings[p.id] || 0;
-          return hh('div', { key: 'pl-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + p.color } },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, p.icon),
-            hh('strong', { style: { fontSize: 13, color: p.color } }, p.label),
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4, marginBottom: 8 } }, p.desc),
-            hh('div', { style: { display: 'flex', gap: 4 } },
-              [1, 2, 3, 4, 5].map(function(n) {
-                return hh('button', { key: 'r-' + n,
-                  onClick: function() { rate(p.id, n === r ? 0 : n); },
-                  style: { padding: '4px 8px', borderRadius: 4, background: r >= n ? p.color + '30' : 'transparent', color: r >= n ? p.color: 'var(--allo-stem-text-soft, #475569)', border: 'none', fontSize: 14, cursor: 'pointer' }
-                }, '⭐');
-              })
+      hh('p', { id: 'learning-lab-focus-audio-help', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 12px' } }, 'Rate each condition from 1 (not helpful) to 5 (very helpful), or choose Not rated. Ratings save automatically in this browser.'),
+      hh('ul', { 'aria-label': 'Focus audio conditions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+        PLAYLISTS.map(function(playlist) {
+          var rating = Number(ratings[playlist.id] || 0);
+          var headingId = 'learning-lab-focus-audio-' + playlist.id + '-heading';
+          var descriptionId = 'learning-lab-focus-audio-' + playlist.id + '-description';
+          var statusId = 'learning-lab-focus-audio-' + playlist.id + '-status';
+          return hh('li', { key: 'pl-' + playlist.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + playlist.borderColor } },
+            hh('article', { 'aria-labelledby': headingId },
+              hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, playlist.icon),
+              hh('h3', { id: headingId, style: { fontSize: 13, color: playlist.textColor, margin: '0 0 4px' } }, playlist.label),
+              hh('p', { id: descriptionId, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 8px' } }, playlist.desc),
+              hh('p', { id: statusId, style: { fontSize: 11, color: playlist.textColor, fontWeight: 800, margin: '0 0 7px' } }, rating ? 'Current rating: ' + rating + ' out of 5.' : 'Current rating: Not rated.'),
+              hh('fieldset', { 'aria-describedby': descriptionId + ' ' + statusId + ' learning-lab-focus-audio-help', style: { border: '1px solid rgba(226,232,240,0.35)', borderRadius: 8, padding: 8, margin: 0 } },
+                hh('legend', { style: { padding: '0 4px', fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800 } }, 'How helpful is ' + playlist.label + '?'),
+                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(54px, 1fr))', gap: 5 } },
+                  ratingValues.map(function(value) {
+                    var optionId = 'learning-lab-focus-audio-' + playlist.id + '-rating-' + value;
+                    var selected = rating === value;
+                    var optionLabel = value === 0 ? 'Not rated' : value + (value === 1 ? ' star' : ' stars');
+                    return hh('label', { key: 'r-' + value, htmlFor: optionId, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, minHeight: 44, padding: '5px 4px', borderRadius: 7, background: selected ? 'rgba(76,29,149,0.62)' : 'rgba(2,6,23,0.45)', color: selected ? '#fff' : 'var(--allo-stem-text, #e2e8f0)', border: selected ? '2px solid #ddd6fe' : '1px solid rgba(226,232,240,0.42)', fontSize: 10, fontWeight: 800, textAlign: 'center', cursor: 'pointer' } },
+                      hh('input', { id: optionId, type: 'radio', name: 'learning-lab-focus-audio-' + playlist.id, value: value, checked: selected, onChange: function() { rate(playlist, value); }, 'data-ll-focusable': true, style: { width: 18, height: 18, margin: 0, accentColor: '#a855f7' } }),
+                      hh('span', null, optionLabel)
+                    );
+                  })
+                )
+              )
             )
           );
         })
       ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🎓 Honest research: '),
-        'The "Mozart effect" doesn\'t make you smarter (Pashler 2008 review). But matching audio to task does help — silence/instrumental for reading-heavy work; lyrics-free for math; whatever helps initiation for ADHD. Track what actually works for YOU; this is one of the most individual study choices.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-focus-audio-note-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.30)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-focus-audio-note-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '💡 '), 'Compare conditions for yourself'),
+        hh('p', { style: { margin: 0 } }, 'Audio preferences can change with the person, task, environment, and day. Try one condition at a time, include silence as a comparison, and rate your own focus rather than treating any category as universally best.')
       )
     );
   }
