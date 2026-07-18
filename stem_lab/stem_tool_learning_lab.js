@@ -17045,98 +17045,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { logs: [] };
     var setData = props.setData;
-    var fs = R.useState({ total: 4, scrolling: 2, productive: 1, reflective: 5 });
-    var form = fs[0]; var setForm = fs[1];
+    var defaultForm = { total: 4, scrolling: 2, productive: 1, reflective: 5 };
+    var fs = R.useState(defaultForm); var form = fs[0]; var setForm = fs[1];
 
+    function safeDomId(value) { return String(value || 'entry').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function finiteNumber(value) { var number = Number(value); return isFinite(number) ? number : null; }
+    function clampNumber(value, min, max, fallback) { var number = finiteNumber(value); if (number === null) number = fallback; return Math.max(min, Math.min(max, number)); }
+    function hourText(value) { var number = finiteNumber(value); if (number === null) return 'Not recorded'; return (number % 1 === 0 ? number.toFixed(0) : number.toFixed(1)) + (number === 1 ? ' hour' : ' hours'); }
+    function scoreText(value) { var number = finiteNumber(value); return number === null ? 'Not recorded' : number.toFixed(0) + ' out of 10'; }
+    function localISO(date) { var year = date.getFullYear(); var month = String(date.getMonth() + 1).padStart(2, '0'); var day = String(date.getDate()).padStart(2, '0'); return year + '-' + month + '-' + day; }
+    function updateTotal(value) { var total = clampNumber(value, 0, 24, 4); setForm(Object.assign({}, form, { total: total, scrolling: Math.min(form.scrolling, total), productive: Math.min(form.productive, total) })); }
     function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ logs: [entry].concat(data.logs || []) });
-      setForm({ total: 4, scrolling: 2, productive: 1, reflective: 5 });
+      var total = clampNumber(form.total, 0, 24, 0);
+      var entry = { id: tkId(), date: todayISO(), total: total, scrolling: clampNumber(form.scrolling, 0, total, 0), productive: clampNumber(form.productive, 0, total, 0), reflective: clampNumber(form.reflective, 1, 10, 5) };
+      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setForm(defaultForm); llAnnounce('Screen-time estimate saved for today.'); focusById('learning-lab-screen-time-history-heading');
     }
-    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+    function remove(entry) {
+      askLearningLabConfirmation('Remove the screen-time entry from ' + String(entry.date || 'an unknown date') + '? This cannot be undone.', { title: 'Remove this screen-time entry?', confirmText: 'Remove entry' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(log) { return log.id !== entry.id; }) }));
+        llAnnounce('Saved screen-time entry removed.'); focusById('learning-lab-screen-time-history-heading');
+      });
+    }
+    function rangeField(config) {
+      var inputId = 'learning-lab-screen-time-' + config.id; var outputId = inputId + '-output'; var helpId = inputId + '-help';
+      return hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.58)', border: '1px solid #64748b' } },
+        hh('label', { htmlFor: inputId, style: { display: 'block', marginBottom: 4, color: '#fecaca', fontSize: 12, fontWeight: 800 } }, config.label),
+        hh('output', { id: outputId, htmlFor: inputId, style: { display: 'block', marginBottom: 4, color: '#f8fafc', fontSize: 16, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, config.valueText),
+        hh('p', { id: helpId, style: { margin: '0 0 5px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 } }, config.help),
+        hh('input', { id: inputId, type: 'range', min: config.min, max: config.max, step: config.step, value: config.value, onChange: config.onChange, 'aria-valuetext': config.valueText, 'aria-describedby': helpId + ' ' + outputId, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#dc2626', cursor: 'pointer' } }),
+        config.endpoints ? hh('p', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, margin: '3px 0 0', color: '#cbd5e1', fontSize: 10 } }, hh('span', null, config.endpoints[0]), hh('span', null, config.endpoints[1])) : null
+      );
+    }
 
     var logs = data.logs || [];
+    var sortedLogs = logs.slice().sort(function(a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
     var today = todayISO();
-    var todayLog = logs.filter(function(l) { return l.date === today; })[0];
-
-    var avg7Total = logs.slice(0, 7).length > 0 ? (logs.slice(0, 7).reduce(function(s, l) { return s + (l.total || 0); }, 0) / logs.slice(0, 7).length).toFixed(1) : '—';
-    var avg7Scroll = logs.slice(0, 7).length > 0 ? (logs.slice(0, 7).reduce(function(s, l) { return s + (l.scrolling || 0); }, 0) / logs.slice(0, 7).length).toFixed(1) : '—';
+    var todayLog = logs.filter(function(log) { return log.date === today; })[0];
+    var startDate = new Date(); startDate.setHours(12, 0, 0, 0); startDate.setDate(startDate.getDate() - 6); var sevenDayStart = localISO(startDate);
+    var recentSevenDays = logs.filter(function(log) { return typeof log.date === 'string' && log.date >= sevenDayStart && log.date <= today; });
+    function averageFor(key) { var values = recentSevenDays.map(function(log) { return finiteNumber(log[key]); }).filter(function(value) { return value !== null; }); if (!values.length) return null; return values.reduce(function(sum, value) { return sum + value; }, 0) / values.length; }
+    var avg7Total = averageFor('total');
+    var avg7Scroll = averageFor('scrolling');
+    var stats = [
+      { label: 'Average total on logged days in the last 7 days', value: avg7Total === null ? 'No data' : hourText(avg7Total) },
+      { label: 'Average scrolling on logged days in the last 7 days', value: avg7Scroll === null ? 'No data' : hourText(avg7Scroll) },
+      { label: 'Saved entries', value: String(logs.length) }
+    ];
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fca5a5', background: '#b91c1c', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📱', 'Screen Time Tracker', 'Daily self-report. No moralizing. Just data → your pattern → your choice.', '#ef4444'),
-
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: '7d avg total', value: avg7Total + 'h', color: '#ef4444', icon: '⏱' },
-          { label: '7d avg scrolling', value: avg7Scroll + 'h', color: '#fbbf24', icon: '📱' },
-          { label: 'Total logs', value: logs.length, color: '#a855f7', icon: '📊' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'sts-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
-          );
-        })
+      tkSectionHeader('📱', 'Screen Time Tracker', 'Record optional estimates and notice patterns in context.', '#ef4444'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-screen-time-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-screen-time-context-heading', style: { margin: '0 0 5px', color: '#fecaca', fontSize: 13 } }, 'Estimates in context, not a health score'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'School, work, creativity, communication, accessibility, rest, and entertainment can all involve screens. A number alone does not determine whether screen use was helpful or harmful.'),
+        hh('p', { style: { margin: 0 } }, 'This tool does not monitor your device or collect usage automatically. Entries save in this browser and are not a diagnosis or medical recommendation; avoid sensitive details on a shared device.')
       ),
-
-      todayLog ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, fontSize: 11, color: '#22c55e' } },
-        '✓ Today logged: ' + todayLog.total + 'h total · ' + todayLog.scrolling + 'h scrolling · feeling ' + todayLog.reflective + '/10'
+      hh('section', { 'aria-labelledby': 'learning-lab-screen-time-stats-heading', style: { marginBottom: 12 } },
+        hh('h2', { id: 'learning-lab-screen-time-stats-heading', style: { margin: '0 0 7px', color: '#fecaca', fontSize: 15 } }, 'Screen-time summary'),
+        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, margin: 0 } }, stats.map(function(stat) { return hh('div', { key: stat.label, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.58)', border: '1px solid #64748b' } }, hh('dt', { style: { color: '#e2e8f0', fontSize: 10, lineHeight: 1.4 } }, stat.label), hh('dd', { style: { margin: '4px 0 0', color: '#f8fafc', fontSize: 15, fontWeight: 800 } }, stat.value)); }))
+      ),
+      todayLog ? hh('section', { 'aria-labelledby': 'learning-lab-screen-time-today-heading', style: { padding: 11, borderRadius: 8, background: 'rgba(30,64,175,0.25)', border: '1px solid #93c5fd', marginBottom: 12, color: '#f8fafc', fontSize: 11 } },
+        hh('h2', { id: 'learning-lab-screen-time-today-heading', style: { margin: '0 0 6px', color: '#bfdbfe', fontSize: 13 } }, 'Today’s estimate is saved'),
+        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 7, margin: 0 } }, [
+          { label: 'Total', value: hourText(todayLog.total) }, { label: 'Scrolling or feeds', value: hourText(todayLog.scrolling) }, { label: 'Intentional or task-focused', value: hourText(todayLog.productive) }, { label: 'Fit with your needs', value: scoreText(todayLog.reflective) }
+        ].map(function(item) { return hh('div', { key: item.label }, hh('dt', { style: { color: '#bfdbfe', fontWeight: 800 } }, item.label), hh('dd', { style: { margin: '2px 0 0' } }, item.value)); })),
+        hh('p', { style: { margin: '7px 0 0', color: '#e2e8f0', lineHeight: 1.5 } }, 'To record a different estimate for today, remove today’s saved entry below and enter it again.')
       ) : tkCard('#ef4444',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 10 } }, '📱 Estimate today\'s screen time'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
-            hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fca5a5', display: 'block', marginBottom: 4 } }, 'Total hours'),
-              hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.total + 'h'),
-              hh('input', { type: 'range', min: 0, max: 16, step: 0.5, value: form.total,
-                onChange: function(e) { setForm(Object.assign({}, form, { total: parseFloat(e.target.value) })); },
-                style: { width: '100%', accentColor: '#ef4444' }
-              })
-            ),
-            hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', display: 'block', marginBottom: 4 } }, 'Of that, scrolling'),
-              hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.scrolling + 'h'),
-              hh('input', { type: 'range', min: 0, max: 16, step: 0.5, value: form.scrolling,
-                onChange: function(e) { setForm(Object.assign({}, form, { scrolling: parseFloat(e.target.value) })); },
-                style: { width: '100%', accentColor: '#fbbf24' }
-              })
-            )
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-screen-time-form-heading', 'aria-describedby': 'learning-lab-screen-time-form-help' },
+          hh('h2', { id: 'learning-lab-screen-time-form-heading', style: { margin: '0 0 5px', color: '#fecaca', fontSize: 15 } }, 'Estimate today’s screen time'),
+          hh('p', { id: 'learning-lab-screen-time-form-help', style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 } }, 'All fields are estimates. Scrolling and intentional time may overlap, but neither can be greater than total time.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 10 } },
+            rangeField({ id: 'total', label: 'Estimated total screen time', help: 'Adjust from 0 to 24 hours in half-hour steps.', value: form.total, valueText: hourText(form.total), min: 0, max: 24, step: 0.5, onChange: function(event) { updateTotal(event.target.value); } }),
+            rangeField({ id: 'scrolling', label: 'Estimated social-feed or scrolling time', help: 'This estimate cannot be greater than total screen time.', value: form.scrolling, valueText: hourText(form.scrolling), min: 0, max: form.total, step: 0.5, onChange: function(event) { setForm(Object.assign({}, form, { scrolling: clampNumber(event.target.value, 0, form.total, 0) })); } }),
+            rangeField({ id: 'productive', label: 'Estimated intentional or task-focused time', help: 'For example: school, work, creating, communicating, or learning. This can overlap with scrolling categories.', value: form.productive, valueText: hourText(form.productive), min: 0, max: form.total, step: 0.5, onChange: function(event) { setForm(Object.assign({}, form, { productive: clampNumber(event.target.value, 0, form.total, 0) })); } }),
+            rangeField({ id: 'reflective', label: 'How well did screen use fit your needs today?', help: 'Choose the response that fits your experience; there is no correct score.', value: form.reflective, valueText: scoreText(form.reflective), min: 1, max: 10, step: 1, endpoints: ['1 — Not at all', '10 — Very well'], onChange: function(event) { setForm(Object.assign({}, form, { reflective: clampNumber(event.target.value, 1, 10, 5) })); } })
           ),
-          hh('div', { style: { marginBottom: 10 } },
-            hh('label', { style: { fontSize: 10, fontWeight: 700, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Productive screen time (school, creating, learning)'),
-            hh('div', { style: { textAlign: 'center', fontSize: 18, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.productive + 'h'),
-            hh('input', { type: 'range', min: 0, max: 16, step: 0.5, value: form.productive,
-              onChange: function(e) { setForm(Object.assign({}, form, { productive: parseFloat(e.target.value) })); },
-              style: { width: '100%', accentColor: '#10b981' }
-            })
-          ),
-          hh('div', { style: { marginBottom: 10 } },
-            hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#a855f7', display: 'block', marginBottom: 4 } }, 'How do you feel about today\'s use? (' + form.reflective + '/10)'),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.reflective,
-              onChange: function(e) { setForm(Object.assign({}, form, { reflective: parseInt(e.target.value, 10) })); },
-              style: { width: '100%', accentColor: '#a855f7' }
-            })
-          ),
-          tkBtn('💾 Log it', save, 'primary')
+          hh('button', { type: 'submit', style: buttonStyle }, 'Save today’s estimate')
         )
       ),
-
-      logs.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          logs.slice(0, 14).map(function(l) {
-            var col = l.total >= 8 ? '#ef4444' : l.total >= 5 ? '#fbbf24' : '#10b981';
-            return hh('div', { key: 'st-' + l.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col, display: 'flex', justifyContent: 'space-between' } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · ' + l.total + 'h (' + l.scrolling + 'h scroll, ' + l.productive + 'h productive) · felt ' + l.reflective + '/10'),
-              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-            );
-          })
-        )
-      ) : null,
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#ef4444' } }, '📱 Honest framing: '),
-        'Screen time research is messy. The pattern is more important than the number. WHAT you do with screens matters more than HOW LONG. The reflection question ("how did you FEEL about it?") is the most useful data here.'
+      hh('section', { 'aria-labelledby': 'learning-lab-screen-time-history-heading' },
+        hh('h2', { id: 'learning-lab-screen-time-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fecaca', fontSize: 15 } }, 'Saved screen-time entries'),
+        sortedLogs.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No screen-time entries saved yet.') :
+        hh('ul', { 'aria-label': 'Saved screen-time entries, newest first', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } }, sortedLogs.map(function(entry) { var domId = safeDomId(entry.id); var headingId = 'learning-lab-screen-time-entry-' + domId; return hh('li', { key: entry.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid #fca5a5' } },
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+            hh('h3', { id: headingId, style: { margin: 0, color: '#fecaca', fontSize: 13 } }, 'Entry from ', hh('time', { dateTime: entry.date || undefined }, entry.date || 'date unavailable')),
+            hh('button', { type: 'button', onClick: function() { remove(entry); }, 'aria-label': 'Remove screen-time entry from ' + String(entry.date || 'date unavailable'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+          ),
+          hh('dl', { 'aria-label': 'Screen-time estimates', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 7, margin: '7px 0 0' } }, [
+            { label: 'Total', value: hourText(entry.total) }, { label: 'Scrolling or feeds', value: hourText(entry.scrolling) }, { label: 'Intentional or task-focused', value: hourText(entry.productive) }, { label: 'Fit with your needs', value: scoreText(entry.reflective) }
+          ].map(function(item) { return hh('div', { key: item.label }, hh('dt', { style: { color: '#fecaca', fontSize: 10, fontWeight: 800 } }, item.label), hh('dd', { style: { margin: '2px 0 0', color: '#f8fafc', fontSize: 11, overflowWrap: 'anywhere' } }, item.value)); }))
+        )); }))
       )
     );
   }
