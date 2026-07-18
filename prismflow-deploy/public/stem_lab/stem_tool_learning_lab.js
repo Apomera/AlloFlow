@@ -14921,74 +14921,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { people: [] };
     var setData = props.setData;
-    var fs = R.useState({ name: '', role: '', closeness: 'close', whyMatter: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { name: '', role: '', closeness: 'close', whyMatter: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var nameError = es[0]; var setNameError = es[1];
 
     var LEVELS = [
-      { id: 'closest',  label: 'Inner circle (closest 1-3 people)', color: '#ef4444' },
-      { id: 'close',    label: 'Close (a few people I really trust)', color: '#f97316' },
-      { id: 'good',     label: 'Good (I know I can rely on them)', color: '#fbbf24' },
-      { id: 'connect',  label: 'Connection (helpful + present)', color: '#10b981' },
-      { id: 'know',     label: 'Know (people I know but don\'t lean on)', color: '#06b6d4' }
+      { id: 'closest', label: 'Inner circle', description: 'A person or service I would contact first', color: '#fca5a5' },
+      { id: 'close', label: 'Close support', description: 'Someone I often feel comfortable contacting', color: '#fdba74' },
+      { id: 'good', label: 'Reliable support', description: 'Someone I may contact for particular needs', color: '#fde68a' },
+      { id: 'connect', label: 'Helpful connection', description: 'A person or service that can offer information or support', color: '#6ee7b7' },
+      { id: 'know', label: 'Known contact', description: 'Someone I know but may not contact often', color: '#67e8f9' }
     ];
 
-    function save() {
-      if (!form.name.trim()) { alert('Need a name.'); return; }
-      var p = Object.assign({ id: tkId(), addedAt: todayISO() }, form);
-      setData({ people: [p].concat(data.people || []) });
-      setForm({ name: '', role: '', closeness: 'close', whyMatter: '' });
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
     }
-    function remove(id) { setData({ people: (data.people || []).filter(function(p) { return p.id !== id; }) }); }
+    function levelFor(id) {
+      return LEVELS.filter(function(level) { return level.id === id; })[0] || LEVELS[1];
+    }
+    function save() {
+      var name = form.name.trim();
+      if (!name) {
+        setNameError('Enter a name, nickname, service, or relationship label.');
+        llAnnounce('Support contact not saved. Enter a label first.');
+        focusById('learning-lab-support-name');
+        return;
+      }
+      var entry = { id: tkId(), addedAt: todayISO(), name: name, role: form.role.trim(), closeness: form.closeness, whyMatter: form.whyMatter.trim() };
+      setData(Object.assign({}, data, { people: [entry].concat(data.people || []) }));
+      setForm(emptyForm); setNameError('');
+      llAnnounce('Support contact saved: ' + name);
+      focusById('learning-lab-support-name');
+    }
+    function removePerson(entry) {
+      askLearningLabConfirmation('Remove “' + String(entry.name || 'this contact') + '” from your support list? This cannot be undone.', { title: 'Remove this support contact?', confirmText: 'Remove contact' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { people: (data.people || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Support contact removed.');
+        focusById('learning-lab-support-list-heading');
+      });
+    }
 
     var people = data.people || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #34d399', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🤝', 'Circle of Support', 'Map your real support network. Especially useful when you feel alone — visible reminder that you\'re not.', '#10b981'),
-
-      tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ Add someone'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '2fr 2fr', gap: 6, marginBottom: 8 } },
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Their name'),
-            tkInput(form.role, function(v) { setForm(Object.assign({}, form, { role: v })); }, 'Their role (mom, mentor, best friend, etc.)')
-          ),
-          hh('div', { style: { fontSize: 11, color: '#10b981', marginBottom: 4 } }, 'How close?'),
-          hh('div', { style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' } },
-            LEVELS.map(function(l) {
-              var on = form.closeness === l.id;
-              return hh('button', { key: 'lv-' + l.id,
-                onClick: function() { setForm(Object.assign({}, form, { closeness: l.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? l.color + '30' : 'rgba(15,23,42,0.5)', color: on ? l.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? l.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-              }, l.label.split(' (')[0]);
-            })
-          ),
-          tkInput(form.whyMatter, function(v) { setForm(Object.assign({}, form, { whyMatter: v })); }, 'Why they matter (specific — 1 line)', { marginBottom: 8 }),
-          tkBtn('💾 Add', save, 'primary')
-        )
+      tkSectionHeader('🤝', 'Circle of Support', 'Make a private reference list of people or services you may choose to contact.', '#10b981'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-support-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #6ee7b7', background: 'rgba(6,78,59,0.25)', color: '#f0fdf4', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-support-about-heading', style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 13 } }, 'Reference list only'),
+        hh('p', { style: { margin: 0 } }, 'This tool does not contact anyone or confirm that a person is available. For an emergency, use your local emergency service or an established crisis resource.')
       ),
-
-      people.length === 0 ? tkEmptyState('🤝', 'No support people added yet. Start with 1.', null, null)
-      : LEVELS.map(function(level) {
-          var inLevel = people.filter(function(p) { return p.closeness === level.id; });
-          if (inLevel.length === 0) return null;
-          return hh('div', { key: 'cs-' + level.id, style: { marginBottom: 14 } },
-            hh('div', { style: { fontSize: 11, fontWeight: 800, color: level.color, marginBottom: 8, padding: '4px 10px', background: level.color + '15', borderRadius: 6, display: 'inline-block' } }, level.label),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-              inLevel.map(function(p) {
-                return hh('div', { key: 'pe-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + level.color } },
-                  hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                    hh('div', null,
-                      hh('strong', { style: { fontSize: 12, color: level.color } }, p.name),
-                      p.role ? hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 6 } }, '— ' + p.role) : null
-                    ),
-                    hh('button', { onClick: function() { remove(p.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                  ),
-                  p.whyMatter ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontStyle: 'italic' } }, '"' + p.whyMatter + '"') : null
+      tkCard('#10b981',
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-support-form-heading', 'aria-describedby': 'learning-lab-support-privacy-note' },
+          hh('h2', { id: 'learning-lab-support-form-heading', style: { margin: '0 0 8px', color: '#6ee7b7', fontSize: 15 } }, 'Add a support contact'),
+          hh('p', { id: 'learning-lab-support-privacy-note', style: helpStyle }, 'Names and notes save in this browser. Use a nickname or relationship label and avoid private details if other people use this device.'),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 } },
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-support-name', style: labelStyle }, 'Name or label (required)'),
+              hh('input', { id: 'learning-lab-support-name', type: 'text', value: form.name, required: true, maxLength: 300, onChange: function(event) { setForm(Object.assign({}, form, { name: event.target.value })); if (nameError) setNameError(''); }, 'aria-invalid': nameError ? 'true' : undefined, 'aria-describedby': nameError ? 'learning-lab-support-name-error' : undefined, style: fieldStyle }),
+              nameError ? hh('p', { id: 'learning-lab-support-name-error', role: 'alert', style: errorStyle }, nameError) : null
+            ),
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-support-role', style: labelStyle }, 'Role or type of service (optional)'),
+              hh('input', { id: 'learning-lab-support-role', type: 'text', value: form.role, maxLength: 500, onChange: function(event) { setForm(Object.assign({}, form, { role: event.target.value })); }, style: fieldStyle })
+            )
+          ),
+          hh('fieldset', { style: { margin: '12px 0', padding: 0, border: 0 } },
+            hh('legend', { style: labelStyle }, 'Support group'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8 } },
+              LEVELS.map(function(level) {
+                var selected = form.closeness === level.id;
+                return hh('label', { key: 'lv-' + level.id, htmlFor: 'learning-lab-support-level-' + level.id, style: { boxSizing: 'border-box', display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 44, minHeight: 44, padding: 9, borderRadius: 7, border: '1px solid ' + (selected ? level.color : '#64748b'), background: selected ? 'rgba(6,78,59,0.32)' : 'rgba(15,23,42,0.45)', color: '#f8fafc', cursor: 'pointer' } },
+                  hh('input', { id: 'learning-lab-support-level-' + level.id, type: 'radio', name: 'learning-lab-support-level', value: level.id, checked: selected, onChange: function() { setForm(Object.assign({}, form, { closeness: level.id })); } }),
+                  hh('span', null, hh('strong', { style: { display: 'block', fontSize: 11 } }, level.label), hh('span', { style: { display: 'block', marginTop: 3, color: '#e2e8f0', fontSize: 10, lineHeight: 1.4 } }, level.description))
                 );
               })
             )
-          );
-        }).filter(Boolean)
+          ),
+          hh('label', { htmlFor: 'learning-lab-support-note', style: labelStyle }, 'Why or when you might contact them (optional)'),
+          hh('textarea', { id: 'learning-lab-support-note', value: form.whyMatter, rows: 3, maxLength: 1500, onChange: function(event) { setForm(Object.assign({}, form, { whyMatter: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+          hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, marginTop: 12, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save support contact')
+        )
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-support-list-heading' },
+        hh('h2', { id: 'learning-lab-support-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#d1fae5', fontSize: 15 } }, 'Saved support contacts'),
+        people.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No support contacts saved yet.')
+          : LEVELS.map(function(level) {
+              var inLevel = people.filter(function(person) { return levelFor(person.closeness).id === level.id; });
+              if (inLevel.length === 0) return null;
+              var groupId = 'learning-lab-support-group-' + level.id;
+              return hh('section', { key: 'cs-' + level.id, 'aria-labelledby': groupId, style: { marginBottom: 14 } },
+                hh('h3', { id: groupId, style: { margin: '0 0 4px', color: level.color, fontSize: 13 } }, level.label),
+                hh('p', { style: helpStyle }, level.description + '. ' + inLevel.length + (inLevel.length === 1 ? ' contact.' : ' contacts.')),
+                hh('ul', { 'aria-label': level.label + ' contacts', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } },
+                  inLevel.map(function(entry) {
+                    var headingId = 'learning-lab-support-person-heading-' + entry.id;
+                    return hh('li', { key: 'pe-' + entry.id },
+                      hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.65)', border: '1px solid #64748b', borderLeft: '4px solid ' + level.color } },
+                        hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                          hh('div', null, hh('p', { style: { margin: '0 0 4px', color: level.color, fontSize: 10, fontWeight: 800 } }, level.label), hh('h4', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 13 } }, String(entry.name || 'Unnamed contact'))),
+                          hh('button', { type: 'button', onClick: function() { removePerson(entry); }, 'aria-label': 'Remove support contact: ' + String(entry.name || 'Unnamed contact'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                        ),
+                        hh('dl', { 'aria-label': 'Support contact details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: 6, margin: '9px 0 0', color: '#e2e8f0', fontSize: 11 } },
+                          entry.role ? hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Role'), hh('dd', { style: { margin: 0 } }, entry.role)) : null,
+                          hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Added'), hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.addedAt || undefined }, relDate(entry.addedAt))))
+                        ),
+                        entry.whyMatter ? hh('section', { 'aria-label': 'Contact note', style: { marginTop: 8 } }, hh('h5', { style: { margin: '0 0 3px', color: '#d1fae5', fontSize: 11 } }, 'Why or when I might contact them'), hh('p', { style: { margin: 0, color: '#f1f5f9', fontSize: 11, lineHeight: 1.5, whiteSpace: 'pre-wrap' } }, entry.whyMatter)) : null
+                      )
+                    );
+                  })
+                )
+              );
+            }).filter(Boolean)
+      )
     );
   }
 
