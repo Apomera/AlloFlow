@@ -16515,70 +16515,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { logs: [] };
     var setData = props.setData;
-    var fs = R.useState({ situation: '', who: '', values: '', options: '', choice: '', why: '' });
-    var form = fs[0]; var setForm = fs[1];
-
-    function save() {
-      if (!form.situation.trim()) { alert('Need a situation.'); return; }
-      var l = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ logs: [l].concat(data.logs || []) });
-      setForm({ situation: '', who: '', values: '', options: '', choice: '', why: '' });
-    }
-    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+    var emptyForm = { situation: '', who: '', values: '', options: '', choice: '', why: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var situationError = es[0]; var setSituationError = es[1];
 
     var STEPS = [
-      { id: 'situation', label: '1. The situation', prompt: 'What\'s happening? Describe it as factually as possible — separate facts from interpretation.' },
-      { id: 'who',       label: '2. Who is affected?', prompt: 'Everyone touched by the decision — including yourself. List them.' },
-      { id: 'values',    label: '3. My values at stake', prompt: 'What do I care about here? Honesty? Loyalty? Fairness? Safety? Connection?' },
-      { id: 'options',   label: '4. My options', prompt: 'List at least 3 — including options that feel uncomfortable.' },
-      { id: 'choice',    label: '5. My choice', prompt: 'What will I do?' },
-      { id: 'why',       label: '6. Why', prompt: 'What\'s the value or reason driving this? Will I be at peace with this in a year?' }
+      { id: 'situation', label: 'Situation (required)', prompt: 'Describe what is happening in the words and level of detail you choose.' },
+      { id: 'who', label: 'People or groups affected (optional)', prompt: 'Include yourself, other people, communities, or no additional notes.' },
+      { id: 'values', label: 'Values or needs involved (optional)', prompt: 'For example: safety, care, honesty, loyalty, fairness, privacy, culture, or another value.' },
+      { id: 'options', label: 'Possible actions or non-actions (optional)', prompt: 'List any number of possibilities, including waiting or asking for support if appropriate.' },
+      { id: 'choice', label: 'Current decision or next step (optional)', prompt: 'A decision can remain uncertain or change when you learn more.' },
+      { id: 'why', label: 'Reasoning, questions, or uncertainty (optional)', prompt: 'Record what matters to you, what you do not know, or whose perspective may be missing.' }
     ];
 
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function setField(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); if (id === 'situation' && situationError) setSituationError(''); }
+    function save() {
+      var situation = form.situation.trim();
+      if (!situation) { setSituationError('Describe the situation before saving this reflection.'); llAnnounce('Decision reflection not saved. Describe the situation first.'); focusById('learning-lab-ethical-situation'); return; }
+      var log = { id: tkId(), date: todayISO() };
+      STEPS.forEach(function(step) { log[step.id] = String(form[step.id] || '').trim(); });
+      setData(Object.assign({}, data, { logs: [log].concat(data.logs || []) }));
+      setForm(emptyForm); setSituationError(''); llAnnounce('Decision reflection saved in this browser.'); focusById('learning-lab-ethical-situation');
+    }
+    function removeLog(log) {
+      askLearningLabConfirmation('Remove this saved decision reflection? This cannot be undone.', { title: 'Remove this reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== log.id; }) }));
+        llAnnounce('Saved decision reflection removed.'); focusById('learning-lab-ethical-history-heading');
+      });
+    }
+    function savedDetails(log) { return STEPS.map(function(step) { return { id: step.id, label: step.label.replace(' (required)', '').replace(' (optional)', ''), value: String(log[step.id] || '').trim() }; }).filter(function(detail) { return detail.value; }); }
+
     var logs = data.logs || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 88, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12, resize: 'vertical', lineHeight: 1.55 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⚖', 'Ethical Dilemma Walker', '6-step framework for working through hard moral situations. Kohlberg-aligned moral development scaffolding.', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '⚖ Moral reasoning: '),
-        'Kohlberg 1958 showed moral reasoning develops in stages — the highest involves balancing universal principles. Working through dilemmas in writing IS the development. There are rarely clean answers, but THINKING IT THROUGH matters.'
+      tkSectionHeader('⚖️', 'Ethical Decision Reflection', 'Use optional prompts to examine a difficult decision from several perspectives.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-ethical-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-ethical-about-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13 } }, 'A reflection aid, not a moral authority'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'Ethical reasoning differs across people, cultures, communities, roles, and circumstances. This tool does not rank moral development, determine a correct answer, or replace advice from a trusted or qualified person.'),
+        hh('p', { style: { margin: 0 } }, 'Reflections save in this browser and may contain sensitive information. Avoid names or private details on a shared device. For immediate safety concerns, contact an appropriate trusted, emergency, or crisis resource.')
       ),
-
-      tkCard('#a855f7',
-        hh('div', null,
-          STEPS.map(function(s) {
-            return hh('div', { key: 'es-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
-              hh('label', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, s.label),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 6 } }, s.prompt),
-              tkTextarea(form[s.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = v; return o; })())); }, '', 2)
-            );
-          }),
-          tkBtn('💾 Save this walk-through', save, 'primary')
-        )
-      ),
-
-      logs.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past dilemmas worked through'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          logs.slice(0, 10).map(function(l) {
-            return hh('div', { key: 'el-' + l.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, '⚖ ' + l.date),
-                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              l.situation ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 4 } }, hh('strong', { style: { color: '#a855f7' } }, 'Situation: '), l.situation) : null,
-              l.choice ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, hh('strong', { style: { color: '#10b981' } }, 'Choice: '), l.choice) : null
-            );
-          })
-        )
-      ) : null
+      tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-ethical-form-heading' },
+        hh('h2', { id: 'learning-lab-ethical-form-heading', style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Add a decision reflection'),
+        STEPS.map(function(step, index) { var inputId = 'learning-lab-ethical-' + step.id; var helpId = inputId + '-help'; var invalid = step.id === 'situation' && situationError; return hh('section', { key: step.id, 'aria-labelledby': inputId + '-label', style: { marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.52)', border: '1px solid #64748b' } },
+          hh('label', { id: inputId + '-label', htmlFor: inputId, style: labelStyle }, (index + 1) + '. ' + step.label),
+          hh('textarea', { id: inputId, value: form[step.id], rows: 3, required: step.id === 'situation', maxLength: 6000, onChange: function(event) { setField(step.id, event.target.value); }, 'aria-invalid': invalid ? 'true' : undefined, 'aria-describedby': helpId + (invalid ? ' learning-lab-ethical-situation-error' : ''), style: fieldStyle }),
+          hh('p', { id: helpId, style: helpStyle }, step.prompt),
+          invalid ? hh('p', { id: 'learning-lab-ethical-situation-error', role: 'alert', style: errorStyle }, situationError) : null
+        ); }),
+        hh('button', { type: 'submit', style: buttonStyle }, 'Save decision reflection')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-ethical-history-heading' },
+        hh('h2', { id: 'learning-lab-ethical-history-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#e9d5ff', fontSize: 15 } }, 'Saved decision reflections'),
+        logs.length > 10 ? hh('p', { style: helpStyle }, 'Showing the 10 most recent reflections out of ' + logs.length + '.') : null,
+        logs.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No decision reflections saved yet.') : hh('ul', { 'aria-label': 'Most recent ethical decision reflections', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, logs.slice(0, 10).map(function(log) { var details = savedDetails(log); var headingId = 'learning-lab-ethical-log-' + log.id; return hh('li', { key: 'el-' + log.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #c084fc' } },
+          hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#e9d5ff', fontSize: 13 } }, String(log.situation || 'Decision reflection')), hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: log.date || undefined }, relDate(log.date)))), hh('button', { type: 'button', onClick: function() { removeLog(log); }, 'aria-label': 'Remove decision reflection: ' + String(log.situation || 'Untitled reflection'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')),
+          hh('details', { style: { marginTop: 8 } }, hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#e9d5ff', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Review complete reflection'), hh('dl', { 'aria-label': 'Decision reflection responses', style: { display: 'grid', gridTemplateColumns: 'minmax(130px, max-content) 1fr', gap: 7, margin: '8px 0 0', color: '#f1f5f9', fontSize: 11 } }, details.map(function(detail) { return hh('div', { key: detail.id, style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, detail.label), hh('dd', { style: { margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, detail.value)); })))
+        )); }))
+      )
     );
   }
 
-  // ── XXX. PERSONAL COMMUNITY RESOURCE FINDER (Wave 15) ──
-  // Build a personalized list of community resources — local crisis
-  // lines, food banks, free counseling, advocacy orgs, etc.
   function PersonalResources(props) {
     if (!R) return null;
     var data = props.data || { resources: [] };
