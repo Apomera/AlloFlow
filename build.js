@@ -1078,6 +1078,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_echolocation.js',
     'stem_lab/stem_tool_multtable.js',
     'stem_lab/stem_tool_numberline.js',
+    'stem_lab/stem_tool_arithmetic.js',
     'stem_lab/stem_tool_platetectonics.js',
     'stem_lab/stem_tool_punnett.js',
     'stem_lab/stem_tool_semiconductor.js',
