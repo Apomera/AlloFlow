@@ -16437,88 +16437,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { skills: {} };
     var setData = props.setData;
-
     var SKILLS = {
-      cooking: { label: 'Cooking + food', color: '#fbbf24', items: [
-        'Boil water + cook pasta', 'Cook a basic egg dish', 'Read a recipe + follow it', 'Use a knife safely (basic cuts)',
-        'Make a salad', 'Cook a vegetable from raw', 'Make a soup from scratch', 'Bake bread or cookies',
-        'Plan + shop for a meal', 'Cook a meal for someone else', 'Adapt a recipe for what\'s in the fridge', 'Use the oven without supervision'
-      ]},
-      home: { label: 'Home + self-care', color: '#10b981', items: [
-        'Do laundry start-to-finish', 'Iron a shirt', 'Sew a button', 'Unclog a drain',
-        'Change a light bulb', 'Plunge a toilet', 'Clean a bathroom', 'Take out trash + recycling',
-        'Set a personal-care routine + stick to it', 'Schedule + go to my own doctor appointment', 'Refill a prescription', 'Pack for a trip'
-      ]},
-      money: { label: 'Money', color: '#10b981', items: [
-        'Read a paycheck stub', 'Understand a budget', 'Open a bank account', 'Use a debit card responsibly',
-        'Understand credit + interest', 'File taxes (with help)', 'Negotiate a price', 'Compare prices + value',
-        'Save for something specific', 'Understand my insurance', 'Know my Social Security number is private', 'Spot a financial scam'
-      ]},
-      transport: { label: 'Transportation', color: '#3b82f6', items: [
-        'Read a public transit map', 'Take a bus or train alone', 'Order an Uber/Lyft', 'Get a learner\'s permit',
-        'Get a driver\'s license', 'Change a flat tire', 'Check tire pressure + oil', 'Plan a route + use GPS',
-        'Bike safely on streets', 'Walk in unfamiliar areas safely', 'Handle a car emergency', 'Travel to another state alone'
-      ]},
-      social: { label: 'Social + communication', color: '#a855f7', items: [
-        'Make a doctor appointment by phone', 'Email a teacher / professor', 'Order food at a restaurant', 'Return an item to a store',
-        'Ask for help from a stranger', 'Politely refuse something', 'Apologize meaningfully', 'Have a hard conversation',
-        'Negotiate a disagreement', 'Set + maintain a boundary', 'Make a new friend as an adult', 'End a friendship/relationship that isn\'t working'
-      ]},
-      civic: { label: 'Civic + adult', color: '#ec4899', items: [
-        'Register to vote', 'Know my representatives', 'Read a contract before signing', 'Get a state ID',
-        'Apply for a passport', 'Fill out a job application', 'Write a resume', 'Interview for a job',
-        'Apply to college / trade school', 'Apply for financial aid (FAFSA)', 'Apply for an apartment', 'Understand a rental lease'
-      ]}
+      cooking: { label: 'Food preparation and access', color: '#fde68a', items: ['Boil water + cook pasta','Cook a basic egg dish','Read a recipe + follow it','Use a knife safely (basic cuts)','Make a salad','Cook a vegetable from raw','Make a soup from scratch','Bake bread or cookies','Plan + shop for a meal','Cook a meal for someone else',"Adapt a recipe for what's in the fridge",'Use the oven without supervision'] },
+      home: { label: 'Home and personal routines', color: '#6ee7b7', items: ['Do laundry start-to-finish','Iron a shirt','Sew a button','Unclog a drain','Change a light bulb','Plunge a toilet','Clean a bathroom','Take out trash + recycling','Set a personal-care routine + stick to it','Schedule + go to my own doctor appointment','Refill a prescription','Pack for a trip'] },
+      money: { label: 'Money and consumer information', color: '#86efac', items: ['Read a paycheck stub','Understand a budget','Open a bank account','Use a debit card responsibly','Understand credit + interest','File taxes (with help)','Negotiate a price','Compare prices + value','Save for something specific','Understand my insurance','Know my Social Security number is private','Spot a financial scam'] },
+      transport: { label: 'Transportation and route planning', color: '#93c5fd', items: ['Read a public transit map','Take a bus or train alone','Order an Uber/Lyft',"Get a learner's permit","Get a driver's license",'Change a flat tire','Check tire pressure + oil','Plan a route + use GPS','Bike safely on streets','Walk in unfamiliar areas safely','Handle a car emergency','Travel to another state alone'] },
+      social: { label: 'Communication and relationships', color: '#d8b4fe', items: ['Make a doctor appointment by phone','Email a teacher / professor','Order food at a restaurant','Return an item to a store','Ask for help from a stranger','Politely refuse something','Apologize meaningfully','Have a hard conversation','Negotiate a disagreement','Set + maintain a boundary','Make a new friend as an adult',"End a friendship/relationship that isn't working"] },
+      civic: { label: 'Civic, education, work, and housing', color: '#f9a8d4', items: ['Register to vote','Know my representatives','Read a contract before signing','Get a state ID','Apply for a passport','Fill out a job application','Write a resume','Interview for a job','Apply to college / trade school','Apply for financial aid (FAFSA)','Apply for an apartment','Understand a rental lease'] }
+    };
+    var LABEL_OVERRIDES = {
+      'Use the oven without supervision': 'Use an oven safely, with support if preferred',
+      'Set a personal-care routine + stick to it': 'Create or adjust a personal-care routine that works for me',
+      'Schedule + go to my own doctor appointment': 'Schedule and attend a health appointment using preferred support',
+      'Refill a prescription': 'Know how to request a prescription refill or ask for help',
+      'Take a bus or train alone': 'Plan or take public transit with preferred support',
+      'Order an Uber/Lyft': 'Use or arrange a ride service if available and appropriate',
+      'Walk in unfamiliar areas safely': 'Plan safer travel in an unfamiliar area',
+      'Travel to another state alone': 'Plan a longer trip with preferred support',
+      'Make a doctor appointment by phone': 'Contact a health office using a preferred communication method',
+      'Ask for help from a stranger': 'Identify ways to request help in public',
+      'Make a new friend as an adult': 'Build or maintain a chosen relationship',
+      "End a friendship/relationship that isn't working": 'Change, limit, or end a relationship with support if wanted',
+      'Apply for an apartment': 'Learn about housing applications or support options'
     };
 
-    function toggleSkill(cat, item) {
-      var s = Object.assign({}, data.skills || {});
-      var key = cat + '|' + item;
-      if (s[key]) delete s[key];
-      else s[key] = todayISO();
-      setData({ skills: s });
+    function skillLabel(item) { return LABEL_OVERRIDES[item] || item.replace(/ + /g, ' and '); }
+    function skillKey(category, item) { return category + '|' + item; }
+    function toggleSkill(category, item, checked) {
+      var nextSkills = Object.assign({}, data.skills || {}); var key = skillKey(category, item);
+      if (checked) nextSkills[key] = todayISO(); else delete nextSkills[key];
+      setData(Object.assign({}, data, { skills: nextSkills }));
+      llAnnounce((checked ? 'Added to tracked skills: ' : 'Removed from tracked skills: ') + skillLabel(item));
     }
+    function knownKeys() { var keys = []; Object.keys(SKILLS).forEach(function(category) { SKILLS[category].items.forEach(function(item) { keys.push(skillKey(category, item)); }); }); return keys; }
 
     var skills = data.skills || {};
-    var totalSkills = Object.keys(SKILLS).reduce(function(s, cat) { return s + SKILLS[cat].items.length; }, 0);
-    var doneSkills = Object.keys(skills).length;
+    var allKeys = knownKeys();
+    var doneSkills = allKeys.filter(function(key) { return !!skills[key]; }).length;
+    var totalSkills = allKeys.length;
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🏆', 'Life Skills Tracker', 'Practical adult skills students rarely get direct instruction in. Track YOUR progression. ' + doneSkills + ' of ' + totalSkills + ' built.', '#10b981'),
-
-      hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(15,23,42,0.7))', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneSkills + ' / ' + totalSkills),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'life skills built · ' + Math.round((doneSkills / totalSkills) * 100) + '%')
+      tkSectionHeader('🧰', 'Life Skills and Supports', 'Optionally track skills, information, or support plans that matter to you.', '#10b981'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-life-skills-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #6ee7b7', background: 'rgba(6,78,59,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-life-skills-about-heading', style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 13 } }, 'Examples, not requirements'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'These examples reflect particular regions, resources, and ways of living. Skip anything unsafe, inaccessible, unavailable, irrelevant, or not part of your goals.'),
+        hh('p', { style: { margin: 0 } }, 'Check an item if you practiced it, learned about it, can do it in your preferred way, or have a support plan. Independence is not the only valid outcome.')
       ),
-
-      Object.keys(SKILLS).map(function(catKey) {
-        var cat = SKILLS[catKey];
-        var catDone = cat.items.filter(function(it) { return skills[catKey + '|' + it]; }).length;
-        return hh('div', { key: 'sc-' + catKey, style: { marginBottom: 14 } },
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', padding: '6px 12px', background: cat.color + '15', borderRadius: 6, marginBottom: 6 } },
-            hh('strong', { style: { fontSize: 12, color: cat.color } }, cat.label),
-            hh('span', { style: { fontSize: 11, color: cat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, catDone + '/' + cat.items.length)
-          ),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 4 } },
-            cat.items.map(function(it) {
-              var done = !!skills[catKey + '|' + it];
-              return hh('button', { key: 'sk-' + it,
-                onClick: function() { toggleSkill(catKey, it); },
-                style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 4, background: done ? cat.color + '20' : 'rgba(15,23,42,0.5)', color: done ? cat.color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid ' + (done ? cat.color : 'rgba(100,116,139,0.30)'), fontSize: 10, cursor: 'pointer', textAlign: 'left' }
-              },
-                hh('span', { style: { width: 14, height: 14, borderRadius: 3, background: done ? cat.color : 'transparent', border: '1px solid ' + cat.color, color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, flexShrink: 0 } }, done ? '✓' : ''),
-                hh('span', { style: { flex: 1 } }, it)
-              );
+      hh('section', { 'aria-labelledby': 'learning-lab-life-skills-progress-heading' },
+        hh('h2', { id: 'learning-lab-life-skills-progress-heading', style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 15 } }, 'Tracking summary'),
+        hh('p', { role: 'status', style: helpStyle }, doneSkills + ' of ' + totalSkills + (doneSkills === 1 ? ' example is tracked.' : ' examples are tracked.')),
+        hh('progress', { value: doneSkills, max: totalSkills, 'aria-label': 'Tracked Life Skills and Supports examples', style: { width: '100%', minHeight: 14, accentColor: '#10b981' } }, doneSkills + ' of ' + totalSkills)
+      ),
+      hh('p', { style: helpStyle }, 'Selections and dates save in this browser. Avoid tracking information you do not want visible to other people who use this device.'),
+      hh('div', null, Object.keys(SKILLS).map(function(categoryKey) {
+        var category = SKILLS[categoryKey];
+        var selectedCount = category.items.filter(function(item) { return !!skills[skillKey(categoryKey, item)]; }).length;
+        var headingId = 'learning-lab-life-skills-category-' + categoryKey;
+        return hh('section', { key: categoryKey, 'aria-labelledby': headingId, style: { marginBottom: 16 } },
+          hh('h2', { id: headingId, style: { margin: '0 0 4px', color: category.color, fontSize: 14 } }, category.label),
+          hh('p', { style: helpStyle }, selectedCount + ' of ' + category.items.length + (selectedCount === 1 ? ' example tracked.' : ' examples tracked.')),
+          hh('ul', { 'aria-label': category.label + ' examples', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, margin: 0, padding: 0, listStyle: 'none' } },
+            category.items.map(function(item) {
+              var key = skillKey(categoryKey, item); var checked = !!skills[key]; var inputId = 'learning-lab-life-skill-' + categoryKey + '-' + category.items.indexOf(item);
+              return hh('li', { key: key }, hh('label', { htmlFor: inputId, style: { boxSizing: 'border-box', display: 'flex', alignItems: 'flex-start', gap: 9, width: '100%', minHeight: 44, height: '100%', padding: 10, borderRadius: 7, border: '2px solid ' + (checked ? category.color : '#64748b'), background: checked ? 'rgba(6,78,59,0.28)' : 'rgba(15,23,42,0.58)', color: '#f8fafc', fontSize: 11, lineHeight: 1.45, cursor: 'pointer' } },
+                hh('input', { id: inputId, type: 'checkbox', checked: checked, onChange: function(event) { toggleSkill(categoryKey, item, event.target.checked); }, style: { width: 22, height: 22, flex: '0 0 auto', margin: 0 } }),
+                hh('span', null, hh('strong', { style: { display: 'block' } }, skillLabel(item)), checked ? hh('span', { style: { display: 'block', marginTop: 4, color: '#d1fae5', fontSize: 10 } }, 'Tracked ', hh('time', { dateTime: skills[key] || undefined }, relDate(skills[key]))) : hh('span', { style: { display: 'block', marginTop: 4, color: '#e2e8f0', fontSize: 10 } }, 'Not tracked'))
+              ));
             })
           )
         );
-      })
+      }))
     );
   }
 
-  // ── WWW. PERSONAL ETHICAL DILEMMA WALKER (Wave 15) ──
-  // Walk through hard ethical situations step by step. Specifically
-  // designed for adolescent moral reasoning development.
   function PersonalEthical(props) {
     if (!R) return null;
     var data = props.data || { logs: [] };
