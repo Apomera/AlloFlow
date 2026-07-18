@@ -1410,6 +1410,46 @@
     return out;
   }
 
+  // Turn a freeform script into editable timed narration cues. Paragraphs and
+  // sentences remain natural units; long passages are word-chunked, then each
+  // cue receives timeline space proportional to its estimated speaking time.
+  function vsScriptTextToNarrationCues(rawText, duration, options) {
+    var text = String(rawText || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ').trim().slice(0, 12000);
+    var dur = Math.max(0.1, Number(duration) || 0.1);
+    var opts = options && typeof options === 'object' ? options : {};
+    var targetWords = Math.max(6, Math.min(36, Math.round(Number(opts.targetWords) || 22)));
+    if (!text) return [];
+    var units = [];
+    text.split(/\n+/).forEach(function (paragraph) {
+      var clean = paragraph.replace(/\s+/g, ' ').trim();
+      if (!clean) return;
+      var sentences = clean.match(/[^.!?]+[.!?]+(?:["']+)?|[^.!?]+$/g) || [clean];
+      sentences.forEach(function (sentence) {
+        var words = String(sentence || '').trim().split(/\s+/).filter(Boolean);
+        while (words.length) {
+          var take = words.splice(0, Math.min(targetWords, words.length));
+          var line = take.join(' ').trim().slice(0, 220);
+          if (line) units.push(line);
+        }
+      });
+    });
+    if (units.length > 20) {
+      var head = units.slice(0, 19);
+      head.push(units.slice(19).join(' ').slice(0, 220));
+      units = head;
+    }
+    var weights = units.map(function (line) { return Math.max(1, line.split(/\s+/).filter(Boolean).length / 2.5 + 0.35); });
+    var totalWeight = weights.reduce(function (sum, value) { return sum + value; }, 0) || 1;
+    var cursor = Math.min(0.3, dur * 0.02);
+    var usable = Math.max(0.1, dur - cursor);
+    var cues = units.map(function (line, index) {
+      var slot = usable * weights[index] / totalWeight;
+      var start = cursor;
+      cursor += slot;
+      return { start: Math.round(start * 100) / 100, end: Math.round(Math.min(dur, Math.max(start + 0.8, cursor - 0.12)) * 100) / 100, text: line };
+    });
+    return vsSanitizeNarrationCues(cues, dur);
+  }
   // AI visual descriptions are separate from spoken captions: they describe what
   // is visible on screen, with labels that make observation vs inference explicit.
   function vsSanitizeVisualDescriptions(raw, duration) {
@@ -2823,7 +2863,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -3137,6 +3177,45 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }).catch(function (e) {
             respond({ error: String((e && e.message) || e).slice(0, 200) });
           });
+        } else if (ev.data.type === 'allostudio-script-generate-request') {
+          // Freeform script generation is text-only. A reviewed brief, title, and
+          // optional current captions are sent; captured pixels and audio stay local.
+          var sgReq = ev.data;
+          var sgReplyTo = studioWinRef.current;
+          var sgRespond = function (payload) {
+            postToStudio(sgReplyTo, Object.assign({ type: 'allostudio-script-generate-response', id: sgReq.id }, payload));
+          };
+          if (typeof propsRef.current.callGemini !== 'function') { sgRespond({ error: 'ai-unavailable' }); return; }
+          var sgToneMap = { teacher: 'clear teacher walkthrough', concise: 'concise and direct', warm: 'warm encouraging coach', documentary: 'calm educational documentary', accessible: 'accessibility-first plain language with explicit orientation' };
+          var sgAudienceMap = { general: 'general learners', elementary: 'elementary learners', secondary: 'secondary learners', adult: 'adult or professional learners', family: 'students and families together' };
+          var sgTone = Object.prototype.hasOwnProperty.call(sgToneMap, sgReq.tone) ? sgReq.tone : 'teacher';
+          var sgAudience = Object.prototype.hasOwnProperty.call(sgAudienceMap, sgReq.audience) ? sgReq.audience : 'general';
+          var sgDuration = Math.max(5, Math.min(7200, Math.round(Number(sgReq.duration) || 60)));
+          var sgMaxWords = Math.max(40, Math.min(3000, Math.round(sgDuration * 2.15)));
+          var sgBrief = String(sgReq.brief || '').replace(/[\u0000-\u001F\u007F]+/g, ' ').trim().slice(0, 8000);
+          var sgContext = String(sgReq.context || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ').trim().slice(0, 12000);
+          if (!sgBrief && !sgContext) { sgRespond({ error: 'Add a brief or captions before generating a script.' }); return; }
+          var sgPrompt = 'Write a complete spoken narration script for an educational video.\n' +
+            'Return ONLY JSON: {"title":"short optional title","script":"complete narration"}. No markdown fences.\n' +
+            'Tone: ' + sgToneMap[sgTone] + '. Audience: ' + sgAudienceMap[sgAudience] + '. Approximate video duration: ' + sgDuration + ' seconds. Hard maximum: ' + sgMaxWords + ' words.\n' +
+            'Create a coherent opening, development, useful transitions, and concise close. Make it natural to speak aloud. Use only facts and product behavior supported by the teacher brief or source captions. Do not invent quotations, people, student data, research claims, visual details, or capabilities. Do not include timestamps, speaker labels, production directions, citations, or music cues. Prefer short paragraphs and sentences that can become editable timed lines.\n' +
+            'Current video title: ' + String(sgReq.title || '').replace(/[\r\n]+/g, ' ').slice(0, 160) + '\n' +
+            'Teacher brief:\n' + sgBrief + '\n' +
+            (sgContext ? ('Current captions/source text for grounding:\n' + sgContext) : 'No source captions were supplied; stay strictly within the brief.');
+          Promise.resolve().then(function () { return propsRef.current.callGemini(sgPrompt, false, true); }).then(function (res) {
+            var sgText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+            var sgParsed = null;
+            try { sgParsed = JSON.parse(sgText); } catch (_) {
+              var sgMatch = /\{[\s\S]*\}/.exec(String(sgText || ''));
+              if (sgMatch) { try { sgParsed = JSON.parse(sgMatch[0]); } catch (_2) {} }
+            }
+            var script = String((sgParsed && sgParsed.script) || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ').trim().slice(0, 12000);
+            var title = String((sgParsed && sgParsed.title) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120);
+            if (!script) { sgRespond({ error: 'The provider did not return a usable script.' }); return; }
+            sgRespond({ script: script, title: title });
+          }).catch(function (e) {
+            sgRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
         } else if (ev.data.type === 'allostudio-narrate-request') {
           // AI narration: the popup sends ONE contact-sheet JPEG (sampled
           // frames with burned-in timestamps) — never the raw video — and we
@@ -3421,6 +3500,53 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             if (planState.cancelled || (e && e.name === 'AbortError')) { releasePlan(); return; }
             dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
             releasePlan();
+          });
+        } else if (ev.data.type === 'allostudio-demoscript-request') {
+          // Script assistance is text-only and teacher-triggered. The popup sends
+          // the reviewed goal and step metadata, never captured video or audio.
+          var dsReq = ev.data;
+          var dsReplyTo = studioWinRef.current;
+          var dsRespond = function (payload) {
+            postToStudio(dsReplyTo, Object.assign({ type: 'allostudio-demoscript-response', id: dsReq.id }, payload));
+          };
+          if (typeof propsRef.current.callGemini !== 'function') { dsRespond({ error: 'ai-unavailable' }); return; }
+          var dsStyleMap = { teacher: 'clear teacher walkthrough', concise: 'direct and concise', coach: 'warm and encouraging coach', accessible: 'accessibility-first with explicit orientation and plain language' };
+          var dsDetailMap = { short: '6-12 words', standard: '10-18 words', detailed: '16-26 words' };
+          var dsStyle = Object.prototype.hasOwnProperty.call(dsStyleMap, dsReq.style) ? dsReq.style : 'teacher';
+          var dsDetail = Object.prototype.hasOwnProperty.call(dsDetailMap, dsReq.detail) ? dsReq.detail : 'standard';
+          var dsSteps = (Array.isArray(dsReq.steps) ? dsReq.steps : []).slice(0, 8).map(function (s, index) {
+            var params = {};
+            if (s && s.params && typeof s.params === 'object' && !Array.isArray(s.params)) {
+              Object.keys(s.params).slice(0, 8).forEach(function (key) {
+                var value = s.params[key];
+                if (typeof value === 'string') params[String(key).slice(0, 40)] = value.slice(0, 160);
+                else if ((typeof value === 'number' && isFinite(value)) || typeof value === 'boolean') params[String(key).slice(0, 40)] = value;
+              });
+            }
+            return { index: index, commandId: String((s && s.commandId) || '').slice(0, 60), label: String((s && s.label) || '').slice(0, 90), why: String((s && s.why) || '').slice(0, 160), currentScript: String((s && s.script) || '').replace(/[\r\n]+/g, ' ').slice(0, 400), params: params };
+          }).filter(function (s) { return s.commandId; });
+          if (!dsSteps.length) { dsRespond({ error: 'no-script-steps' }); return; }
+          var dsPrompt = 'Write polished spoken narration for an AlloFlow product demo.\n' +
+            'Return ONLY JSON in this shape: {"scripts":[{"index":0,"text":"..."}]}. Return exactly one item for every supplied step, in order.\n' +
+            'Tone: ' + dsStyleMap[dsStyle] + '. Target length per line: ' + dsDetailMap[dsDetail] + '.\n' +
+            'Describe the visible action or result accurately. Build a natural progression across lines, vary openings, preserve product and subject terms, and use plain language. Do not invent features, outcomes, people, student data, or screen details. Do not add greetings, a closing, stage directions, quotation marks, or claims not supported by the step metadata. Improve the current script rather than merely paraphrasing labels. Each text must be one line and at most 400 characters.\n' +
+            'Demo goal: ' + String(dsReq.goal || '').replace(/[\r\n]+/g, ' ').slice(0, 300) + '\n' +
+            'Reviewed steps JSON:\n' + JSON.stringify(dsSteps).slice(0, 12000);
+          Promise.resolve().then(function () { return propsRef.current.callGemini(dsPrompt, false, true); }).then(function (res) {
+            var rawText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+            var parsed = null;
+            try { parsed = JSON.parse(rawText); } catch (_) {
+              var match = /\{[\s\S]*\}/.exec(String(rawText || ''));
+              if (match) { try { parsed = JSON.parse(match[0]); } catch (_2) {} }
+            }
+            var scripts = (parsed && Array.isArray(parsed.scripts) ? parsed.scripts : []).slice(0, dsSteps.length).map(function (item) {
+              var index = Math.round(Number(item && item.index));
+              var line = String((item && item.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
+              return { index: index, text: line };
+            }).filter(function (item) { return item.index >= 0 && item.index < dsSteps.length && item.text; });
+            dsRespond({ scripts: scripts });
+          }).catch(function (e) {
+            dsRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-demoplan-cancel') {
           var cancelPlanId = String(ev.data.requestId || '').slice(0, 100);

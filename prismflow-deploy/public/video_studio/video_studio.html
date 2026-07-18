@@ -391,6 +391,23 @@
       </div>
       <div id="demoPreflightList" class="scene-readiness" aria-label="Demo recording preflight checks"></div>
       <div id="demoPlanList" role="group" aria-label="Demo plan steps"></div>
+      <div class="row" style="margin:7px 0" aria-label="Demo narration assistant">
+        <label for="demoScriptStyle">Script tone</label>
+        <select id="demoScriptStyle" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+          <option value="teacher" selected>Teacher walkthrough</option>
+          <option value="concise">Concise</option>
+          <option value="coach">Warm coach</option>
+          <option value="accessible">Accessibility-first</option>
+        </select>
+        <label for="demoScriptDetail">Detail</label>
+        <select id="demoScriptDetail" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+          <option value="short">Short</option>
+          <option value="standard" selected>Standard</option>
+          <option value="detailed">Detailed</option>
+        </select>
+        <button class="quiet" id="demoScriptDraftBtn" disabled title="Send only the goal and reviewed step text to your configured AI provider.">Draft / refine narration</button>
+        <span class="status" id="demoScriptDraftStatus" style="margin-top:0">No video or audio is sent.</span>
+      </div>
       <div class="row" style="margin:7px 0">
         <span class="status" id="demoPlanSummary" style="margin-top:0">No plan loaded.</span>
         <button class="quiet" id="demoScriptReviewBtn" disabled aria-expanded="false" aria-controls="demoScriptReview">Review script</button>
@@ -710,6 +727,32 @@
             <button class="quiet" id="demoNarrCancelEditBtn" hidden>Cancel automatic narration</button>
             <button class="quiet" id="demoNarrRetryEditBtn" hidden>Retry failed narration lines</button>
           </div>
+          <details id="scriptStudioPanel" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:10px 0">
+            <summary style="cursor:pointer;font-weight:700">Script Studio</summary>
+            <label for="scriptStudioInput" style="display:block;margin:8px 0 4px">Brief or complete script</label>
+            <textarea id="scriptStudioInput" rows="6" maxlength="12000" placeholder="Describe the lesson or paste narration here." style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical"></textarea>
+            <div class="row" style="margin-top:8px">
+              <label for="scriptStudioTone">Tone</label>
+              <select id="scriptStudioTone" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+                <option value="teacher" selected>Teacher walkthrough</option>
+                <option value="concise">Concise</option>
+                <option value="warm">Warm coach</option>
+                <option value="documentary">Documentary</option>
+                <option value="accessible">Accessibility-first</option>
+              </select>
+              <label for="scriptStudioAudience">Audience</label>
+              <select id="scriptStudioAudience" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+                <option value="general" selected>General learners</option>
+                <option value="elementary">Elementary</option>
+                <option value="secondary">Secondary</option>
+                <option value="adult">Adult / professional</option>
+                <option value="family">Students and families</option>
+              </select>
+              <button class="action" id="scriptStudioGenerateBtn">Generate script</button>
+              <button class="quiet" id="scriptStudioPrepareBtn">Prepare as written</button>
+            </div>
+            <div class="status" id="scriptStudioStatus" role="status" aria-live="polite">Text-only generation can use the brief and current captions; no video frames or audio are sent.</div>
+          </details>
           <div class="row" style="margin:10px 0 8px">
             <button class="quiet" id="aiNarrateBtn" title="Gemini reads a contact sheet of sampled frames plus your captions — never the raw video — and drafts a narration script you edit before anything is added.">🤖 AI narration (no mic needed)</button>
             <select id="ttsVoice" aria-label="Spoken narration voice" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
@@ -2533,6 +2576,46 @@
     return out;
   }
 
+  // Turn a freeform script into editable timed narration cues. Paragraphs and
+  // sentences remain natural units; long passages are word-chunked, then each
+  // cue receives timeline space proportional to its estimated speaking time.
+  function vsScriptTextToNarrationCues(rawText, duration, options) {
+    var text = String(rawText || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ').trim().slice(0, 12000);
+    var dur = Math.max(0.1, Number(duration) || 0.1);
+    var opts = options && typeof options === 'object' ? options : {};
+    var targetWords = Math.max(6, Math.min(36, Math.round(Number(opts.targetWords) || 22)));
+    if (!text) return [];
+    var units = [];
+    text.split(/\n+/).forEach(function (paragraph) {
+      var clean = paragraph.replace(/\s+/g, ' ').trim();
+      if (!clean) return;
+      var sentences = clean.match(/[^.!?]+[.!?]+(?:["']+)?|[^.!?]+$/g) || [clean];
+      sentences.forEach(function (sentence) {
+        var words = String(sentence || '').trim().split(/\s+/).filter(Boolean);
+        while (words.length) {
+          var take = words.splice(0, Math.min(targetWords, words.length));
+          var line = take.join(' ').trim().slice(0, 220);
+          if (line) units.push(line);
+        }
+      });
+    });
+    if (units.length > 20) {
+      var head = units.slice(0, 19);
+      head.push(units.slice(19).join(' ').slice(0, 220));
+      units = head;
+    }
+    var weights = units.map(function (line) { return Math.max(1, line.split(/\s+/).filter(Boolean).length / 2.5 + 0.35); });
+    var totalWeight = weights.reduce(function (sum, value) { return sum + value; }, 0) || 1;
+    var cursor = Math.min(0.3, dur * 0.02);
+    var usable = Math.max(0.1, dur - cursor);
+    var cues = units.map(function (line, index) {
+      var slot = usable * weights[index] / totalWeight;
+      var start = cursor;
+      cursor += slot;
+      return { start: Math.round(start * 100) / 100, end: Math.round(Math.min(dur, Math.max(start + 0.8, cursor - 0.12)) * 100) / 100, text: line };
+    });
+    return vsSanitizeNarrationCues(cues, dur);
+  }
   // AI visual descriptions are separate from spoken captions: they describe what
   // is visible on screen, with labels that make observation vs inference explicit.
   function vsSanitizeVisualDescriptions(raw, duration) {
@@ -7731,6 +7814,67 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setStatus($('visualStatus'), 'Visual descriptions dismissed.');
   });
 
+  function prepareScriptStudioNarration(script, sourceLabel) {
+    var t = currentTake();
+    if (!t) { setStatus($('scriptStudioStatus'), 'Record or import a video before preparing timed narration.', 'warn'); return false; }
+    var clean = String(script || '').trim();
+    if (!clean) { setStatus($('scriptStudioStatus'), 'Add a brief or complete script first.', 'warn'); $('scriptStudioInput').focus(); return false; }
+    aiNarrSegments = vsScriptTextToNarrationCues(clean, t.duration || 0, { targetWords: 22 });
+    renderAiNarr();
+    if (!aiNarrSegments.length) { setStatus($('scriptStudioStatus'), 'No usable narration lines were found.', 'warn'); return false; }
+    var words = clean.split(/\s+/).filter(Boolean).length;
+    var spokenSeconds = words / 2.5;
+    var overrun = spokenSeconds > Math.max(1, Number(t.duration) || 0);
+    setStatus($('scriptStudioStatus'), aiNarrSegments.length + ' editable timed line' + (aiNarrSegments.length === 1 ? '' : 's') + ' prepared from ' + sourceLabel + '.' + (overrun ? ' The script is likely longer than the video; shorten lines or extend the timeline before generating speech.' : ' Review timing and wording, then generate speech or captions.'), overrun ? 'warn' : 'ok');
+    setStatus($('aiNarrStatus'), 'Script Studio prepared ' + aiNarrSegments.length + ' narration line' + (aiNarrSegments.length === 1 ? '' : 's') + '. Nothing has been added to the video yet.', overrun ? 'warn' : 'ok');
+    announce('Script Studio narration ready for review');
+    return true;
+  }
+
+  $('scriptStudioPrepareBtn').addEventListener('click', function () {
+    prepareScriptStudioNarration($('scriptStudioInput').value, 'the supplied script');
+  });
+
+  var scriptStudioGeneration = 0;
+  $('scriptStudioGenerateBtn').addEventListener('click', async function () {
+    var t = currentTake();
+    if (!t) { setStatus($('scriptStudioStatus'), 'Record or import a video before generating narration.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('scriptStudioStatus'), 'Reconnect Video Studio to AlloFlow to generate a script.', 'warn'); return; }
+    var brief = $('scriptStudioInput').value.trim();
+    var context = (t.captions || []).map(function (cue) { return '[' + (Math.round((Number(cue.start) || 0) * 10) / 10) + 's] ' + String(cue.text || ''); }).join('\n').slice(0, 12000);
+    if (!brief && !context) { setStatus($('scriptStudioStatus'), 'Add a brief, or add captions that can ground the generated script.', 'warn'); $('scriptStudioInput').focus(); return; }
+    var generation = ++scriptStudioGeneration;
+    var generateBtn = $('scriptStudioGenerateBtn');
+    var prepareBtn = $('scriptStudioPrepareBtn');
+    generateBtn.disabled = true; prepareBtn.disabled = true;
+    generateBtn.setAttribute('aria-busy', 'true');
+    setStatus($('scriptStudioStatus'), 'Generating a complete text-only narration script...');
+    try {
+      var response = await bridgeRequest('allostudio-script-generate-request', {
+        brief: brief,
+        title: t.title || '',
+        duration: t.duration || 60,
+        tone: $('scriptStudioTone').value,
+        audience: $('scriptStudioAudience').value,
+        context: context
+      }, 90000);
+      if (generation !== scriptStudioGeneration) return;
+      if (response && response.error) throw new Error(response.error);
+      var script = String((response && response.script) || '').trim().slice(0, 12000);
+      if (!script) throw new Error('The provider did not return a usable script.');
+      $('scriptStudioInput').value = script;
+      prepareScriptStudioNarration(script, 'the generated draft');
+    } catch (e) {
+      if (generation !== scriptStudioGeneration) return;
+      setStatus($('scriptStudioStatus'), 'Script generation failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+    } finally {
+      if (generation === scriptStudioGeneration) {
+        generateBtn.disabled = false; prepareBtn.disabled = false;
+        generateBtn.removeAttribute('aria-busy');
+      }
+    }
+  });
+
   $('aiNarrateBtn').addEventListener('click', async function () {
     var t = currentTake();
     if (!t) { setStatus($('aiNarrStatus'), 'Record or import a video first.', 'warn'); return; }
@@ -10600,6 +10744,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var demoRehearsePending = false;
   var demoManualPreflightPending = false;
   var demoPlanSourceBusy = false;
+  var demoScriptDraftGeneration = 0;
+  var demoScriptDraftBusy = false;
   function cleanDemoResultHold(value) {
     if (value == null || value === '') return 2.2;
     var seconds = Number(value);
@@ -11262,6 +11408,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var fittable = audit.items.filter(function (item) { return item.needsMoreTime && !item.tooLong; }).length;
     $('demoScriptReviewBtn').disabled = !hasScript;
     $('demoScriptCopyBtn').disabled = !hasScript;
+    $('demoScriptDraftBtn').disabled = !hasScript || demoState.running || demoPlanSourceBusy || demoScriptDraftBusy;
     $('demoPacingFitBtn').disabled = !hasScript || !fittable;
     if (!hasScript) setStatus($('demoPacingStatus'), 'Pacing will be checked after a plan is loaded.');
     else if (audit.tooLongCount) setStatus($('demoPacingStatus'), audit.warningCount + ' timing warning' + (audit.warningCount === 1 ? '' : 's') + ': ' + audit.tooLongCount + ' narration line' + (audit.tooLongCount === 1 ? ' is' : 's are') + ' too long for the maximum hold. Shorten the highlighted text.', 'warn');
@@ -11407,6 +11554,52 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (ok) announce('Demo script copied');
     });
   });
+  $('demoScriptDraftBtn').addEventListener('click', async function () {
+    var steps = approvedDemoSteps();
+    if (!steps.length || demoState.running) return;
+    if (!opener || opener.closed) { setStatus($('demoScriptDraftStatus'), 'Reconnect Video Studio to AlloFlow to draft narration.', 'warn'); return; }
+    var generation = ++demoScriptDraftGeneration;
+    var button = $('demoScriptDraftBtn');
+    demoScriptDraftBusy = true;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    syncDemoPlanSourceControls();
+    syncDemoExecutionControls();
+    setStatus($('demoScriptDraftStatus'), 'Drafting narration from the goal and reviewed step text...');
+    try {
+      var response = await bridgeRequest('allostudio-demoscript-request', {
+        goal: $('demoGoal').value.trim(),
+        style: $('demoScriptStyle').value,
+        detail: $('demoScriptDetail').value,
+        steps: steps.map(function (step) { return cleanDemoDraftStep(step); })
+      }, 60000);
+      if (generation !== demoScriptDraftGeneration) return;
+      if (response && response.error) throw new Error(response.error);
+      var scripts = response && Array.isArray(response.scripts) ? response.scripts : [];
+      var changed = 0;
+      scripts.forEach(function (item) {
+        var index = Math.round(Number(item && item.index));
+        var line = String((item && item.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
+        if (index >= 0 && index < steps.length && line && steps[index].script !== line) { steps[index].script = line; changed++; }
+      });
+      if (!changed) throw new Error('The provider did not return usable narration lines.');
+      applyDemoPacingFit(steps);
+      renderDemoPlan();
+      setStatus($('demoScriptDraftStatus'), changed + ' narration line' + (changed === 1 ? '' : 's') + ' drafted. Review the wording before recording.', 'ok');
+      announce('Demo narration draft ready for review');
+    } catch (e) {
+      if (generation !== demoScriptDraftGeneration) return;
+      setStatus($('demoScriptDraftStatus'), 'Narration draft failed: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    } finally {
+      if (generation === demoScriptDraftGeneration) {
+        demoScriptDraftBusy = false;
+        button.removeAttribute('aria-busy');
+        button.disabled = !approvedDemoSteps().length || demoState.running || demoPlanSourceBusy;
+        syncDemoPlanSourceControls();
+        syncDemoExecutionControls();
+      }
+    }
+  });
   $('demoPacingFitBtn').addEventListener('click', function () {
     var changed = applyDemoPacingFit(demoState.steps || []);
     if (!changed) { setStatus($('demoStatus'), 'No result holds can be increased automatically. Shorten any highlighted narration lines.', 'warn'); return; }
@@ -11503,14 +11696,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var demoOfficialDefaultLabel = $('demoOfficialTextBtn').textContent;
   function syncDemoPlanSourceControls() {
     var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
-    var locked = !!demoPlanSourceBusy || recording || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
+    var locked = !!demoPlanSourceBusy || !!demoScriptDraftBusy || recording || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
     $('demoPlanBtn').disabled = locked;
     $('demoOfficialTextBtn').disabled = locked;
   }
   function syncDemoExecutionControls() {
     var hasPlan = !!approvedDemoSteps().length;
     var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
-    var locked = recording || !!demoPlanSourceBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
+    var locked = recording || !!demoPlanSourceBusy || !!demoScriptDraftBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
     $('demoStartBtn').disabled = locked || !hasPlan;
     $('demoRehearseBtn').disabled = locked || !hasPlan;
     $('demoPreflightBtn').disabled = locked || !hasPlan;

@@ -1184,6 +1184,49 @@ describe('vsSanitizeNarrationCues', () => {
   });
 });
 
+describe('vsScriptTextToNarrationCues', () => {
+  it('splits freeform scripts into ordered editable cues fitted to the video', () => {
+    const cues = VS.vsScriptTextToNarrationCues(
+      'Welcome to fractions. Today we will compare halves and fourths.\nWatch how the pieces line up before you try one.',
+      45,
+      { targetWords: 8 },
+    );
+    expect(cues.length).toBeGreaterThanOrEqual(3);
+    expect(cues[0].text).toContain('Welcome');
+    expect(cues.every((cue, index) => cue.start >= 0 && cue.end <= 45 && cue.end > cue.start && (!index || cue.start >= cues[index - 1].start))).toBe(true);
+    expect(cues.map((cue) => cue.text).join(' ')).toContain('pieces line up');
+  });
+
+  it('sanitizes controls, caps cue and line counts, and handles empty text', () => {
+    const script = Array.from({ length: 30 }, (_, i) => 'Section ' + i + ' explains ' + 'word '.repeat(30) + '.').join('\n');
+    const cues = VS.vsScriptTextToNarrationCues(script + '\u0000', 180, { targetWords: 12 });
+    expect(cues).toHaveLength(20);
+    expect(cues.every((cue) => cue.text.length <= 220 && !cue.text.includes('\u0000'))).toBe(true);
+    expect(VS.vsScriptTextToNarrationCues('', 60)).toEqual([]);
+  });
+});
+
+describe('freeform Script Studio wiring', () => {
+  it('generates or prepares scripts through the existing narration and TTS workflow', () => {
+    const html = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+    const module = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+    expect(html).toContain('id="scriptStudioPanel"');
+    expect(html).toContain('id="scriptStudioInput"');
+    expect(html).toContain('id="scriptStudioTone"');
+    expect(html).toContain('id="scriptStudioAudience"');
+    expect(html).toContain('id="scriptStudioGenerateBtn"');
+    expect(html).toContain('id="scriptStudioPrepareBtn"');
+    expect(html).toContain('function prepareScriptStudioNarration(script, sourceLabel)');
+    expect(html).toContain('vsScriptTextToNarrationCues(clean, t.duration || 0');
+    expect(html).toContain("bridgeRequest('allostudio-script-generate-request'");
+    expect(html).toContain('The script is likely longer than the video');
+    expect(module).toContain("ev.data.type === 'allostudio-script-generate-request'");
+    expect(module).toContain("type: 'allostudio-script-generate-response'");
+    expect(module).toContain('captured pixels and audio stay local');
+    expect(module).toContain('Hard maximum:');
+    expect(module).toContain('Do not invent quotations, people, student data');
+  });
+});
 // ─── vsSanitizeVisualDescriptions (AI visual-description scripts) ───────────
 describe('vsSanitizeVisualDescriptions', () => {
   it('passes well-formed descriptions, sorts them, and normalizes labels', () => {
@@ -2303,6 +2346,13 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoScriptReviewBtn"');
     expect(html).toContain('id="demoScriptCopyBtn"');
     expect(html).toContain('id="demoPacingFitBtn"');
+    expect(html).toContain('id="demoScriptStyle"');
+    expect(html).toContain('id="demoScriptDetail"');
+    expect(html).toContain('id="demoScriptDraftBtn"');
+    expect(html).toContain('id="demoScriptDraftStatus"');
+    expect(html).toContain("bridgeRequest('allostudio-demoscript-request'");
+    expect(html).toContain('No video or audio is sent.');
+    expect(html).toContain('applyDemoPacingFit(steps);');
     expect(html).toContain('id="demoPacingStatus"');
     expect(html).toContain('id="demoScriptReviewText"');
     expect(html).toContain('function demoStepPacing(step)');
@@ -2315,6 +2365,10 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('data-demo-step-pacing');
     expect(html).toContain('function defaultDemoStepScript(step)');
     expect(html).toContain('function demoScriptText()');
+    expect(moduleText()).toContain("ev.data.type === 'allostudio-demoscript-request'");
+    expect(moduleText()).toContain("type: 'allostudio-demoscript-response'");
+    expect(moduleText()).toContain('reviewed goal and step metadata, never captured video or audio');
+    expect(moduleText()).toContain('Return exactly one item for every supplied step');
     expect(html).toContain("'Step ' + (i + 1) + ' narration'");
     expect(html).toContain("'Step ' + (i + 1) + ' result hold seconds'");
     expect(html).toContain('demoState.activeSteps = steps.map(cleanDemoDraftStep)');
