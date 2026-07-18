@@ -13507,90 +13507,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { successes: [] };
     var setData = props.setData;
-    var fs = R.useState({ text: '', size: 'medium', category: 'academic' });
+    var emptyForm = { text: '', size: 'medium', category: 'academic' };
+    var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
 
     var SIZES = [
-      { id: 'tiny', label: 'Tiny', color: '#3b82f6' },
-      { id: 'medium', label: 'Medium', color: '#fbbf24' },
-      { id: 'big', label: 'Big', color: '#10b981' }
+      { id: 'tiny', label: 'Tiny', color: '#93c5fd' },
+      { id: 'medium', label: 'Medium', color: '#fde68a' },
+      { id: 'big', label: 'Big', color: '#6ee7b7' }
     ];
     var CATS = [
-      { id: 'academic', label: 'Academic', color: '#3b82f6', icon: '📚' },
-      { id: 'social',   label: 'Social',   color: '#ec4899', icon: '🤝' },
-      { id: 'personal', label: 'Personal', color: '#a855f7', icon: '💖' },
-      { id: 'health',   label: 'Health',   color: '#10b981', icon: '💪' },
-      { id: 'creative', label: 'Creative', color: '#fbbf24', icon: '🎨' }
+      { id: 'academic', label: 'Academic', color: '#93c5fd', icon: '📚' },
+      { id: 'social', label: 'Social', color: '#f9a8d4', icon: '🤝' },
+      { id: 'personal', label: 'Personal', color: '#d8b4fe', icon: '💖' },
+      { id: 'health', label: 'Health', color: '#6ee7b7', icon: '💪' },
+      { id: 'creative', label: 'Creative', color: '#fde68a', icon: '🎨' }
     ];
 
-    function save() {
-      if (!form.text.trim()) { alert('Need success text.'); return; }
-      var s = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ successes: [s].concat(data.successes || []) });
-      setForm({ text: '', size: 'medium', category: 'academic' });
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
     }
-    function remove(id) { setData({ successes: (data.successes || []).filter(function(s) { return s.id !== id; }) }); }
+
+    function save() {
+      var successText = form.text.trim();
+      if (!successText) {
+        setFormError('Describe the progress or success you want to record.');
+        llAnnounce('Success not saved. Describe the progress or success you want to record.');
+        focusById('learning-lab-success-text');
+        return;
+      }
+      var entry = {
+        id: tkId(),
+        date: todayISO(),
+        text: successText,
+        size: form.size,
+        category: form.category
+      };
+      setData(Object.assign({}, data, { successes: [entry].concat(data.successes || []) }));
+      setForm(emptyForm);
+      setFormError('');
+      llAnnounce('Progress saved: ' + successText);
+      focusById('learning-lab-success-text');
+    }
+
+    function removeSuccess(entry) {
+      var shortText = String(entry.text || 'this entry');
+      if (shortText.length > 160) shortText = shortText.slice(0, 157) + '...';
+      askLearningLabConfirmation('Remove “' + shortText + '”? This cannot be undone.', {
+        title: 'Remove this success entry?', confirmText: 'Remove entry'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { successes: (data.successes || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Success entry removed.');
+        focusById('learning-lab-success-history-heading');
+      });
+    }
+
+    function sizeFor(id) {
+      return SIZES.filter(function(size) { return size.id === id; })[0] || SIZES[1];
+    }
+    function categoryFor(id) {
+      return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0];
+    }
 
     var successes = data.successes || [];
+    var recentSuccesses = successes.slice(0, 50);
+    var countText = successes.length + (successes.length === 1 ? ' success recorded.' : ' successes recorded.');
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '5px 0 10px', color: '#d1d5db', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var radioGroupStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🏆', 'Success Log', 'Log wins, tiny + big. Counters the brain\'s negativity bias. Goldman 2020.', '#10b981'),
+      tkSectionHeader('🏆', 'Success Log', 'Record progress in whatever size feels meaningful to you.', '#10b981'),
 
       tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '🏆 Log a win'),
-          tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'What did you do? Tiny counts. Bigger counts. All count.', 2, { marginBottom: 10 }),
-          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
-            hh('div', null,
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Size'),
-              hh('div', { style: { display: 'flex', gap: 4 } },
-                SIZES.map(function(s) {
-                  var on = form.size === s.id;
-                  return hh('button', { key: 'sz-' + s.id,
-                    onClick: function() { setForm(Object.assign({}, form, { size: s.id })); },
-                    style: { padding: '6px 10px', borderRadius: 4, background: on ? s.color + '30' : 'rgba(15,23,42,0.5)', color: on ? s.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? s.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                  }, s.label);
-                })
-              )
-            ),
-            hh('div', null,
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Category'),
-              hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                CATS.map(function(c) {
-                  var on = form.category === c.id;
-                  return hh('button', { key: 'ct-' + c.id,
-                    onClick: function() { setForm(Object.assign({}, form, { category: c.id })); },
-                    style: { padding: '6px 10px', borderRadius: 4, background: on ? c.color + '30' : 'rgba(15,23,42,0.5)', color: on ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                  }, c.icon + ' ' + c.label);
-                })
-              )
+        hh('form', {
+          onSubmit: function(event) { event.preventDefault(); save(); },
+          'aria-labelledby': 'learning-lab-success-form-heading',
+          'aria-describedby': 'learning-lab-success-privacy-note'
+        },
+          hh('h2', { id: 'learning-lab-success-form-heading', style: { margin: '0 0 8px', color: '#6ee7b7', fontSize: 15 } }, 'Record progress'),
+          hh('p', { id: 'learning-lab-success-privacy-note', style: helpStyle }, 'Entries save in this browser. Avoid private details if other people use this device.'),
+          hh('label', { htmlFor: 'learning-lab-success-text', style: labelStyle }, 'What happened? (required)'),
+          hh('textarea', {
+            id: 'learning-lab-success-text', value: form.text, rows: 3, required: true, maxLength: 1500,
+            onChange: function(event) {
+              setForm(Object.assign({}, form, { text: event.target.value }));
+              if (formError) setFormError('');
+            },
+            'aria-invalid': formError ? 'true' : undefined,
+            'aria-describedby': 'learning-lab-success-text-help' + (formError ? ' learning-lab-success-text-error' : ''),
+            style: { boxSizing: 'border-box', width: '100%', minHeight: 88, resize: 'vertical', borderRadius: 7, border: '1px solid #6ee7b7', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 }
+          }),
+          hh('p', { id: 'learning-lab-success-text-help', style: helpStyle }, 'Use your own words. Small steps and large milestones can both be worth recording.'),
+          formError ? hh('p', { id: 'learning-lab-success-text-error', role: 'alert', style: errorStyle }, formError) : null,
+
+          hh('fieldset', { style: { margin: '0 0 12px', padding: 0, border: 0 } },
+            hh('legend', { style: labelStyle }, 'Size'),
+            hh('div', { style: radioGroupStyle },
+              SIZES.map(function(size) {
+                var selected = form.size === size.id;
+                return hh('label', {
+                  key: 'success-size-' + size.id, htmlFor: 'learning-lab-success-size-' + size.id,
+                  style: { boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: 7, minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid ' + (selected ? size.color : '#64748b'), background: selected ? 'rgba(16,185,129,0.17)' : 'rgba(15,23,42,0.45)', color: '#f8fafc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                },
+                  hh('input', {
+                    id: 'learning-lab-success-size-' + size.id, type: 'radio', name: 'learning-lab-success-size', value: size.id,
+                    checked: selected, onChange: function() { setForm(Object.assign({}, form, { size: size.id })); }
+                  }),
+                  size.label
+                );
+              })
             )
           ),
-          tkBtn('💾 Save', save, 'primary')
+
+          hh('fieldset', { style: { margin: '0 0 12px', padding: 0, border: 0 } },
+            hh('legend', { style: labelStyle }, 'Category'),
+            hh('div', { style: radioGroupStyle },
+              CATS.map(function(category) {
+                var selected = form.category === category.id;
+                return hh('label', {
+                  key: 'success-category-' + category.id, htmlFor: 'learning-lab-success-category-' + category.id,
+                  style: { boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: 7, minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 7, border: '1px solid ' + (selected ? category.color : '#64748b'), background: selected ? 'rgba(16,185,129,0.17)' : 'rgba(15,23,42,0.45)', color: '#f8fafc', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                },
+                  hh('input', {
+                    id: 'learning-lab-success-category-' + category.id, type: 'radio', name: 'learning-lab-success-category', value: category.id,
+                    checked: selected, onChange: function() { setForm(Object.assign({}, form, { category: category.id })); }
+                  }),
+                  hh('span', { 'aria-hidden': 'true' }, category.icon), category.label
+                );
+              })
+            )
+          ),
+          hh('button', {
+            type: 'submit',
+            style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+          }, 'Save progress')
         )
       ),
 
-      hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(15,23,42,0.7))', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 12, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, successes.length),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'wins logged total · ', hh('strong', { style: { color: '#10b981' } }, 'each one happened.'))
+      hh('section', {
+        'aria-labelledby': 'learning-lab-success-total-heading',
+        style: { padding: 14, borderRadius: 12, background: 'rgba(6,78,59,0.32)', border: '1px solid #34d399', marginBottom: 12, textAlign: 'center' }
+      },
+        hh('h2', { id: 'learning-lab-success-total-heading', style: { margin: 0, fontSize: 13, color: '#d1fae5' } }, 'Recorded progress'),
+        hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '6px 0 0', color: '#f0fdf4', fontSize: 13 } },
+          hh('strong', { style: { display: 'block', color: '#6ee7b7', fontSize: 30 } }, successes.length),
+          countText
+        )
       ),
 
-      successes.length > 0 ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-        successes.slice(0, 50).map(function(s) {
-          var cat = CATS.filter(function(c) { return c.id === s.category; })[0] || CATS[0];
-          var sz = SIZES.filter(function(z) { return z.id === s.size; })[0] || SIZES[1];
-          return hh('div', { key: 'sl-' + s.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + cat.color } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              hh('div', null,
-                hh('span', { style: { color: cat.color, marginRight: 6 } }, cat.icon),
-                hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: sz.color + '20', color: sz.color, fontSize: 9, fontWeight: 800 } }, sz.label)
-              ),
-              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(s.date), ' · ', hh('button', { onClick: function() { remove(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕'))
-            ),
-            hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, s.text)
-          );
-        })
-      ) : tkEmptyState('🏆', 'No wins logged yet. Tiny ones count.', null, null)
+      hh('section', { 'aria-labelledby': 'learning-lab-success-history-heading' },
+        hh('h2', { id: 'learning-lab-success-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#d1fae5', fontSize: 15 } }, 'Success history'),
+        successes.length > 50 ? hh('p', { style: helpStyle }, 'Showing the 50 most recent entries out of ' + successes.length + '.') : null,
+        recentSuccesses.length === 0
+          ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No progress recorded yet. Small steps count if you want to record one.')
+          : hh('ul', { 'aria-label': 'Most recent success entries', style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              recentSuccesses.map(function(entry) {
+                var category = categoryFor(entry.category);
+                var size = sizeFor(entry.size);
+                var headingId = 'learning-lab-success-heading-' + entry.id;
+                return hh('li', { key: 'sl-' + entry.id },
+                  hh('article', {
+                    'aria-labelledby': headingId,
+                    style: { padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid #64748b', borderLeft: '4px solid ' + category.color }
+                  },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('p', { style: { margin: '0 0 4px', color: '#d1fae5', fontSize: 11, fontWeight: 800 } },
+                          hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label + ' · ' + size.label + ' success'
+                        ),
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, String(entry.text || 'Untitled success'))
+                      ),
+                      hh('button', {
+                        type: 'button', onClick: function() { removeSuccess(entry); },
+                        'aria-label': 'Remove success entry: ' + String(entry.text || 'Untitled success'),
+                        style: { flex: '0 0 auto', minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                      }, 'Remove')
+                    ),
+                    hh('dl', { 'aria-label': 'Success entry details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 8, rowGap: 4, margin: '10px 0 0', color: '#e2e8f0', fontSize: 11 } },
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Category'), hh('dd', { style: { margin: 0 } }, category.label)),
+                      hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Size'), hh('dd', { style: { margin: 0 } }, size.label)),
+                      hh('div', { style: { display: 'contents' } },
+                        hh('dt', { style: { fontWeight: 800 } }, 'Recorded'),
+                        hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.date || undefined }, relDate(entry.date)))
+                      )
+                    )
+                  )
+                );
+              })
+            )
+      )
     );
   }
 
