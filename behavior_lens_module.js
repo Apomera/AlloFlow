@@ -4168,12 +4168,12 @@ Generate a behavior contract and return ONLY valid JSON:
             showHistory && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4 space-y-2' },
                 h('h4', { className: 'text-xs font-black text-slate-600 uppercase mb-2' }, '📋 Past Contracts'),
                 history.map(c => h('div', { key: c.id, className: 'flex items-center justify-between bg-white rounded-lg border border-slate-100 p-3 hover:border-fuchsia-200 transition-all' },
-                    h('div', { className: 'flex-1 cursor-pointer', onClick: () => loadContract(c) },
+                    h('button', { type: 'button', className: 'flex-1 text-start bg-transparent border-0 p-0 cursor-pointer rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-600', onClick: () => loadContract(c) },
                         h('div', { className: 'text-sm font-semibold text-slate-700' }, c.target ? c.target.slice(0, 60) + (c.target.length > 60 ? '…' : '') : 'Untitled'),
                         h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, `${fmtDate(c.savedAt)} • ${c.duration || '—'} • ${c.status || 'active'}`)
                     ),
                     h('span', { style: { fontSize: '8px', padding: '2px 6px', borderRadius: 8, background: (statusColors[c.status] || statusColors.active).bg, color: (statusColors[c.status] || statusColors.active).text, border: `1px solid ${(statusColors[c.status] || statusColors.active).border}`, fontWeight: 700, textTransform: 'uppercase' } }, c.status || 'active'),
-                    h('button', { onClick: () => deleteHistoryItem(c.id), title: 'Close', 'aria-label': 'Close', className: 'ms-2 text-slate-600 hover:text-red-500 text-sm transition-colors', title: (tt('behavior_lens.raw.delete', 'Delete')) }, '✕')
+                    h('button', { type: 'button', onClick: () => deleteHistoryItem(c.id), 'aria-label': (tt('behavior_lens.raw.delete', 'Delete')) + ' ' + (c.target || 'contract'), className: 'ms-2 text-slate-600 hover:text-red-500 text-sm transition-colors', title: (tt('behavior_lens.raw.delete', 'Delete')) }, '✕')
                 ))
             ),
             // Status badge bar
@@ -12214,7 +12214,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     myStrats.length === 0
                         ? h('p', { className: 'text-[11px] text-slate-600 italic' }, 'Tap strategies below to add them to your toolkit!')
                         : h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
-                            myStrats.map(s => h('span', { key: s, onClick: () => removeStrategy(q.id, s), className: `px-2.5 py-1 ${c.badge} rounded-lg text-[11px] font-bold cursor-pointer hover:opacity-70 transition-all`, title: 'Click to remove' }, `${s} ✕`))
+                            myStrats.map(s => h('button', { type: 'button', key: s, onClick: () => removeStrategy(q.id, s), 'aria-label': 'Remove strategy ' + s, className: `px-2.5 py-1 ${c.badge} rounded-lg border-0 text-[11px] font-bold cursor-pointer hover:opacity-70 transition-all`, title: 'Remove strategy' }, `${s} ✕`))
                         )
                 ),
                 // Strategy bank by category
@@ -16008,7 +16008,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 const st = getStats(b.id);
                 return h('div', { key: b.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('div', { className: 'flex items-start justify-between mb-2' },
-                        h('div', { className: 'flex-1 cursor-pointer', onClick: () => setSelectedBehavior(b.id) },
+                        h('button', { type: 'button', className: 'flex-1 text-start bg-transparent border-0 p-0 cursor-pointer rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700', onClick: () => setSelectedBehavior(b.id), 'aria-label': 'Select behavior pair: ' + b.problem + ' to ' + b.replacement },
                             h('div', { className: 'flex items-center gap-2' },
                                 h('span', { className: 'text-red-600 text-[11px]' }, '✕ ' + b.problem),
                                 h('span', { className: 'text-slate-600' }, '→'),
@@ -18077,7 +18077,7 @@ Keep it under 150 words.`);
                                     className: 'w-full ps-8 pe-3 py-2 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none'
                                 })
                             ),
-                            items.length > 3 && h('button', { onClick: () => removeItem(idx), className: 'p-2 text-red-500 hover:bg-red-50 rounded-lg' }, '🗑️')
+                            items.length > 3 && h('button', { type: 'button', onClick: () => removeItem(idx), 'aria-label': 'Remove preference item ' + (idx + 1) + (it ? ': ' + it : ''), className: 'p-2 text-red-500 hover:bg-red-50 rounded-lg' }, '🗑️')
                         ))
                     ),
                     h('button', { onClick: addItem, className: 'mt-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors' }, '+ Add Item'),
@@ -21121,8 +21121,10 @@ Keep the language professional but accessible.`;
                                     const cell = heatmapMatrix.cells[`${a}__${b}`];
                                     if (!cell) return h('td', { key: b, className: 'p-2 border-b border-slate-100 bg-slate-50' }, h('span', { className: 'text-[11px] text-slate-600' }, '—'));
                                     const clr = heatColor(cell.prob);
-                                    return h('td', { key: b, className: `p-2 border-b border-slate-100 ${clr.bg} cursor-pointer hover:ring-2 hover:ring-indigo-300 transition-all`, onClick: () => { setSelectedAntecedent(a); setSelectedBehavior(b); setViewMode('focused'); }, title: `${cell.n}/${cell.total} entries` },
+                                    return h('td', { key: b, className: `p-0 border-b border-slate-100 ${clr.bg}`, title: `${cell.n}/${cell.total} entries` },
+                                        h('button', { type: 'button', onClick: () => { setSelectedAntecedent(a); setSelectedBehavior(b); setViewMode('focused'); }, 'aria-label': `Focused analysis for ${a} and ${b}: ${(cell.prob * 100).toFixed(0)}%, ${cell.n} of ${cell.total} entries`, className: 'w-full h-full p-2 bg-transparent border-0 cursor-pointer hover:ring-2 hover:ring-indigo-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700 transition-all' },
                                         h('span', { className: `text-[11px] font-black ${clr.text}` }, `${(cell.prob * 100).toFixed(0)}%`)
+                                        )
                                     );
                                 })
                             )
@@ -22458,10 +22460,10 @@ Keep the language professional but accessible.`;
             // Summary table
             comparisonWorkspaces.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
                 h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center text-[11px] font-black text-slate-600 uppercase tracking-wider gap-4' },
-                    h('div', { className: 'flex-1 cursor-pointer hover:text-slate-700', onClick: () => toggleSort('student') }, '👤 Student', sortKey === 'student' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
-                    h('div', { className: 'w-16 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('abcCount') }, 'ABCs', sortKey === 'abcCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
-                    h('div', { className: 'w-16 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('sessionCount') }, 'Sessions', sortKey === 'sessionCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
-                    h('div', { className: 'w-20 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('avgIntensity') }, 'Avg Intensity', sortKey === 'avgIntensity' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
+                    h('button', { type: 'button', className: 'flex-1 text-start bg-transparent border-0 p-1 min-h-6 font-black text-[11px] uppercase tracking-wider cursor-pointer hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700', onClick: () => toggleSort('student'), 'aria-label': 'Sort by student' + (sortKey === 'student' ? ', currently ' + (sortDir === 'asc' ? 'ascending' : 'descending') : '') }, '👤 Student', sortKey === 'student' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
+                    h('button', { type: 'button', className: 'w-16 text-center bg-transparent border-0 p-1 min-h-6 font-black text-[11px] uppercase tracking-wider cursor-pointer hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700', onClick: () => toggleSort('abcCount'), 'aria-label': 'Sort by ABC count' + (sortKey === 'abcCount' ? ', currently ' + (sortDir === 'asc' ? 'ascending' : 'descending') : '') }, 'ABCs', sortKey === 'abcCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
+                    h('button', { type: 'button', className: 'w-16 text-center bg-transparent border-0 p-1 min-h-6 font-black text-[11px] uppercase tracking-wider cursor-pointer hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700', onClick: () => toggleSort('sessionCount'), 'aria-label': 'Sort by session count' + (sortKey === 'sessionCount' ? ', currently ' + (sortDir === 'asc' ? 'ascending' : 'descending') : '') }, 'Sessions', sortKey === 'sessionCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
+                    h('button', { type: 'button', className: 'w-20 text-center bg-transparent border-0 p-1 min-h-6 font-black text-[11px] uppercase tracking-wider cursor-pointer hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-700', onClick: () => toggleSort('avgIntensity'), 'aria-label': 'Sort by average intensity' + (sortKey === 'avgIntensity' ? ', currently ' + (sortDir === 'asc' ? 'ascending' : 'descending') : '') }, 'Avg Intensity', sortKey === 'avgIntensity' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
                     h('div', { className: 'w-16 text-center' }, tt('behavior_lens.ui.trend', 'Trend')),
                     h('div', { className: 'w-32 text-center' }, tt('behavior_lens.ui.top_behavior', 'Top Behavior')),
                     h('div', { className: 'w-24 text-center' }, tt('behavior_lens.ui.last_entry', 'Last Entry')),
@@ -24232,7 +24234,7 @@ IMPORTANT rules for expert keys:
                             h('p', { className: 'text-indigo-100 text-sm font-medium' }, 'Let us guide you to the right tool')
                         )
                     ),
-                    h('button', { onClick: onClose, title: 'Close', className: 'text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full hover:bg-white/20' }, '✕')
+                    h('button', { type: 'button', onClick: onClose, 'aria-label': 'Close BehaviorLens Tool Wizard', title: 'Close', className: 'text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full hover:bg-white/20' }, '✕')
                 ),
                 h('div', { className: 'p-8' },
                     step > 0 && h('button', { "aria-label": "Start Over",

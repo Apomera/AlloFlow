@@ -1885,7 +1885,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           ),
           nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             quick.map(function(q) {
-              return nlH('button', { key: q.name, onClick: function() { setForm({ source: q.name, mg: q.mg }); }, style: { padding: '5px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, q.name + ' (' + q.mg + ')');
+              return nlH('button', { key: q.name, onClick: function() { setForm({ source: q.name, mg: q.mg }); }, style: { padding: '5px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: '#475569', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, q.name + ' (' + q.mg + ')');
             })
           ),
           nlBtn({ onClick: add }, '+ Log calcium')
@@ -1895,8 +1895,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Today'),
         entries.filter(function(x) { return x.date === today; }).map(function(e) {
           return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 6, background: '#f1f5f9', display: 'flex', justifyContent: 'space-between', fontSize: 12 } },
-            nlH('span', { style: { color: '#94a3b8' } }, e.source + ' — ' + e.mg + 'mg'),
-            nlH('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+            nlH('span', { style: { color: '#475569' } }, e.source + ' — ' + e.mg + 'mg'),
+            nlH('button', { type: 'button', 'aria-label': 'Remove ' + e.source + ' calcium entry', onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
           );
         })
       ),
@@ -19691,7 +19691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + (pC * 100).toFixed(0) + '% carb / ' + (pP * 100).toFixed(0) + '% protein / ' + (pF * 100).toFixed(0) + '% fat'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 } },
-              h('svg', { width: 200, height: 160, viewBox: '0 0 200 160', style: { background: '#0a0a1a', borderRadius: 6, flex: '0 0 200px' } },
+              h('svg', { width: 200, height: 160, viewBox: '0 0 200 160', 'aria-hidden': 'true', focusable: 'false', style: { background: '#0a0a1a', borderRadius: 6, flex: '0 0 200px' } },
                 pC > 0.001 && h('path', { d: arc(0, pC, 55, 28), fill: '#22d3ee', opacity: 0.85 }),
                 pP > 0.001 && h('path', { d: arc(pC, pC + pP, 55, 28), fill: '#4ade80', opacity: 0.85 }),
                 pF > 0.001 && h('path', { d: arc(pC + pP, 1, 55, 28), fill: '#fb923c', opacity: 0.85 }),
@@ -19741,7 +19741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · c' + e.c + ' p' + e.p + ' f' + e.f + ' fb' + e.fb + ' → sat ' + e.sat + ' gi ' + e.gi); })
             ),
             h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.nutritionlab.your_hypothesis_which_macro_most_affec', 'Your hypothesis (which macro most affects satiety? Glycemic load? They\'re different.)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.e_g_fiber_blunts_the_glycemic_load_alm', 'e.g., fiber blunts the glycemic load almost 1-for-1 with carb increase...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            h('textarea', { value: iq.hypothesis, 'aria-label': __alloT('stem.nutritionlab.your_hypothesis_which_macro_most_affec', 'Your hypothesis about which macro most affects satiety and glycemic load'), onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.e_g_fiber_blunts_the_glycemic_load_alm', 'e.g., fiber blunts the glycemic load almost 1-for-1 with carb increase...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.nutritionlab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.nutritionlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -19756,7 +19756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.nutritionlab.i_can_explain_why_this_macro_split_yie', 'I can explain why this macro split yields this energy state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            iq.understood && h('textarea', { value: iq.explanation, 'aria-label': __alloT('stem.nutritionlab.explain_macro_split_energy_state', 'Explain why this macro split yields this energy state'), onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.nutritionlab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.'))
           )
         );
