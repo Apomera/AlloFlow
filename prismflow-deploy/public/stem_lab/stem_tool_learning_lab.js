@@ -13960,86 +13960,189 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { checks: [] };
     var setData = props.setData;
-    var fs = R.useState({ areas: {}, overall: 5, note: '' });
+    var emptyForm = { areas: {}, overall: 5, note: '' };
+    var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
 
     var BODY_AREAS = [
-      { id: 'head',     label: 'Head',           icon: '🧠' },
-      { id: 'neck',     label: 'Neck + jaw',     icon: '😬' },
-      { id: 'shoulders',label: 'Shoulders',      icon: '🦴' },
-      { id: 'chest',    label: 'Chest + breath', icon: '🫁' },
-      { id: 'stomach',  label: 'Stomach',        icon: '🫃' },
-      { id: 'back',     label: 'Back',           icon: '🔙' },
-      { id: 'hands',    label: 'Hands + arms',   icon: '✋' },
-      { id: 'legs',     label: 'Legs + feet',    icon: '🦵' }
+      { id: 'head', label: 'Head', icon: '🧠' },
+      { id: 'neck', label: 'Neck and jaw', icon: '😬' },
+      { id: 'shoulders', label: 'Shoulders', icon: '🦴' },
+      { id: 'chest', label: 'Chest and breathing', icon: '🫁' },
+      { id: 'stomach', label: 'Stomach', icon: '🫃' },
+      { id: 'back', label: 'Back', icon: '🔙' },
+      { id: 'hands', label: 'Hands and arms', icon: '✋' },
+      { id: 'legs', label: 'Legs and feet', icon: '🦵' }
     ];
 
-    function setArea(id, val) {
-      setForm(Object.assign({}, form, { areas: Object.assign({}, form.areas, (function() { var o = {}; o[id] = val; return o; })()) }));
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function normalizedRating(value) {
+      var number = parseInt(value, 10);
+      return Number.isFinite(number) && number >= 1 && number <= 10 ? number : 5;
+    }
+    function ratingText(value) {
+      return normalizedRating(value) + ' out of 10; 1 is very uncomfortable and 10 is very comfortable';
+    }
+    function setArea(id, value) {
+      var nextAreas = Object.assign({}, form.areas || {});
+      nextAreas[id] = normalizedRating(value);
+      setForm(Object.assign({}, form, { areas: nextAreas }));
     }
     function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData({ checks: [entry].concat(data.checks || []) });
-      setForm({ areas: {}, overall: 5, note: '' });
+      var areas = {};
+      BODY_AREAS.forEach(function(area) { areas[area.id] = normalizedRating((form.areas || {})[area.id]); });
+      var entry = {
+        id: tkId(), date: todayISO(), time: Date.now(), areas: areas,
+        overall: normalizedRating(form.overall), note: form.note.trim()
+      };
+      setData(Object.assign({}, data, { checks: [entry].concat(data.checks || []) }));
+      setForm(emptyForm);
+      llAnnounce('Body comfort check saved. Overall comfort: ' + entry.overall + ' out of 10.');
+      focusById('learning-lab-body-history-heading');
+    }
+    function removeCheck(entry) {
+      askLearningLabConfirmation('Remove the body comfort check from ' + String(entry.date || 'this date') + '? This cannot be undone.', {
+        title: 'Remove this body check?', confirmText: 'Remove check'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { checks: (data.checks || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Body comfort check removed.');
+        focusById(entry.date === todayISO() ? 'learning-lab-body-form-heading' : 'learning-lab-body-history-heading');
+      });
+    }
+    function entryDateTime(entry) {
+      var timestamp = Number(entry.time);
+      if (Number.isFinite(timestamp)) {
+        var date = new Date(timestamp);
+        if (!Number.isNaN(date.getTime())) return date.toISOString();
+      }
+      return entry.date || undefined;
     }
 
     var checks = data.checks || [];
     var today = todayISO();
-    var todayCheck = checks.filter(function(c) { return c.date === today; })[0];
+    var todayCheck = checks.filter(function(check) { return check.date === today; })[0];
+    var recentChecks = checks.slice(0, 10);
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fce7f3', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var rangeStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#ec4899', cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🫀', 'Body Awareness', 'Daily body scan. Notice without trying to fix. Builds interoception (van der Kolk).', '#ec4899'),
-
-      todayCheck ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, fontSize: 11, color: '#22c55e' } },
-        '✓ Today\'s body check logged · overall ' + todayCheck.overall + '/10'
-      ) : tkCard('#ec4899',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, '🫀 How does each part feel? (1 = tight/painful, 10 = relaxed)'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 12 } },
-            BODY_AREAS.map(function(a) {
-              var val = (form.areas || {})[a.id] || 5;
-              var col = val >= 7 ? '#10b981' : val >= 5 ? '#fbbf24' : '#ef4444';
-              return hh('div', { key: 'ba-' + a.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid ' + col } },
-                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
-                  hh('span', { style: { fontSize: 14 } }, a.icon),
-                  hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', flex: 1 } }, a.label),
-                  hh('strong', { style: { color: col, fontSize: 12, fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
-                ),
-                hh('input', { type: 'range', min: 1, max: 10, step: 1, value: val,
-                  onChange: function(e) { setArea(a.id, parseInt(e.target.value, 10)); },
-                  style: { width: '100%', accentColor: col }
-                })
-              );
-            })
-          ),
-          hh('div', { style: { marginBottom: 10 } },
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Overall body feeling: ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10')),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.overall,
-              onChange: function(e) { setForm(Object.assign({}, form, { overall: parseInt(e.target.value, 10) })); },
-              style: { width: '100%', accentColor: '#ec4899' }
-            })
-          ),
-          tkInput(form.note, function(v) { setForm(Object.assign({}, form, { note: v })); }, 'What is your body telling you?', { marginBottom: 10 }),
-          tkBtn('💾 Save check', save, 'primary')
-        )
+      tkSectionHeader('🫀', 'Body Awareness', 'Record how comfortable different areas feel right now.', '#ec4899'),
+      hh('aside', {
+        'aria-labelledby': 'learning-lab-body-safety-heading',
+        style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #f9a8d4', background: 'rgba(131,24,67,0.25)', color: '#fdf2f8', fontSize: 11, lineHeight: 1.6 }
+      },
+        hh('h2', { id: 'learning-lab-body-safety-heading', style: { margin: '0 0 5px', color: '#fbcfe8', fontSize: 13 } }, 'Personal reflection, not a medical assessment'),
+        hh('p', { style: { margin: 0 } }, 'This check cannot explain or diagnose symptoms. If pain, breathing, or another symptom concerns you, contact a health professional or a trusted person. Use your local emergency service for an emergency.')
       ),
 
-      checks.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent body checks'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          checks.slice(0, 10).map(function(c) {
-            var col = c.overall >= 7 ? '#10b981' : c.overall >= 5 ? '#fbbf24' : '#ef4444';
-            return hh('div', { key: 'bc-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + col } },
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.date + ' · overall ' + c.overall + '/10'),
-              c.note ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, c.note) : null
-            );
-          })
-        )
-      ) : null,
+      todayCheck
+        ? hh('section', {
+            'aria-labelledby': 'learning-lab-body-today-heading',
+            style: { padding: 12, borderRadius: 9, background: 'rgba(6,78,59,0.28)', border: '1px solid #6ee7b7', marginBottom: 12 }
+          },
+            hh('h2', { id: 'learning-lab-body-today-heading', style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 14 } }, 'Today’s body check is recorded'),
+            hh('p', { role: 'status', style: { margin: 0, color: '#f0fdf4', fontSize: 12 } }, 'Overall comfort: ' + normalizedRating(todayCheck.overall) + ' out of 10.')
+          )
+        : tkCard('#ec4899',
+            hh('form', {
+              onSubmit: function(event) { event.preventDefault(); save(); },
+              'aria-labelledby': 'learning-lab-body-form-heading',
+              'aria-describedby': 'learning-lab-body-scale-help learning-lab-body-privacy-note'
+            },
+              hh('h2', { id: 'learning-lab-body-form-heading', tabIndex: -1, style: { margin: '0 0 6px', color: '#f9a8d4', fontSize: 15 } }, 'Rate body comfort'),
+              hh('p', { id: 'learning-lab-body-scale-help', style: helpStyle }, 'For every slider, 1 means very uncomfortable and 10 means very comfortable. Five is selected initially; change any rating that does not fit.'),
+              hh('p', { id: 'learning-lab-body-privacy-note', style: helpStyle }, 'Checks save in this browser. Avoid private health details if other people use this device.'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, marginBottom: 14 } },
+                BODY_AREAS.map(function(area) {
+                  var value = normalizedRating((form.areas || {})[area.id]);
+                  var inputId = 'learning-lab-body-area-' + area.id;
+                  var outputId = inputId + '-value';
+                  return hh('div', { key: 'ba-' + area.id, style: { padding: 10, borderRadius: 7, background: 'rgba(2,6,23,0.45)', border: '1px solid #9d174d' } },
+                    hh('label', { htmlFor: inputId, style: labelStyle },
+                      hh('span', { 'aria-hidden': 'true' }, area.icon + ' '), area.label
+                    ),
+                    hh('output', { id: outputId, htmlFor: inputId, style: { display: 'block', marginBottom: 3, color: '#fbcfe8', fontSize: 12, fontWeight: 800 } }, value + ' out of 10'),
+                    hh('input', {
+                      id: inputId, type: 'range', min: 1, max: 10, step: 1, value: value,
+                      onChange: function(event) { setArea(area.id, event.target.value); },
+                      'aria-valuetext': ratingText(value), 'aria-describedby': 'learning-lab-body-scale-help ' + outputId,
+                      style: rangeStyle
+                    })
+                  );
+                })
+              ),
+              hh('div', { style: { marginBottom: 12, padding: 10, borderRadius: 7, border: '1px solid #db2777', background: 'rgba(131,24,67,0.18)' } },
+                hh('label', { htmlFor: 'learning-lab-body-overall', style: labelStyle }, 'Overall body comfort'),
+                hh('output', { id: 'learning-lab-body-overall-value', htmlFor: 'learning-lab-body-overall', style: { display: 'block', marginBottom: 3, color: '#fbcfe8', fontSize: 13, fontWeight: 800 } }, normalizedRating(form.overall) + ' out of 10'),
+                hh('input', {
+                  id: 'learning-lab-body-overall', type: 'range', min: 1, max: 10, step: 1, value: normalizedRating(form.overall),
+                  onChange: function(event) { setForm(Object.assign({}, form, { overall: normalizedRating(event.target.value) })); },
+                  'aria-valuetext': ratingText(form.overall), 'aria-describedby': 'learning-lab-body-scale-help learning-lab-body-overall-value',
+                  style: rangeStyle
+                })
+              ),
+              hh('label', { htmlFor: 'learning-lab-body-note', style: labelStyle }, 'Notes (optional)'),
+              hh('textarea', {
+                id: 'learning-lab-body-note', value: form.note, rows: 3, maxLength: 1500,
+                onChange: function(event) { setForm(Object.assign({}, form, { note: event.target.value })); },
+                style: { boxSizing: 'border-box', width: '100%', minHeight: 88, resize: 'vertical', borderRadius: 7, border: '1px solid #f472b6', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 }
+              }),
+              hh('button', {
+                type: 'submit',
+                style: { minWidth: 44, minHeight: 44, marginTop: 12, padding: '9px 14px', borderRadius: 7, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+              }, 'Save body check')
+            )
+          ),
 
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#ec4899' } }, '🎓 Why body awareness: '),
-        'van der Kolk (The Body Keeps the Score, 2014) — trauma + chronic stress live in the body, often outside conscious awareness. Daily check-ins build interoception (noticing internal body state). Better interoception = better emotional regulation + earlier stress detection. Just notice. Don\'t need to fix.'
+      hh('section', { 'aria-labelledby': 'learning-lab-body-history-heading' },
+        hh('h2', { id: 'learning-lab-body-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fce7f3', fontSize: 15 } }, 'Recent body checks'),
+        checks.length > 10 ? hh('p', { style: helpStyle }, 'Showing the 10 most recent checks out of ' + checks.length + '.') : null,
+        recentChecks.length === 0
+          ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No body checks recorded yet.')
+          : hh('ul', { 'aria-label': 'Most recent body comfort checks', style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              recentChecks.map(function(entry) {
+                var overall = normalizedRating(entry.overall);
+                var headingId = 'learning-lab-body-check-heading-' + entry.id;
+                return hh('li', { key: 'bc-' + entry.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid #f472b6' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#fbcfe8', fontSize: 13 } }, 'Overall comfort: ' + overall + ' out of 10'),
+                        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 11 } },
+                          hh('time', { dateTime: entryDateTime(entry) }, relDate(entry.date))
+                        )
+                      ),
+                      hh('button', {
+                        type: 'button', onClick: function() { removeCheck(entry); },
+                        'aria-label': 'Remove body check from ' + String(entry.date || 'unknown date'),
+                        style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                      }, 'Remove')
+                    ),
+                    entry.note ? hh('p', { style: { margin: '10px 0 0', color: '#f1f5f9', fontSize: 12, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, entry.note) : null,
+                    hh('details', { style: { marginTop: 8, color: '#e2e8f0' } },
+                      hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#fbcfe8', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review area ratings'),
+                      hh('dl', { 'aria-label': 'Body area comfort ratings', style: { display: 'grid', gridTemplateColumns: '1fr max-content', gap: 6, margin: '8px 0 0', fontSize: 11 } },
+                        BODY_AREAS.map(function(area) {
+                          var value = normalizedRating((entry.areas || {})[area.id]);
+                          return hh('div', { key: 'body-detail-' + entry.id + '-' + area.id, style: { display: 'contents' } },
+                            hh('dt', { style: { color: '#e2e8f0' } }, area.label),
+                            hh('dd', { style: { margin: 0, color: '#fbcfe8', fontWeight: 800 } }, value + ' out of 10')
+                          );
+                        })
+                      )
+                    )
+                  )
+                );
+              })
+            )
       )
     );
   }
