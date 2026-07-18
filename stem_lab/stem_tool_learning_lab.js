@@ -15051,150 +15051,210 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { routines: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
-    var ts = R.useState('');                            var newTitle = ts[0]; var setNewTitle = ts[1];
-    var nt = R.useState('morning');                    var newType = nt[0]; var setNewType = nt[1];
-    var sf = R.useState({ text: '', mins: 5 });
-    var stepForm = sf[0]; var setStepForm = sf[1];
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var ts = R.useState(''); var newTitle = ts[0]; var setNewTitle = ts[1];
+    var nt = R.useState('morning'); var newType = nt[0]; var setNewType = nt[1];
+    var ce = R.useState(''); var createError = ce[0]; var setCreateError = ce[1];
+    var sf = R.useState({ text: '', mins: '5' }); var stepForm = sf[0]; var setStepForm = sf[1];
+    var se = R.useState({ text: '', mins: '' }); var stepErrors = se[0]; var setStepErrors = se[1];
 
     var TYPES = [
-      { id: 'morning',  label: 'Morning',  icon: '🌅', color: '#fbbf24' },
-      { id: 'evening',  label: 'Evening',  icon: '🌙', color: '#a855f7' },
-      { id: 'study',    label: 'Study session', icon: '📚', color: '#3b82f6' },
-      { id: 'transition', label: 'Transition (between tasks)', icon: '🔄', color: '#10b981' },
-      { id: 'pre-test', label: 'Pre-test prep', icon: '📝', color: '#ec4899' }
+      { id: 'morning', label: 'Morning', icon: '🌅', color: '#fde68a' },
+      { id: 'evening', label: 'Evening', icon: '🌙', color: '#d8b4fe' },
+      { id: 'study', label: 'Study session', icon: '📚', color: '#93c5fd' },
+      { id: 'transition', label: 'Transition between tasks', icon: '🔄', color: '#6ee7b7' },
+      { id: 'pre-test', label: 'Before a test', icon: '📝', color: '#f9a8d4' }
     ];
 
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function typeFor(id) { return TYPES.filter(function(type) { return type.id === id; })[0] || TYPES[0]; }
+    function routineFor(id) { return (data.routines || []).filter(function(routine) { return routine.id === id; })[0] || null; }
+    function normalizedMinutes(value) {
+      var number = parseInt(value, 10);
+      return Number.isFinite(number) && number >= 1 && number <= 240 ? number : null;
+    }
+    function updateRoutine(id, patch) {
+      setData(Object.assign({}, data, { routines: (data.routines || []).map(function(routine) { return routine.id === id ? Object.assign({}, routine, patch) : routine; }) }));
+    }
     function createRoutine() {
-      if (!newTitle.trim()) return;
-      var r = { id: tkId(), title: newTitle.trim(), type: newType, steps: [], completions: [], createdAt: todayISO() };
-      setData({ routines: [r].concat(data.routines || []) });
-      setActiveId(r.id);
-      setNewTitle('');
-      setView('edit');
+      var title = newTitle.trim();
+      if (!title) {
+        setCreateError('Enter a name for this routine.');
+        llAnnounce('Routine not created. Enter a name first.');
+        focusById('learning-lab-routine-title');
+        return;
+      }
+      var routine = { id: tkId(), title: title, type: newType, steps: [], completions: [], createdAt: todayISO() };
+      setData(Object.assign({}, data, { routines: [routine].concat(data.routines || []) }));
+      setActiveId(routine.id); setNewTitle(''); setCreateError(''); setView('edit');
+      llAnnounce('Routine created: ' + title + '. Add the first step.');
+      focusById('learning-lab-routine-editor-heading');
     }
-    function getRoutine() { return (data.routines || []).filter(function(r) { return r.id === activeId; })[0]; }
-    function updateRoutine(patch) {
-      setData({ routines: (data.routines || []).map(function(r) { return r.id === activeId ? Object.assign({}, r, patch) : r; }) });
+    function openRoutine(routine) {
+      setStepForm({ text: '', mins: '5' }); setStepErrors({ text: '', mins: '' });
+      setActiveId(routine.id); setView('edit'); focusById('learning-lab-routine-editor-heading');
     }
-    function removeRoutine(id) {
-      if (!confirm('Delete this routine?')) return;
-      setData({ routines: (data.routines || []).filter(function(r) { return r.id !== id; }) });
+    function returnToList() {
+      function finish() { setStepForm({ text: '', mins: '5' }); setStepErrors({ text: '', mins: '' }); setActiveId(null); setView('list'); focusById('learning-lab-routine-list-heading'); }
+      if (!stepForm.text.trim() && String(stepForm.mins) === '5') { finish(); return; }
+      askLearningLabConfirmation('Return to all routines and discard the unsaved step?', { title: 'Discard this step draft?', confirmText: 'Discard step' }).then(function(accepted) { if (accepted) finish(); });
     }
-    function addStep() {
-      if (!stepForm.text.trim()) return;
-      var r = getRoutine();
-      updateRoutine({ steps: (r.steps || []).concat([Object.assign({ id: tkId() }, stepForm)]) });
-      setStepForm({ text: '', mins: 5 });
+    function removeRoutine(routine) {
+      askLearningLabConfirmation('Delete “' + String(routine.title || 'this routine') + '” and its completion history? This cannot be undone.', { title: 'Delete this routine?', confirmText: 'Delete routine' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { routines: (data.routines || []).filter(function(item) { return item.id !== routine.id; }) }));
+        if (activeId === routine.id) { setActiveId(null); setView('list'); }
+        llAnnounce('Routine deleted.'); focusById('learning-lab-routine-list-heading');
+      });
     }
-    function removeStep(id) {
-      var r = getRoutine();
-      updateRoutine({ steps: r.steps.filter(function(s) { return s.id !== id; }) });
+    function addStep(routine) {
+      var text = stepForm.text.trim();
+      var mins = normalizedMinutes(stepForm.mins);
+      var nextErrors = { text: text ? '' : 'Enter a description for this step.', mins: mins == null ? 'Enter a whole number from 1 through 240 minutes.' : '' };
+      if (nextErrors.text || nextErrors.mins) {
+        setStepErrors(nextErrors); llAnnounce('Step not added. Review the highlighted fields.');
+        focusById(nextErrors.text ? 'learning-lab-routine-step-text' : 'learning-lab-routine-step-minutes');
+        return;
+      }
+      var step = { id: tkId(), text: text, mins: mins };
+      updateRoutine(routine.id, { steps: (routine.steps || []).concat([step]) });
+      setStepForm({ text: '', mins: '5' }); setStepErrors({ text: '', mins: '' });
+      llAnnounce('Routine step added: ' + text); focusById('learning-lab-routine-step-text');
     }
-    function logCompletion() {
-      var r = getRoutine();
+    function removeStep(routine, step) {
+      askLearningLabConfirmation('Remove the step “' + String(step.text || 'Untitled step') + '”? This cannot be undone.', { title: 'Remove this routine step?', confirmText: 'Remove step' }).then(function(accepted) {
+        if (!accepted) return;
+        updateRoutine(routine.id, { steps: (routine.steps || []).filter(function(item) { return item.id !== step.id; }) });
+        llAnnounce('Routine step removed.'); focusById('learning-lab-routine-steps-heading');
+      });
+    }
+    function toggleCompletion(routine) {
       var today = todayISO();
-      var comps = r.completions || [];
-      if (comps.indexOf(today) >= 0) comps = comps.filter(function(d) { return d !== today; });
-      else comps = comps.concat([today]);
-      updateRoutine({ completions: comps });
+      var completions = (routine.completions || []).filter(function(date, index, list) { return list.indexOf(date) === index; });
+      var completed = completions.indexOf(today) >= 0;
+      var next = completed ? completions.filter(function(date) { return date !== today; }) : completions.concat([today]);
+      updateRoutine(routine.id, { completions: next });
+      llAnnounce(completed ? 'Today’s completion removed.' : 'Routine marked complete for today.');
     }
+    function streakEndingToday(routine) {
+      var completions = routine.completions || [];
+      var parts = todayISO().split('-').map(Number);
+      var cursor = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+      var streak = 0;
+      for (var index = 0; index < 366; index++) {
+        var iso = cursor.toISOString().slice(0, 10);
+        if (completions.indexOf(iso) < 0) break;
+        streak += 1; cursor.setUTCDate(cursor.getUTCDate() - 1);
+      }
+      return streak;
+    }
+    function totalMinutes(routine) {
+      return (routine.steps || []).reduce(function(total, step) { return total + (normalizedMinutes(step.mins) || 0); }, 0);
+    }
+
+    var routines = data.routines || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #34d399', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     if (view === 'edit') {
-      var r = getRoutine();
-      if (!r) { setView('list'); return null; }
-      var type = TYPES.filter(function(t) { return t.id === r.type; })[0] || TYPES[0];
-      var totalMin = (r.steps || []).reduce(function(s, st) { return s + (st.mins || 0); }, 0);
-      var streak = (function() {
-        var comps = r.completions || [];
-        var s = 0;
-        for (var i = 0; i < 365; i++) {
-          var dt = new Date(); dt.setDate(dt.getDate() - i);
-          var iso = dt.toISOString().slice(0, 10);
-          if (comps.indexOf(iso) >= 0) s++;
-          else if (i > 0) break;
-        }
-        return s;
-      })();
-      var todayDone = (r.completions || []).indexOf(todayISO()) >= 0;
+      var routine = routineFor(activeId);
+      if (!routine) {
+        return hh('div', { style: { padding: 14 } }, tkSectionHeader('🔁', 'Routine unavailable', 'This routine may have been removed in another view.', '#10b981'), hh('button', { type: 'button', onClick: function() { setActiveId(null); setView('list'); focusById('learning-lab-routine-list-heading'); }, style: { minWidth: 44, minHeight: 44, padding: '9px 14px' } }, 'Return to routines'));
+      }
+      var type = typeFor(routine.type);
+      var steps = routine.steps || [];
+      var todayDone = (routine.completions || []).indexOf(todayISO()) >= 0;
+      var streak = streakEndingToday(routine);
+      var summary = steps.length + (steps.length === 1 ? ' step' : ' steps') + ', about ' + totalMinutes(routine) + ' minutes, ' + streak + (streak === 1 ? ' consecutive day ending today.' : ' consecutive days ending today.');
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(type.icon, r.title, type.label + ' routine · ' + (r.steps || []).length + ' steps · ~' + totalMin + ' min · 🔥 ' + streak + 'd streak', type.color),
-
-        // Today's completion
-        hh('div', { style: { padding: 10, borderRadius: 8, background: todayDone ? type.color + '20' : 'rgba(15,23,42,0.5)', border: '1px solid ' + type.color + '40', marginBottom: 14, textAlign: 'center' } },
-          tkBtn(todayDone ? '✓ Done today — undo' : '+ Mark done today', logCompletion, todayDone ? 'good' : 'primary', { padding: '10px 22px' })
-        ),
-
-        tkCard(type.color,
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: type.color, marginBottom: 8 } }, '+ Add a step'),
-            hh('div', { style: { display: 'flex', gap: 6 } },
-              tkInput(stepForm.text, function(v) { setStepForm(Object.assign({}, stepForm, { text: v })); }, 'Step description', { flex: 1 }),
-              hh('input', { type: 'number', min: 1, max: 60, value: stepForm.mins,
-                onChange: function(e) { setStepForm(Object.assign({}, stepForm, { mins: parseInt(e.target.value, 10) })); },
-                style: { width: 70, padding: '8px 10px', fontSize: 12, color: type.color, background: 'rgba(2,6,23,0.7)', border: '1px solid ' + type.color + '60', borderRadius: 6, textAlign: 'center' }
-              }),
-              tkBtn('+', addStep, 'primary', { padding: '8px 14px' })
+        tkSectionHeader(type.icon, routine.title, type.label + ' routine', type.color),
+        hh('section', { 'aria-labelledby': 'learning-lab-routine-editor-heading' },
+          hh('h2', { id: 'learning-lab-routine-editor-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 15 } }, 'Edit routine'),
+          hh('p', { role: 'status', style: helpStyle }, summary),
+          hh('button', { type: 'button', onClick: function() { toggleCompletion(routine); }, 'aria-pressed': todayDone ? 'true' : 'false', style: { minWidth: 44, minHeight: 44, marginBottom: 14, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: todayDone ? '#047857' : '#334155', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, todayDone ? 'Completed today — undo' : 'Mark complete today'),
+          tkCard(type.color,
+            hh('form', { onSubmit: function(event) { event.preventDefault(); addStep(routine); }, 'aria-labelledby': 'learning-lab-routine-step-form-heading' },
+              hh('h3', { id: 'learning-lab-routine-step-form-heading', style: { margin: '0 0 8px', color: type.color, fontSize: 14 } }, 'Add a step'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(130px, 180px)', gap: 10 } },
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-routine-step-text', style: labelStyle }, 'Step description (required)'),
+                  hh('input', { id: 'learning-lab-routine-step-text', type: 'text', value: stepForm.text, required: true, maxLength: 1000, onChange: function(event) { setStepForm(Object.assign({}, stepForm, { text: event.target.value })); if (stepErrors.text) setStepErrors(Object.assign({}, stepErrors, { text: '' })); }, 'aria-invalid': stepErrors.text ? 'true' : undefined, 'aria-describedby': stepErrors.text ? 'learning-lab-routine-step-text-error' : undefined, style: fieldStyle }),
+                  stepErrors.text ? hh('p', { id: 'learning-lab-routine-step-text-error', role: 'alert', style: errorStyle }, stepErrors.text) : null
+                ),
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-routine-step-minutes', style: labelStyle }, 'Estimated minutes (required)'),
+                  hh('input', { id: 'learning-lab-routine-step-minutes', type: 'number', min: 1, max: 240, step: 1, value: stepForm.mins, required: true, onChange: function(event) { setStepForm(Object.assign({}, stepForm, { mins: event.target.value })); if (stepErrors.mins) setStepErrors(Object.assign({}, stepErrors, { mins: '' })); }, 'aria-invalid': stepErrors.mins ? 'true' : undefined, 'aria-describedby': 'learning-lab-routine-step-minutes-help' + (stepErrors.mins ? ' learning-lab-routine-step-minutes-error' : ''), style: fieldStyle }),
+                  hh('p', { id: 'learning-lab-routine-step-minutes-help', style: helpStyle }, '1 to 240 minutes.'),
+                  stepErrors.mins ? hh('p', { id: 'learning-lab-routine-step-minutes-error', role: 'alert', style: errorStyle }, stepErrors.mins) : null
+                )
+              ),
+              hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add step')
             )
-          )
-        ),
-
-        (r.steps || []).length === 0 ? tkEmptyState(type.icon, 'No steps yet. Build out your routine.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            (r.steps || []).map(function(s, i) {
-              return hh('div', { key: 'rs-' + s.id, style: { display: 'flex', gap: 8, alignItems: 'center', padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + type.color } },
-                hh('span', { style: { color: type.color, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 20 } }, (i + 1) + '.'),
-                hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, s.text),
-                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.mins + 'm'),
-                hh('button', { onClick: function() { removeStep(s.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              );
-            })
           ),
-
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 12 } },
-          tkBtn('← All routines', function() { setView('list'); setActiveId(null); }, 'ghost'),
-          tkBtn('🗑 Delete', function() { removeRoutine(r.id); setView('list'); }, 'bad')
+          hh('section', { 'aria-labelledby': 'learning-lab-routine-steps-heading' },
+            hh('h3', { id: 'learning-lab-routine-steps-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#d1fae5', fontSize: 14 } }, 'Routine steps'),
+            steps.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No steps saved yet.')
+              : hh('ol', { style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, paddingLeft: 24 } },
+                  steps.map(function(step) { return hh('li', { key: 'rs-' + step.id, style: { paddingLeft: 4 } }, hh('article', { 'aria-label': String(step.text || 'Untitled step') + ', ' + (normalizedMinutes(step.mins) || 0) + ' minutes', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.62)', border: '1px solid #64748b' } }, hh('div', null, hh('p', { style: { margin: 0, color: '#f8fafc', fontSize: 12 } }, String(step.text || 'Untitled step')), hh('p', { style: { margin: '3px 0 0', color: '#e2e8f0', fontSize: 10 } }, (normalizedMinutes(step.mins) || 0) + ' minutes')), hh('button', { type: 'button', onClick: function() { removeStep(routine, step); }, 'aria-label': 'Remove routine step: ' + String(step.text || 'Untitled step'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove'))); })
+                )
+          ),
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10, marginTop: 14 } },
+            hh('button', { type: 'button', onClick: returnToList, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #94a3b8', background: '#334155', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'All routines'),
+            hh('button', { type: 'button', onClick: function() { removeRoutine(routine); }, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #f87171', background: '#991b1b', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Delete routine')
+          )
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🔁', 'Routine Builder', 'Morning + evening + study + transition + pre-test routines. Steps + estimated time. Streak per routine.', '#10b981'),
-
+      tkSectionHeader('🔁', 'Routine Builder', 'Build a reusable sequence of steps with optional time estimates.', '#10b981'),
       tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '+ New routine'),
-          tkInput(newTitle, setNewTitle, 'Routine name (e.g., "My morning")', { marginBottom: 8 }),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
-            TYPES.map(function(t) {
-              var on = newType === t.id;
-              return hh('button', { key: 'rt-' + t.id,
-                onClick: function() { setNewType(t.id); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? t.color + '30' : 'rgba(15,23,42,0.5)', color: on ? t.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? t.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-              }, t.icon + ' ' + t.label);
-            })
+        hh('form', { onSubmit: function(event) { event.preventDefault(); createRoutine(); }, 'aria-labelledby': 'learning-lab-routine-create-heading', 'aria-describedby': 'learning-lab-routine-privacy-note' },
+          hh('h2', { id: 'learning-lab-routine-create-heading', style: { margin: '0 0 8px', color: '#6ee7b7', fontSize: 15 } }, 'Create a routine'),
+          hh('p', { id: 'learning-lab-routine-privacy-note', style: helpStyle }, 'Routines and completion dates save in this browser. Avoid private details if other people use this device.'),
+          hh('label', { htmlFor: 'learning-lab-routine-title', style: labelStyle }, 'Routine name (required)'),
+          hh('input', { id: 'learning-lab-routine-title', type: 'text', value: newTitle, required: true, maxLength: 500, onChange: function(event) { setNewTitle(event.target.value); if (createError) setCreateError(''); }, 'aria-invalid': createError ? 'true' : undefined, 'aria-describedby': createError ? 'learning-lab-routine-title-error' : undefined, style: fieldStyle }),
+          createError ? hh('p', { id: 'learning-lab-routine-title-error', role: 'alert', style: errorStyle }, createError) : null,
+          hh('fieldset', { style: { margin: '12px 0', padding: 0, border: 0 } },
+            hh('legend', { style: labelStyle }, 'Routine type'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+              TYPES.map(function(type) { var selected = newType === type.id; return hh('label', { key: 'rt-' + type.id, htmlFor: 'learning-lab-routine-type-' + type.id, style: { boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', gap: 7, minWidth: 44, minHeight: 44, padding: 9, borderRadius: 7, border: '1px solid ' + (selected ? type.color : '#64748b'), background: selected ? 'rgba(6,78,59,0.28)' : 'rgba(15,23,42,0.45)', color: '#f8fafc', cursor: 'pointer' } }, hh('input', { id: 'learning-lab-routine-type-' + type.id, type: 'radio', name: 'learning-lab-routine-type', value: type.id, checked: selected, onChange: function() { setNewType(type.id); } }), hh('span', { 'aria-hidden': 'true' }, type.icon), type.label); })
+            )
           ),
-          tkBtn('Create', createRoutine, 'primary')
+          hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Create routine')
         )
       ),
-
-      (data.routines || []).length === 0 ? tkEmptyState('🔁', 'No routines built yet.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          (data.routines || []).map(function(r) {
-            var t = TYPES.filter(function(x) { return x.id === r.type; })[0] || TYPES[0];
-            return hh('button', { key: 'ru-' + r.id,
-              onClick: function() { setActiveId(r.id); setView('edit'); },
-              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('strong', { style: { fontSize: 13, color: t.color } }, t.icon + ' ' + r.title),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeRoutine(r.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, (r.steps || []).length + ' steps · ' + (r.completions || []).length + ' done')
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-routine-list-heading' },
+        hh('h2', { id: 'learning-lab-routine-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#d1fae5', fontSize: 15 } }, 'Saved routines'),
+        routines.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #475569', color: '#e2e8f0' } }, 'No routines saved yet.')
+          : hh('ul', { 'aria-label': routines.length + (routines.length === 1 ? ' saved routine' : ' saved routines'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              routines.map(function(routine) {
+                var type = typeFor(routine.type);
+                var headingId = 'learning-lab-routine-card-heading-' + routine.id;
+                var stepCount = (routine.steps || []).length;
+                var completionCount = (routine.completions || []).length;
+                return hh('li', { key: 'ru-' + routine.id }, hh('article', { 'aria-labelledby': headingId, style: { height: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid ' + type.color } },
+                  hh('p', { style: { margin: '0 0 4px', color: type.color, fontSize: 11, fontWeight: 800 } }, hh('span', { 'aria-hidden': 'true' }, type.icon + ' '), type.label),
+                  hh('h3', { id: headingId, style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, String(routine.title || 'Untitled routine')),
+                  hh('p', { style: helpStyle }, stepCount + (stepCount === 1 ? ' step' : ' steps') + ', about ' + totalMinutes(routine) + ' minutes, completed on ' + completionCount + (completionCount === 1 ? ' date.' : ' dates.')),
+                  hh('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 10 } }, 'Created ', hh('time', { dateTime: routine.createdAt || undefined }, relDate(routine.createdAt))),
+                  hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                    hh('button', { type: 'button', onClick: function() { openRoutine(routine); }, style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open routine'),
+                    hh('button', { type: 'button', onClick: function() { removeRoutine(routine); }, 'aria-label': 'Delete routine: ' + String(routine.title || 'Untitled routine'), style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                  )
+                ));
+              })
+            )
+      )
     );
   }
 
