@@ -15404,89 +15404,224 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { drafts: [] };
     var setData = props.setData;
-    var ts = R.useState(null);                       var activeType = ts[0]; var setActiveType = ts[1];
-    var fs = R.useState({ to: 'Mom', body: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { to: '', myName: '', body: '' };
+    var ts = R.useState(null); var activeType = ts[0]; var setActiveType = ts[1];
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var be = R.useState(''); var bodyError = be[0]; var setBodyError = be[1];
+    var cs = R.useState(''); var copyStatus = cs[0]; var setCopyStatus = cs[1];
 
     var TEMPLATES = [
-      { id: 'struggling', label: 'I\'m struggling at school', icon: '🆘',
-        prompt: 'Tell them what\'s hard without minimizing or catastrophizing.',
-        body: 'Hi [Parent],\n\nI\'ve been having a hard time with [SPECIFIC: a class, friendships, focus, mood, sleep, etc.] and I wanted you to know.\n\nWhat\'s going on: [BRIEF]\n\nWhat I\'ve tried: [SHORT LIST]\n\nWhat I think might help: [IF YOU HAVE IDEAS] OR I don\'t know what to try next — that\'s why I\'m telling you.\n\nI\'m not in crisis. I just don\'t want to figure this out alone.\n\nLove,\n[Me]'
+      { id: 'school', label: 'Ask for support with school', icon: '🆘',
+        prompt: 'Describe what is difficult, what you have tried, and what kind of support you want.',
+        body: 'Hi [Recipient],\n\nI want to let you know that I have been having a hard time with [CLASS, TASK, SITUATION, OR FEELING].\n\nWhat I have noticed: [DETAILS YOU WANT TO SHARE]\n\nWhat I have tried: [OPTIONAL]\n\nWhat might help: [IDEA OR “I AM NOT SURE YET”]\n\nCould we choose a time to talk about this?\n\n[Your name]'
       },
-      { id: 'mh',         label: 'I want mental health support', icon: '💭',
-        prompt: 'Ask for therapy, a psychiatrist, or a check-up.',
-        body: 'Hi [Parent],\n\nI\'ve been thinking about this for a while and I want to ask you about it.\n\nI think I would benefit from [therapy / a psychiatrist appointment / talking to my doctor about how I\'m feeling].\n\nWhat I\'ve been noticing in myself: [BRIEF]\n\nI know this might feel surprising, or you might have questions. I\'m open to talking about it. Could we set aside 15 minutes this week?\n\nLove,\n[Me]'
+      { id: 'mh', label: 'Ask for mental health support', icon: '💬',
+        prompt: 'Ask to discuss counseling, health care, or another kind of support.',
+        body: 'Hi [Recipient],\n\nI want to ask for support with how I have been feeling.\n\nWhat I have noticed: [DETAILS YOU WANT TO SHARE]\n\nI would like to talk about [COUNSELING, A HEALTH APPOINTMENT, SCHOOL SUPPORT, OR ANOTHER OPTION].\n\nCould we set aside a time to talk and decide on a next step together?\n\n[Your name]'
       },
-      { id: 'iep',        label: 'I want to talk about my IEP/504', icon: '🎓',
-        prompt: 'Speaking up about what\'s working + what isn\'t in your plan.',
-        body: 'Hi [Parent],\n\nMy next IEP/504 meeting is coming up + I want to be more involved this time.\n\nWhat I think is working in my plan: [LIST]\n\nWhat I think isn\'t working: [LIST]\n\nWhat I want to ask for: [LIST]\n\nCan we talk before the meeting so I can practice saying these things out loud?\n\nLove,\n[Me]'
+      { id: 'iep', label: 'Talk about an IEP or 504 plan', icon: '🎓',
+        prompt: 'Share what is working, what is not working, and what you want to discuss.',
+        body: 'Hi [Recipient],\n\nI want to be more involved in talking about my IEP or 504 plan.\n\nWhat is working for me: [LIST]\n\nWhat I want to revisit: [LIST]\n\nWhat I want to ask about: [LIST]\n\nCould we talk before the next meeting so I can prepare what I want to say?\n\n[Your name]'
       },
-      { id: 'future',     label: 'I\'m thinking about my future', icon: '🌅',
-        prompt: 'Career, college, gap year, trade school — share where your head is.',
-        body: 'Hi [Parent],\n\nI\'ve been thinking about what I want to do after high school + I wanted to share where my head is.\n\nWhat I\'m considering: [LIST]\n\nWhat I\'m most drawn to: [SOMETHING]\n\nWhat scares me about it: [BE HONEST]\n\nI know I don\'t have to decide yet. But I want you to know what I\'m thinking + I want to hear what you think too.\n\nLove,\n[Me]'
+      { id: 'future', label: 'Share thoughts about the future', icon: '🌅',
+        prompt: 'Start a conversation about education, work, training, or another path.',
+        body: 'Hi [Recipient],\n\nI have been thinking about what I may want to do next and would like to share where my thinking is right now.\n\nOptions I am considering: [LIST]\n\nWhat interests me: [DETAILS]\n\nQuestions or concerns I have: [DETAILS]\n\nCould we choose a time to talk and listen to each other’s ideas?\n\n[Your name]'
       },
-      { id: 'boundary',   label: 'I need a boundary respected', icon: '🛡',
-        prompt: 'Hard but important.',
-        body: 'Hi [Parent],\n\nThere\'s something I\'ve been wanting to ask for + I\'m going to try to say it directly.\n\nWhat I need: [SPECIFIC — privacy, less hovering, more sleep, room to make my own choices about X, less commentary about Y]\n\nWhy: [EXPLAIN — without attacking them]\n\nWhat I\'m offering in return: [IF APPROPRIATE — communication, follow-through, etc.]\n\nI\'m not trying to be difficult. I\'m trying to grow into more independence in a way that still keeps us close.\n\nLove,\n[Me]'
+      { id: 'boundary', label: 'Ask to discuss a boundary', icon: '🛡️',
+        prompt: 'Describe a specific need and invite a conversation about it.',
+        body: 'Hi [Recipient],\n\nI want to talk about a boundary that is important to me.\n\nWhat I am asking for: [SPECIFIC REQUEST]\n\nWhy it matters to me: [DETAILS YOU WANT TO SHARE]\n\nWhat I am open to discussing: [OPTIONS OR QUESTIONS]\n\nCould we choose a time to talk about this?\n\n[Your name]'
       },
-      { id: 'thanks',     label: 'Thank you (no agenda)', icon: '💛',
-        prompt: 'For when you want to acknowledge them.',
-        body: 'Hi [Parent],\n\nI don\'t say this enough, so:\n\nThank you for [SPECIFIC — being there last week, helping me figure out X, just being you].\n\nIt mattered.\n\nLove,\n[Me]'
+      { id: 'thanks', label: 'Share appreciation', icon: '💛',
+        prompt: 'Thank someone for something specific and describe its impact.',
+        body: 'Hi [Recipient],\n\nI wanted to thank you for [SPECIFIC THING].\n\nIt mattered to me because [IMPACT].\n\n[Your name]'
       }
     ];
 
-    function generate(t) {
-      return t.body.replace(/\[Parent\]/g, form.to || '[Parent]').replace(/\[Me\]/g, '[Your name]');
+    function focusById(id, selectText) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (!target || typeof target.focus !== 'function') return;
+        target.focus();
+        if (selectText && typeof target.select === 'function') target.select();
+      }, 0);
     }
-    function save(t) {
-      var d = { id: tkId(), date: todayISO(), type: t.id, body: form.body || generate(t) };
-      setData({ drafts: [d].concat(data.drafts || []) });
-      setForm({ to: 'Mom', body: '' });
-      setActiveType(null);
+    function templateFor(id) {
+      return TEMPLATES.filter(function(template) { return template.id === id; })[0] || null;
+    }
+    function generate(template, values) {
+      values = values || emptyForm;
+      return template.body
+        .split('[Recipient]').join(values.to.trim() || '[Recipient]')
+        .split('[Your name]').join(values.myName.trim() || '[Your name]');
+    }
+    function selectTemplate(template) {
+      var next = Object.assign({}, emptyForm, { body: generate(template, emptyForm) });
+      setForm(next); setBodyError(''); setCopyStatus(''); setActiveType(template.id);
+      llAnnounce(template.label + ' template opened. Review and replace every bracketed placeholder.');
+      focusById('learning-lab-message-editor-heading');
+    }
+    function updateIdentity(field, value, template) {
+      var next = Object.assign({}, form); next[field] = value;
+      if (form.body === generate(template, form)) next.body = generate(template, next);
+      setForm(next); setCopyStatus('');
+    }
+    function returnToTemplates() {
+      setForm(emptyForm); setBodyError(''); setCopyStatus(''); setActiveType(null);
+      focusById('learning-lab-message-template-heading');
+    }
+    function goBack(template) {
+      var baseBody = generate(template, emptyForm);
+      var changed = form.to.trim() || form.myName.trim() || form.body !== baseBody;
+      if (!changed) { returnToTemplates(); return; }
+      askLearningLabConfirmation('Return to the template list and discard the changes in this message?', { title: 'Discard this message draft?', confirmText: 'Discard changes' }).then(function(accepted) {
+        if (accepted) returnToTemplates();
+      });
+    }
+    function save(template) {
+      var body = form.body.trim();
+      if (!body) {
+        setBodyError('Enter or keep message text before saving the draft.');
+        llAnnounce('Draft not saved. The message body is empty.');
+        focusById('learning-lab-message-body');
+        return;
+      }
+      var draft = { id: tkId(), date: todayISO(), type: template.id, templateLabel: template.label, body: body };
+      setData(Object.assign({}, data, { drafts: [draft].concat(data.drafts || []) }));
+      llAnnounce(template.label + ' draft saved in this browser.');
+      returnToTemplates();
+    }
+    function copyMessage() {
+      var body = form.body.trim();
+      if (!body) {
+        setBodyError('Enter or keep message text before copying it.'); setCopyStatus('');
+        llAnnounce('Message not copied. The message body is empty.');
+        focusById('learning-lab-message-body');
+        return;
+      }
+      setBodyError('');
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        setCopyStatus('Clipboard access is unavailable. The message is selected; use Control+C or Command+C to copy it.');
+        llAnnounce('Clipboard access is unavailable. The message is selected for manual copying.');
+        focusById('learning-lab-message-body', true);
+        return;
+      }
+      Promise.resolve(navigator.clipboard.writeText(body)).then(function() {
+        setCopyStatus('Message copied. Paste it into your messaging app, review the recipient and details, and send it there.');
+        llAnnounce('Message copied to the clipboard.');
+      }).catch(function() {
+        setCopyStatus('The message could not be copied automatically. The text is selected; use Control+C or Command+C.');
+        llAnnounce('Automatic copying failed. The message is selected for manual copying.');
+        focusById('learning-lab-message-body', true);
+      });
+    }
+    function removeDraft(draft) {
+      askLearningLabConfirmation('Remove this saved ' + (draft.templateLabel || 'message') + ' draft? This cannot be undone.', { title: 'Remove this saved draft?', confirmText: 'Remove draft' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { drafts: (data.drafts || []).filter(function(item) { return item.id !== draft.id; }) }));
+        llAnnounce('Saved message draft removed.');
+        focusById('learning-lab-message-saved-heading');
+      });
     }
 
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' };
+
     if (activeType) {
-      var t = TEMPLATES.filter(function(x) { return x.id === activeType; })[0];
-      if (!t) { setActiveType(null); return null; }
+      var activeTemplate = templateFor(activeType);
+      if (!activeTemplate) {
+        return hh('div', { style: { padding: 14 } }, tkSectionHeader('💌', 'Message template unavailable', 'This template may no longer be available.', '#a855f7'), hh('button', { type: 'button', onClick: returnToTemplates, style: Object.assign({}, buttonStyle, { border: '1px solid #d8b4fe', background: '#6b21a8' }) }, 'Return to templates'));
+      }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('💌', t.label, t.prompt, '#a855f7'),
-        tkCard('#a855f7',
-          hh('div', null,
-            tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'To (Mom, Dad, Parent, Grandma...)', { marginBottom: 10 }),
-            tkTextarea(form.body || generate(t), function(v) { setForm(Object.assign({}, form, { body: v })); }, '', 16, { fontFamily: 'Georgia, serif', fontSize: 12 })
-          )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Back', function() { setActiveType(null); setForm({ to: 'Mom', body: '' }); }, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(form.body || generate(t)); alert('Copied.'); } catch (e) {} }, 'secondary'),
-            tkBtn('💾 Save draft', function() { save(t); }, 'primary')
+        tkSectionHeader('💌', activeTemplate.label, activeTemplate.prompt, '#a855f7'),
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(activeTemplate); }, 'aria-labelledby': 'learning-lab-message-editor-heading', 'aria-describedby': 'learning-lab-message-privacy-note' },
+          tkCard('#a855f7',
+            hh('div', null,
+              hh('h2', { id: 'learning-lab-message-editor-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Edit ' + activeTemplate.label + ' message'),
+              hh('p', { id: 'learning-lab-message-privacy-note', style: helpStyle }, 'Saved drafts stay in this browser. Clipboard content may be available to other apps on this device, so review private details before copying.'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, marginBottom: 12 } },
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-message-recipient', style: labelStyle }, 'Recipient name or relationship (optional)'),
+                  hh('input', { id: 'learning-lab-message-recipient', type: 'text', value: form.to, maxLength: 200, onChange: function(event) { updateIdentity('to', event.target.value, activeTemplate); }, style: fieldStyle })
+                ),
+                hh('div', null,
+                  hh('label', { htmlFor: 'learning-lab-message-name', style: labelStyle }, 'Your name (optional)'),
+                  hh('input', { id: 'learning-lab-message-name', type: 'text', autoComplete: 'name', value: form.myName, maxLength: 200, onChange: function(event) { updateIdentity('myName', event.target.value, activeTemplate); }, style: fieldStyle })
+                )
+              ),
+              hh('label', { htmlFor: 'learning-lab-message-body', style: labelStyle }, 'Message body (required)'),
+              hh('textarea', { id: 'learning-lab-message-body', value: form.body, rows: 16, required: true, maxLength: 10000, onChange: function(event) { setForm(Object.assign({}, form, { body: event.target.value })); if (bodyError) setBodyError(''); setCopyStatus(''); }, 'aria-invalid': bodyError ? 'true' : undefined, 'aria-describedby': 'learning-lab-message-body-help' + (bodyError ? ' learning-lab-message-body-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 280, resize: 'vertical', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.55 }) }),
+              hh('p', { id: 'learning-lab-message-body-help', style: helpStyle }, 'Replace every bracketed placeholder. Change or remove any sentence that does not match your experience, needs, or preferred tone.'),
+              bodyError ? hh('p', { id: 'learning-lab-message-body-error', role: 'alert', style: errorStyle }, bodyError) : null,
+              copyStatus ? hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '8px 0', padding: 8, borderRadius: 6, border: '1px solid #c084fc', color: '#e9d5ff', fontSize: 11 } }, copyStatus) : null
+            )
+          ),
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10 } },
+            hh('button', { type: 'button', onClick: function() { goBack(activeTemplate); }, style: Object.assign({}, buttonStyle, { border: '1px solid #94a3b8', background: '#334155' }) }, 'Back to templates'),
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10 } },
+              hh('button', { type: 'button', onClick: copyMessage, style: Object.assign({}, buttonStyle, { border: '1px solid #d8b4fe', background: '#6b21a8' }) }, 'Copy message'),
+              hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { border: '1px solid #6ee7b7', background: '#047857' }) }, 'Save draft')
+            )
           )
         )
       );
     }
 
+    var drafts = data.drafts || [];
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💌', 'Parent Message Builder', '6 templates for hard conversations with parents/guardians. Practice the words first.', '#a855f7'),
-
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-        TEMPLATES.map(function(t) {
-          return hh('button', { key: 'pm-' + t.id,
-            onClick: function() { setActiveType(t.id); },
-            style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
-          },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
-            hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, t.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, t.prompt)
-          );
-        })
+      tkSectionHeader('💌', 'Parent or Guardian Message Builder', 'Choose a starting template and adapt every part in your own words.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-message-safety-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-message-safety-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13 } }, 'Text preparation only'),
+        hh('p', { style: { margin: 0 } }, 'This tool does not address, send, or monitor messages. If you are in immediate danger or may harm yourself or someone else, contact local emergency or crisis services now instead of waiting for a reply.')
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-message-template-heading' },
+        hh('h2', { id: 'learning-lab-message-template-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Choose a message template'),
+        hh('ul', { 'aria-label': 'Parent or guardian message templates', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: '0 0 16px', padding: 0, listStyle: 'none' } },
+          TEMPLATES.map(function(template) {
+            return hh('li', { key: 'pm-' + template.id },
+              hh('button', { id: 'learning-lab-message-template-' + template.id, type: 'button', onClick: function() { selectTemplate(template); }, style: { boxSizing: 'border-box', display: 'block', width: '100%', minHeight: 44, height: '100%', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(88,28,135,0.28)', color: '#f8fafc', border: '1px solid #c084fc', cursor: 'pointer' } },
+                hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 22, marginBottom: 4 } }, template.icon),
+                hh('strong', { style: { display: 'block', color: '#e9d5ff', fontSize: 13 } }, template.label),
+                hh('span', { style: { display: 'block', marginTop: 5, color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 } }, template.prompt)
+              )
+            );
+          })
+        )
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-message-saved-heading' },
+        hh('h2', { id: 'learning-lab-message-saved-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Saved drafts'),
+        hh('p', { style: helpStyle }, 'Saved drafts stay in this browser and are not sent. Remove drafts you no longer need, especially on a shared device.'),
+        drafts.length > 10 ? hh('p', { style: helpStyle }, 'Showing the 10 most recent drafts out of ' + drafts.length + '.') : null,
+        drafts.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No drafts saved yet.')
+          : hh('ul', { 'aria-label': 'Most recent saved message drafts', style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } },
+              drafts.slice(0, 10).map(function(draft) {
+                var template = templateFor(draft.type);
+                var label = draft.templateLabel || (template ? template.label : 'Message');
+                var headingId = 'learning-lab-message-draft-heading-' + draft.id;
+                return hh('li', { key: 'md-' + draft.id },
+                  hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 9, background: 'rgba(15,23,42,0.65)', border: '1px solid #c084fc' } },
+                    hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+                      hh('div', null,
+                        hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#e9d5ff', fontSize: 13 } }, label + ' draft'),
+                        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 11 } }, 'Saved ', hh('time', { dateTime: draft.date || undefined }, relDate(draft.date)))
+                      ),
+                      hh('button', { type: 'button', onClick: function() { removeDraft(draft); }, 'aria-label': 'Remove saved ' + label + ' draft', style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                    ),
+                    hh('details', { style: { marginTop: 10, color: '#e2e8f0' } },
+                      hh('summary', { style: { display: 'flex', alignItems: 'center', minHeight: 44, color: '#e9d5ff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Review full draft'),
+                      hh('pre', { style: { margin: '8px 0 0', padding: 10, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', borderRadius: 6, background: '#020617', color: '#f1f5f9', fontSize: 11, lineHeight: 1.55 } }, String(draft.body || 'Empty draft'))
+                    )
+                  )
+                );
+              })
+            )
       )
     );
   }
 
-  // ── NNN. PERSONAL RECOVERY KIT (Wave 13) ──
-  // Post-hard-day reset checklist. The 8-step "I survived today, now what"
-  // recovery protocol.
   function PersonalRecoveryKit(props) {
     if (!R) return null;
     var data = props.data || { recoveries: [] };
