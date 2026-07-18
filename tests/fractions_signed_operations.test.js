@@ -27,6 +27,22 @@ describe('Fractions Lab signed operations', () => {
     expect(classify(2, true)).toBe('undefined');
   });
 
+  it('explains signed-operation reasoning and subtraction rewrites', () => {
+    const explain = window.__FractionsCore.buildSignedOperationReasoning;
+    const subtraction = explain('sub', -1, 2, -3, 4, 'positive');
+    expect(subtraction.title).toBe('Add the opposite');
+    expect(subtraction.rewrite).toBe('-1/2 - (-3/4) = -1/2 + (3/4)');
+    expect(subtraction.rule).toContain("second addend's positive sign");
+
+    const cancellation = explain('add', -2, 3, 2, 3, 'zero');
+    expect(cancellation.rule).toContain('additive inverses');
+    expect(cancellation.rule).toContain('cancel to zero');
+
+    expect(explain('mul', -2, 3, 3, 5, 'negative').rule).toContain('different signs');
+    expect(explain('div', -1, 2, -3, 4, 'positive').rule).toContain('same signs');
+    expect(explain('mul', 0, 5, -7, 8, 'zero').title).toBe('Use the zero rule');
+  });
+
   it('provides a curated mission deck with valid signs across all operations', () => {
     const core = window.__FractionsCore;
     expect(core.signedOperationChallengeCount).toBe(10);
@@ -77,7 +93,9 @@ describe('Fractions Lab signed operations', () => {
     expect(html).toContain('name="fraction-sign-prediction"');
     expect(html).toContain('Check sign and reveal');
     expect(html).toContain('Predict the sign before revealing the exact value.');
+    expect(html).toContain('Strategy: For multiplication and division, decide whether the two nonzero operands have the same sign or different signs.');
     expect(html).not.toContain('The exact result is -2/3');
+    expect(html).not.toContain('Reasoning coach:');
   });
 
   it('reveals a normalized exact result after a prediction check', () => {
@@ -93,6 +111,9 @@ describe('Fractions Lab signed operations', () => {
       signFeedback: { key: 'div|1|2|-3|4', correct: true, actual: 'negative' }
     });
     expect(html).toContain('The exact result is -2/3, which is negative.');
+    expect(html).toContain('Reasoning coach: Count negative signs');
+    expect(html).toContain('The operands have different signs, so the quotient is negative.');
+    expect(html).toContain('Same signs make a positive result; different signs make a negative result.');
     expect(html).toContain('aria-live="polite"');
   });
 

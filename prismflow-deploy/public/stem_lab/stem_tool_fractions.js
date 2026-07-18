@@ -119,6 +119,63 @@ window.StemLab = window.StemLab || {
     return value > 0 ? 'positive' : value < 0 ? 'negative' : 'zero';
   }
 
+  function buildSignedOperationReasoning(opMode, n1, d1, n2, d2, resultSign) {
+    var valueA = n1 / d1;
+    var valueB = n2 / d2;
+    var fractionA = n1 + '/' + d1;
+    var fractionB = n2 + '/' + d2;
+
+    function explainSum(first, second) {
+      if (first === 0 && second === 0) return 'Both addends are zero, so their sum is zero.';
+      if (first === 0 || second === 0) return "Adding zero leaves the nonzero addend unchanged, so the result keeps that addend's sign.";
+      if (Math.abs(first + second) < 1e-12) return 'The addends are additive inverses: equal distances from zero in opposite directions. They cancel to zero.';
+      if ((first < 0) === (second < 0)) return 'The addends have the same sign. Add their magnitudes and keep their shared ' + (first < 0 ? 'negative' : 'positive') + ' sign.';
+      var firstIsLarger = Math.abs(first) > Math.abs(second);
+      return 'The addends have opposite signs. Subtract their magnitudes and keep the ' + (firstIsLarger ? 'first' : 'second') + " addend's " + (firstIsLarger ? (first < 0 ? 'negative' : 'positive') : (second < 0 ? 'negative' : 'positive')) + ' sign because it has the greater magnitude.';
+    }
+
+    if (opMode === 'sub') {
+      var oppositeNumerator = n2 === 0 ? 0 : -n2;
+      return {
+        title: 'Add the opposite',
+        prompt: "First change subtraction into addition of the opposite. Then compare the addends' signs and magnitudes.",
+        rewrite: fractionA + ' - (' + fractionB + ') = ' + fractionA + ' + (' + oppositeNumerator + '/' + d2 + ')',
+        rule: explainSum(valueA, -valueB),
+        cue: 'Subtraction changes B to its opposite before the addition sign rules apply.'
+      };
+    }
+
+    if (opMode === 'add') {
+      return {
+        title: 'Compare signs and magnitudes',
+        prompt: 'Ask whether the addends point in the same direction from zero. If not, compare their magnitudes.',
+        rewrite: null,
+        rule: explainSum(valueA, valueB),
+        cue: 'Same signs combine; opposite signs compete by magnitude.'
+      };
+    }
+
+    var operationWord = opMode === 'mul' ? 'product' : 'quotient';
+    if (resultSign === 'zero') {
+      return {
+        title: 'Use the zero rule',
+        prompt: opMode === 'mul' ? 'Check for a zero factor before counting negative signs.' : 'Check the numerator of the dividend and make sure the divisor is nonzero.',
+        rewrite: null,
+        rule: opMode === 'mul' ? "A factor is zero, so the product is zero regardless of the other factor's sign." : 'The dividend is zero and the divisor is nonzero, so the quotient is zero.',
+        cue: 'Zero has no positive or negative direction.'
+      };
+    }
+
+    var sameSign = (valueA < 0) === (valueB < 0);
+    return {
+      title: 'Count negative signs',
+      prompt: 'For multiplication and division, decide whether the two nonzero operands have the same sign or different signs.',
+      rewrite: null,
+      rule: 'The operands have ' + (sameSign ? 'the same' : 'different') + ' signs, so the ' + operationWord + ' is ' + resultSign + '.',
+      cue: 'Same signs make a positive result; different signs make a negative result.'
+    };
+  }
+
   var SIGNED_OPERATION_CHALLENGES = [
     { label: 'Opposite-sign sum', opMode: 'add', num1: -1, den1: 2, num2: 3, den2: 4 },
     { label: 'Negative sum', opMode: 'add', num1: -5, den1: 6, num2: 1, den2: 3 },
@@ -142,6 +199,7 @@ window.StemLab = window.StemLab || {
   window.__FractionsCore = Object.assign({}, window.__FractionsCore || {}, {
     normalizeFractionPair: normalizeFractionPair,
     classifyFractionResultSign: classifyFractionResultSign,
+    buildSignedOperationReasoning: buildSignedOperationReasoning,
     signedOperationChallengeCount: SIGNED_OPERATION_CHALLENGES.length,
     getSignedOperationChallenge: getSignedOperationChallenge
   });
@@ -2303,6 +2361,7 @@ window.StemLab = window.StemLab || {
     var opSymbols = { add: '+', sub: '\u2212', mul: '\u00D7', div: '\u00F7' };
     var opUndefined = (opMode === 'div' && num2 === 0); // dividing by a zero fraction is undefined; guard before simplify masks the 0 denominator
     var opResultSign = classifyFractionResultSign(opSimplified[0], opUndefined);
+    var signReasoning = opUndefined ? null : buildSignedOperationReasoning(opMode, num1, den1, num2, den2, opResultSign);
     var signExpressionKey = [opMode, num1, den1, num2, den2].join('|');
     var signReveal = !signedFractions || !!(signFeedback && signFeedback.key === signExpressionKey);
 
@@ -3045,7 +3104,7 @@ window.StemLab = window.StemLab || {
         } else {
           sfxWrong();
         }
-        announceToSR((correct ? 'Prediction correct. ' : 'Prediction review. ') + 'The result is ' + opResultSign + '.');
+        announceToSR((correct ? 'Prediction correct. ' : 'Prediction review. ') + 'The result is ' + opResultSign + '. ' + signReasoning.rule);
       }
 
       var renderSignedOperationNumberLine = function() {
@@ -3214,6 +3273,7 @@ window.StemLab = window.StemLab || {
         signedFractions && h('fieldset', { className: 'bg-violet-50 border border-violet-200 rounded-xl p-3' },
           h('legend', { className: 'px-1 text-xs font-black text-violet-800' }, 'Sign Detective: predict the result'),
           opUndefined ? h('p', { role: 'status', className: 'text-xs text-red-700' }, 'The second fraction is zero, so division is undefined and has no sign.') : h(React.Fragment, null,
+            !signReveal && h('p', { className: 'text-[11px] text-violet-700 mb-2' }, 'Strategy: ' + signReasoning.prompt),
             h('div', { className: 'grid grid-cols-3 gap-2' }, ['positive', 'zero', 'negative'].map(function(choice) {
               return h('label', { key: choice, className: 'flex items-center justify-center gap-2 rounded-lg border px-2 py-2 text-xs font-bold cursor-pointer ' + (signPrediction === choice ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200') },
                 h('input', { type: 'radio', name: 'fraction-sign-prediction', value: choice, checked: signPrediction === choice, disabled: opUndefined || signReveal, onChange: function() { upd({ signPrediction: choice, signFeedback: null }); } }),
@@ -3221,8 +3281,16 @@ window.StemLab = window.StemLab || {
               );
             })),
             !signReveal && h('button', { type: 'button', onClick: checkSignPrediction, disabled: !signPrediction, className: 'mt-2 w-full py-2 rounded-lg text-xs font-black ' + (signPrediction ? 'bg-violet-700 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed') }, 'Check sign and reveal'),
-            signFeedback && signFeedback.key === signExpressionKey && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-xs font-bold ' + (signFeedback.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900') },
-              (signFeedback.correct ? 'Prediction confirmed. ' : 'Prediction review. ') + 'The exact result is ' + opSimplified[0] + '/' + opSimplified[1] + ', which is ' + opResultSign + '.'
+            signFeedback && signFeedback.key === signExpressionKey && h(React.Fragment, null,
+              h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-2 rounded-lg p-2 text-xs font-bold ' + (signFeedback.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900') },
+                (signFeedback.correct ? 'Prediction confirmed. ' : 'Prediction review. ') + 'The exact result is ' + opSimplified[0] + '/' + opSimplified[1] + ', which is ' + opResultSign + '.'
+              ),
+              h('div', { role: 'note', className: 'mt-3 pt-3 border-t border-violet-200 text-violet-950' },
+                h('p', { className: 'text-xs font-black' }, 'Reasoning coach: ' + signReasoning.title),
+                signReasoning.rewrite && h('p', { className: 'mt-1 font-mono text-xs font-bold break-words' }, signReasoning.rewrite),
+                h('p', { className: 'mt-1 text-xs' }, signReasoning.rule),
+                h('p', { className: 'mt-1 text-[11px] font-bold text-violet-700' }, signReasoning.cue)
+              )
             )
           )
         ),
