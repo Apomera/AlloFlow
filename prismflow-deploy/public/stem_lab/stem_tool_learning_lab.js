@@ -12356,105 +12356,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { logs: [] };
     var setData = props.setData;
-    var fs = R.useState({ mood: 5, energy: 5, note: '' });
+    var emptyForm = function() { return { mood: 5, energy: 5, note: '' }; };
+    var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
 
     function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData({ logs: [entry].concat(data.logs || []) });
-      setForm({ mood: 5, energy: 5, note: '' });
+      var entry = { id: tkId(), date: todayISO(), time: Date.now(), mood: form.mood, energy: form.energy, note: form.note.trim() };
+      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setForm(emptyForm());
+      llAnnounce('Mood check-in saved. Mood ' + entry.mood + ' out of 10 and energy ' + entry.energy + ' out of 10.');
     }
-    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+    async function remove(log) {
+      if (!(await askLearningLabConfirmation('This permanently removes the mood check-in from ' + log.date + '.', {
+        title: 'Remove this mood check-in?', confirmText: 'Remove check-in'
+      }))) return;
+      setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== log.id; }) }));
+      llAnnounce('Mood check-in removed.');
+      focusById('learning-lab-mood-recent-heading');
+    }
 
     var logs = data.logs || [];
     var today = todayISO();
-    var todayLog = logs.filter(function(l) { return l.date === today; })[0];
-
+    var todayLog = logs.filter(function(log) { return log.date === today; })[0];
+    var dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     var last14 = [];
     for (var i = 13; i >= 0; i--) {
       var dt = new Date(); dt.setDate(dt.getDate() - i);
       var iso = dt.toISOString().slice(0, 10);
-      var l = logs.filter(function(x) { return x.date === iso; })[0];
-      last14.push({ date: iso, log: l, label: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()] });
+      var log = logs.filter(function(item) { return item.date === iso; })[0];
+      last14.push({ date: iso, log: log, label: dayLabels[dt.getDay()] });
+    }
+    var recentLogs = last14.map(function(day) { return day.log; }).filter(Boolean);
+    var avgMood = recentLogs.length ? (recentLogs.reduce(function(total, log) { return total + Number(log.mood || 0); }, 0) / recentLogs.length).toFixed(1) : '—';
+    var avgEnergy = recentLogs.length ? (recentLogs.reduce(function(total, log) { return total + Number(log.energy || 0); }, 0) / recentLogs.length).toFixed(1) : '—';
+    var stats = [
+      { label: 'Total check-ins', value: logs.length, color: '#f9a8d4', icon: '🌈' },
+      { label: 'Average mood, last 14 days', value: avgMood === '—' ? avgMood : avgMood + ' out of 10', color: '#ddd6fe', icon: '😊' },
+      { label: 'Average energy, last 14 days', value: avgEnergy === '—' ? avgEnergy : avgEnergy + ' out of 10', color: '#fde68a', icon: '⚡' }
+    ];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(249,168,212,0.6)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var buttonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fbcfe8', background: '#9d174d', color: '#fff', fontWeight: 800, cursor: 'pointer' };
+
+    function rangeField(id, label, value, lowLabel, highLabel, key, color) {
+      return hh('div', { style: { marginBottom: 12 } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+          hh('label', { htmlFor: id, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800 } }, label + ' (1 = ' + lowLabel + ', 10 = ' + highLabel + ')'),
+          hh('output', { htmlFor: id, 'aria-live': 'off', style: { color: color, fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'nowrap' } }, value + ' / 10')
+        ),
+        hh('input', { id: id, type: 'range', min: 1, max: 10, step: 1, value: value, 'aria-valuetext': value + ' out of 10, from ' + lowLabel + ' to ' + highLabel, onChange: function(event) { var patch = {}; patch[key] = parseInt(event.target.value, 10); setForm(Object.assign({}, form, patch)); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: color, cursor: 'pointer' } })
+      );
     }
 
-    var avgMood = logs.slice(0, 14).length > 0 ? (logs.slice(0, 14).reduce(function(s, l) { return s + l.mood; }, 0) / logs.slice(0, 14).length).toFixed(1) : '—';
-    var avgEnergy = logs.slice(0, 14).length > 0 ? (logs.slice(0, 14).reduce(function(s, l) { return s + l.energy; }, 0) / logs.slice(0, 14).length).toFixed(1) : '—';
-
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌈', 'Mood Tracker', 'Daily mood + energy log. Two sliders, 10 seconds.', '#ec4899'),
+      tkSectionHeader('🌈', 'Mood Tracker', 'Record mood and energy once each day, with an optional note.', '#ec4899'),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: 'Total logs', value: logs.length, color: '#ec4899', icon: '🌈' },
-          { label: 'Avg mood (14d)', value: avgMood + '/10', color: '#a855f7', icon: '😊' },
-          { label: 'Avg energy (14d)', value: avgEnergy + '/10', color: '#fbbf24', icon: '⚡' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'ms-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
+      hh('dl', { 'aria-label': 'Mood tracker summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, margin: '0 0 12px' } },
+        stats.map(function(stat, index) {
+          return hh('div', { key: 'ms-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(226,232,240,0.28)', textAlign: 'center' } },
+            hh('span', { 'aria-hidden': 'true', style: { fontSize: 14, display: 'block', marginBottom: 2 } }, stat.icon),
+            hh('dt', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800, marginBottom: 3 } }, stat.label),
+            hh('dd', { style: { margin: 0, fontSize: 15, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value)
           );
         })
       ),
 
-      todayLog ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, color: '#22c55e' } }, '✓ Today: mood ' + todayLog.mood + ' · energy ' + todayLog.energy)
+      todayLog ? hh('section', { 'aria-labelledby': 'learning-lab-mood-today-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(20,83,45,0.45)', border: '1px solid #86efac', marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-mood-today-heading', style: { fontSize: 12, color: '#bbf7d0', margin: '0 0 4px' } }, 'Today’s check-in is complete'),
+        hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, 'Mood ' + todayLog.mood + ' out of 10; energy ' + todayLog.energy + ' out of 10.')
       ) : tkCard('#ec4899',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 10 } }, '🌈 Quick check-in'),
-          hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-              hh('span', null, 'Mood (1 = low, 10 = high)'),
-              hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.mood + '/10')
-            ),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.mood,
-              onChange: function(e) { setForm(Object.assign({}, form, { mood: parseInt(e.target.value, 10) })); },
-              style: { width: '100%', accentColor: '#ec4899' }
-            })
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-mood-form-heading' },
+          hh('h3', { id: 'learning-lab-mood-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', margin: '0 0 4px' } }, 'Daily check-in'),
+          hh('p', { id: 'learning-lab-mood-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Your check-in saves in this browser. Mood information can be personal, so use a device and account you trust.'),
+          rangeField('learning-lab-mood-rating', 'Mood', form.mood, 'low', 'high', 'mood', '#f9a8d4'),
+          rangeField('learning-lab-energy-rating', 'Energy', form.energy, 'depleted', 'very energized', 'energy', '#fde68a'),
+          hh('div', { style: { marginBottom: 10 } },
+            hh('label', { htmlFor: 'learning-lab-mood-note', style: { display: 'block', fontSize: 11, color: '#f9a8d4', fontWeight: 800, marginBottom: 4 } }, 'Context note (optional)'),
+            hh('input', { id: 'learning-lab-mood-note', type: 'text', value: form.note, maxLength: 500, placeholder: 'What may have affected today?', 'aria-describedby': 'learning-lab-mood-privacy-note', onChange: function(event) { setForm(Object.assign({}, form, { note: event.target.value })); }, style: fieldStyle })
           ),
-          hh('div', { style: { marginBottom: 12 } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-              hh('span', null, 'Energy (1 = depleted, 10 = wired)'),
-              hh('strong', { style: { color: '#fbbf24', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.energy + '/10')
-            ),
-            hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.energy,
-              onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value, 10) })); },
-              style: { width: '100%', accentColor: '#fbbf24' }
-            })
-          ),
-          tkInput(form.note, function(v) { setForm(Object.assign({}, form, { note: v })); }, 'One-line context (optional)', { marginBottom: 10 }),
-          tkBtn('💾 Log it', save, 'primary')
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: buttonStyle }, 'Save today’s check-in')
         )
       ),
 
-      // 14-day strip
-      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 700, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📊 Last 14 days'),
-        hh('div', { style: { display: 'flex', gap: 2 } },
-          last14.map(function(d) {
-            var moodVal = d.log ? d.log.mood : 0;
+      hh('section', { 'aria-labelledby': 'learning-lab-mood-history-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-mood-history-heading', style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', margin: '0 0 4px' } }, 'Mood during the last 14 days'),
+        hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 8px' } }, 'Each column includes its date and numeric mood value; color is only an additional cue.'),
+        hh('ul', { 'aria-label': 'Fourteen-day mood history', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 4, alignItems: 'stretch', overflowX: 'auto' } },
+          last14.map(function(day) {
+            var moodVal = day.log ? Number(day.log.mood) : 0;
             var pct = moodVal > 0 ? (moodVal / 10) * 100 : 0;
-            var col = moodVal >= 7 ? '#22c55e' : moodVal >= 5 ? '#fbbf24' : moodVal > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
-            return hh('div', { key: 'mo-' + d.date, style: { flex: 1, height: 60, background: 'rgba(15,23,42,0.5)', borderRadius: 3, position: 'relative', overflow: 'hidden' },
-              title: d.date + (moodVal ? ': mood ' + moodVal : '')
-            },
-              hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+            var color = moodVal >= 7 ? '#4ade80' : moodVal >= 5 ? '#facc15' : moodVal > 0 ? '#f87171' : 'rgba(100,116,139,0.28)';
+            return hh('li', { key: 'mo-' + day.date, style: { flex: '1 0 38px', minWidth: 38, textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)' } },
+              hh('time', { dateTime: day.date, 'aria-label': day.date, style: { display: 'block', fontSize: 9, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 3 } }, day.label),
+              hh('div', { 'aria-hidden': 'true', style: { height: 56, background: 'rgba(15,23,42,0.65)', borderRadius: 4, position: 'relative', overflow: 'hidden', border: '1px solid rgba(148,163,184,0.25)' } },
+                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: color } })
+              ),
+              hh('span', { 'aria-label': moodVal ? 'Mood ' + moodVal + ' out of 10' : 'No mood logged', style: { display: 'block', minHeight: 18, fontSize: 10, fontWeight: 800, color: moodVal ? '#fff' : 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 3 } }, moodVal || '—')
             );
           })
         )
       ),
 
-      logs.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Recent'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-          logs.slice(0, 20).map(function(l) {
-            return hh('div', { key: 'ml-' + l.id, style: { padding: 6, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ec4899', display: 'flex', justifyContent: 'space-between' } },
-              hh('div', null,
-                hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, l.date + ' · mood ' + l.mood + ' · energy ' + l.energy),
-                l.note ? hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 8, fontStyle: 'italic' } }, l.note) : null
-              ),
-              hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
+      logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-mood-recent-heading' },
+        hh('h3', { id: 'learning-lab-mood-recent-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', margin: '0 0 8px' } }, 'Recent mood check-ins'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+          logs.slice(0, 20).map(function(log) {
+            var headingId = 'learning-lab-mood-log-' + log.id;
+            return hh('li', { key: 'ml-' + log.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #ec4899' } },
+              hh('article', { 'aria-labelledby': headingId, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                hh('div', { style: { flex: 1 } },
+                  hh('h4', { id: headingId, style: { fontSize: 11, color: '#fbcfe8', margin: '0 0 4px' } }, 'Check-in for ', hh('time', { dateTime: log.date }, log.date)),
+                  hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 7px', margin: 0, fontSize: 11 } },
+                    hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Mood'),
+                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.mood + ' out of 10'),
+                    hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Energy'),
+                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.energy + ' out of 10')
+                  ),
+                  log.note ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', margin: '5px 0 0', fontStyle: 'italic' } }, 'Context: ' + log.note) : null
+                ),
+                hh('button', { type: 'button', 'aria-label': 'Remove mood check-in from ' + log.date, onClick: function() { remove(log); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+              )
             );
           })
         )
