@@ -12,7 +12,10 @@ This directory contains both maintained guidance and dated review artifacts. Use
 - [Deployment guide](../DEPLOY_YOUR_OWN.md)
 - [Desktop guide](../desktop/README.md)
 - [Security policy](../SECURITY.md)
-- [Accessibility evaluation](../VPAT-2.5-WCAG-AlloFlow.md)
+- [Historical VPAT evaluation](../VPAT-2.5-WCAG-AlloFlow.md)
+- [Current limited-scope WCAG 2.2 audit](../a11y-audit/WCAG-2.2-current-audit.md)
+- [Manual accessibility test plan](accessibility-manual-test-plan.md)
+- [Release evidence template](release-evidence-template.md)
 
 ## Dated reviews and handoffs
 

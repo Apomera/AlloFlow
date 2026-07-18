@@ -31,6 +31,21 @@ on:
     branches: [main]
 
 jobs:
+  docs-integrity:
+    name: Documentation + promotion integrity
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Maintained documentation accuracy and local links
+        run: npm run audit:docs
+      - name: Promotional-site accuracy, accessibility, and local links
+        run: npm run audit:promo
+
   gate:
     name: Static gate (crash + load classes)
     runs-on: windows-latest

@@ -1060,7 +1060,7 @@ window.StemLab = window.StemLab || {
                   onSubmit: function(e) { e.preventDefault(); var inp = e.target.elements['ff-add-' + g.id]; if (inp) { addItem(g.id, inp.value); inp.value = ''; } }
                 },
                   h('input', { name: 'ff-add-' + g.id, placeholder: t('stem.freeforms.add_idea_placeholder', 'Add an idea…'), 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-sm text-slate-100' }),
-                  h('button', { type: 'submit', className: BTN_GHOST }, '+')
+                  h('button', { type: 'submit', className: BTN_GHOST, 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title }, '+')
                 )
               );
             }),

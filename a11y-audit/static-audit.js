@@ -5,7 +5,7 @@
  * Scans all JS/JSX source files for known accessibility anti-patterns
  * identified in the March 2026 comprehensive audit.
  *
- * Usage: node static-audit.js [--fix-report] [--json] [--file path]
+ * Usage: node static-audit.js [--json] [--gate] [--file path]
  */
 
 const fs = require('fs');
@@ -17,19 +17,22 @@ const ROOT = path.resolve(__dirname, '..');
 const STANDARD = 'WCAG 2.2 AA';
 
 const SCAN_DIRS = [
-  '',                // project root (AlloFlowANTI.txt, modules)
+  '',                // project root (canonical source files + module-only files)
   'stem_lab',
   'sel_hub',
-  'prismflow-deploy/src',
 ];
 
-const SCAN_EXTENSIONS = ['.js', '.jsx', '.txt'];
+const SCAN_EXTENSIONS = ['.js', '.jsx'];
+const EXPLICIT_ROOT_FILES = new Set(['AlloFlowANTI.txt']);
 
 // Files to skip (compiled output, backups)
 const SKIP_PATTERNS = [
   /node_modules/,
+  /(?:^|[\\/])\.[^\\/]+$/,
   /_archive/,
   /backup/i,
+  /(?:^|[\\/])(?:build|dist|coverage|test-results)(?:[\\/]|$)/,
+  /(?:^|[\\/])_build_[^\\/]+\.js$/,
   /\.min\.js$/,
   /games_module\.js$/,       // compiled output; audit games_source.jsx instead
   /stem_lab_module\.js$/,    // too large for line-by-line; audited separately
@@ -327,8 +330,15 @@ function discoverFiles(singleFile) {
     for (const entry of fs.readdirSync(absDir)) {
       const full = path.join(absDir, entry);
       if (!fs.statSync(full).isFile()) continue;
-      if (!SCAN_EXTENSIONS.some(ext => entry.endsWith(ext))) continue;
+      const isExplicitRootFile = dir === '' && EXPLICIT_ROOT_FILES.has(entry);
+      if (!isExplicitRootFile && !SCAN_EXTENSIONS.some(ext => entry.endsWith(ext))) continue;
       if (SKIP_PATTERNS.some(pat => pat.test(full))) continue;
+      // Prefer authored JSX sources over generated root module counterparts.
+      // Module-only files remain in scope.
+      if (dir === '' && /_module\.js$/.test(entry)) {
+        const sourcePeer = path.join(absDir, entry.replace(/_module\.js$/, '_source.jsx'));
+        if (fs.existsSync(sourcePeer)) continue;
+      }
       files.push(full);
     }
   }
@@ -491,18 +501,13 @@ function generateReport(allFindings, outputJson, filesScanned) {
     console.log(`    ${bar} ${findings.length} (C:${crit} M:${maj} m:${min})`);
   }
 
-  // Compliance score
-  const maxScore = 100;
-  const penalty = bySeverity.critical.length * 5 + bySeverity.major.length * 2 + bySeverity.minor.length * 0.5;
-  const score = Math.max(0, Math.round(maxScore - penalty));
+  // Heuristic signal only. Static pattern counts cannot determine WCAG
+  // conformance and should never be converted into a compliance percentage.
   console.log('\n' + '-'.repeat(72));
-  console.log(`  ESTIMATED COMPLIANCE SCORE: ${score}/100`);
-  if (allFindings.length === 0) console.log('  Status: NO AUTOMATED FINDINGS -- manual verification still required');
-  else if (score >= 90) console.log('  Status: NEAR COMPLIANT -- minor issues remain');
-  else if (score >= 70) console.log('  Status: PARTIAL COMPLIANCE -- major gaps exist');
-  else if (score >= 50) console.log('  Status: NON-COMPLIANT -- significant remediation needed');
-  else console.log('  Status: NON-COMPLIANT -- critical barriers present');
-  console.log('  (Automated scan only; manual testing required for full assessment)');
+  if (allFindings.length === 0) console.log('  Result: NO HEURISTIC FINDINGS');
+  else console.log(`  Result: ${allFindings.length} HEURISTIC FINDING(S) REQUIRE TRIAGE`);
+  console.log('  This source scan does not determine WCAG conformance. Confirm findings');
+  console.log('  in rendered UI and complete manual assistive-technology testing.');
   console.log('='.repeat(72) + '\n');
 }
 
@@ -511,6 +516,7 @@ function generateReport(allFindings, outputJson, filesScanned) {
 function main() {
   const args = process.argv.slice(2);
   const outputJson = args.includes('--json');
+  const gate = args.includes('--gate');
   const fileIdx = args.indexOf('--file');
   const singleFile = fileIdx >= 0 ? args[fileIdx + 1] : null;
 
@@ -531,6 +537,7 @@ function main() {
   }
 
   generateReport(allFindings, outputJson, files.length);
+  if (gate && allFindings.length > 0) process.exitCode = 1;
 }
 
 main();
