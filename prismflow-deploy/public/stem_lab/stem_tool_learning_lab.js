@@ -12490,104 +12490,165 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { letters: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var fs = R.useState({ to: '', from: '', body: '', deliverOn: '' });
-    var form = fs[0]; var setForm = fs[1];
-    var rs = R.useState(null);                         var reading = rs[0]; var setReading = rs[1];
-
-    function save() {
-      if (!form.body.trim()) { alert('Need letter content.'); return; }
-      var letter = Object.assign({ id: tkId(), writtenOn: todayISO() }, form);
-      setData({ letters: [letter].concat(data.letters || []) });
-      setForm({ to: '', from: '', body: '', deliverOn: '' });
-      setView('list');
-    }
-    function remove(id) {
-      if (!confirm('Delete this letter?')) return;
-      setData({ letters: (data.letters || []).filter(function(l) { return l.id !== id; }) });
-    }
+    var emptyForm = function() { return { to: '', from: '', body: '', deliverOn: '' }; };
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var fs = R.useState(emptyForm()); var form = fs[0]; var setForm = fs[1];
+    var rs = R.useState(null); var reading = rs[0]; var setReading = rs[1];
+    var es = R.useState(''); var bodyError = es[0]; var setBodyError = es[1];
 
     var letters = data.letters || [];
     var today = todayISO();
+    var readingLetter = letters.filter(function(letter) { return letter.id === reading; })[0] || null;
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(196,181,253,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 };
+    var primaryButtonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #ddd6fe', background: '#6d28d9', color: '#fff', fontWeight: 800, cursor: 'pointer' };
+    var secondaryButtonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #c4b5fd', background: 'rgba(76,29,149,0.35)', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' };
 
-    if (view === 'reading' && reading) {
-      var l = letters.filter(function(x) { return x.id === reading; })[0];
-      if (!l) { setView('list'); return null; }
-      var canRead = !l.deliverOn || l.deliverOn <= today;
+    function updateForm(key, value) {
+      var patch = {}; patch[key] = value;
+      setForm(Object.assign({}, form, patch));
+      if (key === 'body' && bodyError) setBodyError('');
+    }
+    function save() {
+      var body = form.body.trim();
+      if (!body) {
+        setBodyError('Write a message to your future self before saving.');
+        llAnnounce('Letter was not saved. Write the letter body.');
+        focusById('learning-lab-future-letter-body');
+        return;
+      }
+      var letter = {
+        id: tkId(),
+        writtenOn: today,
+        to: form.to.trim(),
+        from: form.from.trim(),
+        body: body,
+        deliverOn: form.deliverOn
+      };
+      setData(Object.assign({}, data, { letters: [letter].concat(data.letters || []) }));
+      setForm(emptyForm());
+      setBodyError('');
+      setView('list');
+      llAnnounce(letter.deliverOn && letter.deliverOn > today ? 'Letter saved and sealed until ' + letter.deliverOn + '.' : 'Letter saved and available to read.');
+      focusById('learning-lab-future-write-button');
+    }
+    async function remove(letter) {
+      if (!(await askLearningLabConfirmation('This permanently removes the letter written on ' + letter.writtenOn + '.', {
+        title: 'Remove this future-self letter?', confirmText: 'Remove letter'
+      }))) return false;
+      setData(Object.assign({}, data, { letters: (data.letters || []).filter(function(item) { return item.id !== letter.id; }) }));
+      setReading(null);
+      setView('list');
+      llAnnounce('Future-self letter removed.');
+      focusById('learning-lab-future-write-button');
+      return true;
+    }
+    function startNew() {
+      setForm(emptyForm());
+      setBodyError('');
+      setView('new');
+      llAnnounce('New future-self letter form opened.');
+      focusById('learning-lab-future-letter-to');
+    }
+    function cancelNew() {
+      setForm(emptyForm());
+      setBodyError('');
+      setView('list');
+      llAnnounce('Letter draft canceled.');
+      focusById('learning-lab-future-write-button');
+    }
+    function openLetter(letter) {
+      setReading(letter.id);
+      setView('reading');
+      llAnnounce(letter.deliverOn && letter.deliverOn > today ? 'Letter is sealed until ' + letter.deliverOn + '.' : 'Letter opened.');
+      focusById('learning-lab-future-reading-heading');
+    }
+    function backToList() {
+      var previousId = reading;
+      setReading(null);
+      setView('list');
+      llAnnounce('Returned to future-self letters.');
+      focusById('learning-lab-future-letter-' + previousId);
+    }
+
+    if (view === 'reading' && readingLetter) {
+      var canRead = !readingLetter.deliverOn || readingLetter.deliverOn <= today;
+      var daysRemaining = 0;
+      if (!canRead) {
+        daysRemaining = Math.max(1, Math.ceil((new Date(readingLetter.deliverOn + 'T12:00:00').getTime() - new Date().getTime()) / 86400000));
+      }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('💌', 'Letter from ' + relDate(l.writtenOn), canRead ? 'Read it.' : 'Sealed until ' + l.deliverOn, '#a855f7'),
-        canRead ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '2px solid #a855f7', marginBottom: 14, fontFamily: 'Georgia, serif' } },
-          l.to ? hh('div', { style: { fontSize: 12, color: '#c084fc', marginBottom: 14, fontStyle: 'italic' } }, 'Dear ' + l.to + ',') : null,
-          hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, l.body),
-          l.from ? hh('div', { style: { fontSize: 12, color: '#c084fc', marginTop: 14, fontStyle: 'italic', textAlign: 'right' } }, '— ' + l.from + ', ' + l.writtenOn) : null
-        ) : hh('div', { style: { padding: 30, borderRadius: 14, background: 'rgba(168,85,247,0.08)', border: '2px dashed #a855f7', textAlign: 'center', marginBottom: 14 } },
-          hh('div', { style: { fontSize: 48, marginBottom: 10 } }, '🔒'),
-          hh('div', { style: { fontSize: 13, color: '#a855f7', marginBottom: 8 } }, 'Sealed until ' + l.deliverOn),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, (function() {
-            var d = new Date(l.deliverOn + 'T12:00:00').getTime() - new Date().getTime();
-            var days = Math.ceil(d / 86400000);
-            return days + ' days from today';
-          })())
+        tkSectionHeader('💌', 'Future-self letter', canRead ? 'Written ' + relDate(readingLetter.writtenOn) : 'Sealed until ' + readingLetter.deliverOn, '#a855f7'),
+        canRead ? hh('article', { 'aria-labelledby': 'learning-lab-future-reading-heading', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '2px solid #a855f7', marginBottom: 14, fontFamily: 'Georgia, serif' } },
+          hh('h3', { id: 'learning-lab-future-reading-heading', tabIndex: -1, style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 14px' } }, 'Letter written ', hh('time', { dateTime: readingLetter.writtenOn }, readingLetter.writtenOn)),
+          readingLetter.to ? hh('p', { style: { fontSize: 12, color: '#ddd6fe', margin: '0 0 14px', fontStyle: 'italic' } }, 'Dear ' + readingLetter.to + ',') : null,
+          hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 } }, readingLetter.body),
+          readingLetter.from ? hh('footer', { style: { fontSize: 12, color: '#ddd6fe', marginTop: 14, fontStyle: 'italic', textAlign: 'right' } }, '— ' + readingLetter.from) : null
+        ) : hh('section', { 'aria-labelledby': 'learning-lab-future-reading-heading', style: { padding: 30, borderRadius: 14, background: 'rgba(76,29,149,0.30)', border: '2px dashed #c4b5fd', textAlign: 'center', marginBottom: 14 } },
+          hh('div', { 'aria-hidden': 'true', style: { fontSize: 48, marginBottom: 10 } }, '🔒'),
+          hh('h3', { id: 'learning-lab-future-reading-heading', tabIndex: -1, style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 8px' } }, 'This letter is sealed'),
+          hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, 'It opens on ', hh('time', { dateTime: readingLetter.deliverOn }, readingLetter.deliverOn), ', about ' + daysRemaining + ' day' + (daysRemaining === 1 ? '' : 's') + ' from now.')
         ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Back', function() { setView('list'); setReading(null); }, 'ghost'),
-          tkBtn('🗑 Delete', function() { remove(l.id); setView('list'); }, 'bad')
+        hh('div', { role: 'group', 'aria-label': 'Letter reading actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+          hh('button', { type: 'button', onClick: backToList, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Back to letters'),
+          hh('button', { type: 'button', onClick: function() { remove(readingLetter); }, 'data-ll-focusable': true, style: Object.assign({}, secondaryButtonStyle, { borderColor: '#fecaca', background: 'rgba(127,29,29,0.55)', color: '#fff' }) }, 'Remove letter')
         )
       );
     }
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('💌', 'Write to your future self', 'A letter that opens on a chosen date. Reflect, encourage, predict.', '#a855f7'),
+        tkSectionHeader('💌', 'Write to your future self', 'Reflect, encourage yourself, or describe what you hope will change.', '#a855f7'),
         tkCard('#a855f7',
-          hh('div', null,
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+          hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-future-form-heading' },
+            hh('h3', { id: 'learning-lab-future-form-heading', style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 4px' } }, 'Compose your letter'),
+            hh('p', { id: 'learning-lab-future-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Letters save in this browser and may contain private reflections. Use a device and account you trust.'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'To (your future self\'s name)'),
-                tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'Future me')
+                hh('label', { htmlFor: 'learning-lab-future-letter-to', style: labelStyle }, 'To (optional)'),
+                hh('input', { id: 'learning-lab-future-letter-to', type: 'text', value: form.to, maxLength: 200, placeholder: 'Future me', onChange: function(event) { updateForm('to', event.target.value); }, style: fieldStyle })
               ),
               hh('div', null,
-                hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'From'),
-                tkInput(form.from, function(v) { setForm(Object.assign({}, form, { from: v })); }, 'Past me')
+                hh('label', { htmlFor: 'learning-lab-future-letter-from', style: labelStyle }, 'From (optional)'),
+                hh('input', { id: 'learning-lab-future-letter-from', type: 'text', value: form.from, maxLength: 200, placeholder: 'Past me', onChange: function(event) { updateForm('from', event.target.value); }, style: fieldStyle })
               )
             ),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'Letter body'),
-            tkTextarea(form.body, function(v) { setForm(Object.assign({}, form, { body: v })); }, 'What do you want your future self to remember? What are you proud of? What are you struggling with? What do you hope for?', 12, { marginBottom: 10, fontFamily: 'Georgia, serif' }),
-            hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'Deliver on (optional — leave blank for unsealed)'),
-            hh('input', { type: 'date', value: form.deliverOn,
-              onChange: function(e) { setForm(Object.assign({}, form, { deliverOn: e.target.value })); },
-              style: { padding: '10px 12px', fontSize: 12, color: '#c084fc', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6, boxSizing: 'border-box' }
-            })
+            hh('div', { style: { marginBottom: 10 } },
+              hh('label', { htmlFor: 'learning-lab-future-letter-body', style: labelStyle }, 'Letter body (required)'),
+              hh('p', { id: 'learning-lab-future-letter-body-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 4px' } }, 'What should your future self remember? What are you proud of, working through, or hoping for?'),
+              hh('textarea', { id: 'learning-lab-future-letter-body', value: form.body, rows: 12, maxLength: 12000, 'aria-invalid': bodyError ? 'true' : undefined, 'aria-describedby': bodyError ? 'learning-lab-future-letter-body-help learning-lab-future-letter-body-error' : 'learning-lab-future-letter-body-help', onChange: function(event) { updateForm('body', event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 240, resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.6 }) }),
+              hh('div', { id: 'learning-lab-future-letter-body-error', role: 'alert', style: { minHeight: bodyError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: bodyError ? 4 : 0 } }, bodyError)
+            ),
+            hh('div', { style: { marginBottom: 12 } },
+              hh('label', { htmlFor: 'learning-lab-future-deliver-date', style: labelStyle }, 'Open date (optional)'),
+              hh('p', { id: 'learning-lab-future-deliver-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 4px' } }, 'Choose a future date to seal the letter. Choosing today or leaving this blank makes it readable immediately.'),
+              hh('input', { id: 'learning-lab-future-deliver-date', type: 'date', min: today, value: form.deliverOn, 'aria-describedby': 'learning-lab-future-deliver-help learning-lab-future-privacy-note', onChange: function(event) { updateForm('deliverOn', event.target.value); }, style: Object.assign({}, fieldStyle, { maxWidth: 260 }) })
+            ),
+            hh('div', { role: 'group', 'aria-label': 'Letter form actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              hh('button', { type: 'button', onClick: cancelNew, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Cancel'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: primaryButtonStyle }, form.deliverOn && form.deliverOn > today ? 'Save and seal letter' : 'Save unsealed letter')
+            )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
-          tkBtn('💌 Seal letter', save, 'primary')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💌', 'Letters to Future Self', 'Write yourself a letter. Read it later. Hershfield 2011 — connection to future self predicts better long-term choices.', '#a855f7'),
-
+      tkSectionHeader('💌', 'Letters to Future Self', 'Write yourself a letter to read now or on a future date.', '#a855f7'),
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ Write a letter', function() { setForm({ to: '', from: '', body: '', deliverOn: '' }); setView('new'); }, 'primary')
+        hh('button', { id: 'learning-lab-future-write-button', type: 'button', onClick: startNew, 'data-ll-focusable': true, style: primaryButtonStyle }, 'Write a letter')
       ),
-
-      letters.length === 0 ? tkEmptyState('💌', 'No letters yet. Write one for the version of yourself a year from now.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          letters.map(function(l) {
-            var sealed = l.deliverOn && l.deliverOn > today;
-            return hh('button', { key: 'fl-' + l.id,
-              onClick: function() { setReading(l.id); setView('reading'); },
-              style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(168,85,247,0.30)', borderLeft: '4px solid ' + (sealed ? '#fbbf24' : '#a855f7'), cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('strong', { style: { fontSize: 12, color: sealed ? '#fbbf24' : '#a855f7' } }, (sealed ? '🔒 ' : '💌 ') + 'Letter written ' + relDate(l.writtenOn)),
-                sealed ? hh('span', { style: { fontSize: 10, color: '#fbbf24' } }, 'opens ' + l.deliverOn) : hh('span', { style: { fontSize: 10, color: '#a855f7' } }, 'click to read')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
-                sealed ? 'Sealed until ' + l.deliverOn : (l.body || '').substring(0, 80) + '...'
+      letters.length === 0 ? tkEmptyState('💌', 'No letters yet. Write one for a future version of yourself.', null, null)
+      : hh('ul', { 'aria-label': 'Future-self letters', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
+          letters.map(function(letter) {
+            var sealed = letter.deliverOn && letter.deliverOn > today;
+            return hh('li', { key: 'fl-' + letter.id },
+              hh('button', { id: 'learning-lab-future-letter-' + letter.id, type: 'button', onClick: function() { openLetter(letter); }, 'data-ll-focusable': true, style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(196,181,253,0.55)', borderLeft: '4px solid ' + (sealed ? '#fbbf24' : '#a855f7'), color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
+                hh('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+                  hh('strong', { style: { fontSize: 12, color: sealed ? '#fde68a' : '#ddd6fe' } }, hh('span', { 'aria-hidden': 'true' }, sealed ? '🔒 ' : '💌 '), 'Letter written ', hh('time', { dateTime: letter.writtenOn }, letter.writtenOn)),
+                  hh('span', { style: { fontSize: 10, color: sealed ? '#fde68a' : '#ddd6fe' } }, sealed ? 'Opens ' + letter.deliverOn : 'Available to read')
+                ),
+                hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 4 } }, sealed ? 'Sealed until ' + letter.deliverOn : 'Open letter')
               )
             );
           })
