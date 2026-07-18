@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AlloFlow | Open-Source AI Classroom Assistant</title>
     <meta name="description"
-        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, and accessibility workflows. July 2026 audit: 111 STEM tool files / 116 registered STEM IDs, 70 SEL tools, Desktop local-first path, and optional School Box server stack.">
+        content="Free, open-source AI platform for differentiated instruction, AAC communication, RTI progress monitoring, clinical reporting, STEM/SEL tools, and accessibility workflows. July 2026 audit: 122 STEM plugin files / 123 registered STEM IDs, 70 SEL tools, Desktop local-first path, and optional School Box server stack.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/">
     <meta property="og:type" content="website">
@@ -14,7 +14,7 @@
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/">
     <meta property="og:title" content="AlloFlow | Open-Source UDL and Accessibility Toolkit">
     <meta property="og:description"
-        content="Free, open-source classroom AI with 111 STEM tool files / 116 registered STEM IDs, 70 SEL tools, AAC boards, clinical workflows, Desktop local-first options, and PDF accessibility remediation support.">
+        content="Free, open-source classroom AI with 122 STEM plugin files / 123 registered STEM IDs, 70 SEL tools, AAC boards, clinical workflows, Desktop local-first options, and PDF accessibility remediation support.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/">
@@ -27,34 +27,36 @@
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
-            <a href="index.html" class="nav-logo">
+            <a href="index.html" aria-current="page" class="nav-logo">
                 <i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow
                 <span
                     style="font-size:0.6rem;font-weight:400;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px">v1.1</span>
             </a>
             <div class="nav-links">
-                <a href="index.html">Home</a>
+                <a href="index.html" aria-current="page">Home</a>
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
-                <a href="calculator.html">Savings</a>
+                <a href="calculator.html">Cost Planner</a>
                 <a href="students.html">Students</a>
                 <a href="for-districts.html">For Districts</a>
                 <a href="accessibility_demo.html">Accessibility</a>
                 <a href="#pricing">Pricing</a>
                 <a href="#privacy">Privacy</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu">
                 <i data-lucide="menu" style="width:24px;height:24px"></i>
             </button>
@@ -62,22 +64,22 @@
     </nav>
 
     <!-- Mobile Nav Overlay -->
-    <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
-            aria-label="Close">&times;</button>
-        <a href="index.html" onclick="this.parentElement.classList.remove('open')">Home</a>
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn"
+            aria-label="Close menu">&times;</button>
+        <a href="index.html" aria-current="page" >Home</a>
         <a href="features.html">Features</a>
         <a href="library.html">Library</a>
-        <a href="calculator.html">Savings</a>
+        <a href="calculator.html">Cost Planner</a>
         <a href="students.html">Students</a>
         <a href="for-districts.html">For Districts</a>
         <a href="accessibility_demo.html">Accessibility</a>
-        <a href="#pricing" onclick="this.closest('.mobile-nav').classList.remove('open')">Pricing</a>
-        <a href="#privacy" onclick="this.closest('.mobile-nav').classList.remove('open')">Privacy</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+        <a href="#pricing" >Pricing</a>
+        <a href="#privacy" >Privacy</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         <!-- Hero -->
         <header class="section" style="padding-top:100px;padding-bottom:60px;text-align:center;position:relative">
             <div class="blob" style="width:500px;height:500px;background:#818cf8;top:-100px;left:-150px"></div>
@@ -100,7 +102,7 @@
                     Desktop app; use School Box only when you need school-owned server infrastructure.
                 </p>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
-                    <button onclick="copyCanvasLink()" class="btn-primary" id="hero-copy-btn">
+                    <button type="button" onclick="copyCanvasLink()" class="btn-primary" id="hero-copy-btn">
                         <i data-lucide="link" style="width:18px;height:18px"></i>
                         <span>Copy Canvas Link</span>
                     </button>
@@ -136,11 +138,11 @@
         <div class="section reveal" style="padding:20px 24px 60px;background:#fff;border-top:1px solid #e2e8f0">
             <div class="stats-row">
                 <div class="stat-item">
-                    <div class="stat-number" data-target="720" data-suffix="+">0</div>
+                    <div class="stat-number" data-target="400" data-suffix="+">0</div>
                     <div class="stat-label">Documented Features</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-target="116">0</div>
+                    <div class="stat-number" data-target="123">0</div>
                     <div class="stat-label">Registered STEM IDs</div>
                 </div>
                 <div class="stat-item">
@@ -148,8 +150,8 @@
                     <div class="stat-label">SEL Tools</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number" data-target="63">0</div>
-                    <div class="stat-label">Language Pack Files</div>
+                    <div class="stat-number" data-target="60" data-suffix="+">0</div>
+                    <div class="stat-label">Language Resources</div>
                 </div>
             </div>
         </div>
@@ -170,7 +172,7 @@
                             <div style="width:10px;height:10px;border-radius:50%;background:#22c55e"></div>
                         </div>
                         <div
-                            style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#64748b;font-family:monospace;display:flex;align-items:center;gap:6px">
+                            style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#94a3b8;font-family:monospace;display:flex;align-items:center;gap:6px">
                             <i data-lucide="lock" style="width:10px;height:10px"></i> gemini.google.com · localhost:3000
                         </div>
                     </div>
@@ -212,7 +214,7 @@
                             <div style="width:10px;height:10px;border-radius:50%;background:#22c55e"></div>
                         </div>
                         <div
-                            style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#64748b;font-family:monospace;display:flex;align-items:center;gap:6px">
+                            style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#94a3b8;font-family:monospace;display:flex;align-items:center;gap:6px">
                             <i data-lucide="shield-check" style="width:10px;height:10px"></i> For Administrators
                         </div>
                     </div>
@@ -319,7 +321,7 @@
                             <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                                 <div
                                     style="width:28px;height:28px;border-radius:50%;background:#fff7ed;display:flex;align-items:center;justify-content:center">
-                                    <i data-lucide="globe" style="width:14px;height:14px;color:#ea580c"></i>
+                                    <i data-lucide="globe" style="width:14px;height:14px;color:#c2410c"></i>
                                 </div>
                                 <span style="font-weight:700;font-size:0.95rem;color:#1e293b">Multilingual
                                     Learners</span>
@@ -1815,7 +1817,7 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(248,113,113,0.08)); border: 1px solid rgba(239,68,68,0.3);">
                                         <span class="stat-number" style="color:#f87171;">$0</span>
-                                        <span class="stat-label">parent licensing cost—forever</span>
+                                        <span class="stat-label">AlloFlow software license cost</span>
                                     </div>
                                     <p>Response to Intervention (RTI) thrives when families are involved, but high-tier
                                         educational software is usually gatekept by district licensing fees.
@@ -1851,7 +1853,7 @@
                                             style="border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; background-clip: text;">$0</span>
-                                            <span class="stat-label">Family cost forever</span>
+                                            <span class="stat-label">AlloFlow software license cost</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2090,7 +2092,7 @@
                                         BehaviorLens Clinical Suite</h3>
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(190,24,93,0.15), rgba(236,72,153,0.08)); border: 1px solid rgba(190,24,93,0.3);">
-                                        <span class="stat-number" style="color:#ec4899;">310+</span>
+                                        <span class="stat-number" style="color:#ec4899;">18+</span>
                                         <span class="stat-label">clinical tools across 8 categories</span>
                                     </div>
                                     <p>A comprehensive ABA and behavioral assessment toolkit built for
@@ -2113,7 +2115,7 @@
                                         <div class="info-title">🤖 AI-Powered Tools</div>
                                         <div class="info-desc">Natural language ABC analysis, IEP goal generators,
                                             observation coach, progress reports, caseload dashboard, MTSS tier manager,
-                                            and effect size calculators (Tau-U, NAP, PND) — all powered by 244 AI calls.</div>
+                                            and effect size calculators (Tau-U, NAP, PND) — across AI-assisted workflows.</div>
                                     </div>
                                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                                         <div class="stat-callout"
@@ -2126,7 +2128,7 @@
                                             style="border-color: rgba(236, 72, 153, 0.3); background: rgba(236, 72, 153, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #be185d, #ec4899); -webkit-background-clip: text; background-clip: text;">FERPA</span>
-                                            <span class="stat-label">Compliant by design</span>
+                                            <span class="stat-label">Deployment-dependent privacy</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2166,7 +2168,7 @@
                                             <text x="110" y="84" font-size="12" text-anchor="middle">✅</text>
                                         </g>
                                         <text x="200" y="280" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">310+ Tools → 8 Categories → FERPA Compliant → Zero Cloud</text>
+                                            font-family="Inter">Clinical Workflows → 8 Categories → District-Controlled Data Paths → Local Mode</text>
                                     </svg>
                                 </div>
                             </div>
@@ -3801,7 +3803,7 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(129,140,248,0.08)); border: 1px solid rgba(99,102,241,0.3);">
                                         <span class="stat-number" style="color:#818cf8;">100%</span>
-                                        <span class="stat-label">open-source, forever free</span>
+                                        <span class="stat-label">open-source software</span>
                                     </div>
                                     <p>Built by a public school educator to dismantle the "Differentiation Tax"—the
                                         unacceptable reality
@@ -3833,7 +3835,7 @@
                                             style="border-color: rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.08);">
                                             <span class="stat-number"
                                                 style="background: linear-gradient(135deg, #6366f1, #818cf8); -webkit-background-clip: text; background-clip: text;">MIT</span>
-                                            <span class="stat-label">Licensed forever</span>
+                                            <span class="stat-label">AGPL v3 licensed</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(129, 140, 248, 0.3); background: rgba(129, 140, 248, 0.08);">
@@ -4009,13 +4011,13 @@
                                 <div class="slide-visual">
                                     <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
-                                            <radialGradient id="researchGlow" cx="50%" cy="50%" r="50%">
+                                            <radialGradient id="researchInfrastructureGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#84cc16" stop-opacity="0.12" />
                                                 <stop offset="100%" stop-color="#84cc16" stop-opacity="0" />
                                             </radialGradient>
                                         </defs>
 
-                                        <circle cx="200" cy="150" r="140" fill="url(#researchGlow)">
+                                        <circle cx="200" cy="150" r="140" fill="url(#researchInfrastructureGlow)">
                                             <animate attributeName="r" values="130;145;130" dur="4s"
                                                 repeatCount="indefinite" />
                                         </circle>
@@ -4448,7 +4450,7 @@
                                     <div class="stat-callout"
                                         style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.08)); border: 1px solid rgba(245,158,11,0.3);">
                                         <span class="stat-number" style="color:#fbbf24;">$0/yr</span>
-                                        <span class="stat-label">AI costs after hardware</span>
+                                        <span class="stat-label">Cloud API fees in local mode</span>
                                     </div>
                                     <p>AlloFlow supports <strong>model-agnostic AI backends</strong>. AlloFlow Desktop is
                                         the normal local-first teacher-laptop path. The Docker School Box stack is optional
@@ -4477,15 +4479,14 @@
                                         <div class="stat-callout"
                                             style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text;">~$3K</span>
-                                            <span class="stat-label">One-time hardware</span>
+                                                style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text;">Varies</span>
+                                            <span class="stat-label">Hardware budget</span>
                                         </div>
                                         <div class="stat-callout"
                                             style="border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.08);">
                                             <span class="stat-number"
-                                                style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text;">vs
-                                                $23.5K</span>
-                                            <span class="stat-label">/yr in SaaS subscriptions</span>
+                                                style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text;">Quote-based</span>
+                                            <span class="stat-label">Existing subscription stack</span>
                                         </div>
                                     </div>
                                 </div>
@@ -4583,7 +4584,7 @@
 
                                         <!-- Bottom label -->
                                         <text x="200" y="290" font-size="9" fill="#64748b" text-anchor="middle"
-                                            font-family="Inter">One Command → 4 AI Services → Zero Cloud
+                                            font-family="Inter">One Command → 4 AI Services → Local Mode
                                             Dependencies</text>
                                     </svg>
                                 </div>
@@ -4592,7 +4593,7 @@
                         </div>
 
                         <div id="controls">
-                            <button class="btn" id="prev" aria-label="Previous">
+                            <button type="button" class="btn" id="prev" aria-label="Previous">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="m15 18-6-6 6-6" />
@@ -4600,29 +4601,29 @@
                             </button>
                             <div class="controls-center">
                                 <div class="slide-dots">
-                                    <button class="dot active" data-slide="0" aria-label="Go to slide 1"></button>
-                                    <button class="dot" data-slide="1" aria-label="Go to slide 2"></button>
-                                    <button class="dot" data-slide="2" aria-label="Go to slide 3"></button>
-                                    <button class="dot" data-slide="3" aria-label="Go to slide 4"></button>
-                                    <button class="dot" data-slide="4" aria-label="Go to slide 5"></button>
-                                    <button class="dot" data-slide="5" aria-label="Go to slide 6"></button>
-                                    <button class="dot" data-slide="6" aria-label="Go to slide 7"></button>
-                                    <button class="dot" data-slide="7" aria-label="Go to slide 8"></button>
-                                    <button class="dot" data-slide="8" aria-label="Go to slide 9"></button>
-                                    <button class="dot" data-slide="9" aria-label="Go to slide 10"></button>
-                                    <button class="dot" data-slide="10" aria-label="Go to slide 11"></button>
-                                    <button class="dot" data-slide="11" aria-label="Go to slide 12"></button>
-                                    <button class="dot" data-slide="12" aria-label="Go to slide 13"></button>
-                                    <button class="dot" data-slide="13" aria-label="Go to slide 14"></button>
-                                    <button class="dot" data-slide="14" aria-label="Go to slide 15"></button>
-                                    <button class="dot" data-slide="15" aria-label="Go to slide 16"></button>
-                                    <button class="dot" data-slide="16" aria-label="Go to slide 17"></button>
-                                    <button class="dot" data-slide="17" aria-label="Go to slide 18"></button>
-                                    <button class="dot" data-slide="18" aria-label="Go to slide 19"></button>
-                                    <button class="dot" data-slide="19" aria-label="Go to slide 20"></button>
-                                    <button class="dot" data-slide="20" aria-label="Go to slide 21"></button>
-                                    <button class="dot" data-slide="21" aria-label="Go to slide 22"></button>
-                                    <button class="dot" data-slide="22" aria-label="Go to slide 23"></button>
+                                    <button type="button" class="dot active" data-slide="0" aria-label="Go to slide 1"></button>
+                                    <button type="button" class="dot" data-slide="1" aria-label="Go to slide 2"></button>
+                                    <button type="button" class="dot" data-slide="2" aria-label="Go to slide 3"></button>
+                                    <button type="button" class="dot" data-slide="3" aria-label="Go to slide 4"></button>
+                                    <button type="button" class="dot" data-slide="4" aria-label="Go to slide 5"></button>
+                                    <button type="button" class="dot" data-slide="5" aria-label="Go to slide 6"></button>
+                                    <button type="button" class="dot" data-slide="6" aria-label="Go to slide 7"></button>
+                                    <button type="button" class="dot" data-slide="7" aria-label="Go to slide 8"></button>
+                                    <button type="button" class="dot" data-slide="8" aria-label="Go to slide 9"></button>
+                                    <button type="button" class="dot" data-slide="9" aria-label="Go to slide 10"></button>
+                                    <button type="button" class="dot" data-slide="10" aria-label="Go to slide 11"></button>
+                                    <button type="button" class="dot" data-slide="11" aria-label="Go to slide 12"></button>
+                                    <button type="button" class="dot" data-slide="12" aria-label="Go to slide 13"></button>
+                                    <button type="button" class="dot" data-slide="13" aria-label="Go to slide 14"></button>
+                                    <button type="button" class="dot" data-slide="14" aria-label="Go to slide 15"></button>
+                                    <button type="button" class="dot" data-slide="15" aria-label="Go to slide 16"></button>
+                                    <button type="button" class="dot" data-slide="16" aria-label="Go to slide 17"></button>
+                                    <button type="button" class="dot" data-slide="17" aria-label="Go to slide 18"></button>
+                                    <button type="button" class="dot" data-slide="18" aria-label="Go to slide 19"></button>
+                                    <button type="button" class="dot" data-slide="19" aria-label="Go to slide 20"></button>
+                                    <button type="button" class="dot" data-slide="20" aria-label="Go to slide 21"></button>
+                                    <button type="button" class="dot" data-slide="21" aria-label="Go to slide 22"></button>
+                                    <button type="button" class="dot" data-slide="22" aria-label="Go to slide 23"></button>
                                 </div>
                                 <div class="slide-title-label" id="slide-title">Equity First — Local-First Architecture
                                 </div>
@@ -4630,7 +4631,7 @@
                             </div>
 
                             <div style="display:flex;align-items:center;gap:12px;">
-                                <button class="btn" id="autoplay-toggle" aria-label="Auto-play slides"
+                                <button type="button" class="btn" id="autoplay-toggle" aria-label="Auto-play slides"
                                     title="Auto-play slides">
                                     <svg id="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
                                         stroke="none">
@@ -4642,7 +4643,7 @@
                                         <rect x="14" y="4" width="4" height="16" />
                                     </svg>
                                 </button>
-                                <button class="btn" id="next" aria-label="Next">
+                                <button type="button" class="btn" id="next" aria-label="Next">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="m9 18 6-6-6-6" />
@@ -4774,7 +4775,7 @@
             <div class="section-inner">
                 <div class="section-header">
                     <h2>Universal Design for Learning</h2>
-                    <p>720+ documented features organized by UDL Principle. <a href="features.html"
+                    <p>400+ documented capabilities organized by UDL Principle. <a href="features.html"
                             style="color:var(--indigo);font-weight:700">See all features →</a></p>
                 </div>
                 <div class="grid-3">
@@ -4804,7 +4805,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#ea580c">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#c2410c">
                             <i data-lucide="gamepad-2" style="width:18px;height:18px"></i> Interactive Games
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Review Game, Bingo, Memory Match, Crossword, Word
@@ -4861,7 +4862,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#10b981">
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">111 STEM tool files / 116 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
+                        <p style="font-size:0.85rem;color:#475569">122 STEM plugin files / 123 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
                         </p>
                     </div>
                     <div class="card">
@@ -4914,7 +4915,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#be185d">
                             <i data-lucide="brain" style="width:18px;height:18px"></i> BehaviorLens Clinical Suite
                         </div>
-                        <p style="font-size:0.85rem;color:#475569">310+ clinical tools — IOA calculators (5 methods),
+                        <p style="font-size:0.85rem;color:#475569">specialized clinical workflows — IOA calculators (5 methods),
                             DTT data sheets, preference assessments, scatterplot analysis, effect size calculators,
                             IEP goal generators, MTSS tier management, and AI-powered observation coaching.</p>
                     </div>
@@ -4939,7 +4940,7 @@
                 </div>
                 <div style="text-align:center;margin-top:36px">
                     <a href="features.html" class="btn-primary" style="background:var(--slate-900)"><i
-                            data-lucide="layout-grid" style="width:18px;height:18px"></i> View All 720+ Features</a>
+                            data-lucide="layout-grid" style="width:18px;height:18px"></i> View 400+ Documented Capabilities</a>
                 </div>
             </div>
         </section>
@@ -5004,74 +5005,28 @@
                 </div>
                 <div class="grid-3">
                     <div class="card" style="border-width:2px">
-                        <div
-                            style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">
-                            Free</div>
-                        <div style="font-size:2.5rem;font-weight:900;color:var(--slate-900)">$0</div>
-                        <div style="font-size:0.85rem;color:#64748b;margin-bottom:20px">Google Education Account</div>
-                        <ul
-                            style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#475569">
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:#22c55e"></i> Full AlloFlow access</li>
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:#22c55e"></i> Ample district quotas</li>
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:#22c55e"></i> Enterprise protections</li>
-                        </ul>
+                        <div style="font-size:0.75rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Keyless web path</div>
+                        <h3 style="font-size:1.4rem;font-weight:900;margin-bottom:8px">Gemini Canvas</h3>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">No AlloFlow license fee. Google controls account eligibility, availability, quotas, and plan terms; school accounts may require administrator enablement.</p>
                     </div>
-                    <div class="card" style="border-color:var(--indigo);border-width:2px;position:relative">
-                        <div
-                            style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#fff;font-size:0.65rem;font-weight:700;padding:4px 14px;border-radius:999px">
-                            Recommended for Families</div>
-                        <div
-                            style="font-size:0.75rem;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">
-                            AI Plus</div>
-                        <div style="font-size:2.5rem;font-weight:900;color:var(--slate-900)">~$8<span
-                                style="font-size:1rem;font-weight:400;color:#64748b">/mo</span></div>
-                        <div style="font-size:0.85rem;color:#64748b;margin-bottom:12px">Personal Google Account</div>
-                        <div
-                            style="display:inline-block;background:#dcfce7;color:#15803d;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:16px">
-                            🎁 ~$4/mo for first 2 months</div>
-                        <ul
-                            style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#475569">
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:var(--indigo)"></i> Higher usage limits</li>
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:var(--indigo)"></i> Full Gemini AI platform</li>
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:var(--indigo)"></i> 2 TB Google storage</li>
-                        </ul>
+                    <div class="card" style="border-color:var(--indigo);border-width:2px">
+                        <div style="font-size:0.75rem;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Recommended local-first path</div>
+                        <h3 style="font-size:1.4rem;font-weight:900;margin-bottom:8px">AlloFlow Desktop</h3>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">No AlloFlow license fee. Local models avoid cloud API charges; hardware, electricity, support, and any optional cloud provider remain your responsibility.</p>
                     </div>
                     <div class="card" style="border-width:2px">
-                        <div
-                            style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">
-                            AI Pro</div>
-                        <div style="font-size:2.5rem;font-weight:900;color:var(--slate-900)">~$20<span
-                                style="font-size:1rem;font-weight:400;color:#64748b">/mo</span></div>
-                        <div style="font-size:0.85rem;color:#64748b;margin-bottom:20px">Personal Google Account</div>
-                        <ul
-                            style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:#475569">
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:#22c55e"></i> Everything in AI Plus</li>
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:#22c55e"></i> ~100 prompts/day</li>
-                            <li style="display:flex;align-items:center;gap:8px"><i data-lucide="check"
-                                    style="width:14px;height:14px;color:#22c55e"></i> Premium models</li>
-                        </ul>
+                        <div style="font-size:0.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">School-controlled deployment</div>
+                        <h3 style="font-size:1.4rem;font-weight:900;margin-bottom:8px">Hosted or School Box</h3>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">No AlloFlow license fee. Budget separately for hosting or hardware, security operations, support, and usage-based AI services.</p>
                     </div>
                 </div>
                 <div style="text-align:center;margin-top:24px">
-                    <a href="calculator.html" class="btn-primary"
-                        style="background:#22c55e;box-shadow:0 8px 24px rgba(34,197,94,0.25);margin-bottom:16px">
-                        <i data-lucide="calculator" style="width:18px;height:18px"></i>
-                        See How Your School Saves $40K+/Year
+                    <a href="for-districts.html#deploy" class="btn-primary"
+                        style="margin-bottom:16px">
+                        <i data-lucide="route" style="width:18px;height:18px"></i>
+                        Compare Deployment Paths
                     </a>
-                    <p style="font-size:0.8rem;color:#64748b">Prices shown are approximate U.S. pricing as of early
-                        2026.
-                        Visit <a href="https://one.google.com" target="_blank"
-                            style="color:var(--indigo)">one.google.com</a> for current plans. AlloFlow does not charge
-                        any
-                        fees.</p>
+                    <p style="font-size:0.8rem;color:#475569">Gemini availability and limits can change. Verify current details in the <a href="https://support.google.com/gemini/answer/16275805" target="_blank" style="color:var(--indigo);text-decoration:underline" rel="noopener noreferrer">official Gemini limits guide</a> and <a href="https://one.google.com/intl/en/about/google-ai-plans/" target="_blank" style="color:var(--indigo);text-decoration:underline" rel="noopener noreferrer">Google AI plan page</a>.</p>
                     <div
                         style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:12px;max-width:640px;margin:12px auto 0">
                         <p style="font-size:0.7rem;color:#64748b"><strong>Disclaimer:</strong> AlloFlow is an
@@ -5148,10 +5103,10 @@
                     time
                     and reaching every learner.</p>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                    <button onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
+                    <button type="button" onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
                             style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
                     <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="btn-secondary"
-                        style="border-color:#475569;color:#fff;background:transparent"><i data-lucide="github"
+                        style="border-color:#475569;color:#fff;background:transparent" rel="noopener noreferrer"><i data-lucide="github"
                             style="width:18px;height:18px"></i> Star on GitHub</a>
                 </div>
             </div>
@@ -5172,7 +5127,7 @@
                 <a href="for-districts.html">For Districts</a>
                 <a href="https://github.com/Apomera/AlloFlow#readme">Docs</a>
                 <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
-                <a href="https://www.youtube.com/@AlloFlow" target="_blank">YouTube</a>
+                <a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a>
                 <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
             </div>
         </div>
@@ -5180,7 +5135,7 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
         <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
     </button>
 

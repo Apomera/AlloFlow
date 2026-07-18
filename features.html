@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Features | AlloFlow</title>
     <meta name="description"
-        content="720+ documented AlloFlow features, including 111 STEM tool files, 116 registered STEM IDs, 70 SEL tools, AAC, RTI, accessibility, and local-first Desktop support.">
+        content="400+ documented AlloFlow capabilities, including 122 STEM plugin files, 123 registered STEM IDs, 70 SEL tools, AAC, RTI, accessibility, and local-first Desktop support.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/features.html">
     <meta property="og:type" content="website">
@@ -23,34 +23,36 @@
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow</a>
             <div class="nav-links">
                 <a href="index.html">Home</a>
-                <a href="features.html" style="color:var(--indigo)">Features</a>
+                <a href="features.html" aria-current="page" style="color:var(--indigo)">Features</a>
                 <a href="library.html">Library</a>
                 <a href="students.html">Students</a>
                 <a href="for-districts.html">For Districts</a>
                 <a href="index.html#pricing">Pricing</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
-    <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')">&times;</button>
-        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="students.html">Students</a><a href="for-districts.html">For Districts</a><a href="accessibility_demo.html">Accessibility</a><a
-            href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a><a href="features.html" aria-current="page">Features</a><a href="library.html">Library</a><a href="students.html">Students</a><a href="for-districts.html">For Districts</a><a href="accessibility_demo.html">Accessibility</a><a
+            href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
     <!-- Page Header -->
@@ -58,7 +60,7 @@
         style="background:linear-gradient(135deg,#f0fdfa,#fff7ed);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #ccfbf1">
         <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">The Complete <span class="gradient-text">UDL
                 Toolkit</span></h1>
-        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto">720+ documented features organized by CAST's
+        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto">400+ documented capabilities organized by CAST's
             Universal Design for Learning framework, with current STEM and SEL registries.</p>
     </header>
 
@@ -78,7 +80,7 @@
         </div>
     </div>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         <!-- Engagement -->
         <section id="engagement" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
             <div class="section-inner">
@@ -112,7 +114,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ea580c">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#c2410c">
                             <i data-lucide="gamepad-2" style="width:16px;height:16px"></i> Interactive Games
                         </div>
                         <p style="font-size:0.8rem;color:#475569;margin-bottom:6px">Instantly generates games from
@@ -273,7 +275,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#ea580c">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#c2410c">
                             <i data-lucide="table" style="width:16px;height:16px"></i> Rubric Builder
                         </div>
                         <p style="font-size:0.8rem;color:#475569">Generates detailed grading rubrics aligned to learning
@@ -458,7 +460,7 @@
         </section>
 
         <!-- Content Intake & Integrations -->
-        <section id="intake" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+        <section id="integrations" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
             <div class="section-inner">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:32px">
                     <div style="width:6px;height:32px;background:#f97316;border-radius:4px"></div>
@@ -547,7 +549,7 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1e40af;font-size:0.85rem">
                             <i data-lucide="sigma" style="width:16px;height:16px"></i> Interactive STEM Lab
                         </div>
-                        <p style="font-size:0.75rem;color:#475569">111 STEM tool files and 116 registered STEM IDs across math, science, physics, chemistry, biology, coding, music, economics, vocational/CTE, and more. Recent additions include First Response Lab, WeldLab, ThrowLab, NutritionLab, Optics Lab, and RoadReady.</p>
+                        <p style="font-size:0.75rem;color:#475569">122 STEM plugin files and 123 registered STEM IDs across math, science, physics, chemistry, biology, coding, music, economics, vocational/CTE, and more. Recent additions include First Response Lab, WeldLab, ThrowLab, NutritionLab, Optics Lab, and RoadReady.</p>
                     </div>
                     <div class="card">
                         <div
@@ -851,7 +853,7 @@
                         screen reader labeling, and reduced-motion support. Current deployments should still be
                         validated against district workflows. <a
                             href="https://github.com/Apomera/AlloFlow/blob/main/alloflow_wcag_aa_audit_report.md"
-                            target="_blank" style="color:var(--indigo);font-weight:600">Read the audit report</a>.
+                            target="_blank" style="color:var(--indigo);font-weight:600" rel="noopener noreferrer">Read the audit report</a>.
                     </p>
                 </div>
                 <div class="grid-4">
@@ -929,8 +931,7 @@
                         </div>
                         <div>
                             <h4 style="font-size:0.85rem;font-weight:700">Keyboard Nav</h4>
-                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">All games playable via Tab/Arrow
-                                keys
+                            <p style="font-size:0.75rem;color:#64748b;margin-top:2px">Core game controls support standard keyboard patterns; see the audit for workflow-specific coverage
                             </p>
                         </div>
                     </div>
@@ -955,15 +956,15 @@
             <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
-            <div class="footer-links"><a href="index.html">Home</a><a href="features.html">Features</a><a
+            <div class="footer-links"><a href="index.html">Home</a><a href="features.html" aria-current="page">Features</a><a
                     href="library.html">Library</a><a href="for-districts.html">For Districts</a><a
                     href="https://github.com/Apomera/AlloFlow">GitHub</a><a
-                    href="https://www.youtube.com/@AlloFlow" target="_blank">YouTube</a></div>
+                    href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a></div>
         </div>
     </footer>
 
     <!-- Back to Top Button -->
-    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
         <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
     </button>
 
@@ -972,7 +973,7 @@
         <div
             style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
             <p style="font-size:0.85rem;font-weight:600;color:#e2e8f0;margin:0">Ready to try AlloFlow? <span
-                    style="color:#64748b;font-weight:400">720+ documented features, free software.</span></p>
+                    style="color:#64748b;font-weight:400">400+ documented capabilities; no AlloFlow license fee.</span></p>
             <div style="display:flex;gap:10px;align-items:center">
                 <a href="index.html" style="font-size:0.8rem;color:#a5b4fc;text-decoration:none;font-weight:600">←
                     Back

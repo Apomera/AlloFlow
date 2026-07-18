@@ -19,6 +19,7 @@
 <meta property="twitter:description" content="Try AlloFlow accessibility features including keyboard navigation, switch scanning, high contrast, and screen reader support.">
 <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
 <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -211,11 +212,11 @@ footer a { color: var(--purple); }
 </style>
 </head>
 <body>
-<a href="#main" class="skip-link">Skip to main content</a>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 <div id="live" role="status" aria-live="assertive" aria-atomic="true"></div>
 
 <!-- ── Site Navbar ── -->
-<nav class="navbar">
+<nav class="navbar" aria-label="Primary">
   <div class="navbar-inner">
     <a href="index.html" class="nav-logo">
       <i data-lucide="layers" style="width:28px;height:28px"></i>
@@ -225,19 +226,19 @@ footer a { color: var(--purple); }
       <a href="index.html">Home</a>
       <a href="features.html">Features</a>
       <a href="library.html">Library</a>
-      <a href="calculator.html">Savings</a>
+      <a href="calculator.html">Cost Planner</a>
       <a href="students.html">Students</a>
-      <a href="accessibility_demo.html" style="color:var(--indigo)">Accessibility</a>
-      <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github" style="width:16px;height:16px"></i> Get Code</a>
+      <a href="accessibility_demo.html" aria-current="page" style="color:var(--indigo)">Accessibility</a>
+      <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github" style="width:16px;height:16px"></i> Get Code</a>
     </div>
-    <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')" aria-label="Open menu">
+    <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
       <i data-lucide="menu" style="width:24px;height:24px"></i>
     </button>
   </div>
 </nav>
-<div id="mobileNav" class="mobile-nav">
-  <button class="close-btn" onclick="this.parentElement.classList.remove('open')" aria-label="Close">&times;</button>
-  <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="calculator.html">Savings</a><a href="students.html">Students</a><a href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+<div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+  <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+  <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="calculator.html">Cost Planner</a><a href="students.html">Students</a><a href="accessibility_demo.html" aria-current="page">Accessibility</a><a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
 </div>
 
 <!-- ════════ HERO ════════ -->
@@ -247,7 +248,7 @@ footer a { color: var(--purple); }
   <h1 style="margin-top:12px;">Accessibility in AlloFlow</h1>
   <p class="subtitle">An interactive demonstration of how AlloFlow's AAC communication tools serve every student — regardless of how they access technology.</p>
   <div class="btn-group" style="margin-top:24px;">
-    <button class="btn btn-dark" onclick="toggleHC()" aria-label="Toggle high contrast mode" id="hc-btn">Toggle High Contrast</button>
+    <button type="button" class="btn btn-dark" onclick="toggleHC()" aria-label="Toggle high contrast mode" id="hc-btn">Toggle High Contrast</button>
     <a href="#demo-board" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;">Try the Demo Board</a>
   </div>
 </div>
@@ -268,7 +269,7 @@ footer a { color: var(--purple); }
 </nav>
 
 <!-- ════════ MAIN ════════ -->
-<main id="main" role="main">
+<main id="main-content" tabindex="-1">
 
 <!-- ── Who This Serves ── -->
 <section id="stats" class="reveal">
@@ -322,15 +323,15 @@ footer a { color: var(--purple); }
     <div class="demo-header">
       <h3>Core Vocabulary Board</h3>
       <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-sm" style="background:#0f766e;color:#fff;" onclick="toggleScan()" aria-label="Toggle scanning mode" id="scan-toggle-btn">Scan</button>
-        <button class="btn btn-sm" id="scan-mode-btn" style="background:#334155;color:#fff;" onclick="toggleScanMode()" aria-label="Switch scanning mode">1-Switch</button>
+        <button type="button" class="btn btn-sm" style="background:#0f766e;color:#fff;" onclick="toggleScan()" aria-label="Toggle scanning mode" id="scan-toggle-btn">Scan</button>
+        <button type="button" class="btn btn-sm" id="scan-mode-btn" style="background:#334155;color:#fff;" onclick="toggleScanMode()" aria-label="Switch scanning mode">1-Switch</button>
       </div>
     </div>
     <!-- Scan bar -->
     <div class="scan-bar" id="scan-bar" role="status" aria-live="polite">
       <span class="status">Scanning Active</span>
       <label style="color:#94a3b8;display:flex;align-items:center;gap:4px;">Speed: <select onchange="setScanSpd(Number(this.value))" aria-label="Scanning speed"><option value="800">Fast</option><option value="1500" selected>Medium</option><option value="2500">Slow</option></select></label>
-      <button class="btn btn-sm" style="background:#1e40af;color:#fff;" onclick="advanceScan()" aria-label="Advance to next symbol">&rarr; Next</button>
+      <button type="button" class="btn btn-sm" style="background:#1e40af;color:#fff;" onclick="advanceScan()" aria-label="Advance to next symbol">&rarr; Next</button>
       <span style="color:#94a3b8;font-size:11px;margin-left:auto;">Space = select &middot; Esc = stop</span>
     </div>
     <!-- Sentence strip -->
@@ -339,9 +340,9 @@ footer a { color: var(--purple); }
       <div id="strip-words" style="display:contents;"></div>
       <span id="word-count" style="display:none;background:#0f766e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;flex-shrink:0;" aria-hidden="true"></span>
       <div id="strip-btns" style="display:none;margin-left:auto;gap:6px;">
-        <button class="btn btn-sm" style="background:#0f766e;color:#fff;" onclick="speakAll()" aria-label="Speak entire message">&#128264; Speak</button>
-        <button class="btn btn-sm" style="background:#374151;color:#fff;" onclick="delLast()" aria-label="Delete last word">&#9003; Undo</button>
-        <button class="btn btn-sm" style="background:#374151;color:#cbd5e1;" onclick="clearAll()" aria-label="Clear message">Clear</button>
+        <button type="button" class="btn btn-sm" style="background:#0f766e;color:#fff;" onclick="speakAll()" aria-label="Speak entire message">&#128264; Speak</button>
+        <button type="button" class="btn btn-sm" style="background:#374151;color:#fff;" onclick="delLast()" aria-label="Delete last word">&#9003; Undo</button>
+        <button type="button" class="btn btn-sm" style="background:#374151;color:#cbd5e1;" onclick="clearAll()" aria-label="Clear message">Clear</button>
       </div>
     </div>
     <!-- Grid -->
@@ -411,7 +412,7 @@ footer a { color: var(--purple); }
     <div class="card">
       <h3>High Contrast Mode</h3>
       <p style="font-size:0.9rem;color:var(--text-muted);margin:4px 0 12px;">Switches to Atkinson Hyperlegible font, white-on-black, yellow highlights. Toggle with <kbd>H</kbd> or the button above.</p>
-      <button class="btn btn-outline btn-sm" onclick="toggleHC()">Toggle High Contrast</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="toggleHC()">Toggle High Contrast</button>
     </div>
     <div class="card">
       <h3>OS Preferences</h3>

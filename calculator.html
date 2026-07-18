@@ -4,25 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cost Savings Calculator | AlloFlow</title>
+    <title>Cost Scenario Planner | AlloFlow</title>
     <meta name="description"
-        content="Estimate where AlloFlow may reduce overlap with paid EdTech subscriptions using free, open-source classroom software and deployment-dependent AI/runtime options.">
+        content="Model an illustrative EdTech subscription scenario, compare potentially overlapping AlloFlow capabilities, and verify assumptions against current written quotes.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://apomera.github.io/AlloFlow/calculator.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="AlloFlow">
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/calculator.html">
-    <meta property="og:title" content="AlloFlow Cost Savings Calculator">
-    <meta property="og:description" content="Estimate how much a school or district could save by comparing paid EdTech subscriptions against overlapping AlloFlow capabilities.">
+    <meta property="og:title" content="AlloFlow Cost Scenario Planner">
+    <meta property="og:description" content="Model a school or district subscription scenario and review potentially overlapping AlloFlow capabilities without treating the result as a savings guarantee.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/calculator.html">
-    <meta property="twitter:title" content="AlloFlow Cost Savings Calculator">
-    <meta property="twitter:description" content="Compare subscription costs against AlloFlow's free open-source classroom AI platform.">
+    <meta property="twitter:title" content="AlloFlow Cost Scenario Planner">
+    <meta property="twitter:description" content="Explore a quote-verified subscription scenario alongside AlloFlow's open-source classroom capabilities.">
     <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .calc-hero {
@@ -387,9 +388,10 @@
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo">
                 <i data-lucide="layers" style="width:28px;height:28px"></i>
@@ -399,20 +401,22 @@
                 <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
-                <a href="calculator.html" style="color:var(--indigo)">Savings</a>
+                <a href="calculator.html" aria-current="page" style="color:var(--indigo)">Cost Planner</a>
                 <a href="students.html">Students</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
-    <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
-            aria-label="Close">&times;</button>
-        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="calculator.html">Savings</a><a href="students.html">Students</a><a href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn"
+            aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="calculator.html" aria-current="page">Cost Planner</a><a href="students.html">Students</a><a href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
+
+    <main id="main-content" tabindex="-1">
 
     <!-- Hero -->
     <header class="calc-hero">
@@ -421,21 +425,21 @@
             <i data-lucide="calculator" style="width:14px;height:14px;color:#a5b4fc"></i>
             <span
                 style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a5b4fc">Interactive
-                ROI Calculator</span>
+                Cost Scenario Planner</span>
         </div>
-        <h1>How Much Could Your<br>School <span
-                style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Save</span>?
+        <h1>Model Your Current<br>EdTech <span
+                style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Stack</span>?
         </h1>
-        <p>Select the tools your school currently pays for. AlloFlow may cover many overlapping classroom use cases with free, open-source software.</p>
+        <p>Select tools to model an illustrative subscription total, then verify every assumption against your current written quotes. Feature overlap is not equivalent to full product replacement.</p>
     </header>
 
     <!-- Sticky Savings Bar -->
     <div class="savings-bar" id="savingsBar">
         <div class="savings-inner">
             <div>
-                <div class="savings-label">Estimated Annual Savings</div>
+                <div class="savings-label">Illustrative Annual Subscription Total</div>
                 <div class="savings-amount zero" id="savingsAmount">$0</div>
-                <div class="savings-subtitle" id="savingsSubtitle">Select tools below to calculate</div>
+                <div class="savings-subtitle" id="savingsSubtitle">Select tools to model a scenario</div>
             </div>
             <div class="savings-cta">
                 <span class="selected-count" id="selectedCount">0 tools selected</span>
@@ -468,8 +472,7 @@
 
     <!-- Fine Print -->
     <div class="fine-print">
-        <strong>Methodology:</strong> Per-student and per-teacher costs are based on publicly available 2026 pricing
-        from vendor websites, state procurement documents, and EdTech review sites. District-negotiated rates may vary.
+        <strong>Methodology:</strong> Default prices are illustrative planning assumptions, not current vendor quotes or guaranteed savings. District pricing, bundles, implementation, support, and feature scope vary. Verify and document current written quotes before using this scenario in a decision.
         AlloFlow is free, open-source software (AGPL v3). Cloud AI, API keys, local hardware, and support costs depend on
         the deployment path a school chooses.
         AlloFlow is not affiliated with any of the products listed above.
@@ -481,12 +484,14 @@
         <p>AlloFlow brings many overlapping capabilities into one free, open-source platform. Local-first paths do not
             require student accounts by default, and PII handling should be governed by district configuration.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-            <button onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
+            <button type="button" onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
                     style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
             <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" style="width:18px;height:18px"></i>
-                See All 720+ Features</a>
+                View 400+ Documented Capabilities</a>
         </div>
     </section>
+
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -498,7 +503,7 @@
             <div class="footer-links">
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
-                <a href="calculator.html">Savings</a>
+                <a href="calculator.html" aria-current="page">Cost Planner</a>
                 <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
                 <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
             </div>
@@ -585,7 +590,7 @@
                     'Color Overlays (Blue, Peach, Yellow), High Contrast Mode, Dark Mode',
                     'Reading Ruler, Line Focus, Syllabification, Grammar Highlighting (POS color coding)',
                     'Adjustable text size, line height, letter spacing, word spacing',
-                    'Speech-to-text dictation in every input field'
+                    'Speech-to-text dictation in supported input workflows'
                 ]
             },
             {
@@ -611,7 +616,7 @@
                 id: 'magicschool',
                 name: 'MagicSchool AI (Enterprise)',
                 category: 'AI Content Generation',
-                categoryColor: '#ea580c',
+                categoryColor: '#c2410c',
                 categoryBg: '#fff7ed',
                 perStudent: 4,
                 perTeacher: 0,
@@ -625,7 +630,7 @@
                     'Multimodal intake: OCR for PDFs/images, Whisper transcription for audio/video, URL import',
                     'Standards Finder (CCSS, NGSS, TEKS) with AI consultation and alignment reports',
                     'Glossary Generator with Tier 2/3 extraction, multi-language support, and visual icons',
-                    '550+ contextual help guides explaining the pedagogical "why" behind every tool'
+                    'Contextual help guides explaining the pedagogical purpose of supported tools'
                 ]
             }
         ];
@@ -678,9 +683,9 @@
                     count + ' tools selected';
 
             if (total === 0) {
-                subtitleEl.textContent = 'Select tools below to calculate';
+                subtitleEl.textContent = 'Select tools to model a scenario';
             } else {
-                subtitleEl.textContent = `per year for a ${getStudentCount()}-student school`;
+                subtitleEl.textContent = `illustrative total for a ${getStudentCount()}-student school`;
             }
 
             // Update card price displays too
@@ -697,14 +702,14 @@
                 selectedProducts.add(id);
             }
             const card = document.querySelector(`[data-product="${id}"]`);
-            if (card) card.classList.toggle('selected', selectedProducts.has(id));
+            if (card) { card.classList.toggle('selected', selectedProducts.has(id)); card.setAttribute('aria-checked', String(selectedProducts.has(id))); }
             updateSavingsDisplay();
         }
 
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = PRODUCTS.map(p => `
-                <div class="product-card" data-product="${p.id}" onclick="toggleProduct('${p.id}')">
+                <div class="product-card" data-product="${p.id}" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleProduct('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleProduct('${p.id}')}">
                     <div class="product-header">
                         <div class="product-check">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -721,7 +726,7 @@
                         <div class="parity-section">
                             <div class="parity-title">
                                 <i data-lucide="layers" style="width:12px;height:12px"></i>
-                                What AlloFlow Offers Instead
+                                Potentially Overlapping AlloFlow Capabilities
                             </div>
                             <ul class="parity-list">
                                 ${p.parity.map(item => `<li>${item}</li>`).join('')}
@@ -740,7 +745,7 @@
             PRODUCTS.forEach(p => {
                 selectedProducts.add(p.id);
                 const card = document.querySelector(`[data-product="${p.id}"]`);
-                if (card) card.classList.add('selected');
+                if (card) { card.classList.add('selected'); card.setAttribute('aria-checked', 'true'); }
             });
             updateSavingsDisplay();
         }
@@ -752,10 +757,6 @@
         document.getElementById('studentCount').addEventListener('input', updateSavingsDisplay);
         document.getElementById('teacherCount').addEventListener('input', updateSavingsDisplay);
 
-        // Auto-select all after 1.5s for impact
-        setTimeout(() => {
-            selectAll();
-        }, 1500);
 
         // Copy Link
         function copyCanvasLink() {

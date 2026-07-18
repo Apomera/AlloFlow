@@ -23,6 +23,7 @@
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .filter-btn {
@@ -127,31 +128,34 @@
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow</a>
             <div class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
-                <a href="library.html" style="color:var(--indigo)">Library</a>
+                <a href="library.html" aria-current="page" style="color:var(--indigo)">Library</a>
                 <a href="students.html">Students</a>
                 <a href="for-districts.html">For Districts</a>
                 <a href="index.html#pricing">Pricing</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
-    <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')">&times;</button>
-        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a href="students.html">Students</a><a href="for-districts.html">For Districts</a><a href="accessibility_demo.html">Accessibility</a><a
-            href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html" aria-current="page">Library</a><a href="students.html">Students</a><a href="for-districts.html">For Districts</a><a href="accessibility_demo.html">Accessibility</a><a
+            href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
+
+    <main id="main-content" tabindex="-1">
 
     <!-- Page Header -->
     <header class="section"
@@ -172,13 +176,13 @@
     <section class="section" style="padding-top:32px;padding-bottom:0">
         <div class="section-inner" style="text-align:center">
             <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="filters">
-                <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
-                <button class="filter-btn" onclick="filterCards('ela', this)">📖 ELA</button>
-                <button class="filter-btn" onclick="filterCards('stem', this)">🔬 STEM</button>
-                <button class="filter-btn" onclick="filterCards('social', this)">🌎 Social Studies</button>
-                <button class="filter-btn" onclick="filterCards('math', this)">🧮 Math</button>
-                <button class="filter-btn" onclick="filterCards('sel', this)">💛 SEL</button>
-                <button class="filter-btn" onclick="filterCards('cte', this)">🔧 CTE</button>
+                <button type="button" class="filter-btn active" onclick="filterCards('all', this)">All</button>
+                <button type="button" class="filter-btn" onclick="filterCards('ela', this)">📖 ELA</button>
+                <button type="button" class="filter-btn" onclick="filterCards('stem', this)">🔬 STEM</button>
+                <button type="button" class="filter-btn" onclick="filterCards('social', this)">🌎 Social Studies</button>
+                <button type="button" class="filter-btn" onclick="filterCards('math', this)">🧮 Math</button>
+                <button type="button" class="filter-btn" onclick="filterCards('sel', this)">💛 SEL</button>
+                <button type="button" class="filter-btn" onclick="filterCards('cte', this)">🔧 CTE</button>
             </div>
         </div>
     </section>
@@ -200,18 +204,6 @@
                             style="width:14px;height:14px"></i> Download</a>
                 </div>
 
-                <div class="lesson-card" data-category="ela">
-                    <div style="margin-bottom:12px"><span class="lesson-badge badge-ela">ELA</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grades 3-4</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🕷️ Anansi the Spider (Folktales)
-                    </h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Folktales from Around
-                        the World. Cultural responsiveness, compare and contrast.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">CCSS.ELA-LITERACY.RL.3.2, RL.3.9</p>
-                    <a href="./examples/anansi.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
-                </div>
-
                 <div class="lesson-card" data-category="social">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-social">Social Studies</span> <span
                             style="font-size:0.7rem;color:#64748b;margin-left:8px">Grade 5</span></div>
@@ -220,17 +212,6 @@
                         with timeline organizer and multiple perspectives.</p>
                     <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">C3 D2.His.1.3-5, CCSS.RI.5.6</p>
                     <a href="./examples/civil_war.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
-                </div>
-
-                <div class="lesson-card" data-category="stem">
-                    <div style="margin-bottom:12px"><span class="lesson-badge badge-stem">STEM</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grades 3-5</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🪐 The Solar System</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Planets, moons, and the
-                        sun. Adventure Mode: "Space Explorer" RPG.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">NGSS 5-ESS1-1</p>
-                    <a href="./examples/solar_system.json" download class="download-btn"><i data-lucide="download"
                             style="width:14px;height:14px"></i> Download</a>
                 </div>
 
@@ -245,50 +226,7 @@
                             style="width:14px;height:14px"></i> Download</a>
                 </div>
 
-                <div class="lesson-card" data-category="sel">
-                    <div style="margin-bottom:12px"><span class="lesson-badge badge-sel">SEL</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grades 2-4</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🤝 Conflict Resolution</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Using "I Statements" to
-                        solve problems. Adventure Mode: "Playground Peacemaker" RPG.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">CASEL: Relationship Skills</p>
-                    <a href="./examples/conflict_resolution.json" download class="download-btn"><i
-                            data-lucide="download" style="width:14px;height:14px"></i> Download</a>
-                </div>
 
-                <div class="lesson-card" data-category="social">
-                    <div style="margin-bottom:12px"><span class="lesson-badge badge-social">Social Studies</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grades 4-5</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🏛️ Ancient Egypt</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Pyramids, Pharaohs, and
-                        the Nile. Includes STEM math (pyramid geometry).</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">C3 D2.His.3.3-5</p>
-                    <a href="./examples/ancient_egypt.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
-                </div>
-
-                <div class="lesson-card" data-category="cte">
-                    <div style="margin-bottom:12px"><span class="lesson-badge badge-cte">CTE</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grades 4-8</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🔒 Digital Literacy & Online Safety
-                    </h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Passwords, phishing,
-                        and online safety. Escape Room: "Hack-Proof Challenge".</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">ACTE IT Cluster, ISTE 2.a</p>
-                    <a href="./examples/digital_literacy.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
-                </div>
-
-                <div class="lesson-card" data-category="math">
-                    <div style="margin-bottom:12px"><span class="lesson-badge badge-math">Math</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Grade 3</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🍕 Introduction to Fractions</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Parts of a whole.
-                        Visual models with pizza/pie analogy.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">CCSS.MATH.3.NF.A.1</p>
-                    <a href="./examples/fractions.json" download class="download-btn"><i data-lucide="download"
-                            style="width:14px;height:14px"></i> Download</a>
-                </div>
 
             </div>
 
@@ -305,6 +243,8 @@
         </div>
     </section>
 
+    </main>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-inner">
@@ -317,7 +257,7 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
         <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
     </button>
 

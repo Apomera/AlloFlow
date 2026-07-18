@@ -6,8 +6,8 @@
 
   [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
   [![Local-First Architecture](https://img.shields.io/badge/Architecture-Local--First-brightgreen.svg)](#-local-first-desktop-and-school-box)
-  [![Privacy: FERPA & COPPA](https://img.shields.io/badge/Privacy-FERPA_Compatible-red.svg)](#-privacy--ferpa-aligned-deployment)
-  [![Accessibility: WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-blue.svg)](#-accessibility)
+  [![Privacy: FERPA-aligned deployment](https://img.shields.io/badge/Privacy-FERPA--aligned_deployment-red.svg)](#-privacy--ferpa-aligned-deployment)
+  [![Accessibility: WCAG 2.1 AA-oriented](https://img.shields.io/badge/Accessibility-WCAG_2.1_AA--oriented-blue.svg)](#-accessibility)
   [![UDL Aligned](https://img.shields.io/badge/UDL-Aligned-purple.svg)](#-udl-alignment)
 </div>
 
@@ -15,15 +15,15 @@
 
 ## 🚀 What is AlloFlow?
 
-AlloFlow is an **open-source, privacy-first AI differentiation engine** built for educators, special education teams, and school psychologists. It runs inside Google Gemini Canvas — **no install required** — and instantly transforms any source material into a full suite of interactive, gamified, and accessible learning resources.
+AlloFlow is an **open-source, privacy-first AI differentiation engine** built for educators, special education teams, and school psychologists. Use the keyless Google-managed Gemini Canvas path with no installation, or run AlloFlow Desktop for a local-first teacher-laptop workflow. AlloFlow can transform source material into interactive, differentiated learning resources.
 
-**No subscriptions. No student accounts. No PII collected.**
+**No AlloFlow software subscription. Local classroom flows can run without student accounts or required PII. Cloud-provider terms, data handling, and costs depend on the deployment you choose.**
 
 **Official website:** [apomera.github.io/AlloFlow](https://apomera.github.io/AlloFlow/)
 
 **Search identity:** AlloFlow is a free open-source AI classroom assistant for differentiated instruction, UDL, accessibility, AAC communication, STEM/SEL tools, RTI, and local-first school deployments.
 
-**Current codebase review:** The July 3, 2026 audit found 111 STEM tool files, 116 registered STEM plugin IDs, 70 SEL tools, 151 top-level build modules, 413 test files, and roughly 2.70M canonical-ish source lines after excluding deploy mirrors and generated source/module pairs. A July 9 desktop pass clarified that AlloFlow Desktop is now the everyday local-first path and the Docker School Box stack is optional server/appliance infrastructure. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md), and [desktop/README.md](./desktop/README.md).
+**Current inventory (verified July 18, 2026):** the repository registry check reports 123 STEM tool registrations and 70 SEL tool registrations; the STEM directory contains 122 plugin files because one file registers an additional tool. The broader July 3 codebase review remains the dated source for architecture and size estimates. AlloFlow Desktop is the everyday local-first path, while the Docker School Box stack is optional server/appliance infrastructure. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md), and [desktop/README.md](./desktop/README.md).
 
 🔗 **[Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html)**
 
@@ -31,7 +31,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ## ⚡ Quick Start
 
-1. **[Click to launch](https://apomera.github.io/AlloFlow/launch.html)** — opens directly in Gemini Canvas (free Google account required)
+1. **[Click to launch](https://apomera.github.io/AlloFlow/launch.html)** — opens the Gemini Canvas path (eligible Google account required; availability and school administrator settings apply)
 2. **Paste your lesson text** into the Source Material box, or let the AI generate from a topic
 3. **Click Fullpack** — leveled text, glossary, quizzes, and scaffolds generated in one click
 4. **Start a Live Session** to push resources to student devices in real-time
@@ -42,17 +42,14 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ---
 
-## 📸 Screenshots
+## Product tour
 
-| Main Interface | Live Session | STEM Lab |
-|:-:|:-:|:-:|
-| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing current interactive simulation tiles](docs/screenshots/stem-lab.png) |
+- [Promotion site](https://apomera.github.io/AlloFlow/) -- overview, deployment paths, and current evidence
+- [Feature catalog](https://apomera.github.io/AlloFlow/features.html) -- documented capabilities organized around UDL
+- [Student experience](https://apomera.github.io/AlloFlow/students.html) -- learner-facing tools and accessibility supports
+- [District brief](https://apomera.github.io/AlloFlow/for-districts.html) -- planning, privacy, accessibility, and pilot considerations
 
-| Adventure Mode | BehaviorLens | Word Sounds |
-|:-:|:-:|:-:|
-| ![Adventure Mode RPG scene with inventory and dice](docs/screenshots/adventure-mode.png) | ![BehaviorLens ABC data collection form](docs/screenshots/behavior-lens.png) | ![Word Sounds phonemic awareness activity with Elkonin boxes](docs/screenshots/word-sounds.png) |
-
-> To contribute screenshots, place PNGs in `docs/screenshots/` matching the filenames above and open a PR. You can capture them from the [live Canvas deployment](https://apomera.github.io/AlloFlow/launch.html).
+> Screenshots change quickly as the interface evolves. Use the current promotion pages and launch flow for the latest maintained product tour.
 
 ---
 
@@ -62,7 +59,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 | Feature | Description |
 |---------|-------------|
-| **Leveled Text & Scaffolds** | Instantly rewrite any source to K–Graduate reading level with bilingual side-by-side views, cloze passages, and scaffolded writing frames |
+| **Leveled Text & Scaffolds** | Instantly rewrite any source to K-12 plus higher-education/adult reading levels with bilingual side-by-side views, cloze passages, and scaffolded writing frames |
 | **Fullpack Generation** | One click generates glossary, leveled reader, quiz, visual organizer, and lesson plan simultaneously |
 | **Live Session (Classroom Sync)** | Push your screen to all student devices in real-time — Teacher Paced or Student Paced modes |
 | **Group Differentiation** | Assign different resources to different student groups simultaneously during a live session |
@@ -113,9 +110,9 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ---
 
-## 🧮 STEM Lab (111 Tool Files / 116 Registered Plugin IDs)
+## STEM Lab (122 Plugin Files / 123 Registered Tool IDs)
 
-The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As of the July 3, 2026 codebase review, the workspace contains **111 `stem_tool_*.js` files** and **116 unique registered plugin IDs** because a few tools preserve aliases or paired tool IDs.
+The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As verified by `node dev-tools/check_tool_registry.cjs` on July 18, 2026, the workspace contains **122 `stem_tool_*.js` files** and **123 registered STEM tool IDs** because one plugin file registers an additional tool.
 
 | Domain | Tools |
 |--------|-------|
@@ -208,7 +205,7 @@ AlloFlow is built toward **WCAG 2.1 AA** with keyboard-first interaction pattern
 - **Reading Ruler** — mouse-following line isolation bar
 - **High Contrast & Dark Mode**
 - **Voice Dictation** — speech-to-text on all input fields
-- **Full Keyboard Navigation** — every game and tool accessible via Tab/Enter/Arrow keys
+- **Keyboard-first coverage** — core navigation and audited workflows support standard keyboard interaction; use the published audit and report any tool-specific gaps
 
 ---
 
@@ -218,9 +215,9 @@ AlloFlow is built toward **WCAG 2.1 AA** with keyboard-first interaction pattern
 
 | Path | Software cost | API cost | What You Need |
 |------|---|---|---|
-| **Gemini Canvas** | Free | $0 (Google injects key) | A Google account (uses your free daily Gemini quota) |
-| **Firebase Hosting (Spark — free tier)** | Free | $0 for typical classroom use | A Firebase project + Gemini API key; covers ~1,500 Flash requests/day |
-| **Firebase Hosting (Blaze — pay-as-you-go)** | Free | Pay-as-you-go | Standard Gemini pricing — relevant for heavy PDF remediation batches (Vision API). See [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) for the cost model |
+| **Gemini Canvas** | No AlloFlow license fee | Subject to Google's current terms and quotas | A Google account; uses the host-provided keyless path |
+| **Firebase Hosting (Spark — free tier)** | No AlloFlow license fee | Hosting and AI-provider usage are subject to current free-tier limits | A Firebase project plus a securely configured AI-provider path |
+| **Firebase Hosting (Blaze — pay-as-you-go)** | No AlloFlow license fee | Provider and hosting charges vary by usage | Relevant for heavier workflows; see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) and verify current provider pricing |
 | **AlloFlow Desktop** | Free | $0 for local engine use; cloud providers optional | Teacher laptop/workstation; no Docker required |
 | **School Box Server (optional Docker)** | Hardware cost only | $0 for local model paths; cloud providers optional | School-owned server/appliance stack |
 
@@ -233,7 +230,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (111 tool files / 116 registered IDs), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (122 plugin files / 123 registered IDs), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -257,7 +254,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~31K lines in the current deploy copy) dynamically loads 151 top-level build modules plus large plugin families on demand: STEM Lab (111 tool files / 116 registered IDs), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), AlloStudio, Open Groove Studio, Professional Development, Doc Pipeline, Games, AI Backend, and more. Modules are served from the Cloudflare Pages CDN; `build.js` handles URL resolution. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~31K lines in the current deploy copy) dynamically loads a large set of modules and plugin families on demand: STEM Lab (122 plugin files / 123 registered IDs), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), AlloStudio, Open Groove Studio, Professional Development, Doc Pipeline, Games, AI Backend, and more. Modules are served from the selected deployment's static asset host; `build.js` handles URL resolution. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)

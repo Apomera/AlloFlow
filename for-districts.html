@@ -14,23 +14,25 @@
     <meta property="og:url" content="https://apomera.github.io/AlloFlow/for-districts.html">
     <meta property="og:title" content="AlloFlow for Districts - Open-Source Classroom AI">
     <meta property="og:description"
-        content="720+ documented features, current STEM and SEL inventories, local-first Desktop support, and FERPA-aligned deployment options for district review.">
+        content="400+ documented capabilities, current STEM and SEL inventories, local-first Desktop support, and FERPA-aligned deployment options for district review.">
     <meta property="og:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://apomera.github.io/AlloFlow/for-districts.html">
     <meta property="twitter:title" content="AlloFlow for Districts | Open-Source AI Education Platform">
-    <meta property="twitter:description" content="A district-facing brief for AlloFlow: open-source classroom AI, local-first deployment, accessibility documentation, and lower subscription costs.">
+    <meta property="twitter:description" content="A district-facing brief for AlloFlow: open-source classroom AI, local-first deployment, accessibility documentation, and an open-source software-license alternative.">
     <meta property="twitter:image" content="https://apomera.github.io/AlloFlow/rainbow-book.jpg">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
                 AlloFlow</a>
@@ -39,31 +41,31 @@
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
                 <a href="students.html">Students</a>
-                <a href="for-districts.html" style="color:var(--indigo)">For Districts</a>
+                <a href="for-districts.html" aria-current="page" style="color:var(--indigo)">For Districts</a>
                 <a href="index.html#pricing">Pricing</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer"><i data-lucide="github"
                         style="width:16px;height:16px"></i> Get Code</a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
-    <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
-            aria-label="Close">&times;</button>
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn"
+            aria-label="Close menu">&times;</button>
         <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
-            href="students.html">Students</a><a href="for-districts.html">For Districts</a><a
+            href="students.html">Students</a><a href="for-districts.html" aria-current="page">For Districts</a><a
             href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow"
-            target="_blank">GitHub</a>
+            target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
     <!-- Page Header -->
     <header class="section"
         style="background:linear-gradient(135deg,#f0fdfa,#fff7ed);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #ccfbf1">
         <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">The <span
-                class="gradient-text">$26,000</span> Question</h1>
+                class="gradient-text">EdTech Stack</span> Question</h1>
         <p style="font-size:1.05rem;color:#64748b;max-width:640px;margin:0 auto">
-            A one-page brief for district decision-makers. Cost comparison, privacy &amp; compliance, and the pilot path.
+            A one-page brief for district decision-makers. Planning considerations, privacy, accessibility, and the pilot path.
         </p>
         <p style="font-size:0.85rem;color:#64748b;margin-top:10px">Updated July 2026</p>
     </header>
@@ -72,7 +74,7 @@
     <div class="jump-nav">
         <div class="jump-nav-inner">
             <a href="#problem" class="jump-pill">The Problem</a>
-            <a href="#solution" class="jump-pill">Cost Comparison</a>
+            <a href="#solution" class="jump-pill">License &amp; Cost</a>
             <a href="#free" class="jump-pill">Why It's Free</a>
             <a href="#privacy" class="jump-pill">Privacy &amp; FERPA</a>
             <a href="#included" class="jump-pill">What's Included</a>
@@ -83,7 +85,7 @@
         </div>
     </div>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         <!-- Problem -->
         <section id="problem" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
             <div class="section-inner">
@@ -110,7 +112,7 @@
                 </div>
                 <p
                     style="font-size:1.1rem;font-weight:800;color:#1e293b;background:#fef3c7;padding:14px 18px;border-radius:10px;border-left:4px solid #f59e0b;max-width:800px">
-                    Annual cost for a typical school site: <span style="color:#b45309">$20,000&ndash;$30,000</span>.
+                    District costs vary by enrollment, product tier, negotiated contract, hosting, support, and AI usage. Compare current written quotes before making a purchasing decision.
                 </p>
                 <p style="font-size:0.95rem;color:#64748b;line-height:1.7;margin-top:16px;max-width:800px">
                     Each tool requires separate logins, separate training, separate data-sharing agreements, and
@@ -140,7 +142,7 @@
                             <tr style="background:linear-gradient(135deg,#f0fdfa,#fff7ed)">
                                 <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Capability</th>
                                 <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Typical Tool</th>
-                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Typical Cost</th>
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Pricing model</th>
                                 <th style="text-align:left;padding:14px 16px;font-weight:800;color:#059669">AlloFlow</th>
                             </tr>
                         </thead>
@@ -148,19 +150,19 @@
                             <tr style="border-top:1px solid #e2e8f0">
                                 <td style="padding:12px 16px">Text leveling</td>
                                 <td style="padding:12px 16px">Diffit</td>
-                                <td style="padding:12px 16px">$3,000/yr</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
                                 <td style="padding:12px 16px">Gamification</td>
                                 <td style="padding:12px 16px">Kahoot</td>
-                                <td style="padding:12px 16px">$3,000/yr</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0">
                                 <td style="padding:12px 16px">Interactive lessons</td>
                                 <td style="padding:12px 16px">Nearpod</td>
-                                <td style="padding:12px 16px">$5,000/yr</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
@@ -172,20 +174,20 @@
                             <tr style="border-top:1px solid #e2e8f0">
                                 <td style="padding:12px 16px">Oral fluency assessment</td>
                                 <td style="padding:12px 16px">Amira</td>
-                                <td style="padding:12px 16px">$3,000/yr</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
                                 <td style="padding:12px 16px">AI content generation</td>
                                 <td style="padding:12px 16px">MagicSchool</td>
-                                <td style="padding:12px 16px">$5,000/yr</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
                             </tr>
                             <tr style="border-top:2px solid #cbd5e1;background:#eef2ff;font-weight:800">
                                 <td style="padding:14px 16px">TOTAL (top 6 rows)</td>
                                 <td style="padding:14px 16px"></td>
-                                <td style="padding:14px 16px;color:#b45309">~$26,000/yr</td>
-                                <td style="padding:14px 16px;color:#059669;font-size:1.15rem">$0</td>
+                                <td style="padding:14px 16px;color:#b45309">Contract-dependent</td>
+                                <td style="padding:14px 16px;color:#059669;font-size:1.15rem">No license fee</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0">
                                 <td colspan="4"
@@ -197,13 +199,13 @@
                             <tr style="border-top:1px solid #e2e8f0">
                                 <td style="padding:12px 16px">AAC / symbol boards</td>
                                 <td style="padding:12px 16px">Boardmaker</td>
-                                <td style="padding:12px 16px">$500+/student</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Symbol Studio</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
                                 <td style="padding:12px 16px">PDF accessibility remediation</td>
                                 <td style="padding:12px 16px">Human services</td>
-                                <td style="padding:12px 16px">$5&ndash;25/page</td>
+                                <td style="padding:12px 16px">Varies by document and vendor</td>
                                 <td style="padding:12px 16px;color:#059669;font-weight:700">&check; AI remediation pipeline</td>
                             </tr>
                         </tbody>
@@ -225,7 +227,7 @@
                 <div class="grid-3" style="margin-bottom:20px">
                     <div class="card">
                         <div style="font-weight:700;color:#7c3aed;margin-bottom:6px">No subscription fees</div>
-                        <p style="font-size:0.85rem;color:#64748b">Zero cost forever. Not freemium, not a trial.</p>
+                        <p style="font-size:0.85rem;color:#64748b">No AlloFlow software license fee under AGPL v3. Hosting, hardware, support, and optional AI providers may still cost money.</p>
                     </div>
                     <div class="card">
                         <div style="font-weight:700;color:#7c3aed;margin-bottom:6px">Public, auditable code</div>
@@ -315,7 +317,7 @@
                     <h2 style="font-size:1.75rem;font-weight:900">What's Included</h2>
                 </div>
                 <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:800px;margin-bottom:24px">
-                    <strong>720+ documented features on a single UDL-aligned platform</strong>, spanning:
+                    <strong>400+ documented capabilities on a single UDL-aligned platform</strong>, spanning:
                 </p>
                 <div class="grid-3" style="margin-bottom:8px">
                     <div class="card">
@@ -366,7 +368,7 @@
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
-                            <strong>111 STEM tool files and 116 registered STEM IDs</strong> across math, life/earth/space science, physics/chemistry,
+                            <strong>122 STEM plugin files and 123 registered STEM IDs</strong> across math, life/earth/space science, physics/chemistry,
                             CS/tech, and creative/applied labs. Includes RoadReady driver's ed, Space Explorer
                             roguelike, LLM Literacy Lab, AppLab generative-AI mini-app builder.
                         </p>
@@ -418,7 +420,7 @@
                         </p>
                         <p style="font-size:0.75rem;color:#64748b">
                             <a href="https://github.com/Apomera/AlloFlow/tree/main/desktop"
-                                style="color:#0d9488" target="_blank">Desktop setup</a> on GitHub.
+                                style="color:#0d9488" target="_blank" rel="noopener noreferrer">Desktop setup</a> on GitHub.
                         </p>
                     </div>
                     <div class="card">
@@ -431,7 +433,7 @@
                         </p>
                         <p style="font-size:0.75rem;color:#64748b">
                             <a href="https://github.com/Apomera/AlloFlow/blob/main/DEPLOY_YOUR_OWN.md"
-                                style="color:#0d9488" target="_blank">Deploy guide</a> on GitHub.
+                                style="color:#0d9488" target="_blank" rel="noopener noreferrer">Deploy guide</a> on GitHub.
                         </p>
                     </div>
                     <div class="card">
@@ -470,7 +472,7 @@
                     <div class="card">
                         <div style="font-weight:700;color:#2563eb;margin-bottom:6px">Offline TTS</div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
-                            Two engines: Kokoro (English) and Piper (40+ languages). Audio never hits cloud APIs.
+                            Local Kokoro and Piper options can keep audio on the teacher device or school-controlled infrastructure; cloud voice options remain deployment-dependent.
                         </p>
                     </div>
                     <div class="card">
@@ -483,16 +485,16 @@
                     <div class="card">
                         <div style="font-weight:700;color:#2563eb;margin-bottom:6px">Keyboard + multilingual</div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
-                            Full keyboard accessibility; no mouse-required interactions. 18-language UI with
+                            Keyboard-first patterns, published audit evidence, and an 18-language UI with
                             community-contributed translations.
                         </p>
                     </div>
                 </div>
                 <p style="font-size:0.9rem;color:#64748b;margin-top:20px">
                     Documents: <a href="https://github.com/Apomera/AlloFlow/blob/main/VPAT-2.5-WCAG-AlloFlow.md"
-                        target="_blank" style="color:var(--indigo);font-weight:700">VPAT 2.5</a> &middot;
+                        target="_blank" style="color:var(--indigo);font-weight:700" rel="noopener noreferrer">VPAT 2.5</a> &middot;
                     <a href="https://github.com/Apomera/AlloFlow/blob/main/alloflow_wcag_aa_audit_report.md"
-                        target="_blank" style="color:var(--indigo);font-weight:700">WCAG AA Audit Report</a>
+                        target="_blank" style="color:var(--indigo);font-weight:700" rel="noopener noreferrer">WCAG AA Audit Report</a>
                 </p>
             </div>
         </section>
@@ -509,7 +511,7 @@
                 <div class="grid-3" style="max-width:800px;margin:0 auto 28px">
                     <div class="card" style="text-align:center">
                         <div style="font-size:1.75rem;font-weight:900;color:#059669;margin-bottom:4px">$0</div>
-                        <div style="font-size:0.85rem;color:#64748b">cost to try</div>
+                        <div style="font-size:0.85rem;color:#64748b">AlloFlow license fee for a pilot</div>
                     </div>
                     <div class="card" style="text-align:center">
                         <div style="font-size:1.75rem;font-weight:900;color:#7c3aed;margin-bottom:4px">0</div>
@@ -547,7 +549,7 @@
                     <li style="margin-bottom:6px">&bull; Published doctoral research on game-based math
                         instruction: <em>Use of Minecraft Education to Teach 5th-Grade Common Core Math
                         Standards</em> (<a href="https://eric.ed.gov/?id=ED659551" target="_blank"
-                        style="color:var(--indigo);font-weight:700">ERIC ED659551</a>)</li>
+                        style="color:var(--indigo);font-weight:700" rel="noopener noreferrer">ERIC ED659551</a>)</li>
                     <li style="margin-bottom:6px">&bull; AlloFlow Desktop is the primary local-first path; Docker School
                         Box is optional school-owned server infrastructure</li>
                 </ul>
@@ -555,9 +557,9 @@
                     <strong>Email:</strong> <a href="mailto:aaron.pomeranz@maine.edu"
                         style="color:var(--indigo)">aaron.pomeranz@maine.edu</a><br>
                     <strong>GitHub:</strong> <a href="https://github.com/Apomera/AlloFlow"
-                        style="color:var(--indigo)" target="_blank">github.com/Apomera/AlloFlow</a><br>
+                        style="color:var(--indigo)" target="_blank" rel="noopener noreferrer">github.com/Apomera/AlloFlow</a><br>
                     <strong>License:</strong> <a href="https://www.gnu.org/licenses/agpl-3.0.html"
-                        style="color:var(--indigo)" target="_blank">AGPL v3 (open source)</a>
+                        style="color:var(--indigo)" target="_blank" rel="noopener noreferrer">AGPL v3 (open source)</a>
                 </p>
                 <p style="font-size:0.85rem;color:#64748b;font-style:italic;margin-top:24px">
                     "Differentiation shouldn't depend on budget."
@@ -576,16 +578,16 @@
                 <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
-                <a href="for-districts.html">For Districts</a>
+                <a href="for-districts.html" aria-current="page">For Districts</a>
                 <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
-                <a href="https://www.youtube.com/@AlloFlow" target="_blank">YouTube</a>
+                <a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a>
                 <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
             </div>
         </div>
     </footer>
 
     <!-- Back to Top Button -->
-    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
         <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
     </button>
 

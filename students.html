@@ -23,13 +23,15 @@
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
+    <script src="site.js" defer></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="index.html" class="nav-logo">
                 <i data-lucide="layers" style="width:28px;height:28px"></i>
@@ -41,16 +43,16 @@
                 <a href="index.html">Home</a>
                 <a href="features.html">Features</a>
                 <a href="library.html">Library</a>
-                <a href="students.html" style="color:var(--indigo)">Students</a>
+                <a href="students.html" aria-current="page" style="color:var(--indigo)">Students</a>
                 <a href="for-districts.html">For Districts</a>
                 <a href="accessibility_demo.html">Accessibility</a>
-                <a href="calculator.html">Savings</a>
+                <a href="calculator.html">Cost Planner</a>
                 <a href="index.html#pricing">Pricing</a>
-                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn">
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn" rel="noopener noreferrer">
                     <i data-lucide="github" style="width:16px;height:16px"></i> Get Code
                 </a>
             </div>
-            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu">
                 <i data-lucide="menu" style="width:24px;height:24px"></i>
             </button>
@@ -58,16 +60,16 @@
     </nav>
 
     <!-- Mobile Nav Overlay -->
-    <div id="mobileNav" class="mobile-nav">
-        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
-            aria-label="Close">&times;</button>
-        <a href="index.html" onclick="this.parentElement.classList.remove('open')">Home</a>
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn"
+            aria-label="Close menu">&times;</button>
+        <a href="index.html" >Home</a>
         <a href="features.html">Features</a>
         <a href="library.html">Library</a>
-        <a href="students.html">Students</a>
+        <a href="students.html" aria-current="page">Students</a>
         <a href="for-districts.html">For Districts</a>
-        <a href="calculator.html">Savings</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank">GitHub</a>
+        <a href="calculator.html">Cost Planner</a>
+        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
     <!-- Page Header -->
@@ -108,7 +110,7 @@
         </div>
     </div>
 
-    <main>
+    <main id="main-content" tabindex="-1">
 
         <!-- Join a Session -->
         <section id="join" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
@@ -597,7 +599,7 @@
                     <div style="width:6px;height:32px;background:#0d9488;border-radius:4px"></div>
                     <h2 style="font-size:1.75rem;font-weight:900">STEM Lab 🧪</h2>
                 </div>
-                <p style="color:#64748b;margin-bottom:24px;max-width:560px">55 interactive simulations across science,
+                <p style="color:#64748b;margin-bottom:24px;max-width:560px">120+ registered STEM tools across science,
                     math, coding, biology, and more — all running right in your browser.</p>
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
                     <div
@@ -787,7 +789,7 @@
     </footer>
 
     <!-- Back to Top -->
-    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
         <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
     </button>
 
