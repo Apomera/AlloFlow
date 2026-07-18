@@ -17228,60 +17228,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { moments: [] };
     var setData = props.setData;
-    var fs = R.useState({ what: '', when: '', what_did_it: '', strength_showed: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { what: '', when: '', what_did_it: '', strength_showed: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var whatError = es[0]; var setWhatError = es[1];
+    var FIELDS = [
+      { id: 'what', label: 'What happened? (required)', help: 'Briefly describe a moment when you noticed confidence, comfort, self-trust, or capability.' },
+      { id: 'when', label: 'When did you notice it? (optional)', help: 'For example: before, during, or after the moment.' },
+      { id: 'what_did_it', label: 'What may have contributed? (optional)', help: 'For example: practice, preparation, support, access needs being met, or words you used.' },
+      { id: 'strength_showed', label: 'What quality or strength did you notice? (optional)', help: 'Use your own words; you do not need to choose a conventional strength label.' }
+    ];
 
+    function safeDomId(value) { return String(value || 'moment').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
     function save() {
-      if (!form.what.trim()) { alert('Need a brief description.'); return; }
-      var m = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ moments: [m].concat(data.moments || []) });
-      setForm({ what: '', when: '', what_did_it: '', strength_showed: '' });
+      var what = form.what.trim();
+      if (!what) { setWhatError('Describe a moment before saving.'); llAnnounce('Confidence reflection not saved. Describe a moment first.'); focusById('learning-lab-confidence-what'); return; }
+      var moment = { id: tkId(), date: todayISO(), what: what, when: form.when.trim(), what_did_it: form.what_did_it.trim(), strength_showed: form.strength_showed.trim() };
+      setData(Object.assign({}, data, { moments: [moment].concat(data.moments || []) }));
+      setForm(emptyForm); setWhatError(''); llAnnounce('Confidence reflection saved in this browser.'); focusById('learning-lab-confidence-what');
     }
-    function remove(id) { setData({ moments: (data.moments || []).filter(function(m) { return m.id !== id; }) }); }
+    function remove(moment) {
+      askLearningLabConfirmation('Remove “' + String(moment.what || 'this confidence reflection') + '”? This cannot be undone.', { title: 'Remove this confidence reflection?', confirmText: 'Remove reflection' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { moments: (data.moments || []).filter(function(item) { return item.id !== moment.id; }) }));
+        llAnnounce('Saved confidence reflection removed.'); focusById('learning-lab-confidence-history-heading');
+      });
+    }
+    function detailsFor(moment) {
+      return FIELDS.slice(1).map(function(field) { return { id: field.id, label: field.label.replace(' (optional)', ''), value: String(moment[field.id] || '').trim() }; }).filter(function(detail) { return !!detail.value; });
+    }
 
     var moments = data.moments || [];
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 76, borderRadius: 7, border: '1px solid #34d399', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12, lineHeight: 1.5, resize: 'vertical' };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💪', 'Confidence Builder', 'Track moments when you noticed confidence. The pattern reveals what builds it for YOU.', '#10b981'),
-
+      tkSectionHeader('💪', 'Confidence Builder', 'Record moments of confidence, comfort, self-trust, or capability.', '#10b981'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-confidence-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #34d399', background: 'rgba(6,78,59,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-confidence-context-heading', style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 13 } }, 'Personal observations, not an assessment'),
+        hh('p', { style: { margin: 0 } }, 'Entries may offer clues about supportive conditions, but they do not measure your worth, prove what caused a feeling, diagnose a condition, or guarantee a future outcome. Having few or no entries does not mean confidence is absent.')
+      ),
       tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 8 } }, '💪 Log a confidence moment'),
-          [
-            { id: 'what',           label: 'What happened?',                     placeholder: 'Brief — "I asked a question in chemistry"' },
-            { id: 'when',           label: 'When did you notice the confidence?', placeholder: 'Before / during / after?' },
-            { id: 'what_did_it',    label: 'What contributed?',                  placeholder: 'Practice? A friend? Preparation? Specific words you used?' },
-            { id: 'strength_showed', label: 'What strength of yours showed up?', placeholder: 'Courage? Curiosity? Persistence?' }
-          ].map(function(f) {
-            return hh('div', { key: 'cf-' + f.id, style: { marginBottom: 8 } },
-              hh('label', { style: { fontSize: 11, fontWeight: 700, color: '#10b981', display: 'block', marginBottom: 4 } }, f.label),
-              tkInput(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, f.placeholder)
-            );
-          }),
-          tkBtn('💾 Log', save, 'primary')
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-confidence-form-heading', 'aria-describedby': 'learning-lab-confidence-privacy' },
+          hh('h2', { id: 'learning-lab-confidence-form-heading', style: { margin: '0 0 6px', color: '#d1fae5', fontSize: 15 } }, 'Add a confidence reflection'),
+          hh('p', { id: 'learning-lab-confidence-privacy', style: helpStyle }, 'Reflections save in this browser and may contain sensitive information. Avoid names or private details if other people use this device.'),
+          FIELDS.map(function(field) { var inputId = 'learning-lab-confidence-' + field.id; var helpId = inputId + '-help'; var isRequired = field.id === 'what'; return hh('div', { key: field.id, style: { marginBottom: 10 } },
+            hh('label', { htmlFor: inputId, style: labelStyle }, field.label),
+            hh('p', { id: helpId, style: helpStyle }, field.help),
+            hh('textarea', { id: inputId, value: form[field.id], rows: field.id === 'what' ? 3 : 2, required: isRequired, maxLength: 4000, onChange: function(event) { var update = {}; update[field.id] = event.target.value; setForm(Object.assign({}, form, update)); if (isRequired && whatError) setWhatError(''); }, 'aria-invalid': isRequired && whatError ? 'true' : undefined, 'aria-describedby': helpId + (isRequired && whatError ? ' learning-lab-confidence-what-error' : ''), style: fieldStyle }),
+            isRequired && whatError ? hh('p', { id: 'learning-lab-confidence-what-error', role: 'alert', style: { margin: '5px 0 0', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, whatError) : null
+          ); }),
+          hh('button', { type: 'submit', style: buttonStyle }, 'Save confidence reflection')
         )
       ),
-
-      moments.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Your confidence pattern'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          moments.slice(0, 15).map(function(m) {
-            return hh('div', { key: 'cm-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('strong', { style: { fontSize: 12, color: '#10b981' } }, '💪 ' + m.what),
-                hh('button', { onClick: function() { remove(m.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } }, relDate(m.date)),
-              m.what_did_it ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, hh('strong', { style: { color: '#10b981' } }, 'What helped: '), m.what_did_it) : null,
-              m.strength_showed ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginTop: 4 } }, hh('strong', { style: { color: '#10b981' } }, 'Strength: '), m.strength_showed) : null
-            );
-          })
-        )
-      ) : null,
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#10b981' } }, '🎓 Why log this: '),
-        'Bandura 1977 — self-efficacy is the most powerful predictor of trying hard things. The way you build it is by NOTICING when it shows up + understanding what conditions produced it. Over time the pattern becomes a blueprint.'
+      hh('section', { 'aria-labelledby': 'learning-lab-confidence-history-heading' },
+        hh('h2', { id: 'learning-lab-confidence-history-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#d1fae5', fontSize: 15 } }, 'Saved confidence reflections'),
+        moments.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No confidence reflections saved yet.') :
+        hh('ul', { 'aria-label': 'Saved confidence reflections, newest first', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, moments.map(function(moment) { var domId = safeDomId(moment.id); var headingId = 'learning-lab-confidence-heading-' + domId; var details = detailsFor(moment); return hh('li', { key: moment.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid #34d399' } },
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+            hh('div', { style: { minWidth: 0 } }, hh('h3', { id: headingId, style: { margin: 0, color: '#d1fae5', fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, '💪 '), String(moment.what || 'Untitled reflection')), hh('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: moment.date || undefined }, relDate(moment.date)))),
+            hh('button', { type: 'button', onClick: function() { remove(moment); }, 'aria-label': 'Remove confidence reflection: ' + String(moment.what || 'untitled reflection'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+          ),
+          details.length ? hh('dl', { 'aria-label': 'Confidence reflection details', style: { margin: '6px 0 0' } }, details.map(function(detail) { return hh('div', { key: detail.id, style: { marginTop: 7 } }, hh('dt', { style: { color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, detail.label), hh('dd', { style: { margin: '3px 0 0', color: '#f8fafc', fontSize: 11, lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, detail.value)); })) : hh('p', { style: { margin: '7px 0 0', color: '#e2e8f0', fontSize: 11 } }, 'No optional details were added.')
+        )); }))
       )
     );
   }
