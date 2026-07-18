@@ -16126,84 +16126,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { entries: [], identity: '' };
     var setData = props.setData;
-    var fs = R.useState({ topic: '', text: '', felt: '5' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { topic: '', text: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var is = R.useState(String(data.identity || '')); var identityDraft = is[0]; var setIdentityDraft = is[1];
+    var es = R.useState(''); var textError = es[0]; var setTextError = es[1];
 
     var TOPICS = [
-      { id: 'masking',     label: 'Masking moment', icon: '🎭' },
-      { id: 'sensory',     label: 'Sensory situation', icon: '🌈' },
-      { id: 'social',      label: 'Social interaction', icon: '🤝' },
-      { id: 'misunderstood', label: 'Being misunderstood', icon: '😕' },
-      { id: 'success',     label: 'Neurodivergent strength win', icon: '⭐' },
-      { id: 'community',   label: 'Connection with other ND people', icon: '🤝' },
-      { id: 'advocacy',    label: 'Self-advocacy moment', icon: '🛡' },
-      { id: 'overload',    label: 'Overload / shutdown', icon: '😵' },
-      { id: 'other',       label: 'Other', icon: '📝' }
+      { id: 'masking', label: 'Masking or adapting', icon: '🎭' },
+      { id: 'sensory', label: 'Sensory experience', icon: '🌈' },
+      { id: 'social', label: 'Social interaction', icon: '🤝' },
+      { id: 'misunderstood', label: 'Being misunderstood', icon: '💭' },
+      { id: 'success', label: 'Strength or positive experience', icon: '⭐' },
+      { id: 'community', label: 'Community or belonging', icon: '🫶' },
+      { id: 'advocacy', label: 'Self-advocacy', icon: '🛡️' },
+      { id: 'overload', label: 'Overload, shutdown, or difficult moment', icon: '⏸️' },
+      { id: 'other', label: 'Another topic', icon: '📝' }
     ];
 
-    function save() {
-      if (!form.text.trim()) { alert('Need some text.'); return; }
-      var e = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData(Object.assign({}, data, { entries: [e].concat(data.entries || []) }));
-      setForm({ topic: '', text: '', felt: '5' });
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function topicFor(id) { return TOPICS.filter(function(topic) { return topic.id === id; })[0] || { id: '', label: 'No topic selected', icon: '📝' }; }
+    function saveIdentity() {
+      var identity = identityDraft.trim();
+      setData(Object.assign({}, data, { identity: identity })); setIdentityDraft(identity);
+      llAnnounce(identity ? 'Identity language saved in this browser.' : 'Saved identity language cleared.');
+      focusById('learning-lab-nd-identity-heading');
     }
-    function remove(id) { setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(e) { return e.id !== id; }) })); }
-    function setIdentity(v) { setData(Object.assign({}, data, { identity: v })); }
+    function saveEntry() {
+      var text = form.text.trim();
+      if (!text) { setTextError('Enter journal text before saving.'); llAnnounce('Journal entry not saved. Enter some text first.'); focusById('learning-lab-nd-entry-text'); return; }
+      var entry = { id: tkId(), date: todayISO(), time: Date.now(), topic: form.topic, text: text };
+      setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
+      setForm(emptyForm); setTextError(''); llAnnounce('Journal entry saved in this browser.'); focusById('learning-lab-nd-entry-text');
+    }
+    function removeEntry(entry) {
+      askLearningLabConfirmation('Remove this journal entry? This cannot be undone.', { title: 'Remove this journal entry?', confirmText: 'Remove entry' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== entry.id; }) }));
+        llAnnounce('Journal entry removed.'); focusById('learning-lab-nd-history-heading');
+      });
+    }
+    function entryDateTime(entry) { var timestamp = Number(entry.time); return entry.time != null && Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : (entry.date || undefined); }
+    function entryDateLabel(entry) { var timestamp = Number(entry.time); return entry.time != null && Number.isFinite(timestamp) ? relDate(entry.date) + ' at ' + new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : relDate(entry.date); }
 
     var entries = data.entries || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#e9d5ff', fontSize: 12, fontWeight: 800 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧠', 'Neurodivergence Journal', 'For autistic, ADHD, dyslexic, sensory-processing, anxious, and other ND students. Journal the lived experience.', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🧠 Identity-first by default: '),
-        '"Autistic student" not "student with autism" (community consensus: Kenny 2016, Bury 2020). Override if YOUR preference is different.'
+      tkSectionHeader('🧠', 'Neurodivergence Journal', 'Record identity language and lived experiences in the words you choose.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-nd-about-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-nd-about-heading', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13 } }, 'Your language and privacy choices'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'Use identity-first, person-first, community-specific, questioning, or other language according to your own preference. You may leave the identity field and topic blank.'),
+        hh('p', { style: { margin: 0 } }, 'Entries save in this browser and are not monitored. Avoid private details on a shared device. If you are in immediate danger or may harm yourself or someone else, contact local emergency or crisis services now.')
       ),
-
-      tkCard('#a855f7',
-        hh('div', null,
-          hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, 'My ND identity (in my own words)'),
-          tkInput(data.identity, setIdentity, 'e.g., "autistic + ADHD" or "anxious + dyslexic"', { marginBottom: 14 }),
-
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Log an experience'),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
-            TOPICS.map(function(t) {
-              var on = form.topic === t.id;
-              return hh('button', { key: 'nt-' + t.id,
-                onClick: function() { setForm(Object.assign({}, form, { topic: t.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(168,85,247,0.25)' : 'rgba(15,23,42,0.5)', color: on ? '#c084fc' : '#94a3b8', border: '1px solid ' + (on ? '#a855f7' : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-              }, t.icon + ' ' + t.label);
-            })
-          ),
-          tkTextarea(form.text, function(v) { setForm(Object.assign({}, form, { text: v })); }, 'What happened? How did it feel? What did you notice?', 4, { marginBottom: 10 }),
-          tkBtn('💾 Save', save, 'primary')
-        )
-      ),
-
-      entries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 My journal'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          entries.slice(0, 20).map(function(e) {
-            var t = TOPICS.filter(function(x) { return x.id === e.topic; })[0] || TOPICS[TOPICS.length - 1];
-            return hh('div', { key: 'nd-' + e.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 11, color: '#c084fc' } }, t.icon + ' ' + t.label),
-                hh('div', null,
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginRight: 6 } }, e.date),
-                  hh('button', { onClick: function() { remove(e.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, e.text)
-            );
-          })
-        )
-      ) : null
+      tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); saveIdentity(); }, 'aria-labelledby': 'learning-lab-nd-identity-heading' },
+        hh('h2', { id: 'learning-lab-nd-identity-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Identity language'),
+        hh('label', { htmlFor: 'learning-lab-nd-identity', style: labelStyle }, 'How I describe my identity (optional)'),
+        hh('input', { id: 'learning-lab-nd-identity', type: 'text', value: identityDraft, maxLength: 1000, onChange: function(event) { setIdentityDraft(event.target.value); }, 'aria-describedby': 'learning-lab-nd-identity-help', style: fieldStyle }),
+        hh('p', { id: 'learning-lab-nd-identity-help', style: helpStyle }, 'Use any words you prefer, or clear this field and save it blank.'),
+        hh('button', { type: 'submit', style: buttonStyle }, 'Save identity language')
+      )),
+      tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); saveEntry(); }, 'aria-labelledby': 'learning-lab-nd-entry-heading' },
+        hh('h2', { id: 'learning-lab-nd-entry-heading', style: { margin: '0 0 8px', color: '#e9d5ff', fontSize: 15 } }, 'Add a journal entry'),
+        hh('label', { htmlFor: 'learning-lab-nd-topic', style: labelStyle }, 'Topic (optional)'),
+        hh('select', { id: 'learning-lab-nd-topic', value: form.topic, onChange: function(event) { setForm(Object.assign({}, form, { topic: event.target.value })); }, style: fieldStyle },
+          hh('option', { value: '' }, 'No topic selected'), TOPICS.map(function(topic) { return hh('option', { key: topic.id, value: topic.id }, topic.label); })
+        ),
+        hh('label', { htmlFor: 'learning-lab-nd-entry-text', style: Object.assign({}, labelStyle, { marginTop: 10 }) }, 'Journal text (required)'),
+        hh('textarea', { id: 'learning-lab-nd-entry-text', value: form.text, rows: 6, required: true, maxLength: 10000, onChange: function(event) { setForm(Object.assign({}, form, { text: event.target.value })); if (textError) setTextError(''); }, 'aria-invalid': textError ? 'true' : undefined, 'aria-describedby': 'learning-lab-nd-entry-help' + (textError ? ' learning-lab-nd-entry-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 150, resize: 'vertical' }) }),
+        hh('p', { id: 'learning-lab-nd-entry-help', style: helpStyle }, 'Write only what you want to keep on this device. Any experience, uncertainty, strength, difficulty, or ordinary moment can belong here.'),
+        textError ? hh('p', { id: 'learning-lab-nd-entry-error', role: 'alert', style: errorStyle }, textError) : null,
+        hh('button', { type: 'submit', style: buttonStyle }, 'Save journal entry')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-nd-history-heading' },
+        hh('h2', { id: 'learning-lab-nd-history-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#e9d5ff', fontSize: 15 } }, 'Saved journal entries'),
+        entries.length > 20 ? hh('p', { style: helpStyle }, 'Showing the 20 most recent entries out of ' + entries.length + '.') : null,
+        entries.length === 0 ? hh('p', { style: { padding: 14, borderRadius: 8, border: '1px solid #64748b', color: '#e2e8f0' } }, 'No journal entries saved yet.') : hh('ul', { 'aria-label': 'Most recent neurodivergence journal entries', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, entries.slice(0, 20).map(function(entry) { var topic = topicFor(entry.topic); var headingId = 'learning-lab-nd-entry-title-' + entry.id; return hh('li', { key: 'nd-' + entry.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.62)', border: '1px solid #c084fc' } },
+          hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } }, hh('div', null, hh('h3', { id: headingId, style: { margin: '0 0 4px', color: '#e9d5ff', fontSize: 13 } }, hh('span', { 'aria-hidden': 'true' }, topic.icon + ' '), topic.label), hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: entryDateTime(entry) }, entryDateLabel(entry)))), hh('button', { type: 'button', onClick: function() { removeEntry(entry); }, 'aria-label': 'Remove journal entry: ' + topic.label, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')),
+          hh('p', { style: { margin: '9px 0 0', color: '#f1f5f9', fontSize: 11, lineHeight: 1.6, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(entry.text || 'Empty entry'))
+        )); }))
+      )
     );
   }
 
-  // ── SSS. PERSONAL LIFE MAP (Wave 14) ──
-  // Visual representation of life across 8 dimensions. Self-assess + see
-  // what areas need attention.
   function PersonalLifeMap(props) {
     if (!R) return null;
     var data = props.data || { snapshots: [] };
