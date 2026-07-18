@@ -14336,98 +14336,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { custom: [], favorites: [], lastReadDate: null };
     var setData = props.setData;
     var ns = R.useState(''); var newOne = ns[0]; var setNewOne = ns[1];
+    var es = R.useState(''); var entryError = es[0]; var setEntryError = es[1];
 
     var BUILTIN = [
       'I am allowed to take up space.',
-      'My pace is my pace. Comparison is the thief of joy.',
-      'I am learning. Learning includes not-yet-knowing.',
-      'I deserve accommodations because I have a brain that works in a specific way.',
-      'Asking for help is a skill, not a weakness.',
+      'My pace is my pace.',
+      'I am learning, and learning includes not knowing yet.',
+      'I can ask for the accommodations in my plan.',
+      'Asking for help is a skill.',
       'My identity is bigger than my grades.',
-      'I am the kind of person who finishes hard things.',
-      'I can do hard things. I have evidence — I\'ve done hard things before.',
-      'Being neurodivergent is not a problem to fix.',
-      'Rest is productive.',
-      'I am exactly where I need to be in my own story.',
-      'My worth is not contingent on my output today.',
-      'I am building a life that fits me.',
+      'I can remember difficult things I have already completed.',
+      'Being neurodivergent is one part of who I am.',
+      'Rest can be part of my plan.',
       'I am allowed to change my mind.',
-      'I am allowed to not have everything figured out.',
-      'Small steps in the right direction count.',
+      'I am allowed not to have everything figured out.',
+      'Small steps can count.',
       'My voice matters in this conversation.',
-      'I am someone\'s favorite person.',
-      'I can disagree with someone and still respect them. They can do the same to me.',
-      'I do not need permission to be myself.'
+      'I can disagree with someone and still treat them with respect.',
+      'I can choose words that fit my own experience.'
     ];
+
+    function focusById(id) {
+      setTimeout(function() {
+        if (typeof document === 'undefined') return;
+        var target = document.getElementById(id);
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+    }
+    function legacyTextId(text, index) {
+      var hash = 0;
+      for (var i = 0; i < text.length; i++) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+      return 'legacy-' + Math.abs(hash).toString(36) + '-' + index;
+    }
 
     var custom = data.custom || [];
     var favorites = data.favorites || [];
-    var all = BUILTIN.map(function(t, i) { return { id: 'b-' + i, text: t, builtin: true }; }).concat(custom.map(function(t, i) { return { id: 'c-' + i, text: t, builtin: false }; }));
+    var customEntries = custom.map(function(item, index) {
+      if (item && typeof item === 'object') {
+        return { id: 'c-' + String(item.id || legacyTextId(String(item.text || ''), index)), text: String(item.text || ''), raw: item, legacyIndex: index };
+      }
+      var text = String(item || '');
+      return { id: 'c-' + legacyTextId(text, index), text: text, raw: item, legacyIndex: index };
+    });
+    var normalizedFavorites = favorites.map(function(id) {
+      var match = /^c-(\d+)$/.exec(String(id));
+      return match && customEntries[parseInt(match[1], 10)] ? customEntries[parseInt(match[1], 10)].id : String(id);
+    }).filter(function(id, index, list) { return list.indexOf(id) === index; });
+    var all = BUILTIN.map(function(text, index) { return { id: 'b-' + index, text: text, builtin: true }; })
+      .concat(customEntries.map(function(entry) { return { id: entry.id, text: entry.text, builtin: false, raw: entry.raw }; }));
 
     function addCustom() {
-      if (!newOne.trim()) return;
-      setData(Object.assign({}, data, { custom: custom.concat([newOne.trim()]) }));
-      setNewOne('');
+      var text = newOne.trim();
+      if (!text) {
+        setEntryError('Enter words you want to add to your library.');
+        llAnnounce('Affirmation not added. Enter some words first.');
+        focusById('learning-lab-affirmation-new');
+        return;
+      }
+      var entry = { id: tkId(), text: text };
+      setData(Object.assign({}, data, { custom: custom.concat([entry]), favorites: normalizedFavorites }));
+      setNewOne(''); setEntryError('');
+      llAnnounce('Custom affirmation added: ' + text);
+      focusById('learning-lab-affirmation-new');
     }
-    function removeCustom(text) {
-      setData(Object.assign({}, data, { custom: custom.filter(function(t) { return t !== text; }) }));
+    function removeCustom(entry) {
+      askLearningLabConfirmation('Remove “' + entry.text + '” from your library? This cannot be undone.', {
+        title: 'Remove this affirmation?', confirmText: 'Remove affirmation'
+      }).then(function(accepted) {
+        if (!accepted) return;
+        var nextCustom = customEntries.filter(function(item) { return item.id !== entry.id; }).map(function(item) { return item.raw; });
+        var nextFavorites = normalizedFavorites.filter(function(id) { return id !== entry.id; });
+        setData(Object.assign({}, data, { custom: nextCustom, favorites: nextFavorites }));
+        llAnnounce('Custom affirmation removed.');
+        focusById('learning-lab-affirmation-library-heading');
+      });
     }
-    function toggleFav(id) {
-      var newFavs = favorites.indexOf(id) >= 0 ? favorites.filter(function(f) { return f !== id; }) : favorites.concat([id]);
-      setData(Object.assign({}, data, { favorites: newFavs }));
+    function toggleFavorite(entry) {
+      var favorite = normalizedFavorites.indexOf(entry.id) >= 0;
+      var nextFavorites = favorite ? normalizedFavorites.filter(function(id) { return id !== entry.id; }) : normalizedFavorites.concat([entry.id]);
+      setData(Object.assign({}, data, { favorites: nextFavorites }));
+      llAnnounce((favorite ? 'Removed from favorites: ' : 'Added to favorites: ') + entry.text);
     }
-
-    // Random daily — same each day via seed
     function dailyAffirmation() {
-      var today = todayISO();
-      var seed = today.split('-').reduce(function(s, p) { return s + parseInt(p, 10); }, 0);
-      var pool = favorites.length > 0 ? all.filter(function(a) { return favorites.indexOf(a.id) >= 0; }) : all;
+      if (all.length === 0) return null;
+      var seed = todayISO().split('-').reduce(function(sum, part) { return sum + parseInt(part, 10); }, 0);
+      var favoritePool = all.filter(function(entry) { return normalizedFavorites.indexOf(entry.id) >= 0; });
+      var pool = favoritePool.length > 0 ? favoritePool : all;
       return pool[seed % pool.length];
     }
 
     var daily = dailyAffirmation();
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '5px 0 10px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('✨', 'Affirmation Library', 'Self-affirmation theory (Steele 1988): briefly remembering what matters to you buffers against threats to identity.', '#fbbf24'),
-
-      // Daily card
-      daily ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(15,23,42,0.7))', border: '2px solid #fbbf24', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, '✨ Today'),
-        hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + daily.text + '"')
+      tkSectionHeader('✨', 'Affirmation Library', 'Choose words that feel true or useful to you, and leave any that do not fit.', '#fbbf24'),
+      hh('p', { style: helpStyle }, 'These are optional reflection prompts, not promises or treatment. Favorite only the statements that fit your experience.'),
+      daily ? hh('section', {
+        'aria-labelledby': 'learning-lab-affirmation-daily-heading',
+        style: { padding: 20, borderRadius: 12, background: 'rgba(120,53,15,0.28)', border: '2px solid #fbbf24', marginBottom: 14, textAlign: 'center' }
+      },
+        hh('h2', { id: 'learning-lab-affirmation-daily-heading', style: { margin: '0 0 10px', color: '#fde68a', fontSize: 13 } }, 'Today’s optional prompt'),
+        hh('blockquote', { style: { margin: 0, color: '#f8fafc', fontSize: 16, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, daily.text)
       ) : null,
 
-      // Add custom
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ Add your own affirmation'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkInput(newOne, setNewOne, 'Write something true about you (or that you want to be true)', { flex: 1 }),
-            tkBtn('+', addCustom, 'primary', { padding: '8px 16px' })
-          )
+        hh('form', { onSubmit: function(event) { event.preventDefault(); addCustom(); }, 'aria-labelledby': 'learning-lab-affirmation-form-heading', 'aria-describedby': 'learning-lab-affirmation-privacy-note' },
+          hh('h2', { id: 'learning-lab-affirmation-form-heading', style: { margin: '0 0 8px', color: '#fde68a', fontSize: 15 } }, 'Add your own words'),
+          hh('p', { id: 'learning-lab-affirmation-privacy-note', style: helpStyle }, 'Custom statements and favorites save in this browser. Avoid private details if other people use this device.'),
+          hh('label', { htmlFor: 'learning-lab-affirmation-new', style: labelStyle }, 'Custom affirmation (required)'),
+          hh('textarea', {
+            id: 'learning-lab-affirmation-new', value: newOne, rows: 3, required: true, maxLength: 1000,
+            onChange: function(event) { setNewOne(event.target.value); if (entryError) setEntryError(''); },
+            'aria-invalid': entryError ? 'true' : undefined,
+            'aria-describedby': 'learning-lab-affirmation-new-help' + (entryError ? ' learning-lab-affirmation-new-error' : ''),
+            style: { boxSizing: 'border-box', width: '100%', minHeight: 88, resize: 'vertical', borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 }
+          }),
+          hh('p', { id: 'learning-lab-affirmation-new-help', style: helpStyle }, 'Write something that feels believable, useful, or worth remembering to you.'),
+          entryError ? hh('p', { id: 'learning-lab-affirmation-new-error', role: 'alert', style: errorStyle }, entryError) : null,
+          hh('button', { type: 'submit', style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Add affirmation')
         )
       ),
 
-      // List
-      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-        all.map(function(a) {
-          var fav = favorites.indexOf(a.id) >= 0;
-          return hh('div', { key: 'af-' + a.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (fav ? '#fbbf24' : 'rgba(251,191,36,0.40)') } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
-              hh('div', { style: { flex: 1, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + a.text + '"'),
-              hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                hh('button', { onClick: function() { toggleFav(a.id); },
-                  style: { background: 'transparent', border: 'none', color: fav ? '#fbbf24' : '#475569', fontSize: 16, cursor: 'pointer' }
-                }, fav ? '⭐' : '☆'),
-                !a.builtin ? hh('button', { onClick: function() { removeCustom(a.text); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕') : null
+      hh('section', { 'aria-labelledby': 'learning-lab-affirmation-library-heading' },
+        hh('h2', { id: 'learning-lab-affirmation-library-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 15 } }, 'Affirmation library'),
+        hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: helpStyle }, normalizedFavorites.length + (normalizedFavorites.length === 1 ? ' favorite.' : ' favorites.')),
+        hh('ul', { 'aria-label': all.length + ' affirmations', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } },
+          all.map(function(entry) {
+            var favorite = normalizedFavorites.indexOf(entry.id) >= 0;
+            var textId = 'learning-lab-affirmation-text-' + entry.id;
+            return hh('li', { key: 'af-' + entry.id },
+              hh('article', { 'aria-labelledby': textId, style: { padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.58)', border: '1px solid ' + (favorite ? '#fbbf24' : '#64748b') } },
+                hh('p', { id: textId, style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55, fontFamily: 'Georgia, serif' } }, entry.text),
+                hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  hh('button', {
+                    type: 'button', onClick: function() { toggleFavorite(entry); }, 'aria-pressed': favorite ? 'true' : 'false',
+                    'aria-label': (favorite ? 'Remove from favorites: ' : 'Add to favorites: ') + entry.text,
+                    style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '1px solid #fbbf24', background: favorite ? '#854d0e' : '#334155', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                  }, favorite ? 'Favorited' : 'Add favorite'),
+                  !entry.builtin ? hh('button', {
+                    type: 'button', onClick: function() { removeCustom(entry); }, 'aria-label': 'Remove custom affirmation: ' + entry.text,
+                    style: { minWidth: 44, minHeight: 44, padding: '8px 11px', borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                  }, 'Remove') : null
+                )
               )
-            )
-          );
-        })
-      ),
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#fbbf24' } }, '🎓 Self-affirmation theory: '),
-        'Steele 1988 + many replications. Briefly affirming an important value (not "I\'m awesome" — more like "I value being a good friend") before a stressful task reduces threat response + improves performance. Especially powerful for students from groups facing stereotype threat (Cohen + Garcia 2014).'
+            );
+          })
+        )
       )
     );
   }
