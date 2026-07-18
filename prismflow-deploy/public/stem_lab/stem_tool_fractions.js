@@ -119,9 +119,31 @@ window.StemLab = window.StemLab || {
     return value > 0 ? 'positive' : value < 0 ? 'negative' : 'zero';
   }
 
+  var SIGNED_OPERATION_CHALLENGES = [
+    { label: 'Opposite-sign sum', opMode: 'add', num1: -1, den1: 2, num2: 3, den2: 4 },
+    { label: 'Negative sum', opMode: 'add', num1: -5, den1: 6, num2: 1, den2: 3 },
+    { label: 'Additive inverses', opMode: 'add', num1: -2, den1: 3, num2: 2, den2: 3 },
+    { label: 'Subtract a negative', opMode: 'sub', num1: -1, den1: 2, num2: -3, den2: 4 },
+    { label: 'Cross zero', opMode: 'sub', num1: 2, den1: 3, num2: 5, den2: 6 },
+    { label: 'Same-sign product', opMode: 'mul', num1: -2, den1: 3, num2: -3, den2: 5 },
+    { label: 'Different-sign product', opMode: 'mul', num1: -3, den1: 4, num2: 2, den2: 5 },
+    { label: 'Same-sign quotient', opMode: 'div', num1: -1, den1: 2, num2: -3, den2: 4 },
+    { label: 'Different-sign quotient', opMode: 'div', num1: 2, den1: 3, num2: -4, den2: 5 },
+    { label: 'Zero result', opMode: 'mul', num1: 0, den1: 5, num2: -7, den2: 8 }
+  ];
+
+  function getSignedOperationChallenge(index) {
+    var parsed = Number(index);
+    var safeIndex = Number.isFinite(parsed) ? Math.floor(parsed) : 0;
+    safeIndex = ((safeIndex % SIGNED_OPERATION_CHALLENGES.length) + SIGNED_OPERATION_CHALLENGES.length) % SIGNED_OPERATION_CHALLENGES.length;
+    return Object.assign({ index: safeIndex }, SIGNED_OPERATION_CHALLENGES[safeIndex]);
+  }
+
   window.__FractionsCore = Object.assign({}, window.__FractionsCore || {}, {
     normalizeFractionPair: normalizeFractionPair,
-    classifyFractionResultSign: classifyFractionResultSign
+    classifyFractionResultSign: classifyFractionResultSign,
+    signedOperationChallengeCount: SIGNED_OPERATION_CHALLENGES.length,
+    getSignedOperationChallenge: getSignedOperationChallenge
   });
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
   (function() {
@@ -1684,6 +1706,11 @@ window.StemLab = window.StemLab || {
     var signPrediction = _f.signPrediction || null;
     var signFeedback = _f.signFeedback || null;
     var signChecks = _f.signChecks || {};
+    var signChallengeIndex = Number.isInteger(_f.signChallengeIndex) ? _f.signChallengeIndex : -1;
+    var signCorrectCount = Math.max(0, Number(_f.signCorrectCount) || 0);
+    var signAttemptCount = Math.max(0, Number(_f.signAttemptCount) || 0);
+    var signStreak = Math.max(0, Number(_f.signStreak) || 0);
+    var signBestStreak = Math.max(0, Number(_f.signBestStreak) || 0);
 
     // Practice state
     var pieces = _f.pieces || { numerator: 3, denominator: 8 };
@@ -2978,13 +3005,40 @@ window.StemLab = window.StemLab || {
 
     // ═══ TAB: OPERATIONS ═══
     var renderOperations = function() {
+      function startNextSignChallenge() {
+        var nextIndex = (signChallengeIndex + 1) % SIGNED_OPERATION_CHALLENGES.length;
+        var mission = getSignedOperationChallenge(nextIndex);
+        sfxNewChallenge();
+        upd({
+          signedFractions: true,
+          signChallengeIndex: nextIndex,
+          opMode: mission.opMode,
+          num1: mission.num1,
+          den1: mission.den1,
+          num2: mission.num2,
+          den2: mission.den2,
+          signPrediction: null,
+          signFeedback: null
+        });
+        announceToSR('New Sign Detective mission: ' + mission.label + '. Predict whether the result is positive, zero, or negative.');
+      }
+
       function checkSignPrediction() {
         if (!signPrediction || opUndefined) return;
         var correct = signPrediction === opResultSign;
         var alreadyChecked = !!signChecks[signExpressionKey];
         var nextChecks = Object.assign({}, signChecks);
+        var nextSignStreak = correct ? signStreak + 1 : 0;
+        var nextSignBest = Math.max(signBestStreak, nextSignStreak);
         if (correct) nextChecks[signExpressionKey] = true;
-        upd({ signFeedback: { key: signExpressionKey, correct: correct, actual: opResultSign }, signChecks: nextChecks });
+        upd({
+          signFeedback: { key: signExpressionKey, correct: correct, actual: opResultSign },
+          signChecks: nextChecks,
+          signCorrectCount: signCorrectCount + (correct ? 1 : 0),
+          signAttemptCount: signAttemptCount + 1,
+          signStreak: nextSignStreak,
+          signBestStreak: nextSignBest
+        });
         if (correct) {
           sfxCorrect();
           if (!alreadyChecked) awardXP('fractionViz', 3, 'signed fraction sign prediction');
@@ -3090,6 +3144,9 @@ window.StemLab = window.StemLab || {
         );
       };
 
+      var activeMission = signChallengeIndex >= 0 ? getSignedOperationChallenge(signChallengeIndex) : null;
+      var signAccuracy = signAttemptCount > 0 ? Math.round(signCorrectCount / signAttemptCount * 100) : 0;
+
       return h('div', { className: 'space-y-3' },
         h('div', { role: 'note', className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex flex-wrap items-center gap-3' },
           h('div', { className: 'flex-1 min-w-[220px]' },
@@ -3097,9 +3154,27 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] text-indigo-700 mt-0.5' }, signedFractions ? 'Sign Detective is active. Predict positive, zero, or negative before the exact result is revealed.' : 'Enable negative numerators to practice Grade 7 rational-number sign rules.')
           ),
           h('button', { type: 'button', role: 'switch', 'aria-checked': signedFractions, 'aria-label': 'Signed fraction mode',
-            onClick: function() { var next = !signedFractions; upd({ signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null }); },
+            onClick: function() { var next = !signedFractions; upd({ signedFractions: next, num1: next ? num1 : Math.abs(num1), num2: next ? num2 : Math.abs(num2), signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
             className: 'px-3 py-2 rounded-lg text-xs font-black transition-all ' + (signedFractions ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300')
           }, signedFractions ? 'Signed mode on' : 'Enable signed mode')
+        ),
+        signedFractions && h('section', { className: 'bg-slate-900 text-white rounded-xl p-3', 'aria-labelledby': 'sign-missions-title' },
+          h('div', { className: 'flex flex-wrap items-center gap-3' },
+            h('div', { className: 'flex-1 min-w-[190px]' },
+              h('h3', { id: 'sign-missions-title', className: 'text-sm font-black' }, 'Sign Detective missions'),
+              h('p', { className: 'text-[11px] text-slate-300 mt-0.5', 'aria-live': 'polite' }, activeMission ? 'Mission ' + (activeMission.index + 1) + ' of ' + SIGNED_OPERATION_CHALLENGES.length + ': ' + activeMission.label : 'Practice a curated mix of signed addition, subtraction, multiplication, and division.')
+            ),
+            h('button', { type: 'button', onClick: startNextSignChallenge, className: 'px-3 py-2 rounded-lg bg-cyan-400 text-slate-950 text-xs font-black hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900' }, activeMission ? (signReveal ? 'Next mission' : 'Change mission') : 'Start mission')
+          ),
+          h('div', { className: 'grid grid-cols-3 gap-2 mt-3 text-center' },
+            h('div', null, h('p', { className: 'text-lg font-black text-cyan-300' }, signCorrectCount + '/' + signAttemptCount), h('p', { className: 'text-[10px] text-slate-300' }, 'Correct')),
+            h('div', null, h('p', { className: 'text-lg font-black text-amber-300' }, signStreak), h('p', { className: 'text-[10px] text-slate-300' }, 'Streak')),
+            h('div', null, h('p', { className: 'text-lg font-black text-emerald-300' }, signBestStreak), h('p', { className: 'text-[10px] text-slate-300' }, 'Best'))
+          ),
+          h('div', { className: 'mt-2 flex items-center gap-2' },
+            h('progress', { max: 100, value: signAccuracy, 'aria-label': 'Sign Detective accuracy: ' + signAccuracy + ' percent', className: 'w-full h-2 accent-cyan-400' }),
+            h('span', { className: 'text-[10px] font-bold text-slate-300 w-9 text-right' }, signAccuracy + '%')
+          )
         ),
         // Fraction inputs (compact)
         h('div', { className: 'grid grid-cols-2 gap-4' },
@@ -3112,14 +3187,14 @@ window.StemLab = window.StemLab || {
                 h('input', {
                   type: 'number', min: signedFractions ? -20 : 0, max: 20, value: frac.n,
                   'aria-label': 'Fraction ' + frac.label + ' numerator' + (signedFractions ? ', signed values allowed' : ''),
-                  onChange: function(e) { var o = {}; var parsed = parseInt(e.target.value); o[frac.nk] = Math.max(signedFractions ? -20 : 0, Math.min(20, isNaN(parsed) ? 0 : parsed)); o.signPrediction = null; o.signFeedback = null; upd(o); },
+                  onChange: function(e) { var o = {}; var parsed = parseInt(e.target.value); o[frac.nk] = Math.max(signedFractions ? -20 : 0, Math.min(20, isNaN(parsed) ? 0 : parsed)); o.signPrediction = null; o.signFeedback = null; o.signChallengeIndex = -1; upd(o); },
                   className: 'w-12 text-center text-lg font-bold border-b-2 outline-none focus:ring-2 focus:ring-blue-400', style: { borderColor: frac.color }
                 }),
                 h('span', { className: 'text-xl font-bold text-slate-600 mx-1' }, '/'),
                 h('input', {
                   type: 'number', min: 1, max: 20, value: frac.d,
                   'aria-label': 'Fraction ' + frac.label + ' denominator',
-                  onChange: function(e) { var o = {}; o[frac.dk] = Math.max(1, parseInt(e.target.value) || 1); upd(o); },
+                  onChange: function(e) { var o = {}; o[frac.dk] = Math.max(1, parseInt(e.target.value) || 1); o.signPrediction = null; o.signFeedback = null; o.signChallengeIndex = -1; upd(o); },
                   className: 'w-12 text-center text-lg font-bold outline-none focus:ring-2 focus:ring-blue-400'
                 })
               )
@@ -3130,7 +3205,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-2 justify-center' },
           [['add', '+', 'Add'], ['sub', '\u2212', 'Subtract'], ['mul', '\u00D7', 'Multiply'], ['div', '\u00F7', 'Divide']].map(function(op) {
             return h('button', { key: op[0], 'aria-pressed': opMode === op[0], 'aria-label': op[2],
-              onClick: function() { sfxClick(); upd({ opMode: op[0], signPrediction: null, signFeedback: null }); },
+              onClick: function() { sfxClick(); upd({ opMode: op[0], signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
                 (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-1'
             }, op[1]);

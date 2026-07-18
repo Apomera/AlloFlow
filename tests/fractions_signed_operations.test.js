@@ -27,6 +27,50 @@ describe('Fractions Lab signed operations', () => {
     expect(classify(2, true)).toBe('undefined');
   });
 
+  it('provides a curated mission deck with valid signs across all operations', () => {
+    const core = window.__FractionsCore;
+    expect(core.signedOperationChallengeCount).toBe(10);
+    const operations = new Set();
+    const signs = new Set();
+
+    for (let index = 0; index < core.signedOperationChallengeCount; index += 1) {
+      const mission = core.getSignedOperationChallenge(index);
+      operations.add(mission.opMode);
+      let pair;
+      if (mission.opMode === 'add') pair = [mission.num1 * mission.den2 + mission.num2 * mission.den1, mission.den1 * mission.den2];
+      if (mission.opMode === 'sub') pair = [mission.num1 * mission.den2 - mission.num2 * mission.den1, mission.den1 * mission.den2];
+      if (mission.opMode === 'mul') pair = [mission.num1 * mission.num2, mission.den1 * mission.den2];
+      if (mission.opMode === 'div') pair = [mission.num1 * mission.den2, mission.den1 * mission.num2];
+      const normalized = core.normalizeFractionPair(pair[0], pair[1]);
+      signs.add(core.classifyFractionResultSign(normalized[0], mission.opMode === 'div' && mission.num2 === 0));
+      expect(mission.label).toBeTruthy();
+    }
+
+    expect([...operations].sort()).toEqual(['add', 'div', 'mul', 'sub']);
+    expect(signs).toEqual(new Set(['positive', 'negative', 'zero']));
+  });
+
+  it('renders mission identity, independent stats, and accessible accuracy', () => {
+    const html = renderFractions({
+      tab: 'operations',
+      signedFractions: true,
+      signChallengeIndex: 3,
+      signCorrectCount: 4,
+      signAttemptCount: 6,
+      signStreak: 2,
+      signBestStreak: 5,
+      num1: -1,
+      den1: 2,
+      num2: -3,
+      den2: 4,
+      opMode: 'sub'
+    });
+    expect(html).toContain('Sign Detective missions');
+    expect(html).toContain('Mission 4 of 10: Subtract a negative');
+    expect(html).toContain('aria-label="Sign Detective accuracy: 67 percent"');
+    expect(html).toContain('Change mission');
+  });
+
   it('offers an accessible predict-reveal workflow for signed operands', () => {
     const html = renderFractions({ tab: 'operations', signedFractions: true, num1: 1, den1: 2, num2: -3, den2: 4, opMode: 'div' });
     expect(html).toContain('Sign Detective: predict the result');
