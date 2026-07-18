@@ -775,6 +775,8 @@
           <div class="row" id="aiNarrActions" hidden style="margin-top:8px">
             <button class="action" id="narrAsTtsBtn" style="background:#059669">🔊 Generate spoken narration</button>
             <button class="quiet" id="narrAsCapsBtn">Add as captions</button>
+            <button class="quiet" id="narrAddLineBtn">Add line at playhead</button>
+            <button class="quiet" id="narrRedistributeBtn">Redistribute timing</button>
             <button class="quiet" id="narrDismissBtn">Dismiss</button>
           </div>
           <p class="status">Narration records from your mic while the video plays silently, lined up from 0:00 — press the button again to stop. Or let AI draft it: review and edit the script, then generate spoken audio (each line becomes a sound clip at its timestamp) and/or add it as captions. To REPLACE the original sound, also tick “Remove audio entirely” above. Everything mixes together permanently on export.</p>
@@ -7318,6 +7320,55 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
+  var AI_NARR_VOICES = ['Puck', 'Kore', 'Charon', 'Aoede', 'Leda'];
+
+  function redistributeAiNarrationTiming() {
+    var t = currentTake();
+    if (!t || !aiNarrSegments.length) return false;
+    var dur = Math.max(0.1, Number(t.duration) || 0.1);
+    var weights = aiNarrSegments.map(function (segment) {
+      return Math.max(1, String(segment.text || '').split(/s+/).filter(Boolean).length / 2.5 + 0.35);
+    });
+    var total = weights.reduce(function (sum, value) { return sum + value; }, 0) || 1;
+    var cursor = Math.min(0.3, dur * 0.02);
+    var usable = Math.max(0.1, dur - cursor);
+    aiNarrSegments.forEach(function (segment, index) {
+      var slot = usable * weights[index] / total;
+      segment.start = Math.round(cursor * 100) / 100;
+      cursor += slot;
+      segment.end = Math.round(Math.min(dur, Math.max(segment.start + 0.8, cursor - 0.12)) * 100) / 100;
+    });
+    renderAiNarr();
+    return true;
+  }
+
+  function splitAiNarrationLine(index) {
+    var segment = aiNarrSegments[index];
+    if (!segment) return false;
+    var words = String(segment.text || '').trim().split(/s+/).filter(Boolean);
+    if (words.length < 2 || aiNarrSegments.length >= 20) return false;
+    var cut = Math.ceil(words.length / 2);
+    var midpoint = Math.max(Number(segment.start) + 0.5, (Number(segment.start) + Number(segment.end)) / 2);
+    var second = { start: midpoint, end: Number(segment.end) || midpoint + 2, text: words.slice(cut).join(' '), voice: segment.voice || '' };
+    segment.end = midpoint;
+    segment.text = words.slice(0, cut).join(' ');
+    aiNarrSegments.splice(index + 1, 0, second);
+    renderAiNarr();
+    return true;
+  }
+
+  function mergeAiNarrationLine(index) {
+    var first = aiNarrSegments[index], second = aiNarrSegments[index + 1];
+    if (!first || !second) return false;
+    var merged = (String(first.text || '').trim() + ' ' + String(second.text || '').trim()).trim();
+    if (!merged || merged.length > 220) return false;
+    first.text = merged;
+    first.end = Math.max(Number(first.end) || 0, Number(second.end) || 0);
+    aiNarrSegments.splice(index + 1, 1);
+    renderAiNarr();
+    return true;
+  }
+
   function renderAiNarr() {
     var host = $('aiNarrList');
     host.innerHTML = '';
@@ -7325,24 +7376,47 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     aiNarrSegments.forEach(function (s, idx) {
       var row = document.createElement('div');
       row.className = 'row';
-      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px;align-items:flex-start';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:6px 9px;margin-bottom:6px;align-items:flex-start;flex-wrap:wrap';
       var at = document.createElement('input');
       at.type = 'number'; at.step = '0.1'; at.min = '0'; at.style.width = '70px';
       at.value = (Math.round(s.start * 10) / 10).toFixed(1);
       at.setAttribute('aria-label', 'Start time of narration line ' + (idx + 1));
-      at.addEventListener('change', function () { s.start = Number(at.value) || 0; });
+      at.addEventListener('change', function () { s.start = Math.max(0, Number(at.value) || 0); if (s.end <= s.start) s.end = s.start + 0.8; renderAiNarr(); });
+      var end = document.createElement('input');
+      end.type = 'number'; end.step = '0.1'; end.min = '0'; end.style.width = '70px';
+      end.value = (Math.round(s.end * 10) / 10).toFixed(1);
+      end.setAttribute('aria-label', 'End time of narration line ' + (idx + 1));
+      end.addEventListener('change', function () { s.end = Math.max(Number(s.start) + 0.8, Number(end.value) || 0); renderAiNarr(); });
       var txt = document.createElement('input');
-      txt.type = 'text'; txt.value = s.text; txt.style.flex = '1';
+      txt.type = 'text'; txt.maxLength = 220; txt.value = s.text; txt.style.cssText = 'flex:1 1 260px;min-width:180px';
       txt.setAttribute('aria-label', 'Narration line ' + (idx + 1));
-      txt.addEventListener('change', function () { s.text = txt.value; });
-      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
+      txt.addEventListener('change', function () { s.text = String(txt.value || '').replace(/[
+]+/g, ' ').trim().slice(0, 220); txt.value = s.text; });
+      var voice = document.createElement('select');
+      voice.setAttribute('aria-label', 'Voice for narration line ' + (idx + 1));
+      voice.style.cssText = 'max-width:120px';
+      [''].concat(AI_NARR_VOICES).forEach(function (name) {
+        var option = document.createElement('option'); option.value = name; option.textContent = name || 'Default voice'; voice.appendChild(option);
+      });
+      voice.value = AI_NARR_VOICES.indexOf(s.voice) >= 0 ? s.voice : '';
+      voice.addEventListener('change', function () { s.voice = voice.value; });
+      var split = document.createElement('button'); split.className = 'quiet'; split.textContent = 'Split';
+      split.disabled = String(s.text || '').trim().split(/s+/).filter(Boolean).length < 2 || aiNarrSegments.length >= 20;
+      split.setAttribute('aria-label', 'Split narration line ' + (idx + 1));
+      split.addEventListener('click', function () { splitAiNarrationLine(idx); });
+      var merge = document.createElement('button'); merge.className = 'quiet'; merge.textContent = 'Merge';
+      merge.disabled = idx >= aiNarrSegments.length - 1;
+      merge.setAttribute('aria-label', 'Merge narration line ' + (idx + 1) + ' with the next line');
+      merge.addEventListener('click', function () {
+        if (!mergeAiNarrationLine(idx)) setStatus($('aiNarrStatus'), 'Those lines are too long to merge safely.', 'warn');
+      });
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'X';
       del.setAttribute('aria-label', 'Delete narration line ' + (idx + 1));
       del.addEventListener('click', function () { aiNarrSegments.splice(idx, 1); renderAiNarr(); });
-      row.appendChild(at); row.appendChild(txt); row.appendChild(del);
+      row.appendChild(at); row.appendChild(end); row.appendChild(txt); row.appendChild(voice); row.appendChild(split); row.appendChild(merge); row.appendChild(del);
       host.appendChild(row);
     });
   }
-
   function approvedVisualDescriptions(t) {
     return ((t && t.visualDescriptions) || []).filter(function (s) { return s && s.checked && String(s.description || '').trim(); });
   }
@@ -7910,6 +7984,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     btn.disabled = false;
   });
 
+  $('narrAddLineBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t || aiNarrSegments.length >= 20) return;
+    var at = 0;
+    try { at = Math.max(0, Math.min(Number(t.duration) || 0, Number($('editVideo').currentTime) || 0)); } catch (_) {}
+    aiNarrSegments.push({ start: at, end: Math.min(Number(t.duration) || at + 4, at + 4), text: 'New narration line', voice: '' });
+    aiNarrSegments.sort(function (a, b) { return a.start - b.start; });
+    renderAiNarr();
+    setStatus($('aiNarrStatus'), 'Narration line added at the playhead. Edit its wording, timing, and voice.', 'ok');
+  });
+  $('narrRedistributeBtn').addEventListener('click', function () {
+    if (!redistributeAiNarrationTiming()) return;
+    setStatus($('aiNarrStatus'), 'Narration timing redistributed by estimated speaking length. Review before generating speech.', 'ok');
+  });
   $('narrDismissBtn').addEventListener('click', function () { aiNarrSegments = []; renderAiNarr(); setStatus($('aiNarrStatus'), 'Dismissed.'); });
 
   $('narrAsCapsBtn').addEventListener('click', function () {
@@ -7934,7 +8021,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var s = aiNarrSegments[i];
       if (!s.text.trim()) continue;
       setStatus($('aiNarrStatus'), 'Generating speech ' + (i + 1) + '/' + aiNarrSegments.length + '…');
-      var resp = await bridgeRequest('allostudio-tts-request', { text: s.text, voice: voice }, 60000);
+      var resp = await bridgeRequest('allostudio-tts-request', { text: s.text, voice: s.voice || voice }, 60000);
       if (resp.error || !resp.pcm) { failed += 1; continue; }
       var wav = vsPcmToWav(resp.pcm instanceof Uint8Array ? resp.pcm : new Uint8Array(resp.pcm), resp.sampleRate || 24000);
       (t.audioClips = t.audioClips || []).push({

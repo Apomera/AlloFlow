@@ -1216,7 +1216,15 @@ describe('freeform Script Studio wiring', () => {
     expect(html).toContain('id="scriptStudioAudience"');
     expect(html).toContain('id="scriptStudioGenerateBtn"');
     expect(html).toContain('id="scriptStudioPrepareBtn"');
+    expect(html).toContain('id="narrAddLineBtn"');
+    expect(html).toContain('id="narrRedistributeBtn"');
     expect(html).toContain('function prepareScriptStudioNarration(script, sourceLabel)');
+    expect(html).toContain('function redistributeAiNarrationTiming()');
+    expect(html).toContain('function splitAiNarrationLine(index)');
+    expect(html).toContain('function mergeAiNarrationLine(index)');
+    expect(html).toContain("'End time of narration line ' + (idx + 1)");
+    expect(html).toContain("'Voice for narration line ' + (idx + 1)");
+    expect(html).toContain("{ text: s.text, voice: s.voice || voice }");
     expect(html).toContain('vsScriptTextToNarrationCues(clean, t.duration || 0');
     expect(html).toContain("bridgeRequest('allostudio-script-generate-request'");
     expect(html).toContain('The script is likely longer than the video');
