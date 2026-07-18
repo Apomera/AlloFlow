@@ -12664,77 +12664,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { logs: [] };
     var setData = props.setData;
-    var fs = R.useState({ context: '', who: '', what: '', why: '', when: '', risk: 5, gain: 5 });
+    var emptyForm = function() { return { context: '', who: '', what: '', why: '', when: '', risk: 5, gain: 5 }; };
+    var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var whatError = es[0]; var setWhatError = es[1];
 
-    function save() {
-      if (!form.what.trim()) { alert('Need what you would disclose.'); return; }
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ logs: [entry].concat(data.logs || []) });
-      setForm({ context: '', who: '', what: '', why: '', when: '', risk: 5, gain: 5 });
+    function updateForm(key, value) {
+      var patch = {}; patch[key] = value;
+      setForm(Object.assign({}, form, patch));
+      if (key === 'what' && whatError) setWhatError('');
     }
-    function remove(id) { setData({ logs: (data.logs || []).filter(function(l) { return l.id !== id; }) }); }
+    function save() {
+      var what = form.what.trim();
+      if (!what) {
+        setWhatError('Describe what information or need you are considering sharing.');
+        llAnnounce('Disclosure decision was not saved. Complete the required sharing field.');
+        focusById('learning-lab-disclosure-what');
+        return;
+      }
+      var entry = {
+        id: tkId(),
+        date: todayISO(),
+        context: form.context.trim(),
+        who: form.who.trim(),
+        what: what,
+        why: form.why.trim(),
+        when: form.when.trim(),
+        risk: form.risk,
+        gain: form.gain
+      };
+      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setForm(emptyForm());
+      setWhatError('');
+      llAnnounce('Disclosure decision saved. Risk ' + entry.risk + ' out of 10 and possible benefit ' + entry.gain + ' out of 10.');
+      focusById('learning-lab-disclosure-context');
+    }
+    async function remove(entry) {
+      var label = entry.context || entry.what || 'this disclosure decision';
+      if (label.length > 80) label = label.slice(0, 77) + '...';
+      if (!(await askLearningLabConfirmation('This permanently removes “' + label + '” from your saved disclosure decisions.', {
+        title: 'Remove this disclosure decision?', confirmText: 'Remove decision'
+      }))) return;
+      setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== entry.id; }) }));
+      llAnnounce('Disclosure decision removed.');
+      focusById('learning-lab-disclosure-history-heading');
+    }
 
     var logs = data.logs || [];
+    var FIELDS = [
+      { id: 'context', label: 'Situation', required: false, help: 'For example: starting a job, meeting a new teacher, requesting an accommodation, or talking with a friend.', placeholder: 'Describe the setting or situation' },
+      { id: 'who', label: 'Person or office I might tell', required: false, help: 'Name the person, role, office, or group as specifically as you can.', placeholder: 'Name and role' },
+      { id: 'what', label: 'Information or need I might share', required: true, help: 'This could be a diagnosis, a functional need, a requested change, or only the information needed for this conversation.', placeholder: 'Describe what you are considering sharing' },
+      { id: 'why', label: 'Reason I might share now', required: false, help: 'For example: requesting support, preventing a misunderstanding, building trust, or explaining a need.', placeholder: 'Describe the possible purpose or benefit' },
+      { id: 'when', label: 'Time and setting', required: false, help: 'Consider privacy, who will be present, timing, communication format, and whether support would help.', placeholder: 'Describe when, where, and how' }
+    ];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(196,181,253,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 };
+    var buttonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #ddd6fe', background: '#6d28d9', color: '#fff', fontWeight: 800, cursor: 'pointer' };
+
+    function ratingField(id, label, value, lowLabel, highLabel, key, color) {
+      return hh('div', null,
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+          hh('label', { htmlFor: id, style: Object.assign({}, labelStyle, { color: color, textTransform: 'none' }) }, label + ' (1 = ' + lowLabel + ', 10 = ' + highLabel + ')'),
+          hh('output', { htmlFor: id, style: { color: color, fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 900, whiteSpace: 'nowrap' } }, value + ' / 10')
+        ),
+        hh('input', { id: id, type: 'range', min: 1, max: 10, step: 1, value: value, 'aria-valuetext': value + ' out of 10, from ' + lowLabel + ' to ' + highLabel, onChange: function(event) { updateForm(key, parseInt(event.target.value, 10)); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: color, cursor: 'pointer' } })
+      );
+    }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🗝', 'Disclosure Wizard', 'Should I tell them? Walk through the decision step by step. You always have the right to decide.', '#a855f7'),
+      tkSectionHeader('🗝', 'Disclosure Wizard', 'Think through whether, what, when, and with whom you may want to share personal information.', '#a855f7'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🛡 Disclosure is YOURS to control. '),
-        'For accommodations: only the office handling accommodations needs documentation. Teachers/employers may need to know specific NEEDS (extended time, sensory tools) without knowing diagnostic LABELS. There\'s no rule that says you must share.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-disclosure-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.32)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-disclosure-guidance-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🛡 '), 'You control your personal information'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'You may be able to discuss a functional need or requested support without sharing every personal detail. Accommodation processes, documentation rules, and confidentiality protections vary by setting and location.'),
+        hh('p', { style: { margin: 0 } }, 'This reflection tool is not legal advice and does not decide whether disclosure is safe or required. For authoritative guidance, contact the relevant accommodations office, human-resources contact, advocate, union, or qualified legal resource.')
       ),
 
       tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '🗝 Walk through a specific disclosure decision'),
-
-          [
-            { id: 'context', label: 'What\'s the situation?', placeholder: 'e.g., "Starting a new job", "New teacher this semester", "Telling a new friend"' },
-            { id: 'who',     label: 'WHO would I be telling?', placeholder: 'Be specific — name + role' },
-            { id: 'what',    label: 'WHAT specifically would I share?', placeholder: 'Could be the label, or just the need without label, or accommodation without context' },
-            { id: 'why',     label: 'WHY share now?', placeholder: 'Practical (need accommodation) / relational (want them to understand me) / both?' },
-            { id: 'when',    label: 'WHEN is the best time + setting?', placeholder: 'Private vs public, before vs during a need, time of day...' }
-          ].map(function(f) {
-            return hh('div', { key: 'df-' + f.id, style: { marginBottom: 10 } },
-              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, f.label),
-              tkInput(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, f.placeholder)
+        hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-disclosure-form-heading' },
+          hh('h3', { id: 'learning-lab-disclosure-form-heading', style: { fontSize: 13, fontWeight: 800, color: '#ddd6fe', margin: '0 0 4px' } }, 'Plan a specific disclosure decision'),
+          hh('p', { id: 'learning-lab-disclosure-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Responses save in this browser and may contain disability, health, or relationship information. Use a device and account you trust. Only the sharing field is required.'),
+          FIELDS.map(function(field) {
+            var fieldId = 'learning-lab-disclosure-' + field.id;
+            var helpId = fieldId + '-help';
+            var describedBy = helpId;
+            if (field.id === 'what' && whatError) describedBy += ' learning-lab-disclosure-what-error';
+            return hh('div', { key: 'df-' + field.id, style: { marginBottom: 10 } },
+              hh('label', { htmlFor: fieldId, style: labelStyle }, field.label + (field.required ? ' (required)' : ' (optional)')),
+              hh('p', { id: helpId, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 4px' } }, field.help),
+              field.id === 'what' || field.id === 'why' || field.id === 'when'
+                ? hh('textarea', { id: fieldId, value: form[field.id], rows: field.id === 'what' ? 4 : 3, maxLength: 3000, placeholder: field.placeholder, 'aria-invalid': field.id === 'what' && whatError ? 'true' : undefined, 'aria-describedby': describedBy, onChange: function(event) { updateForm(field.id, event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: field.id === 'what' ? 104 : 82, resize: 'vertical' }) })
+                : hh('input', { id: fieldId, type: 'text', value: form[field.id], maxLength: 1000, placeholder: field.placeholder, 'aria-describedby': describedBy, onChange: function(event) { updateForm(field.id, event.target.value); }, style: fieldStyle }),
+              field.id === 'what' ? hh('div', { id: 'learning-lab-disclosure-what-error', role: 'alert', style: { minHeight: whatError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: whatError ? 4 : 0 } }, whatError) : null
             );
           }),
-
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
-            hh('div', null,
-              hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#ef4444', marginBottom: 4 } }, '⚠ Risk (1 = no risk, 10 = high risk)'),
-              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.risk,
-                onChange: function(e) { setForm(Object.assign({}, form, { risk: parseInt(e.target.value, 10) })); },
-                style: { width: '100%', accentColor: '#ef4444' }
-              }),
-              hh('div', { style: { textAlign: 'center', fontSize: 14, color: '#ef4444', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.risk + '/10')
-            ),
-            hh('div', null,
-              hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#10b981', marginBottom: 4 } }, '✨ Gain (1 = none, 10 = huge)'),
-              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: form.gain,
-                onChange: function(e) { setForm(Object.assign({}, form, { gain: parseInt(e.target.value, 10) })); },
-                style: { width: '100%', accentColor: '#10b981' }
-              }),
-              hh('div', { style: { textAlign: 'center', fontSize: 14, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } }, form.gain + '/10')
+          hh('fieldset', { style: { border: '1px solid rgba(196,181,253,0.45)', borderRadius: 10, padding: 10, margin: '0 0 12px' } },
+            hh('legend', { style: { padding: '0 5px', fontSize: 11, fontWeight: 800, color: '#ddd6fe' } }, 'Your current estimate'),
+            hh('p', { id: 'learning-lab-disclosure-rating-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 10px' } }, 'These ratings organize your thoughts; they are not a formula, safety assessment, or recommendation.'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 } },
+              ratingField('learning-lab-disclosure-risk', 'Possible risk', form.risk, 'very low', 'very high', 'risk', '#fecaca'),
+              ratingField('learning-lab-disclosure-gain', 'Possible benefit', form.gain, 'very low', 'very high', 'gain', '#a7f3d0')
             )
           ),
-          tkBtn('💾 Save this decision', save, 'primary')
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: buttonStyle }, 'Save disclosure decision')
         )
       ),
 
-      logs.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 8 } }, '📚 Past decisions'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          logs.slice(0, 10).map(function(l) {
-            return hh('div', { key: 'dl-' + l.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 12, color: '#c084fc' } }, l.context || 'Decision'),
-                hh('button', { onClick: function() { remove(l.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, l.what),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'risk: ' + l.risk + '/10 · gain: ' + l.gain + '/10 · ' + relDate(l.date))
+      logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-disclosure-history-heading' },
+        hh('h3', { id: 'learning-lab-disclosure-history-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#ddd6fe', margin: '0 0 8px' } }, 'Saved disclosure decisions'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
+          logs.slice(0, 10).map(function(entry) {
+            var headingId = 'learning-lab-disclosure-entry-' + entry.id;
+            var details = [
+              { label: 'Person or office', value: entry.who },
+              { label: 'Information or need', value: entry.what },
+              { label: 'Reason', value: entry.why },
+              { label: 'Time and setting', value: entry.when },
+              { label: 'Possible risk', value: entry.risk + ' out of 10' },
+              { label: 'Possible benefit', value: entry.gain + ' out of 10' }
+            ].filter(function(detail) { return detail.value !== undefined && detail.value !== null && detail.value !== ''; });
+            return hh('li', { key: 'dl-' + entry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #a855f7' } },
+              hh('article', { 'aria-labelledby': headingId },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
+                  hh('h4', { id: headingId, style: { fontSize: 12, color: '#ddd6fe', margin: 0 } }, entry.context || 'Disclosure decision'),
+                  hh('button', { type: 'button', 'aria-label': 'Remove disclosure decision: ' + (entry.context || entry.what || 'saved decision'), onClick: function() { remove(entry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+                ),
+                hh('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(100px, auto) 1fr', gap: '3px 8px', margin: 0, fontSize: 11 } },
+                  details.reduce(function(items, detail, index) {
+                    items.push(hh('dt', { key: 'dt-' + index, style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, detail.label));
+                    items.push(hh('dd', { key: 'dd-' + index, style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'pre-wrap' } }, detail.value));
+                    return items;
+                  }, [])
+                ),
+                entry.date ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0' } }, 'Saved ', hh('time', { dateTime: entry.date }, entry.date)) : null
+              )
             );
           })
         )
