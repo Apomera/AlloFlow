@@ -224,7 +224,7 @@ describe('KaraokeAudioStore.getCompatible (stale stored-voice guard)', () => {
   }
 
   it('refuses a stored Puck AI clip when Kore is selected', () => {
-    const st = storeWith('ai', { voice: 'Puck', speed: 1, language: 'English' });
+    const st = storeWith('ai', { voice: 'Puck', speed: 1, language: 'English', voiceResolverVersion: 2 });
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'English' })).toBeNull();
     expect(st.getCompatible('The sun is hot.', { voice: 'Puck', speed: 1, language: 'English' })).toBe('blob:stored-clip');
   });
@@ -234,32 +234,37 @@ describe('KaraokeAudioStore.getCompatible (stale stored-voice guard)', () => {
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore' })).toBeNull();
   });
 
+  it('rejects pre-resolver AI metadata even when the recorded label says Kore', () => {
+    const st = storeWith('ai', { voice: 'Kore', speed: 1, language: 'English' });
+    expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'English' })).toBeNull();
+  });
+
   it('always serves human recordings regardless of the selected voice', () => {
     const st = storeWith('human-teacher', { voice: 'Puck' });
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1.5, language: 'Spanish' })).toBe('blob:stored-clip');
   });
 
   it('rejects speed and language mismatches for AI clips', () => {
-    const st = storeWith('ai', { voice: 'Kore', speed: 1, language: 'English' });
+    const st = storeWith('ai', { voice: 'Kore', speed: 1, language: 'English', voiceResolverVersion: 2 });
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1.5, language: 'English' })).toBeNull();
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'Spanish' })).toBeNull();
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore', speed: 1, language: 'English' })).toBe('blob:stored-clip');
   });
 
   it('is case-insensitive on voice names', () => {
-    const st = storeWith('ai', { voice: 'kore' });
+    const st = storeWith('ai', { voice: 'kore', voiceResolverVersion: 2 });
     expect(st.getCompatible('The sun is hot.', { voice: 'Kore' })).toBe('blob:stored-clip');
   });
 });
 
 describe('callTTS urlCache ownership + bounded eviction', () => {
-  function makeTTS(state) {
+  function makeTTS(state, isCanvas = true) {
     return createTTS({
       state,
       apiKey: 'test-key',
       GEMINI_MODELS: { tts: 'test-tts' },
       AVAILABLE_VOICES: ['Puck', 'Kore'],
-      _isCanvasEnv: true,
+      _isCanvasEnv: isCanvas,
       languageToTTSCode: () => 'en',
       isGlobalMuted: () => false,
       warnLog: () => {},
@@ -328,6 +333,19 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('keys non-Canvas cloud audio by the resolved Gemini voice', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    stubSynthesis();
+    const { callTTS } = makeTTS(state, false);
+
+    const first = await callTTS('Cache this resolved voice.', 'not-a-gemini-voice', 1, 0, 'English');
+    const second = await callTTS('Cache this resolved voice.', 'Kore', 1, 0, 'English');
+
+    expect(second).toBe(first);
+    expect(Array.from(state.urlCache.keys())).toEqual(['cache this resolved voice.__Kore__1__English']);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
   it('resolves the caller without waiting for the 150ms inter-request settle gap', async () => {
     vi.useFakeTimers();
     const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
@@ -340,6 +358,54 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     for (let i = 0; i < 20 && !settled; i++) await Promise.resolve();
     await p;
     expect(settled).toBe(true);
+  });
+
+  it('uses the live selected Gemini voice when VoiceConfig loads after the TTS factory', async () => {
+    let liveVoices = [];
+    let selectedVoice = 'Aoede';
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true, writable: true, value: vi.fn(() => 'blob:live-voice'),
+    });
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    // This mirrors production boot: TTS can initialize while AVAILABLE_VOICES
+    // is still the original empty array, then VoiceConfig arrives later.
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts' },
+      AVAILABLE_VOICES: [],
+      getAvailableVoices: () => liveVoices,
+      getSelectedVoice: () => selectedVoice,
+      _isCanvasEnv: true,
+      languageToTTSCode: () => 'en',
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'English',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({}),
+      getAi: () => null,
+      setShowKokoroOfferModal: null,
+    });
+    liveVoices = ['Kore', 'Puck', 'Aoede'];
+
+    await callTTS('Use the selected voice when omitted.', undefined, 1, 0, 'English');
+    selectedVoice = 'Kore';
+    await callTTS('Use the selected voice for an invalid request.', 'not-a-real-voice', 1, 0, 'English');
+
+    const requestedVoices = fetchMock.mock.calls.map(([, options]) => {
+      const payload = JSON.parse(options.body);
+      return payload.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName;
+    });
+    expect(requestedVoices).toEqual(['Aoede', 'Kore']);
   });
 });
 

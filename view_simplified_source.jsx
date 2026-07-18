@@ -473,7 +473,7 @@
       }
     };
     var getKaraokeAudioUrl = React.useCallback(function (sentenceText) {
-      var voice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Puck';
+      var voice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
       var language = leveledTextLanguage || 'English';
       try {
@@ -508,14 +508,14 @@
       if (source === 'human-teacher') return { source: source, label: 'Teacher recording', metadata: metadata, stale: false };
       if (source === 'human-student') return { source: source, label: 'Student recording', metadata: metadata, stale: false };
       if (source && String(source).indexOf('human') === 0) return { source: source, label: 'Human recording', metadata: metadata, stale: false };
-      var currentVoice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Puck';
+      var currentVoice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var currentSpeed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
       var currentLanguage = leveledTextLanguage || 'English';
-      var stale = !!(metadata && (
+      var stale = !metadata || Number(metadata.voiceResolverVersion) !== 2 || !!(
         (metadata.voice && String(metadata.voice).toLowerCase() !== String(currentVoice).toLowerCase()) ||
         (metadata.speed && Math.abs(Number(metadata.speed) - currentSpeed) > 0.001) ||
         (metadata.language && String(metadata.language).toLowerCase() !== String(currentLanguage).toLowerCase())
-      ));
+      );
       var details = ['AI voice'];
       if (metadata && metadata.voice) details.push(metadata.voice);
       if (metadata && metadata.speed) details.push(Number(metadata.speed) + '×');

@@ -20,9 +20,50 @@ const createTTS = (deps) => {
         warnLog, debugLog,
         // Dynamic getters for React-state-dependent values
         getLeveledTextLanguage, getCurrentUiLanguage, getAiUserConfig, getAi,
+        getSelectedVoice, getAvailableVoices,
         // React callback
         setShowKokoroOfferModal,
     } = deps;
+
+    const DEFAULT_GEMINI_VOICE = 'Kore';
+    const _voiceId = (value) => {
+        if (typeof value === 'string') return value.trim();
+        if (value && typeof value === 'object' && typeof value.voice === 'string') return value.voice.trim();
+        return '';
+    };
+    const _liveGeminiVoices = () => {
+        let voices = null;
+        try { if (typeof getAvailableVoices === 'function') voices = getAvailableVoices(); } catch (_) {}
+        try {
+            if (!Array.isArray(voices) || voices.length === 0) {
+                const config = window.AlloModules && window.AlloModules.VoiceConfig;
+                if (config && Array.isArray(config.AVAILABLE_VOICES)) voices = config.AVAILABLE_VOICES;
+            }
+        } catch (_) {}
+        if ((!Array.isArray(voices) || voices.length === 0) && Array.isArray(AVAILABLE_VOICES)) voices = AVAILABLE_VOICES;
+        return (Array.isArray(voices) ? voices : []).map((voice) => {
+            if (typeof voice === 'string') return voice.trim();
+            return voice && typeof voice.id === 'string' ? voice.id.trim() : '';
+        }).filter(Boolean);
+    };
+    const _liveSelectedVoice = () => {
+        let selected = '';
+        try { if (typeof getSelectedVoice === 'function') selected = _voiceId(getSelectedVoice()); } catch (_) {}
+        try { if (!selected && typeof window !== 'undefined') selected = _voiceId(window.__alloSelectedVoice); } catch (_) {}
+        return selected || DEFAULT_GEMINI_VOICE;
+    };
+    const _resolveRequestedVoice = (voiceName) => _voiceId(voiceName) || _liveSelectedVoice();
+    const _resolveGeminiVoice = (voiceName) => {
+        const requested = _voiceId(voiceName);
+        const selected = _liveSelectedVoice();
+        const voices = _liveGeminiVoices();
+        // VoiceConfig is asynchronous. While its catalog is still empty,
+        // preserve the caller's explicit/selected name instead of declaring
+        // every valid Gemini voice invalid and silently substituting Puck.
+        if (voices.length === 0) return requested || selected || DEFAULT_GEMINI_VOICE;
+        const canonical = (candidate) => voices.find((voice) => voice.toLowerCase() === String(candidate || '').toLowerCase());
+        return canonical(requested) || canonical(selected) || canonical(DEFAULT_GEMINI_VOICE) || DEFAULT_GEMINI_VOICE;
+    };
 
     // Effective cloud-TTS key. Two ways a "key" can be a lie (both field-hit
     // 2026-07-06 on desktop): the bundler's old 'desktop-user-provided'
@@ -98,9 +139,9 @@ const createTTS = (deps) => {
         };
     } catch (_) {}
 
-    const fetchTTSBytes = (text, voiceName = "Puck", speed = 1, language = 'English', signal = null) => {
-        // Defensive: ensure voiceName is a valid Gemini voice, fall back to Puck if not
-        const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
+    const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null) => {
+        // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
+        const safeVoice = _resolveGeminiVoice(voiceName);
         if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
         debugLog("[fetchTTSBytes] text:", text?.substring(0, 30), "lang:", language);
         const queuedTask = state.queue.then(async () => {
@@ -323,7 +364,7 @@ const createTTS = (deps) => {
     // look-ahead warm). Requests carrying an AbortSignal stay independent so
     // one caller can never cancel audio another caller is awaiting.
     const callTTSInFlight = new Map();
-    const callTTS = async (text, voiceName = "Puck", speed = 1, maxRetriesOrOpts = 2, languageArg) => {
+    const callTTS = async (text, voiceName, speed = 1, maxRetriesOrOpts = 2, languageArg) => {
         if (isGlobalMuted()) {
             return null;
         }
@@ -331,6 +372,7 @@ const createTTS = (deps) => {
             console.warn('[TTS] Skipped: empty text (a caller passed a missing field)');
             return null;
         }
+        voiceName = _resolveRequestedVoice(voiceName);
         var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts
             : (maxRetriesOrOpts && typeof maxRetriesOrOpts.maxRetries === 'number' ? maxRetriesOrOpts.maxRetries : 2);
         var _callOpts = (maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object') ? maxRetriesOrOpts : {};
@@ -353,13 +395,15 @@ const createTTS = (deps) => {
             var _kokoroVoicePrefix = /^(af_|am_|bf_|bm_)/i;
             var _isKokoroVoice = typeof voiceName === 'string' && _kokoroVoicePrefix.test(voiceName);
             if (_isKokoroVoice && !_isEnglish) {
-                console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — switching to Gemini "Puck" for this call');
-                voiceName = 'Puck';
+                const _geminiVoice = _resolveGeminiVoice(voiceName);
+                console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — switching to Gemini "' + _geminiVoice + '" for this call');
+                voiceName = _geminiVoice;
                 _isKokoroVoice = false;
             }
             if (_isKokoroVoice) {
                 console.log('[Canvas TTS] Kokoro voice selected (' + voiceName + ') — skipping Gemini, using Kokoro directly');
             }
+            if (!_isKokoroVoice) voiceName = _resolveGeminiVoice(voiceName);
             // Match the non-Canvas cache key exactly, including language. The
             // previous Canvas branch wrote a shorter key and never read it, so
             // a warmed sentence was synthesized again when playback asked.
@@ -564,8 +608,8 @@ const createTTS = (deps) => {
             }
         }
         if (_kokoroDeferredToGemini && KOKORO_VOICE_PREFIX.test(voiceName)) {
-            console.warn('[TTS] Kokoro voice unavailable for this call — using Gemini "Puck"');
-            voiceName = 'Puck';
+            voiceName = _resolveGeminiVoice(voiceName);
+            console.warn('[TTS] Kokoro voice unavailable for this call — using Gemini "' + voiceName + '"');
         }
         if (Date.now() < state.rateLimitedUntil) {
             console.warn("[TTS] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
@@ -583,6 +627,7 @@ const createTTS = (deps) => {
             _routeNote('keyless-skip', 'no cloud key; caller falls back to the browser voice');
             return null;
         }
+        voiceName = _resolveGeminiVoice(voiceName);
         const cacheKey = `${(text || '').toLowerCase().trim()}__${voiceName}__${speed}__${_language || 'English'}`;
         if (state.urlCache.has(cacheKey)) {
             debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
@@ -639,11 +684,12 @@ const createTTS = (deps) => {
         throw lastError;
     };
 
-    const callTTSDirect = async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
+    const callTTSDirect = async (text, voiceName, speed = 1, maxRetries = 2) => {
         if (isGlobalMuted()) return null;
         if (text == null || !String(text).trim()) { console.warn('[TTS] Skipped: empty text'); return null; }
         // Spoken math pre-pass (no-op unless delimited math is present)
         text = await _mathToSpeakable(text, getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
+        voiceName = _resolveRequestedVoice(voiceName);
         // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
         if (_isCanvasEnv) {
             if (Date.now() >= state.rateLimitedUntil) {
@@ -657,7 +703,8 @@ const createTTS = (deps) => {
                 const botCanvasMaxAttempts = 3;
                 for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
                     try {
-                        const ttsResult = await fetchTTSBytes(text, voiceName, speed);
+                const botCanvasGeminiVoice = _resolveGeminiVoice(voiceName);
+                        const ttsResult = await fetchTTSBytes(text, botCanvasGeminiVoice, speed);
                         if (ttsResult) {
                             const { bytes: pcmBytes } = ttsResult;
                             const wavBuffer = pcmToWav(pcmBytes);
@@ -742,8 +789,8 @@ const createTTS = (deps) => {
                 }
             }
             // No rewrite here: the configured provider accepts af_* names
-            // (Kokoro-FastAPI); the safeVoice guard below already maps any
-            // non-Gemini voice to 'Puck' for the Gemini fallback leg.
+            // (Kokoro-FastAPI); the safeVoice guard below maps any non-Gemini
+            // voice to the selected/default voice for the Gemini fallback leg.
         }
 
         // ─── AIProvider TTS routing (same as callTTS) ─────────────────
@@ -771,7 +818,7 @@ const createTTS = (deps) => {
             }
             return null;
         }
-        const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
+        const safeVoice = _resolveGeminiVoice(voiceName);
         if (safeVoice !== voiceName) console.warn(`[TTS-Bot] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
         console.log("[TTS-Bot] 🎤 callTTSDirect called:", { text: text?.substring(0, 40), voice: safeVoice, speed });
         const cacheKey = `${(text || '').toLowerCase().trim()}__${safeVoice}__${speed}`;

@@ -256,11 +256,11 @@ describe('karaoke capture integration contracts', () => {
   });
 
   it('routes every leveled-text TTS entry point through the selected voice', () => {
-    // callTTS defaults to Puck when the voice argument is omitted; these call
-    // sites used to omit it (or hardcode Puck), overriding the user's choice.
+    // TTS callers must pass the live selection and use Kore only as the
+    // application default when no selection exists.
     const host = read('AlloFlowANTI.txt');
     expect(host).not.toMatch(/callTTS\(text, 'Puck'/);
-    expect(host).toContain("const _voice = window.__alloSelectedVoice || 'Puck';");
+    expect(host).toContain("const _voice = window.__alloSelectedVoice || 'Kore';");
     expect(host).not.toMatch(/callTTS\(sentenceText\)/);
     expect(host).not.toMatch(/callTTS\(items\[i\]\.text\)/);
     expect(host).not.toMatch(/callTTS\(items\[idx\]\.text\)/);

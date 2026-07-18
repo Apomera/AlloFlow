@@ -163,6 +163,43 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
   });
 
+  it('shows an accessible motion-safe spinner while the current sentence audio is loading', async () => {
+    localStorage.setItem('allo_save_karaoke_audio', '0');
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    window.AlloIcons = window.AlloIcons || {};
+    window.AlloIcons.Loader2 = (props) => React.createElement('svg', props);
+
+    let resolveAudio;
+    const pendingAudio = new Promise((resolvePending) => { resolveAudio = resolvePending; });
+    renderKaraoke(karaokeProps({
+      text: 'Show a loading spinner for this sentence.',
+      sentenceList: ['Show a loading spinner for this sentence.'],
+      getAudioUrl: () => pendingAudio,
+    }));
+
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => { play.click(); });
+
+    const status = Array.from(host.querySelectorAll('[role="status"]'))
+      .find((node) => node.textContent.includes('Generating audio...'));
+    expect(status).toBeTruthy();
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    const spinner = status.querySelector('svg');
+    expect(spinner).toBeTruthy();
+    expect(spinner.getAttribute('aria-hidden')).toBe('true');
+    expect(spinner.classList.contains('animate-spin')).toBe(true);
+    expect(spinner.classList.contains('motion-reduce:animate-none')).toBe(true);
+
+    await act(async () => {
+      resolveAudio('blob:spinner-test');
+      await pendingAudio;
+      await Promise.resolve();
+    });
+    expect(host.textContent).not.toContain('Generating audio...');
+  });
+
   it('captures the actively played sentence into durable karaoke storage', async () => {
     audioInstances = [];
     global.Audio = window.Audio = FakeAudio;

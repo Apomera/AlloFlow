@@ -2827,7 +2827,7 @@ function _upgradeGeminiAPI() {
 if (typeof window !== 'undefined') window._upgradeGeminiAPI = _upgradeGeminiAPI;
 
 let _ttsState = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
-let _ttsLiveRef = { current: { leveledTextLanguage: 'English', currentUiLanguage: 'English', _aiUserConfig: null, ai: null, setShowKokoroOfferModal: null } };
+let _ttsLiveRef = { current: { leveledTextLanguage: 'English', currentUiLanguage: 'English', selectedVoice: 'Kore', _aiUserConfig: null, ai: null, setShowKokoroOfferModal: null } };
 let fetchTTSBytes = async () => { console.warn('[fetchTTSBytes] Fallback — TTS module not loaded'); return null; };
 let callTTS = async () => { console.warn('[callTTS] Fallback — TTS module not loaded'); return null; };
 let callTTSDirect = async () => { console.warn('[callTTSDirect] Fallback — TTS module not loaded'); return null; };
@@ -2843,6 +2843,8 @@ function _upgradeTTS() {
         getCurrentUiLanguage: () => _ttsLiveRef.current.currentUiLanguage,
         getAiUserConfig: () => _ttsLiveRef.current._aiUserConfig,
         getAi: () => _ttsLiveRef.current.ai,
+        getSelectedVoice: () => _ttsLiveRef.current.selectedVoice || window.__alloSelectedVoice || 'Kore',
+        getAvailableVoices: () => window.AlloModules?.VoiceConfig?.AVAILABLE_VOICES?.length ? window.AlloModules.VoiceConfig.AVAILABLE_VOICES : AVAILABLE_VOICES,
         setShowKokoroOfferModal: (v) => {
             const setter = _ttsLiveRef.current.setShowKokoroOfferModal;
             if (typeof setter === 'function') setter(v);
@@ -6324,6 +6326,7 @@ const AlloFlowContent = () => {
           if (_isCanvasEnv) {
               const saved = safeGetItem('allo_voice_preference');
               if (saved) {
+                  if (AVAILABLE_VOICES.length === 0 && KOKORO_VOICES.length === 0) return saved;
                   if (AVAILABLE_VOICES.map(v => v.toLowerCase()).includes(saved.toLowerCase())) return saved;
                   if (KOKORO_VOICES.some(v => v.id === saved)) return saved;
               }
@@ -6340,6 +6343,7 @@ const AlloFlowContent = () => {
           const isLocalBackend = !!(cfg?.backend && cfg.backend !== 'gemini');
           const saved = safeGetItem('allo_voice_preference');
           if (saved) {
+              if (AVAILABLE_VOICES.length === 0 && KOKORO_VOICES.length === 0) return saved;
               // A saved Kokoro voice is ALWAYS valid outside Canvas — the
               // engine is local and needs no backend or key (mirrors the
               // Canvas branch above).
@@ -8164,7 +8168,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=e75e151f');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=8c891bde');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=a1627a42e');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=a1627a42e');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -8181,7 +8185,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=a1627a42e');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=a1627a42e');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=a1627a42e');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=b2cf323a');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=f46a89d4');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=a1627a42e');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=a1627a42e');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=a1627a42e');
@@ -8201,7 +8205,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=a1627a42e');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=a1627a42e');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=a1627a42e');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d65f8010');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=4d7e68c6');
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=a1627a42e');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=a1627a42e');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=a1627a42e');
@@ -9817,7 +9821,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // effect) — this callback has [] deps, so reading state here would be
     // stale and 'Puck' used to be hardcoded, overriding the user's choice.
     const _ttsOpts = language ? { maxRetries: 2, language } : 2;
-    const _voice = window.__alloSelectedVoice || 'Puck';
+    const _voice = window.__alloSelectedVoice || 'Kore';
     try {
       if (typeof callTTS === 'function') return await callTTS(text, _voice, 1, _ttsOpts);
       if (typeof window.callTTS === 'function') return await window.callTTS(text, _voice, 1, _ttsOpts);
@@ -20188,7 +20192,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     throw new Error("[applyAIConfig] GlossaryHelpers module not loaded - reload the page");
   };
   _ttsLiveRef.current = {
-      leveledTextLanguage, currentUiLanguage, _aiUserConfig, ai,
+      leveledTextLanguage, currentUiLanguage, selectedVoice, _aiUserConfig, ai,
       setShowKokoroOfferModal,
   };
   useEffect(() => {
@@ -22334,7 +22338,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       createdAt: new Date().toISOString(),
     };
     if (includeVoice !== false) {
-      meta.voice = selectedVoice || window.__alloSelectedVoice || 'Puck';
+      meta.voice = selectedVoice || window.__alloSelectedVoice || 'Kore';
+      meta.voiceResolverVersion = 2;
       meta.speed = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
     }
     return meta;
@@ -22351,8 +22356,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const src = String((typeof st.sourceOf === 'function' && st.sourceOf(sentence)) || 'ai');
       if (src.indexOf('human') === 0) return false;
       const meta = (typeof st.metadataOf === 'function' && st.metadataOf(sentence)) || {};
-      const cur = selectedVoice || window.__alloSelectedVoice || 'Puck';
-      return String(meta.voice || '') !== String(cur);
+      const cur = selectedVoice || window.__alloSelectedVoice || 'Kore';
+      return Number(meta.voiceResolverVersion) !== 2 || String(meta.voice || '') !== String(cur);
     } catch (_) { return false; }
   };
   const _karaokePutFailureDetail = (st) => {

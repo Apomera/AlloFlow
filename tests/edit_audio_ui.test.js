@@ -125,6 +125,12 @@ describe('SimplifiedView Edit Audio mode', () => {
       has: (sentence) => saved.has(sentence),
       get: (sentence) => saved.has(sentence) ? urlFor(sentence) : null,
       sourceOf: (sentence) => saved.has(sentence) ? 'ai' : null,
+      metadataOf: (sentence) => saved.has(sentence) ? {
+        voice: 'Kore',
+        speed: 1,
+        language: 'English',
+        voiceResolverVersion: 2,
+      } : null,
     };
     window.AlloModules.KaraokeAudioStore = {
       current: store,

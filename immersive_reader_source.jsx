@@ -65,6 +65,7 @@ var BookOpen = _lazyIcon('BookOpen');
 var ChevronLeft = _lazyIcon('ChevronLeft');
 var ChevronRight = _lazyIcon('ChevronRight');
 var List = _lazyIcon('List');
+var Loader2 = _lazyIcon('Loader2');
 var Pause = _lazyIcon('Pause');
 var Play = _lazyIcon('Play');
 var Settings2 = _lazyIcon('Settings2');
@@ -1722,7 +1723,10 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                         <h2 id="karaoke-reader-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</h2>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
                         {isGeneratingAudio && (
-                            <span className="text-xs font-semibold" role="status" aria-live="polite" style={{ color: c.sweep }}>Generating audio...</span>
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold" role="status" aria-live="polite" aria-atomic="true" style={{ color: c.sweep }}>
+                                <Loader2 size={13} className="animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />
+                                <span>Generating audio...</span>
+                            </span>
                         )}
                     </div>
                 </div>

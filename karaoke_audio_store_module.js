@@ -140,6 +140,8 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     });
     var speed = Number(meta.speed);
     if (isFinite(speed) && speed > 0 && speed <= 4) out.speed = speed;
+    var voiceResolverVersion = Number(meta.voiceResolverVersion);
+    if (isFinite(voiceResolverVersion) && voiceResolverVersion > 0) out.voiceResolverVersion = voiceResolverVersion;
     if (!out.createdAt) out.createdAt = new Date().toISOString();
     return out;
   }
@@ -208,6 +210,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         if (String(e.source || 'ai').indexOf('human') === 0) return e.url;
         var o = opts || {};
         var meta = e.metadata || null;
+        if (!meta || Number(meta.voiceResolverVersion) !== 2) return null;
         if (o.voice) {
           if (!meta || !meta.voice || String(meta.voice).toLowerCase() !== String(o.voice).toLowerCase()) return null;
         }
