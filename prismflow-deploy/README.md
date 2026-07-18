@@ -17,7 +17,7 @@
 
 AlloFlow is an **open-source, privacy-first AI differentiation engine** built for educators, special education teams, and school psychologists. It runs inside Google Gemini Canvas — **no install required** — and instantly transforms any source material into a full suite of interactive, gamified, and accessible learning resources.
 
-**No subscriptions. No student accounts. No PII collected.**
+**No AlloFlow license fee. Student accounts and PII are not required by default; data flows depend on the features, provider, and deployment selected.**
 
 🔗 **[Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html)**
 
@@ -31,20 +31,6 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 4. **Start a Live Session** to push resources to student devices in real-time
 
 > 💡 For local-first use on a teacher laptop, see [desktop/README.md](../desktop/README.md). For school-owned server/appliance experiments, see [School Box](#-local-first-desktop-and-school-box) below.
-
----
-
-## 📸 Screenshots
-
-| Main Interface | Live Session | STEM Lab |
-|:-:|:-:|:-:|
-| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing current interactive simulation tiles](docs/screenshots/stem-lab.png) |
-
-| Adventure Mode | BehaviorLens | Word Sounds |
-|:-:|:-:|:-:|
-| ![Adventure Mode RPG scene with inventory and dice](docs/screenshots/adventure-mode.png) | ![BehaviorLens ABC data collection form](docs/screenshots/behavior-lens.png) | ![Word Sounds phonemic awareness activity with Elkonin boxes](docs/screenshots/word-sounds.png) |
-
-> To contribute screenshots, place PNGs in `docs/screenshots/` matching the filenames above and open a PR. You can capture them from the [live Canvas deployment](https://apomera.github.io/AlloFlow/launch.html).
 
 ---
 
@@ -101,9 +87,9 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 ---
 
-## 🧮 STEM Lab (111 Tool Files / 116 Registered Plugin IDs)
+## 🧮 STEM Lab (122 Tool Files / 123 Registered Plugin IDs)
 
-The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As of the July 2026 codebase review, the workspace contains **111 `stem_tool_*.js` files** and **116 unique registered plugin IDs** because a few tools preserve aliases or paired tool IDs.
+The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As of July 18, 2026, the workspace contains **122 `stem_tool_*.js` files** and **123 unique registered plugin IDs** because a few tools preserve aliases or paired tool IDs.
 
 | Domain | Tools |
 |--------|-------|
@@ -192,20 +178,20 @@ AlloFlow is built toward **WCAG 2.1 AA** with keyboard-first interaction pattern
 - **Reading Ruler** — mouse-following line isolation bar
 - **High Contrast & Dark Mode**
 - **Voice Dictation** — speech-to-text on all input fields
-- **Full Keyboard Navigation** — every game and tool accessible via Tab/Enter/Arrow keys
+- **Keyboard support** — maintained interaction patterns and audits cover major workflows; verify the exact tools used with keyboard, screen reader, zoom, and contrast testing
 
 ---
 
 ## 💵 Is It Really Free?
 
-**Yes.** AlloFlow is free and open-source under AGPL v3.
+**AlloFlow has no license fee** and is open-source under AGPL v3. Hosting, AI-provider, implementation, support, hardware, and specialist-review costs vary by configuration.
 
 | Path | Cost | What You Need |
 |------|------|---------------|
-| **Gemini Canvas** | Free | A Google account (uses your free daily Gemini quota) |
-| **Firebase Hosting** | Free tier available | A Firebase project; see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
-| **AlloFlow Desktop** | Free | Teacher laptop/workstation; no Docker required |
-| **School Box Server (optional Docker)** | Hardware cost only | School-owned server/appliance stack |
+| **Gemini Canvas** | No AlloFlow license fee; Google terms and quotas apply | An eligible Google account and current feature availability |
+| **Firebase Hosting** | Usage-based Google pricing and any applicable allowance | A district-controlled Firebase project; see [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md) |
+| **AlloFlow Desktop** | No AlloFlow license fee; local/provider costs may apply | Teacher laptop/workstation; no Docker required |
+| **School Box Server (optional Docker)** | Hardware, operations, and any provider costs | School-owned server/appliance stack |
 
 ---
 
@@ -216,7 +202,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (111 tool files / 116 registered IDs), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (122 tool files / 123 registered IDs), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -225,19 +211,19 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 | Resource | Link |
 |----------|------|
-| 📖 Complete User Manual | [AlloFlow Complete User Manual.md](./AlloFlow%20Complete%20User%20Manual.md) |
-| 🖨️ Quick Reference Cards | [QuickReferenceCards.md](./QuickReferenceCards.md) |
-| 🏗️ Architecture Overview | [architecture.md](./architecture.md) |
-| 🚀 Firebase Deployment | [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
-| 🔒 Security Policy | [SECURITY.md](./SECURITY.md) |
-| 🤝 Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| 📖 Complete User Manual | [AlloFlow Complete User Manual.md](../AlloFlow%20Complete%20User%20Manual.md) |
+| 🖨️ Quick Reference Cards | [QuickReferenceCards.md](../QuickReferenceCards.md) |
+| 🏗️ Architecture Overview | [architecture.md](../architecture.md) |
+| 🚀 Firebase Deployment | [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md) |
+| 🔒 Security Policy | [SECURITY.md](../SECURITY.md) |
+| 🤝 Contributing | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | 🐛 Report Issues | [GitHub Issues](https://github.com/Apomera/AlloFlow/issues) |
 
 ---
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~31K lines in the current deploy copy) dynamically loads 151 top-level build modules plus large plugin families on demand: STEM Lab (111 tool files / 116 registered IDs), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](../CONTRIBUTING.md) for architecture rules and [architecture.md](../architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`) dynamically loads the top-level modules listed in `build.js` plus large plugin families on demand: STEM Lab (122 tool files / 123 registered IDs), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](../CONTRIBUTING.md) for architecture rules and [architecture.md](../architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)
@@ -258,7 +244,7 @@ AlloFlow includes **117 automated tests** covering clinical decision-making logi
 - **Tier 2 (Learning Tracking):** Familiarity scoring, word growth levels, codename validation, Pearson correlation, aimline monitoring
 - **Tier 3 (Data Quality):** Math fluency benchmarks, error analysis, doc pipeline issue normalization, assessment preset integrity
 
-Run with `node tests/clinical_tests.js` — zero dependencies, just Node.js. See [tests/README.md](./tests/README.md) for full documentation.
+Run with `node tests/clinical_tests.js` — zero dependencies, just Node.js. See [tests/README.md](../tests/README.md) for full documentation.
 
 ---
 
@@ -266,8 +252,8 @@ Run with `node tests/clinical_tests.js` — zero dependencies, just Node.js. See
 
 Contributions are welcome — especially new STEM/SEL tools, accessibility improvements, clinical test cases, and additional language support.
 
-1. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, CDN hash pinning, plugin templates).
-2. Read [architecture.md](./architecture.md) for a full technical overview.
+1. Read [CONTRIBUTING.md](../CONTRIBUTING.md) for architecture rules (Hub-and-Spoke pattern, CDN hash pinning, plugin templates).
+2. Read [architecture.md](../architecture.md) for a full technical overview.
 3. Open a descriptive PR explaining which UDL checkpoint or clinical workflow your change enhances.
 
 **Quick wins for new contributors:**

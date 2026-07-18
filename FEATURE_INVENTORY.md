@@ -8,11 +8,11 @@
 > [architecture.md](architecture.md). The two documents pair deliberately:
 > feature inventory for product/educator review, architecture for engineering review.
 
-> **Current audit note - July 3, 2026:** The live local workspace now contains
+> **Dated audit baseline — July 3, 2026:** The live local workspace now contains
 > 111 STEM tool files, 116 registered STEM plugin IDs, 70 SEL tool files,
 > 151 top-level `build.js` module definitions, 111 root source/module pairs,
 > 413 test files, and about 2.70M canonical-ish source lines after excluding
-> deploy mirrors and generated source/module pairs. The older May/June counts
+> deploy mirrors and generated source/module pairs. These figures are a point-in-time baseline, not current totals. As of July 18, the live registries contain 122 STEM tool files / 123 STEM IDs and 70 SEL tools. The older May/June counts
 > below are kept for history where they describe point-in-time sections. For
 > the current evidence-based review, see
 > [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md).
@@ -30,9 +30,9 @@
 **Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
 **Codebase scale:** July 3, 2026 local review found ~5.69M physical code lines including generated/deploy mirrors, ~4.07M exact-hash unique code lines, and ~2.70M canonical-ish source lines after excluding deploy mirrors and generated root module pairs. See the current audit note above for caveats.
 **Monolith size:** ~31K deployed lines (`prismflow-deploy/src/App.jsx`, ~1.7 MB) with `AlloFlowANTI.txt` remaining the Gemini Canvas orchestration source.
-**Total user-facing features:** ~720+ documented (was ~177 in initial draft; deepened across 10+ review passes)
+**Inventory scope:** 720+ grouped and granular entries in this evolving catalog; do not treat this taxonomy count as a count of distinct shipped tools
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
-- **111 STEM Lab tool files / 116 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.
+- **122 STEM Lab tool files / 123 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.
 - **July 2026 additions surfaced by code review:** AlloStudio (`studio_module.js` / `studio_core.js`) is the born-accessible flyer, worksheet, and digital-art object editor with explicit reading order, alt/decorative image gates, and process/provenance history. Open Groove Studio (`music_studio/open_groove_core.js`, `open_groove_scheduler.js`, `open_groove_audio.js`, `open_groove_module.js`) is a browser-based groovebox/composition studio covering pads, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets.
 - **70 SEL Hub tools** (+ 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. See §5.8 for the cross-cutting safety pipeline (defense-in-depth pre-flight regex gate layered on top of the assessSafety LLM checks).
 - **New June 2026 subsystems** (built after the bulk of §3–§12 was written): Cinematic Studio (`cinematic_studio_module.js` — agentic document→video, client-side WebCodecs/Remotion), in-app Professional Development (`pd_core_module.js` + `catalog/pd/`), Research Hub + 3 Research Lanes (`research_lane_*_module.js`), Lumen, Dynamic Assessment, Live Polling, Translation Feedback (`translation_feedback_module.js`), Generate-Unit/Throughline (`mind_map_module.js`), footnotes + APA/MLA/Chicago `DOC_MODES`, PDF redaction + fillable AcroForm worksheets, native tagged-PDF output, in-app structural checks, and local veraPDF/PDF-UA QA workflows in the doc pipeline.
@@ -1220,7 +1220,7 @@ Five latent bugs surfaced by extraction work and fixed:
 | [AXE_AUDIT.md](AXE_AUDIT.md) | axe-core scenario testing results |
 | [VPAT-2.5-WCAG-AlloFlow.md](VPAT-2.5-WCAG-AlloFlow.md) | Full VPAT 2.5 WCAG conformance documentation |
 | [alloflow_wcag_aa_audit_report.md](alloflow_wcag_aa_audit_report.md) | Comprehensive WCAG AA audit report |
-| [CLAUDE.md](CLAUDE.md) (in `~/.claude/projects/`) | Auto-memory store with project context, user profile, feedback patterns |
+| `CLAUDE.md` (external agent-memory file, when configured) | Auto-memory store with project context, user profile, feedback patterns |
 | [examples/lesson_briefs.md](examples/lesson_briefs.md) | Sample lesson briefs / use cases |
 
 ### Memory references for context
@@ -1637,9 +1637,4 @@ placeholders, prefers-reduced-motion gaps, transition durations.
 
 ---
 
-**End of inventory.** Total documented features: **~720+** user-facing across
-151 top-level build-managed modules, 111 STEM tool files / 116 registered STEM
-plugin IDs, 70 SEL Hub tools, expanded doc pipeline export/runtime surfaces,
-AlloStudio, Open Groove Studio, Video/Cinematic Studio work, annotation suite
-cross-cutting features, teacher dashboard expansion, tool catalog single source
-of truth, and hundreds of personalized student kit surfaces, with overlap.
+**End of inventory.** This evolving catalog contains **720+ grouped and granular entries**; that taxonomy count is not a count of distinct shipped tools. Current live totals are 122 STEM tool files / 123 registered STEM plugin IDs and 70 SEL Hub tools. The current top-level module map lives in `build.js`. The catalog also includes expanded document-pipeline exports, AlloStudio, Open Groove Studio, Video/Cinematic Studio work, cross-cutting annotation features, teacher-dashboard expansion, and overlapping personalized student-kit surfaces.

@@ -76,6 +76,7 @@
     "audit:a11y": "cd a11y-audit && node static-audit.js",
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js",
     "audit:promo": "node dev-tools/audit_promo_site.cjs",
+    "audit:docs": "node dev-tools/audit_current_docs.cjs",
     "desktop": "node desktop/runtime/alloflow-desktop-runtime.cjs",
     "desktop:check": "node desktop/runtime/alloflow-desktop-runtime.cjs --check",
     "desktop:smoke": "node desktop/runtime/alloflow-desktop-runtime.cjs --smoke --port 0",

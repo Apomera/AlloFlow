@@ -4,16 +4,16 @@
 Desktop/local-first clarification, and the much larger CDN/plugin surface that
 hosts the rendered UI.*
 
-> **2026-07-03 scale audit:** the live workspace contains 151 top-level
+> **Dated baseline — 2026-07-03:** the live workspace contains 151 top-level
 > `build.js` module definitions, 111 STEM tool files with 116 registered STEM
 > plugin IDs, 70 SEL tool files, 111 root `*_source.jsx` / `*_module.js` pairs,
 > 413 test files, and about 2.70M canonical-ish source lines after excluding
 > deploy mirrors and generated source/module pairs. See
-> [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md).
+> [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md). These are point-in-time measurements, not current totals. As of July 18, the live STEM registry contains 122 tool files / 123 IDs and the SEL registry contains 70 tools; use `build.js` for the current module map.
 
 > **Companion document:** This file describes *how* the codebase is structured.
-> For the catalog of *what* the codebase actually does (720+ documented user-facing
-> features, every STEM tool, every SEL tool, discoverability paths), see
+> For the catalog of *what* the codebase actually does (400+ rows in the dated feature matrix, plus broader inventory groupings;
+> every STEM tool, every SEL tool, and discoverability paths), see
 > [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md). The two documents pair
 > deliberately: architecture for engineering review, feature inventory for
 > product / educator review.
@@ -32,8 +32,7 @@ The current architecture is best understood as three layers:
 1. **Canvas host / orchestrator:** `AlloFlowANTI.txt`, compiled to
    `prismflow-deploy/src/App.jsx`, owns state, role gates, AI bridges,
    contexts, and routing.
-2. **Top-level CDN modules:** `build.js` currently manages 151 module
-   definitions, including Doc Pipeline, BehaviorLens, AlloHaven, Video Studio,
+2. **Top-level modules:** `build.js` is the authoritative current module map, including Doc Pipeline, BehaviorLens, AlloHaven, Video Studio,
    AlloStudio, Open Groove Studio, Teacher, StoryForge, and view modules.
 3. **Plugin families:** STEM, SEL, psychometric probe JSONs, TTS loaders, and
    other lazily loaded plugin files self-register at runtime.
@@ -52,12 +51,12 @@ AlloFlowANTI.txt / App.jsx          ← Container (~31K deployed lines, cross-cu
 │   ├── csState (concept-sort game)
 │   └── adventureState (adventure mode)
 │
-├── 151 top-level CDN modules         ← Loaded dynamically via loadModule() / build.js map
+├── build-managed top-level modules         ← Loaded dynamically via loadModule() / build.js map
 │   ├── view_header_module.js         ← Header bar (Phase 2 context consumer)
 │   ├── view_history_panel_module.js  ← History sidebar (522 lines extracted)
 │   ├── view_kokoro_offer_modal.js    ← Modals, panels, toolbars
 │   ├── view_*_module.js              ← (~30 view modules total)
-│   ├── stem_lab_module.js            ← STEM Lab host + 111 tool files / 116 registered IDs
+│   ├── stem_lab_module.js            ← STEM Lab host + 122 tool files / 123 registered IDs
 │   ├── sel_hub_module.js             ← SEL Hub host + 70 tools + safety/standards layers
 │   ├── behavior_lens_module.js       ← Clinical FBA/BIP suite
 │   ├── report_writer_module.js       ← Psychoeducational report wizard
@@ -316,8 +315,8 @@ STEM Lab is a secondary plugin host: `stem_lab_module.js` registers as
 a CDN module, then each tool is a self-contained IIFE registered via
 `window.StemLab.registerTool(id, config)`.
 
-As of the July 3, 2026 code review there are 111 `stem_tool_*.js` files
-with 116 registered plugin IDs. The count difference is intentional: some
+As of July 18, 2026 there are 122 `stem_tool_*.js` files
+with 123 registered plugin IDs. The count difference is intentional: some
 files preserve aliases or paired IDs. The tools span math fundamentals,
 advanced math, life science, earth science, physics, chemistry, computer
 science, music + art, and vocational/applied labs such as welding, auto
@@ -871,7 +870,7 @@ clinical impact.
 ├── *_module.js                   ← Other CDN modules (~50 files)
 ├── stem_lab/
 │   ├── stem_lab_module.js        ← STEM Lab host
-│   └── stem_tool_*.js            ← 111 tool files / 116 registered IDs (July 2026)
+│   └── stem_tool_*.js            ← 122 tool files / 123 registered IDs (July 18, 2026)
 ├── sel_hub/
 │   ├── sel_hub_module.js         ← SEL Hub host
 │   └── sel_tool_*.js             ← 70 tools (July 2026)

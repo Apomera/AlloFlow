@@ -1,7 +1,7 @@
-# AlloFlow: The $26,000 Question
+# AlloFlow: A District EdTech Consolidation Brief
 ### A One-Pager for District Decision-Makers
 
-*Updated July 2026*
+*Updated July 18, 2026*
 
 ---
 
@@ -16,7 +16,7 @@ Teachers are juggling 5-7 different edtech subscriptions:
 - Reading assessment: Amira, Literably
 - AI content generation: MagicSchool, SchoolAI
 
-Annual cost for a typical school site: **$20,000-$30,000**.
+The combined cost varies substantially by enrollment, contract tier, negotiated pricing, and which products a district already licenses. Districts should compare current written quotes rather than rely on a generic savings estimate.
 
 Each tool requires separate logins, separate training, separate data-sharing agreements, and separate renewal negotiations. Most also create another student-data surface for the district to govern.
 
@@ -26,20 +26,19 @@ Each tool requires separate logins, separate training, separate data-sharing agr
 
 **AlloFlow** is a single, open-source platform that combines those core categories with specialty accessibility, clinical, STEM, SEL, and local-first tools that districts often cannot afford separately.
 
-| Capability | Typical Tool | Typical Cost | AlloFlow |
-|---|---|---:|---|
-| Text leveling | Diffit | $3,000/yr | Included |
-| Gamification | Kahoot | $3,000/yr | Included |
-| Interactive lessons | Nearpod | $5,000/yr | Included |
-| Accessibility suite | Read&Write | $4,500/yr | Included |
-| Oral fluency assessment | Amira | $3,000/yr | Included |
-| AI content generation | MagicSchool | $5,000/yr | Included |
-| AAC / symbol boards | Boardmaker | $500+/student | Symbol Studio included |
-| PDF accessibility remediation | Human services | $5-25/page | AI pipeline + expert referral path |
-| Psychoeducational report writing | Q-Global / Q-interactive | $500+/clinician | Report Writer included |
-| **TOTAL, top 6 rows** | | **~$26,000/yr** | **$0 software cost** |
+| Capability | Products a district might compare | AlloFlow scope |
+|---|---|---|
+| Text leveling | Diffit, Newsela | Included |
+| Gamification | Kahoot, Quizizz | Included |
+| Interactive lessons | Nearpod, Pear Deck | Included |
+| Reading and accessibility support | Read&Write, Immersive Reader | Included, with workflow-specific verification still required |
+| Oral fluency workflows | Amira, Literably | Included |
+| AI content generation | MagicSchool, SchoolAI | Included when a configured AI provider is available |
+| AAC / symbol boards | Boardmaker and other AAC tools | Symbol Studio included; not a substitute for an individualized AAC evaluation |
+| PDF accessibility remediation | Software and specialist services | Audit/remediation pipeline plus expert-review path |
+| Psychoeducational report workflows | Assessment-platform reporting tools | Report Writer included; licensed test content is not bundled |
 
-Clinical tools are additive value, not part of the $26K replacement figure.
+AlloFlow can reduce category overlap, but it is not a drop-in replacement for every licensed content library, assessment instrument, clinical service, or specialist review. Use the [Cost Planner](calculator.html) with current district quotes and local assumptions.
 
 ---
 
@@ -88,7 +87,7 @@ For school psychologists:
 
 Curriculum depth:
 
-- **STEM Lab**: 111 tool files / 116 registered plugin IDs across math, life science, earth/space, physics/chemistry, CS, design, and applied simulations
+- **STEM Lab**: 122 tool files / 123 registered plugin IDs across math, life science, earth/space, physics/chemistry, CS, design, and applied simulations
 - **SEL Hub**: 70 tools aligned to CASEL and expanded AlloFlow categories such as self-direction, inner work, care of self, and stewardship
 
 ---
@@ -119,7 +118,7 @@ AlloFlow does not require a developer-operated student database. Districts that 
 
 ## Accessibility
 
-- Built toward **WCAG 2.1 AA** with keyboard-first interaction patterns, audits, and per-tool accessibility gates
+- Engineering target of **WCAG 2.2 Level A and AA** with keyboard-first interaction patterns, audits, and per-tool accessibility gates
 - VPAT and audit artifacts are published in the repo
 - PDF pipeline supports native tagged-PDF output, structural checks, and optional local veraPDF QA
 - Reading supports include dyslexia-friendly fonts, color overlays, bionic reading, reading ruler, RSVP speed reader, and voice options
@@ -133,7 +132,7 @@ Compliance-sensitive deployments should verify the exact workflows and exports t
 
 **Pilot AlloFlow in 3-5 classrooms for one semester.**
 
-- Zero software cost to try
+- No AlloFlow license fee; provider, hosting, support, implementation, and specialist-review costs depend on the pilot configuration
 - Open-source codebase
 - Low IT burden if using the Canvas path
 - Desktop/local options for privacy-sensitive pilots

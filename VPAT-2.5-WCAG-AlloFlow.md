@@ -10,12 +10,12 @@
 | **Contact** | Aaron Pomeranz, PsyD — apomeranz@alloflow.org |
 | **Evaluation Methods** | Static code analysis and automated pattern scanning across 470 source files (~880K+ lines of code including 104 STEM Lab tools, 70+ SEL Hub items, 98 monolith CDN modules — the May 2026 evaluation scope; see the Evaluation currency note below), supplemented by runtime axe-core 4.10.3 testing via Playwright across 7 representative visual scenarios (light theme, dark theme, high-contrast theme, sepia + dyslexia reading themes, blue Irlen-style color overlay, and an active-content state). A custom 12-criterion static-pattern audit script (`c:/tmp/wcag_full_audit.cjs`) re-runnable on each release. Criteria marked "Supports (pending verification)" reflect code-level compliance that warrants additional manual confirmation (full keyboard-only walkthrough, screen-reader testing, 200%/400% zoom). |
 | **Applicable Standards** | DOJ Title II baseline: WCAG 2.1 Level A & AA; current product evaluation target: WCAG 2.2 Level A & AA |
-| **Platform** | Web application (React SPA, Firebase Hosting + Cloudflare Pages CDN) |
+| **Platform** | Web application (React SPA); hosting and AI/data paths vary by deployment |
 | **Supported Browsers** | Chrome 90+, Firefox 90+, Safari 15+, Edge 90+ |
 
 > **Standards and regulatory note (updated July 11, 2026).** The U.S. Department of Justice Title II web and mobile application rule incorporates **WCAG 2.1 Level A and AA**. In April 2026, DOJ extended the compliance dates to **April 26, 2027** for public entities with populations of 50,000 or more and **April 26, 2028** for smaller public entities and special district governments. AlloFlow's current engineering and audit target is **WCAG 2.2 Level A and AA**, which includes WCAG 2.1 and adds criteria such as Focus Not Obscured, Dragging Movements, Target Size (Minimum), Consistent Help, Redundant Entry, and Accessible Authentication. Meeting the WCAG 2.2 target must not be inferred from older WCAG 2.1 results; the new criteria are reported separately below.
 
-> **Evaluation currency (updated July 9, 2026).** This VPAT reflects a static + runtime accessibility evaluation performed **May 17, 2026** against product version **0.9.4**, covering the source tree as it existed then (470 files, including **104 STEM Lab tools**, 70 SEL Hub items, and 98 CDN modules). The product has since grown to **v1.1** -- now **111 STEM Lab tool files / 116 registered STEM plugin IDs** and **151 build-managed top-level module definitions**, plus new subsystems that postdate this evaluation: native tagged-PDF output with in-app structural PDF/UA self-checks, optional browser/local veraPDF QA paths, Cinematic Studio, and in-app Professional Development. **Tools and features added after May 17, 2026 are *Not Evaluated*; conformance must not be inferred for them** until this VPAT is regenerated against the current build. All findings below describe the evaluated snapshot.
+> **Evaluation currency (updated July 18, 2026).** This VPAT reflects a static + runtime accessibility evaluation performed **May 17, 2026** against product version **0.9.4**, covering the source tree as it existed then (470 files, including **104 STEM Lab tools**, 70 SEL Hub items, and 98 CDN modules). The product has since grown to **v1.1** -- now **122 STEM Lab tool files / 123 registered STEM plugin IDs** -- and includes new subsystems that postdate this evaluation: native tagged-PDF output with in-app structural PDF/UA self-checks, optional browser/local veraPDF QA paths, Cinematic Studio, and in-app Professional Development. **Tools and features added or materially changed after May 17, 2026 are *Not Evaluated*; conformance must not be inferred for them** until this VPAT is regenerated against the current build. All findings below describe the evaluated snapshot.
 
 ### Conformance Level Key
 
@@ -145,8 +145,8 @@ A comprehensive polish + WCAG 2.1 AA audit pass ran in May 2026, producing both
 - Scope: 470 source files (104 STEM Lab tools + 70 SEL Hub items + 98
   monolith CDN modules + the AlloFlowANTI.txt monolith + all `_source.jsx`
   + `_module.js` pairs) — **as of the May 2026 evaluation**. The codebase has
-  since grown to 111 STEM Lab tool files / 116 registered STEM plugin IDs and
-  151 build-managed top-level module definitions; the net-new tools and modules
+  since grown to 122 STEM Lab tool files / 123 registered STEM plugin IDs; the
+  net-new and materially changed tools and modules
   are Not Evaluated (see the Evaluation currency note at the top).
 - Baseline found 466 distinct flagged issues; ~60% were heuristic false
   positives (code examples in App Lab teaching content, regex strings in
@@ -217,7 +217,7 @@ A comprehensive polish + WCAG 2.1 AA audit pass ran in May 2026, producing both
 
 A systematic 9-criterion accessibility audit has been completed across the entire AlloFlow codebase:
 
-- **STEM Lab tool files** have full ✓-grades on all 9 per-tool WCAG 2.1 AA criteria. All canvas-based tools are keyboard-accessible (arrow-pan + zoom + Enter/Space-click). All form inputs labeled.
+- **STEM Lab tool files in the evaluated May 2026 scope** received full grades on the nine automated per-tool checks. Those checks do not establish complete WCAG conformance, and tools added or changed later require fresh keyboard, screen-reader, zoom, contrast, and automated testing.
 - **SEL Hub files** (tools + module + safety_layer) have full ✓-grades.
 - **AlloFlowANTI.txt monolith** (the JSX source for App.jsx) audited with launch-pad mode-selection cards converted from `<div onClick>` to keyboard-accessible buttons, decorative emoji `aria-hidden`, hardcoded "Close" labels migrated to i18n, and `aria-busy` injections on JSX `disabled={isProcessing}` patterns.
 - **Top-level CDN modules** audited individually, including `behavior_lens_module.js` (FBA / observation tool, AI/loading buttons got `aria-busy`), `word_sounds_module.js` (Word Garden / phonics), `doc_pipeline_module.js` (accessible HTML/PDF generator — N/A for per-tool criteria, pure backend), `student_analytics_module.js` (teacher-facing dashboard), and the writing-craft trio (StoryForge, PoetTree, LitLab).

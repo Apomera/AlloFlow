@@ -12,7 +12,7 @@ This is the compact distillation of six months of collaboration. The full versio
 
 ## What AlloFlow is for
 
-A privacy-first, open-source AI differentiation engine for educators, special-ed teams, school psychologists, and BCBAs. Runs in Gemini Canvas and as AlloFlow Desktop, with school-owned Firebase/self-hosted paths when an institution wants its own deployment. Covers reading scaffolds, behavior analysis (FBA/BIP), AAC, gamified student tools, accessibility-audited PDF pipelines, school-psych report writing, and more. Current public counts are 111 STEM files / 116 registered STEM IDs, 70 SEL tools, and 151 build-managed module entries, with multiple CDN-loaded modules and in-progress language packs.
+A privacy-first, open-source AI differentiation engine for educators, special-ed teams, school psychologists, and BCBAs. Runs in Gemini Canvas and as AlloFlow Desktop, with school-owned Firebase/self-hosted paths when an institution wants its own deployment. Covers reading scaffolds, behavior analysis (FBA/BIP), AAC, gamified student tools, accessibility-audited PDF pipelines, school-psych report writing, and more. As of July 18, 2026, the public counts are 122 STEM files / 123 registered STEM IDs and 70 SEL tools. Use `build.js` for the current module map rather than copying a fixed module count into documentation.
 
 **The political point**, restated from journal Entry 2: the monolith is intentional. Single file, no build step, runs on the lowest-end hardware in the most underfunded classroom. Every optimization is in service of that constraint.
 
@@ -43,7 +43,7 @@ Hard-won across many entries. The short version:
 
 ## Working patterns Aaron has confirmed (do these)
 
-- **Commit early and often** with descriptive messages. Mirror `lang/*.js` to `prismflow-deploy/public/lang/*.js` for any translation work (Cloudflare CDN auto-deploys).
+- **Commit coherent, verified changes** with descriptive messages. Mirror `lang/*.js` to `prismflow-deploy/public/lang/*.js` for translation work; deployment and cache behavior depend on the configured host.
 - **Use TodoWrite when work is multi-step**, but don't ritualize it for trivial tasks.
 - **Stay in VS Code for now.** Antigravity 2.0 (May 19, 2026) dropped VS Code extension support. The Claude Code extension cannot run there.
 - **For language packs:** hand-translation for primary languages (Vietnamese, Spanish, French). The CLI batch tool is for greenfield languages with `GEMINI_API_KEY` set. Don't run the batch tool over already-translated packs — it overwrites.

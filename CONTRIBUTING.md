@@ -15,14 +15,14 @@ AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~29K lines)
 │   ├── stem_tool_dna.js             ← STEM plugin
 │   ├── stem_tool_physics.js         ← STEM plugin
 │   ├── stem_tool_cyberdefense.js    ← STEM plugin
-│   └── stem_tool_*.js               ← 111 STEM tool files / 116 registered plugin IDs
+│   └── stem_tool_*.js               ← 122 STEM tool files / 123 registered plugin IDs
 ├── sel_hub/sel_tool_*.js            ← 70 SEL plugins
 ├── behavior_lens_module.js          ← Clinical FBA/BIP suite
 ├── report_writer_module.js          ← Psychoeducational report wizard
 ├── symbol_studio_module.js          ← AAC & visual communication
 ├── student_analytics_module.js      ← RTI probes & dashboards
 ├── math_fluency_module.js           ← CBM math fluency probes
-├── 151 build-managed module entries ← cinematic_studio, pd_core, doc_pipeline, etc.
+├── build-managed module entries     ← cinematic_studio, pd_core, doc_pipeline, etc.
 ├── help_strings.js                  ← Contextual help content
 ├── ui_strings.js                    ← English i18n master (56 lang packs in lang/)
 └── audio_bank.json                  ← Pre-recorded phoneme audio
@@ -54,7 +54,7 @@ Heavy modules load dynamically at runtime. Each spoke is a self-contained JS fil
 | Module File | Purpose | Access |
 |-------------|---------|--------|
 | `word_sounds_module.js` | Phonemic awareness, 8 activity types, ORF | All users |
-| `stem_lab/stem_lab_module.js` | STEM Lab host (111 tool files / 116 registered IDs) | All users |
+| `stem_lab/stem_lab_module.js` | STEM Lab host (122 tool files / 123 registered IDs) | All users |
 | `behavior_lens_module.js` | FBA/BIP clinical suite, ABC data, IOA | TeacherGate |
 | `report_writer_module.js` | Psychoeducational report wizard | TeacherGate |
 | `symbol_studio_module.js` | AAC boards, visual schedules, social stories | TeacherGate |

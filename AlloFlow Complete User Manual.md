@@ -27,7 +27,7 @@
    - [FAQ Generator](#-faq-generator)
    - [Socratic Tutor](#-socratic-tutor)
 5. [Word Sounds Studio](#5-word-sounds-studio)
-6. [STEM Lab (111 tool files / 116 registered IDs)](#6-stem-lab)
+6. [STEM Lab (122 tool files / 123 registered IDs)](#6-stem-lab)
 7. [Educator Tools Hub](#7-educator-tools-hub-teachergate-gated)
    - [Student Analytics & RTI Dashboard](#-student-analytics--rti-dashboard)
    - [Psychometric & CBM Probes](#-psychometric--cbm-probes)
@@ -80,7 +80,7 @@ AlloFlow is built upon the principles of Universal Design for Learning (UDL), a 
 
 | Capability | Description |
 | :--- | :--- |
-| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite, studios, document pipeline) load dynamically only when accessed, improving performance on older school devices. The July 2026 build map includes 151 top-level modules plus large plugin families served from Cloudflare Pages. |
+| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite, studios, document pipeline) load dynamically only when accessed, improving performance on older school devices. `build.js` is the source of truth for the current top-level module map; large plugin families load from the selected deployment's static asset host. |
 | **AlloStudio** | Born-accessible flyer/worksheet/digital-art studio: real text, explicit reading order, image alt/decorative gates, and process/provenance history. |
 | **Open Groove Studio** | Browser-based music-production studio for pads, patterns, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets. |
 | **PDF Accessibility Pipeline** | Upload any PDF → multi-auditor AI audit → one-click WCAG remediation → **native tagged PDF** output with in-app structural checks and optional local veraPDF QA validation. PII redaction + fillable worksheets. See §7. |
@@ -361,7 +361,7 @@ Launch the ORF assessment from Student Analytics to time student reading. The sy
 
 ## 6. STEM Lab
 
-**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and, as of the July 3, 2026 code review, has **111 `stem_tool_*.js` files** and **116 registered plugin IDs** spanning math, science, technology, arts, economics, life skills, and simulation. The registered-ID count is higher than the file count because some files preserve aliases or paired tool IDs.
+**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and, as of July 18, 2026, has **122 `stem_tool_*.js` files** and **123 registered plugin IDs** spanning math, science, technology, arts, economics, life skills, and simulation. The registered-ID count is higher than the file count because some files preserve aliases or paired tool IDs.
 
 ### How to Use
 1. Click the STEM Lab icon → select a domain category or browse all tools.
@@ -697,7 +697,7 @@ A gamified quiz where the whole class battles a boss character together.
 
 ## 9. Accessibility Features
 
-AlloFlow is built toward WCAG 2.1 AA practices and prioritizes Universal Design for Learning.
+AlloFlow’s engineering target is WCAG 2.2 Level A and AA, and the product prioritizes Universal Design for Learning. Published evaluation results remain scoped to the version and date identified in each audit.
 
 | Feature | Function | How to Enable |
 | :--- | :--- | :--- |
@@ -985,7 +985,7 @@ A: A notification appears in your Teacher View with the flagged text and severit
 
 ## 16. Accessibility Compliance
 
-AlloFlow is built toward WCAG 2.1 AA standards for keyboard navigation and screen reader support. Core interactions are designed to be operable without a mouse, with manual assistive-technology review still recommended for high-stakes deployments.
+AlloFlow’s engineering target is WCAG 2.2 Level A and AA. Core interactions use keyboard and screen-reader support patterns, but high-stakes deployments should manually verify the exact workflows they use with assistive technology, zoom, contrast, and reduced-motion settings.
 
 ### UDL Alignment Matrix
 
@@ -1004,9 +1004,8 @@ AlloFlow is built toward WCAG 2.1 AA standards for keyboard navigation and scree
 
 ## Appendix A: Spoke Module Versions
 
-A representative subset of the 151 build-managed top-level module definitions and major spoke modules (the clinical/flagship ones).
-The authoritative list is `build.js` plus the on-disk `*_module.js` files, served hashless from the
-Cloudflare Pages CDN (`alloflow-cdn.pages.dev`).
+A representative subset of the build-managed top-level module definitions and major spoke modules (the clinical/flagship ones).
+The authoritative list is `build.js` plus the on-disk `*_module.js` files. Runtime hosting and cache behavior depend on the selected deployment.
 
 | Module | Version | Last Updated |
 | :--- | :--- | :--- |
