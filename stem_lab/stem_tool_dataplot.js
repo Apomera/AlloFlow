@@ -540,7 +540,7 @@ window.StemLab = window.StemLab || {
           if (celebrate) celebrate();
         }
       };
-      if (points.length > 0) setTimeout(function() { checkBadges({}); }, 0);
+      if (points.length > 0) setTimeout(function() { checkBadges(points.length >= 3 ? { spearmanViewed: true } : {}); }, 0);
 
       // ══════════════════════════════════════════════════════════════
       // ── Actions ──
@@ -1186,7 +1186,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
               h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Regression:'),
               ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
-                return h('button', { 'aria-label': t('stem.dataplot.pearson_r_spearman', 'Pearson r / Spearman \u03C1'), key: rt, onClick: function() { upd('regressionType', rt); },
+                return h('button', { key: rt, onClick: function() { upd('regressionType', rt); },
                   className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }, rt.charAt(0).toUpperCase() + rt.slice(1));
               })
@@ -1196,7 +1196,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-[11px] font-bold text-slate-500', title: t('stem.dataplot.sample_size_interpret_r_with_n_in_mind', 'Sample size — interpret R² with n in mind') }, 'n = ' + n),
               h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
               h('span', { className: 'text-[11px] text-slate-600' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
-              n >= 3 && h('span', { className: 'text-[11px] font-bold text-indigo-500', title: t('stem.dataplot.pearson_r_spearman_2', 'Pearson r / Spearman \u03C1'), onClick: function() { checkBadges({ spearmanViewed: true }); } }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
+              n >= 3 && h('span', { className: 'text-[11px] font-bold text-indigo-500', title: t('stem.dataplot.pearson_r_spearman_2', 'Pearson r / Spearman \u03C1') }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
             ),
             // Correlation strength bar
             h('div', { className: 'flex items-center gap-2 mt-1.5' },
@@ -1255,7 +1255,7 @@ window.StemLab = window.StemLab || {
                   { label: t('stem.dataplot.pearson_r', 'Pearson r'), value: pearsonR.toFixed(4), icon: '\uD83D\uDD17' },
                   { label: t('stem.dataplot.spearman', 'Spearman \u03C1'), value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
                 ].map(function(stat) {
-                  return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center', onClick: stat.label === 'Spearman \u03C1' ? function() { checkBadges({ spearmanViewed: true }); } : undefined },
+                  return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center' },
                     h('div', { className: 'text-[11px] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
                     h('div', { className: 'text-sm font-bold text-teal-900' }, stat.value)
                   );
