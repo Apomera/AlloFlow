@@ -18086,163 +18086,197 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { drafts: [] };
     var setData = props.setData;
-    var fs = R.useState({
-      to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: ''
-    });
-    var form = fs[0]; var setForm = fs[1];
-    var ts = R.useState(null);                       var activeType = ts[0]; var setActiveType = ts[1];
+    var emptyForm = { to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: '' };
+    var fsState = R.useState(emptyForm); var form = fsState[0]; var setForm = fsState[1];
+    var ts = R.useState(null); var activeType = ts[0]; var setActiveType = ts[1];
+    var es = R.useState({ request: '' }); var errors = es[0]; var setErrors = es[1];
+    var ps = R.useState(null); var previewOverride = ps[0]; var setPreviewOverride = ps[1];
+    var cs = R.useState(null); var copyStatus = cs[0]; var setCopyStatus = cs[1];
 
     var TEMPLATES = [
-      { id: 'iep',     label: 'IEP team request', icon: '🎓', color: '#06b6d4',
-        prompt: 'Asking for a new accommodation to be added to your IEP, or for an existing one to be changed.' },
-      { id: '504',     label: '504 plan request', icon: '📋', color: '#3b82f6',
-        prompt: '504 plans are for students who don\'t qualify for an IEP but have a disability that affects learning.' },
-      { id: 'teacher', label: 'Specific teacher request', icon: '👤', color: '#a855f7',
-        prompt: 'Asking a single teacher to use an accommodation that\'s already in your plan, OR an informal request.' },
-      { id: 'college', label: 'College DSS request', icon: '🎓', color: '#10b981',
-        prompt: 'Disability Support Services at your college. Different process — they need documentation.' },
-      { id: 'work',    label: 'Workplace accommodation', icon: '💼', color: '#fbbf24',
-        prompt: 'ADA-protected workplace accommodation. Different framing than school.' }
+      { id: 'iep', label: 'IEP team discussion', color: '#22d3ee', prompt: 'Draft a request to discuss an IEP change with the student’s team. School procedures and team roles vary.' },
+      { id: '504', label: 'K–12 Section 504 discussion', color: '#60a5fa', prompt: 'Draft a request to discuss an evaluation, plan, or plan change. Eligibility and supports require an individualized school process.' },
+      { id: 'teacher', label: 'Teacher or school contact', color: '#c084fc', prompt: 'Draft an informal message about an access barrier, an existing support, or a change you want to discuss.' },
+      { id: 'college', label: 'College accessibility office', color: '#34d399', prompt: 'Ask about the institution’s process for academic adjustments, auxiliary aids, or other disability-related support.' },
+      { id: 'work', label: 'Workplace accommodation discussion', color: '#fbbf24', prompt: 'Draft a plain-language request for a disability-related change at work. Employer procedures and legal coverage vary.' }
     ];
+    var drafts = Array.isArray(data.drafts) ? data.drafts : [];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #67e8f9', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#cffafe', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+    var secondaryButtonStyle = Object.assign({}, buttonStyle, { background: 'rgba(21,94,117,0.34)', color: '#cffafe' });
+    var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
-    function generate(t) {
-      var template = '';
-      if (t.id === 'iep' || t.id === '504') {
-        template = 'Dear ' + (form.to || '[IEP team]') + ',\n\n' +
-          'I\'m writing to request a change to my ' + (t.id === 'iep' ? 'IEP' : '504 plan') + '.\n\n' +
-          '**Context:** ' + (form.context || '[describe your context — class, grade, recent changes]') + '\n\n' +
-          '**The situation:** ' + (form.situation || '[describe what\'s happening that needs accommodation]') + '\n\n' +
-          '**Impact:** ' + (form.impact || '[how this is affecting your learning, behavior, or wellbeing]') + '\n\n' +
-          '**What I\'m requesting:** ' + (form.request || '[specific accommodation]') + '\n\n' +
-          '**Why this would help:** ' + (form.why || '[connect to your disability or diagnosis]') + '\n\n' +
-          (form.alternatives ? '**Alternatives I\'ve already tried:** ' + form.alternatives + '\n\n' : '') +
-          'I\'m available to discuss this at the next IEP meeting or sooner if helpful.\n\n' +
-          'Thank you,\n' + (form.myName || '[Your name]');
-      } else if (t.id === 'teacher') {
-        template = 'Hi ' + (form.to || '[Teacher name]') + ',\n\n' +
-          'I want to talk with you about ' + (form.context || '[class / specific situation]') + '.\n\n' +
-          'What\'s happening: ' + (form.situation || '[brief]') + '\n\n' +
-          'What I\'m asking for: ' + (form.request || '[specific accommodation]') + '\n\n' +
-          'Why: ' + (form.why || '[brief — connect to need]') + '\n\n' +
-          'Could we talk for 5 minutes this week?\n\n' +
-          'Thank you,\n' + (form.myName || '[Your name]');
-      } else if (t.id === 'college') {
-        template = 'Dear ' + (form.to || '[DSS office]') + ',\n\n' +
-          'My name is ' + (form.myName || '[Your name]') + ', and I\'m requesting accommodation through Disability Support Services.\n\n' +
-          '**Documentation:** [Attach documentation of your disability — IEP, evaluation report, medical letter, etc.]\n\n' +
-          '**Diagnosis/condition:** ' + (form.context || '[your condition]') + '\n\n' +
-          '**How it impacts learning:** ' + (form.impact || '[functional impact]') + '\n\n' +
-          '**Accommodations I\'m requesting:** ' + (form.request || '[specific accommodations]') + '\n\n' +
-          '**Prior accommodations that worked:** ' + (form.alternatives || '[what worked in high school]') + '\n\n' +
-          'I\'d like to schedule an intake meeting to discuss this.\n\n' +
-          'Thank you,\n' + (form.myName || '[Your name]');
-      } else if (t.id === 'work') {
-        template = 'Dear ' + (form.to || '[Supervisor or HR]') + ',\n\n' +
-          'I\'m writing to request a workplace accommodation under the ADA.\n\n' +
-          '**Position:** ' + (form.context || '[your job title]') + '\n\n' +
-          '**My situation:** ' + (form.situation || '[disability-related need]') + '\n\n' +
-          '**What I\'m requesting:** ' + (form.request || '[specific accommodation]') + '\n\n' +
-          '**How this would help me do my job:** ' + (form.why || '[link to job functions]') + '\n\n' +
-          '**Alternatives I\'m open to:** ' + (form.alternatives || '[flexibility]') + '\n\n' +
-          'I\'m happy to provide documentation. Could we discuss this in person?\n\n' +
-          'Thank you,\n' + (form.myName || '[Your name]');
+    function safeDomId(value) { return String(value || 'draft').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    function templateFor(id) { return TEMPLATES.filter(function(template) { return template.id === id; })[0] || null; }
+    function saveDrafts(nextDrafts) { setData(Object.assign({}, data, { drafts: nextDrafts })); }
+    function setField(id, value) { var next = Object.assign({}, form); next[id] = value; setForm(next); setCopyStatus(null); if (id === 'request' && errors.request) setErrors({ request: '' }); }
+    function hasFormContent() { return Object.keys(form).some(function(key) { return String(form[key] || '').trim(); }) || (previewOverride !== null && String(previewOverride).trim()); }
+
+    function generate(template) {
+      var recipient = form.to.trim() || (template.id === 'work' ? '[Supervisor, manager, or HR contact]' : template.id === 'college' ? '[Accessibility office or contact]' : '[Recipient or team]');
+      var sender = form.myName.trim() || '[Your name]';
+      var context = form.context.trim() || '[setting, class, program, role, or other context]';
+      var situation = form.situation.trim() || '[barrier or situation you want to discuss]';
+      var impact = form.impact.trim() || '[how the barrier affects access, participation, learning, or work]';
+      var request = form.request.trim() || '[change or support you want to discuss]';
+      var why = form.why.trim() || '[how the requested change may address the barrier]';
+      var alternatives = form.alternatives.trim();
+      var opening = '';
+      if (template.id === 'iep') opening = 'I am writing to ask the IEP team to discuss a possible change to the student’s IEP.';
+      else if (template.id === '504') opening = 'I am writing to ask the school to discuss whether a Section 504 evaluation, plan, or plan change may be appropriate.';
+      else if (template.id === 'teacher') opening = 'I would like to discuss an access barrier or support in your class or program.';
+      else if (template.id === 'college') opening = 'I am writing to ask about your process for requesting disability-related academic adjustments, auxiliary aids, or other support.';
+      else opening = 'I need a change at work because of a disability-related limitation or medical condition, and I would like to discuss possible accommodations.';
+      return 'Dear ' + recipient + ',\n\n' + opening + '\n\n' +
+        'Context: ' + context + '\n\n' +
+        'Barrier or situation: ' + situation + '\n\n' +
+        'Impact: ' + impact + '\n\n' +
+        'Change or support I want to discuss: ' + request + '\n\n' +
+        'How this may help: ' + why + '\n\n' +
+        (alternatives ? 'Alternatives or prior supports: ' + alternatives + '\n\n' : '') +
+        'Please let me know the next step in your process and whether you need other information. I would welcome a discussion about effective options.\n\nThank you,\n' + sender;
+    }
+    function currentBody(template) { return previewOverride === null ? generate(template) : String(previewOverride); }
+    function openTemplate(template) { setActiveType(template.id); setForm(emptyForm); setErrors({ request: '' }); setPreviewOverride(null); setCopyStatus(null); llAnnounce('Opened ' + template.label + ' drafting form.'); focusById('learning-lab-accom-editor-heading'); }
+    function finishEditor(template) { setActiveType(null); setForm(emptyForm); setErrors({ request: '' }); setPreviewOverride(null); setCopyStatus(null); focusById('learning-lab-accom-template-' + template.id); }
+    function cancelEditor(template) {
+      function finish() { finishEditor(template); llAnnounce('Drafting form closed without saving.'); }
+      if (!hasFormContent()) { finish(); return; }
+      askLearningLabConfirmation('Discard the unsaved accommodation-request draft? This cannot be undone.', { title: 'Discard unsaved draft?', confirmText: 'Discard draft' }).then(function(accepted) { if (accepted) finish(); });
+    }
+    function save(template, event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      if (!form.request.trim()) { setErrors({ request: 'Describe the change or support you want to discuss.' }); llAnnounce('Draft not saved. Complete the required request field.'); focusById('learning-lab-accom-request'); return; }
+      var body = currentBody(template).trim();
+      var draft = { id: tkId(), date: todayISO(), type: template.id, body: body };
+      saveDrafts([draft].concat(drafts)); finishEditor(template); llAnnounce('Accommodation request draft saved in this browser.'); focusById('learning-lab-accom-saved-heading');
+    }
+    function copyText(text, textId, statusId) {
+      var body = String(text || '').trim();
+      if (!body) { setCopyStatus({ id: statusId, message: 'Nothing was copied because this draft is empty.' }); llAnnounce('Nothing was copied because the draft is empty.'); focusById(textId); return; }
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        setCopyStatus({ id: statusId, message: 'Clipboard access is unavailable. The draft is selected; use Control+C or Command+C.' }); llAnnounce('Clipboard access is unavailable. The draft text is selected for manual copying.'); focusById(textId, true); return;
       }
-      return template;
+      Promise.resolve(navigator.clipboard.writeText(body)).then(function() { setCopyStatus({ id: statusId, message: 'Draft copied. Review it before sharing.' }); llAnnounce('Draft copied to the clipboard.'); }).catch(function() { setCopyStatus({ id: statusId, message: 'Automatic copying failed. The draft is selected; use Control+C or Command+C.' }); llAnnounce('Automatic copying failed. The draft text is selected for manual copying.'); focusById(textId, true); });
     }
-
-    function save(t) {
-      var d = { id: tkId(), date: todayISO(), type: t.id, body: generate(t) };
-      setData({ drafts: [d].concat(data.drafts || []) });
-      setForm({ to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: '' });
-      setActiveType(null);
+    function removeDraft(draft) {
+      askLearningLabConfirmation('Remove this saved ' + (templateFor(draft.type) || TEMPLATES[0]).label + ' draft? This cannot be undone.', { title: 'Remove saved draft?', confirmText: 'Remove draft' }).then(function(accepted) {
+        if (!accepted) return; saveDrafts(drafts.filter(function(savedDraft) { return savedDraft.id !== draft.id; })); setCopyStatus(null); llAnnounce('Saved accommodation request draft removed.'); focusById('learning-lab-accom-saved-heading');
+      });
     }
-    function remove(id) { setData({ drafts: (data.drafts || []).filter(function(d) { return d.id !== id; }) }); }
 
     if (activeType) {
-      var t = TEMPLATES.filter(function(x) { return x.id === activeType; })[0];
-      if (!t) { setActiveType(null); return null; }
+      var activeTemplate = templateFor(activeType);
+      if (!activeTemplate) return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('', 'Accommodation Request Builder', 'The requested template is not available.', '#22d3ee'),
+        hh('section', { 'aria-labelledby': 'learning-lab-accom-missing-heading', style: { padding: 14, borderRadius: 10, border: '1px solid #f87171', background: 'rgba(127,29,29,0.25)' } },
+          hh('h2', { id: 'learning-lab-accom-missing-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#fee2e2', fontSize: 15 } }, 'This template could not be found'),
+          hh('button', { type: 'button', onClick: function() { setActiveType(null); focusById('learning-lab-accom-template-heading'); }, style: secondaryButtonStyle }, 'Return to templates')
+        )
+      );
+      var previewBody = currentBody(activeTemplate); var previewStatus = copyStatus && copyStatus.id === 'editor' ? copyStatus.message : '';
+      var fields = [
+        { id: 'context', label: 'Setting, class, program, or role (optional)', help: 'Give only the context the recipient needs.' },
+        { id: 'situation', label: 'Barrier or situation (optional)', help: 'Describe what is happening without including unnecessary private information.' },
+        { id: 'impact', label: 'Effect on access, participation, learning, or work (optional)', help: 'Describe the functional effect that is relevant to the request.' },
+        { id: 'request', label: 'Change or support I want to discuss (required)', help: 'Describe a specific change, support, academic adjustment, auxiliary aid, or accommodation to discuss.' },
+        { id: 'why', label: 'How the change may help (optional)', help: 'Connect the requested change to the barrier or functional need.' },
+        { id: 'alternatives', label: 'Alternatives or prior supports (optional)', help: 'Include other effective options only if you want to.' }
+      ];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(t.icon, t.label, t.prompt, t.color),
-        tkCard(t.color,
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: t.color, marginBottom: 8 } }, '📋 Fill in the fields'),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 } },
-              tkInput(form.to, function(v) { setForm(Object.assign({}, form, { to: v })); }, 'To (recipient name)'),
-              tkInput(form.myName, function(v) { setForm(Object.assign({}, form, { myName: v })); }, 'Your name')
+        tkSectionHeader('', activeTemplate.label, 'Create and review a draft. This tool does not send it.', activeTemplate.color),
+        hh('section', { 'aria-labelledby': 'learning-lab-accom-editor-heading' },
+          hh('h2', { id: 'learning-lab-accom-editor-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#cffafe', fontSize: 17 } }, activeTemplate.label + ' draft'),
+          hh('p', { style: helpStyle }, activeTemplate.prompt),
+          hh('aside', { 'aria-labelledby': 'learning-lab-accom-editor-caution-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #67e8f9', background: 'rgba(8,47,73,0.38)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+            hh('h3', { id: 'learning-lab-accom-editor-caution-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 13 } }, 'Review, adapt, and check the current process'),
+            hh('p', { style: { margin: '0 0 5px' } }, 'This is a writing aid, not legal advice or an eligibility decision. A request can start a conversation, but this draft does not establish rights, approve support, replace an evaluation, or guarantee an outcome.'),
+            hh('p', { style: { margin: 0 } }, 'Requirements vary by setting and jurisdiction. Check the school, institution, employer, union, advocate, or official agency guidance that applies to you. Share only information you choose and that is relevant to the request.')
+          ),
+          hh('form', { onSubmit: function(event) { save(activeTemplate, event); }, 'aria-labelledby': 'learning-lab-accom-fields-heading', 'aria-describedby': 'learning-lab-accom-privacy-help' },
+            tkCard(activeTemplate.color,
+              hh('div', null,
+                hh('h3', { id: 'learning-lab-accom-fields-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 14 } }, 'Draft details'),
+                hh('p', { id: 'learning-lab-accom-privacy-help', style: helpStyle }, 'Drafts save in this browser and may contain disability, health, school, or employment information. Avoid sensitive details on a shared device.'),
+                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 9 } },
+                  hh('div', null, hh('label', { htmlFor: 'learning-lab-accom-to', style: labelStyle }, 'Recipient or team (optional)'), hh('input', { id: 'learning-lab-accom-to', type: 'text', value: form.to, maxLength: 1000, onChange: function(event) { setField('to', event.target.value); }, style: fieldStyle })),
+                  hh('div', null, hh('label', { htmlFor: 'learning-lab-accom-name', style: labelStyle }, 'Your name or preferred sign-off (optional)'), hh('input', { id: 'learning-lab-accom-name', type: 'text', value: form.myName, maxLength: 1000, onChange: function(event) { setField('myName', event.target.value); }, style: fieldStyle }))
+                ),
+                fields.map(function(field) { var fieldId = 'learning-lab-accom-' + field.id; var helpId = fieldId + '-help'; var errorId = fieldId + '-error'; var invalid = field.id === 'request' && errors.request; return hh('div', { key: field.id, style: { marginBottom: 9 } },
+                  hh('label', { htmlFor: fieldId, style: labelStyle }, field.label),
+                  hh('p', { id: helpId, style: helpStyle }, field.help),
+                  hh('textarea', { id: fieldId, value: form[field.id], rows: field.id === 'request' ? 3 : 2, required: field.id === 'request', maxLength: 6000, onChange: function(event) { setField(field.id, event.target.value); }, 'aria-invalid': invalid ? 'true' : undefined, 'aria-describedby': helpId + (invalid ? ' ' + errorId : '') + ' learning-lab-accom-privacy-help', style: Object.assign({}, fieldStyle, { minHeight: field.id === 'request' ? 92 : 76, resize: 'vertical' }) }),
+                  invalid ? hh('p', { id: errorId, role: 'alert', style: { margin: '5px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.request) : null
+                ); })
+              )
             ),
-            [
-              { id: 'context',    label: 'Context (your class, situation, diagnosis)' },
-              { id: 'situation',  label: 'The situation (what\'s happening)' },
-              { id: 'impact',     label: 'Impact (how it affects you)' },
-              { id: 'request',    label: 'What I\'m requesting (be specific)' },
-              { id: 'why',        label: 'Why this helps (connect to need)' },
-              { id: 'alternatives',label: 'Alternatives I\'ve tried or am open to' }
-            ].map(function(f) {
-              return hh('div', { key: 'ar-' + f.id, style: { marginBottom: 8 } },
-                hh('label', { style: { fontSize: 10, fontWeight: 700, color: t.color, display: 'block', marginBottom: 4 } }, f.label),
-                tkTextarea(form[f.id], function(v) { setForm(Object.assign({}, form, (function() { var o = {}; o[f.id] = v; return o; })())); }, '', 2)
-              );
-            })
-          )
-        ),
-
-        // Generated preview
-        hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', border: '1px solid ' + t.color + '60', marginBottom: 12, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-          hh('div', { style: { fontSize: 9, color: t.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'inherit' } }, '📄 Generated draft (edit before sending)'),
-          generate(t)
-        ),
-
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 } },
-          tkBtn('← Cancel', function() { setActiveType(null); setForm({ to: '', myName: '', context: '', situation: '', impact: '', request: '', why: '', alternatives: '' }); }, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(generate(t)); alert('Copied. Paste + edit before sending.'); } catch (e) {} }, 'secondary'),
-            tkBtn('💾 Save draft', function() { save(t); }, 'primary')
+            hh('section', { 'aria-labelledby': 'learning-lab-accom-preview-heading', style: { marginBottom: 12 } },
+              hh('h3', { id: 'learning-lab-accom-preview-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 14 } }, 'Review and edit the generated draft'),
+              hh('p', { id: 'learning-lab-accom-preview-help', style: helpStyle }, 'The preview updates from the fields until you edit it directly. Review every placeholder and statement before copying, saving, or sharing. This tool does not send messages.'),
+              hh('label', { htmlFor: 'learning-lab-accom-preview', style: labelStyle }, 'Editable draft text'),
+              hh('textarea', { id: 'learning-lab-accom-preview', value: previewBody, rows: 16, maxLength: 30000, 'aria-describedby': 'learning-lab-accom-preview-help' + (previewStatus ? ' learning-lab-accom-editor-copy-status' : ''), onChange: function(event) { setPreviewOverride(event.target.value); setCopyStatus(null); }, style: Object.assign({}, fieldStyle, { minHeight: 280, resize: 'vertical', fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+              previewStatus ? hh('p', { id: 'learning-lab-accom-editor-copy-status', role: 'status', 'aria-live': 'polite', style: { margin: '6px 0 0', color: '#cffafe', fontSize: 11 } }, previewStatus) : null
+            ),
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 } },
+              hh('button', { type: 'button', onClick: function() { cancelEditor(activeTemplate); }, style: secondaryButtonStyle }, 'Close without saving'),
+              hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                hh('button', { type: 'button', onClick: function() { copyText(previewBody, 'learning-lab-accom-preview', 'editor'); }, style: secondaryButtonStyle }, 'Copy draft'),
+                hh('button', { type: 'submit', style: buttonStyle }, 'Save draft')
+              )
+            )
           )
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🪪', 'Accommodation Request Builder', '5 formal-letter templates for IEP / 504 / college DSS / teacher / workplace requests.', '#06b6d4'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#06b6d4' } }, '🪪 Why this matters: '),
-        'Self-advocacy is the most important transition skill. In high school, your parents + IEP team advocate FOR you. In college + work, YOU do. This tool lets you practice the formal writing while you have a low-stakes context.'
+      tkSectionHeader('', 'Accommodation Request Builder', 'Draft and review optional messages for school, college, or workplace conversations.', '#22d3ee'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-accom-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #67e8f9', background: 'rgba(8,47,73,0.38)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-accom-context-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 14 } }, 'A drafting aid, not a legal determination'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'A clear message can help begin a conversation, but no single letter is required in every setting. Eligibility, documentation, procedures, terminology, and available supports vary and require individualized decisions.'),
+        hh('p', { style: { margin: 0 } }, 'This tool does not send requests, contact anyone, assess eligibility, or provide legal advice. Drafts save in this browser; avoid sensitive details on a shared device.')
       ),
-
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
-        TEMPLATES.map(function(t) {
-          return hh('button', { key: 'tp-' + t.id,
-            onClick: function() { setActiveType(t.id); },
-            style: { display: 'block', textAlign: 'left', padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + t.color + '40', borderLeft: '4px solid ' + t.color, cursor: 'pointer' }
-          },
-            hh('div', { style: { fontSize: 22, marginBottom: 4 } }, t.icon),
-            hh('strong', { style: { fontSize: 13, color: t.color } }, t.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic', lineHeight: 1.55 } }, t.prompt)
-          );
-        })
-      ),
-
-      (data.drafts || []).length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Saved drafts'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          (data.drafts || []).slice(0, 10).map(function(d) {
-            var tt = TEMPLATES.filter(function(x) { return x.id === d.type; })[0] || TEMPLATES[0];
-            return hh('div', { key: 'dr-' + d.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + tt.color } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('span', { style: { fontSize: 11, color: tt.color, fontWeight: 700 } }, tt.icon + ' ' + tt.label),
-                hh('div', null,
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 6, fontFamily: 'ui-monospace, Menlo, monospace' } }, d.date),
-                  hh('button', { onClick: function() { remove(d.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap', maxHeight: 60, overflow: 'hidden' } }, d.body.substring(0, 200) + '...')
-            );
-          })
+      hh('section', { 'aria-labelledby': 'learning-lab-accom-resources-heading', style: { marginBottom: 14 } },
+        hh('h2', { id: 'learning-lab-accom-resources-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 14 } }, 'Current official starting points'),
+        hh('p', { style: helpStyle }, 'These U.S. federal resources explain different settings. State, local, institutional, and employer procedures may also apply.'),
+        hh('ul', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 11 } },
+          hh('li', null, hh('a', { href: 'https://www.ed.gov/laws-and-policy/civil-rights-laws/disability-discrimination/frequently-asked-questions-disability-discrimination', target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'U.S. Department of Education disability discrimination frequently asked questions (opens in a new tab)', style: { display: 'inline-flex', minHeight: 44, alignItems: 'center', color: '#67e8f9', textDecoration: 'underline' } }, 'U.S. Department of Education: K–12 disability discrimination questions (opens in a new tab)')),
+          hh('li', null, hh('a', { href: 'https://www.ed.gov/laws-and-policy/civil-rights-laws/disability-discrimination/disability-discrimination-key-issues/disability-discrimination-academic-adjustments-postsecondary-students', target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'U.S. Department of Education postsecondary academic adjustments guidance (opens in a new tab)', style: { display: 'inline-flex', minHeight: 44, alignItems: 'center', color: '#67e8f9', textDecoration: 'underline' } }, 'U.S. Department of Education: postsecondary academic adjustments (opens in a new tab)')),
+          hh('li', null, hh('a', { href: 'https://www.eeoc.gov/laws/guidance/enforcement-guidance-reasonable-accommodation-and-undue-hardship-under-ada', target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'U.S. Equal Employment Opportunity Commission workplace accommodation guidance (opens in a new tab)', style: { display: 'inline-flex', minHeight: 44, alignItems: 'center', color: '#67e8f9', textDecoration: 'underline' } }, 'U.S. EEOC: workplace accommodation guidance (opens in a new tab)'))
         )
-      ) : null
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-accom-template-heading' },
+        hh('h2', { id: 'learning-lab-accom-template-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#cffafe', fontSize: 15 } }, 'Choose a drafting context'),
+        hh('ul', { 'aria-label': 'Accommodation request drafting contexts', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: '0 0 14px', padding: 0, listStyle: 'none' } }, TEMPLATES.map(function(template) { var descId = 'learning-lab-accom-template-desc-' + template.id; return hh('li', { key: template.id },
+          hh('button', { id: 'learning-lab-accom-template-' + template.id, type: 'button', onClick: function() { openTemplate(template); }, 'aria-describedby': descId, style: { display: 'block', width: '100%', minHeight: 92, textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.72)', color: '#f8fafc', border: '2px solid ' + template.color, cursor: 'pointer' } },
+            hh('strong', { style: { display: 'block', color: template.color, fontSize: 13 } }, template.label),
+            hh('span', { id: descId, style: { display: 'block', marginTop: 5, color: '#e2e8f0', fontSize: 10, lineHeight: 1.55 } }, template.prompt)
+          )
+        ); }))
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-accom-saved-heading' },
+        hh('h2', { id: 'learning-lab-accom-saved-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#cffafe', fontSize: 15 } }, 'Saved drafts'),
+        drafts.length === 0 ? hh('p', { style: { margin: 0, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.55)', color: '#e2e8f0', fontSize: 11 } }, 'No accommodation request drafts saved.') :
+        hh('ul', { 'aria-label': 'Saved accommodation request drafts', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, drafts.map(function(draft) { var template = templateFor(draft.type) || TEMPLATES[0]; var domId = safeDomId(draft.id); var headingId = 'learning-lab-accom-draft-heading-' + domId; var textId = 'learning-lab-accom-draft-text-' + domId; var statusId = 'draft-' + domId; var savedStatus = copyStatus && copyStatus.id === statusId ? copyStatus.message : ''; return hh('li', { key: draft.id },
+          hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, borderLeft: '4px solid ' + template.color, background: 'rgba(15,23,42,0.64)' } },
+            hh('h3', { id: headingId, style: { margin: '0 0 4px', color: template.color, fontSize: 13 } }, template.label + ' draft'),
+            draft.date ? hh('p', { style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: draft.date }, relDate(draft.date))) : null,
+            hh('label', { htmlFor: textId, style: labelStyle }, 'Saved draft text'),
+            hh('textarea', { id: textId, value: String(draft.body || ''), readOnly: true, rows: 8, 'aria-describedby': savedStatus ? textId + '-status' : undefined, style: Object.assign({}, fieldStyle, { minHeight: 150, resize: 'vertical', fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+            savedStatus ? hh('p', { id: textId + '-status', role: 'status', 'aria-live': 'polite', style: { margin: '6px 0 0', color: '#cffafe', fontSize: 11 } }, savedStatus) : null,
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 } },
+              hh('button', { type: 'button', onClick: function() { copyText(draft.body, textId, statusId); }, 'aria-label': 'Copy saved ' + template.label + ' draft', style: secondaryButtonStyle }, 'Copy draft'),
+              hh('button', { type: 'button', onClick: function() { removeDraft(draft); }, 'aria-label': 'Remove saved ' + template.label + ' draft', style: dangerButtonStyle }, 'Remove draft')
+            )
+          )
+        ); }))
+      )
     );
   }
+
 
   // ── LLLL. PERSONAL LIFE DECK (Wave 21) ──
   // Card-deck-style daily question prompt. 50+ life-direction questions
