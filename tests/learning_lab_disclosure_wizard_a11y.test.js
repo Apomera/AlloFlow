@@ -89,7 +89,7 @@ describe('Learning Lab Disclosure Wizard accessibility', () => {
     expect(wizard).toContain('context: form.context.trim()');
     expect(wizard).toContain('who: form.who.trim()');
     expect(wizard).toContain('why: form.why.trim()');
-    expect(wizard).toContain("setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }))");
+    expect(wizard).toContain("setData(Object.assign({}, data, { logs: [entry].concat(rawLogs) }))");
   });
 
   it('announces saves with both rating values and restores focus', () => {
@@ -118,7 +118,9 @@ describe('Learning Lab Disclosure Wizard accessibility', () => {
     expect(wizard).toContain("hh('dl', { style: { display: 'grid'");
     expect(wizard).toContain("items.push(hh('dt'");
     expect(wizard).toContain("items.push(hh('dd'");
-    expect(wizard).toContain("hh('time', { dateTime: entry.date }");
+    expect(wizard).toContain("hh('time', { dateTime: textValue(entry.date) }");
+    expect(wizard).toContain('logs.map(function(entry)');
+    expect(wizard).not.toContain('.slice(0, 10)');
   });
 
   it('provides named 44-pixel deletion controls and fields', () => {
@@ -126,6 +128,26 @@ describe('Learning Lab Disclosure Wizard accessibility', () => {
     expect(wizard).toContain("minWidth: 44, minHeight: 44");
     expect(wizard).toContain("width: '100%', minHeight: 44");
     expect(wizard).toContain("minHeight: 44, padding: '9px 14px'");
+  });
+
+  it('defines its own render-synchronized focus helper (regression: free focusById crashed saves)', () => {
+    expect(wizard).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(wizard).toContain('if (!pendingFocusId) return;');
+    expect(wizard).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(wizard).not.toContain('setTimeout');
+  });
+
+  it('handles malformed legacy log data without crashing', () => {
+    expect(wizard).toContain('var rawLogs = Array.isArray(data.logs) ? data.logs : [];');
+    expect(wizard).toContain('var logs = rawLogs.filter(isRecord);');
+    expect(wizard).toContain("textValue(entry.context).trim() || 'Disclosure decision'");
+    expect(wizard).toContain("Number.isFinite(Number(entry.risk))");
+    expect(source).toContain("stat: (Array.isArray((data.mytkDisc || {}).logs) ? (data.mytkDisc || {}).logs.length : 0) + ' decisions'");
+  });
+
+  it('states that saving never discloses or notifies anyone', () => {
+    expect(wizard).toContain('Saving a decision here does not disclose anything');
+    expect(wizard).toContain('does not send or show your notes to a teacher, school, employer, clinician, or family member');
   });
 
   it('keeps the deployed mirror identical', () => {

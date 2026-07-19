@@ -14405,13 +14405,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // conceptually but lives here as a personal tool.
   function PersonalDisclosure(props) {
     if (!R) return null;
-    var data = props.data || { logs: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { logs: [] };
     var setData = props.setData;
     var emptyForm = function() { return { context: '', who: '', what: '', why: '', when: '', risk: 5, gain: 5 }; };
     var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var whatError = es[0]; var setWhatError = es[1];
+    var pf = R.useState(''); var pendingFocusId = pf[0]; var setPendingFocusId = pf[1];
+    var rawLogs = Array.isArray(data.logs) ? data.logs : [];
 
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
+    function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+    function textValue(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); }
     function updateForm(key, value) {
       var patch = {}; patch[key] = value;
       setForm(Object.assign({}, form, patch));
@@ -14436,24 +14449,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         risk: form.risk,
         gain: form.gain
       };
-      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setData(Object.assign({}, data, { logs: [entry].concat(rawLogs) }));
       setForm(emptyForm());
       setWhatError('');
       llAnnounce('Disclosure decision saved. Risk ' + entry.risk + ' out of 10 and possible benefit ' + entry.gain + ' out of 10.');
       focusById('learning-lab-disclosure-context');
     }
     async function remove(entry) {
-      var label = entry.context || entry.what || 'this disclosure decision';
+      var label = textValue(entry.context).trim() || textValue(entry.what).trim() || 'this disclosure decision';
       if (label.length > 80) label = label.slice(0, 77) + '...';
       if (!(await askLearningLabConfirmation('This permanently removes “' + label + '” from your saved disclosure decisions.', {
         title: 'Remove this disclosure decision?', confirmText: 'Remove decision'
       }))) return;
-      setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== entry.id; }) }));
+      setData(Object.assign({}, data, { logs: rawLogs.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
       llAnnounce('Disclosure decision removed.');
       focusById('learning-lab-disclosure-history-heading');
     }
 
-    var logs = data.logs || [];
+    var logs = rawLogs.filter(isRecord);
     var FIELDS = [
       { id: 'context', label: 'Situation', required: false, help: 'For example: starting a job, meeting a new teacher, requesting an accommodation, or talking with a friend.', placeholder: 'Describe the setting or situation' },
       { id: 'who', label: 'Person or office I might tell', required: false, help: 'Name the person, role, office, or group as specifically as you can.', placeholder: 'Name and role' },
@@ -14462,7 +14475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'when', label: 'Time and setting', required: false, help: 'Consider privacy, who will be present, timing, communication format, and whether support would help.', placeholder: 'Describe when, where, and how' }
     ];
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(196,181,253,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 };
     var buttonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #ddd6fe', background: '#6d28d9', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     function ratingField(id, label, value, lowLabel, highLabel, key, color) {
@@ -14478,7 +14491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🗝', 'Disclosure Wizard', 'Think through whether, what, when, and with whom you may want to share personal information.', '#a855f7'),
 
-      hh('aside', { 'aria-labelledby': 'learning-lab-disclosure-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.32)', border: '1px solid #c4b5fd', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-disclosure-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(76,29,149,0.32)', border: '1px solid #c4b5fd', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
         hh('h3', { id: 'learning-lab-disclosure-guidance-heading', style: { color: '#ddd6fe', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🛡 '), 'You control your personal information'),
         hh('p', { style: { margin: '0 0 6px' } }, 'You may be able to discuss a functional need or requested support without sharing every personal detail. Accommodation processes, documentation rules, and confidentiality protections vary by setting and location.'),
         hh('p', { style: { margin: 0 } }, 'This reflection tool is not legal advice and does not decide whether disclosure is safe or required. For authoritative guidance, contact the relevant accommodations office, human-resources contact, advocate, union, or qualified legal resource.')
@@ -14487,7 +14500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#a855f7',
         hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-disclosure-form-heading' },
           hh('h3', { id: 'learning-lab-disclosure-form-heading', style: { fontSize: 13, fontWeight: 800, color: '#ddd6fe', margin: '0 0 4px' } }, 'Plan a specific disclosure decision'),
-          hh('p', { id: 'learning-lab-disclosure-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Responses save in this browser and may contain disability, health, or relationship information. Use a device and account you trust. Only the sharing field is required.'),
+          hh('p', { id: 'learning-lab-disclosure-privacy-note', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Responses save in this browser and may contain disability, health, or relationship information. Saving a decision here does not disclose anything: it does not send or show your notes to a teacher, school, employer, clinician, or family member. Use a device and account you trust. Only the sharing field is required.'),
           FIELDS.map(function(field) {
             var fieldId = 'learning-lab-disclosure-' + field.id;
             var helpId = fieldId + '-help';
@@ -14495,7 +14508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             if (field.id === 'what' && whatError) describedBy += ' learning-lab-disclosure-what-error';
             return hh('div', { key: 'df-' + field.id, style: { marginBottom: 10 } },
               hh('label', { htmlFor: fieldId, style: labelStyle }, field.label + (field.required ? ' (required)' : ' (optional)')),
-              hh('p', { id: helpId, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 4px' } }, field.help),
+              hh('p', { id: helpId, style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 4px' } }, field.help),
               field.id === 'what' || field.id === 'why' || field.id === 'when'
                 ? hh('textarea', { id: fieldId, value: form[field.id], rows: field.id === 'what' ? 4 : 3, maxLength: 3000, placeholder: field.placeholder, 'aria-invalid': field.id === 'what' && whatError ? 'true' : undefined, 'aria-describedby': describedBy, onChange: function(event) { updateForm(field.id, event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: field.id === 'what' ? 104 : 82, resize: 'vertical' }) })
                 : hh('input', { id: fieldId, type: 'text', value: form[field.id], maxLength: 1000, placeholder: field.placeholder, 'aria-describedby': describedBy, onChange: function(event) { updateForm(field.id, event.target.value); }, style: fieldStyle }),
@@ -14504,7 +14517,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           }),
           hh('fieldset', { style: { border: '1px solid rgba(196,181,253,0.45)', borderRadius: 10, padding: 10, margin: '0 0 12px' } },
             hh('legend', { style: { padding: '0 5px', fontSize: 11, fontWeight: 800, color: '#ddd6fe' } }, 'Your current estimate'),
-            hh('p', { id: 'learning-lab-disclosure-rating-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 10px' } }, 'These ratings organize your thoughts; they are not a formula, safety assessment, or recommendation.'),
+            hh('p', { id: 'learning-lab-disclosure-rating-help', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 10px' } }, 'These ratings organize your thoughts; they are not a formula, safety assessment, or recommendation.'),
             hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 } },
               ratingField('learning-lab-disclosure-risk', 'Possible risk', form.risk, 'very low', 'very high', 'risk', '#fecaca'),
               ratingField('learning-lab-disclosure-gain', 'Possible benefit', form.gain, 'very low', 'very high', 'gain', '#a7f3d0')
@@ -14517,30 +14530,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-disclosure-history-heading' },
         hh('h3', { id: 'learning-lab-disclosure-history-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#ddd6fe', margin: '0 0 8px' } }, 'Saved disclosure decisions'),
         hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
-          logs.slice(0, 10).map(function(entry) {
+          logs.map(function(entry) {
             var headingId = 'learning-lab-disclosure-entry-' + entry.id;
             var details = [
-              { label: 'Person or office', value: entry.who },
-              { label: 'Information or need', value: entry.what },
-              { label: 'Reason', value: entry.why },
-              { label: 'Time and setting', value: entry.when },
-              { label: 'Possible risk', value: entry.risk + ' out of 10' },
-              { label: 'Possible benefit', value: entry.gain + ' out of 10' }
-            ].filter(function(detail) { return detail.value !== undefined && detail.value !== null && detail.value !== ''; });
+              { label: 'Person or office', value: textValue(entry.who).trim() },
+              { label: 'Information or need', value: textValue(entry.what).trim() },
+              { label: 'Reason', value: textValue(entry.why).trim() },
+              { label: 'Time and setting', value: textValue(entry.when).trim() },
+              { label: 'Possible risk', value: Number.isFinite(Number(entry.risk)) && entry.risk !== null && entry.risk !== '' ? Number(entry.risk) + ' out of 10' : '' },
+              { label: 'Possible benefit', value: Number.isFinite(Number(entry.gain)) && entry.gain !== null && entry.gain !== '' ? Number(entry.gain) + ' out of 10' : '' }
+            ].filter(function(detail) { return detail.value !== ''; });
             return hh('li', { key: 'dl-' + entry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #a855f7' } },
               hh('article', { 'aria-labelledby': headingId },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
-                  hh('h4', { id: headingId, style: { fontSize: 12, color: '#ddd6fe', margin: 0 } }, entry.context || 'Disclosure decision'),
-                  hh('button', { type: 'button', 'aria-label': 'Remove disclosure decision: ' + (entry.context || entry.what || 'saved decision'), onClick: function() { remove(entry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+                  hh('h4', { id: headingId, style: { fontSize: 12, color: '#ddd6fe', margin: 0 } }, textValue(entry.context).trim() || 'Disclosure decision'),
+                  hh('button', { type: 'button', 'aria-label': 'Remove disclosure decision: ' + (textValue(entry.context).trim() || textValue(entry.what).trim() || 'saved decision'), onClick: function() { remove(entry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
                 ),
-                hh('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(100px, auto) 1fr', gap: '3px 8px', margin: 0, fontSize: 11 } },
+                hh('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(100px, auto) 1fr', gap: '3px 8px', margin: 0, fontSize: 12 } },
                   details.reduce(function(items, detail, index) {
                     items.push(hh('dt', { key: 'dt-' + index, style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800 } }, detail.label));
                     items.push(hh('dd', { key: 'dd-' + index, style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', whiteSpace: 'pre-wrap' } }, detail.value));
                     return items;
                   }, [])
                 ),
-                entry.date ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0' } }, 'Saved ', hh('time', { dateTime: entry.date }, entry.date)) : null
+                textValue(entry.date) ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0 0' } }, 'Saved ', hh('time', { dateTime: textValue(entry.date) }, textValue(entry.date))) : null
               )
             );
           })
@@ -20591,7 +20604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkFut',      icon: '💌', label: 'Letters to Future Self', color: '#a855f7', desc: 'Hershfield 2011 — connection to future self',
         stat: ((data.mytkFut || {}).letters || []).length + ' letters', cta: 'Write a letter' },
       { id: 'mytkDisc',     icon: '🗝', label: 'Disclosure Wizard',    color: '#a855f7', desc: 'Should I tell them? Walk through the decision',
-        stat: ((data.mytkDisc || {}).logs || []).length + ' decisions', cta: 'Walk through' },
+        stat: (Array.isArray((data.mytkDisc || {}).logs) ? (data.mytkDisc || {}).logs.length : 0) + ' decisions', cta: 'Walk through' },
       { id: 'mytkAudio',    icon: '🎧', label: 'Focus Audio',          color: '#a855f7', desc: '8 categories — rate what works for YOU',
         stat: 'experiment', cta: 'Pick audio' },
       { id: 'mytkWorry',    icon: '⏰', label: 'Worry Time',           color: '#a855f7', desc: '15-min scheduled worry vs all-day (Borkovec 1983)',
