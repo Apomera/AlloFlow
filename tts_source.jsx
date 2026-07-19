@@ -424,7 +424,15 @@ const createTTS = (deps) => {
             if (_isKokoroVoice) {
                 // Intentional fall-through to Kokoro/Piper block below.
             } else if (Date.now() >= state.rateLimitedUntil) {
-                const canvasMaxAttempts = 3;
+                // Honor the caller's retry budget here just as the non-Canvas
+                // path does below. Karaoke deliberately uses 0 retries for
+                // look-ahead and 1 retry for active playback; the former
+                // hard-coded three attempts could add several seconds before
+                // the learner heard the local/browser fallback.
+                const canvasMaxAttempts = Math.max(
+                    1,
+                    (Number.isFinite(maxRetries) ? Math.max(0, Math.floor(maxRetries)) : 2) + 1
+                );
                 let canvasLastErr = null;
                 const fetchCanvasTTSBytes = async () => {
                     if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);

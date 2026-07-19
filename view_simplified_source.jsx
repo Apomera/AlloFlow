@@ -481,6 +481,29 @@
       var voice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
       var language = leveledTextLanguage || 'English';
+      var options = Object.assign({
+        language: language,
+        maxRetries: 1,
+        priority: 'interactive'
+      }, requestOptions || {});
+      options.language = language;
+      // Snapshot the synthesis profile with the request. The shared service uses
+      // it for compatibility and provider resolution, so a settings change
+      // mid-request cannot relabel the voice the learner actually heard.
+      options.profile = Object.assign({}, options.profile || {}, {
+        voice: voice,
+        speed: speed,
+        synthesisRate: speed,
+        language: language,
+        voiceResolverVersion: 2
+      });
+      try {
+        var sharedResolver = typeof window !== 'undefined' && window.__alloResolveReadAloudAudio;
+        if (typeof sharedResolver === 'function') {
+          return Promise.resolve(sharedResolver(sentenceText, options)).catch(function () { return null; });
+        }
+      } catch (_) {}
+      // Direct store/callTTS compatibility path while the shared host module loads.
       try {
         var st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
         if (st) {
@@ -501,33 +524,36 @@
       } catch (_) {}
       var resolver = karaokeCallTTSRef.current;
       if (typeof resolver !== 'function') return Promise.resolve(null);
-      var options = Object.assign({
-        language: language,
-        maxRetries: 1,
-        priority: 'interactive'
-      }, requestOptions || {});
-      options.language = language;
       return Promise.resolve(resolver(sentenceText, voice, speed, options, language)).catch(function () { return null; });
     }, [selectedVoice, voiceSpeed, leveledTextLanguage]);
     var getReadAloudAudioProvenance = function (sentence) {
-      var st = getReadAloudStore();
-      var source = null;
-      var metadata = null;
+      var inspection = null;
       try {
-        if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
-        if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence);
+        var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
+        if (typeof sharedInspect === 'function') inspection = sharedInspect(sentence, 'reference');
       } catch (_) {}
+      var st = getReadAloudStore();
+      var source = inspection && inspection.source != null ? inspection.source : null;
+      var metadata = inspection && inspection.metadata ? inspection.metadata : null;
+      if (!inspection) {
+        try {
+          if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
+          if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence);
+        } catch (_) {}
+      }
       if (source === 'human-teacher') return { source: source, label: 'Teacher recording', metadata: metadata, stale: false };
       if (source === 'human-student') return { source: source, label: 'Student recording', metadata: metadata, stale: false };
       if (source && String(source).indexOf('human') === 0) return { source: source, label: 'Human recording', metadata: metadata, stale: false };
       var currentVoice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var currentSpeed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
       var currentLanguage = leveledTextLanguage || 'English';
-      var stale = !metadata || Number(metadata.voiceResolverVersion) !== 2 || !!(
-        (metadata.voice && String(metadata.voice).toLowerCase() !== String(currentVoice).toLowerCase()) ||
-        (metadata.speed && Math.abs(Number(metadata.speed) - currentSpeed) > 0.001) ||
-        (metadata.language && String(metadata.language).toLowerCase() !== String(currentLanguage).toLowerCase())
-      );
+      var stale = inspection
+        ? inspection.status === 'stale'
+        : (!metadata || Number(metadata.voiceResolverVersion) !== 2 || !!(
+          (metadata.voice && String(metadata.voice).toLowerCase() !== String(currentVoice).toLowerCase()) ||
+          (metadata.speed && Math.abs(Number(metadata.speed) - currentSpeed) > 0.001) ||
+          (metadata.language && String(metadata.language).toLowerCase() !== String(currentLanguage).toLowerCase())
+        ));
       var details = ['AI voice'];
       if (metadata && metadata.voice) details.push(metadata.voice);
       if (metadata && metadata.speed) details.push(Number(metadata.speed) + '×');
@@ -535,17 +561,31 @@
       return { source: source || 'ai', label: details.join(' · '), metadata: metadata, stale: stale };
     };
     var hasStoredReadAloudAudio = function (sentence) {
+      try {
+        var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
+        if (typeof sharedInspect === 'function') {
+          var inspection = sharedInspect(sentence, 'reference');
+          if (inspection && inspection.status) return inspection.status === 'ready' || inspection.status === 'stale';
+        }
+      } catch (_) {}
       var st = getReadAloudStore();
       try { return !!(st && st.has(sentence)); } catch (_) { return false; }
     };
     var getReadAloudAudioSummary = function (sentences) {
       var list = Array.isArray(sentences) ? sentences : [];
-      var saved = list.reduce(function (n, sentence) { return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0); }, 0);
-      var bytes = 0;
+      var sharedSummary = null;
+      try {
+        var summaryResolver = typeof window !== 'undefined' && window.__alloGetReadAloudAudioSummary;
+        if (typeof summaryResolver === 'function') sharedSummary = summaryResolver(list, 'reference');
+      } catch (_) {}
+      var saved = sharedSummary
+        ? Number(sharedSummary.ready || 0) + Number(sharedSummary.stale || 0)
+        : list.reduce(function (n, sentence) { return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0); }, 0);
+      var bytes = sharedSummary ? Number(sharedSummary.estimatedBytes || 0) : 0;
       var maxBytes = 0;
       try {
         var st = getReadAloudStore();
-        if (st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
+        if (!sharedSummary && st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
         if (st && typeof st.limits === 'function') maxBytes = st.limits().maxBytes || 0;
       } catch (_) {}
       return { saved: saved, total: list.length, bytes: bytes, maxBytes: maxBytes };

@@ -382,6 +382,26 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     expect(state.interactiveQueue).toBeTruthy();
   });
 
+  it('honors Karaoke zero-retry requests in the Canvas Gemini path', async () => {
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 503,
+      text: async () => '',
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { callTTS } = makeTTS(state);
+
+    const url = await callTTS('Do not delay this look-ahead.', 'Kore', 1, {
+      language: 'English',
+      maxRetries: 0,
+      priority: 'background',
+    });
+
+    expect(url).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('uses the live selected Gemini voice when VoiceConfig loads after the TTS factory', async () => {
     let liveVoices = [];
     let selectedVoice = 'Aoede';

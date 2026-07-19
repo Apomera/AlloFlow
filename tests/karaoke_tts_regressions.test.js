@@ -167,10 +167,18 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
   });
 
-  it('shows an accessible motion-safe spinner while the current sentence audio is loading', async () => {
+  it('shows a prominent accessible spinner through generation and audio startup', async () => {
     localStorage.setItem('allo_save_karaoke_audio', '0');
     audioInstances = [];
-    global.Audio = window.Audio = FakeAudio;
+    let resolveStart;
+    const pendingStart = new Promise((resolvePending) => { resolveStart = resolvePending; });
+    class DeferredStartAudio extends FakeAudio {
+      constructor(src) {
+        super(src);
+        this.play = vi.fn(() => pendingStart);
+      }
+    }
+    global.Audio = window.Audio = DeferredStartAudio;
     window.AlloIcons = window.AlloIcons || {};
     window.AlloIcons.Loader2 = (props) => React.createElement('svg', props);
 
@@ -182,16 +190,16 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       getAudioUrl: () => pendingAudio,
     }));
 
-    const preparingStatus = Array.from(host.querySelectorAll('[role="status"]'))
-      .find((node) => node.textContent.includes('Preparing first sentence...'));
+    const preparingStatus = host.querySelector('#karaoke-audio-loading-status');
     expect(preparingStatus).toBeTruthy();
+    expect(preparingStatus.textContent).toContain('Preparing first sentence...');
 
     const play = host.querySelector('button[aria-label="Play"]');
     await act(async () => { play.click(); });
 
-    const status = Array.from(host.querySelectorAll('[role="status"]'))
-      .find((node) => node.textContent.includes('Generating audio...'));
+    const status = host.querySelector('#karaoke-audio-loading-status');
     expect(status).toBeTruthy();
+    expect(status.textContent).toContain('Generating audio...');
     expect(status.getAttribute('aria-live')).toBe('polite');
     expect(status.getAttribute('aria-atomic')).toBe('true');
     const spinner = status.querySelector('svg');
@@ -199,13 +207,28 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(spinner.getAttribute('aria-hidden')).toBe('true');
     expect(spinner.classList.contains('animate-spin')).toBe(true);
     expect(spinner.classList.contains('motion-reduce:animate-none')).toBe(true);
+    expect(play.getAttribute('aria-busy')).toBe('true');
+    expect(play.getAttribute('aria-describedby')).toBe('karaoke-audio-loading-status');
+    expect(play.textContent).toContain('Loading');
+    expect(play.querySelector('svg.animate-spin')).toBeTruthy();
 
     await act(async () => {
       resolveAudio('blob:spinner-test');
       await pendingAudio;
       await Promise.resolve();
     });
-    expect(host.textContent).not.toContain('Generating audio...');
+    const startingStatus = host.querySelector('#karaoke-audio-loading-status');
+    expect(startingStatus).toBeTruthy();
+    expect(startingStatus.textContent).toContain('Starting audio...');
+    expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveStart();
+      await pendingStart;
+      await Promise.resolve();
+    });
+    expect(host.querySelector('#karaoke-audio-loading-status')).toBeNull();
+    expect(play.getAttribute('aria-busy')).toBe('false');
   });
 
   it('captures the actively played sentence into durable karaoke storage', async () => {
@@ -228,7 +251,7 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       await Promise.resolve();
     });
 
-    expect(capture).toHaveBeenCalledWith('Capture this sentence.', 'blob:Capture this sentence.');
+    expect(capture).toHaveBeenCalledWith('Capture this sentence.', 'blob:Capture this sentence.', { occurrence: 0 });
   });
 
   it('warms one look-ahead sentence but persists only audio that actually plays', async () => {
@@ -251,7 +274,7 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       await Promise.resolve();
     });
 
-    expect(capture).toHaveBeenCalledWith('First sentence.', 'blob:First sentence.');
+    expect(capture).toHaveBeenCalledWith('First sentence.', 'blob:First sentence.', { occurrence: 0 });
     expect(capture).toHaveBeenCalledTimes(1);
     expect(getAudioUrl).toHaveBeenCalledWith('Second sentence.', expect.objectContaining({
       priority: 'background',
@@ -259,6 +282,50 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     }));
     expect(getAudioUrl.mock.calls.map((call) => call[0])).not.toContain('Third sentence.');
     expect(getAudioUrl.mock.calls.map((call) => call[0])).not.toContain('Fourth sentence.');
+  });
+
+  it('replaces a pending background look-ahead with a fresh interactive request when its sentence becomes active', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    // The background look-ahead stays PENDING for the whole test: joining it
+    // would strand active playback on a zero-retry, non-abortable request.
+    const getAudioUrl = vi.fn((sentence, opts) => {
+      if (opts && opts.priority === 'background') return new Promise(() => {});
+      return Promise.resolve('blob:' + sentence);
+    });
+
+    renderKaraoke(karaokeProps({ getAudioUrl, captureOn: false }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+      await Promise.resolve();
+    });
+
+    // Finish the first clip; auto-advance makes the warmed sentence active.
+    await act(async () => {
+      const ended = audioInstances[0].listeners.get('ended');
+      if (ended) ended();
+      await vi.advanceTimersByTimeAsync(300);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const secondCalls = getAudioUrl.mock.calls.filter((call) => call[0] === 'Second sentence.');
+    expect(secondCalls).toHaveLength(2);
+    expect(secondCalls[0][1]).toMatchObject({ priority: 'background', maxRetries: 0 });
+    expect(secondCalls[1][1]).toMatchObject({
+      priority: 'interactive',
+      maxRetries: 1,
+      reason: 'karaoke-play',
+    });
+    expect(secondCalls[1][1].signal).toBeTruthy();
+    expect(audioInstances[1].src).toBe('blob:Second sentence.');
   });
 
   it('uses the canonical leveled-text sentence list when supplied', async () => {

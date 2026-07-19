@@ -8489,7 +8489,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=d2c66e384');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=d2c66e384');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=d2c66e384');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=17bb1829');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=69dcf52f');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=2a953579');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=d2c66e384');
@@ -8631,7 +8631,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d33bb476');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=6132d5c6');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=d2c66e384');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=d2c66e384');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -8649,7 +8649,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=d2c66e384');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=d2c66e384');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=1d1891ac');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=509ebe4a');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83');
@@ -8672,7 +8672,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=d2c66e384');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=d2c66e384');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=d2c66e384');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=89dd7997');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=afafccd7');
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=d2c66e384');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=d2c66e384');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=d2c66e384');
@@ -23531,7 +23531,35 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // their __allo* call sites, while the shared service owns durable orchestration
   // and V4 segment identity. The legacy functions above remain the live fallback
   // if the asynchronously loaded service is unavailable.
+  const _legacyResolveReadAloudAudio = async (sentence, requestOptions) => {
+    if (!sentence) return null;
+    const voice = selectedVoice || window.__alloSelectedVoice || 'Kore';
+    const speed = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
+    const language = leveledTextLanguage || currentUiLanguage || 'English';
+    try {
+      const st = _ensureKaraokeStore('reference');
+      if (st) {
+        if (typeof st.getCompatible === 'function') {
+          const compatible = st.getCompatible(sentence, { voice, speed, language });
+          if (compatible) return compatible;
+        } else if (typeof st.get === 'function') {
+          const stored = st.get(sentence);
+          if (stored) return stored;
+        }
+      }
+    } catch (_) {}
+    if (typeof callTTS !== 'function') return null;
+    const options = Object.assign({
+      language,
+      maxRetries: 1,
+      priority: 'interactive',
+    }, requestOptions || {});
+    options.language = language;
+    try { return await callTTS(sentence, voice, speed, options, language); }
+    catch (_) { return null; }
+  };
   const _legacyReadAloudApi = {
+    resolve: _legacyResolveReadAloudAudio,
     regenerate: window.__alloRegenerateSentenceAudio,
     prepare: window.__alloPrepareReadAloud,
     capturePlayed: window.__alloCaptureKaraokeAudio,
@@ -23625,7 +23653,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         synthesisRate: (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1,
         voiceResolverVersion: 2,
       }),
-      synthesize: ({ text }) => _synthSentenceForStore(text),
+      synthesize: ({ text, profile, signal, reason, operation, priority, maxRetries }) => {
+        if (operation === 'resolve') {
+          const liveProfile = profile || {};
+          const voice = liveProfile.voice || selectedVoice || window.__alloSelectedVoice || 'Kore';
+          const speed = (typeof liveProfile.speed === 'number' && liveProfile.speed > 0)
+            ? liveProfile.speed
+            : ((typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1);
+          const language = liveProfile.language || leveledTextLanguage || currentUiLanguage || 'English';
+          if (typeof callTTS !== 'function') return null;
+          return callTTS(text, voice, speed, {
+            language,
+            signal,
+            reason: reason || 'resolve',
+            priority: priority || 'interactive',
+            maxRetries: Number.isFinite(maxRetries) ? maxRetries : 1,
+          }, language);
+        }
+        return _synthSentenceForStore(text);
+      },
       encode: _encodeReadAloudBridgeAudio,
       persist: ({ lane, payload, resourceId }) => {
         const field = lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio';
@@ -23638,6 +23684,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     });
   };
   window.__alloGetReadAloudAudioBridge = _getReadAloudBridge;
+  window.__alloResolveReadAloudAudio = async (sentence, options) => {
+    const bridge = _getReadAloudBridge();
+    return bridge && typeof bridge.resolve === 'function'
+      ? bridge.resolve(sentence, options || {})
+      : _legacyReadAloudApi.resolve(sentence, options || {});
+  };
+  window.__alloInspectReadAloudAudio = (sentence, lane, inspectOptions) => {
+    const bridge = _getReadAloudBridge();
+    return bridge && typeof bridge.inspect === 'function'
+      ? bridge.inspect(sentence, lane || 'reference', inspectOptions)
+      : null;
+  };
   window.__alloRegenerateSentenceAudio = async (sentence) => {
     const bridge = _getReadAloudBridge();
     return bridge ? bridge.regenerate(sentence) : _legacyReadAloudApi.regenerate(sentence);
@@ -23654,7 +23712,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       window.__alloPrepareReadAloudCancel = false;
     }
   };
-  window.__alloCaptureKaraokeAudio = async (sentence, url) => {
+  window.__alloCaptureKaraokeAudio = async (sentence, url, captureOptions) => {
     const bridge = _getReadAloudBridge();
     if (!bridge) return _legacyReadAloudApi.capturePlayed(sentence, url);
     const resourceId = generatedContent && generatedContent.id;
@@ -23662,13 +23720,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const sentenceKey = KS && typeof KS.keyFor === 'function'
       ? KS.keyFor(sentence)
       : String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
-    const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
+    // Duplicated sentences are distinct segments in the shared service — the
+    // in-flight dedupe must not collapse their concurrent captures into one.
+    const occurrenceKey = captureOptions && Number.isInteger(captureOptions.occurrence)
+      ? '::occ' + captureOptions.occurrence
+      : '';
+    const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey + occurrenceKey;
     if (_karaokeCaptureInFlight.has(captureKey)) return _karaokeCaptureInFlight.get(captureKey);
-    const capture = Promise.resolve().then(() => bridge.capturePlayed(sentence, url));
+    const capture = Promise.resolve().then(() => bridge.capturePlayed(sentence, url, captureOptions || {}));
     _karaokeCaptureInFlight.set(captureKey, capture);
     let saved = false;
     try {
       saved = !!(await capture);
+    } catch (_) {
+      saved = false;
     } finally {
       if (_karaokeCaptureInFlight.get(captureKey) === capture) _karaokeCaptureInFlight.delete(captureKey);
     }

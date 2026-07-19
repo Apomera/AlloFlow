@@ -355,13 +355,14 @@ function makeLegacyBridgeHarness(options = {}) {
   });
   const persist = options.persist || vi.fn(async () => {});
   const notify = options.notify || vi.fn();
+  const getProfile = options.getProfile || vi.fn(() => ({
+    voice: 'Kore', language: 'English', synthesisRate: 1,
+    provider: 'gemini', voiceResolverVersion: 2,
+  }));
   const bridge = createReadAloudLegacyBridge({
     getResource: () => resource,
     getStore,
-    getProfile: () => ({
-      voice: 'Kore', language: 'English', synthesisRate: 1,
-      provider: 'gemini', voiceResolverVersion: 2,
-    }),
+    getProfile,
     synthesize,
     encode,
     persist,
@@ -379,6 +380,7 @@ function makeLegacyBridgeHarness(options = {}) {
     encode,
     persist,
     notify,
+    getProfile,
     setResource(next) { resource = next; },
   };
 }
@@ -423,6 +425,69 @@ describe('ReadAloudAudioService structured store inspection', () => {
 });
 
 describe('ReadAloudAudioService legacy compatibility bridge', () => {
+  it('resolves a compatible stored clip without synthesizing and exposes its inspection', async () => {
+    const harness = makeLegacyBridgeHarness();
+    await harness.bridge.regenerate('Already stored.');
+    harness.synthesize.mockClear();
+
+    expect(harness.bridge.inspect('Already stored.')).toMatchObject({
+      status: 'ready',
+      source: 'ai-generated',
+      profile: expect.objectContaining({ voice: 'Kore' }),
+    });
+    expect(await harness.bridge.resolve('Already stored.', {
+      priority: 'interactive',
+      maxRetries: 1,
+      reason: 'karaoke-play',
+    })).toMatch(/^blob:stored-/);
+    expect(harness.synthesize).not.toHaveBeenCalled();
+  });
+
+  it('resolves missing and stale clips with the full playback request contract', async () => {
+    let activeVoice = 'Puck';
+    const getProfile = vi.fn(() => ({
+      voice: activeVoice,
+      language: 'English',
+      synthesisRate: 1,
+      provider: 'gemini',
+      voiceResolverVersion: 2,
+    }));
+    const harness = makeLegacyBridgeHarness({ getProfile });
+
+    await harness.bridge.regenerate('Stale sentence.');
+    activeVoice = 'Kore';
+    harness.synthesize.mockClear();
+    expect(harness.bridge.inspect('Stale sentence.')).toMatchObject({ status: 'stale' });
+
+    const controller = new AbortController();
+    const request = {
+      priority: 'interactive',
+      maxRetries: 1,
+      signal: controller.signal,
+      reason: 'karaoke-play',
+      profile: { voice: 'Aoede', language: 'Spanish', speed: 0.85, synthesisRate: 0.85 },
+    };
+    await expect(harness.bridge.resolve('Missing sentence.', request)).resolves.toBe('blob:legacy-Missing sentence.');
+    await expect(harness.bridge.resolve('Stale sentence.', request)).resolves.toBe('blob:legacy-Stale sentence.');
+
+    expect(harness.synthesize).toHaveBeenCalledTimes(2);
+    for (const [synthesisRequest] of harness.synthesize.mock.calls) {
+      expect(synthesisRequest).toMatchObject({
+        operation: 'resolve',
+        priority: 'interactive',
+        maxRetries: 1,
+        signal: controller.signal,
+        reason: 'karaoke-play',
+        profile: expect.objectContaining({
+          voice: 'Aoede',
+          language: 'Spanish',
+          speed: 0.85,
+          synthesisRate: 0.85,
+        }),
+      });
+    }
+  });
+
   it('captures a played URL into the real v4 store and persists the resource payload', async () => {
     let persistedResource = {
       id: 'simple-played-capture',
@@ -550,6 +615,8 @@ describe('ReadAloudAudioService legacy compatibility bridge', () => {
     });
 
     expect(await harness.bridge.regenerate('Narration.')).toBeNull();
+    expect(await harness.bridge.resolve('Narration.', { reason: 'karaoke-play' })).toBeNull();
+    expect(harness.bridge.inspect('Narration.')).toBeNull();
     expect(await harness.bridge.capturePlayed('Narration.', 'blob:narration')).toBe(false);
     expect(await harness.bridge.saveRecording('Narration.', new Blob(['voice']), 'human-teacher')).toBe(false);
     expect(await harness.bridge.remove('Narration.')).toBe(false);
@@ -675,5 +742,63 @@ describe('ReadAloudAudioService legacy bridge identity safety', () => {
 
     expect(Object.keys(after.entries).sort()).toEqual(beforeKeys);
     expect(Object.values(after.entries).every((entry) => entry.identity.scopeId === 'main')).toBe(true);
+  });
+
+  it('captures under the resolution-time profile when voice settings change mid-flight', async () => {
+    let activeVoice = 'Kore';
+    const getProfile = vi.fn(() => ({
+      voice: activeVoice, language: 'English', synthesisRate: 1,
+      provider: 'gemini', voiceResolverVersion: 2,
+    }));
+    const harness = makeLegacyBridgeHarness({
+      getProfile,
+      enumerateResourceSegments: () => [{
+        spokenText: 'Voice pinned sentence.',
+        segmentId: 'body/0/sentence/0',
+        scopeId: 'main',
+      }],
+    });
+
+    const url = await harness.bridge.resolve('Voice pinned sentence.', {
+      priority: 'interactive', maxRetries: 1, reason: 'karaoke-play',
+    });
+    expect(url).toBe('blob:legacy-Voice pinned sentence.');
+
+    // Voice settings hydrate/change while generation + audio startup is still
+    // pending. The played clip IS Kore audio; capture must not relabel it.
+    activeVoice = 'Puck';
+    expect(await harness.bridge.capturePlayed('Voice pinned sentence.', url)).toBe(true);
+
+    const entry = Object.values(harness.referenceStore.serialize().entries)[0];
+    expect(entry.source).toBe('ai-played');
+    expect(entry.synthesisProfile).toMatchObject({ voice: 'Kore', language: 'English' });
+  });
+
+  it('resolves and captures duplicated sentences as distinct segments via occurrence', async () => {
+    const harness = makeLegacyBridgeHarness({
+      enumerateResourceSegments: () => [
+        { spokenText: 'Jump up high.', segmentId: 'body/0/sentence/0', scopeId: 'main' },
+        { spokenText: 'Jump up high.', segmentId: 'body/0/sentence/1', scopeId: 'main' },
+      ],
+    });
+
+    const firstUrl = await harness.bridge.resolve('Jump up high.', { occurrence: 0, reason: 'karaoke-play' });
+    expect(await harness.bridge.capturePlayed('Jump up high.', firstUrl, { occurrence: 0 })).toBe(true);
+
+    // The twin resolves to the SAME url (synthesis is text-keyed upstream);
+    // the occurrence alone must route its capture into the second segment.
+    const secondUrl = await harness.bridge.resolve('Jump up high.', { occurrence: 1, reason: 'karaoke-play' });
+    expect(secondUrl).toBe(firstUrl);
+    expect(await harness.bridge.capturePlayed('Jump up high.', secondUrl, { occurrence: 1 })).toBe(true);
+
+    const entries = Object.values(harness.referenceStore.serialize().entries);
+    expect(entries).toHaveLength(2);
+    expect(entries.map((entry) => entry.identity.segmentId).sort()).toEqual([
+      'body/0/sentence/0',
+      'body/0/sentence/1',
+    ]);
+    expect(harness.bridge.summary(['Jump up high.', 'Jump up high.'])).toMatchObject({
+      total: 2, ready: 2, stale: 0, missing: 0,
+    });
   });
 });

@@ -393,8 +393,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 resourceId,
                 resourceType,
                 lane,
+                operation: 'resolve',
                 signal: options.signal,
                 reason: options.reason || 'resolve',
+                priority: options.priority,
+                maxRetries: options.maxRetries,
             });
             throwIfAborted(options.signal);
             const url = audioUrlOf(audio);
@@ -634,6 +637,28 @@ const createReadAloudAudioService = (dependencies = {}) => {
     return { forResource };
 };
 
+// Resolution→capture provenance (2026-07-19). Hosts recreate the legacy
+// bridge for every global call, so this registry lives at module scope. It
+// maps a resolved playback URL to the exact synthesis profile and segment
+// identity that produced it; capturePlayed prefers it over the live profile,
+// so a voice change while generation/startup is pending can never persist
+// one voice's audio under another voice's metadata. Bounded FIFO: an evicted
+// entry only means capture falls back to the live profile — never a wrong
+// match, because cached URLs are keyed by text+voice+speed+language.
+const READ_ALOUD_PROVENANCE_LIMIT = 64;
+const readAloudUrlProvenance = new Map();
+const recordReadAloudProvenance = (url, provenance) => {
+    if (!url || typeof url !== 'string' || !provenance) return;
+    if (readAloudUrlProvenance.has(url)) readAloudUrlProvenance.delete(url);
+    readAloudUrlProvenance.set(url, provenance);
+    while (readAloudUrlProvenance.size > READ_ALOUD_PROVENANCE_LIMIT) {
+        readAloudUrlProvenance.delete(readAloudUrlProvenance.keys().next().value);
+    }
+};
+const readAloudProvenanceForUrl = (url) => (
+    url && typeof url === 'string' ? readAloudUrlProvenance.get(url) || null : null
+);
+
 // Compatibility facade for the existing host globals. It intentionally owns
 // no window globals itself: hosts opt in by constructing it and delegating
 // their release-cycle shims to the returned methods.
@@ -766,28 +791,37 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         return [];
     }
 
-    function reconcileSuppliedSentences(canonical, supplied, context) {
+    function reconcileSuppliedSentences(canonical, supplied, context, occurrence) {
         if (!Array.isArray(supplied)) return canonical;
         const availableByText = new Map();
         canonical.forEach((descriptor) => {
             if (!availableByText.has(descriptor.spokenText)) availableByText.set(descriptor.spokenText, []);
             availableByText.get(descriptor.spokenText).push(descriptor);
         });
+        // A single-sentence request may target the caller's Nth occurrence of
+        // a duplicated sentence. Without it, the first canonical twin absorbed
+        // every duplicate's resolve/capture and the saved counter stayed short.
+        const useOccurrence = supplied.length === 1 && Number.isInteger(occurrence) && occurrence >= 0;
         return supplied.map((value, index) => {
             const spokenText = cleanText(value, Object.assign({ index }, context || {}));
             if (!spokenText) return null;
             const matches = availableByText.get(spokenText);
-            if (matches && matches.length) return Object.assign({}, matches.shift(), { suppliedIndex: index });
+            if (matches && matches.length) {
+                const descriptor = useOccurrence
+                    ? matches[Math.min(occurrence, matches.length - 1)]
+                    : matches.shift();
+                return Object.assign({}, descriptor, { suppliedIndex: index });
+            }
             // A sentence that is genuinely outside the resource has no stable
             // semantic locator; retain the legacy text-derived fallback.
             return segmentDescriptor(value, index, context, 'text/' + textFingerprint(spokenText));
         }).filter(Boolean);
     }
 
-    function resourceSegments(resource, resourceType, suppliedSentences) {
+    function resourceSegments(resource, resourceType, suppliedSentences, occurrence) {
         const context = { resource, resourceType, operation: 'legacy-enumerate' };
         const canonical = canonicalResourceSegments(resource, resourceType, context);
-        return reconcileSuppliedSentences(canonical, suppliedSentences, context);
+        return reconcileSuppliedSentences(canonical, suppliedSentences, context, occurrence);
     }
 
     function identityFor(resourceType, segment) {
@@ -802,12 +836,12 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         };
     }
 
-    function bindingFor(suppliedSentences, lane) {
+    function bindingFor(suppliedSentences, lane, occurrence) {
         const resource = liveResource();
         const resourceType = resourceTypeOf(resource);
         if (!resourceType) return null;
         const resourceId = String(resource.id || resource.resourceId || 'unsaved');
-        const rawSegments = resourceSegments(resource, resourceType, suppliedSentences);
+        const rawSegments = resourceSegments(resource, resourceType, suppliedSentences, occurrence);
         const adapter = {
             id: 'alloflow.' + resourceType + '.read-aloud',
             version: ADAPTER_VERSION,
@@ -868,8 +902,51 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         };
     }
 
-    async function regenerate(sentence) {
-        const binding = bindingFor([sentence], 'reference');
+    async function resolve(sentence, options = {}) {
+        if (!sentence) return null;
+        const binding = bindingFor([sentence], options.lane || 'reference', options.occurrence);
+        const segment = firstSegment(binding);
+        if (!segment) return null;
+        // Snapshot {url → profile, segment} at the moment of resolution: the
+        // controller's 'resolved' event carries the exact merged profile it
+        // matched or synthesized with, so a later capture persists the clip
+        // under the voice the learner actually heard even if the settings
+        // hydrated or changed while generation/startup was pending.
+        const unsubscribe = binding.controller.subscribe((event) => {
+            if (!event || event.type !== 'resolved' || !event.url) return;
+            recordReadAloudProvenance(event.url, {
+                profile: event.profile ? Object.assign({}, event.profile) : null,
+                segmentId: event.segment && event.segment.segmentId != null
+                    ? String(event.segment.segmentId)
+                    : String(segment.segmentId),
+            });
+        });
+        try {
+            return await binding.controller.resolve(segment, {
+                signal: options.signal,
+                reason: options.reason || 'resolve',
+                priority: options.priority,
+                maxRetries: options.maxRetries,
+                profile: options.profile,
+                force: options.force === true,
+            });
+        } catch (_) {
+            return null;
+        } finally {
+            unsubscribe();
+        }
+    }
+
+    function inspect(sentence, lane, options) {
+        if (!sentence) return null;
+        const binding = bindingFor([sentence], lane || 'reference', options && options.occurrence);
+        const segment = firstSegment(binding);
+        if (!segment) return null;
+        try { return binding.controller.inspect(segment); } catch (_) { return null; }
+    }
+
+    async function regenerate(sentence, options = {}) {
+        const binding = bindingFor([sentence], 'reference', options.occurrence);
         const segment = firstSegment(binding);
         if (!segment) return null;
         try {
@@ -945,15 +1022,35 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         };
     }
 
-    async function capturePlayed(sentence, url) {
+    async function capturePlayed(sentence, url, options = {}) {
         if (!sentence || !url) return false;
-        const binding = bindingFor([sentence], 'reference');
-        const segment = firstSegment(binding);
+        const provenance = readAloudProvenanceForUrl(url);
+        const hasOccurrence = Number.isInteger(options.occurrence) && options.occurrence >= 0;
+        const binding = bindingFor([sentence], 'reference', options.occurrence);
+        if (!binding) return false;
+        let segment = null;
+        if (!hasOccurrence && provenance && provenance.segmentId != null) {
+            // No explicit occurrence: trust the URL's own resolution record
+            // over first-text-match so a duplicated sentence still captures
+            // into the segment that actually requested this clip.
+            try {
+                segment = binding.controller.segments().find((candidate) => (
+                    String(candidate.segmentId) === String(provenance.segmentId)
+                )) || null;
+            } catch (_) { segment = null; }
+        }
+        if (!segment) segment = firstSegment(binding);
         if (!segment) return false;
         try {
             if (binding.controller.inspect(segment).status === 'ready') return false;
             notifyStatus(binding, segment.spokenText, 'saving');
-            await binding.controller.capturePlayed(segment, url, { source: 'ai-played' });
+            await binding.controller.capturePlayed(segment, url, {
+                source: 'ai-played',
+                // The resolution-time profile travels with the URL; without it
+                // a mid-flight settings change relabels the clip (Puck audio
+                // stored as Kore) and later compatible lookups accept it.
+                profile: options.profile || (provenance && provenance.profile) || undefined,
+            });
             const summary = binding.controller.summary();
             notifyStatus(binding, segment.spokenText, 'saved', { storedBytes: summary.estimatedBytes || 0 });
             return true;
@@ -994,7 +1091,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         try { return binding.controller.summary(); } catch (_) { return null; }
     }
 
-    return { regenerate, prepare, capturePlayed, saveRecording, remove, summary };
+    return { resolve, inspect, regenerate, prepare, capturePlayed, saveRecording, remove, summary };
 };
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createReadAloudAudioService = createReadAloudAudioService;
