@@ -70,10 +70,10 @@ describe('magnetism tool — registration + structure', () => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain("window.StemLab.registerTool('magnetism'");
       expect(source).toContain('questHooks');
-      ['field', 'electro', 'motor', 'earth', 'quiz'].forEach((tabId) => {
+      ['field', 'electro', 'motor', 'induce', 'materials', 'earth', 'quiz'].forEach((tabId) => {
         expect(source).toContain("id: '" + tabId + "'");
       });
-      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_quiz'].forEach((q) => {
+      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_quiz'].forEach((q) => {
         expect(source).toContain("id: '" + q + "'");
       });
       // host-guarded registration (does not early-return the whole module)
@@ -125,7 +125,7 @@ describe('magnetism tool — real physics', () => {
   });
 
   it('the quiz bank is 10 questions with valid answer indices', () => {
-    expect(physics.QUIZ.length).toBe(10);
+    expect(physics.QUIZ.length).toBe(12);
     physics.QUIZ.forEach((q) => {
       expect(q.a.length).toBeGreaterThanOrEqual(2);
       expect(q.c).toBeGreaterThanOrEqual(0);
@@ -174,7 +174,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   });
 
   it('renders every tab under jsdom', () => {
-    ['field', 'electro', 'motor', 'earth', 'quiz'].forEach((tab) => {
+    ['field', 'electro', 'motor', 'induce', 'materials', 'earth', 'quiz'].forEach((tab) => {
       const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab }));
       expect(html.length).toBeGreaterThan(200);
     });
@@ -186,7 +186,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
 
   it('renders the quiz results view when done', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'quiz', quizDone: true, quizScore: 8 }));
-    expect(html).toContain('8 / 10');
+    expect(html).toContain('8 / 12');
   });
 
   it('quest hooks fire on the right state', () => {
@@ -198,7 +198,54 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(hooks.mag_electro({ magnetism: { coilTouched: true } })).toBe(true);
     expect(hooks.mag_motor({ magnetism: { motorRan: true } })).toBe(true);
     expect(hooks.mag_earth({ magnetism: { earthSeen: true } })).toBe(true);
-    expect(hooks.mag_quiz({ magnetism: { quizBest: 7 } })).toBe(true);
-    expect(hooks.mag_quiz({ magnetism: { quizBest: 6 } })).toBe(false);
+    expect(hooks.mag_induce({ magnetism: { peakEMF: 0.6 } })).toBe(true);
+    expect(hooks.mag_induce({ magnetism: { peakEMF: 0.2 } })).toBe(false);
+    expect(hooks.mag_materials({ magnetism: { matPerfect: true } })).toBe(true);
+    expect(hooks.mag_materials({ magnetism: {} })).toBe(false);
+    expect(hooks.mag_quiz({ magnetism: { quizBest: 9 } })).toBe(true);
+    expect(hooks.mag_quiz({ magnetism: { quizBest: 8 } })).toBe(false);
+  });
+});
+
+describe('magnetism tool — induction (Faraday + Lenz)', () => {
+  it('a still magnet induces exactly zero EMF', () => {
+    expect(Math.abs(physics.induceEMF(50, -40, -40, 1, 40))).toBe(0);
+  });
+
+  it('EMF is linear in turns and larger when the flux gradient is steep', () => {
+    const base = physics.induceEMF(50, -40, -20, 1, 40);
+    expect(physics.induceEMF(100, -40, -20, 1, 40) / base).toBeCloseTo(2, 9); // 2× turns
+    const far = physics.induceEMF(50, -100, -80, 1, 40);
+    expect(Math.abs(base)).toBeGreaterThan(Math.abs(far)); // same step, nearer the coil → more EMF
+  });
+
+  it("Lenz's law: reversing the motion reverses the EMF sign", () => {
+    const inward = physics.induceEMF(50, -40, -20, 1, 40);
+    const outward = physics.induceEMF(50, -20, -40, 1, 40);
+    expect(Math.sign(inward)).toBe(-Math.sign(outward));
+  });
+
+  it('flux peaks with the magnet centred in the coil and vanishes far away', () => {
+    expect(physics.fluxAt(0, 40)).toBe(1);
+    expect(physics.fluxAt(100, 40)).toBeLessThan(0.01);
+    expect(physics.fluxAt(-30, 40)).toBeCloseTo(physics.fluxAt(30, 40), 12); // symmetric
+  });
+});
+
+describe('magnetism tool — materials sorter', () => {
+  it('exactly the ferromagnetic trio (+steel) are magnetic; 8 items total', () => {
+    expect(physics.MATERIALS.length).toBe(8);
+    const magnetic = physics.MATERIALS.filter((m) => m.magnetic).map((m) => m.id).sort();
+    expect(magnetic).toEqual(['clip', 'cobalt', 'nail', 'nickel']);
+    physics.MATERIALS.forEach((m) => {
+      expect(typeof m.why).toBe('string');
+      expect(m.why.length).toBeGreaterThan(10);
+    });
+  });
+
+  it('the aluminum/copper misconception is addressed head-on', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('NOT ferromagnetic');
+    expect(source).toContain('iron, nickel, and cobalt');
   });
 });

@@ -9,9 +9,13 @@
 //     and watch the solenoid field B = μ₀·n·I respond; drop in an iron core.
 //   • Motor — a current loop in a field: F = B·I·L on each side makes torque,
 //     and the commutator flips the current every half-turn to keep it spinning.
+//   • Generator (Induction) — Faraday's law ε = −N·ΔΦ/Δt: drag a magnet
+//     through a coil to light a bulb; still magnet = zero volts; Lenz's law.
+//   • Materials — predict-then-test sorter: only iron/nickel/cobalt (and
+//     alloys like steel) stick — most metals do NOT.
 //   • Earth's Field — Earth as a giant (tilted) bar magnet: declination,
 //     the magnetosphere that deflects the solar wind, and pole reversals.
-//   • Quiz — 10 questions with a quest hook at 7+.
+//   • Quiz — 12 questions with a quest hook at 9+.
 //
 // Science-accuracy notes (hedged where honesty demands it):
 //   • Field LINES are a schematic dipole model — real bar-magnet fields near
@@ -103,6 +107,36 @@
   // Force on one wire side of the motor loop: F = B · I · L (newtons).
   function wireForce(B, current, lengthM) { return B * current * lengthM; }
 
+  // ── Induction (Faraday's law) helpers ──────────────────────────────────
+  // Flux through the coil as a bar magnet sits at position x (coil at x=0).
+  // Modeled as a Gaussian bump: max flux when the magnet is centred in the
+  // coil, falling off smoothly as it withdraws. Schematic but monotone-correct.
+  function fluxAt(x, width) {
+    var w = width || 40;
+    return Math.exp(-(x * x) / (w * w));
+  }
+
+  // Faraday's law: EMF = −N · ΔΦ/Δt. Sign carries Lenz's law (the induced
+  // current opposes the CHANGE in flux). Same magnet held still → ΔΦ=0 → 0 V.
+  function induceEMF(turns, x1, x2, dt, width) {
+    var dPhi = fluxAt(x2, width) - fluxAt(x1, width);
+    return -turns * dPhi / Math.max(dt, 1e-9);
+  }
+
+  // ── Magnetic materials (predict-then-test) ─────────────────────────────
+  // Only the ferromagnetic trio (iron, nickel, cobalt) and their alloys stick
+  // to an everyday magnet — the classic misconception is "all metals do".
+  var MATERIALS = [
+    { id: 'nail',    name: 'Iron nail',        emoji: '🔩', magnetic: true,  why: 'Iron is ferromagnetic — its atomic magnets can line up and hold.' },
+    { id: 'clip',    name: 'Steel paperclip',  emoji: '📎', magnetic: true,  why: 'Steel is mostly iron, so it inherits iron’s magnetism.' },
+    { id: 'nickel',  name: 'Nickel bar',       emoji: '🪙', magnetic: true,  why: 'Nickel is one of only three room-temperature ferromagnetic elements (iron, nickel, cobalt).' },
+    { id: 'cobalt',  name: 'Cobalt chunk',     emoji: '🪨', magnetic: true,  why: 'Cobalt completes the ferromagnetic trio with iron and nickel.' },
+    { id: 'foil',    name: 'Aluminum foil',    emoji: '🥡', magnetic: false, why: 'Aluminum is a metal, but NOT ferromagnetic — a fridge magnet ignores it.' },
+    { id: 'penny',   name: 'Copper coin',      emoji: '🥉', magnetic: false, why: 'Copper conducts electricity brilliantly but is not attracted to magnets.' },
+    { id: 'ruler',   name: 'Plastic ruler',    emoji: '📏', magnetic: false, why: 'Plastic has no free-to-align atomic magnets at all.' },
+    { id: 'pencil',  name: 'Wooden pencil',    emoji: '✏️', magnetic: false, why: 'Wood is non-magnetic — organic materials almost always are.' }
+  ];
+
   // ── Quiz bank ──────────────────────────────────────────────────────────
   var QUIZ = [
     { q: 'Where is a bar magnet’s pull the strongest?', a: ['At the two poles (ends)', 'In the middle', 'It is equal everywhere', 'Just outside the middle'], c: 0,
@@ -124,7 +158,11 @@
     { q: 'Earth’s magnetic field matters for life mainly because it…', a: ['Deflects much of the solar wind', 'Warms the planet', 'Makes the tides', 'Holds the atmosphere down by gravity'], c: 0,
       why: 'The magnetosphere steers charged particles from the Sun around the planet; where they leak in near the poles we get auroras.' },
     { q: 'Over Earth’s history the magnetic poles have…', a: ['Reversed many times, at irregular intervals', 'Never moved', 'Reversed exactly every 1000 years', 'Only moved once'], c: 0,
-      why: 'The field flips north↔south irregularly over geologic time; the last full reversal was about 780,000 years ago.' }
+      why: 'The field flips north↔south irregularly over geologic time; the last full reversal was about 780,000 years ago.' },
+    { q: 'You hold a strong magnet perfectly still inside a coil of wire. The voltmeter reads…', a: ['Zero — only CHANGING flux makes voltage', 'A steady high voltage', 'Higher the stronger the magnet', 'It slowly charges up'], c: 0,
+      why: 'Faraday’s law: EMF = −N·ΔΦ/Δt. No change in flux means no EMF — you must MOVE the magnet (or vary the field) to generate.' },
+    { q: 'Which of these will a fridge magnet actually stick to?', a: ['A steel paperclip', 'Aluminum foil', 'A copper coin', 'All metals equally'], c: 0,
+      why: 'Only iron, nickel, cobalt (and their alloys, like steel) are ferromagnetic at room temperature — most metals, including aluminum and copper, are not.' }
   ];
 
   var FACTS = [
@@ -138,7 +176,7 @@
   if (_hasHost) window.StemLab.registerTool('magnetism', {
     icon: '🧲',
     label: 'Magnetism Lab',
-    desc: 'See invisible magnetic fields and learn how electricity makes them. Trace field lines around bar magnets with a live compass, build an electromagnet and change its turns and current, spin a DC motor with real forces, and explore Earth’s own magnetic shield. NGSS MS-PS2 fields and forces.',
+    desc: 'See invisible magnetic fields and learn how electricity makes them. Trace field lines with a live compass, build an electromagnet, spin a DC motor, crank a generator with Faraday’s law, sort magnetic from non-magnetic materials, and explore Earth’s own magnetic shield. NGSS MS-PS2 fields and forces.',
     color: 'rose',
     category: 'science',
     questHooks: [
@@ -147,7 +185,9 @@
       { id: 'mag_electro', label: 'Change an electromagnet’s turns or current', icon: '🔌', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.coilTouched; } },
       { id: 'mag_motor', label: 'Run the DC motor', icon: '⚙️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.motorRan; } },
       { id: 'mag_earth', label: 'Explore Earth’s magnetic field', icon: '🌍', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.earthSeen; } },
-      { id: 'mag_quiz', label: 'Score 7+ on the magnetism quiz', icon: '🧠', check: function (d) { var s = (d && d.magnetism) || {}; return (s.quizBest || 0) >= 7; } }
+      { id: 'mag_induce', label: 'Generate electricity by moving a magnet', icon: '⚡', check: function (d) { var s = (d && d.magnetism) || {}; return (s.peakEMF || 0) >= 0.5; } },
+      { id: 'mag_materials', label: 'Sort all 8 materials correctly', icon: '🔩', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.matPerfect; } },
+      { id: 'mag_quiz', label: 'Score 9+ on the magnetism quiz', icon: '🧠', check: function (d) { var s = (d && d.magnetism) || {}; return (s.quizBest || 0) >= 9; } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -183,6 +223,10 @@
         motorCurrent: 3, motorField: 4, motorRunning: false, motorAngle: 0, motorRan: false,
         // Earth
         earthSeen: false, declination: 12,
+        // Induction (generator)
+        induceX: -100, inducePrevX: -100, induceTurns: 50, lastEMF: 0, peakEMF: 0,
+        // Materials sorter
+        matGuesses: {}, matRevealed: false, matPerfect: false,
         // Quiz
         quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0,
         factIdx: 0,
@@ -224,6 +268,8 @@
         { id: 'field', label: '🧭 Field Explorer' },
         { id: 'electro', label: '🔌 Electromagnet' },
         { id: 'motor', label: '⚙️ Motor' },
+        { id: 'induce', label: '⚡ Generator' },
+        { id: 'materials', label: '🔩 Materials' },
         { id: 'earth', label: '🌍 Earth’s Field' },
         { id: 'quiz', label: '🧠 Quiz' }
       ];
@@ -311,6 +357,18 @@
               h('span', null, ''), pad('↑', 0, -18), h('span', null, ''),
               pad('←', -18, 0), h('span', { style: { textAlign: 'center', color: SOFT, fontSize: 11, alignSelf: 'center' } }, 'compass'), pad('→', 18, 0),
               h('span', null, ''), pad('↓', 0, 18), h('span', null, '')),
+            // live field-strength readout at the compass position (log scale:
+            // dipole fields fall off as 1/r³, so linear bars would be useless)
+            (function () {
+              var b = fieldAt(d.compass.x, d.compass.y, d.magnets);
+              var mag = Math.sqrt(b.x * b.x + b.y * b.y);
+              var level = Math.max(0, Math.min(5, Math.floor(Math.log10(mag * 1e7) + 3)));
+              var words = ['barely there', 'faint', 'weak', 'moderate', 'strong', 'very strong'];
+              return h('div', { role: 'status', style: { textAlign: 'center', marginBottom: 10, color: SOFT, fontSize: 12 } },
+                'Field here: ',
+                h('span', { 'aria-hidden': 'true', style: { letterSpacing: 1, color: '#f43f5e' } }, '▮'.repeat(level + 1) + '▯'.repeat(5 - level)),
+                ' ' + words[level] + ' — try moving closer to a pole');
+            })(),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' } },
               h('button', { onClick: function () {
                   var ms = d.magnets.map(function (m, i) { return i === 0 ? Object.assign({}, m, { polarity: -m.polarity }) : m; });
@@ -456,6 +514,123 @@
         _spinRAF = window.requestAnimationFrame(frame);
       }
 
+      // ── Induction / Generator (Faraday's law) ─────────────────────────
+      function moveInduceMagnet(nx) {
+        nx = Math.max(-100, Math.min(100, nx));
+        // The slider gesture IS the motion: each change is treated as one
+        // time-step, so speed of dragging maps to ΔΦ per step — drag fast,
+        // induce more. Held still (no change events) → EMF decays to 0.
+        var emf = induceEMF(d.induceTurns, d.induceX, nx, 1, 40) * 4; // display-scaled volts
+        var peak = Math.max(d.peakEMF || 0, Math.abs(emf));
+        upd({ inducePrevX: d.induceX, induceX: nx, lastEMF: emf, peakEMF: peak });
+      }
+
+      function induceSVG() {
+        var x = d.induceX;                    // −100 (far left) … 0 (in coil) … +100
+        var glow = Math.min(1, Math.abs(d.lastEMF) / 2);
+        var flux = fluxAt(x, 40);
+        return h('svg', { viewBox: '0 0 320 150', width: '100%', style: { maxWidth: 380 }, role: 'img',
+          'aria-label': 'A bar magnet at position ' + Math.round(x) + ' near a coil; bulb ' + (glow > 0.15 ? 'glowing' : 'dark') },
+          h('rect', { x: 0, y: 0, width: 320, height: 150, fill: '#0b1220', rx: 10 }),
+          // coil (fixed at centre)
+          [0, 1, 2, 3, 4].map(function (i) {
+            return h('ellipse', { key: 'c' + i, cx: 140 + i * 12, cy: 75, rx: 6, ry: 26, fill: 'none', stroke: '#f59e0b', strokeWidth: 3 });
+          }),
+          // flux indicator (how much field threads the coil right now)
+          h('rect', { x: 132, y: 44, width: Math.max(2, flux * 64), height: 4, rx: 2, fill: 'rgba(244,63,94,' + (0.25 + flux * 0.6) + ')' }),
+          // magnet (rides the slider)
+          h('g', { transform: 'translate(' + (160 + x * 1.1) + ',75)' },
+            h('rect', { x: -28, y: -10, width: 28, height: 20, fill: '#3b82f6', rx: 2 }),
+            h('rect', { x: 0, y: -10, width: 28, height: 20, fill: '#ef4444', rx: 2 }),
+            h('text', { x: 14, y: 4, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'N'),
+            h('text', { x: -14, y: 4, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'S')),
+          // wires to bulb
+          h('path', { d: 'M 140 101 L 140 128 L 60 128', fill: 'none', stroke: '#64748b', strokeWidth: 2 }),
+          h('path', { d: 'M 188 101 L 188 136 L 60 136', fill: 'none', stroke: '#64748b', strokeWidth: 2 }),
+          // bulb — brightness ∝ EMF magnitude
+          h('circle', { cx: 48, cy: 132, r: 12, fill: glow > 0.05 ? 'rgba(251,191,36,' + (0.25 + glow * 0.75) + ')' : '#1f2937', stroke: '#fbbf24', strokeWidth: 1.5 }),
+          glow > 0.4 ? h('circle', { cx: 48, cy: 132, r: 18, fill: 'none', stroke: 'rgba(251,191,36,0.4)', strokeWidth: 3 }) : null,
+          h('text', { x: 48, y: 136, fill: glow > 0.3 ? '#0b1220' : '#64748b', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, '💡')
+        );
+      }
+
+      function induceTab() {
+        var emfAbs = Math.abs(d.lastEMF);
+        var lenz = d.lastEMF === 0 ? '—' : (d.lastEMF > 0 ? 'counter-clockwise (opposing the rising flux)' : 'clockwise (opposing the falling flux)');
+        return h('div', null,
+          card('Make electricity — the generator', h('div', null,
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'The motor’s mirror twin. ', h('b', null, 'Move'), ' the magnet through the coil and the changing flux pushes charge through the wire: ', h('b', null, 'ε = −N·ΔΦ/Δt'), '. Drag fast for a bright flash; hold still and you get exactly nothing.'),
+            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, induceSVG()),
+            h('div', { style: { marginBottom: 10 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
+                h('span', null, 'Magnet position — drag it through the coil'), h('span', { style: { color: '#f43f5e' } }, String(Math.round(d.induceX)))),
+              h('input', { type: 'range', min: -100, max: 100, step: 2, value: d.induceX,
+                'aria-label': 'Magnet position relative to the coil',
+                onChange: function (e) { moveInduceMagnet(parseFloat(e.target.value)); },
+                style: { width: '100%', accentColor: '#f43f5e' } })),
+            slider('Turns on the coil (N)', d.induceTurns, 10, 200, 10, function (v) { upd({ induceTurns: v }); }),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' } },
+                h('div', { style: { color: SOFT, fontSize: 11 } }, 'EMF right now'),
+                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, emfAbs.toFixed(2) + ' V'),
+                h('div', { style: { color: SOFT, fontSize: 10.5 } }, emfAbs < 0.01 ? 'still magnet = zero volts' : 'induced by the change')),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)' } },
+                h('div', { style: { color: SOFT, fontSize: 11 } }, 'Best flash so far'),
+                h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, (d.peakEMF || 0).toFixed(2) + ' V'),
+                h('div', { style: { color: SOFT, fontSize: 10.5 } }, (d.peakEMF || 0) >= 0.5 ? '✓ generator quest earned' : 'target: 0.50 V'))),
+            h('div', { style: { color: SOFT, fontSize: 12, lineHeight: 1.5 } },
+              h('b', { style: { color: TEXT } }, 'Lenz’s law: '), 'the induced current flows ', lenz, ' — nature resists the change, which is why generators take real effort to crank.')
+          ), '#fbbf24'),
+          card('Why this runs the world', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
+            'Nearly every power plant — coal, gas, nuclear, hydro, wind — is just something spinning a magnet near coils. Only solar panels make electricity without this trick. The motor and generator are the same machine run in opposite directions.'), '#fbbf24'),
+          disclosure('The flux curve is a smooth schematic (Gaussian) model of a magnet entering a coil, and volts shown are display-scaled. The law itself — EMF = −N·ΔΦ/Δt, zero when nothing changes, sign by Lenz — is the real thing.')
+        );
+      }
+
+      // ── Magnetic materials (predict-then-test) ────────────────────────
+      function materialsTab() {
+        var guesses = d.matGuesses || {};
+        var answered = Object.keys(guesses).length;
+        var allAnswered = answered >= MATERIALS.length;
+        var correct = MATERIALS.filter(function (m) { return guesses[m.id] === m.magnetic; }).length;
+        return h('div', null,
+          card('Will it stick? Predict first', h('div', null,
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'For each item, predict whether a magnet will grab it — ', h('b', null, 'before'), ' revealing. The common trap: thinking every metal is magnetic.'),
+            MATERIALS.map(function (m) {
+              var g = guesses[m.id]; // true / false / undefined
+              var revealed = d.matRevealed;
+              var right = revealed && g === m.magnetic;
+              var wrong = revealed && g != null && g !== m.magnetic;
+              return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 9, marginBottom: 6, background: right ? 'rgba(34,197,94,0.12)' : wrong ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.06)', border: '1px solid ' + (right ? '#22c55e' : wrong ? '#ef4444' : BORDER) } },
+                h('span', { style: { fontSize: 18 } }, m.emoji),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, m.name),
+                  revealed ? h('div', { style: { color: SOFT, fontSize: 11, lineHeight: 1.4, marginTop: 2 } }, (m.magnetic ? '🧲 Sticks. ' : '🚫 No pull. ') + m.why) : null),
+                !revealed ? h('div', { style: { display: 'flex', gap: 4 } },
+                  h('button', { 'aria-pressed': g === true ? 'true' : 'false', onClick: function () { var ng = Object.assign({}, guesses); ng[m.id] = true; upd({ matGuesses: ng }); },
+                    style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (g === true ? '#f43f5e' : BORDER), background: g === true ? '#f43f5e' : 'transparent', color: g === true ? '#fff' : SOFT, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Sticks'),
+                  h('button', { 'aria-pressed': g === false ? 'true' : 'false', onClick: function () { var ng = Object.assign({}, guesses); ng[m.id] = false; upd({ matGuesses: ng }); },
+                    style: { padding: '5px 9px', borderRadius: 8, border: '1px solid ' + (g === false ? '#f43f5e' : BORDER), background: g === false ? '#f43f5e' : 'transparent', color: g === false ? '#fff' : SOFT, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'No pull')
+                ) : h('span', { style: { fontSize: 16 } }, right ? '✓' : wrong ? '✗' : '·'));
+            }),
+            !d.matRevealed ? h('div', { style: { textAlign: 'center', marginTop: 8 } },
+              h('button', { disabled: !allAnswered,
+                onClick: function () {
+                  var perfect = MATERIALS.every(function (m) { return guesses[m.id] === m.magnetic; });
+                  upd({ matRevealed: true, matPerfect: perfect || d.matPerfect });
+                  if (perfect) { awardXP(15); addToast('🔩 Perfect sort! +15 XP', 'success'); }
+                  announceToSR('Revealed: ' + MATERIALS.filter(function (m) { return guesses[m.id] === m.magnetic; }).length + ' of ' + MATERIALS.length + ' correct');
+                },
+                style: Object.assign({}, btn(true), { opacity: allAnswered ? 1 : 0.5 }) }, allAnswered ? '🧲 Test with the magnet!' : 'Predict all ' + MATERIALS.length + ' first (' + answered + '/' + MATERIALS.length + ')'))
+              : h('div', { style: { textAlign: 'center', marginTop: 8 } },
+                h('p', { style: { color: correct === MATERIALS.length ? '#34d399' : TEXT, fontSize: 14, fontWeight: 800, margin: '4px 0 8px' } }, correct + ' / ' + MATERIALS.length + ' correct' + (correct === MATERIALS.length ? ' — perfect!' : '')),
+                h('button', { onClick: function () { upd({ matGuesses: {}, matRevealed: false }); }, style: btn() }, '↻ Sort again'))
+          ), '#a3e635'),
+          card('The rule underneath', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
+            'Only three elements are ferromagnetic at room temperature: ', h('b', { style: { color: TEXT } }, 'iron, nickel, and cobalt'), '. Their atoms are tiny magnets that can lock into alignment. Steel sticks because it is mostly iron; aluminum and copper are metals whose atomic magnets cannot line up this way.'), '#a3e635')
+        );
+      }
+
       // ── Earth's Field ─────────────────────────────────────────────────
       function earthTab() {
         if (!d.earthSeen) { setTimeout(function () { upd({ earthSeen: true }); }, 0); }
@@ -494,9 +669,9 @@
       function quizTab() {
         if (d.quizDone) {
           return card('Quiz complete', h('div', null,
-            h('div', { style: { fontSize: 30, textAlign: 'center', marginBottom: 6 } }, d.quizScore >= 7 ? '🏆' : '🧲'),
+            h('div', { style: { fontSize: 30, textAlign: 'center', marginBottom: 6 } }, d.quizScore >= 9 ? '🏆' : '🧲'),
             h('p', { style: { color: TEXT, fontSize: 16, fontWeight: 800, textAlign: 'center', margin: '0 0 4px' } }, 'You scored ' + d.quizScore + ' / ' + QUIZ.length),
-            h('p', { style: { color: SOFT, fontSize: 13, textAlign: 'center', margin: '0 0 12px' } }, d.quizScore >= 7 ? 'Field mastery unlocked — nicely done.' : 'Solid start — revisit the tabs and try again to reach 7+.'),
+            h('p', { style: { color: SOFT, fontSize: 13, textAlign: 'center', margin: '0 0 12px' } }, d.quizScore >= 9 ? 'Field mastery unlocked — nicely done.' : 'Solid start — revisit the tabs and try again to reach 9+.'),
             h('div', { style: { textAlign: 'center' } },
               h('button', { onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false }); }, style: btn() }, '↻ Try again'))
           ));
@@ -528,7 +703,7 @@
                   if (d.quizIdx + 1 >= QUIZ.length) {
                     var best = Math.max(d.quizBest || 0, d.quizScore);
                     upd({ quizDone: true, quizBest: best });
-                    if (d.quizScore >= 7) { awardXP(20); addToast('🏆 Quiz passed! +20 XP', 'success'); }
+                    if (d.quizScore >= 9) { awardXP(20); addToast('🏆 Quiz passed! +20 XP', 'success'); }
                   } else {
                     upd({ quizIdx: d.quizIdx + 1, quizPicked: null });
                   }
@@ -585,6 +760,8 @@
       var body = d.tab === 'field' ? fieldTab()
         : d.tab === 'electro' ? electroTab()
         : d.tab === 'motor' ? motorTab()
+        : d.tab === 'induce' ? induceTab()
+        : d.tab === 'materials' ? materialsTab()
         : d.tab === 'earth' ? earthTab()
         : quizTab();
 
@@ -606,6 +783,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, QUIZ: QUIZ, MU0: MU0 };
+    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, MATERIALS: MATERIALS, QUIZ: QUIZ, MU0: MU0 };
   }
 })();
