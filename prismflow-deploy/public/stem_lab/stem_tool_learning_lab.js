@@ -12199,150 +12199,185 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
   function PersonalAskTracker(props) {
     if (!R) return null;
-    var data = props.data || { asks: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { asks: [] };
     var setData = props.setData;
-    var fs = R.useState({ who: '', what: '', outcome: 'helpful', notes: '' });
-    var form = fs[0]; var setForm = fs[1];
-    var es = R.useState(''); var whatError = es[0]; var setWhatError = es[1];
+    var emptyForm = { who: '', what: '', outcome: '', notes: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var detailsError = es[0]; var setDetailsError = es[1];
+    var is = R.useState(null); var editIndex = is[0]; var setEditIndex = is[1];
+    var bs = R.useState(null); var editBaseline = bs[0]; var setEditBaseline = bs[1];
+    var ps = R.useState(''); var pendingFocusId = ps[0]; var setPendingFocusId = ps[1];
+    var rawAsks = Array.isArray(data.asks) ? data.asks : [];
 
     var OUTCOMES = [
       { id: 'helpful', label: 'Helpful', icon: '✓', color: '#10b981' },
       { id: 'partial', label: 'Partly helpful', icon: '~', color: '#fbbf24' },
-      { id: 'not-useful', label: 'Not useful', icon: '×', color: '#94a3b8' },
-      { id: 'hard', label: 'Hard to ask', icon: '😰', color: '#a855f7' }
+      { id: 'not-useful', label: 'Not helpful', icon: '−', color: '#94a3b8' },
+      { id: 'hard', label: 'Hard to ask', icon: '○', color: '#a855f7' }
     ];
 
-    function focusWhat() {
-      setTimeout(function() { var input = document.getElementById('learning-lab-ask-what'); if (input) input.focus(); }, 0);
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data, editIndex]);
+
+    function textValue(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); }
+    function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+    function validOutcome(value) { return OUTCOMES.some(function(item) { return item.id === value; }) ? value : ''; }
+    function outcomeFor(value) { return OUTCOMES.filter(function(item) { return item.id === value; })[0] || null; }
+    function focusById(id) { setPendingFocusId(id); }
+    function saveAsks(next) { setData(Object.assign({}, data, { asks: next })); }
+    function normalizedForm(entry) {
+      return { who: textValue(entry && entry.who), what: textValue(entry && entry.what), outcome: validOutcome(entry && entry.outcome), notes: textValue(entry && entry.notes) };
     }
-    function logAsk() {
-      var what = form.what.trim();
-      if (!what) {
-        setWhatError('Describe what you asked for.');
-        focusWhat();
+    function formsMatch(a, b) { return !!a && !!b && a.who === b.who && a.what === b.what && a.outcome === b.outcome && a.notes === b.notes; }
+    function clearForm() { setForm(emptyForm); setDetailsError(''); setEditIndex(null); setEditBaseline(null); }
+    function saveNote() {
+      var cleaned = { who: form.who.trim(), what: form.what.trim(), outcome: validOutcome(form.outcome), notes: form.notes.trim() };
+      if (!cleaned.who && !cleaned.what && !cleaned.outcome && !cleaned.notes) {
+        setDetailsError('Enter at least one detail before saving this support note.');
+        focusById('learning-lab-ask-what');
         return;
       }
-      var outcome = OUTCOMES.filter(function(item) { return item.id === form.outcome; })[0] || OUTCOMES[0];
-      var entry = {
-        id: tkId(),
-        date: todayISO(),
-        time: Date.now(),
-        who: form.who.trim(),
-        what: what,
-        outcome: outcome.id,
-        notes: form.notes.trim()
-      };
-      setData(Object.assign({}, data, { asks: [entry].concat(data.asks || []) }));
-      setForm({ who: '', what: '', outcome: 'helpful', notes: '' });
-      setWhatError('');
-      llAnnounce('Help request logged. Outcome: ' + outcome.label + '.');
+      if (typeof editIndex === 'number' && isRecord(rawAsks[editIndex])) {
+        saveAsks(rawAsks.map(function(entry, index) { return index === editIndex ? Object.assign({}, entry, cleaned, { updatedAt: Date.now() }) : entry; }));
+        llAnnounce('Support note updated.');
+        var savedIndex = editIndex;
+        clearForm();
+        focusById('learning-lab-ask-edit-' + savedIndex);
+        return;
+      }
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, cleaned);
+      saveAsks([entry].concat(rawAsks));
+      clearForm();
+      llAnnounce('Support note saved.');
+      focusById('learning-lab-ask-what');
     }
-    async function remove(id) {
-      var entry = (data.asks || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes the help request' + (entry ? ' "' + entry.what + '"' : '') + '.', {
-        title: 'Delete this help request?', confirmText: 'Delete request'
+    function startEdit(index) {
+      if (!isRecord(rawAsks[index])) return;
+      var next = normalizedForm(rawAsks[index]);
+      setForm(next); setEditBaseline(next); setEditIndex(index); setDetailsError('');
+      focusById('learning-lab-ask-form-heading');
+    }
+    async function cancelEdit() {
+      if (typeof editIndex !== 'number') return;
+      var previousIndex = editIndex;
+      if (!formsMatch(form, editBaseline) && !(await askLearningLabConfirmation('This discards changes made to the support note form.', {
+        title: 'Discard unsaved changes?', confirmText: 'Discard changes'
       }))) return;
-      setData(Object.assign({}, data, { asks: (data.asks || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Help request deleted.');
+      clearForm();
+      llAnnounce('Support note editing canceled.');
+      focusById('learning-lab-ask-edit-' + previousIndex);
+    }
+    function nextRecordIndex(items, preferred) {
+      if (!items.length) return null;
+      var start = Math.min(Math.max(preferred, 0), items.length - 1);
+      var offset;
+      for (offset = 0; offset < items.length; offset += 1) {
+        if (isRecord(items[start + offset])) return start + offset;
+        if (start - offset >= 0 && isRecord(items[start - offset])) return start - offset;
+      }
+      return null;
+    }
+    async function remove(index) {
+      var entry = isRecord(rawAsks[index]) ? rawAsks[index] : null;
+      var label = textValue(entry && (entry.what || entry.who)).trim();
+      if (!(await askLearningLabConfirmation('This permanently removes the support note' + (label ? ' "' + label + '"' : '') + '.', {
+        title: 'Delete this support note?', confirmText: 'Delete note'
+      }))) return;
+      var remaining = rawAsks.filter(function(_, itemIndex) { return itemIndex !== index; });
+      var focusIndex = nextRecordIndex(remaining, index);
+      saveAsks(remaining);
+      if (editIndex === index) clearForm();
+      else if (typeof editIndex === 'number' && editIndex > index) setEditIndex(editIndex - 1);
+      llAnnounce('Support note deleted.');
+      focusById(focusIndex === null ? 'learning-lab-ask-what' : 'learning-lab-ask-edit-' + focusIndex);
+    }
+    function formattedDate(entry) {
+      var value = Number(entry && entry.time);
+      var parsed = Number.isFinite(value) ? new Date(value) : new Date(textValue(entry && entry.date) + 'T12:00:00');
+      if (!Number.isFinite(parsed.getTime())) return { text: 'Date not recorded', iso: '' };
+      return { text: parsed.toLocaleString(), iso: parsed.toISOString() };
     }
 
-    var asks = data.asks || [];
-    var weekCount = asks.filter(function(entry) { return daysAgo(entry.date) <= 7; }).length;
-    var helpfulPercent = asks.length > 0 ? Math.round(asks.filter(function(entry) { return entry.outcome === 'helpful'; }).length / asks.length * 100) + '%' : 'No data';
-    var metrics = [
-      { label: 'Total asks', value: asks.length, icon: '🙋' },
-      { label: 'This week', value: weekCount, icon: '📅' },
-      { label: 'Helpful percentage', value: helpfulPercent, icon: '✨' }
-    ];
+    var entries = rawAsks.map(function(entry, index) { return { entry: entry, index: index }; }).filter(function(item) { return isRecord(item.entry); });
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 7, border: '1px solid rgba(16,185,129,0.50)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', marginBottom: 4 };
-
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#a7f3d0', marginBottom: 4 };
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🙋', 'Ask-for-Help Tracker', 'Log every help request. The act of asking is the skill, separate from whether the help was useful.', '#10b981'),
-
-      hh('section', { 'aria-label': 'Help request statistics', style: { marginBottom: 12 } },
-        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, margin: 0 } },
-          metrics.map(function(metric, index) {
-            return hh('div', { key: 'ats-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.35)', textAlign: 'center' } },
-              hh('span', { 'aria-hidden': 'true', style: { fontSize: 14, display: 'block', marginBottom: 2 } }, metric.icon),
-              hh('dt', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, metric.label),
-              hh('dd', { style: { margin: 0, fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } }, String(metric.value))
-            );
-          })
-        )
-      ),
-
+      tkSectionHeader('🙋', 'Optional Support Request Notes', 'Save personal notes about support requests when that is useful to you.', '#10b981'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'This optional log saves notes in your Personal Toolkit. Saving a note does not send a request or notify a teacher, school, employer, clinician, family member, or the person named. Avoid including private details you do not want stored.'),
+      hh('p', { role: 'status', style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 12px' } }, entries.length + (entries.length === 1 ? ' support note saved. ' : ' support notes saved. '), 'Notes are shown in saved order without scores or rankings.'),
       tkCard('#10b981',
-        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); logAsk(); }, 'aria-labelledby': 'learning-lab-ask-form-heading' },
-          hh('h3', { id: 'learning-lab-ask-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', margin: '0 0 8px' } }, 'Log a help request'),
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); saveNote(); }, 'aria-labelledby': 'learning-lab-ask-form-heading' },
+          hh('h3', { id: 'learning-lab-ask-form-heading', tabIndex: -1, style: { fontSize: 15, fontWeight: 800, color: '#a7f3d0', margin: '0 0 8px' } }, typeof editIndex === 'number' ? 'Edit support note' : 'Add a support note'),
+          hh('p', { id: 'learning-lab-ask-form-help', style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 10px', fontSize: 12 } }, 'All fields are optional, but enter at least one detail before saving.'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 8 } },
             hh('div', null,
-              hh('label', { htmlFor: 'learning-lab-ask-who', style: labelStyle }, 'Who did you ask? (optional)'),
-              hh('input', { id: 'learning-lab-ask-who', type: 'text', value: form.who, maxLength: 240, placeholder: 'e.g., Teacher, tutor, classmate', onChange: function(event) { setForm(Object.assign({}, form, { who: event.target.value })); }, style: fieldStyle })
+              hh('label', { htmlFor: 'learning-lab-ask-who', style: labelStyle }, 'Person or resource (optional)'),
+              hh('input', { id: 'learning-lab-ask-who', type: 'text', value: form.who, maxLength: 240, placeholder: 'For example, teacher, tutor, website', onChange: function(event) { setForm(Object.assign({}, form, { who: event.target.value })); if (detailsError) setDetailsError(''); }, style: fieldStyle })
             ),
             hh('div', null,
-              hh('label', { htmlFor: 'learning-lab-ask-what', style: labelStyle }, 'What did you ask for? (required)'),
-              hh('input', { id: 'learning-lab-ask-what', type: 'text', value: form.what, required: true, maxLength: 500, 'aria-invalid': whatError ? 'true' : undefined, 'aria-describedby': whatError ? 'learning-lab-ask-what-error' : undefined, placeholder: 'Describe the help you requested', onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); if (whatError) setWhatError(''); }, style: fieldStyle }),
-              hh('div', { id: 'learning-lab-ask-what-error', role: 'alert', style: { minHeight: whatError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: whatError ? 4 : 0 } }, whatError)
+              hh('label', { htmlFor: 'learning-lab-ask-what', style: labelStyle }, 'Support requested (optional)'),
+              hh('input', { id: 'learning-lab-ask-what', type: 'text', value: form.what, maxLength: 500, 'aria-invalid': detailsError ? 'true' : undefined, 'aria-describedby': detailsError ? 'learning-lab-ask-details-error' : 'learning-lab-ask-form-help', placeholder: 'Describe the support if you want to', onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); if (detailsError) setDetailsError(''); }, style: fieldStyle })
             )
           ),
+          hh('div', { id: 'learning-lab-ask-details-error', role: 'alert', style: { minHeight: detailsError ? '1.4em' : 0, color: '#fecaca', fontSize: 12, fontWeight: 800, marginBottom: detailsError ? 8 : 0 } }, detailsError),
           hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 10px' } },
-            hh('legend', { style: labelStyle }, 'How did it go?'),
+            hh('legend', { style: labelStyle }, 'Optional reflection on how it went'),
             hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 6 } },
               OUTCOMES.map(function(outcome) {
                 var selected = form.outcome === outcome.id;
-                return hh('label', { key: 'oc-' + outcome.id, htmlFor: 'learning-lab-ask-outcome-' + outcome.id, style: { boxSizing: 'border-box', minHeight: 44, padding: '7px 9px', borderRadius: 7, background: selected ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #e2e8f0)', border: '2px solid ' + (selected ? outcome.color : 'rgba(148,163,184,0.35)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 } },
-                  hh('input', { id: 'learning-lab-ask-outcome-' + outcome.id, type: 'radio', name: 'learning-lab-ask-outcome', value: outcome.id, checked: selected, onChange: function() { setForm(Object.assign({}, form, { outcome: outcome.id })); }, style: { width: 20, height: 20, margin: 0, accentColor: outcome.color, flexShrink: 0 } }),
+                return hh('label', { key: 'oc-' + outcome.id, htmlFor: 'learning-lab-ask-outcome-' + outcome.id, style: { boxSizing: 'border-box', minHeight: 44, padding: '7px 9px', borderRadius: 7, background: selected ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #e2e8f0)', border: '2px solid ' + (selected ? outcome.color : 'rgba(148,163,184,0.35)'), fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7 } },
+                  hh('input', { id: 'learning-lab-ask-outcome-' + outcome.id, type: 'radio', name: 'learning-lab-ask-outcome', value: outcome.id, checked: selected, onChange: function() { setForm(Object.assign({}, form, { outcome: outcome.id })); if (detailsError) setDetailsError(''); }, style: { width: 20, height: 20, margin: 0, accentColor: outcome.color, flexShrink: 0 } }),
                   hh('span', null, hh('span', { 'aria-hidden': 'true' }, outcome.icon + ' '), outcome.label)
                 );
               })
-            )
+            ),
+            form.outcome ? hh('button', { type: 'button', onClick: function() { setForm(Object.assign({}, form, { outcome: '' })); }, 'data-ll-focusable': true, style: { minHeight: 44, marginTop: 6, padding: '8px 12px', borderRadius: 8, border: '1px solid #a7f3d0', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Clear outcome') : null
           ),
-          hh('label', { htmlFor: 'learning-lab-ask-notes', style: labelStyle }, 'Reflection notes (optional)'),
-          hh('textarea', { id: 'learning-lab-ask-notes', value: form.notes, rows: 3, maxLength: 2000, placeholder: 'What surprised you?', onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical', marginBottom: 8 }) }),
-          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Log help request')
+          hh('label', { htmlFor: 'learning-lab-ask-notes', style: labelStyle }, 'Additional notes (optional)'),
+          hh('textarea', { id: 'learning-lab-ask-notes', value: form.notes, rows: 3, maxLength: 2000, placeholder: 'Add context if useful', onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); if (detailsError) setDetailsError(''); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical', marginBottom: 8 }) }),
+          hh('div', { role: 'group', 'aria-label': 'Support note form actions', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, typeof editIndex === 'number' ? 'Update support note' : 'Save support note'),
+            typeof editIndex === 'number' ? hh('button', { type: 'button', onClick: cancelEdit, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel editing') : null
+          )
         )
       ),
-
-      asks.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-ask-history-heading' },
-        hh('h3', { id: 'learning-lab-ask-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Recent help requests'),
-        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
-          asks.slice(0, 15).map(function(entry) {
-            var outcome = OUTCOMES.filter(function(item) { return item.id === entry.outcome; })[0] || OUTCOMES[0];
-            var askedAt = new Date(entry.time);
-            var validDate = Number.isFinite(askedAt.getTime());
-            return hh('li', { key: 'as-' + entry.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + outcome.color } },
-              hh('article', { 'aria-label': (entry.who ? 'Asked ' + entry.who + ': ' : 'Help request: ') + entry.what + '. Outcome: ' + outcome.label + '.' },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
-                  hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                      hh('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, outcome.icon),
-                      hh('span', { style: { fontWeight: 800 } }, outcome.label + '. '),
-                      entry.who ? hh('strong', null, entry.who + ': ') : null,
-                      entry.what
-                    ),
-                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, validDate ? hh('time', { dateTime: askedAt.toISOString() }, askedAt.toLocaleString()) : relDate(entry.date))
-                  ),
-                  hh('button', { type: 'button', 'aria-label': 'Delete help request: ' + entry.what, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
-                ),
-                entry.notes ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', margin: '4px 0 0', fontStyle: 'italic' } }, entry.notes) : null
+      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-ask-history-heading' },
+        hh('h3', { id: 'learning-lab-ask-history-heading', style: { fontSize: 15, fontWeight: 800, color: '#a7f3d0', margin: '0 0 8px' } }, 'All saved support notes'),
+        hh('ul', { 'aria-label': 'All saved support notes', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
+          entries.map(function(item, visibleIndex) {
+            var entry = item.entry; var index = item.index; var outcome = outcomeFor(entry.outcome); var when = formattedDate(entry);
+            var who = textValue(entry.who).trim(); var what = textValue(entry.what).trim(); var notes = textValue(entry.notes).trim();
+            var headingId = 'learning-lab-ask-entry-' + index;
+            return hh('li', { key: 'as-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (outcome ? outcome.color : '#64748b') } },
+              hh('article', { 'aria-labelledby': headingId },
+                hh('h4', { id: headingId, style: { fontSize: 14, color: '#a7f3d0', margin: '0 0 6px' } }, 'Support note ' + (visibleIndex + 1)),
+                who ? hh('p', { style: { margin: '3px 0', color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('strong', null, 'Person or resource: '), who) : null,
+                what ? hh('p', { style: { margin: '3px 0', color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('strong', null, 'Support requested: '), what) : null,
+                outcome ? hh('p', { style: { margin: '3px 0', color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('strong', null, 'Optional outcome: '), outcome.label) : null,
+                notes ? hh('p', { style: { margin: '3px 0', color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('strong', null, 'Additional notes: '), notes) : null,
+                !who && !what && !outcome && !notes ? hh('p', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'No readable details recorded in this legacy note.') : null,
+                hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '6px 0' } }, when.iso ? hh('time', { dateTime: when.iso }, when.text) : when.text),
+                hh('div', { role: 'group', 'aria-label': 'Actions for support note ' + (visibleIndex + 1), style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  hh('button', { id: 'learning-lab-ask-edit-' + index, type: 'button', onClick: function() { startEdit(index); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, background: '#047857', border: '1px solid #a7f3d0', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Edit note'),
+                  hh('button', { type: 'button', 'aria-label': 'Delete support note ' + (visibleIndex + 1), onClick: function() { remove(index); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, background: 'transparent', border: '1px solid #fecaca', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Delete note')
+                )
               )
             );
           })
         )
       ) : null,
-
-      hh('aside', { 'aria-label': 'Why tracking help requests matters', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#6ee7b7' } }, 'Why log this: '),
-        'Asking for help is an academic skill. Logging requests can normalize the behavior and reveal who feels easy or difficult to approach, so you can plan the support you need.'
+      hh('aside', { 'aria-label': 'Possible uses for support request notes', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('strong', { style: { color: '#a7f3d0' } }, 'Possible use: '),
+        'Record context you may want to remember before choosing your next step. A saved note is not evidence that support was requested, received, effective, or required.'
       )
     );
   }
 
-  // ── KK. PERSONAL MINDFULNESS PRACTICE (Wave 8) ──
-  // Six guided mindfulness practices with timers and instructions.
-  // Body scan, mindful breathing, RAIN, open awareness, walking
-  // meditation, and mindful eating. Each includes research context.
   function PersonalMindfulness(props) {
     if (!R) return null;
     var data = props.data || { sessions: [] };
@@ -20447,8 +20482,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: 'instant', cta: 'Search now' },
       { id: 'mytkCheats',   icon: '📋', label: 'Personal Reference Sheet Builder',  color: '#fbbf24', desc: 'Create and edit personal reference sheets',
         stat: ((data.mytkCheats || {}).sheets || []).length + ' sheets', cta: 'Build a sheet' },
-      { id: 'mytkAsk',      icon: '🙋', label: 'Ask-for-Help Tracker', color: '#10b981', desc: 'Log every help-ask. Destigmatize the skill.',
-        stat: ((data.mytkAsk || {}).asks || []).length + ' asks', cta: 'Log an ask' },
+      { id: 'mytkAsk',      icon: '🙋', label: 'Optional Support Request Notes', color: '#10b981', desc: 'Save personal notes about support requests',
+        stat: (Array.isArray((data.mytkAsk || {}).asks) ? data.mytkAsk.asks.length : 0) + ' notes', cta: 'Open notes' },
       { id: 'mytkMind',     icon: '🧘', label: 'Mindfulness',          color: '#a855f7', desc: '6 guided practices (MBSR + RAIN)',
         stat: ((data.mytkMind || {}).sessions || []).length + ' sessions', cta: 'Practice now' },
       { id: 'mytkAnxiety',  icon: '🧰', label: 'Anxiety Toolkit',      color: '#ef4444', desc: '6 quick-access tools for anxious moments',
@@ -20768,7 +20803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Optional attention-shift notes with neutral categories and editable history.') },
               { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Submit-based local text search across six named personal Learning Lab tools.') },
               { id: 'mytkCheats', icon: '📋', label: __alloT('stem.learning_lab.cheat_sheet_builder', 'Personal Reference Sheet Builder'),  desc: __alloT('stem.learning_lab.build_1_page_cheat_sheets_per_topic_bu', 'Create and edit personal reference sheets for topics you choose.') },
-              { id: 'mytkAsk',    icon: '🙋', label: __alloT('stem.learning_lab.ask_for_help_tracker', 'Ask-for-Help Tracker'), desc: __alloT('stem.learning_lab.log_every_help_ask_normalize_the_most_', 'Log every help-ask. Normalize the most underused academic skill.') },
+              { id: 'mytkAsk',    icon: '🙋', label: __alloT('stem.learning_lab.ask_for_help_tracker', 'Optional Support Request Notes'), desc: __alloT('stem.learning_lab.log_every_help_ask_normalize_the_most_', 'Save and edit personal notes about support requests when useful.') },
               { id: 'mytkMind',   icon: '🧘', label: __alloT('stem.learning_lab.mindfulness', 'Mindfulness'),          desc: __alloT('stem.learning_lab.6_guided_practices_body_scan_breath_ra', '6 guided practices (body scan, breath, RAIN, walking, eating, open). MBSR-aligned.') },
               { id: 'mytkAnxiety',icon: '🧰', label: __alloT('stem.learning_lab.anxiety_toolkit', 'Anxiety Toolkit'),      desc: __alloT('stem.learning_lab.6_quick_access_tools_when_anxiety_hits', '6 quick-access tools when anxiety hits: naming, slow-exhale breath, cold water, defusion, grounding, evidence-check.') },
               { id: 'mytkDec',    icon: '⚖️', label: __alloT('stem.learning_lab.decision_maker', 'Decision Maker'),       desc: __alloT('stem.learning_lab.structured_choice_tool_options_weighte', 'Structured choice tool: options × weighted criteria × scores → clarity for big decisions.') },
