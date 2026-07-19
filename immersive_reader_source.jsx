@@ -1013,6 +1013,22 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 // (Compatible with Gemini TTS, which returns audio-only with no timepoint
 // metadata. See plan.md for rationale.)
 // ============================================================================
+// Karaoke playback events land in the SAME window.__alloTtsTrace ring buffer
+// the TTS module writes, so one "Copy diagnostics" snapshot shows the whole
+// chain: overlay intent → bridge resolution → provider routing → outcome.
+const KARAOKE_TRACE_MAX = 150;
+const karaokeTrace = (event, detail) => {
+    try {
+        const buffer = window.__alloTtsTrace || (window.__alloTtsTrace = []);
+        buffer.push({ at: Date.now(), event: event, detail: detail || null });
+        while (buffer.length > KARAOKE_TRACE_MAX) buffer.shift();
+    } catch (e) {}
+};
+// A resolution that never settles (hung queue, stalled plugin load, dead
+// provider) must not spin the overlay forever OR poison the warm cache so
+// every later Play re-joins the same hang. After this window the player
+// falls back to the device voice and the next Play starts FRESH.
+const KARAOKE_RESOLVE_WATCHDOG_MS = 45000;
 const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
     const { t } = useContext(LanguageContext);
     const dialogRef = useOverlayDialogFocus(isOpen);
@@ -1140,6 +1156,65 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         for (let i = 0; i < idx; i++) { if (sentences[i] === target) occurrence += 1; }
         return occurrence;
     }, [sentences]);
+    // "Copy diagnostics": snapshot the shared TTS trace + overlay state as
+    // JSON on the clipboard, so a stuck/silent read-aloud can be reported
+    // (and diagnosed) without opening DevTools. Declared AFTER every state it
+    // lists as a dep — a deps array reads its values at render time, so a
+    // later-declared useState would be a TDZ render crash.
+    const [diagnosticsCopied, setDiagnosticsCopied] = useState(false);
+    const copyDiagnostics = useCallback(async () => {
+        let payload;
+        try {
+            payload = JSON.stringify({
+                at: new Date().toISOString(),
+                userAgent: typeof navigator !== 'undefined' ? String(navigator.userAgent || '').substring(0, 120) : '',
+                overlay: {
+                    sentenceIdx,
+                    sentenceCount: sentences.length,
+                    isPlaying,
+                    audioLoadPhase,
+                    fallbackNotice: playbackFallbackNotice || null,
+                    captureOn,
+                    captureState: captureSaveState,
+                    currentAudioReadyIdx,
+                },
+                flags: {
+                    geminiQuotaFailed: !!window.__ttsGeminiQuotaFailed,
+                    geminiAuthFailed: !!window.__ttsGeminiAuthFailed,
+                    sharedResolver: typeof window.__alloResolveReadAloudAudio === 'function',
+                    serviceModule: !!(window.AlloModules && window.AlloModules.ReadAloudAudioServiceModule),
+                },
+                lastRoute: window.__ttsLastRoute || null,
+                trace: (window.__alloTtsTrace || []).slice(-120),
+            }, null, 2);
+        } catch (e) {
+            payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e);
+        }
+        let copied = false;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(payload);
+                copied = true;
+            }
+        } catch (e) {}
+        if (!copied) {
+            try {
+                const scratch = document.createElement('textarea');
+                scratch.value = payload;
+                scratch.setAttribute('readonly', '');
+                scratch.style.position = 'fixed';
+                scratch.style.opacity = '0';
+                document.body.appendChild(scratch);
+                scratch.select();
+                copied = document.execCommand('copy');
+                scratch.remove();
+            } catch (e) {}
+        }
+        if (copied) {
+            setDiagnosticsCopied(true);
+            setTimeout(() => setDiagnosticsCopied(false), 2000);
+        }
+    }, [sentenceIdx, sentences, isPlaying, audioLoadPhase, playbackFallbackNotice, captureOn, captureSaveState, currentAudioReadyIdx]);
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
@@ -1191,12 +1266,14 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                 captureRetryRef.current.set(key, { sentence: sentenceText, url, occurrence: occ });
                 if (!captureIssueRef.current.message) captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
             }
+            karaokeTrace('karaoke:capture-result', { key, saved: !!(saved || stored) });
             refreshCaptureSaveState();
             return !!(saved || stored);
         }).catch(() => {
             capturePendingRef.current.delete(key);
             captureRetryRef.current.set(key, { sentence: sentenceText, url, occurrence: occ });
             captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
+            karaokeTrace('karaoke:capture-error', { key });
             refreshCaptureSaveState();
             return false;
         });
@@ -1334,13 +1411,27 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             }
             return null;
         }).finally(() => {
+            if (warmWatchdog) clearTimeout(warmWatchdog);
             if (!cancelled) finishAudioLoad(warmLoadOwner);
         });
+        // Watchdog: a warm that never settles must not spin the "Preparing
+        // first sentence" pill forever OR stay joinable — clear it so the
+        // pill closes and the next Play/reopen issues a FRESH request. If
+        // the request settles later anyway, it still lands in the urlCache.
+        const warmWatchdog = setTimeout(() => {
+            const entry = warmPromisesRef.current.get(0);
+            if (entry && entry.promise === request) {
+                warmedRef.current.delete(0);
+                warmPromisesRef.current.delete(0);
+            }
+            karaokeTrace('karaoke:open-warm-timeout', { afterMs: KARAOKE_RESOLVE_WATCHDOG_MS });
+            if (!cancelled) finishAudioLoad(warmLoadOwner);
+        }, KARAOKE_RESOLVE_WATCHDOG_MS);
         // Warm entries record their queue priority: playback may JOIN an
         // interactive warm (same budget it would request itself) but must
         // REPLACE a background one (see playSentence).
         warmPromisesRef.current.set(0, { promise: request, priority: 'interactive' });
-        return () => { cancelled = true; finishAudioLoad(warmLoadOwner); };
+        return () => { cancelled = true; clearTimeout(warmWatchdog); finishAudioLoad(warmLoadOwner); };
     }, [isOpen, isPlaying, isGeneratingAudio, sentences, getAudioUrl, beginAudioLoad, finishAudioLoad]);
 
     // ── Low-priority next-sentence pre-warm ─────────────────────────────
@@ -1470,16 +1561,20 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         // Try parent-provided audio (Gemini)
         let url = null;
         let audioLoadOwner = null;
+        let resolveTimedOut = false;
         const resolver = getAudioUrlRef.current;
         if (typeof resolver === 'function') {
             audioLoadOwner = beginAudioLoad('generating');
             let requestController = null;
             try {
                 const warmEntry = warmPromisesRef.current.get(idx);
+                let resolution;
+                const resolveStartedAt = Date.now();
                 if (warmEntry && warmEntry.priority !== 'background') {
                     // An interactive warm (overlay-open) carries the same
                     // priority/retry budget playback would request — join it.
-                    url = await warmEntry.promise;
+                    karaokeTrace('karaoke:play', { idx, mode: 'join-warm' });
+                    resolution = warmEntry.promise;
                 } else {
                     // No warm, or only a BACKGROUND look-ahead. A background
                     // warm must not shape ACTIVE playback: it sits in the
@@ -1488,9 +1583,10 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     // interactive request; the look-ahead settles harmlessly
                     // into the shared urlCache.
                     if (warmEntry) warmPromisesRef.current.delete(idx);
+                    karaokeTrace('karaoke:play', { idx, mode: warmEntry ? 'replace-background-warm' : 'fresh' });
                     requestController = typeof AbortController !== 'undefined' ? new AbortController() : null;
                     audioRequestAbortRef.current = requestController;
-                    url = await resolver(sentenceText, {
+                    resolution = resolver(sentenceText, {
                         priority: 'interactive',
                         maxRetries: 1,
                         signal: requestController ? requestController.signal : null,
@@ -1498,8 +1594,33 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                         occurrence: occurrenceForIndex(idx)
                     });
                 }
+                // Watchdog: the resolution chain has awaits that can hang
+                // (serialized cloud queue, plugin loads). Give up after the
+                // window, fall back to the device voice, and clear the warm
+                // bookkeeping so the NEXT Play issues a fresh request rather
+                // than re-joining the hung promise.
+                let watchdogTimer = null;
+                url = await Promise.race([
+                    Promise.resolve(resolution),
+                    new Promise((resolveLater) => {
+                        watchdogTimer = setTimeout(() => {
+                            resolveTimedOut = true;
+                            resolveLater(null);
+                        }, KARAOKE_RESOLVE_WATCHDOG_MS);
+                    })
+                ]);
+                if (watchdogTimer) clearTimeout(watchdogTimer);
+                if (resolveTimedOut && !url) {
+                    warmedRef.current.delete(idx);
+                    warmPromisesRef.current.delete(idx);
+                    karaokeTrace('karaoke:resolve-timeout', { idx, afterMs: Date.now() - resolveStartedAt });
+                    console.warn('[Karaoke] Audio resolution timed out after ' + Math.round(KARAOKE_RESOLVE_WATCHDOG_MS / 1000) + 's; using the device voice for this sentence.');
+                } else {
+                    karaokeTrace('karaoke:resolve-settled', { idx, ok: !!url, ms: Date.now() - resolveStartedAt });
+                }
             } catch (e) {
                 url = null;
+                karaokeTrace('karaoke:resolve-error', { idx, error: String(e?.message || e).substring(0, 140) });
                 console.warn('[Karaoke] Generated audio request failed; using browser fallback.', e?.message || e);
             } finally {
                 if (audioRequestAbortRef.current === requestController) audioRequestAbortRef.current = null;
@@ -1561,6 +1682,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     try { audio.pause(); } catch (_) {}
                     return;
                 }
+                karaokeTrace('karaoke:audio-playing', { idx });
                 // Let playback win the main-thread/startup race; capture snapshots
                 // immediately afterward and performs conversion in the background.
                 scheduleCaptureForStorage(sentenceText, url, occurrenceForIndex(idx));
@@ -1571,6 +1693,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     return;
                 }
                 transitionAudioLoad(audioLoadOwner, 'starting-device');
+                karaokeTrace('karaoke:audio-start-fail', { idx, error: String(e?.message || e).substring(0, 140) });
                 console.warn('[Karaoke] Generated audio could not start; using browser speech fallback.', e?.message || e);
                 setPlaybackFallbackNotice(captureOn
                     ? 'Using this device\'s voice. Browser fallback audio cannot be saved; retry when generated audio is available.'
@@ -1584,9 +1707,11 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         if (typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined') {
             if (audioLoadOwner == null) audioLoadOwner = beginAudioLoad('starting-device');
             else transitionAudioLoad(audioLoadOwner, 'starting-device');
-            setPlaybackFallbackNotice(captureOn
+            karaokeTrace('karaoke:device-fallback', { idx, cause: resolveTimedOut ? 'resolve-timeout' : 'no-generated-url' });
+            setPlaybackFallbackNotice((captureOn
                 ? 'Using this device\'s voice. Browser fallback audio cannot be saved; retry when generated audio is available.'
-                : 'Using this device\'s voice because generated audio is unavailable.');
+                : 'Using this device\'s voice because generated audio is unavailable.')
+                + (resolveTimedOut ? ' Audio generation timed out — press Play to retry.' : ''));
             try {
                 const u = new SpeechSynthesisUtterance(sentenceText);
                 u.onstart = () => finishAudioLoad(audioLoadOwner);
@@ -2018,6 +2143,12 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     <button type="button" onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
                         className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label={t("a11y.restart_first_sentence")}>
                         ↺ Restart
+                    </button>
+                    <button type="button" onClick={copyDiagnostics}
+                        className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }}
+                        aria-label="Copy read-aloud diagnostics to clipboard"
+                        title="Copies a technical trace of the last read-aloud attempts — paste it into a bug report if audio gets stuck.">
+                        {diagnosticsCopied ? '✓ Copied' : '🩺 Diagnostics'}
                     </button>
                 </div>
             </div>

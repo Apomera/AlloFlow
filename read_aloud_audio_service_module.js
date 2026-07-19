@@ -661,6 +661,19 @@ const readAloudProvenanceForUrl = (url) => (
     url && typeof url === 'string' ? readAloudUrlProvenance.get(url) || null : null
 );
 
+// Diagnostics: bridge resolution events land in the same window.__alloTtsTrace
+// ring the TTS module and karaoke overlay write, so one snapshot shows where a
+// stuck read-aloud actually stalled (overlay → bridge → provider).
+const READ_ALOUD_TRACE_MAX = 150;
+const readAloudTrace = (event, detail) => {
+    try {
+        if (typeof window === 'undefined') return;
+        const buffer = window.__alloTtsTrace || (window.__alloTtsTrace = []);
+        buffer.push({ at: Date.now(), event: event, detail: detail || null });
+        while (buffer.length > READ_ALOUD_TRACE_MAX) buffer.shift();
+    } catch (_) {}
+};
+
 // Compatibility facade for the existing host globals. It intentionally owns
 // no window globals itself: hosts opt in by constructing it and delegating
 // their release-cycle shims to the returned methods.
@@ -923,8 +936,15 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                     : String(segment.segmentId),
             });
         });
+        const resolveStartedAt = Date.now();
+        readAloudTrace('bridge:resolve-start', {
+            segmentId: segment.segmentId,
+            reason: options.reason || 'resolve',
+            priority: options.priority || null,
+            occurrence: Number.isInteger(options.occurrence) ? options.occurrence : null,
+        });
         try {
-            return await binding.controller.resolve(segment, {
+            const resolvedUrl = await binding.controller.resolve(segment, {
                 signal: options.signal,
                 reason: options.reason || 'resolve',
                 priority: options.priority,
@@ -932,7 +952,18 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                 profile: options.profile,
                 force: options.force === true,
             });
-        } catch (_) {
+            readAloudTrace('bridge:resolve-settled', {
+                segmentId: segment.segmentId,
+                ok: !!resolvedUrl,
+                ms: Date.now() - resolveStartedAt,
+            });
+            return resolvedUrl;
+        } catch (error) {
+            readAloudTrace('bridge:resolve-error', {
+                segmentId: segment.segmentId,
+                ms: Date.now() - resolveStartedAt,
+                error: String((error && error.message) || error).substring(0, 140),
+            });
             return null;
         } finally {
             unsubscribe();

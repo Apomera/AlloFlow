@@ -328,6 +328,55 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(audioInstances[1].src).toBe('blob:Second sentence.');
   });
 
+  it('times out a hung resolution, clears the spinner, and recovers with a fresh request', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    // The FIRST request never settles — a wedged cloud queue or stalled
+    // plugin load. Without the watchdog this spun the overlay forever, and
+    // every later Play re-joined the same hung warm promise.
+    let resolverCalls = 0;
+    const getAudioUrl = vi.fn(() => {
+      resolverCalls += 1;
+      return resolverCalls === 1 ? new Promise(() => {}) : Promise.resolve('blob:recovered');
+    });
+
+    renderKaraoke(karaokeProps({ text: 'Only sentence here.', getAudioUrl, captureOn: false }));
+    await act(async () => { await Promise.resolve(); });
+    expect(getAudioUrl).toHaveBeenCalledTimes(1); // overlay-open warm (hung)
+
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(host.querySelector('#karaoke-audio-loading-status')).toBeTruthy();
+
+    // Cross the watchdog window (hung promise still pending), then let the
+    // no-TTS tail stop playback and the overlay re-warm with a FRESH request.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(45100);
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getAudioUrl.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(host.querySelector('#karaoke-audio-loading-status')).toBeNull();
+
+    // The fresh warm resolved — pressing Play now ACTUALLY plays audio.
+    await act(async () => {
+      host.querySelector('button[aria-label="Play"]').click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(audioInstances[0].src).toBe('blob:recovered');
+  });
+
   it('uses the canonical leveled-text sentence list when supplied', async () => {
     audioInstances = [];
     global.Audio = window.Audio = FakeAudio;

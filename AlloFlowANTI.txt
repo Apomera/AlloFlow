@@ -8489,7 +8489,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=0ff9bfb00');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=0ff9bfb00');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=0ff9bfb00');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=0ff9bfb00');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=0e36d592');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6d41dc65');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=0ff9bfb00');
@@ -8631,7 +8631,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=6132d5c6');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=15874424');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=0ff9bfb00');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=0ff9bfb00');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -8649,7 +8649,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=0ff9bfb00');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=0ff9bfb00');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=509ebe4a');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83');
@@ -8750,6 +8750,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_graphcalc.js',
         'stem_lab/stem_tool_algebracas.js',
         'stem_lab/stem_tool_circuit.js',
+        'stem_lab/stem_tool_magnetism.js',
         'stem_lab/stem_tool_climateExplorer.js',
         'stem_lab/stem_tool_renewables.js',
         'stem_lab/stem_tool_pets.js',
