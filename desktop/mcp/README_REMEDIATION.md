@@ -108,8 +108,12 @@ The Canvas app never needs this — only this connector does.
 
 Remediate options (same on all three remediate tools): `output_dir`, `target_score` (default
 95), `fix_passes` (default 2), `polish_passes` (default 0), `tagged_pdf` (default true),
-`auto_continue` (default false), `auto_continue_rounds` (default 3, max 5), `ocr_language`
-(Tesseract code for scanned docs, e.g. `spa`; omit for auto-detect).
+`auto_continue` (default false), `auto_continue_rounds` (default 3, max 5), `validate_ua`
+(default false — also run the keyless ISO 14289-1 veraPDF check on the tagged output and put
+the verdict in the report; parity with the app's auto-veraPDF), `ocr_language` (Tesseract code
+for scanned docs, e.g. `spa`; omit for auto-detect). Batch only: `skip_existing` (default
+true) skips files whose `-remediation-report.json` already exists in the output folder — an
+interrupted batch is resumable without re-spending quota on finished files.
 
 **Auto-continue parity (#6-full):** with `auto_continue: true` the connector runs the SAME
 improvement loop the app runs after the primary pass — axe violations go to the deterministic

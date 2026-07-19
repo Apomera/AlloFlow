@@ -56,7 +56,9 @@ const VERAPDF_URL_OVERRIDE = process.env.ALLOFLOW_MCP_VERAPDF_URL || '';
 
 const DEFAULT_MODEL = process.env.ALLOFLOW_MCP_GEMINI_MODEL || 'gemini-3-flash-preview';
 const FALLBACK_MODEL = process.env.ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash-lite';
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+// Lazy + env-overridable so tests can point the transport at a scripted loopback model
+// (ALLOFLOW_MCP_GEMINI_BASE) even after this module is loaded.
+function geminiBase() { return process.env.ALLOFLOW_MCP_GEMINI_BASE || 'https://generativelanguage.googleapis.com/v1beta/models'; }
 
 function defaultLog(msg) { process.stderr.write('[alloflow-remediation] ' + msg + '\n'); }
 
@@ -162,7 +164,7 @@ function classifyHttpFailure(status, bodyText) {
 }
 
 async function geminiGenerate({ apiKey, model, parts, log }) {
-  const url = GEMINI_BASE + '/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
+  const url = geminiBase() + '/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
   let res;
   try {
     res = await fetch(url, {
@@ -416,8 +418,12 @@ function createDriver(options) {
         const roundLog = [];
         if (wantAutoContinue && cur && typeof cur.accessibleHtml === 'string') {
           const isComplete = (r) => r.verificationState === 'complete' && r.afterScoreVerified === true && !r.requiresManualReview;
-          let curDet = (typeof cur._detScore === 'number') ? cur._detScore
-            : ((typeof cur.axeScore === 'number') ? cur.axeScore : null);
+          // Det baseline starts ONLY from a reducer-produced _detScore (min of axe+EA). The
+          // primary fixAndVerifyPdf result never carries one, and falling back to its axe-only
+          // score compared apples to oranges: EA < axe made EVERY first round read as a
+          // regression (caught by the scripted-model golden). Round 1 is still guarded by the
+          // more-issues check and stagnation; det-vs-det starts once a round has merged.
+          let curDet = (typeof cur._detScore === 'number') ? cur._detScore : null;
           let stagnant = 0;
           for (let round = 0; round < autoContinueRounds; round++) {
             if ((cur.afterScore || 0) >= targetScore && isComplete(cur)) break;

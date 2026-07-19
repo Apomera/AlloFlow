@@ -233,8 +233,9 @@ function validateRemediateOptions(args) {
   const polishPasses = optionalBoundedNumber(args, 'polish_passes', 0, 3);
   if (args.tagged_pdf !== undefined && typeof args.tagged_pdf !== 'boolean') throw invalidParams('arguments.tagged_pdf must be a boolean');
   if (args.auto_continue !== undefined && typeof args.auto_continue !== 'boolean') throw invalidParams('arguments.auto_continue must be a boolean');
+  if (args.validate_ua !== undefined && typeof args.validate_ua !== 'boolean') throw invalidParams('arguments.validate_ua must be a boolean');
   const autoContinueRounds = optionalBoundedNumber(args, 'auto_continue_rounds', 1, 5);
-  return { targetScore, fixPasses, polishPasses, taggedPdf: args.tagged_pdf !== false, autoContinue: args.auto_continue === true, autoContinueRounds, ocrLanguage: optionalOcrLanguage(args) };
+  return { targetScore, fixPasses, polishPasses, taggedPdf: args.tagged_pdf !== false, autoContinue: args.auto_continue === true, autoContinueRounds, validateUa: args.validate_ua === true, ocrLanguage: optionalOcrLanguage(args) };
 }
 
 function resolveOutputDir(args, filePath) {
@@ -257,9 +258,21 @@ async function remediateOneFile(filePath, outDir, opts, onLog) {
     files.taggedPdf = claimOutputPath(outDir, stem + '-tagged.pdf');
     fs.writeFileSync(files.taggedPdf, Buffer.from(out.taggedPdfB64, 'base64'));
   }
+  // validate_ua: independent ISO 14289-1 check of the just-written tagged bytes (keyless,
+  // ~1 min incl. JVM boot). Parity with the app's auto-veraPDF; verdict rides the report.
+  let pdfUa;
+  if (opts.validateUa && files.taggedPdf) {
+    try {
+      const v = await getDriver().validatePdfUa({ filePath: files.taggedPdf, onLog });
+      pdfUa = { standard: 'PDF/UA-1 (ISO 14289-1)', compliant: !!(v && v.compliant), failedChecks: (v && v.failedChecks) || 0, failedRules: ((v && v.failedRules) || []).slice(0, 100) };
+    } catch (e) { pdfUa = { error: (e && e.message) || String(e) }; }
+  } else if (opts.validateUa) {
+    pdfUa = { skipped: out.taggedPdfB64 ? 'tagged PDF not written' : 'no tagged PDF (office input or tagged_pdf: false)' };
+  }
   const summary = {
     input: filePath,
     files,
+    pdfUa,
     verdict: out.verdict,
     beforeScore: out.beforeScore,
     afterScore: out.afterScore,
@@ -334,6 +347,7 @@ const TOOLS = [
       tagged_pdf: { type: 'boolean', description: 'Also build the tagged PDF export (default true)' },
       auto_continue: { type: 'boolean', description: "Run the app's auto-continue improvement loop after the primary pass: extra fix rounds merged through the same canonical reducer the app uses, until the target score + complete verification or the rounds are spent (default false; adds time and Gemini quota)" },
       auto_continue_rounds: { type: 'number', minimum: 1, maximum: 5, description: 'Max auto-continue rounds (default 3)' },
+      validate_ua: { type: 'boolean', description: 'Also run the independent keyless PDF/UA-1 (ISO 14289-1) veraPDF check on the tagged output and include its verdict in the report (default false; ~1 min extra)' },
       ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
     };
     const JOB_ID_SCHEMA = { type: 'object', required: ['job_id'], properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
@@ -367,7 +381,10 @@ const TOOLS = [
         description: 'Start a BACKGROUND JOB that remediates every .pdf/.docx/.pptx in a folder (non-recursive, up to 60 files), one at a time, continuing past per-file failures. Returns a job_id immediately; poll remediation_job_status for per-file progress and fetch remediation_job_result for the per-file summaries. Same outputs and options as pdf_remediate, applied to each file.',
         inputSchema: {
           type: 'object', required: ['dir_path'],
-          properties: Object.assign({ dir_path: { type: 'string', description: 'Folder containing .pdf files (searched non-recursively)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({
+            dir_path: { type: 'string', description: 'Folder containing .pdf/.docx/.pptx files (searched non-recursively)' },
+            skip_existing: { type: 'boolean', description: 'Skip files whose -remediation-report.json already exists in the output folder — makes an interrupted batch resumable without re-spending quota (default true)' },
+          }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Start a folder batch job', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
@@ -471,7 +488,7 @@ const TOOL_HANDLERS = {
   },
 
   async pdf_remediate(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -480,7 +497,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_start(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -491,7 +508,9 @@ const TOOL_HANDLERS = {
   },
 
   pdf_batch_remediate_start(args) {
-    assertAllowedKeys(args, ['dir_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['dir_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
+    if (args.skip_existing !== undefined && typeof args.skip_existing !== 'boolean') throw invalidParams('arguments.skip_existing must be a boolean');
+    const skipExisting = args.skip_existing !== false;
     if (typeof args.dir_path !== 'string' || !args.dir_path.trim()) throw invalidParams('arguments.dir_path is required');
     const dir = path.resolve(args.dir_path);
     let entries;
@@ -512,6 +531,17 @@ const TOOL_HANDLERS = {
       for (let i = 0; i < pdfs.length; i++) {
         if (j.cancelRequested) { jobLog(j, 'batch cancelled at file ' + (i + 1) + '/' + pdfs.length); break; }
         const f = pdfs[i];
+        // Resumability (default ON): a file whose report already sits in outDir was finished by
+        // a previous batch run — skip it instead of re-spending its quota. skip_existing: false
+        // forces re-remediation (fresh outputs get collision-suffixed names, nothing overwrites).
+        if (skipExisting) {
+          const _stem = path.basename(f).replace(/\.(pdf|docx|pptx)$/i, '');
+          if (fs.existsSync(path.join(outDir, _stem + '-remediation-report.json'))) {
+            perFile.push({ file: f, ok: true, skipped: 'report-exists' });
+            jobLog(j, 'file ' + (i + 1) + '/' + pdfs.length + ': ' + path.basename(f) + ' SKIPPED (report exists — resumed batch)');
+            continue;
+          }
+        }
         jobLog(j, 'file ' + (i + 1) + '/' + pdfs.length + ': ' + path.basename(f));
         try {
           // Per-file validation (size/header) at run time — one bad file must not sink the batch.
