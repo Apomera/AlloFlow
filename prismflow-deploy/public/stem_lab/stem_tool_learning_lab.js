@@ -8097,79 +8097,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // self-discovery, goal-setting, growth.
   function PersonalReflectionPrompts(props) {
     if (!R) return null;
-    var data = props.data || { responses: [] };
+    var data = props.data || {};
     var setData = props.setData;
-    var ps = R.useState(null);                var picked = ps[0];   var setPicked = ps[1];
-    var rs = R.useState('');                  var response = rs[0]; var setResponse = rs[1];
-    var vs = R.useState('library');           var view = vs[0];     var setView = vs[1]; // library | answer | history
-    var ves = R.useState('');                 var responseError = ves[0]; var setResponseError = ves[1];
+    var ps = R.useState(null); var picked = ps[0]; var setPicked = ps[1];
+    var rs = R.useState(''); var response = rs[0]; var setResponse = rs[1];
+    var vs = R.useState('library'); var view = vs[0]; var setView = vs[1];
+    var es = R.useState(''); var responseError = es[0]; var setResponseError = es[1];
+    var fts = R.useState(null); var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var CATEGORIES = [
-      { id: 'metacog',   label: 'Metacognition',         color: '#9333ea', icon: '🧠' },
-      { id: 'identity',  label: 'Identity + values',     color: '#ec4899', icon: '🪞' },
-      { id: 'growth',    label: 'Growth + struggle',     color: '#10b981', icon: '🌱' },
-      { id: 'connection',label: 'Connection + support',  color: '#fbbf24', icon: '🤝' }
+      { id: 'metacog', label: 'Learning reflection', color: '#d8b4fe', icon: '\ud83e\udde0' },
+      { id: 'identity', label: 'Identity and values', color: '#f9a8d4', icon: '\ud83e\ude9e' },
+      { id: 'growth', label: 'Change and challenge', color: '#6ee7b7', icon: '\ud83c\udf31' },
+      { id: 'connection', label: 'Connection and support', color: '#fde68a', icon: '\ud83e\udd1d' }
     ];
-
     var PROMPTS = [
-      { id: 'mc1', cat: 'metacog', text: 'What is one thing I learned this week that I didn\'t know before?' },
-      { id: 'mc2', cat: 'metacog', text: 'When did I notice myself fully focused? What helped?' },
-      { id: 'mc3', cat: 'metacog', text: 'What strategy did I try that didn\'t work? Why?' },
-      { id: 'mc4', cat: 'metacog', text: 'If I taught this material to a 5th grader, what would I say first?' },
+      { id: 'mc1', cat: 'metacog', text: 'What is one thing I learned recently that I did not know before?' },
+      { id: 'mc2', cat: 'metacog', text: 'When did focusing feel easier, and what might have helped?' },
+      { id: 'mc3', cat: 'metacog', text: 'What strategy did I try, and what did I notice about it?' },
+      { id: 'mc4', cat: 'metacog', text: 'How might I explain one part of this material in plain language?' },
       { id: 'mc5', cat: 'metacog', text: 'What question about this topic do I still have?' },
-      { id: 'mc6', cat: 'metacog', text: 'How is what I\'m studying now connected to something I already know?' },
-      { id: 'mc7', cat: 'metacog', text: 'When did I feel overwhelmed today? What was the first sign?' },
-      { id: 'mc8', cat: 'metacog', text: 'What\'s one thing I did today that took more effort than I expected? Why?' },
-
-      { id: 'id1', cat: 'identity', text: 'When am I most myself?' },
-      { id: 'id2', cat: 'identity', text: 'What is something true about me that most people don\'t see?' },
-      { id: 'id3', cat: 'identity', text: 'What is one thing I\'m glad I\'m different about?' },
-      { id: 'id4', cat: 'identity', text: 'What\'s a value I hold that I rarely talk about?' },
-      { id: 'id5', cat: 'identity', text: 'What would 10-year-old me think of who I am now?' },
-      { id: 'id6', cat: 'identity', text: 'What\'s a label others have put on me that doesn\'t fit?' },
-      { id: 'id7', cat: 'identity', text: 'What\'s something I do that surprises people?' },
-      { id: 'id8', cat: 'identity', text: 'When do I feel most useful?' },
-
-      { id: 'gr1', cat: 'growth', text: 'What\'s something hard I did this week?' },
-      { id: 'gr2', cat: 'growth', text: 'What\'s something I tried that didn\'t go well — and what did I learn?' },
-      { id: 'gr3', cat: 'growth', text: 'What\'s a small thing I\'ve gotten better at in the last 6 months?' },
-      { id: 'gr4', cat: 'growth', text: 'What\'s a fear I\'ve outgrown?' },
-      { id: 'gr5', cat: 'growth', text: 'What advice would I give past-me from 1 year ago?' },
-      { id: 'gr6', cat: 'growth', text: 'What\'s a mistake I made that I\'m glad about, in hindsight?' },
-      { id: 'gr7', cat: 'growth', text: 'When I imagine the version of me I want to be in 5 years — what is that person doing?' },
-
-      { id: 'co1', cat: 'connection', text: 'Who is one person who genuinely sees me?' },
-      { id: 'co2', cat: 'connection', text: 'When was the last time I asked for help? How did it go?' },
-      { id: 'co3', cat: 'connection', text: 'Who in my life makes me feel calmer when they\'re around?' },
-      { id: 'co4', cat: 'connection', text: 'What\'s a friendship I want to invest more in?' },
-      { id: 'co5', cat: 'connection', text: 'When did someone do something small that mattered to me?' },
-      { id: 'co6', cat: 'connection', text: 'What kind of support do I need that I haven\'t asked for?' },
-      { id: 'co7', cat: 'connection', text: 'Who could I check in on this week?' }
+      { id: 'mc6', cat: 'metacog', text: 'How might this connect to something I already know?' },
+      { id: 'mc7', cat: 'metacog', text: 'If I want to reflect on a difficult learning moment, what did I notice first?' },
+      { id: 'mc8', cat: 'metacog', text: 'What took more or less effort than I expected?' },
+      { id: 'id1', cat: 'identity', text: 'When do I feel most like myself?' },
+      { id: 'id2', cat: 'identity', text: 'What strength, interest, or perspective do I want to recognize?' },
+      { id: 'id3', cat: 'identity', text: 'What is one difference or perspective I value about myself?' },
+      { id: 'id4', cat: 'identity', text: 'What value matters to me in this context?' },
+      { id: 'id5', cat: 'identity', text: 'What is something I want to remember about myself right now?' },
+      { id: 'id6', cat: 'identity', text: 'Is there a word or description I choose for myself, if any?' },
+      { id: 'id7', cat: 'identity', text: 'What is something I enjoy doing in my own way?' },
+      { id: 'id8', cat: 'identity', text: 'When do I feel that my contribution matters?' },
+      { id: 'gr1', cat: 'growth', text: 'What is something challenging I chose to work on?' },
+      { id: 'gr2', cat: 'growth', text: 'What did I try, and what might I change next time?' },
+      { id: 'gr3', cat: 'growth', text: 'What is a small change or skill I have noticed over time?' },
+      { id: 'gr4', cat: 'growth', text: 'What feels more manageable now than it once did?' },
+      { id: 'gr5', cat: 'growth', text: 'What kind advice might I offer an earlier version of myself?' },
+      { id: 'gr6', cat: 'growth', text: 'What did an unexpected result help me notice?' },
+      { id: 'gr7', cat: 'growth', text: 'What is one direction I may want to explore in the future?' },
+      { id: 'co1', cat: 'connection', text: 'What kind of support helps me feel understood?' },
+      { id: 'co2', cat: 'connection', text: 'What did I notice the last time I asked for help?' },
+      { id: 'co3', cat: 'connection', text: 'What settings or interactions may help me feel more at ease?' },
+      { id: 'co4', cat: 'connection', text: 'What kind of connection might I want to make time for?' },
+      { id: 'co5', cat: 'connection', text: 'What small supportive action mattered to me recently?' },
+      { id: 'co6', cat: 'connection', text: 'What kind of support might be useful, if I choose to ask?' },
+      { id: 'co7', cat: 'connection', text: 'Is there someone I may want to check in with, without pressure to do so?' }
     ];
+
+    R.useEffect(function() {
+      if (!focusTarget || typeof document === 'undefined') return;
+      var target = document.getElementById(focusTarget);
+      if (target && typeof target.focus === 'function') target.focus();
+      setFocusTarget(null);
+    }, [focusTarget, view, data.responses]);
+
+    function categoryForPrompt(promptId) {
+      var prompt = PROMPTS.filter(function(item) { return item.id === promptId; })[0];
+      return CATEGORIES.filter(function(category) { return category.id === (prompt || {}).cat; })[0] || CATEGORIES[0];
+    }
+    function openPrompt(prompt) {
+      setPicked(prompt);
+      setResponse('');
+      setResponseError('');
+      setView('answer');
+      setFocusTarget('learning-lab-reflection-answer-heading');
+    }
+    function returnToLibrary(announcement) {
+      setPicked(null);
+      setResponse('');
+      setResponseError('');
+      setView('library');
+      setFocusTarget('learning-lab-reflection-library-heading');
+      if (announcement) llAnnounce(announcement);
+    }
+    function openHistory() {
+      setView('history');
+      setFocusTarget('learning-lab-reflection-history-heading');
+    }
+    function saveResponse(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      if (!picked) return;
+      var text = String(response || '').trim();
+      if (!text) {
+        setResponseError('Write a response before saving.');
+        setFocusTarget('learning-lab-reflection-response');
+        llAnnounce('A reflection response is required before saving.');
+        return;
+      }
+      var entry = { id: tkId(), promptId: picked.id, promptText: picked.text, text: text, date: todayISO() };
+      setData(Object.assign({}, data, { responses: [entry].concat(data.responses || []) }));
+      returnToLibrary('Reflection response saved.');
+    }
+    async function removeResponse(entry) {
+      if (!(await askLearningLabConfirmation('This permanently removes the saved response from ' + entry.date + '.', {
+        title: 'Delete this reflection response?', confirmText: 'Delete response'
+      }))) return;
+      var remaining = (data.responses || []).filter(function(candidate) { return candidate.id !== entry.id; });
+      setData(Object.assign({}, data, { responses: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-reflection-history-heading' : 'learning-lab-reflection-history-back');
+      llAnnounce('Reflection response deleted.');
+    }
 
     var responses = data.responses || [];
 
-    function saveResponse() {
-      if (!picked) return;
-      if (!response.trim()) { setResponseError('Write a response before saving.'); setTimeout(function() { var target = document.getElementById('learning-lab-reflection-response'); if (target) target.focus(); }, 0); return; }
-      var entry = { id: tkId(), promptId: picked.id, promptText: picked.text, text: response.trim(), date: todayISO() };
-      setData({ responses: [entry].concat(responses) });
-      setResponse(''); setResponseError(''); setPicked(null); setView('library');
-      llAnnounce('Reflection response saved.');
-    }
-
     if (view === 'history') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📓', 'My reflection history', responses.length + ' saved responses', '#a855f7'),
-        tkBtn('← Back to prompts', function() { setView('library'); }, 'ghost', { minHeight: 44 }),
-        responses.length === 0 ? tkEmptyState('📓', 'No responses yet. Browse prompts and start writing.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 } },
-            responses.map(function(r) {
-              var cat = CATEGORIES.filter(function(c) { return c.id === (PROMPTS.filter(function(p) { return p.id === r.promptId; })[0] || {}).cat; })[0] || CATEGORIES[0];
-              return hh('div', { key: 'r-' + r.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + cat.color } },
-                hh('div', { style: { fontSize: 10, color: cat.color, fontWeight: 700, marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, cat.icon + ' ' + r.date),
-                hh('h3', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Question: ' + r.promptText),
-                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
+        tkSectionHeader('\ud83d\udcd3', 'Saved reflection responses', responses.length + (responses.length === 1 ? ' saved response' : ' saved responses'), '#d8b4fe', 'learning-lab-reflection-history-heading'),
+        hh('button', { id: 'learning-lab-reflection-history-back', type: 'button', onClick: function() { returnToLibrary('Returned to reflection prompts.'); }, 'data-ll-focusable': true,
+          style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', border: '1px solid rgba(148,163,184,0.50)', color: '#e2e8f0', fontWeight: 800, cursor: 'pointer' }
+        }, 'Back to prompts'),
+        responses.length === 0 ? hh('p', { role: 'status', style: { margin: '12px 0 0', padding: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'No responses are saved. Choose a prompt only if you want to write.')
+        : hh('ul', { 'aria-labelledby': 'learning-lab-reflection-history-heading', style: { display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: '12px 0 0' } },
+            responses.map(function(entry) {
+              var category = categoryForPrompt(entry.promptId);
+              return hh('li', { key: 'r-' + entry.id, style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + category.color + '66', borderLeft: '3px solid ' + category.color } },
+                hh('article', { 'aria-labelledby': 'learning-lab-reflection-entry-' + entry.id },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
+                    hh('div', null,
+                      hh('p', { style: { margin: '0 0 3px', fontSize: 10, color: category.color, fontWeight: 800 } }, hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label),
+                      hh('time', { dateTime: entry.date, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, entry.date)
+                    ),
+                    hh('button', { type: 'button', 'aria-label': 'Delete reflection response from ' + entry.date, onClick: function() { removeResponse(entry); },
+                      style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 6, background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(252,165,165,0.55)', color: '#fecaca', cursor: 'pointer' }
+                    }, 'Delete')
+                  ),
+                  hh('h3', { id: 'learning-lab-reflection-entry-' + entry.id, style: { margin: '8px 0 6px', fontSize: 11, color: '#e2e8f0', overflowWrap: 'anywhere' } }, entry.promptText),
+                  hh('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.65, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, entry.text)
+                )
               );
             })
           )
@@ -8177,41 +8231,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     if (view === 'answer' && picked) {
-      var cat = CATEGORIES.filter(function(c) { return c.id === picked.cat; })[0] || CATEGORIES[0];
+      var category = CATEGORIES.filter(function(item) { return item.id === picked.cat; })[0] || CATEGORIES[0];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📝', cat.icon + ' ' + cat.label, 'Take your time. No right answer.', cat.color),
-        hh('div', { style: { padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + cat.color + '15, rgba(15,23,42,0.7))', border: '2px solid ' + cat.color, marginBottom: 12 } },
-          hh('div', { style: { fontSize: 9, color: cat.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Prompt'),
-          hh('h3', { id: 'learning-lab-reflection-prompt', style: { margin: 0, fontSize: 15, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, fontStyle: 'italic' } }, picked.text)
-        ),
-        hh('label', { htmlFor: 'learning-lab-reflection-response', style: { display: 'block', fontSize: 11, fontWeight: 800, color: cat.color, marginBottom: 4 } }, 'Your response'),
-        hh('textarea', { id: 'learning-lab-reflection-response', 'aria-describedby': 'learning-lab-reflection-prompt' + (responseError ? ' learning-lab-reflection-response-error' : ''), 'aria-invalid': responseError ? 'true' : undefined, value: response, rows: 8, onChange: function(e) { setResponse(e.target.value); setResponseError(''); }, placeholder: 'Write your response', style: { width: '100%', minHeight: 176, padding: '10px 12px', marginBottom: responseError ? 4 : 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }),
-        responseError ? hh('div', { id: 'learning-lab-reflection-response-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, responseError) : null,
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Different prompt', function() { setPicked(null); setResponse(''); setResponseError(''); setView('library'); }, 'ghost', { minHeight: 44 }),
-          tkBtn('💾 Save my response', saveResponse, 'primary', { minHeight: 44 })
+        tkSectionHeader('\ud83d\udcdd', category.label, 'Take as much or as little time as you want. There is no required kind of answer.', category.color, 'learning-lab-reflection-answer-heading'),
+        hh('form', { 'aria-labelledby': 'learning-lab-reflection-answer-heading', 'aria-describedby': 'learning-lab-reflection-privacy', onSubmit: saveResponse },
+          hh('section', { 'aria-labelledby': 'learning-lab-reflection-prompt', style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.65)', border: '2px solid ' + category.color, marginBottom: 12 } },
+            hh('p', { style: { margin: '0 0 6px', fontSize: 10, color: category.color, fontWeight: 800 } }, 'Current prompt'),
+            hh('h3', { id: 'learning-lab-reflection-prompt', style: { margin: 0, fontSize: 14, color: '#e2e8f0', lineHeight: 1.55, overflowWrap: 'anywhere' } }, picked.text)
+          ),
+          hh('p', { id: 'learning-lab-reflection-privacy', style: { margin: '0 0 10px', fontSize: 10, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Responses save in this browser. On a shared device, avoid names, health details, or other information you would not want another user to see. You can choose a different prompt or leave without saving.'),
+          hh('label', { htmlFor: 'learning-lab-reflection-response', style: { display: 'block', fontSize: 11, fontWeight: 800, color: category.color, marginBottom: 4 } }, 'Response'),
+          hh('textarea', { id: 'learning-lab-reflection-response', value: response, rows: 8, maxLength: 4000,
+            'aria-describedby': 'learning-lab-reflection-prompt learning-lab-reflection-privacy' + (responseError ? ' learning-lab-reflection-response-error' : ''), 'aria-invalid': responseError ? 'true' : undefined,
+            onChange: function(event) { setResponse(event.target.value); if (responseError) setResponseError(''); }, placeholder: 'Write only what you want to save.',
+            style: { width: '100%', minHeight: 176, padding: '10px 12px', marginBottom: responseError ? 4 : 10, fontSize: 12, color: '#e2e8f0', background: 'rgba(2,6,23,0.7)', border: '1px solid ' + category.color + '99', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+          }),
+          responseError ? hh('p', { id: 'learning-lab-reflection-response-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 10px' } }, responseError) : null,
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+            tkBtn('Choose a different prompt', function() { returnToLibrary('Returned to reflection prompts without saving.'); }, 'ghost'),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, background: '#6b21a8', border: '1.5px solid #d8b4fe', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save response')
+          )
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📓', 'Reflection Prompts', '30+ metacognitive prompts. Browse, pick one that catches your eye, write a response. Saves to your history.', '#a855f7'),
-
-      hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, responses.length + ' saved responses'),
-        tkBtn('📓 My history', function() { setView('history'); }, 'secondary', { minHeight: 44 })
+      tkSectionHeader('\ud83d\udcd3', 'Reflection Prompts', 'Optional prompts for learning, identity, change, and support. Choose only prompts that feel useful.', '#d8b4fe', 'learning-lab-reflection-library-heading'),
+      hh('p', { id: 'learning-lab-reflection-library-privacy', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(216,180,254,0.40)', color: '#e2e8f0', fontSize: 10, lineHeight: 1.6 } }, 'Saved responses remain in this browser until deleted. Prompts are optional reflection aids, not an assessment, therapy, or a requirement to disclose personal experiences.'),
+      hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' } },
+        hh('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, responses.length + (responses.length === 1 ? ' saved response' : ' saved responses')),
+        tkBtn('View saved responses', openHistory, 'secondary')
       ),
-
-      CATEGORIES.map(function(cat) {
-        var catPrompts = PROMPTS.filter(function(p) { return p.cat === cat.id; });
-        return hh('div', { key: 'c-' + cat.id, style: { marginBottom: 16 } },
-          hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: cat.color, padding: '6px 12px', background: cat.color + '12', borderRadius: 6, display: 'inline-block' } }, cat.icon + ' ' + cat.label),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-            catPrompts.map(function(p) {
-              return hh('button', { key: 'p-' + p.id, type: 'button',
-                onClick: function() { setPicked(p); setResponse(''); setResponseError(''); setView('answer'); },
-                style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid ' + cat.color + '20', borderLeft: '3px solid ' + cat.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer' }
-              }, p.text);
+      CATEGORIES.map(function(category) {
+        var categoryPrompts = PROMPTS.filter(function(prompt) { return prompt.cat === category.id; });
+        var headingId = 'learning-lab-reflection-category-' + category.id;
+        return hh('section', { key: 'c-' + category.id, 'aria-labelledby': headingId, style: { marginBottom: 16 } },
+          hh('h3', { id: headingId, style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: category.color } }, hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label),
+          hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 5, listStyle: 'none', padding: 0, margin: 0 } },
+            categoryPrompts.map(function(prompt) {
+              return hh('li', { key: 'p-' + prompt.id },
+                hh('button', { type: 'button', onClick: function() { openPrompt(prompt); },
+                  style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.55)', color: '#e2e8f0', border: '1px solid ' + category.color + '66', borderLeft: '3px solid ' + category.color, fontSize: 12, lineHeight: 1.5, cursor: 'pointer', overflowWrap: 'anywhere' }
+                }, prompt.text)
+              );
             })
           )
         );
@@ -8219,7 +8281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // ── R. PERSONAL CONCEPT MAP MAKER (Wave 4) ──
+  // R. PERSONAL CONCEPT MAP MAKER (Wave 4)
   // Interactive node+edge canvas for synthesis. Add nodes by clicking
   // canvas. Drag nodes. Connect by clicking source then target. Color
   // by category. Save multiple maps. Novak + Gowin 1984 concept mapping
@@ -19956,7 +20018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Optional self-report on task demands and context; not a diagnostic score.') },
               { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Optional reflection using autonomy, competence, and relatedness concepts.') },
               { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'Optional private learning-preference summary you control and may print.') },
-              { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', '30+ metacognitive prompts across 4 categories. Saves to journal history.') },
+              { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', 'Optional reflection prompts across four categories; responses save locally.') },
               { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.') },
               { id: 'mytkNotes',  icon: '📝', label: __alloT('stem.learning_lab.cornell_notes', 'Cornell Notes'),        desc: __alloT('stem.learning_lab.in_tool_cornell_style_note_taking_with', 'In-tool Cornell-style note-taking with cue column + summary + search.') },
               { id: 'mytkAgenda', icon: '📋', label: __alloT('stem.learning_lab.today', 'Today'),                desc: __alloT('stem.learning_lab.today_s_pulled_together_agenda_habits_', 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.') },
