@@ -169,29 +169,35 @@
       var SOFT = 'var(--allo-stem-text-soft, #94a3b8)';
       var BORDER = 'var(--allo-stem-border, #334155)';
 
+      // Fresh per render so the defaults-merge below can never share (and
+      // never mutate) a module-level object between renders.
+      var MAG_DEFAULTS = {
+        tab: 'field',
+        // Field Explorer
+        magnets: [{ x: -70, y: 0, angle: 0, polarity: 1 }],
+        compass: { x: 90, y: 90 }, filings: false, compassMoved: false,
+        sawAttract: false, sawRepel: false,
+        // Electromagnet
+        turns: 20, current: 2, core: false, coilTouched: false,
+        // Motor
+        motorCurrent: 3, motorField: 4, motorRunning: false, motorAngle: 0, motorRan: false,
+        // Earth
+        earthSeen: false, declination: 12,
+        // Quiz
+        quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0,
+        factIdx: 0,
+        askInput: '', askAnswer: '', askLoading: false
+      };
       if (!labToolData || !labToolData.magnetism) {
         setLabToolData(function (prev) {
-          return Object.assign({}, prev, { magnetism: {
-            tab: 'field',
-            // Field Explorer
-            magnets: [{ x: -70, y: 0, angle: 0, polarity: 1 }],
-            compass: { x: 90, y: 90 }, filings: false, compassMoved: false,
-            sawAttract: false, sawRepel: false,
-            // Electromagnet
-            turns: 20, current: 2, core: false, coilTouched: false,
-            // Motor
-            motorCurrent: 3, motorField: 4, motorRunning: false, motorAngle: 0, motorRan: false,
-            // Earth
-            earthSeen: false, declination: 12,
-            // Quiz
-            quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0,
-            factIdx: 0,
-            askInput: '', askAnswer: '', askLoading: false
-          } });
+          return Object.assign({}, prev, { magnetism: MAG_DEFAULTS });
         });
         return h('div', { style: { padding: 24, color: SOFT, textAlign: 'center' } }, __alloT('stem.magnetism.initializing', '🧲 Charging the coils…'));
       }
-      var d = labToolData.magnetism;
+      // PARTIAL state must render, not crash: saved projects from older
+      // versions (and the render gate's per-tab probe) supply only some
+      // fields — layer the defaults under whatever is present.
+      var d = Object.assign({}, MAG_DEFAULTS, labToolData.magnetism);
       function upd(patch) {
         setLabToolData(function (prev) {
           var s = Object.assign({}, (prev && prev.magnetism) || {}, patch);
