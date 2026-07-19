@@ -5379,147 +5379,214 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var sf = R.useState('list');                 var view = sf[0];      var setView = sf[1];
     var fi = R.useState({ ifPart: '', thenPart: '' });
     var formIf = fi[0], setForm = fi[1];
+    var fe = R.useState({ ifPart: '', thenPart: '' });
+    var formErrors = fe[0], setFormErrors = fe[1];
+    var ft = R.useState('');                     var focusTarget = ft[0]; var setFocusTarget = ft[1];
 
     var TEMPLATES = [
-      { ifPart: 'I feel the urge to check my phone during study time', thenPart: 'put it face-down in the other room and set a 25-min timer' },
-      { ifPart: "I notice I've been re-reading the same paragraph 3+ times", thenPart: 'switch to writing a 1-sentence summary of what I just read' },
+      { ifPart: 'I feel the urge to check my phone during study time', thenPart: 'put it face-down in the other room and set a 25-minute timer' },
+      { ifPart: "I notice I've been re-reading the same paragraph 3 or more times", thenPart: 'switch to writing a one-sentence summary of what I just read' },
       { ifPart: "I open a tab unrelated to my current task", thenPart: 'close it and write the distraction in my Brain Dump for later' },
-      { ifPart: 'I sit down to study and feel overwhelmed', thenPart: 'open my goal list and pick the smallest 2-min next step' },
-      { ifPart: "It's 9pm on a school night", thenPart: 'put my phone on the charger across the room' },
-      { ifPart: 'I miss a check-in on a goal for 3+ days', thenPart: 'either lower the scope or remove the goal — do not just feel guilty' },
-      { ifPart: 'I get a test back', thenPart: 'spend 5 min reviewing the wrong answers BEFORE checking the score' },
-      { ifPart: "I'm tempted to study by re-reading my notes", thenPart: 'close the notes and try to recall the main points first (retrieval practice)' },
+      { ifPart: 'I sit down to study and feel overwhelmed', thenPart: 'open my goal list and pick the smallest two-minute next step' },
+      { ifPart: "It's 9 p.m. on a school night", thenPart: 'put my phone on the charger across the room' },
+      { ifPart: 'I miss a check-in on a goal for three or more days', thenPart: 'either lower the scope, ask for support, or remove the goal' },
+      { ifPart: 'I get a test back', thenPart: 'spend five minutes reviewing the wrong answers before checking the score' },
+      { ifPart: "I'm tempted to study by re-reading my notes", thenPart: 'close the notes and try to recall the main points first' },
       { ifPart: "I get a notification while doing homework", thenPart: 'finish the current sentence before looking, then decide if it needs a response' },
-      { ifPart: 'I start a homework session', thenPart: 'write down the 1 thing I need to finish in this session BEFORE I begin' }
+      { ifPart: 'I start a homework session', thenPart: 'write down the one thing I want to finish in this session before I begin' }
     ];
 
-    function save(plan) {
-      var plans = (data.plans || []).slice();
-      if (plan.id) {
-        var idx = plans.findIndex(function(p) { return p.id === plan.id; });
-        if (idx >= 0) plans[idx] = plan;
-        else plans.unshift(plan);
-      } else {
-        plan.id = tkId();
-        plan.usedCount = 0;
-        plan.createdAt = todayISO();
-        plans.unshift(plan);
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
       }
-      setData({ plans: plans });
+      setFocusTarget('');
+    }, [focusTarget]);
+
+    function persistPlans(plans) {
+      setData(Object.assign({}, data, { plans: plans }));
     }
-    function remove(id) {
-      setData({ plans: (data.plans || []).filter(function(p) { return p.id !== id; }) });
-    }
-    function used(p) {
-      save(Object.assign({}, p, { usedCount: (p.usedCount || 0) + 1, lastUsed: todayISO() }));
-    }
-    function fromTemplate(t) {
-      setForm({ ifPart: t.ifPart, thenPart: t.thenPart });
+    function openNew(template) {
+      setForm(template ? { ifPart: template.ifPart, thenPart: template.thenPart } : { ifPart: '', thenPart: '' });
+      setFormErrors({ ifPart: '', thenPart: '' });
       setView('new');
+      setFocusTarget('learning-lab-ifthen-form-heading');
+    }
+    function cancelNew() {
+      setFormErrors({ ifPart: '', thenPart: '' });
+      setView('list');
+      setFocusTarget('learning-lab-ifthen-heading');
+      llAnnounce('New if-then plan canceled.');
+    }
+    function savePlan(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var ifPart = String(formIf.ifPart || '').trim();
+      var thenPart = String(formIf.thenPart || '').trim();
+      var errors = {
+        ifPart: ifPart ? '' : 'Describe the cue or situation for this plan.',
+        thenPart: thenPart ? '' : 'Describe the response you choose for this plan.'
+      };
+      setFormErrors(errors);
+      if (errors.ifPart || errors.thenPart) {
+        setFocusTarget(errors.ifPart ? 'learning-lab-ifthen-trigger' : 'learning-lab-ifthen-action');
+        llAnnounce('The if-then plan has missing required information.');
+        return;
+      }
+      var plan = { id: tkId(), ifPart: ifPart, thenPart: thenPart, usedCount: 0, createdAt: todayISO() };
+      persistPlans([plan].concat(data.plans || []));
+      setForm({ ifPart: '', thenPart: '' });
+      setFormErrors({ ifPart: '', thenPart: '' });
+      setView('list');
+      setFocusTarget('learning-lab-ifthen-heading');
+      llAnnounce('If-then plan saved.');
+    }
+    function markUsed(plan) {
+      var plans = (data.plans || []).map(function(candidate) {
+        return candidate.id === plan.id
+          ? Object.assign({}, candidate, { usedCount: (candidate.usedCount || 0) + 1, lastUsed: todayISO() })
+          : candidate;
+      });
+      persistPlans(plans);
+      llAnnounce('Use recorded for plan: When ' + plan.ifPart + '.');
+    }
+    async function remove(plan) {
+      if (!(await askLearningLabConfirmation('This permanently removes the selected if-then plan.', {
+        title: 'Delete this if-then plan?', confirmText: 'Delete plan'
+      }))) return;
+      persistPlans((data.plans || []).filter(function(candidate) { return candidate.id !== plan.id; }));
+      setFocusTarget('learning-lab-ifthen-heading');
+      llAnnounce('If-then plan deleted.');
     }
 
     var plans = data.plans || [];
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🔗', 'New If-Then Plan', 'Implementation intentions (Gollwitzer 1999) link a trigger to a pre-decided action.', '#a78bfa'),
+        tkSectionHeader('🔗', 'New If-Then Plan', 'Draft a cue and a response you choose. Both fields are required to save.', '#a78bfa', 'learning-lab-ifthen-form-heading'),
 
         tkCard('#a78bfa',
-          hh('div', null,
+          hh('form', { 'aria-labelledby': 'learning-lab-ifthen-form-heading', onSubmit: savePlan },
             hh('div', { style: { marginBottom: 12 } },
-              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 4 } }, '🟡 IF / WHEN... (the trigger)'),
-              tkTextarea(formIf.ifPart, function(v) { setForm(Object.assign({}, formIf, { ifPart: v })); }, 'When this specific thing happens... (be concrete)', 2)
+              hh('label', { htmlFor: 'learning-lab-ifthen-trigger', style: { fontSize: 11, fontWeight: 800, color: '#fde68a', display: 'block', marginBottom: 4 } },
+                hh('span', { 'aria-hidden': 'true' }, '🟡 '), 'If or when — the cue'),
+              hh('p', { id: 'learning-lab-ifthen-trigger-help', style: { margin: '0 0 6px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Describe one specific situation you can recognize.'),
+              tkTextarea(formIf.ifPart, function(value) {
+                setForm(Object.assign({}, formIf, { ifPart: value }));
+                if (formErrors.ifPart) setFormErrors(Object.assign({}, formErrors, { ifPart: '' }));
+              }, 'For example: When I sit down to begin homework', 3, {
+                id: 'learning-lab-ifthen-trigger', required: true, maxLength: 2000,
+                'aria-invalid': formErrors.ifPart ? 'true' : undefined,
+                'aria-describedby': 'learning-lab-ifthen-trigger-help' + (formErrors.ifPart ? ' learning-lab-ifthen-trigger-error' : ''),
+                minHeight: 84, marginBottom: formErrors.ifPart ? 4 : 0
+              }),
+              formErrors.ifPart ? hh('p', { id: 'learning-lab-ifthen-trigger-error', role: 'alert', style: { margin: '0 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formErrors.ifPart) : null
             ),
-            hh('div', { style: { fontSize: 18, textAlign: 'center', color: '#a78bfa', margin: '4px 0' } }, '↓'),
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 18, textAlign: 'center', color: '#c4b5fd', margin: '4px 0' } }, '↓'),
             hh('div', null,
-              hh('label', { style: { fontSize: 10, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 4 } }, '🟢 THEN I WILL... (the action)'),
-              tkTextarea(formIf.thenPart, function(v) { setForm(Object.assign({}, formIf, { thenPart: v })); }, '...do this exact thing.', 2)
+              hh('label', { htmlFor: 'learning-lab-ifthen-action', style: { fontSize: 11, fontWeight: 800, color: '#a7f3d0', display: 'block', marginBottom: 4 } },
+                hh('span', { 'aria-hidden': 'true' }, '🟢 '), 'Then I will — my response'),
+              hh('p', { id: 'learning-lab-ifthen-action-help', style: { margin: '0 0 6px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Describe a concrete response that feels useful and realistic for you.'),
+              tkTextarea(formIf.thenPart, function(value) {
+                setForm(Object.assign({}, formIf, { thenPart: value }));
+                if (formErrors.thenPart) setFormErrors(Object.assign({}, formErrors, { thenPart: '' }));
+              }, 'For example: I will open the assignment and write the first step', 3, {
+                id: 'learning-lab-ifthen-action', required: true, maxLength: 2000,
+                'aria-invalid': formErrors.thenPart ? 'true' : undefined,
+                'aria-describedby': 'learning-lab-ifthen-action-help' + (formErrors.thenPart ? ' learning-lab-ifthen-action-error' : ''),
+                minHeight: 84, marginBottom: formErrors.thenPart ? 4 : 0
+              }),
+              formErrors.thenPart ? hh('p', { id: 'learning-lab-ifthen-action-error', role: 'alert', style: { margin: '0 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formErrors.thenPart) : null
             ),
 
-            formIf.ifPart && formIf.thenPart ? hh('div', { style: { marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.30)' } },
-              hh('div', { style: { fontSize: 10, color: '#c084fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🔗 Your plan reads:'),
-              hh('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
-                hh('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'When '), formIf.ifPart,
-                ', ', hh('span', { style: { color: '#10b981', fontWeight: 700 } }, 'I will '), formIf.thenPart, '.'
+            formIf.ifPart || formIf.thenPart ? hh('section', { 'aria-labelledby': 'learning-lab-ifthen-preview-heading', style: { marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(196,181,253,0.45)' } },
+              hh('h3', { id: 'learning-lab-ifthen-preview-heading', style: { margin: '0 0 6px', fontSize: 11, color: '#ddd6fe' } }, hh('span', { 'aria-hidden': 'true' }, '🔗 '), 'Plan preview'),
+              hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } },
+                hh('span', { style: { color: '#fde68a', fontWeight: 700 } }, 'When '), formIf.ifPart || '…',
+                ', ', hh('span', { style: { color: '#a7f3d0', fontWeight: 700 } }, 'I will '), formIf.thenPart || '…', '.'
               )
-            ) : null
-          )
-        ),
+            ) : null,
 
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
-          tkBtn('← Cancel', function() { setView('list'); }, 'ghost'),
-          tkBtn('💾 Save plan', function() {
-            if (!formIf.ifPart.trim() || !formIf.thenPart.trim()) { alert('Both IF and THEN are required.'); return; }
-            save({ ifPart: formIf.ifPart.trim(), thenPart: formIf.thenPart.trim() });
-            setForm({ ifPart: '', thenPart: '' });
-            setView('list');
-          }, 'primary')
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginTop: 14 } },
+              hh('button', { type: 'button', onClick: cancelNew, 'data-ll-focusable': true,
+                style: { minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid rgba(196,181,253,0.55)', background: 'transparent', color: '#ddd6fe', fontWeight: 800, cursor: 'pointer' } }, 'Cancel'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true,
+                style: { minHeight: 44, padding: '9px 16px', borderRadius: 7, border: '1px solid #c4b5fd', background: '#7c3aed', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save plan')
+            )
+          )
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🔗', 'If-Then Plans', 'Pre-decide your response to common triggers. Removes the in-the-moment decision cost.', '#a78bfa'),
+      tkSectionHeader('🔗', 'If-Then Plans', 'Optional cue-and-response plans that may make a chosen action easier to remember.', '#a78bfa', 'learning-lab-ifthen-heading'),
 
       hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, plans.length + ' active plan' + (plans.length !== 1 ? 's' : '')),
-        tkBtn('+ New plan', function() { setForm({ ifPart: '', thenPart: '' }); setView('new'); }, 'primary')
+        hh('p', { id: 'learning-lab-ifthen-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, plans.length + (plans.length === 1 ? ' saved plan' : ' saved plans')),
+        hh('button', { id: 'learning-lab-ifthen-new', type: 'button', onClick: function() { openNew(null); }, 'data-ll-focusable': true,
+          style: { minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #c4b5fd', background: '#7c3aed', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'New plan')
       ),
 
-      // Saved plans
-      plans.length === 0
-        ? tkEmptyState('🔗', 'No if-then plans yet. Start from a template below, or build your own.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
-            plans.map(function(p) {
-              return hh('div', { key: 'p-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.30)', borderLeft: '4px solid #a78bfa' } },
-                hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 8 } },
-                  hh('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'When '), p.ifPart,
-                  ', ', hh('span', { style: { color: '#10b981', fontWeight: 700 } }, 'I will '), p.thenPart, '.'
-                ),
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
-                  hh('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                    'used ' + (p.usedCount || 0) + 'x' + (p.lastUsed ? ' · last ' + relDate(p.lastUsed) : '')
+      hh('section', { 'aria-labelledby': 'learning-lab-ifthen-saved-heading', style: { marginBottom: 16 } },
+        hh('h3', { id: 'learning-lab-ifthen-saved-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#ddd6fe' } }, 'Saved plans'),
+        plans.length === 0
+          ? tkEmptyState('🔗', 'No saved if-then plans. You can create your own or choose an editable example below.', null, null)
+          : hh('ul', { 'aria-labelledby': 'learning-lab-ifthen-saved-heading', style: { display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 } },
+              plans.map(function(plan) {
+                var itemName = ('When ' + String(plan.ifPart || '') + ', I will ' + String(plan.thenPart || '')).slice(0, 160);
+                var lastUsedDate = plan.lastUsed ? new Date(plan.lastUsed + 'T00:00:00') : null;
+                var validLastUsed = lastUsedDate && !isNaN(lastUsedDate.getTime());
+                return hh('li', { key: 'p-' + plan.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(196,181,253,0.45)', borderLeft: '4px solid #a78bfa' } },
+                  hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, marginBottom: 8, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } },
+                    hh('span', { style: { color: '#fde68a', fontWeight: 700 } }, 'When '), plan.ifPart,
+                    ', ', hh('span', { style: { color: '#a7f3d0', fontWeight: 700 } }, 'I will '), plan.thenPart, '.'
                   ),
-                  hh('div', { style: { display: 'flex', gap: 4 } },
-                    tkBtn('+1 ✓ used today', function() { used(p); }, 'good', { padding: '4px 10px', fontSize: 10 }),
-                    tkBtn('✕', function() { remove(p.id); }, 'ghost', { padding: '4px 8px', fontSize: 10 })
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
+                    hh('p', { style: { margin: 0, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                      'Recorded uses: ' + (plan.usedCount || 0),
+                      validLastUsed ? hh(React.Fragment, null, ' · Last recorded ', hh('time', { dateTime: plan.lastUsed }, relDate(plan.lastUsed))) : null
+                    ),
+                    hh('div', { role: 'group', 'aria-label': 'Actions for ' + itemName, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                      hh('button', { type: 'button', onClick: function() { markUsed(plan); }, 'aria-label': 'Record use for: ' + itemName, 'data-ll-focusable': true,
+                        style: { minHeight: 44, padding: '8px 11px', borderRadius: 6, border: '1px solid #6ee7b7', background: 'rgba(5,150,105,0.28)', color: '#d1fae5', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Record use'),
+                      hh('button', { type: 'button', onClick: function() { remove(plan); }, 'aria-label': 'Delete if-then plan: ' + itemName, 'data-ll-focusable': true,
+                        style: { minHeight: 44, padding: '8px 11px', borderRadius: 6, border: '1px solid rgba(252,165,165,0.65)', background: 'transparent', color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                    )
                   )
-                )
-              );
-            })
-          ),
+                );
+              })
+            )
+      ),
 
-      // Templates
-      hh('div', { style: { marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '✨ Common student templates'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          TEMPLATES.map(function(t, i) {
-            return hh('button', { key: 't-' + i,
-              onClick: function() { fromTemplate(t); },
-              style: { display: 'block', textAlign: 'left', width: '100%', padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(167,139,250,0.30)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', transition: 'all 160ms ease' }
-            },
-              hh('div', { style: { fontSize: 11, lineHeight: 1.55 } },
-                hh('span', { style: { color: '#fbbf24', fontWeight: 700 } }, 'When '), t.ifPart,
-                ', ', hh('span', { style: { color: '#10b981', fontWeight: 700 } }, 'I will '), t.thenPart, '.'
+      hh('section', { 'aria-labelledby': 'learning-lab-ifthen-templates-heading', style: { marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-ifthen-templates-heading', style: { margin: '0 0 4px', fontSize: 13, color: '#ddd6fe' } }, hh('span', { 'aria-hidden': 'true' }, '✨ '), 'Editable examples'),
+        hh('p', { id: 'learning-lab-ifthen-templates-help', style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'These are optional starting points. Choose one only if it is useful, then edit either field before saving.'),
+        hh('ul', { 'aria-labelledby': 'learning-lab-ifthen-templates-heading', 'aria-describedby': 'learning-lab-ifthen-templates-help', style: { display: 'flex', flexDirection: 'column', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+          TEMPLATES.map(function(template, index) {
+            var templateName = 'When ' + template.ifPart + ', I will ' + template.thenPart;
+            return hh('li', { key: 't-' + index },
+              hh('button', { type: 'button', onClick: function() { openNew(template); }, 'aria-label': 'Use editable example: ' + templateName, 'data-ll-focusable': true,
+                style: { display: 'block', textAlign: 'left', width: '100%', minHeight: 44, padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(196,181,253,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', overflowWrap: 'anywhere' } },
+                hh('span', { style: { fontSize: 11, lineHeight: 1.55 } },
+                  hh('span', { style: { color: '#fde68a', fontWeight: 700 } }, 'When '), template.ifPart,
+                  ', ', hh('span', { style: { color: '#a7f3d0', fontWeight: 700 } }, 'I will '), template.thenPart, '.'
+                )
               )
             );
           })
         )
       ),
 
-      // Citation
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#c084fc' } }, '📚 Source: '),
-        'Gollwitzer (1999). "Implementation Intentions: Strong Effects of Simple Plans." ', hh('em', null, 'American Psychologist'), ', 54(7), 493-503. Meta-analysis (Gollwitzer + Sheeran 2006, ', hh('em', null, 'Advances in Experimental Social Psychology'), ') across 94 studies found medium-to-large effect sizes (d ≈ 0.65) of if-then plans on goal completion vs simple intentions. Mechanism: pre-deciding offloads the in-the-moment decision cost; the trigger automatically activates the planned response.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-ifthen-evidence-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(196,181,253,0.45)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-ifthen-evidence-heading', style: { margin: '0 0 4px', color: '#ddd6fe', fontSize: 12 } }, hh('span', { 'aria-hidden': 'true' }, '📚 '), 'Research context'),
+        'Implementation-intention research reports benefits across varied goals and contexts, with effects differing by study and population. An if-then plan can make a chosen response easier to remember when a cue occurs; it does not guarantee follow-through or replace support. Sources: Gollwitzer (1999), ',
+        hh('em', null, 'American Psychologist'), ', 54(7), 493–503; Gollwitzer and Sheeran (2006), ', hh('em', null, 'Advances in Experimental Social Psychology'), '.'
       )
     );
   }
 
-  // ── E. PERSONAL ACCOMMODATION CARD ──
-  // Student-facing IEP / 504 accommodations they control. UDL-aligned.
-  // Categories: testing / in-class / organization / sensory / communication.
-  // Custom-add ones not on the standard list. Self-advocacy script
-  // generator: "I'd like to use my [accommodation] because [reason]."
+  // E. PERSONAL ACCOMMODATION CARD
   function PersonalAccommodationCard(props) {
     if (!R) return null;
     var data = props.data || { selected: {}, custom: [], advoText: '' };
