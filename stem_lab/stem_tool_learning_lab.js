@@ -8002,6 +8002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var profile = data.profile || {};
     var pms = R.useState(''); var printMessage = pms[0]; var setPrintMessage = pms[1];
+    var pes = R.useState(false); var printError = pes[0]; var setPrintError = pes[1];
     var fts = R.useState(null); var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var FIELDS = [
@@ -8028,14 +8029,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var patch = {}; patch[key] = value;
       setData(Object.assign({}, data, { profile: Object.assign({}, profile, patch) }));
       if (printMessage) setPrintMessage('');
+      if (printError) setPrintError(false);
     }
     function printProfile() {
       setPrintMessage('');
+      setPrintError(false);
       try {
         window.print();
         setPrintMessage('Print dialog requested. Review the destination and included information before printing or saving.');
         llAnnounce('Print dialog requested. Review the profile before sharing it.');
       } catch (error) {
+        setPrintError(true);
         setPrintMessage('The print dialog could not open. Use Ctrl+P on Windows or Command+P on macOS.');
         llAnnounce('The print dialog could not open.');
       }
@@ -8046,6 +8050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }))) return;
       setData(Object.assign({}, data, { profile: {} }));
       setPrintMessage('');
+      setPrintError(false);
       setFocusTarget('learning-lab-profile-name');
       llAnnounce('Learning profile cleared.');
     }
@@ -8059,7 +8064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hasContent ? hh('button', { type: 'button', onClick: clearProfile, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(252,165,165,0.55)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Clear profile') : null,
         hh('button', { type: 'button', onClick: printProfile, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: '#0e7490', border: '1.5px solid #67e8f9', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Print or save profile')
       ),
-      printMessage ? hh('p', { id: 'learning-lab-profile-print-status', role: 'status', style: { margin: '0 0 10px', padding: 10, borderRadius: 8, color: '#e2e8f0', background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(103,232,249,0.45)', fontSize: 11, fontWeight: 700 } }, printMessage) : null,
+      printMessage ? hh('p', { id: 'learning-lab-profile-print-status', role: printError ? 'alert' : 'status', style: { margin: '0 0 10px', padding: 10, borderRadius: 8, color: '#e2e8f0', background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(103,232,249,0.45)', fontSize: 11, fontWeight: 700 } }, printMessage) : null,
       hh('section', { 'aria-labelledby': 'learning-lab-profile-fields-heading', 'aria-describedby': 'learning-lab-profile-privacy' },
         hh('h3', { id: 'learning-lab-profile-fields-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#a5f3fc' } }, 'Profile fields'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
