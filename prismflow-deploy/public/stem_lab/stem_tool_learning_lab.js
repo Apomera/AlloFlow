@@ -5591,171 +5591,212 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { selected: {}, custom: [], advoText: '' };
     var setData = props.setData;
-    var es = R.useState(null);   var editingCustom = es[0]; var setEditingCustom = es[1];
+    var ls = R.useState('');                       var customLabel = ls[0]; var setCustomLabel = ls[1];
+    var ws = R.useState('');                       var customWhy = ws[0]; var setCustomWhy = ws[1];
+    var er = R.useState('');                       var customError = er[0]; var setCustomError = er[1];
+    var ft = R.useState('');                       var focusTarget = ft[0]; var setFocusTarget = ft[1];
 
     var CATALOG = [
       { id: 'extended-time',  cat: 'testing', icon: '⏱',  label: 'Extended time on tests',
-        why: 'Lets me show what I know without time-pressure interference.' },
-      { id: 'small-group',    cat: 'testing', icon: '👥', label: 'Test in a small group / separate room',
-        why: 'Fewer auditory + visual distractions.' },
-      { id: 'tests-read',     cat: 'testing', icon: '🗣', label: 'Test questions read aloud (or text-to-speech)',
-        why: 'Separates reading fluency from content knowledge.' },
+        why: 'It can give me time to demonstrate what I know without rushing.' },
+      { id: 'small-group',    cat: 'testing', icon: '👥', label: 'Test in a small group or separate room',
+        why: 'Fewer auditory and visual distractions can help me concentrate.' },
+      { id: 'tests-read',     cat: 'testing', icon: '🗣', label: 'Test questions read aloud or provided with text-to-speech',
+        why: 'It can reduce a reading-access barrier when reading fluency is not the skill being assessed.' },
       { id: 'calc',           cat: 'testing', icon: '🔢', label: 'Calculator on non-computation problems',
-        why: 'Removes a barrier unrelated to the skill being assessed.' },
-      { id: 'breaks',         cat: 'testing', icon: '☕', label: 'Movement / stretch breaks',
-        why: 'Helps regulate attention + body during long sessions.' },
+        why: 'It can reduce a calculation barrier when computation is not the skill being assessed.' },
+      { id: 'breaks',         cat: 'testing', icon: '☕', label: 'Movement or stretch breaks',
+        why: 'Brief breaks can help me regulate attention and physical comfort during a long session.' },
       { id: 'preferential',   cat: 'class',   icon: '🪑', label: 'Preferential seating',
-        why: 'Closer to the board or away from a high-traffic area = less distraction.' },
-      { id: 'notes-copy',     cat: 'class',   icon: '📋', label: 'Copy of teacher\'s notes / slides',
-        why: 'Lets me listen + process without splitting attention to copy.' },
-      { id: 'fidget',         cat: 'class',   icon: '🪀', label: 'Fidget / movement breaks',
-        why: 'Self-regulation. Helps me stay focused, not less focused.' },
-      { id: 'directions-rep', cat: 'class',   icon: '🔁', label: 'Directions repeated / clarified',
-        why: 'I sometimes need the verbal directions said a second way.' },
-      { id: 'visual-sched',   cat: 'org',     icon: '📅', label: 'Visual schedule / agenda',
-        why: 'Reduces cognitive load on what\'s coming next.' },
-      { id: 'chunked',        cat: 'org',     icon: '📦', label: 'Long assignments broken into chunks',
-        why: 'Helps with overwhelm + initiation.' },
-      { id: 'reminder-system', cat: 'org',    icon: '🔔', label: 'Check-in / reminder system',
-        why: 'Outside support for working memory.' },
-      { id: 'sensory-tools',  cat: 'sensory', icon: '🎧', label: 'Noise-canceling headphones / sensory tools',
-        why: 'Reduces overwhelm so I can think.' },
+        why: 'A planned seat can improve my access to instruction or reduce distractions.' },
+      { id: 'notes-copy',     cat: 'class',   icon: '📋', label: "Copy of the teacher's notes or slides",
+        why: 'It can let me listen and process without having to copy everything at the same time.' },
+      { id: 'fidget',         cat: 'class',   icon: '🪀', label: 'Fidget or movement option',
+        why: 'A movement option can support my self-regulation and attention.' },
+      { id: 'directions-rep', cat: 'class',   icon: '🔁', label: 'Directions repeated or clarified',
+        why: 'Hearing directions another way can help me understand what to do.' },
+      { id: 'visual-sched',   cat: 'org',     icon: '📅', label: 'Visual schedule or agenda',
+        why: 'A visible sequence can help me anticipate what is coming next.' },
+      { id: 'chunked',        cat: 'org',     icon: '📦', label: 'Long assignments broken into smaller parts',
+        why: 'Smaller parts can make it easier for me to begin and track progress.' },
+      { id: 'reminder-system', cat: 'org',    icon: '🔔', label: 'Check-in or reminder system',
+        why: 'External reminders can support my working memory and planning.' },
+      { id: 'sensory-tools',  cat: 'sensory', icon: '🎧', label: 'Noise-reducing headphones or sensory tools',
+        why: 'Reducing sensory input can help me stay comfortable and think clearly.' },
       { id: 'low-light',      cat: 'sensory', icon: '💡', label: 'Reduced fluorescent lighting near my seat',
-        why: 'Bright fluorescents are a real cognitive cost for me.' },
-      { id: 'aac',            cat: 'comm',    icon: '💬', label: 'AAC / written communication option',
-        why: 'When verbal isn\'t working — same content, different channel.' },
-      { id: 'wait-time',      cat: 'comm',    icon: '⏳', label: 'Wait-time before responding',
-        why: 'Processing takes a moment. Don\'t move on to the next student before I\'ve answered.' }
+        why: 'Lower lighting can reduce visual discomfort and help me focus.' },
+      { id: 'aac',            cat: 'comm',    icon: '💬', label: 'AAC or written communication option',
+        why: 'Another communication channel can help me express the same ideas.' },
+      { id: 'wait-time',      cat: 'comm',    icon: '⏳', label: 'Wait time before responding',
+        why: 'A short pause can give me enough processing time to answer.' }
     ];
     var CATS = [
-      { id: 'testing', label: 'Testing',       color: '#9333ea' },
-      { id: 'class',   label: 'In-class',      color: '#3b82f6' },
-      { id: 'org',     label: 'Organization',  color: '#10b981' },
-      { id: 'sensory', label: 'Sensory',       color: '#fbbf24' },
-      { id: 'comm',    label: 'Communication', color: '#ef4444' }
+      { id: 'testing', label: 'Testing',       color: '#c4b5fd' },
+      { id: 'class',   label: 'In-class',      color: '#93c5fd' },
+      { id: 'org',     label: 'Organization',  color: '#6ee7b7' },
+      { id: 'sensory', label: 'Sensory',       color: '#fde68a' },
+      { id: 'comm',    label: 'Communication', color: '#fca5a5' }
     ];
 
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      setFocusTarget('');
+    }, [focusTarget]);
+
+    function catalogItem(id) {
+      return CATALOG.filter(function(item) { return item.id === id; })[0];
+    }
     function toggle(id) {
       var sel = Object.assign({}, data.selected || {});
-      sel[id] = !sel[id];
+      var nextValue = !sel[id];
+      sel[id] = nextValue;
       setData(Object.assign({}, data, { selected: sel }));
+      var item = catalogItem(id);
+      llAnnounce((item ? item.label : 'Accommodation') + (nextValue ? ' added to' : ' removed from') + ' the practice card.');
     }
-    function addCustom(text, why) {
-      if (!text.trim()) return;
-      var custom = (data.custom || []).concat([{ id: tkId(), label: text.trim(), why: (why || '').trim() }]);
+    function addCustom(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var label = String(customLabel || '').trim();
+      if (!label) {
+        setCustomError('Enter a name for the custom accommodation.');
+        setFocusTarget('learning-lab-accommodation-custom-name');
+        llAnnounce('A custom accommodation name is required.');
+        return;
+      }
+      var custom = (data.custom || []).concat([{ id: tkId(), label: label, why: String(customWhy || '').trim() }]);
       setData(Object.assign({}, data, { custom: custom }));
+      setCustomLabel('');
+      setCustomWhy('');
+      setCustomError('');
+      setFocusTarget('learning-lab-accommodation-custom-name');
+      llAnnounce('Custom accommodation added to the practice card.');
     }
-    function removeCustom(id) {
-      setData(Object.assign({}, data, { custom: (data.custom || []).filter(function(c) { return c.id !== id; }) }));
+    async function removeCustom(item) {
+      if (!(await askLearningLabConfirmation('This permanently removes the custom accommodation from this practice card.', {
+        title: 'Delete this custom accommodation?', confirmText: 'Delete accommodation'
+      }))) return;
+      var remaining = (data.custom || []).filter(function(candidate) { return candidate.id !== item.id; });
+      setData(Object.assign({}, data, { custom: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-accommodation-custom-heading' : 'learning-lab-accommodation-custom-name');
+      llAnnounce('Custom accommodation deleted.');
     }
 
     var selected = data.selected || {};
     var custom = data.custom || [];
-    var selectedCount = Object.keys(selected).filter(function(k) { return selected[k]; }).length + custom.length;
+    var selectedItems = CATALOG.filter(function(item) { return !!selected[item.id]; }).concat(custom);
+    var selectedCount = selectedItems.length;
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🪪', 'My Accommodation Card', 'A student-controlled card of YOUR accommodations + a script for asking for them.', '#10b981'),
+      tkSectionHeader('🪪', 'My Accommodation Card', 'A private practice card for reviewing supports and preparing a request.', '#10b981', 'learning-lab-accommodation-heading'),
 
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#10b981' } }, '🎓 Why this matters: '),
-        'Accommodations only work when YOU know what they are + can ask for them. The self-advocacy skill matters more in college + work than the accommodations themselves. Build the card you can use to learn the script.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-accommodation-note-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(110,231,183,0.50)', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-accommodation-note-heading', style: { margin: '0 0 4px', color: '#a7f3d0', fontSize: 12 } }, hh('span', { 'aria-hidden': 'true' }, '🎓 '), 'About this practice card'),
+        'Knowing which supports are documented or agreed upon can make self-advocacy easier. This private practice card does not change an IEP, 504 plan, workplace record, or other official record, and it does not guarantee that a request will be approved. Select only supports that apply to you and adapt the example reasons in your own words.'
       ),
 
-      // Selected count
-      hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(16,185,129,0.40)', marginBottom: 12, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, selectedCount),
-        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 } }, 'accommodations on my card')
+      hh('p', { id: 'learning-lab-accommodation-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(110,231,183,0.50)', margin: '0 0 12px', textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)' } },
+        hh('span', { style: { display: 'block', fontSize: 28, fontWeight: 900, color: '#6ee7b7', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, selectedCount),
+        hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, selectedCount === 1 ? 'accommodation on this practice card' : 'accommodations on this practice card')
       ),
 
-      // Catalog grouped by category
-      CATS.map(function(cat) {
-        var items = CATALOG.filter(function(a) { return a.cat === cat.id; });
-        return hh('div', { key: 'cat-' + cat.id, style: { marginBottom: 16 } },
-          hh('div', { style: { fontSize: 11, fontWeight: 800, color: cat.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, cat.label),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6 } },
-            items.map(function(a) {
-              var on = !!selected[a.id];
-              return hh('button', { key: 'a-' + a.id,
-                onClick: function() { toggle(a.id); },
-                style: {
-                  display: 'block', textAlign: 'left', padding: '10px 12px', borderRadius: 8,
-                  background: on ? cat.color + '20' : 'rgba(15,23,42,0.5)',
-                  color: on ? cat.color: 'var(--allo-stem-text, #cbd5e1)',
-                  border: '1.5px solid ' + (on ? cat.color : 'rgba(100,116,139,0.30)'),
-                  borderLeft: '3px solid ' + cat.color,
-                  cursor: 'pointer', transition: 'all 160ms ease'
-                }
-              },
-                hh('div', { style: { fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
-                  hh('span', null, a.icon), a.label,
-                  on ? hh('span', { style: { marginLeft: 'auto', color: cat.color } }, '✓') : null
-                ),
-                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic', lineHeight: 1.5 } }, a.why)
-              );
-            })
-          )
-        );
-      }),
+      hh('section', { 'aria-labelledby': 'learning-lab-accommodation-catalog-heading' },
+        hh('h3', { id: 'learning-lab-accommodation-catalog-heading', style: { margin: '0 0 6px', fontSize: 13, color: '#a7f3d0' } }, 'Common accommodation examples'),
+        hh('p', { id: 'learning-lab-accommodation-catalog-help', style: { margin: '0 0 12px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Toggle an example to add or remove it. Selected state is announced and shown visually.'),
+        CATS.map(function(cat) {
+          var items = CATALOG.filter(function(item) { return item.cat === cat.id; });
+          var categoryHeadingId = 'learning-lab-accommodation-category-' + cat.id;
+          return hh('section', { key: 'cat-' + cat.id, 'aria-labelledby': categoryHeadingId, style: { marginBottom: 16 } },
+            hh('h4', { id: categoryHeadingId, style: { margin: '0 0 8px', fontSize: 11, fontWeight: 800, color: cat.color } }, cat.label),
+            hh('ul', { 'aria-labelledby': categoryHeadingId, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+              items.map(function(item) {
+                var on = !!selected[item.id];
+                var labelId = 'learning-lab-accommodation-label-' + item.id;
+                var reasonId = 'learning-lab-accommodation-reason-' + item.id;
+                return hh('li', { key: 'a-' + item.id },
+                  hh('button', { type: 'button', onClick: function() { toggle(item.id); }, 'aria-pressed': on ? 'true' : 'false', 'aria-labelledby': labelId, 'aria-describedby': reasonId, 'data-ll-focusable': true,
+                    style: { display: 'block', textAlign: 'left', width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 8,
+                      background: on ? cat.color + '20' : 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #e2e8f0)',
+                      borderTop: '1.5px solid ' + (on ? cat.color : 'rgba(148,163,184,0.55)'), borderRight: '1.5px solid ' + (on ? cat.color : 'rgba(148,163,184,0.55)'), borderBottom: '1.5px solid ' + (on ? cat.color : 'rgba(148,163,184,0.55)'), borderLeft: '3px solid ' + cat.color, cursor: 'pointer' } },
+                    hh('span', { id: labelId, style: { fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
+                      hh('span', { 'aria-hidden': 'true' }, item.icon), item.label,
+                      on ? hh('span', { 'aria-hidden': 'true', style: { marginLeft: 'auto', color: cat.color } }, '✓') : null
+                    ),
+                    hh('span', { id: reasonId, style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, lineHeight: 1.5 } }, 'Example reason: ' + item.why)
+                  )
+                );
+              })
+            )
+          );
+        })
+      ),
 
-      // Custom additions
       tkCard('#a78bfa',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 10 } }, '+ Add a custom accommodation (not on the list)'),
-          custom.length > 0 ? hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
-            custom.map(function(c) {
-              return hh('div', { key: 'cu-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa', display: 'flex', alignItems: 'flex-start', gap: 8 } },
-                hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, c.label),
-                  c.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, c.why) : null
+        hh('section', { 'aria-labelledby': 'learning-lab-accommodation-custom-heading' },
+          hh('h3', { id: 'learning-lab-accommodation-custom-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 13, color: '#ddd6fe' } }, 'Custom accommodations'),
+          hh('p', { id: 'learning-lab-accommodation-custom-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Add a support that is not listed above. A name is required; the reason is optional.'),
+          custom.length > 0 ? hh('ul', { 'aria-labelledby': 'learning-lab-accommodation-custom-heading', style: { display: 'flex', flexDirection: 'column', gap: 6, listStyle: 'none', padding: 0, margin: '0 0 10px' } },
+            custom.map(function(item) {
+              var itemName = String(item.label || '').slice(0, 160);
+              return hh('li', { key: 'cu-' + item.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa', display: 'flex', alignItems: 'flex-start', gap: 8 } },
+                hh('div', { style: { flex: 1, minWidth: 0, overflowWrap: 'anywhere' } },
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, item.label),
+                  item.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, whiteSpace: 'pre-wrap' } }, 'Reason: ' + item.why) : null
                 ),
-                hh('button', { onClick: function() { removeCustom(c.id); },
-                  style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 14, cursor: 'pointer', padding: 4 }
-                }, '✕')
+                hh('button', { type: 'button', onClick: function() { removeCustom(item); }, 'aria-label': 'Delete custom accommodation: ' + itemName, 'data-ll-focusable': true,
+                  style: { minWidth: 44, minHeight: 44, background: 'transparent', border: '1px solid rgba(252,165,165,0.65)', borderRadius: 6, color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer', padding: 8, flexShrink: 0 }
+                }, 'Delete')
               );
             })
-          ) : null,
-          (function() {
-            var ts = R.useState(''); var t = ts[0]; var setT = ts[1];
-            var ws = R.useState(''); var w = ws[0]; var setW = ws[1];
-            return hh('div', null,
-              tkInput(t, setT, 'e.g., "Standing desk option"', { marginBottom: 6 }),
-              tkInput(w, setW, 'Why this helps you (1 sentence)', { marginBottom: 8 }),
-              tkBtn('+ Add', function() { if (t.trim()) { addCustom(t, w); setT(''); setW(''); } }, 'secondary')
-            );
-          })()
+          ) : hh('p', { style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No custom accommodations on this practice card.'),
+          hh('form', { 'aria-labelledby': 'learning-lab-accommodation-custom-form-heading', onSubmit: addCustom },
+            hh('h4', { id: 'learning-lab-accommodation-custom-form-heading', style: { margin: '0 0 8px', fontSize: 11, color: '#ddd6fe' } }, 'Add a custom accommodation'),
+            hh('label', { htmlFor: 'learning-lab-accommodation-custom-name', style: { display: 'block', marginBottom: 4, fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Accommodation name'),
+            tkInput(customLabel, function(value) { setCustomLabel(value); if (customError) setCustomError(''); }, 'For example: standing desk option', {
+              id: 'learning-lab-accommodation-custom-name', required: true, maxLength: 240,
+              'aria-invalid': customError ? 'true' : undefined,
+              'aria-describedby': 'learning-lab-accommodation-custom-help' + (customError ? ' learning-lab-accommodation-custom-error' : ''),
+              marginBottom: customError ? 4 : 8
+            }),
+            customError ? hh('p', { id: 'learning-lab-accommodation-custom-error', role: 'alert', style: { margin: '0 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, customError) : null,
+            hh('label', { htmlFor: 'learning-lab-accommodation-custom-reason', style: { display: 'block', marginBottom: 4, fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Reason this support helps you (optional)'),
+            tkInput(customWhy, setCustomWhy, 'Write a short reason in your own words', { id: 'learning-lab-accommodation-custom-reason', maxLength: 500, marginBottom: 10 }),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #c4b5fd', background: '#7c3aed', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add custom accommodation')
+          )
         )
       ),
 
-      // Self-advocacy script
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '🗣 Self-advocacy script'),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } },
-            'Practice the script for asking for an accommodation. The pattern: ',
-            hh('em', { style: { color: '#fbbf24' } }, '"I\'d like to use my [accommodation] because [reason]."')
+        hh('section', { 'aria-labelledby': 'learning-lab-accommodation-script-heading' },
+          hh('h3', { id: 'learning-lab-accommodation-script-heading', style: { margin: '0 0 6px', fontSize: 13, color: '#fde68a' } }, hh('span', { 'aria-hidden': 'true' }, '🗣 '), 'Self-advocacy practice'),
+          hh('p', { id: 'learning-lab-accommodation-script-help', style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+            'Review and adapt these examples before using them. A simple pattern is: ',
+            hh('em', { style: { color: '#fde68a' } }, '“I would like to use my [accommodation] because [reason].”')
           ),
           selectedCount > 0
-            ? hh('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)' } },
-                hh('div', { style: { fontSize: 9, color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Example scripts for your card'),
-                hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                  CATALOG.concat(custom).filter(function(a) { return selected[a.id] || (custom.indexOf(a) >= 0); }).slice(0, 3).map(function(a) {
-                    return hh('div', { key: 's-' + a.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic' } },
-                      '"Hi — I\'d like to use my ', hh('strong', { style: { fontStyle: 'normal', color: '#fbbf24' } }, a.label.toLowerCase()),
-                      ' for this ', (a.cat === 'testing' ? 'test' : 'activity'), ', because ', a.why.replace(/^[A-Z]/, function(c) { return c.toLowerCase(); }), '"'
+            ? hh('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(253,230,138,0.50)' } },
+                hh('h4', { id: 'learning-lab-accommodation-examples-heading', style: { margin: '0 0 6px', fontSize: 11, color: '#fde68a' } }, 'Examples based on this practice card'),
+                hh('ul', { 'aria-labelledby': 'learning-lab-accommodation-examples-heading', 'aria-describedby': 'learning-lab-accommodation-script-help', style: { display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'disc', paddingLeft: 20, margin: 0 } },
+                  selectedItems.slice(0, 3).map(function(item) {
+                    var context = item.cat === 'testing' ? 'test' : 'activity';
+                    return hh('li', { key: 's-' + item.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, overflowWrap: 'anywhere' } },
+                      '“I would like to use my ', hh('strong', { style: { color: '#fde68a' } }, String(item.label || '').toLowerCase()),
+                      ' for this ' + context + (item.why ? ', because ' + item.why.replace(/^[A-Z]/, function(character) { return character.toLowerCase(); }) : '') + '.”'
                     );
                   })
-                )
+                ),
+                selectedCount > 3 ? hh('p', { style: { margin: '8px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Showing 3 of ' + selectedCount + ' examples.') : null
               )
-            : hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'Select accommodations above to generate scripts.')
+            : hh('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', padding: 12 } }, 'Add an accommodation to this practice card to see a script example.')
         )
       )
     );
   }
 
-  // ── G. PERSONAL FLASHCARD DECK (Wave 2) ──
-  // Create flashcards. Review with simple SM-2-lite spaced repetition.
-  // Each card has front, back, deck tag, ease factor, next-due date.
-  // Review mode picks cards due today, user rates Hard/Good/Easy.
+  // G. PERSONAL FLASHCARD DECK (Wave 2)
   function PersonalFlashcardDeck(props) {
     if (!R) return null;
     var data = props.data || { cards: [], decks: ['Default'] };
