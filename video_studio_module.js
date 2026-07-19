@@ -1410,6 +1410,37 @@
     return out;
   }
 
+  function vsParsePronunciationGlossary(raw) {
+    var entries = [];
+    String(raw || '').slice(0, 4000).split(/\r?\n/).forEach(function (line) {
+      if (entries.length >= 40) return;
+      var clean = String(line || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim();
+      if (!clean) return;
+      var match = /^(.{1,60}?)\s*(?:=|->|→|\t)\s*(.{1,100})$/.exec(clean);
+      if (!match) return;
+      var term = match[1].trim(), spoken = match[2].trim();
+      if (!term || !spoken || term.toLowerCase() === spoken.toLowerCase()) return;
+      if (entries.some(function (item) { return item.term.toLowerCase() === term.toLowerCase(); })) return;
+      entries.push({ term: term, spoken: spoken });
+    });
+    return entries.sort(function (a, b) { return b.term.length - a.term.length; });
+  }
+
+  function vsApplyPronunciationGlossary(text, rawGlossary) {
+    var source = String(text || '').slice(0, 12000);
+    var entries = Array.isArray(rawGlossary) ? rawGlossary : vsParsePronunciationGlossary(rawGlossary);
+    if (!source || !entries.length) return source;
+    var map = {};
+    entries.forEach(function (entry) { map[String(entry.term).toLowerCase()] = String(entry.spoken); });
+    var pattern = entries.map(function (entry) { return String(entry.term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+    if (!pattern) return source;
+    return source.replace(new RegExp(pattern, 'gi'), function (match, offset, whole) {
+      var before = offset > 0 ? whole.charAt(offset - 1) : '';
+      var after = whole.charAt(offset + match.length);
+      if (/[A-Za-z0-9]/.test(before) || /[A-Za-z0-9]/.test(after)) return match;
+      return map[match.toLowerCase()] || match;
+    });
+  }
   // Turn a freeform script into editable timed narration cues. Paragraphs and
   // sentences remain natural units; long passages are word-chunked, then each
   // cue receives timeline space proportional to its estimated speaking time.
@@ -2863,7 +2894,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsParsePronunciationGlossary: vsParsePronunciationGlossary, vsApplyPronunciationGlossary: vsApplyPronunciationGlossary, vsScriptTextToNarrationCues: vsScriptTextToNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsDemoContinuationPlan: vsDemoContinuationPlan, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -3177,7 +3208,43 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }).catch(function (e) {
             respond({ error: String((e && e.message) || e).slice(0, 200) });
           });
-        } else if (ev.data.type === 'allostudio-script-generate-request') {
+        } else if (ev.data.type === 'allostudio-script-line-request') {
+          // Targeted narration rewriting is text-only and returns one inert line.
+          var slReq = ev.data;
+          var slReplyTo = studioWinRef.current;
+          var slRespond = function (payload) {
+            postToStudio(slReplyTo, Object.assign({ type: 'allostudio-script-line-response', id: slReq.id }, payload));
+          };
+          if (typeof propsRef.current.callGemini !== 'function') { slRespond({ error: 'ai-unavailable' }); return; }
+          var slToneMap = { teacher: 'clear teacher walkthrough', concise: 'concise and direct', warm: 'warm encouraging coach', documentary: 'calm educational documentary', accessible: 'accessibility-first plain language with explicit orientation' };
+          var slAudienceMap = { general: 'general learners', elementary: 'elementary learners', secondary: 'secondary learners', adult: 'adult or professional learners', family: 'students and families together' };
+          var slTone = Object.prototype.hasOwnProperty.call(slToneMap, slReq.tone) ? slReq.tone : 'teacher';
+          var slAudience = Object.prototype.hasOwnProperty.call(slAudienceMap, slReq.audience) ? slReq.audience : 'general';
+          var slTarget = Math.max(3, Math.min(50, Math.round(Number(slReq.targetWords) || 14)));
+          var slGlossary = (Array.isArray(slReq.glossary) ? slReq.glossary : []).slice(0, 40).map(function (entry) {
+            return { term: String((entry && entry.term) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 60), spoken: String((entry && entry.spoken) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 100) };
+          }).filter(function (entry) { return entry.term && entry.spoken; });
+          var slPrompt = 'Rewrite one spoken narration line for an educational video.\n' +
+            'Return ONLY JSON: {"text":"one rewritten line"}. No markdown.\n' +
+            'Tone: ' + slToneMap[slTone] + '. Audience: ' + slAudienceMap[slAudience] + '. Stay near ' + slTarget + ' words and never exceed 220 characters.\n' +
+            'Improve clarity, flow, and speakability while preserving meaning and factual limits. Do not add facts, names, screen details, capabilities, stage directions, quotation marks, or a greeting. Avoid repeating the neighboring lines. Keep glossary terms in their original written spelling; pronunciation is applied later during speech synthesis.\n' +
+            'Previous line: ' + String(slReq.previous || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
+            'Line to rewrite: ' + String(slReq.text || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
+            'Next line: ' + String(slReq.next || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
+            'Pronunciation glossary JSON: ' + JSON.stringify(slGlossary).slice(0, 5000);
+          Promise.resolve().then(function () { return propsRef.current.callGemini(slPrompt, false, true); }).then(function (res) {
+            var slText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+            var slParsed = null;
+            try { slParsed = JSON.parse(slText); } catch (_) {
+              var slMatch = /\{[\s\S]*\}/.exec(String(slText || ''));
+              if (slMatch) { try { slParsed = JSON.parse(slMatch[0]); } catch (_2) {} }
+            }
+            var line = String((slParsed && slParsed.text) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 220);
+            if (!line) { slRespond({ error: 'The provider did not return a usable line.' }); return; }
+            slRespond({ text: line });
+          }).catch(function (e) {
+            slRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });        } else if (ev.data.type === 'allostudio-script-generate-request') {
           // Freeform script generation is text-only. A reviewed brief, title, and
           // optional current captions are sent; captured pixels and audio stay local.
           var sgReq = ev.data;

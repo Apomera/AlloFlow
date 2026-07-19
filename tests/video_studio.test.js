@@ -13,6 +13,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { Script } from 'node:vm';
 import { loadAlloModule } from './setup.js';
 
 let VS;
@@ -40,6 +41,14 @@ describe('shared-block sync gate', () => {
     const read = (f) => readFileSync(resolve(process.cwd(), f), 'utf-8').replace(/\r\n/g, '\n');
     expect(read('prismflow-deploy/public/video_studio_module.js')).toBe(read('video_studio_module.js'));
     expect(read('prismflow-deploy/public/video_studio/video_studio.html')).toBe(read('video_studio/video_studio.html'));
+  });
+  it('keeps the popup inline script syntactically valid', () => {
+    const html = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+    const scriptStart = html.indexOf('<script>');
+    const scriptEnd = html.lastIndexOf('</script>');
+    expect(scriptStart).toBeGreaterThan(-1);
+    expect(scriptEnd).toBeGreaterThan(scriptStart);
+    expect(() => new Script(html.slice(scriptStart + '<script>'.length, scriptEnd), { filename: 'video-studio-inline.js' })).not.toThrow();
   });
 });
 
@@ -1184,6 +1193,24 @@ describe('vsSanitizeNarrationCues', () => {
   });
 });
 
+describe('pronunciation glossary helpers', () => {
+  it('parses reviewed term mappings and rejects malformed or duplicate entries', () => {
+    const entries = VS.vsParsePronunciationGlossary('AlloFlow = AL-oh-flow\nC++ -> see plus plus\nAlloFlow = duplicate\ninvalid');
+    expect(entries).toEqual([
+      { term: 'AlloFlow', spoken: 'AL-oh-flow' },
+      { term: 'C++', spoken: 'see plus plus' },
+    ]);
+  });
+
+  it('changes only synthesis text, supports punctuation terms, and avoids word substrings', () => {
+    const spoken = VS.vsApplyPronunciationGlossary(
+      'AlloFlow supports a C++ example, but AlloFlowTools stays written.',
+      'AlloFlow = AL-oh-flow\nC++ = see plus plus',
+    );
+    expect(spoken).toBe('AL-oh-flow supports a see plus plus example, but AlloFlowTools stays written.');
+    expect(VS.vsApplyPronunciationGlossary('Keep this.', '')).toBe('Keep this.');
+  });
+});
 describe('vsScriptTextToNarrationCues', () => {
   it('splits freeform scripts into ordered editable cues fitted to the video', () => {
     const cues = VS.vsScriptTextToNarrationCues(
@@ -1216,18 +1243,26 @@ describe('freeform Script Studio wiring', () => {
     expect(html).toContain('id="scriptStudioAudience"');
     expect(html).toContain('id="scriptStudioGenerateBtn"');
     expect(html).toContain('id="scriptStudioPrepareBtn"');
+    expect(html).toContain('id="scriptStudioPronunciation"');
+    expect(html).toContain('Written scripts and captions stay unchanged');
     expect(html).toContain('id="narrAddLineBtn"');
     expect(html).toContain('id="narrRedistributeBtn"');
     expect(html).toContain('function prepareScriptStudioNarration(script, sourceLabel)');
     expect(html).toContain('function redistributeAiNarrationTiming()');
     expect(html).toContain('function splitAiNarrationLine(index)');
     expect(html).toContain('function mergeAiNarrationLine(index)');
+    expect(html).toContain('async function rewriteAiNarrationLine(index, button)');
+    expect(html).toContain("bridgeRequest('allostudio-script-line-request'");
+    expect(html).toContain("vsApplyPronunciationGlossary(s.text, $('scriptStudioPronunciation').value)");
     expect(html).toContain("'End time of narration line ' + (idx + 1)");
     expect(html).toContain("'Voice for narration line ' + (idx + 1)");
-    expect(html).toContain("{ text: s.text, voice: s.voice || voice }");
+    expect(html).toContain("{ text: spokenText, voice: s.voice || voice }");
     expect(html).toContain('vsScriptTextToNarrationCues(clean, t.duration || 0');
     expect(html).toContain("bridgeRequest('allostudio-script-generate-request'");
     expect(html).toContain('The script is likely longer than the video');
+    expect(module).toContain("ev.data.type === 'allostudio-script-line-request'");
+    expect(module).toContain("type: 'allostudio-script-line-response'");
+    expect(module).toContain('Keep glossary terms in their original written spelling');
     expect(module).toContain("ev.data.type === 'allostudio-script-generate-request'");
     expect(module).toContain("type: 'allostudio-script-generate-response'");
     expect(module).toContain('captured pixels and audio stay local');
@@ -2252,6 +2287,13 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoAudioMode"');
     expect(html).toContain('id="demoStatus" role="status" aria-live="polite"');
     expect(html).toContain("bridgeRequest('allostudio-demoplan-request'");
+    const replacementHandlerStart = html.indexOf("$('demoPlanBtn').addEventListener('click'");
+    const replacementHandlerEnd = html.indexOf("$('demoOfficialTextBtn').addEventListener('click'", replacementHandlerStart);
+    const replacementHandler = html.slice(replacementHandlerStart, replacementHandlerEnd);
+    const replacementCleanup = replacementHandler.indexOf('cleanupOfficialTutorial();');
+    expect(replacementCleanup).toBeGreaterThan(replacementHandler.lastIndexOf('} else {'));
+    expect(replacementCleanup).toBeLessThan(replacementHandler.indexOf('clearDemoContinuation();'));
+    expect(replacementHandler.split('cleanupOfficialTutorial();')).toHaveLength(2);
     expect(html).toContain("'allostudio-official-tutorial-run-request' : 'allostudio-demorun-request'");
     expect(html).toContain("isOpenerMessage(ev, 'allostudio-demostep')");
     expect(html).toContain("postToOpener({ type: 'allostudio-demostop' });");
@@ -2409,6 +2451,26 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoCursorEmphasisChk"');
     expect(html).toContain('id="demoTemplateSelect"');
     expect(html).toContain('id="demoDuplicateBtn"');
+    expect(html).toContain('id="demoTemplateSafety"');
+    expect(html).toContain('Saved templates are independent, editable copies.');
+    expect(html).toContain('officialId: null,');
+    expect(html).not.toContain("officialId: String(t.officialId");
+    expect(html).toContain('Copy of\\s+');
+    expect(html).toContain('function demoTemplateMutationLocked()');
+    expect(html).toContain('function syncDemoTemplateControls()');
+    expect(html).toContain('select.disabled = locked');
+    expect(html).toContain('var DEMO_PLAN_EDITOR_STATIC_IDS');
+    expect(html).toContain('function demoPlanEditorMutationLocked()');
+    expect(html).toContain('function setDemoPlanEditorBaseDisabled(control, disabled)');
+    expect(html).toContain('function syncDemoPlanEditorControls()');
+    expect(html).toContain("querySelectorAll('input, textarea, select, button')");
+    expect(html).toContain("control.getAttribute('data-demo-editor-base-disabled')");
+    expect(html).toContain('syncDemoPlanEditorControls();');
+    expect(html).toContain('if (demoPlanEditorMutationLocked() || demoState.officialId || !demoState.steps) return;');
+    expect(html).toContain("if (!demoPlanEditorMutationLocked()) clearDemoDraft(true);");
+    expect(html).toContain('if (demoPlanEditorMutationLocked() || !demoState.continuation || !demoState.continuation.steps.length) return;');
+    expect(html).toContain('if (!template || demoTemplateMutationLocked()) return false;');
+    expect(html).toContain('if (demoTemplateMutationLocked() || !demoState.steps || !demoState.steps.length) return null;');
     expect(html).toContain("var DEMO_TEMPLATE_KEY = 'vs_demo_templates_v1'");
     expect(html).toContain('function cleanDemoPolish(value)');
     expect(html).toContain('function loadDemoTemplate(item)');

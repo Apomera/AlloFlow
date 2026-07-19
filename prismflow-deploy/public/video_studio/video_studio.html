@@ -380,6 +380,7 @@
         <button class="quiet" id="demoDuplicateBtn" disabled>Duplicate tutorial</button>
         <button class="quiet" id="demoTemplateDeleteBtn" disabled>Delete template</button>
       </div>
+      <p class="status" id="demoTemplateSafety" style="margin:-2px 0 8px">Saved templates are independent, editable copies. Video Studio revalidates their commands against the current AlloFlow window before recording.</p>
       <div class="row" style="margin:0 0 8px">
         <button class="quiet" id="demoOfficialTextBtn">Use official Text Adaptation tutorial</button>
         <button class="quiet" id="demoNarrCancelBtn" hidden>Cancel narration</button>
@@ -731,6 +732,9 @@
             <summary style="cursor:pointer;font-weight:700">Script Studio</summary>
             <label for="scriptStudioInput" style="display:block;margin:8px 0 4px">Brief or complete script</label>
             <textarea id="scriptStudioInput" rows="6" maxlength="12000" placeholder="Describe the lesson or paste narration here." style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical"></textarea>
+            <label for="scriptStudioPronunciation" style="display:block;margin:8px 0 4px">Pronunciation glossary</label>
+            <textarea id="scriptStudioPronunciation" rows="2" maxlength="4000" placeholder="AlloFlow = AL-oh-flow (one entry per line)" style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical" aria-describedby="scriptStudioPronunciationHelp"></textarea>
+            <div class="status" id="scriptStudioPronunciationHelp">Use “term = spoken form”. Written scripts and captions stay unchanged; substitutions apply only to generated speech.</div>
             <div class="row" style="margin-top:8px">
               <label for="scriptStudioTone">Tone</label>
               <select id="scriptStudioTone" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
@@ -2578,6 +2582,37 @@
     return out;
   }
 
+  function vsParsePronunciationGlossary(raw) {
+    var entries = [];
+    String(raw || '').slice(0, 4000).split(/\r?\n/).forEach(function (line) {
+      if (entries.length >= 40) return;
+      var clean = String(line || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim();
+      if (!clean) return;
+      var match = /^(.{1,60}?)\s*(?:=|->|→|\t)\s*(.{1,100})$/.exec(clean);
+      if (!match) return;
+      var term = match[1].trim(), spoken = match[2].trim();
+      if (!term || !spoken || term.toLowerCase() === spoken.toLowerCase()) return;
+      if (entries.some(function (item) { return item.term.toLowerCase() === term.toLowerCase(); })) return;
+      entries.push({ term: term, spoken: spoken });
+    });
+    return entries.sort(function (a, b) { return b.term.length - a.term.length; });
+  }
+
+  function vsApplyPronunciationGlossary(text, rawGlossary) {
+    var source = String(text || '').slice(0, 12000);
+    var entries = Array.isArray(rawGlossary) ? rawGlossary : vsParsePronunciationGlossary(rawGlossary);
+    if (!source || !entries.length) return source;
+    var map = {};
+    entries.forEach(function (entry) { map[String(entry.term).toLowerCase()] = String(entry.spoken); });
+    var pattern = entries.map(function (entry) { return String(entry.term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+    if (!pattern) return source;
+    return source.replace(new RegExp(pattern, 'gi'), function (match, offset, whole) {
+      var before = offset > 0 ? whole.charAt(offset - 1) : '';
+      var after = whole.charAt(offset + match.length);
+      if (/[A-Za-z0-9]/.test(before) || /[A-Za-z0-9]/.test(after)) return match;
+      return map[match.toLowerCase()] || match;
+    });
+  }
   // Turn a freeform script into editable timed narration cues. Paragraphs and
   // sentences remain natural units; long passages are word-chunked, then each
   // cue receives timeline space proportional to its estimated speaking time.
@@ -7327,7 +7362,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!t || !aiNarrSegments.length) return false;
     var dur = Math.max(0.1, Number(t.duration) || 0.1);
     var weights = aiNarrSegments.map(function (segment) {
-      return Math.max(1, String(segment.text || '').split(/s+/).filter(Boolean).length / 2.5 + 0.35);
+      return Math.max(1, String(segment.text || '').split(/\s+/).filter(Boolean).length / 2.5 + 0.35);
     });
     var total = weights.reduce(function (sum, value) { return sum + value; }, 0) || 1;
     var cursor = Math.min(0.3, dur * 0.02);
@@ -7345,7 +7380,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function splitAiNarrationLine(index) {
     var segment = aiNarrSegments[index];
     if (!segment) return false;
-    var words = String(segment.text || '').trim().split(/s+/).filter(Boolean);
+    var words = String(segment.text || '').trim().split(/\s+/).filter(Boolean);
     if (words.length < 2 || aiNarrSegments.length >= 20) return false;
     var cut = Math.ceil(words.length / 2);
     var midpoint = Math.max(Number(segment.start) + 0.5, (Number(segment.start) + Number(segment.end)) / 2);
@@ -7369,6 +7404,42 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return true;
   }
 
+  async function rewriteAiNarrationLine(index, button) {
+    var segment = aiNarrSegments[index];
+    if (!segment || !String(segment.text || '').trim()) return false;
+    if (!opener || opener.closed) { setStatus($('aiNarrStatus'), 'Reconnect Video Studio to AlloFlow to rewrite this line.', 'warn'); return false; }
+    var token = 'rw' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    segment._rewriteToken = token;
+    if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); }
+    setStatus($('aiNarrStatus'), 'Rewriting narration line ' + (index + 1) + ' in context...');
+    try {
+      var response = await bridgeRequest('allostudio-script-line-request', {
+        text: String(segment.text || '').slice(0, 220),
+        previous: index > 0 ? String(aiNarrSegments[index - 1].text || '').slice(0, 220) : '',
+        next: index + 1 < aiNarrSegments.length ? String(aiNarrSegments[index + 1].text || '').slice(0, 220) : '',
+        tone: $('scriptStudioTone').value,
+        audience: $('scriptStudioAudience').value,
+        targetWords: String(segment.text || '').split(/\s+/).filter(Boolean).length,
+        glossary: vsParsePronunciationGlossary($('scriptStudioPronunciation').value)
+      }, 60000);
+      if (segment._rewriteToken !== token || aiNarrSegments.indexOf(segment) < 0) return false;
+      if (response && response.error) throw new Error(response.error);
+      var line = String((response && response.text) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 220);
+      if (!line) throw new Error('The provider did not return a usable line.');
+      segment.text = line;
+      delete segment._rewriteToken;
+      renderAiNarr();
+      setStatus($('aiNarrStatus'), 'Narration line ' + (aiNarrSegments.indexOf(segment) + 1) + ' rewritten. Review it before generating speech.', 'ok');
+      announce('Narration line rewritten');
+      return true;
+    } catch (e) {
+      if (segment._rewriteToken === token) delete segment._rewriteToken;
+      setStatus($('aiNarrStatus'), 'Line rewrite failed: ' + String((e && e.message) || e).slice(0, 150), 'bad');
+      return false;
+    } finally {
+      if (button && document.body.contains(button)) { button.disabled = false; button.removeAttribute('aria-busy'); }
+    }
+  }
   function renderAiNarr() {
     var host = $('aiNarrList');
     host.innerHTML = '';
@@ -7390,8 +7461,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var txt = document.createElement('input');
       txt.type = 'text'; txt.maxLength = 220; txt.value = s.text; txt.style.cssText = 'flex:1 1 260px;min-width:180px';
       txt.setAttribute('aria-label', 'Narration line ' + (idx + 1));
-      txt.addEventListener('change', function () { s.text = String(txt.value || '').replace(/[
-]+/g, ' ').trim().slice(0, 220); txt.value = s.text; });
+      txt.addEventListener('change', function () { s.text = String(txt.value || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 220); txt.value = s.text; });
       var voice = document.createElement('select');
       voice.setAttribute('aria-label', 'Voice for narration line ' + (idx + 1));
       voice.style.cssText = 'max-width:120px';
@@ -7400,8 +7470,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       });
       voice.value = AI_NARR_VOICES.indexOf(s.voice) >= 0 ? s.voice : '';
       voice.addEventListener('change', function () { s.voice = voice.value; });
+      var rewrite = document.createElement('button'); rewrite.className = 'quiet'; rewrite.textContent = 'Rewrite';
+      rewrite.setAttribute('aria-label', 'Rewrite narration line ' + (idx + 1));
+      rewrite.addEventListener('click', function () { rewriteAiNarrationLine(idx, rewrite); });
       var split = document.createElement('button'); split.className = 'quiet'; split.textContent = 'Split';
-      split.disabled = String(s.text || '').trim().split(/s+/).filter(Boolean).length < 2 || aiNarrSegments.length >= 20;
+      split.disabled = String(s.text || '').trim().split(/\s+/).filter(Boolean).length < 2 || aiNarrSegments.length >= 20;
       split.setAttribute('aria-label', 'Split narration line ' + (idx + 1));
       split.addEventListener('click', function () { splitAiNarrationLine(idx); });
       var merge = document.createElement('button'); merge.className = 'quiet'; merge.textContent = 'Merge';
@@ -7413,7 +7486,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'X';
       del.setAttribute('aria-label', 'Delete narration line ' + (idx + 1));
       del.addEventListener('click', function () { aiNarrSegments.splice(idx, 1); renderAiNarr(); });
-      row.appendChild(at); row.appendChild(end); row.appendChild(txt); row.appendChild(voice); row.appendChild(split); row.appendChild(merge); row.appendChild(del);
+      row.appendChild(at); row.appendChild(end); row.appendChild(txt); row.appendChild(voice); row.appendChild(rewrite); row.appendChild(split); row.appendChild(merge); row.appendChild(del);
       host.appendChild(row);
     });
   }
@@ -8021,7 +8094,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var s = aiNarrSegments[i];
       if (!s.text.trim()) continue;
       setStatus($('aiNarrStatus'), 'Generating speech ' + (i + 1) + '/' + aiNarrSegments.length + '…');
-      var resp = await bridgeRequest('allostudio-tts-request', { text: s.text, voice: s.voice || voice }, 60000);
+      var spokenText = vsApplyPronunciationGlossary(s.text, $('scriptStudioPronunciation').value);
+      var resp = await bridgeRequest('allostudio-tts-request', { text: spokenText, voice: s.voice || voice }, 60000);
       if (resp.error || !resp.pcm) { failed += 1; continue; }
       var wav = vsPcmToWav(resp.pcm instanceof Uint8Array ? resp.pcm : new Uint8Array(resp.pcm), resp.sampleRate || 24000);
       (t.audioClips = t.audioClips || []).push({
@@ -10959,7 +11033,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       name: (String(t.name || 'Tutorial template').trim().replace(/[\r\n]+/g, ' ').slice(0, 80) || 'Tutorial template'),
       goal: String(t.goal || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 300),
       audioMode: String(t.audioMode || 'auto-Kore').slice(0, 40),
-      officialId: String(t.officialId || '').slice(0, 60) || null,
+      officialId: null,
       polish: cleanDemoPolish(t.polish),
       steps: steps,
       savedAt: Math.max(0, Number(t.savedAt) || Date.now())
@@ -11004,16 +11078,46 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       select.appendChild(option);
     });
     if (keep && demoTemplates.some(function (item) { return item.id === keep; })) select.value = keep;
+    syncDemoTemplateControls();
+  }
+  function demoTemplateMutationLocked() {
+    var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
+    return recording || !!demoPlanSourceBusy || !!demoScriptDraftBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
+  }
+  var DEMO_PLAN_EDITOR_STATIC_IDS = ['demoGoal', 'demoAudioMode', 'demoOpeningCardChk', 'demoOpeningTitle', 'demoTransitionStyle', 'demoCursorEmphasisChk', 'demoClosingCardChk', 'demoClosingText', 'demoScriptStyle', 'demoScriptDetail', 'demoPlanResetBtn', 'demoDraftClearBtn', 'demoRepairBtn', 'demoContinueBtn', 'demoContinueEditBtn', 'demoContinuationDismissBtn', 'demoContinuationDismissEditBtn'];
+  var DEMO_PLAN_EDITOR_BASE_IDS = ['demoScriptDraftBtn', 'demoPacingFitBtn'];
+  function demoPlanEditorMutationLocked() { return demoTemplateMutationLocked(); }
+  function setDemoPlanEditorBaseDisabled(control, disabled) {
+    if (!control) return;
+    control.setAttribute('data-demo-editor-base-disabled', disabled ? 'true' : 'false');
+    control.disabled = demoPlanEditorMutationLocked() || !!disabled;
+  }
+  function syncDemoPlanEditorControls() {
+    var locked = demoPlanEditorMutationLocked();
+    DEMO_PLAN_EDITOR_STATIC_IDS.forEach(function (id) { var control = $(id); if (control) control.disabled = locked; });
+    var controls = Array.prototype.slice.call($('demoPlanList').querySelectorAll('input, textarea, select, button'));
+    DEMO_PLAN_EDITOR_BASE_IDS.forEach(function (id) { var control = $(id); if (control) controls.push(control); });
+    controls.forEach(function (control) {
+      var base = control.getAttribute('data-demo-editor-base-disabled');
+      if (base == null) { base = control.disabled ? 'true' : 'false'; control.setAttribute('data-demo-editor-base-disabled', base); }
+      control.disabled = locked || base === 'true';
+    });
+  }
+  function syncDemoTemplateControls() {
+    var select = $('demoTemplateSelect');
     var selected = demoTemplates.find(function (item) { return item.id === select.value; });
     var hasPlan = !!(demoState.steps && demoState.steps.length);
-    $('demoTemplateSaveBtn').disabled = !hasPlan;
-    $('demoDuplicateBtn').disabled = !hasPlan && !selected;
-    $('demoTemplateLoadBtn').disabled = !selected;
-    $('demoTemplateDeleteBtn').disabled = !selected;
+    var locked = demoTemplateMutationLocked();
+    select.disabled = locked;
+    $('demoTemplateName').disabled = locked;
+    $('demoTemplateSaveBtn').disabled = locked || !hasPlan;
+    $('demoDuplicateBtn').disabled = locked || (!hasPlan && !selected);
+    $('demoTemplateLoadBtn').disabled = locked || !selected;
+    $('demoTemplateDeleteBtn').disabled = locked || !selected;
   }
   function loadDemoTemplate(item) {
     var template = cleanDemoTemplate(item);
-    if (!template || demoState.running) return false;
+    if (!template || demoTemplateMutationLocked()) return false;
     cleanupOfficialTutorial();
     clearDemoContinuation();
     demoState.seriesId = null; demoState.seriesPart = 1;
@@ -11033,10 +11137,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return true;
   }
   function saveCurrentDemoTemplate(name, copyPrefix) {
-    if (!demoState.steps || !demoState.steps.length) return null;
-    var fallback = $('demoGoal').value.trim().replace(/^Official tutorial:s*/i, '').slice(0, 60) || 'Tutorial template';
+    if (demoTemplateMutationLocked() || !demoState.steps || !demoState.steps.length) return null;
+    var fallback = $('demoGoal').value.trim().replace(/^Official tutorial:\s*/i, '').slice(0, 60) || 'Tutorial template';
     var desired = String(name || fallback).trim();
-    if (copyPrefix) desired = 'Copy of ' + desired.replace(/^Copy ofs+/i, '');
+    if (copyPrefix) desired = 'Copy of ' + desired.replace(/^Copy of\s+/i, '');
     var item = currentDemoTemplate(uniqueDemoTemplateName(desired));
     if (!item) return null;
     demoTemplates.unshift(item);
@@ -11126,7 +11230,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     demoContinuationEnableTimer = null;
     var buttons = demoContinuationButtons().concat(demoContinuationDismissButtons()).filter(function (btn) { return !btn.hidden; });
     if (!buttons.length) return;
-    var busy = !!demoState.running || !!(rec && rec.state !== 'inactive');
+    var busy = demoPlanEditorMutationLocked();
     buttons.forEach(function (btn) { btn.disabled = busy; });
     if (busy) demoContinuationEnableTimer = setTimeout(enableDemoContinuationWhenReady, 250);
   }
@@ -11495,8 +11599,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var fittable = audit.items.filter(function (item) { return item.needsMoreTime && !item.tooLong; }).length;
     $('demoScriptReviewBtn').disabled = !hasScript;
     $('demoScriptCopyBtn').disabled = !hasScript;
-    $('demoScriptDraftBtn').disabled = !hasScript || demoState.running || demoPlanSourceBusy || demoScriptDraftBusy;
-    $('demoPacingFitBtn').disabled = !hasScript || !fittable;
+    setDemoPlanEditorBaseDisabled($('demoScriptDraftBtn'), !hasScript);
+    setDemoPlanEditorBaseDisabled($('demoPacingFitBtn'), !hasScript || !fittable);
     if (!hasScript) setStatus($('demoPacingStatus'), 'Pacing will be checked after a plan is loaded.');
     else if (audit.tooLongCount) setStatus($('demoPacingStatus'), audit.warningCount + ' timing warning' + (audit.warningCount === 1 ? '' : 's') + ': ' + audit.tooLongCount + ' narration line' + (audit.tooLongCount === 1 ? ' is' : 's are') + ' too long for the maximum hold. Shorten the highlighted text.', 'warn');
     else if (audit.warningCount) setStatus($('demoPacingStatus'), audit.warningCount + ' step' + (audit.warningCount === 1 ? '' : 's') + ' may finish before the narration. Use Fit pacing to narration.', 'warn');
@@ -11523,7 +11627,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     refreshDemoScriptReview();
   }
   function moveDemoStep(index, direction) {
-    if (demoState.officialId || !demoState.steps) return;
+    if (demoPlanEditorMutationLocked() || demoState.officialId || !demoState.steps) return;
     var next = index + direction;
     if (next < 0 || next >= demoState.steps.length) return;
     var item = demoState.steps.splice(index, 1)[0];
@@ -11622,11 +11726,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (hasApproved) runDemoPreflight();
   }
   $('demoPlanResetBtn').addEventListener('click', function () {
-    if (!demoState.originalSteps || demoState.officialId) return;
+    if (demoPlanEditorMutationLocked() || !demoState.originalSteps || demoState.officialId) return;
     demoState.steps = demoState.originalSteps.map(prepareDemoStep);
     renderDemoPlan(); announce('Demo step order reset');
   });
-  $('demoDraftClearBtn').addEventListener('click', function () { clearDemoDraft(true); });
+  $('demoDraftClearBtn').addEventListener('click', function () { if (!demoPlanEditorMutationLocked()) clearDemoDraft(true); });
   $('demoScriptReviewBtn').addEventListener('click', function () {
     var review = $('demoScriptReview');
     review.hidden = !review.hidden;
@@ -11643,7 +11747,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   });
   $('demoScriptDraftBtn').addEventListener('click', async function () {
     var steps = approvedDemoSteps();
-    if (!steps.length || demoState.running) return;
+    if (!steps.length || demoPlanEditorMutationLocked()) return;
     if (!opener || opener.closed) { setStatus($('demoScriptDraftStatus'), 'Reconnect Video Studio to AlloFlow to draft narration.', 'warn'); return; }
     var generation = ++demoScriptDraftGeneration;
     var button = $('demoScriptDraftBtn');
@@ -11688,6 +11792,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
   });
   $('demoPacingFitBtn').addEventListener('click', function () {
+    if (demoPlanEditorMutationLocked()) return;
     var changed = applyDemoPacingFit(demoState.steps || []);
     if (!changed) { setStatus($('demoStatus'), 'No result holds can be increased automatically. Shorten any highlighted narration lines.', 'warn'); return; }
     renderDemoPlan();
@@ -11695,13 +11800,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     announce('Demo narration pacing fitted');
   });
   $('demoRepairBtn').addEventListener('click', function () {
-    if (demoState.running || demoState.officialId) return;
+    if (demoPlanEditorMutationLocked() || demoState.officialId) return;
     if (!$('demoGoal').value.trim()) { setStatus($('demoStatus'), 'Add a goal before repairing this plan.', 'warn'); return; }
     setStatus($('demoStatus'), 'Replanning from the current AlloFlow state…');
     $('demoPlanBtn').click();
   });
   function loadDemoContinuation() {
-    if (demoState.running || (rec && rec.state !== 'inactive') || !demoState.continuation || !demoState.continuation.steps.length) return;
+    if (demoPlanEditorMutationLocked() || !demoState.continuation || !demoState.continuation.steps.length) return;
     var pending = demoState.continuation;
     clearDemoContinuation();
     demoState.seriesId = String(pending.seriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null;
@@ -11715,7 +11820,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setTimeout(function () { $('demoPreflightBtn').focus(); }, 0);
   }
   function dismissDemoContinuation() {
-    if (demoState.running || (rec && rec.state !== 'inactive') || !demoState.continuation) return;
+    if (demoPlanEditorMutationLocked() || !demoState.continuation) return;
     clearDemoContinuation();
     setStatus($('demoStatus'), 'Saved unfinished steps dismissed. The current on-screen plan is unchanged.', 'ok');
     announce('Saved demo continuation dismissed. Current plan unchanged.');
@@ -11742,6 +11847,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (item) loadDemoTemplate(item);
   });
   $('demoDuplicateBtn').addEventListener('click', function () {
+    if (demoTemplateMutationLocked()) return;
     var selected = demoTemplates.find(function (row) { return row.id === $('demoTemplateSelect').value; });
     var source = selected || currentDemoTemplate($('demoTemplateName').value || $('demoGoal').value);
     if (!source) return;
@@ -11761,6 +11867,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     announce('Tutorial duplicated');
   });
   $('demoTemplateDeleteBtn').addEventListener('click', function () {
+    if (demoTemplateMutationLocked()) return;
     var id = $('demoTemplateSelect').value;
     var item = demoTemplates.find(function (row) { return row.id === id; });
     if (!item) return;
@@ -11786,6 +11893,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var locked = !!demoPlanSourceBusy || !!demoScriptDraftBusy || recording || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
     $('demoPlanBtn').disabled = locked;
     $('demoOfficialTextBtn').disabled = locked;
+    syncDemoTemplateControls();
   }
   function syncDemoExecutionControls() {
     var hasPlan = !!approvedDemoSteps().length;
@@ -11794,6 +11902,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('demoStartBtn').disabled = locked || !hasPlan;
     $('demoRehearseBtn').disabled = locked || !hasPlan;
     $('demoPreflightBtn').disabled = locked || !hasPlan;
+    syncDemoPlanEditorControls();
   }
   function setDemoPlanningBusy(busy, kind) {
     demoPlanSourceBusy = !!busy;
@@ -11831,7 +11940,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var goal = $('demoGoal').value.trim();
     if (!goal) { setStatus($('demoStatus'), 'Describe what the demo should show first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window (it uses the app’s command registry and Gemini connection).', 'warn'); return; }
-    cleanupOfficialTutorial();
     var generation = ++demoPlanRequestGeneration;
     var bridgeController = typeof AbortController === 'function' ? new AbortController() : null;
     demoPlanBridgeController = bridgeController;
@@ -11849,6 +11957,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } else if (!resp.steps || !resp.steps.length) {
         setStatus($('demoStatus'), 'Gemini couldn’t map that goal to a safe, runnable command sequence. Describe concrete visible actions — for example “open the Educator Hub, then open the Document Builder”.', 'warn');
       } else {
+        cleanupOfficialTutorial();
         clearDemoContinuation();
         demoState.seriesId = null; demoState.seriesPart = 1;
         demoState.officialId = null;
