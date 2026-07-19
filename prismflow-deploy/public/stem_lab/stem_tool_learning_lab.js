@@ -11101,89 +11101,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { challenges: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var fs = R.useState({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' });
-    var form = fs[0]; var setForm = fs[1];
-    var es = R.useState({ title: '', dailyAction: '' }); var errors = es[0]; var setErrors = es[1];
+    var EMPTY_FORM = { title: '', dailyAction: '', why: '', startDate: '', days: '' };
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var fs = R.useState(Object.assign({}, EMPTY_FORM)); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(null); var editing = es[0]; var setEditing = es[1];
+    var ers = R.useState(''); var titleError = ers[0]; var setTitleError = ers[1];
+    var focusTargetRef = R.useRef(null);
+    var challenges = Array.isArray(data.challenges) ? data.challenges : [];
 
-    function addChallenge() {
-      var nextErrors = {
-        title: form.title.trim() ? '' : 'Challenge name is required.',
-        dailyAction: form.dailyAction.trim() ? '' : 'Daily action is required.'
+    R.useLayoutEffect(function() {
+      var targetId = focusTargetRef.current;
+      if (!targetId) return;
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        focusTargetRef.current = null;
+      }
+    }, [view, challenges.length]);
+
+    function formFromChallenge(challenge) {
+      var days = Number(challenge && challenge.days);
+      return {
+        title: challenge && challenge.title ? String(challenge.title) : '',
+        dailyAction: challenge && challenge.dailyAction ? String(challenge.dailyAction) : '',
+        why: challenge && challenge.why ? String(challenge.why) : '',
+        startDate: challenge && challenge.startDate ? String(challenge.startDate) : '',
+        days: Number.isFinite(days) && days >= 1 && days <= 365 ? String(Math.round(days)) : ''
       };
-      if (nextErrors.title || nextErrors.dailyAction) {
-        setErrors(nextErrors);
-        setTimeout(function() { var field = document.getElementById(nextErrors.title ? 'learning-lab-challenge-title' : 'learning-lab-challenge-action'); if (field) field.focus(); }, 0);
+    }
+    function formIsDirty() {
+      var baseline = editing ? formFromChallenge(editing.challenge) : EMPTY_FORM;
+      return ['title', 'dailyAction', 'why', 'startDate', 'days'].some(function(key) {
+        return String(form[key] == null ? '' : form[key]) !== String(baseline[key] == null ? '' : baseline[key]);
+      });
+    }
+    function dateInfo(raw) {
+      if (!raw) return null;
+      var parsed = new Date(String(raw) + (String(raw).length === 10 ? 'T12:00:00' : ''));
+      if (Number.isNaN(parsed.getTime())) return null;
+      return { dateTime: parsed.toISOString(), label: parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
+    }
+    function startNew() {
+      setForm(Object.assign({}, EMPTY_FORM));
+      setEditing(null);
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-challenge-editor-heading';
+      setView('new');
+    }
+    function startEdit(challenge) {
+      setForm(formFromChallenge(challenge));
+      setEditing({ id: challenge && challenge.id ? challenge.id : null, challenge: challenge });
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-challenge-editor-heading';
+      setView('new');
+    }
+    async function cancelEditor() {
+      if (formIsDirty() && !(await askLearningLabConfirmation('Your unsaved Challenge Board changes will be discarded.', {
+        title: 'Discard unsaved changes?', confirmText: 'Discard changes'
+      }))) return;
+      setForm(Object.assign({}, EMPTY_FORM));
+      setEditing(null);
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-challenge-add';
+      setView('list');
+      llAnnounce('Challenge Board editor closed.');
+    }
+    function saveChallenge() {
+      var title = String(form.title || '').trim();
+      if (!title) {
+        setTitleError('Enter a name before saving this challenge or practice.');
+        setTimeout(function() { var field = document.getElementById('learning-lab-challenge-title'); if (field) field.focus(); }, 0);
         return;
       }
-      var challenge = Object.assign({ id: tkId(), createdAt: todayISO(), logs: [] }, form, { title: form.title.trim(), dailyAction: form.dailyAction.trim(), why: form.why.trim(), days: Math.max(1, Math.min(365, Number(form.days) || 30)) });
-      setData(Object.assign({}, data, { challenges: [challenge].concat(data.challenges || []) }));
-      setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' });
-      setErrors({ title: '', dailyAction: '' });
+      var nextChallenges = challenges.slice();
+      var index = editing ? nextChallenges.indexOf(editing.challenge) : -1;
+      if (index < 0 && editing && editing.id) index = nextChallenges.findIndex(function(item) { return item && item.id === editing.id; });
+      var existing = index >= 0 ? nextChallenges[index] : null;
+      var days = form.days === '' ? null : Math.min(365, Math.max(1, Math.round(Number(form.days) || 1)));
+      var challenge = Object.assign({}, existing || {}, {
+        id: existing && existing.id ? existing.id : tkId(),
+        createdAt: existing && existing.createdAt ? existing.createdAt : todayISO(),
+        logs: Array.isArray(existing && existing.logs) ? existing.logs : [],
+        title: title,
+        dailyAction: String(form.dailyAction || '').trim(),
+        why: String(form.why || '').trim(),
+        startDate: form.startDate || '',
+        days: days
+      });
+      if (index >= 0) nextChallenges[index] = challenge;
+      else nextChallenges.unshift(challenge);
+      setData(Object.assign({}, data, { challenges: nextChallenges }));
+      setForm(Object.assign({}, EMPTY_FORM));
+      setEditing(null);
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-challenge-entry-heading-' + challenge.id;
       setView('list');
-      llAnnounce('Challenge started: ' + challenge.title + '.');
+      llAnnounce('Challenge or practice saved: ' + challenge.title + '.');
     }
-    async function remove(id) {
-      var challenge = (data.challenges || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (challenge ? ' "' + challenge.title + '" and all daily logs' : ' this challenge and all daily logs') + '.', {
-        title: 'Delete this challenge?', confirmText: 'Delete challenge'
+    async function removeChallenge(challenge) {
+      var title = challenge && challenge.title ? String(challenge.title) : 'Untitled entry';
+      if (!(await askLearningLabConfirmation('This permanently removes “' + title + '” and its saved check-ins.', {
+        title: 'Delete this challenge or practice?', confirmText: 'Delete entry'
       }))) return;
-      setData(Object.assign({}, data, { challenges: (data.challenges || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Challenge deleted.');
+      setData(Object.assign({}, data, { challenges: challenges.filter(function(item) { return item !== challenge; }) }));
+      focusTargetRef.current = 'learning-lab-challenge-list-heading';
+      llAnnounce('Challenge or practice deleted.');
     }
-    function logDay(challengeId) {
-      var challenge = (data.challenges || []).filter(function(item) { return item.id === challengeId; })[0];
-      if (!challenge) return;
+    function toggleToday(challenge) {
+      var index = challenges.indexOf(challenge);
+      if (index < 0 && challenge && challenge.id) index = challenges.findIndex(function(item) { return item && item.id === challenge.id; });
+      if (index < 0) return;
       var today = todayISO();
-      var logs = (challenge.logs || []).slice();
-      var index = logs.findIndex(function(log) { return log.date === today; });
-      var removing = index >= 0;
-      if (removing) logs.splice(index, 1);
-      else logs.push({ date: today, time: Date.now() });
-      setData(Object.assign({}, data, { challenges: data.challenges.map(function(item) { return item.id === challengeId ? Object.assign({}, item, { logs: logs }) : item; }) }));
-      llAnnounce(challenge.title + (removing ? ' marked incomplete for today.' : ' marked complete for today.'));
+      var logs = Array.isArray(challenge.logs) ? challenge.logs.slice() : [];
+      var alreadyRecorded = logs.some(function(log) { return log && log.date === today; });
+      logs = alreadyRecorded ? logs.filter(function(log) { return !log || log.date !== today; }) : logs.concat({ date: today, time: Date.now() });
+      var nextChallenges = challenges.slice();
+      nextChallenges[index] = Object.assign({}, challenge, { logs: logs });
+      setData(Object.assign({}, data, { challenges: nextChallenges }));
+      llAnnounce(challenge.title + (alreadyRecorded ? ': today’s check-in removed.' : ': today’s check-in recorded.'));
     }
 
-    var challenges = data.challenges || [];
     var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
     var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 4 };
-    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
-
-    function daysFromStart(challenge) {
-      var start = new Date(challenge.startDate + 'T12:00:00').getTime();
-      var now = new Date().getTime();
-      return Math.floor((now - start) / 86400000);
-    }
+    var hintStyle = { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, margin: '4px 0 10px' };
 
     if (view === 'new') {
+      var titleDescriptions = 'learning-lab-challenge-title-hint' + (titleError ? ' learning-lab-challenge-title-error' : '');
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🏆', 'New challenge', 'Declare a 30-day or custom challenge with one daily action.', '#fbbf24'),
         tkCard('#fbbf24',
-          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addChallenge(); }, 'aria-labelledby': 'learning-lab-challenge-form-heading' },
-            hh('h3', { id: 'learning-lab-challenge-form-heading', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'New personal challenge'),
-            hh('label', { htmlFor: 'learning-lab-challenge-title', style: labelStyle }, 'Challenge name (required)'),
-            hh('input', { id: 'learning-lab-challenge-title', type: 'text', value: form.title, required: true, maxLength: 180, 'aria-invalid': errors.title ? 'true' : undefined, 'aria-describedby': errors.title ? 'learning-lab-challenge-title-error' : undefined, placeholder: 'e.g., Read 20 pages every day for 30 days', onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (errors.title) setErrors(Object.assign({}, errors, { title: '' })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: errors.title ? 4 : 10 }) }),
-            hh('div', { id: 'learning-lab-challenge-title-error', role: 'alert', style: { minHeight: errors.title ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: errors.title ? 8 : 0 } }, errors.title),
+          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); saveChallenge(); }, 'aria-labelledby': 'learning-lab-challenge-editor-heading' },
+            hh('h2', { id: 'learning-lab-challenge-editor-heading', tabIndex: -1, style: { fontSize: 18, color: '#fde68a', margin: '0 0 6px', outlineOffset: 4 } }, editing ? 'Edit optional challenge or practice' : 'Add an optional challenge or practice'),
+            hh('p', { id: 'learning-lab-challenge-editor-guidance', style: hintStyle }, 'Only the name is required. A daily reminder, start date, and duration are optional reference details—not requirements or deadlines.'),
+            hh('p', { id: 'learning-lab-challenge-editor-privacy', style: hintStyle }, 'Names and notes can reveal goals, health information, beliefs, or identity. They are stored with this Learning Lab data; saving here does not itself notify a teacher, school, coach, clinician, or family member. Use care on a shared or managed device.'),
 
-            hh('label', { htmlFor: 'learning-lab-challenge-action', style: labelStyle }, 'Daily action (required)'),
-            hh('input', { id: 'learning-lab-challenge-action', type: 'text', value: form.dailyAction, required: true, maxLength: 240, 'aria-invalid': errors.dailyAction ? 'true' : undefined, 'aria-describedby': errors.dailyAction ? 'learning-lab-challenge-action-error' : undefined, placeholder: 'e.g., Read 20 pages', onChange: function(event) { setForm(Object.assign({}, form, { dailyAction: event.target.value })); if (errors.dailyAction) setErrors(Object.assign({}, errors, { dailyAction: '' })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: errors.dailyAction ? 4 : 10 }) }),
-            hh('div', { id: 'learning-lab-challenge-action-error', role: 'alert', style: { minHeight: errors.dailyAction ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: errors.dailyAction ? 8 : 0 } }, errors.dailyAction),
+            hh('label', { htmlFor: 'learning-lab-challenge-title', style: labelStyle }, 'Name (required)'),
+            hh('input', { id: 'learning-lab-challenge-title', type: 'text', value: form.title, required: true, maxLength: 180, autoComplete: 'off', 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleDescriptions, onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (titleError) setTitleError(''); }, 'data-ll-focusable': true, style: inputStyle }),
+            hh('p', { id: 'learning-lab-challenge-title-hint', style: hintStyle }, 'Up to 180 characters.'),
+            titleError ? hh('p', { id: 'learning-lab-challenge-title-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, margin: '0 0 10px' } }, titleError) : null,
 
-            hh('label', { htmlFor: 'learning-lab-challenge-why', style: labelStyle }, 'Why this challenge matters (optional)'),
-            hh('textarea', { id: 'learning-lab-challenge-why', value: form.why, rows: 3, maxLength: 2000, placeholder: 'Connect to a deeper “why” for hard days.', onChange: function(event) { setForm(Object.assign({}, form, { why: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { minHeight: 72, resize: 'vertical', marginBottom: 10 }) }),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 } },
+            hh('label', { htmlFor: 'learning-lab-challenge-action', style: labelStyle }, 'Optional recurring reminder'),
+            hh('input', { id: 'learning-lab-challenge-action', type: 'text', value: form.dailyAction, maxLength: 240, autoComplete: 'off', 'aria-describedby': 'learning-lab-challenge-action-hint', onChange: function(event) { setForm(Object.assign({}, form, { dailyAction: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle }),
+            hh('p', { id: 'learning-lab-challenge-action-hint', style: hintStyle }, 'Up to 240 characters. It does not need to happen every day.'),
+
+            hh('label', { htmlFor: 'learning-lab-challenge-why', style: labelStyle }, 'Personal note (optional)'),
+            hh('textarea', { id: 'learning-lab-challenge-why', value: form.why, rows: 3, maxLength: 2000, 'aria-describedby': 'learning-lab-challenge-why-hint learning-lab-challenge-editor-privacy', onChange: function(event) { setForm(Object.assign({}, form, { why: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { minHeight: 72, resize: 'vertical' }) }),
+            hh('p', { id: 'learning-lab-challenge-why-hint', style: hintStyle }, 'Up to 2,000 characters. Avoid private information you do not want stored here.'),
+
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-challenge-start', style: labelStyle }, 'Start date'),
-                hh('input', { id: 'learning-lab-challenge-start', type: 'date', value: form.startDate, required: true, onChange: function(event) { setForm(Object.assign({}, form, { startDate: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle })
+                hh('label', { htmlFor: 'learning-lab-challenge-start', style: labelStyle }, 'Reference start date (optional)'),
+                hh('input', { id: 'learning-lab-challenge-start', type: 'date', value: form.startDate, onChange: function(event) { setForm(Object.assign({}, form, { startDate: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle })
               ),
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-challenge-days', style: labelStyle }, 'Number of days'),
-                hh('input', { id: 'learning-lab-challenge-days', type: 'number', min: 1, max: 365, step: 1, value: form.days, onChange: function(event) { setForm(Object.assign({}, form, { days: Math.max(1, Math.min(365, parseInt(event.target.value, 10) || 30)) })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { textAlign: 'center' }) })
+                hh('label', { htmlFor: 'learning-lab-challenge-days', style: labelStyle }, 'Reference duration in days (optional)'),
+                hh('input', { id: 'learning-lab-challenge-days', type: 'number', min: 1, max: 365, step: 1, inputMode: 'numeric', value: form.days, 'aria-describedby': 'learning-lab-challenge-days-hint', onChange: function(event) { setForm(Object.assign({}, form, { days: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle }),
+                hh('p', { id: 'learning-lab-challenge-days-hint', style: hintStyle }, 'Leave blank for no planned duration. Maximum 365 days.')
               )
             ),
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 14 } },
-              hh('button', { type: 'button', onClick: function() { setErrors({ title: '', dailyAction: '' }); setView('list'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← Cancel'),
-              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '🏆 Start challenge')
+              hh('button', { type: 'button', onClick: cancelEditor, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save challenge or practice')
             )
           )
         )
@@ -11191,68 +11268,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🏆', 'Challenge Board', 'Personal challenges with one daily action. Mark each day as you go.', '#fbbf24'),
+      hh('header', null,
+        hh('h2', { id: 'learning-lab-challenge-heading', style: { fontSize: 18, color: '#fde68a', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '🏆 '), 'Optional Challenge or Practice Tracker'),
+        hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Track a project, experiment, or recurring practice only if useful. Check-ins are optional records, not proof of completion, consistency, motivation, or success. Missing days do not indicate failure.'),
+        hh('p', { style: { margin: '0 0 12px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Entries can reveal goals, health information, beliefs, or identity. They are stored with this Learning Lab data; saving here does not itself notify a teacher, school, coach, clinician, or family member. Edit or delete records you no longer want stored, especially on shared or managed devices.')
+      ),
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        hh('button', { type: 'button', onClick: function() { setErrors({ title: '', dailyAction: '' }); setForm({ title: '', why: '', target: '', startDate: todayISO(), days: 30, dailyAction: '' }); setView('new'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ New challenge')
+        hh('button', { id: 'learning-lab-challenge-add', type: 'button', onClick: startNew, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ Add challenge or practice')
       ),
 
-      challenges.length === 0 ? tkEmptyState('🏆', 'No challenges yet. Pick something you want to build a habit around.', '+ Start your first challenge', function() { setView('new'); })
-      : hh('ul', { 'aria-label': 'Personal challenges', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 12 }) },
-          challenges.map(function(challenge) {
-            var elapsedDay = daysFromStart(challenge);
-            var doneCount = (challenge.logs || []).length;
-            var pct = Math.min(100, Math.round(doneCount / challenge.days * 100));
-            var todayDone = (challenge.logs || []).some(function(log) { return log.date === todayISO(); });
-            var displayDay = Math.max(0, Math.min(challenge.days, elapsedDay + 1));
-            return hh('li', { key: 'ch-' + challenge.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24' } },
-              hh('article', { 'aria-label': challenge.title + '. ' + doneCount + ' of ' + challenge.days + ' days complete.' },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-                  hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('strong', { style: { fontSize: 14, color: '#fbbf24' } }, hh('span', { 'aria-hidden': 'true' }, '🏆 '), challenge.title),
-                    challenge.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 2 } }, 'Why: ' + challenge.why) : null
+      hh('section', { 'aria-labelledby': 'learning-lab-challenge-list-heading' },
+        hh('h3', { id: 'learning-lab-challenge-list-heading', tabIndex: -1, style: { fontSize: 13, color: '#fde68a', margin: '0 0 8px', outlineOffset: 4 } }, 'Saved challenges and practices'),
+        challenges.length === 0 ? tkEmptyState('🏆', 'No challenges or practices saved.', null, null)
+        : hh('ul', { 'aria-label': 'Saved challenges and practices', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 } },
+            challenges.map(function(challenge, challengeIndex) {
+              challenge = challenge || {};
+              var title = String(challenge.title || '').trim() || 'Untitled entry';
+              var logs = Array.isArray(challenge.logs) ? challenge.logs : [];
+              var today = todayISO();
+              var todayRecorded = logs.some(function(log) { return log && log.date === today; });
+              var start = dateInfo(challenge.startDate);
+              var days = Number(challenge.days);
+              var duration = Number.isFinite(days) && days >= 1 && days <= 365 ? Math.round(days) : null;
+              var itemKey = challenge.id ? String(challenge.id) : 'legacy-' + challengeIndex;
+              var headingId = 'learning-lab-challenge-entry-heading-' + (challenge.id || itemKey);
+              return hh('li', { key: 'ch-' + itemKey, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24', overflowWrap: 'anywhere' } },
+                hh('article', { 'aria-labelledby': headingId },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+                    hh('div', { style: { flex: 1, minWidth: 0 } },
+                      hh('h4', { id: headingId, tabIndex: -1, style: { fontSize: 14, color: '#fbbf24', margin: '0 0 3px', outlineOffset: 4 } }, hh('span', { 'aria-hidden': 'true' }, '🏆 '), title),
+                      challenge.why ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', whiteSpace: 'pre-wrap', margin: '0 0 4px', overflowWrap: 'anywhere' } }, challenge.why) : null,
+                      hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } },
+                        start ? hh('span', null, 'Reference start: ', hh('time', { dateTime: start.dateTime }, start.label), '. ') : 'Reference start not recorded. ',
+                        duration ? 'Reference duration: ' + duration + ' day' + (duration === 1 ? '' : 's') + '; not a deadline.' : 'Reference duration not recorded.'
+                      )
+                    ),
+                    hh('div', { style: { display: 'flex', gap: 4 } },
+                      hh('button', { type: 'button', 'aria-label': 'Edit challenge or practice: ' + title, onClick: function() { startEdit(challenge); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 6, background: 'transparent', border: '1px solid transparent', color: '#fbbf24', fontSize: 14, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '✎')),
+                      hh('button', { type: 'button', 'aria-label': 'Delete challenge or practice: ' + title, onClick: function() { removeChallenge(challenge); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 6, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '×'))
+                    )
                   ),
-                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(251,191,36,0.25)', color: '#fbbf24', fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, doneCount + '/' + challenge.days)
-                ),
-                hh('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 8, padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #fbbf24' } }, hh('strong', null, 'Today: '), challenge.dailyAction),
-                hh('div', { role: 'progressbar', 'aria-label': challenge.title + ' completion', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-valuetext': doneCount + ' of ' + challenge.days + ' days complete', style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', marginBottom: 8 } },
-                  hh('div', { 'aria-hidden': 'true', style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f97316)', transition: 'width 300ms ease' } })
-                ),
-                hh('div', { role: 'img', 'aria-label': 'Daily completion history. ' + doneCount + ' of ' + challenge.days + ' days logged. Today is ' + (todayDone ? 'complete.' : 'not complete.'), style: { display: 'flex', gap: 2, flexWrap: 'wrap', marginBottom: 6 } },
-                  (function() {
-                    var days = [];
-                    for (var index = 0; index < challenge.days; index++) {
-                      var date = new Date(challenge.startDate + 'T12:00:00'); date.setDate(date.getDate() + index);
-                      var iso = date.toISOString().slice(0, 10);
-                      var done = (challenge.logs || []).some(function(log) { return log.date === iso; });
-                      var isToday = iso === todayISO();
-                      days.push(hh('span', { key: 'cd-' + index, 'aria-hidden': 'true', style: { width: 16, height: 16, borderRadius: 3, background: done ? '#fbbf24' : 'rgba(100,116,139,0.20)', color: done ? '#111827' : '#cbd5e1', border: isToday ? '2px solid #fff' : '1px solid transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, boxSizing: 'border-box' } }, done ? '✓' : '·'));
-                    }
-                    return days;
-                  })()
-                ),
-                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, '✓ complete · · not complete · outlined square is today'),
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 } },
-                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Day ' + displayDay + ' of ' + challenge.days),
-                  hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                    hh('button', { type: 'button', 'aria-pressed': todayDone ? 'true' : 'false', onClick: function() { logDay(challenge.id); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (todayDone ? '#86efac' : '#fde68a'), background: todayDone ? '#166534' : '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, todayDone ? '✓ Done today — select to undo' : '+ Log today'),
-                    hh('button', { type: 'button', 'aria-label': 'Delete challenge: ' + challenge.title, onClick: function() { remove(challenge.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
-                  )
+                  challenge.dailyAction ? hh('p', { style: { fontSize: 11, color: '#fde68a', margin: '0 0 8px', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6, borderLeft: '2px solid #fbbf24', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('strong', null, 'Optional reminder: '), challenge.dailyAction) : null,
+                  hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 8px' } }, logs.length + ' saved check-in' + (logs.length === 1 ? '' : 's') + '. Today: ' + (todayRecorded ? 'check-in recorded.' : 'no check-in recorded.')),
+                  hh('details', { style: { marginBottom: 10 } },
+                    hh('summary', { 'data-ll-focusable': true, style: { minHeight: 44, display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, 'View saved check-ins (' + logs.length + ')'),
+                    logs.length === 0 ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 0' } }, 'No check-ins saved.')
+                    : hh('ul', { 'aria-label': 'Saved check-ins for ' + title, style: { margin: '4px 0 0', paddingLeft: 22 } },
+                        logs.map(function(log, logIndex) {
+                          var date = dateInfo(log && log.date);
+                          return hh('li', { key: 'log-' + logIndex, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, date ? hh('time', { dateTime: date.dateTime }, date.label) : 'Date not recorded');
+                        })
+                      )
+                  ),
+                  hh('button', { type: 'button', 'aria-pressed': todayRecorded ? 'true' : 'false', onClick: function() { toggleToday(challenge); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '7px 14px', borderRadius: 8, border: '1px solid ' + (todayRecorded ? '#86efac' : '#fde68a'), background: todayRecorded ? '#166534' : '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, todayRecorded ? 'Today’s check-in is recorded — select to remove' : 'Record today’s optional check-in')
                 )
-              )
-            );
-          })
-        ),
+              );
+            })
+          )
+      ),
 
-      hh('aside', { 'aria-label': 'Tiny Habits guidance', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#fbbf24' } }, '🎓 BJ Fogg (2019), Tiny Habits: '),
-        'Make the action small enough for hard days, attach it to an existing routine, and celebrate immediately. Challenges are easier to sustain when the daily action is small enough not to skip.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-challenge-choice-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-challenge-choice-heading', style: { fontSize: 12, color: '#fde68a', margin: '0 0 4px' } }, 'Choice and flexibility'),
+        hh('p', { style: { margin: 0 } }, 'You can change the reminder, duration, or start date; pause without explanation; remove a check-in; or delete the entry. This tracker does not use streaks or assume that daily repetition is appropriate.')
       )
     );
   }
 
-  // Predict how long a task will take. Log actual. Calibration improves
-  // over time. ADHD students often under-estimate by 30-100%; this builds
-  // the meta-skill.
+  // Optional challenge or practice tracker with neutral check-ins.
   function PersonalTimeEstimator(props) {
     if (!R) return null;
     var data = props.data || { predictions: [] };
@@ -20124,7 +20206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkCompass || {}).sessions || []).length + ' practices', cta: 'Practice now' },
       { id: 'mytkDash',     icon: '📊', label: 'Progress Dashboard',   color: '#10b981', desc: 'Optional summary of selected personal tracker data',
         stat: 'live', cta: 'See progress' },
-      { id: 'mytkChall',    icon: '🏆', label: 'Challenge Board',      color: '#fbbf24', desc: '30-day challenges with daily action log',
+      { id: 'mytkChall',    icon: '🏆', label: 'Challenge Board',      color: '#fbbf24', desc: 'Optional challenges or practices with neutral check-ins',
         stat: ((data.mytkChall || {}).challenges || []).length + ' active', cta: 'Start a challenge' },
       { id: 'mytkTime',     icon: '⏱', label: 'Time Estimator',       color: '#9333ea', desc: 'Predict + log time. Build calibration.',
         stat: ((data.mytkTime || {}).predictions || []).length + ' logged', cta: 'Time a task' },
@@ -20450,7 +20532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Optional personal reading list, status, page notes, and reflections.') },
               { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Optional RAIN, supportive coach, and self-kindness reflection prompts.') },
               { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Neutral summary of selected personal tracker counts and 14-day saved activity.') },
-              { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', '30-day challenges with daily action log + Fogg 2019 Tiny Habits.') },
+              { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', 'Optional challenge or practice notes with editable, neutral check-ins.') },
               { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Predict task time, log actual, see your calibration percentage.') },
               { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.') },
               { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.') },

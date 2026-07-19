@@ -11,79 +11,90 @@ describe('Learning Lab Challenge Board accessibility', () => {
   const end = source.indexOf('  function PersonalTimeEstimator(props) {', start);
   const board = source.slice(start, end);
 
-  it('uses a named creation form with submit and cancel controls', () => {
-    expect(board).toContain("onSubmit: function(event) { event.preventDefault(); addChallenge(); }");
-    expect(board).toContain("'aria-labelledby': 'learning-lab-challenge-form-heading'");
-    expect(board).toContain("hh('button', { type: 'submit'");
+  it('frames check-ins as optional and non-evaluative', () => {
+    expect(board).toContain('Check-ins are optional records, not proof of completion, consistency, motivation, or success.');
+    expect(board).toContain('Missing days do not indicate failure.');
+    expect(board).toContain('does not use streaks or assume that daily repetition is appropriate');
+    expect(board).not.toContain('marked complete for today');
   });
 
-  it('associates all challenge creation fields', () => {
+  it('provides privacy and data-control guidance', () => {
+    expect(board).toContain('Entries can reveal goals, health information, beliefs, or identity.');
+    expect(board).toContain('does not itself notify a teacher, school, coach, clinician, or family member');
+    expect(board).toContain('Edit or delete records you no longer want stored');
+  });
+
+  it('uses blank optional defaults with only the name required', () => {
+    expect(board).toContain("var EMPTY_FORM = { title: '', dailyAction: '', why: '', startDate: '', days: '' }");
+    expect(board).toContain('Only the name is required.');
+    expect(board).toContain("'Optional recurring reminder'");
+    expect(board).toContain("'Reference start date (optional)'");
+    expect(board).toContain("'Reference duration in days (optional)'");
+    expect(board).not.toContain('Daily action is required.');
+    expect(board).not.toContain('days: 30');
+  });
+
+  it('uses a named form, bounded fields, and conditional validation', () => {
+    expect(board).toContain("'aria-labelledby': 'learning-lab-challenge-editor-heading'");
     for (const field of ['title', 'action', 'why', 'start', 'days']) {
-      expect(board).toContain(`htmlFor: 'learning-lab-challenge-${field}'`);
-      expect(board).toContain(`id: 'learning-lab-challenge-${field}'`);
+      expect(board).toContain("htmlFor: 'learning-lab-challenge-" + field + "'");
+      expect(board).toContain("id: 'learning-lab-challenge-" + field + "'");
     }
+    expect(board).toContain('maxLength: 2000');
+    expect(board).toContain('max: 365');
+    expect(board).toContain("titleError ? hh('p', { id: 'learning-lab-challenge-title-error', role: 'alert'");
   });
 
-  it('reports missing title and daily action independently', () => {
-    expect(board).toContain("title: form.title.trim() ? '' : 'Challenge name is required.'");
-    expect(board).toContain("dailyAction: form.dailyAction.trim() ? '' : 'Daily action is required.'");
-    expect(board).toContain("id: 'learning-lab-challenge-title-error', role: 'alert'");
-    expect(board).toContain("id: 'learning-lab-challenge-action-error', role: 'alert'");
-    expect(board).not.toContain("alert('Need title + daily action.')");
+  it('confirms dirty cancellation and restores meaningful focus', () => {
+    expect(board).toContain("title: 'Discard unsaved changes?', confirmText: 'Discard changes'");
+    expect(board).toContain("focusTargetRef.current = 'learning-lab-challenge-add'");
+    expect(board).toContain("focusTargetRef.current = 'learning-lab-challenge-entry-heading-' + challenge.id");
+    expect(board).toContain("focusTargetRef.current = 'learning-lab-challenge-list-heading'");
+    expect(board).toContain('R.useLayoutEffect(function()');
   });
 
-  it('focuses the first invalid required field', () => {
-    expect(board).toContain("document.getElementById(nextErrors.title ? 'learning-lab-challenge-title' : 'learning-lab-challenge-action')");
-    expect(board).toContain("'aria-invalid': errors.title ? 'true' : undefined");
-    expect(board).toContain("'aria-invalid': errors.dailyAction ? 'true' : undefined");
+  it('supports editing and preserves legacy records and logs', () => {
+    expect(board).toContain('var index = editing ? nextChallenges.indexOf(editing.challenge) : -1;');
+    expect(board).toContain('logs: Array.isArray(existing && existing.logs) ? existing.logs : []');
+    expect(board).toContain('challenges.filter(function(item) { return item !== challenge; })');
+    expect(board).toContain('var index = challenges.indexOf(challenge);');
   });
 
-  it('uses semantic challenge lists and articles', () => {
-    expect(board).toContain("hh('ul', { 'aria-label': 'Personal challenges'");
-    expect(board).toContain("return hh('li', { key: 'ch-' + challenge.id");
-    expect(board).toContain("hh('article', { 'aria-label': challenge.title");
+  it('uses neutral check-in text instead of percentage completion', () => {
+    expect(board).toContain("' saved check-in' + (logs.length === 1 ? '' : 's')");
+    expect(board).toContain("'Record today’s optional check-in'");
+    expect(board).toContain("'aria-pressed': todayRecorded ? 'true' : 'false'");
+    expect(board).not.toContain("role: 'progressbar'");
+    expect(board).not.toContain('days complete');
   });
 
-  it('gives each challenge progressbar semantics', () => {
-    expect(board).toContain("role: 'progressbar'");
-    expect(board).toContain("'aria-label': challenge.title + ' completion'");
-    expect(board).toContain("'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct");
-    expect(board).toContain("'aria-valuetext': doneCount + ' of ' + challenge.days + ' days complete'");
+  it('renders visible, semantic, robust check-in dates', () => {
+    expect(board).toContain("'View saved check-ins (' + logs.length + ')'");
+    expect(board).toContain("'aria-label': 'Saved check-ins for ' + title");
+    expect(board).toContain("hh('time', { dateTime: date.dateTime }");
+    expect(board).toContain("'Date not recorded'");
+    expect(board).not.toContain('role: \'img\', \'aria-label\': \'Daily completion history');
   });
 
-  it('provides a concise alternative for daily completion history', () => {
-    expect(board).toContain("role: 'img', 'aria-label': 'Daily completion history. '");
-    expect(board).toContain("' days logged. Today is ' + (todayDone ? 'complete.' : 'not complete.')");
-    expect(board).toContain("'aria-hidden': 'true'");
+  it('uses semantic lists, articles, headings, and 44-pixel actions', () => {
+    expect(board).toContain("'aria-label': 'Saved challenges and practices'");
+    expect(board).toContain("hh('article', { 'aria-labelledby': headingId }");
+    expect(board).toContain("hh('h4', { id: headingId, tabIndex: -1");
+    expect(board).toContain("'aria-label': 'Edit challenge or practice: ' + title");
+    expect(board).toContain("'aria-label': 'Delete challenge or practice: ' + title");
+    expect(board.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('does not rely on color alone for daily history', () => {
-    expect(board).toContain("done ? '✓' : '·'");
-    expect(board).toContain("'✓ complete · · not complete · outlined square is today'");
-    expect(board).not.toContain("title: iso");
+  it('removes the causal Tiny Habits claim from the component and catalog', () => {
+    expect(board).not.toContain('BJ Fogg');
+    expect(board).not.toContain('easier to sustain');
+    expect(source).toContain("desc: 'Optional challenges or practices with neutral check-ins'");
+    expect(source).toContain("'Optional challenge or practice notes with editable, neutral check-ins.'");
   });
 
-  it('exposes today completion as a large toggle', () => {
-    expect(board).toContain("'aria-pressed': todayDone ? 'true' : 'false'");
-    expect(board).toContain("todayDone ? '✓ Done today — select to undo' : '+ Log today'");
-    expect(board).toContain("minHeight: 44, padding: '6px 14px'");
-  });
-
-  it('provides named 44-pixel confirmed deletion', () => {
-    expect(board).toContain("'aria-label': 'Delete challenge: ' + challenge.title");
-    expect(board).toContain("minWidth: 44, minHeight: 44");
-    expect(board).toContain("title: 'Delete this challenge?', confirmText: 'Delete challenge'");
-    expect(board).not.toContain("confirm('Delete this challenge?')");
-  });
-
-  it('announces creation, daily changes, and deletion while preserving data', () => {
-    expect(board).toContain("llAnnounce('Challenge started: '");
-    expect(board).toContain("' marked incomplete for today.' : ' marked complete for today.'");
-    expect(board).toContain("llAnnounce('Challenge deleted.')");
-    expect(board).toContain("setData(Object.assign({}, data, { challenges:");
-  });
-
-  it('keeps the deployed mirror identical', () => {
+  it('preserves unrelated section data and mirror parity', () => {
+    expect(board).toContain('setData(Object.assign({}, data, { challenges:');
+    expect(board).not.toContain('setData({ challenges:');
     expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });
