@@ -10787,123 +10787,184 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { sessions: [] };
     var setData = props.setData;
-    var vs = R.useState('home');                  var view = vs[0]; var setView = vs[1];
-    var ss = R.useState(null);                    var activeStep = ss[0]; var setActiveStep = ss[1];
+    var vs = R.useState('home'); var view = vs[0]; var setView = vs[1];
+    var ss = R.useState(null); var activeStep = ss[0]; var setActiveStep = ss[1];
+    var focusTargetRef = R.useRef(null);
 
     var EXERCISES = [
-      { id: 'rain', label: 'RAIN: Recognize / Allow / Investigate / Nurture', icon: '🌧',
-        steps: [
-          { name: 'Recognize', prompt: 'What are you feeling right now? Just name it as accurately as you can. ("I notice frustration." "Sadness is here.")' },
-          { name: 'Allow', prompt: 'Can you let this feeling be here without trying to push it away? You don\'t have to like it — just allow it.' },
-          { name: 'Investigate', prompt: 'Where do you feel it in your body? What does it want you to know? What does this part of you need right now?' },
-          { name: 'Nurture', prompt: 'Place a hand over your heart or somewhere comforting. What would you say to a friend in this exact moment? Say it to yourself.' }
-        ]
-      },
-      { id: 'critic', label: 'Inner Critic to Inner Coach', icon: '🗣',
-        steps: [
-          { name: 'Hear the critic', prompt: 'What is your inner critic saying to you right now? Write it down word-for-word.' },
-          { name: 'Get curious', prompt: 'Where does this voice come from? Whose voice does it sound like? When did you first hear it?' },
-          { name: 'Reframe as a coach', prompt: 'How would a skilled coach (someone who actually wanted you to grow) say the same thing? Write that version.' },
-          { name: 'Receive it', prompt: 'Read the coach version aloud. Notice how it lands differently in your body than the critic version.' }
-        ]
-      },
-      { id: 'break', label: 'Self-Compassion Break (3 phrases)', icon: '💖',
-        steps: [
-          { name: 'This is a moment of suffering', prompt: 'Acknowledge: "This is hard right now." That alone is mindfulness — naming what is.' },
-          { name: 'Suffering is part of life', prompt: 'Remember: humans are not designed to feel okay all the time. This experience connects you with everyone else who has ever felt this way.' },
-          { name: 'May I be kind to myself', prompt: 'What kind of kindness do you need? Patience? Forgiveness? Permission to rest? Say what you need: "May I have ___."' }
-        ]
-      }
+      { id: 'rain', label: 'RAIN reflection', icon: '🌧', steps: [
+        { name: 'Recognize', prompt: 'If you want, name what you notice right now in your own words. You may also leave it unnamed and move on.' },
+        { name: 'Allow space', prompt: 'You do not have to like, accept, or stay with a feeling. If it feels manageable, notice that it is present; otherwise skip this step.' },
+        { name: 'Explore gently', prompt: 'You may notice a thought, need, or body sensation. Body awareness is optional; you can instead look at a stable object, remain still, or continue.' },
+        { name: 'Offer support', prompt: 'Choose a supportive phrase you might offer yourself or another person. Touch, speaking aloud, and writing are all optional.' }
+      ] },
+      { id: 'critic', label: 'Inner critic to supportive coach', icon: '🗣', steps: [
+        { name: 'Notice the theme', prompt: 'If it feels safe, notice the general theme of a self-critical thought. You do not need to repeat or record harmful words.' },
+        { name: 'Choose distance', prompt: 'You may label it as a thought rather than a fact. You can skip questions about where it came from.' },
+        { name: 'Try supportive wording', prompt: 'What could a respectful, realistic coach say about the same situation? You may think it, write elsewhere, or move on.' },
+        { name: 'Check your response', prompt: 'Notice whether the alternative wording feels useful. You do not have to believe it, say it aloud, or keep it.' }
+      ] },
+      { id: 'break', label: 'Three-part supportive pause', icon: '💖', steps: [
+        { name: 'Name the difficulty', prompt: 'If useful, try a brief phrase such as “This is hard right now.” You may choose different words or skip this step.' },
+        { name: 'Remember common humanity', prompt: 'Many people experience difficulty, and your situation is still your own. Use this idea only if it feels supportive rather than minimizing.' },
+        { name: 'Choose kindness', prompt: 'What support would be useful now—patience, rest, practical help, or something else? No particular feeling or phrase is required.' }
+      ] }
     ];
 
-    function focusStepHeading() {
-      setTimeout(function() { var heading = document.getElementById('learning-lab-self-compassion-step-heading'); if (heading) heading.focus(); }, 0);
+    var sessions = Array.isArray(data.sessions) ? data.sessions : [];
+    R.useLayoutEffect(function() {
+      var targetId = focusTargetRef.current;
+      if (!targetId) return;
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        focusTargetRef.current = null;
+      }
+    }, [view, activeStep ? activeStep.id + ':' + activeStep.step : '', sessions.length]);
+
+    function exerciseFor(id) {
+      return EXERCISES.filter(function(exercise) { return exercise.id === id; })[0] || null;
+    }
+    function sessionDate(session) {
+      var raw = session && (session.time || session.date);
+      if (!raw) return null;
+      var parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return { dateTime: parsed.toISOString(), label: parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
     }
     function openExercise(exercise, stepIndex) {
+      focusTargetRef.current = 'learning-lab-self-compassion-step-heading';
       setActiveStep({ id: exercise.id, step: stepIndex });
       setView('exercise');
-      focusStepHeading();
     }
-    function logSession(exercise, notes) {
-      var session = { id: tkId(), date: todayISO(), time: Date.now(), exerciseId: exercise.id, notes: notes || '' };
-      setData(Object.assign({}, data, { sessions: [session].concat(data.sessions || []) }));
-      llAnnounce('Self-compassion practice completed: ' + exercise.label + '.');
+    function returnHome(exerciseId, announcement) {
+      focusTargetRef.current = 'learning-lab-self-compassion-start-' + exerciseId;
+      setActiveStep(null);
+      setView('home');
+      if (announcement) llAnnounce(announcement);
+    }
+    function finishWithoutSaving(exercise) {
+      returnHome(exercise.id, 'Practice closed without adding a history entry.');
+    }
+    function savePractice(exercise) {
+      var id = tkId();
+      var session = { id: id, date: todayISO(), time: Date.now(), exerciseId: exercise.id };
+      setData(Object.assign({}, data, { sessions: [session].concat(sessions) }));
+      focusTargetRef.current = 'learning-lab-self-compassion-session-heading-' + id;
+      setActiveStep(null);
+      setView('home');
+      llAnnounce('Practice history entry saved: ' + exercise.label + '.');
+    }
+    async function removeSession(session) {
+      var exercise = exerciseFor(session && session.exerciseId);
+      var label = exercise ? exercise.label : 'Saved practice';
+      if (!(await askLearningLabConfirmation('This permanently removes the “' + label + '” entry from this personal history.', {
+        title: 'Delete this practice history entry?', confirmText: 'Delete entry'
+      }))) return;
+      setData(Object.assign({}, data, { sessions: sessions.filter(function(item) { return item !== session; }) }));
+      focusTargetRef.current = 'learning-lab-self-compassion-history-heading';
+      llAnnounce('Practice history entry deleted.');
     }
 
-    var sessions = data.sessions || [];
     var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
+    var buttonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid rgba(244,114,182,0.55)', background: 'rgba(15,23,42,0.65)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit', fontWeight: 800, cursor: 'pointer' };
 
     if (view === 'exercise' && activeStep !== null) {
-      var exercise = EXERCISES.filter(function(item) { return item.id === activeStep.id; })[0];
-      if (!exercise) { setView('home'); return null; }
-      var step = exercise.steps[activeStep.step] || exercise.steps[0];
-      var currentStep = activeStep.step + 1;
+      var exercise = exerciseFor(activeStep.id);
+      if (!exercise) return null;
+      var safeIndex = Math.max(0, Math.min(exercise.steps.length - 1, Number(activeStep.step) || 0));
+      var step = exercise.steps[safeIndex];
+      var currentStep = safeIndex + 1;
+      var isLast = currentStep === exercise.steps.length;
 
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(exercise.icon, exercise.label, 'Step ' + currentStep + ' of ' + exercise.steps.length + ': ' + step.name, '#f472b6'),
-
-        hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-step-heading', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(244,114,182,0.20), rgba(15,23,42,0.7))', border: '2px solid #f472b6', marginBottom: 14, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
-          hh('h3', { id: 'learning-lab-self-compassion-step-heading', tabIndex: -1, style: { fontSize: 12, color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', margin: '0 0 12px' } }, 'Step ' + currentStep + ' of ' + exercise.steps.length + ': ' + step.name),
-          hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.6, fontStyle: 'italic', margin: 0 } }, '“' + step.prompt + '”')
+        hh('header', null,
+          hh('h2', { style: { fontSize: 18, color: '#f9a8d4', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, exercise.icon + ' '), exercise.label),
+          hh('p', { id: 'learning-lab-self-compassion-step-safety', style: { color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, margin: '0 0 12px' } }, 'This optional reflection is not therapy, diagnosis, or emergency support. Skip any prompt, keep your eyes open, remain still, or stop at any time. If a prompt increases distress, leave the activity and seek support that feels safe for you.')
+        ),
+        hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-step-heading', 'aria-describedby': 'learning-lab-self-compassion-step-safety', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(244,114,182,0.20), rgba(15,23,42,0.7))', border: '2px solid #f472b6', marginBottom: 14, minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+          hh('h3', { id: 'learning-lab-self-compassion-step-heading', tabIndex: -1, style: { fontSize: 13, color: '#f9a8d4', fontWeight: 800, textAlign: 'center', margin: '0 0 12px', outlineOffset: 4 } }, 'Step ' + currentStep + ' of ' + exercise.steps.length + ': ' + step.name),
+          hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.6, margin: 0 } }, step.prompt)
         ),
 
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
-          tkBtn('← Cancel', function() { setActiveStep(null); setView('home'); }, 'ghost', { minHeight: 44 }),
+          hh('button', { type: 'button', onClick: function() { returnHome(exercise.id, 'Practice closed.'); }, 'data-ll-focusable': true, style: buttonStyle }, 'Stop and return'),
           hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-            activeStep.step > 0 ? tkBtn('← Previous step', function() { openExercise(exercise, activeStep.step - 1); }, 'secondary', { minHeight: 44 }) : null,
-            activeStep.step + 1 < exercise.steps.length
-              ? tkBtn('Next step →', function() { openExercise(exercise, activeStep.step + 1); }, 'primary', { minHeight: 44 })
-              : tkBtn('✓ Finish practice', function() { logSession(exercise); setActiveStep(null); setView('home'); }, 'good', { minHeight: 44 })
+            safeIndex > 0 ? hh('button', { type: 'button', onClick: function() { openExercise(exercise, safeIndex - 1); }, 'data-ll-focusable': true, style: buttonStyle }, 'Previous step') : null,
+            !isLast ? hh('button', { type: 'button', onClick: function() { openExercise(exercise, safeIndex + 1); }, 'data-ll-focusable': true, style: Object.assign({}, buttonStyle, { background: '#9d174d', color: '#fff' }) }, 'Next step')
+            : hh(R.Fragment, null,
+                hh('button', { type: 'button', onClick: function() { finishWithoutSaving(exercise); }, 'data-ll-focusable': true, style: buttonStyle }, 'Finish without saving'),
+                hh('button', { type: 'button', onClick: function() { savePractice(exercise); }, 'data-ll-focusable': true, style: Object.assign({}, buttonStyle, { background: '#9d174d', color: '#fff' }) }, 'Save to personal history')
+              )
           )
         ),
 
         hh('div', { role: 'progressbar', 'aria-label': exercise.label + ' progress', 'aria-valuemin': 1, 'aria-valuemax': exercise.steps.length, 'aria-valuenow': currentStep, 'aria-valuetext': 'Step ' + currentStep + ' of ' + exercise.steps.length, style: { display: 'flex', justifyContent: 'center', gap: 6 } },
           exercise.steps.map(function(_, index) {
-            return hh('span', { key: 'pd-' + index, 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: '50%', background: index <= activeStep.step ? '#f472b6' : 'rgba(244,114,182,0.20)', border: '1px solid #f472b6' } });
+            return hh('span', { key: 'pd-' + index, 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: '50%', background: index <= safeIndex ? '#f472b6' : 'rgba(244,114,182,0.20)', border: '1px solid #f472b6' } });
           })
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💖', 'Self-Compassion Practice', 'Three guided exercises based on Neff (2003). Build the skill of treating yourself like a friend.', '#f472b6'),
-
-      hh('aside', { 'aria-label': 'Self-compassion background', style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#f472b6' } }, '🎓 Self-compassion versus self-esteem: '),
-        'Neff (2003) found that self-compassion correlates strongly with well-being and motivation without depending on comparison or being protected from setbacks. The skill is treating yourself the way you would treat a friend in the same situation.'
+      hh('header', null,
+        hh('h2', { id: 'learning-lab-self-compassion-heading', style: { fontSize: 18, color: '#f9a8d4', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '💖 '), 'Optional Self-Compassion Reflections'),
+        hh('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, margin: '0 0 8px' } }, 'Use, adapt, or skip any prompt. There is no required feeling, body position, spoken phrase, pace, or saved completion. This activity is not therapy, diagnosis, or emergency support.'),
+        hh('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Saved history can reveal emotional or mental-health information. It is stored with this Learning Lab data; saving here does not itself notify a teacher, school, counselor, clinician, or family member. Use care on a shared or managed device, and delete entries you no longer want stored.')
       ),
 
-      hh('ul', { 'aria-label': 'Self-compassion exercises', style: Object.assign({}, listStyle, { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 }) },
-        EXERCISES.map(function(exercise) {
-          var count = sessions.filter(function(session) { return session.exerciseId === exercise.id; }).length;
-          return hh('li', { key: 'ex-' + exercise.id },
-            hh('button', { type: 'button', onClick: function() { openExercise(exercise, 0); }, 'data-ll-focusable': true, style: { display: 'block', width: '100%', minHeight: 110, height: '100%', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', borderLeft: '4px solid #f472b6', cursor: 'pointer' } },
-              hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, exercise.icon),
-              hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#f472b6' } }, exercise.label),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, exercise.steps.length + ' steps · ' + (count > 0 ? 'practiced ' + count + ' time' + (count === 1 ? '' : 's') : 'not practiced yet'))
-            )
-          );
-        })
+      hh('aside', { 'aria-labelledby': 'learning-lab-self-compassion-research-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-self-compassion-research-heading', style: { fontSize: 12, color: '#f9a8d4', margin: '0 0 4px' } }, 'Research context'),
+        hh('p', { style: { margin: 0 } }, 'A 2003 paper proposed self-compassion as a psychological concept. Later intervention reviews report possible benefits for some outcomes, while also noting limits such as study heterogeneity, high risk of bias, and comparisons with passive controls. These brief prompts are not equivalent to a studied clinical intervention and do not promise an outcome.')
       ),
 
-      sessions.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-history-heading' },
-        hh('h3', { id: 'learning-lab-self-compassion-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 Practice log'),
-        hh('ul', { style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 4 }) },
-          sessions.slice(0, 15).map(function(session) {
-            var exercise = EXERCISES.filter(function(item) { return item.id === session.exerciseId; })[0] || EXERCISES[0];
-            return hh('li', { key: 'se-' + session.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #f472b6', display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, hh('span', { 'aria-hidden': 'true' }, exercise.icon + ' '), exercise.label),
-              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, relDate(session.date))
+      hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-exercises-heading' },
+        hh('h3', { id: 'learning-lab-self-compassion-exercises-heading', style: { fontSize: 13, color: '#f9a8d4', margin: '0 0 8px' } }, 'Choose an optional reflection'),
+        hh('ul', { 'aria-label': 'Optional self-compassion reflections', style: Object.assign({}, listStyle, { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 }) },
+          EXERCISES.map(function(exercise) {
+            var count = sessions.filter(function(session) { return session && session.exerciseId === exercise.id; }).length;
+            return hh('li', { key: 'ex-' + exercise.id },
+              hh('button', { id: 'learning-lab-self-compassion-start-' + exercise.id, type: 'button', 'aria-label': 'Start ' + exercise.label, onClick: function() { openExercise(exercise, 0); }, 'data-ll-focusable': true, style: { display: 'block', width: '100%', minHeight: 110, height: '100%', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', borderLeft: '4px solid #f472b6', cursor: 'pointer' } },
+                hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, exercise.icon),
+                hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#f472b6' } }, exercise.label),
+                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, exercise.steps.length + ' optional steps · ' + count + ' saved histor' + (count === 1 ? 'y entry' : 'y entries'))
+              )
             );
           })
         )
-      ) : null
+      ),
+
+      hh('section', { 'aria-labelledby': 'learning-lab-self-compassion-history-heading' },
+        hh('h3', { id: 'learning-lab-self-compassion-history-heading', tabIndex: -1, style: { fontSize: 13, color: '#f9a8d4', margin: '0 0 8px', outlineOffset: 4 } }, 'Personal practice history'),
+        sessions.length === 0 ? tkEmptyState('💖', 'No practice history entries saved.', null, null)
+        : hh('ul', { 'aria-label': 'All personal self-compassion history entries', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 6 }) },
+            sessions.map(function(session, index) {
+              session = session || {};
+              var exercise = exerciseFor(session.exerciseId);
+              var label = exercise ? exercise.label : 'Practice type not recorded';
+              var icon = exercise ? exercise.icon : '•';
+              var date = sessionDate(session);
+              var itemKey = session.id ? String(session.id) : 'legacy-' + index;
+              var headingId = 'learning-lab-self-compassion-session-heading-' + (session.id || itemKey);
+              return hh('li', { key: 'se-' + itemKey, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #f472b6', overflowWrap: 'anywhere' } },
+                hh('article', { 'aria-labelledby': headingId },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                    hh('div', null,
+                      hh('h4', { id: headingId, tabIndex: -1, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 2px', outlineOffset: 4 } }, hh('span', { 'aria-hidden': 'true' }, icon + ' '), label),
+                      hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', margin: 0 } }, date ? hh('time', { dateTime: date.dateTime }, date.label) : 'Date not recorded')
+                    ),
+                    hh('button', { type: 'button', 'aria-label': 'Delete self-compassion history entry: ' + label, onClick: function() { removeSession(session); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 6, border: '1px solid transparent', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '×'))
+                  )
+                )
+              );
+            })
+          )
+      )
     );
   }
 
-  // Aggregate view of everything: goals progress + focus minutes + habit
-  // streaks + reflection count + sleep avg + recent activity. Single
-  // overview screen for the "how am I doing?" question.
+  // Optional, non-clinical self-compassion reflection prompts.
   function PersonalProgressDashboard(props) {
     if (!R) return null;
     var allData = props.allData || {};
@@ -20058,7 +20119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkGrat || {}).entries || []).length + ' days logged', cta: 'Log today\'s 3' },
       { id: 'mytkRead',     icon: '📚', label: 'Reading Tracker',      color: '#fbbf24', desc: 'Optional personal reading list + reflections',
         stat: ((data.mytkRead || {}).books || []).filter(function(b) { return b.status === 'done'; }).length + ' read', cta: 'Track a book' },
-      { id: 'mytkCompass',  icon: '💖', label: 'Self-Compassion',      color: '#f472b6', desc: 'RAIN + Inner Coach + Self-Compassion Break',
+      { id: 'mytkCompass',  icon: '💖', label: 'Self-Compassion',      color: '#f472b6', desc: 'Optional RAIN + supportive reflection prompts',
         stat: ((data.mytkCompass || {}).sessions || []).length + ' practices', cta: 'Practice now' },
       { id: 'mytkDash',     icon: '📊', label: 'Progress Dashboard',   color: '#10b981', desc: 'All toolkit stats + trends in one view',
         stat: 'live', cta: 'See progress' },
@@ -20386,7 +20447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkJournal',icon: '📓', label: __alloT('stem.learning_lab.learning_journal', 'Learning Journal'),     desc: __alloT('stem.learning_lab.free_form_journal_with_subject_mood_ta', 'Optional personal learning notes with searchable subject, mood, and tags; review privacy before use.') },
               { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', 'Optional appreciation notes with privacy and non-treatment guidance; use only when this reflection fits.') },
               { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Optional personal reading list, status, page notes, and reflections.') },
-              { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).') },
+              { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Optional RAIN, supportive coach, and self-kindness reflection prompts.') },
               { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Single overview of every toolkit tool with 14-day activity strip + suggestions.') },
               { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', '30-day challenges with daily action log + Fogg 2019 Tiny Habits.') },
               { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Predict task time, log actual, see your calibration percentage.') },
