@@ -683,8 +683,29 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
 
     it('every copy guards the offline-history loader against clobbering a live student', () => {
         NEW_COPIES.forEach(source => {
-            expect(source).toContain("_alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp')");
-            expect(source).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive() || _qrLiveStudent)) {');
+            // Current guard form (@41cc1dd52): mailbox entries are checked via
+            // the entry params directly; Firebase live students self-heal from
+            // data.resources so they no longer need an explicit term here.
+            expect(source).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()');
+            expect(source).toContain("|| _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp'))) {");
+        });
+    });
+
+    it('every copy wires online/pageshow recovery (refresh-resilience wave)', () => {
+        NEW_COPIES.forEach(source => {
+            // Module-scope session-doc pump nudges on network return + bfcache restore.
+            expect(source).toContain('window.__alloMbNetWakeWired = true;');
+            expect(source).toContain("window.addEventListener('pageshow', (event) => { if (event && event.persisted) _alloMbNudge(); });");
+            // Student recv loop + teacher roster loop both re-poll on 'online'/'pageshow' (and clean up).
+            expect(source.split("try { window.addEventListener('online', onNetBack); window.addEventListener('pageshow', onPageShow); } catch (_) {}").length - 1).toBe(2);
+            expect(source.split("try { window.removeEventListener('online', onNetBack); window.removeEventListener('pageshow', onPageShow); } catch (_) {}").length - 1).toBe(2);
+            // RTC retry resets its backoff on network return + bfcache restore.
+            expect(source).toContain("try { window.addEventListener('online', onRtcNetBack); window.addEventListener('pageshow', onRtcPageShow); } catch (_) {}");
+            expect(source).toContain("try { window.removeEventListener('online', onRtcNetBack); window.removeEventListener('pageshow', onRtcPageShow); } catch (_) {}");
+            // Mailbox join auto-retries only TRANSIENT failures; terminal ones
+            // (old script / ended session / denied) keep the manual button.
+            expect(source).toContain('setMbJoinRetryable(!oldScript && !sessionGone);');
+            expect(source).toContain('}, [mbJoinError, mbJoinRetryable]);');
         });
     });
 

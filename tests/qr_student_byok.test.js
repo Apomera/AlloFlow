@@ -203,7 +203,9 @@ describe('student AI setup source wiring', () => {
 
   it('exposes setup while AI features remain locked and never inherits the active teacher provider', () => {
     expect(headerSource).toContain('window.__alloStudentAiSetupAllowed');
-    expect(headerSource).toContain("window.__alloStudentAiConfigured ? 'AI ready' : 'Set up AI'");
+    // Labels are i18n'd now; the configured-state toggle is what matters.
+    expect(headerSource).toContain('window.__alloStudentAiConfigured ? personalAIReadyLabel : personalAIConnectLabel');
+    expect(headerSource).toContain("t('header.personal_ai_ready') || 'AI ready'");
     expect(headerSource).toContain('header_student_ai_disconnect');
     expect(modalSource).toContain('const canInheritActiveProvider = !isStudentAiSetup');
     expect(anti).toContain("apiKey: _alloHasAnyStudentEntry() ? (_aiUserConfig?.apiKey || '')");

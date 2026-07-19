@@ -748,6 +748,18 @@ function _applyMbSessionAdapter() {
         });
       } catch (_) {}
     }
+    // Same for network return and bfcache restore: 'online' fires on a
+    // Wi-Fi↔LTE handoff before any backoff timer expires, and 'pageshow'
+    // with persisted=true is the only reliable signal after a back-forward
+    // cache restore (timers are stale and visibilitychange may not fire —
+    // the page was already visible when it was frozen).
+    if (!window.__alloMbNetWakeWired) {
+      window.__alloMbNetWakeWired = true;
+      try {
+        window.addEventListener('online', () => { _alloMbNudge(); });
+        window.addEventListener('pageshow', (event) => { if (event && event.persisted) _alloMbNudge(); });
+      } catch (_) {}
+    }
   }
 }
 _applyMbSessionAdapter(); // Boot wrap; must wrap AFTER the LAN adapter so mailbox refs outrank it.
@@ -5705,6 +5717,15 @@ const SESSION_TIER1_LEAVES = new Set([
   // with the session doc at session end. Teacher's Live Session Center renders
   // it as a per-student progress chip.
   'wsProgress',
+  // Session AI policy (teacher-managed): aiPolicy = { studentAi: 'off'|'student-byok' }.
+  // The teacher's chosen student-AI posture for the session — students read it to
+  // enable/disable their personal AI connection (the QR-pathways policy machinery;
+  // consumed via _alloApplyAuthoritativeStudentAiPolicy, which itself coerces to the
+  // enum). Enum-only, teacher-set, no student-typed content, and writeToSession
+  // normalizes the shape before writing (unknown values coerce to 'off' = fail-closed).
+  // Without this leaf the policy sync AND the resources sync it rides with were
+  // both refused (2026-07-19 field report).
+  'aiPolicy',
   // Word Sounds probe-result handoff (student-written): roster.{uid}.wsProbeResult
   // = { activity, correct, total, accuracy, itemsPerMin, elapsed, grade, form, at }
   // — structured numbers + pattern-checked enum-ish strings only
@@ -5878,7 +5899,15 @@ const writeToSession = async (sessionRef, payload) => {
       return Promise.reject(new Error('writeToSession: invalid AlloHaven recognition config'));
     }
     safePayload = { ...safePayload, havenRecognitionConfig: normalizedConfig };
-  }  safePayload = stripUndefined(safePayload);
+  }
+  if (Object.prototype.hasOwnProperty.call(safePayload, 'aiPolicy')) {
+    // Shape-enforce the allowlisted aiPolicy leaf: strictly the enum object,
+    // never free text. Unknown/malformed values fail CLOSED to student AI off.
+    const rawPolicy = safePayload.aiPolicy;
+    const studentAi = rawPolicy && typeof rawPolicy === 'object' ? rawPolicy.studentAi : rawPolicy;
+    safePayload = { ...safePayload, aiPolicy: { studentAi: studentAi === 'student-byok' ? 'student-byok' : 'off' } };
+  }
+  safePayload = stripUndefined(safePayload);
   const violations = [];
   Object.keys(safePayload).forEach(key => {
     const leaf = key.split('.').pop();
@@ -15691,6 +15720,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbHostedAssignment, setMbHostedAssignment] = useState(null);
   const [mbJoinStatus, setMbJoinStatus] = useState('');
   const [mbJoinError, setMbJoinError] = useState(false);
+  const [mbJoinRetryable, setMbJoinRetryable] = useState(false);
   const [mbJoinAttempt, setMbJoinAttempt] = useState(0);
   const [standardResumeAttempt, setStandardResumeAttempt] = useState(0);
   const [mbHandUp, setMbHandUp] = useState(false);
@@ -16354,6 +16384,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       };
       try { document.addEventListener('visibilitychange', onVisible); } catch (_) {}
+      // Network return / bfcache restore: same instant re-poll as a wake, so
+      // the roster and student signals recover without waiting out backoff.
+      const onNetBack = () => { if (!cancelled) { if (timer) clearTimeout(timer); timer = setTimeout(poll, 300); } };
+      const onPageShow = (event) => { if (event && event.persisted) onNetBack(); };
+      try { window.addEventListener('online', onNetBack); window.addEventListener('pageshow', onPageShow); } catch (_) {}
       // Bridge nudge fan-out: the teacher's own session-doc writes ping every
       // connected student's channel so their pumps pull immediately.
       _alloMbSetNudgeSender(() => {
@@ -16369,6 +16404,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (timer) clearTimeout(timer);
           _alloMbSetNudgeSender(null);
           try { document.removeEventListener('visibilitychange', onVisible); } catch (_) {}
+          try { window.removeEventListener('online', onNetBack); window.removeEventListener('pageshow', onPageShow); } catch (_) {}
           _mbCloseTeacherPeers();
       };
   }, [mbLive, mbConfig, _mbCloseTeacherPeers]);
@@ -25891,9 +25927,37 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   useEffect(() => {
       if (!liveJoinError || !liveJoinRetryable || typeof window === 'undefined') return undefined;
       const retryWhenOnline = () => setLiveJoinAttempt(value => value + 1);
+      // Wake and bfcache-restore retries: a join that failed while the phone
+      // slept (or that bfcache froze mid-flight) otherwise sits in the error
+      // state until a manual tap — the moment students reach for refresh.
+      const retryOnWake = () => { if (typeof document === 'undefined' || !document.hidden) retryWhenOnline(); };
+      const retryOnPageShow = (event) => { if (event && event.persisted) retryWhenOnline(); };
       window.addEventListener('online', retryWhenOnline, { once: true });
-      return () => window.removeEventListener('online', retryWhenOnline);
+      document.addEventListener('visibilitychange', retryOnWake);
+      window.addEventListener('pageshow', retryOnPageShow);
+      return () => {
+          window.removeEventListener('online', retryWhenOnline);
+          document.removeEventListener('visibilitychange', retryOnWake);
+          window.removeEventListener('pageshow', retryOnPageShow);
+      };
   }, [liveJoinError, liveJoinRetryable]);
+  // Mailbox twin of the effect above: transient mailbox join failures retry
+  // on connectivity return / wake / bfcache restore; terminal failures
+  // (mbJoinRetryable=false) keep the manual Retry button only.
+  useEffect(() => {
+      if (!mbJoinError || !mbJoinRetryable || typeof window === 'undefined') return undefined;
+      const retry = () => setMbJoinAttempt(value => value + 1);
+      const retryOnWake = () => { if (typeof document === 'undefined' || !document.hidden) retry(); };
+      const retryOnPageShow = (event) => { if (event && event.persisted) retry(); };
+      window.addEventListener('online', retry, { once: true });
+      document.addEventListener('visibilitychange', retryOnWake);
+      window.addEventListener('pageshow', retryOnPageShow);
+      return () => {
+          window.removeEventListener('online', retry);
+          document.removeEventListener('visibilitychange', retryOnWake);
+          window.removeEventListener('pageshow', retryOnPageShow);
+      };
+  }, [mbJoinError, mbJoinRetryable]);
   const handleExportPDF = () => {
       handleExport('print');
   };
@@ -28095,6 +28159,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setHistory(prev => (Array.isArray(prev) && prev.length ? prev : []));
       setGeneratedContent(null);
       setMbJoinError(false);
+      setMbJoinRetryable(false);
       setMbJoinStatus('Contacting the class mailbox…');
 
       (async () => {
@@ -28152,6 +28217,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               setMbStudent(null);
               setMbJoinError(true);
               const oldScript = String(joinErr?.code || '').includes('bad-action') || /v7|update/i.test(String(joinErr?.message || ''));
+              const sessionGone = String(joinErr?.code || '').includes('no-session') || String(joinErr?.code || '').includes('denied');
+              // Transient failures (radio still waking, Wi-Fi handoff, mailbox
+              // blip) auto-retry via the online/wake effect below; terminal
+              // ones (old script, ended session, denied) keep the manual
+              // Retry button only.
+              setMbJoinRetryable(!oldScript && !sessionGone);
               const joinMessage = oldScript
                   ? 'Your teacher needs to update the Class Mailbox script before students can join securely.'
                   : 'Could not join this live session. Check the connection, then retry or ask your teacher for a new QR code.';
@@ -28246,6 +28317,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   addToast(mbStudentConnectedRef.current ? 'This live session has ended.' : 'Could not find this live session — it may have ended. Ask your teacher for a new QR code.', 'error');
                   setMbStudent(null);
               setMbJoinError(true);
+                  setMbJoinRetryable(false);
                   return;
               }
               errorCount = Math.min(errorCount + 1, 3);
@@ -28261,6 +28333,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (typeof document !== 'undefined' && !document.hidden) mbPollNowRef.current?.();
       };
       try { document.addEventListener('visibilitychange', onVisible); } catch (_) {}
+      // Wi-Fi↔LTE flap or bfcache restore: re-poll immediately instead of
+      // sitting out the error backoff — that dead window reads as frozen.
+      const onNetBack = () => { mbPollNowRef.current?.(); };
+      const onPageShow = (event) => { if (event && event.persisted) mbPollNowRef.current?.(); };
+      try { window.addEventListener('online', onNetBack); window.addEventListener('pageshow', onPageShow); } catch (_) {}
       announce().catch(e => warnLog('Mailbox join announce failed', e));
       poll();
       return () => {
@@ -28270,6 +28347,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           mbPollNowRef.current = null;
           _alloMbSetNudgeSender(null);
           try { document.removeEventListener('visibilitychange', onVisible); } catch (_) {}
+          try { window.removeEventListener('online', onNetBack); window.removeEventListener('pageshow', onPageShow); } catch (_) {}
       };
   }, [mbStudent, applyMbDownPayload]);
   // Real-time upgrade: the student offers a WebRTC data channel, signaled
@@ -28308,6 +28386,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
       };
       try { document.addEventListener('visibilitychange', onRtcVisible); } catch (_) {}
+      // Network return / bfcache restore: reset the backoff and re-offer —
+      // riding out a 60s retry window after a Wi-Fi flap reads as frozen.
+      // 1.2s delay lets the radio settle before the SDP round-trip.
+      const onRtcNetBack = () => {
+          if (cancelled) return;
+          const dc = mbRtcRef.current?.dc;
+          if (!dc || dc.readyState !== 'open') {
+              tries = 0;
+              if (retryTimer) clearTimeout(retryTimer);
+              retryTimer = setTimeout(attempt, 1200);
+          }
+      };
+      const onRtcPageShow = (event) => { if (event && event.persisted) onRtcNetBack(); };
+      try { window.addEventListener('online', onRtcNetBack); window.addEventListener('pageshow', onRtcPageShow); } catch (_) {}
       const attempt = async () => {
           if (cancelled) return;
           tries += 1;
@@ -28353,6 +28445,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           cancelled = true;
           if (retryTimer) clearTimeout(retryTimer);
           try { document.removeEventListener('visibilitychange', onRtcVisible); } catch (_) {}
+          try { window.removeEventListener('online', onRtcNetBack); window.removeEventListener('pageshow', onRtcPageShow); } catch (_) {}
           cleanupPeer();
       };
   }, [mbStudent, applyMbDownPayload]);
@@ -28447,6 +28540,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     if (generatedContent && generatedContent.id === id) {
         setGeneratedContent(null);
       setMbJoinError(false);
+      setMbJoinRetryable(false);
       setMbJoinStatus('Contacting the class mailbox…');
         setActiveView('input');
     }
@@ -28673,6 +28767,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
       setGeneratedContent(null);
       setMbJoinError(false);
+      setMbJoinRetryable(false);
       setMbJoinStatus('Contacting the class mailbox…');
       setActiveView('input');
       setInputText("");
@@ -33444,6 +33539,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     if (action === 'dismiss') {
       setGeneratedContent(null);
       setMbJoinError(false);
+      setMbJoinRetryable(false);
       setMbJoinStatus('Contacting the class mailbox…');
       setActiveView('input');
       addToast('Transcript shortcuts hidden. The source text is still available.', 'info');
