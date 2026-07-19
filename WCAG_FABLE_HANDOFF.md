@@ -43,6 +43,10 @@ These sections were independently committed:
 | Personal Reference Sheet Builder | `cffee2e98` |
 | Optional Support Request Notes | `d3dd20d32` |
 | Mindfulness Practice | `6598a8ad6` |
+| Anxiety Toolkit | `876bb36f4` |
+| Decision Maker | `4b9032eb8` |
+| Vocabulary Builder | `ea486afd3` |
+| Focus-timing stabilization (Concept Map + Notes Workbench) | `f398b40e3` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -71,9 +75,19 @@ Known follow-ups (not blocking, for a future section or the i18n lane):
 - Both retained i18n keys `stem.learning_lab.ask_for_help_tracker` and `stem.learning_lab.log_every_help_ask_normalize_the_most_` still serve OLD translated strings ("Ask-for-Help Tracker", "Log every help ask…") in non-English packs, so localized UIs may still show the removed framing. Same pattern likely applies to `stem.learning_lab.mindfulness` descriptions. Fixing means minting new keys (falls back to the corrected English) or updating 63 packs.
 - `formattedDate` in the support notes treats `time: null` or `time: ''` as epoch 0 and would render a 1970 date; only non-numeric garbage falls back to "Date not recorded". Exotic, not observed in real data.
 
-## Next section: PersonalAnxietyToolkit
+## Session notes (2026-07-19 late evening, Fable — second continuation)
 
-Continue with `PersonalAnxietyToolkit` (crisis-adjacent content — apply the scientific-integrity and non-communication conventions with extra care, and check any crisis-resource claims are current), then the remaining Learning Lab components and app areas, one independently tested and committed section at a time.
+Four more sections completed and committed, all with the standard gate (focused contract + render tests, golden, bounded full suite green; hash-guarded pathspec commits). Mirror SHA-256 after `f398b40e3`: `C98E224E7B5267D25B883B1A2FB8017A0972CFDF16493CB392660EA8C978BB50`.
+
+- **Anxiety Toolkit** `876bb36f4`: hedged "regulation circuits"/"reduces fusion" claims into attributions (ACT/DBT named, no effect claims), added optional/local-save/non-communication guidance, DBT cold-water opt-out caution, de-ranked "Most-used tools" → "Tools you have logged" (no sort, no ordinals, counts framed informational), added "Clear logged uses" with confirmation, pendingFocusId pattern, malformed-log guards, crisis aside text 11→12px. Crisis links (988 call/text/chat, Maine 1-888-568-1112, relay 711) verified present and kept.
+- **Decision Maker** `4b9032eb8`: render-crash-class guards (options/criteria non-arrays, non-string names crashed `namedOptions` filter), Untitled fallbacks, pendingFocusId, weight input value clamped, local-only note, 10px→12px. **Shared `relDate()` now guards null/NaN → "date not recorded"** (was rendering "null days ago"/"NaN months ago" for malformed `createdAt` in every caller).
+- **Vocabulary Builder** `ea486afd3`: same guard class (`wordsOf`, listedLists, textValue fallbacks), pendingFocusId, self-ratings-not-grades framing, catalog stat guards (mytkMind/mytkDec/mytkVocab all Array.isArray-guarded now).
+- **Focus stabilization** `f398b40e3`: ROOT CAUSE of the notes-workbench and concept-map render-test flakes was those components' `setTimeout` focus racing the tests' microtask-only flush. Converted both to the pendingFocusId effect pattern; 6× stress runs deterministic. Do NOT patch the tests with timer flushes — that made it worse; fix the component. **3 `setTimeout`-focus sites remain in the file** (grep `setTimeout(function() { var target = document.getElementById`) — convert each as its section is audited, or proactively if its test flakes.
+- Process note: when a cross-cutting fix lands mid-section, revert it temporarily (hash-verify against the section's verified state), commit the section, re-apply (hash-verify again), then commit the fix separately. Worked cleanly twice.
+
+## Next section
+
+Continue with the next unaudited Learning Lab component after `PersonalVocabBuilder` (in file order: `PersonalMemoryPalace` region / whatever follows — check for an existing `learning_lab_*_a11y` test to see if it had a prior structural pass), then the remaining app areas, one independently tested and committed section at a time. Apply the established wave conventions: pendingFocusId focus, Array.isArray/isRecord/textValue guards, optional/local-save/non-communication guidance, hedged claims, no ranking/scoring pressure, 12px minimum helper text, catalog stat guards, paired contract + render tests.
 
 ## Completed section reference: Optional Support Request Notes
 
