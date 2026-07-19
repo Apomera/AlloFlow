@@ -18713,6 +18713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || {};
     var navigate = props.navigate; // function(viewId)
+    var qs = R.useState(''); var query = qs[0]; var setQuery = qs[1];
 
     var goalData = data.mytkGoals || { goals: [] };
     var goals = goalData.goals || [];
@@ -18752,7 +18753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var habitCount = (habitData.habits || []).length;
 
     var TOOLS = [
-      { id: 'mytkGoals',    icon: '🎯', label: 'My Goals',           color: '#9333ea', desc: 'Personal SMART goals + progress tracking',
+      { id: 'mytkGoals',    icon: '🎯', label: 'My Goals',           color: '#9333ea', desc: 'Optional personal goals and progress notes',
         stat: activeGoals + ' active', cta: 'Track goals' },
       { id: 'mytkFocus',    icon: '⏱️', label: 'Focus Timer',         color: '#ef4444', desc: 'Custom Pomodoro with session log + streak',
         stat: todayFocusMin + 'm today', cta: 'Start a focus session' },
@@ -18772,15 +18773,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: openTasks + ' open', cta: 'Break a task down' },
       { id: 'mytkHabits',   icon: '✅', label: 'Habit Tracker',        color: '#10b981', desc: 'Daily check-ins + streak heatmap',
         stat: habitCount + ' tracked', cta: 'Track a habit' },
-      { id: 'mytkReflect',  icon: '📔', label: 'Weekly Reflection',    color: '#f472b6', desc: '5-prompt journal — highest-evidence metacog tool',
+      { id: 'mytkReflect',  icon: '📔', label: 'Weekly Reflection',    color: '#f472b6', desc: 'Optional five-prompt weekly reflection',
         stat: ((data.mytkReflect || {}).entries || []).length + ' reflections', cta: 'Reflect on this week' },
-      { id: 'mytkWizard',   icon: '🪄', label: 'Strategy Wizard',      color: '#a855f7', desc: 'Adaptive plan generator (Dunlosky 2013)',
+      { id: 'mytkWizard',   icon: '🪄', label: 'Strategy Wizard',      color: '#a855f7', desc: 'Optional study-strategy planning prompts',
         stat: ((data.mytkWizard || {}).savedPlans || []).length + ' saved plans', cta: 'Generate a plan' },
       { id: 'mytkLoad',     icon: '⚖️', label: 'Cognitive Load Monitor', color: '#fbbf24', desc: 'Daily 3-axis load check + triggers',
         stat: ((data.mytkLoad || {}).entries || []).length + ' check-ins', cta: 'Log today\'s load' },
-      { id: 'mytkMotiv',    icon: '🌟', label: 'Motivation Audit',     color: '#ec4899', desc: 'SDT autonomy/competence/relatedness check',
+      { id: 'mytkMotiv',    icon: '🌟', label: 'Motivation Audit',     color: '#ec4899', desc: 'Reflect on autonomy, competence, and connection',
         stat: ((data.mytkMotiv || {}).audits || []).length + ' audits', cta: 'Audit motivation' },
-      { id: 'mytkProfile',  icon: '🪞', label: 'My Learning Profile',  color: '#06b6d4', desc: 'One-page self-snapshot, printable',
+      { id: 'mytkProfile',  icon: '🪞', label: 'My Learning Profile',  color: '#06b6d4', desc: 'Reviewable personal learning-preference summary',
         stat: Object.keys(((data.mytkProfile || {}).profile) || {}).length + ' fields filled', cta: 'Build my profile' },
       { id: 'mytkPrompts',  icon: '📓', label: 'Reflection Prompts',   color: '#a855f7', desc: '30+ metacognitive prompts + journal',
         stat: ((data.mytkPrompts || {}).responses || []).length + ' responses', cta: 'Pick a prompt' },
@@ -18794,7 +18795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' },
       { id: 'mytkEF',       icon: '🧩', label: 'EF Dashboard',         color: '#a855f7', desc: '8 executive-function dimensions tracked weekly',
         stat: ((data.mytkEF || {}).ratings || []).length + ' ratings', cta: 'Rate this week' },
-      { id: 'mytkIEP',      icon: '🎓', label: 'My IEP Tracker',       color: '#06b6d4', desc: 'YOUR copy of your IEP goals + meeting log',
+      { id: 'mytkIEP',      icon: '🎓', label: 'My IEP Tracker',       color: '#06b6d4', desc: 'Personal notes about IEP goals and meetings',
         stat: ((data.mytkIEP || {}).goals || []).length + ' goals', cta: 'Track IEP goals' },
       { id: 'mytkMastery',  icon: '📚', label: 'Subject Mastery',      color: '#3b82f6', desc: 'Track mastery per topic per subject',
         stat: ((data.mytkMastery || {}).subjects || []).length + ' subjects', cta: 'Map mastery' },
@@ -18802,7 +18803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkSleep || {}).entries || []).length + ' nights', cta: 'Log last night' },
       { id: 'mytkJournal',  icon: '📓', label: 'Learning Journal',     color: '#ec4899', desc: 'Free-form journal with subject + mood tags',
         stat: ((data.mytkJournal || {}).entries || []).length + ' entries', cta: 'Write an entry' },
-      { id: 'mytkGrat',     icon: '🙏', label: 'Gratitude Log',        color: '#10b981', desc: '3 daily gratitudes (Emmons + McCullough 2003)',
+      { id: 'mytkGrat',     icon: '🙏', label: 'Gratitude Log',        color: '#10b981', desc: 'Optional gratitude entries and reflections',
         stat: ((data.mytkGrat || {}).entries || []).length + ' days logged', cta: 'Log today\'s 3' },
       { id: 'mytkRead',     icon: '📚', label: 'Reading Tracker',      color: '#fbbf24', desc: 'Books read + want-to-read + reflections',
         stat: ((data.mytkRead || {}).books || []).filter(function(b) { return b.status === 'done'; }).length + ' read', cta: 'Track a book' },
@@ -18886,7 +18887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkCurrentRead || {}).books || []).length + ' in progress', cta: 'Update reading' },
       { id: 'mytkGreatDay', icon: '☀', label: 'Great-Day Pattern',    color: '#fbbf24', desc: '5-ingredient tracker — find YOUR formula',
         stat: ((data.mytkGreatDay || {}).entries || []).length + ' days logged', cta: 'Log today' },
-      { id: 'mytkSensory',  icon: '🌈', label: 'Sensory Profile',      color: '#a855f7', desc: '8-dimension preferences for ND students',
+      { id: 'mytkSensory',  icon: '🌈', label: 'Sensory Profile',      color: '#a855f7', desc: 'Optional sensory preferences and support notes',
         stat: 'configured', cta: 'Map sensory' },
       { id: 'mytkND',       icon: '🧠', label: 'ND Journal',           color: '#a855f7', desc: 'Journal the neurodivergent experience',
         stat: ((data.mytkND || {}).entries || []).length + ' entries', cta: 'Journal' },
@@ -18898,17 +18899,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkHigh || {}).highlights || []).length + ' reels', cta: 'Highlight today' },
       { id: 'mytkLifeSkills',icon: '🏆',label: 'Life Skills Tracker',  color: '#10b981', desc: '72 adult life skills across 6 categories',
         stat: Object.keys(((data.mytkLifeSkills || {}).skills || {})).length + ' built', cta: 'Track skills' },
-      { id: 'mytkEthical',  icon: '⚖', label: 'Ethical Dilemma Walker',color: '#a855f7', desc: '6-step Kohlberg moral reasoning framework',
+      { id: 'mytkEthical',  icon: '⚖', label: 'Ethical Dilemma Walker',color: '#a855f7', desc: 'Optional six-step ethical reflection prompts',
         stat: ((data.mytkEthical || {}).logs || []).length + ' dilemmas', cta: 'Walk a dilemma' },
-      { id: 'mytkResources',icon: '🛟', label: 'Community Resources',  color: '#ef4444', desc: 'Universal crisis lines + your personal list',
+      { id: 'mytkResources',icon: '🛟', label: 'Community Resources',  color: '#ef4444', desc: 'General resource starting points and a personal list',
         stat: ((data.mytkResources || {}).resources || []).length + ' added', cta: 'Add a resource' },
       { id: 'mytkSunday',   icon: '📋', label: 'Sunday Plan',          color: '#3b82f6', desc: '5-section weekly planning ritual',
         stat: ((data.mytkSunday || {}).plans || []).length + ' weeks planned', cta: 'Plan this week' },
       { id: 'mytkFriends',  icon: '🤝', label: 'Friendship Tracker',   color: '#ec4899', desc: 'Combat relational drift with cadence tracking',
         stat: ((data.mytkFriends || {}).friends || []).length + ' tracked', cta: 'Track friendships' },
-      { id: 'mytkValues',   icon: '🧭', label: 'Values Compass',       color: '#a855f7', desc: 'Sort 36 values → top 3 (Hayes 1999 ACT)',
+      { id: 'mytkValues',   icon: '🧭', label: 'Values Compass',       color: '#a855f7', desc: 'Explore and record values that matter to you',
         stat: ((data.mytkValues || {}).top3 || []).length + ' top values', cta: 'Find values' },
-      { id: 'mytkMomentum', icon: '📆', label: 'Momentum Calendar',    color: '#10b981', desc: '12-week grid per habit, Seinfeld chain',
+      { id: 'mytkMomentum', icon: '📆', label: 'Momentum Calendar',    color: '#10b981', desc: 'Optional 12-week habit activity grid',
         stat: ((data.mytkMomentum || {}).habits || []).length + ' habits', cta: 'Track momentum' },
       { id: 'mytkScreen',   icon: '📱', label: 'Screen Time Tracker',  color: '#ef4444', desc: 'Self-report screen time + reflection',
         stat: ((data.mytkScreen || {}).logs || []).length + ' logs', cta: 'Log today' },
@@ -18922,95 +18923,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkScript || {}).custom || []).length + ' custom', cta: 'Browse scripts' },
       { id: 'mytkKnowl',    icon: '🗺', label: 'Knowledge Map',        color: '#06b6d4', desc: 'Map what you know vs learning vs curious about',
         stat: ((data.mytkKnowl || {}).areas || []).length + ' areas', cta: 'Map knowledge' },
-      { id: 'mytkCurr',     icon: '🎓', label: 'Curriculum Builder',   color: '#a855f7', desc: 'Design YOUR own learning curriculum — capstone tool',
+      { id: 'mytkCurr',     icon: '🎓', label: 'Curriculum Builder',   color: '#a855f7', desc: 'Build a flexible personal learning plan',
         stat: ((data.mytkCurr || {}).curricula || []).length + ' built', cta: 'Design curriculum' },
-      { id: 'mytkTransition',icon: '🌉',label: 'Transition Planner',    color: '#fbbf24', desc: 'Plan major transitions (Schlossberg 4-phase)',
+      { id: 'mytkTransition',icon: '🌉',label: 'Transition Planner',    color: '#fbbf24', desc: 'Flexible prompts for anticipating or experiencing a change',
         stat: ((data.mytkTransition || {}).transitions || []).length + ' planned', cta: 'Plan a transition' },
-      { id: 'mytkAccomReq', icon: '🪪', label: 'Accommodation Request', color: '#06b6d4', desc: '5 formal-letter templates for IEP/504/college/teacher/work',
+      { id: 'mytkAccomReq', icon: '🪪', label: 'Accommodation Request', color: '#06b6d4', desc: 'Draft and review school, college, or workplace request messages',
         stat: ((data.mytkAccomReq || {}).drafts || []).length + ' drafts', cta: 'Build a request' },
-      { id: 'mytkDeck',     icon: '🃏', label: 'Life Deck',             color: '#ec4899', desc: '52 reflection cards. Draw + answer one at a time',
+      { id: 'mytkDeck',     icon: '🃏', label: 'Life Deck',             color: '#ec4899', desc: 'Choose optional gentle or deeper reflection prompts',
         stat: ((data.mytkDeck || {}).answers || []).length + ' answered', cta: 'Draw a card' },
-      { id: 'mytkComm',     icon: '🗣', label: 'Communication Style',   color: '#06b6d4', desc: '4-dim self-profile + printable comm card',
-        stat: 'mapped', cta: 'Map style' },
-      { id: 'mytkBackup',   icon: '💾', label: 'Backup + Import',       color: '#3b82f6', desc: 'Export your toolkit data. Your data, your control.',
-        stat: 'private', cta: 'Manage data' }
+      { id: 'mytkComm',     icon: '🗣', label: 'Communication Preferences',   color: '#06b6d4', desc: 'Flexible preferences, requests, and a reviewable summary',
+        stat: 'optional', cta: 'Review preferences' },
+      { id: 'mytkBackup',   icon: '💾', label: 'Toolkit Data Management',       color: '#3b82f6', desc: 'Review, download, import, or clear available toolkit records',
+        stat: 'data tools', cta: 'Manage data' }
     ];
 
-    var dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()];
-    var dateLong = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    var normalizedQuery = query.trim().toLowerCase();
+    var filteredTools = TOOLS.filter(function(tool) { if (!normalizedQuery) return true; return [tool.label, tool.desc, tool.stat, tool.cta].join(' ').toLowerCase().indexOf(normalizedQuery) >= 0; });
+    var dateLong = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    var resultText = filteredTools.length + ' of ' + TOOLS.length + ' toolkit tools shown' + (normalizedQuery ? ' for “' + query.trim() + '”.' : '.');
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #c084fc', background: '#7e22ce', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function openTool(tool) { if (typeof navigate !== 'function') { llAnnounce('This toolkit tool could not be opened.'); return; } llAnnounce('Opening ' + tool.label + '.'); navigate(tool.id); }
+    function clearSearch() { setQuery(''); llAnnounce('Toolkit search cleared. All tools are shown.'); focusById('learning-lab-toolkit-hub-search'); }
 
     return hh('div', { style: { padding: 14 } },
-      // Hero header
-      hh('div', { style: {
-        padding: '22px 20px', borderRadius: 14, marginBottom: 16,
-        background: 'linear-gradient(135deg, rgba(147,51,234,0.20), rgba(239,68,68,0.10), rgba(16,185,129,0.10))',
-        border: '1px solid rgba(147,51,234,0.40)',
-        boxShadow: '0 4px 20px rgba(147,51,234,0.20)'
-      } },
-        hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🧰 My Toolkit'),
-        hh('div', { style: { fontSize: 22, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.2, marginBottom: 6 } }, dateLong),
-        hh('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
-          'Personal evidence-based learning tools. Everything saves to your browser — your data, your control.'
-        )
+      hh('header', { style: { padding: '18px 16px', borderRadius: 12, marginBottom: 14, background: 'linear-gradient(135deg, rgba(147,51,234,0.20), rgba(15,23,42,0.72))', border: '1px solid #c084fc' } },
+        hh('h1', { id: 'learning-lab-toolkit-hub-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 22 } }, 'My Toolkit'),
+        hh('p', { style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 12, lineHeight: 1.55 } }, 'Browse optional planning, learning, reflection, and self-advocacy tools. Use only what fits your goals and context.'),
+        hh('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 11 } }, hh('time', { dateTime: todayISOv }, dateLong))
       ),
-
-      // Quick stats
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginBottom: 16 } },
-        [
-          { label: 'Active goals', value: activeGoals, color: '#9333ea', icon: '🎯' },
-          { label: 'Focus today', value: todayFocusMin + 'm', color: '#ef4444', icon: '⏱' },
-          { label: 'Brain dumps', value: brainOpen, color: '#60a5fa', icon: '🧠' },
-          { label: 'If-then plans', value: ifThens, color: '#a78bfa', icon: '🔗' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'hs-' + i, style: {
-            padding: 12, borderRadius: 10,
-            background: s.color + '12', border: '1px solid ' + s.color + '30',
-            textAlign: 'center'
-          } },
-            hh('div', { style: { fontSize: 18, marginBottom: 4 } }, s.icon),
-            hh('div', { style: { fontSize: 22, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4 } }, s.label)
-          );
-        })
+      hh('aside', { 'aria-labelledby': 'learning-lab-toolkit-hub-storage-heading', style: { marginBottom: 14, padding: 10, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-toolkit-hub-storage-heading', style: { margin: '0 0 4px', color: '#f3e8ff', fontSize: 13 } }, 'Storage and privacy vary by configuration'),
+        hh('p', { style: { margin: 0 } }, 'Tools may save personal information. Depending on app configuration, sign-in, synchronization, browser backup, downloaded files, or device services, copies may exist in more than one place. Avoid sensitive details on shared devices and use Toolkit Data Management to review the browser-session records available there.')
       ),
-
-      // Tool grid
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
-        TOOLS.map(function(t) {
-          return hh('button', { key: 't-' + t.id,
-            onClick: function() { navigate(t.id); },
-            style: {
-              display: 'block', textAlign: 'left', padding: 14, borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + t.color + '15, rgba(15,23,42,0.7))',
-              border: '1px solid ' + t.color + '40',
-              borderLeft: '4px solid ' + t.color,
-              cursor: 'pointer', transition: 'all 200ms ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.20)'
-            }
-          },
-            hh('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 } },
-              hh('div', { style: { fontSize: 28, lineHeight: 1 } }, t.icon),
-              hh('div', { style: { flex: 1, minWidth: 0 } },
-                hh('div', { style: { fontSize: 14, fontWeight: 800, color: t.color, marginBottom: 2 } }, t.label),
-                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, t.desc)
-              )
-            ),
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: '1px solid ' + t.color + '30' } },
-              hh('span', { style: { fontSize: 10, color: t.color, fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, t.stat),
-              hh('span', { style: { fontSize: 11, color: t.color, fontWeight: 700 } }, t.cta + ' →')
-            )
-          );
-        })
+      hh('section', { 'aria-labelledby': 'learning-lab-toolkit-hub-overview-heading', style: { marginBottom: 16 } },
+        hh('h2', { id: 'learning-lab-toolkit-hub-overview-heading', style: { margin: '0 0 8px', color: '#f3e8ff', fontSize: 15 } }, 'Current overview'),
+        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, margin: 0 } }, [
+          { label: 'Active goals', value: activeGoals }, { label: 'Focus minutes today', value: todayFocusMin }, { label: 'Open brain-dump items', value: brainOpen }, { label: 'Saved if-then plans', value: ifThens }
+        ].map(function(stat, index) { return hh('div', { key: index, style: { padding: 11, borderRadius: 9, border: '1px solid #a78bfa', background: 'rgba(76,29,149,0.20)' } },
+          hh('dt', { style: { color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, stat.label),
+          hh('dd', { style: { margin: '5px 0 0', color: '#f8fafc', fontSize: 20, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, String(stat.value))
+        ); }))
       ),
-
-      // Coming-soon teaser for upcoming tools (wave 2 + 3)
-      hh('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(147,51,234,0.30)' } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '✨ More tools coming'),
-        hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-          ['🃏 Flashcards', '📅 Study planner', '🎓 Exam prep', '✂ Task breaker', '🕸 Concept map', '✅ Habit tracker', '📔 Weekly reflect', '⚖ Load monitor', '🪄 Strategy wizard', '🌟 Motivation audit'].map(function(t, i) {
-            return hh('span', { key: 'cs-' + i, style: { padding: '3px 8px', borderRadius: 999, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } }, t);
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-toolkit-hub-tools-heading' },
+        hh('h2', { id: 'learning-lab-toolkit-hub-tools-heading', style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 16 } }, 'Toolkit tools'),
+        hh('form', { role: 'search', onSubmit: function(event) { event.preventDefault(); }, 'aria-labelledby': 'learning-lab-toolkit-hub-search-label', style: { marginBottom: 8 } },
+          hh('label', { id: 'learning-lab-toolkit-hub-search-label', htmlFor: 'learning-lab-toolkit-hub-search', style: { display: 'block', marginBottom: 4, color: '#f3e8ff', fontSize: 12, fontWeight: 800 } }, 'Search toolkit tools'),
+          hh('p', { id: 'learning-lab-toolkit-hub-search-help', style: { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11 } }, 'Search tool names, descriptions, saved-status text, or actions.'),
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+            hh('input', { id: 'learning-lab-toolkit-hub-search', type: 'search', value: query, placeholder: 'For example: journal, planning, reading, backup', 'aria-describedby': 'learning-lab-toolkit-hub-search-help learning-lab-toolkit-hub-results', onChange: function(event) { setQuery(event.target.value); }, style: Object.assign({}, fieldStyle, { flex: '1 1 260px' }) }),
+            query ? hh('button', { type: 'button', onClick: clearSearch, style: buttonStyle }, 'Clear search') : null
+          )
+        ),
+        hh('p', { id: 'learning-lab-toolkit-hub-results', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 10px', color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, resultText),
+        filteredTools.length === 0 ? hh('p', { style: { margin: 0, padding: 14, borderRadius: 9, border: '1px solid #a78bfa', background: 'rgba(76,29,149,0.18)', color: '#f8fafc', fontSize: 11 } }, 'No toolkit tools match this search. Change or clear the search to show tools.') :
+        hh('ul', { 'aria-label': 'Toolkit tools', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } }, filteredTools.map(function(tool) { var safeId = String(tool.id).replace(/[^A-Za-z0-9_-]+/g, '-'); var descId = 'learning-lab-toolkit-hub-desc-' + safeId; var statId = 'learning-lab-toolkit-hub-stat-' + safeId; return hh('li', { key: tool.id },
+          hh('button', { type: 'button', onClick: function() { openTool(tool); }, 'aria-describedby': descId + ' ' + statId, style: { display: 'block', width: '100%', minHeight: 150, height: '100%', textAlign: 'left', padding: 13, borderRadius: 10, background: 'rgba(15,23,42,0.72)', color: '#f8fafc', border: '2px solid ' + tool.color, cursor: 'pointer', overflowWrap: 'anywhere' } },
+            hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 24, marginBottom: 5 } }, tool.icon),
+            hh('strong', { style: { display: 'block', color: tool.color, fontSize: 14, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, tool.label),
+            hh('span', { id: descId, style: { display: 'block', marginTop: 5, color: '#e2e8f0', fontSize: 11, lineHeight: 1.5 } }, tool.desc),
+            hh('span', { id: statId, style: { display: 'block', marginTop: 8, paddingTop: 7, borderTop: '1px solid #64748b', color: '#f8fafc', fontSize: 10 } }, 'Status: ' + tool.stat + '. Action: ' + tool.cta + '.')
+          )
+        ); }))
       )
     );
   }
