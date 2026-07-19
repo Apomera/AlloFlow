@@ -17866,207 +17866,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { transitions: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
-    var fs = R.useState({ title: '', kind: 'school', startDate: '', preWork: '', concerns: '', supports: '' });
-    var newT = fs[0]; var setNewT = fs[1];
+    var emptyTransition = { title: '', kind: 'school', startDate: '', preWork: '', concerns: '', supports: '' };
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var fsState = R.useState(emptyTransition); var newT = fsState[0]; var setNewT = fsState[1];
+    var cs = R.useState(''); var checklistDraft = cs[0]; var setChecklistDraft = cs[1];
+    var es = R.useState({ title: '', checklist: '' }); var errors = es[0]; var setErrors = es[1];
 
     var KINDS = [
-      { id: 'school',     label: 'New school year', icon: '🎒', color: '#3b82f6' },
-      { id: 'college',    label: 'Going to college', icon: '🎓', color: '#a855f7' },
-      { id: 'job',        label: 'New job',          icon: '💼', color: '#10b981' },
-      { id: 'move',       label: 'Moving',           icon: '📦', color: '#fbbf24' },
-      { id: 'graduation', label: 'Graduation',       icon: '🎉', color: '#ec4899' },
-      { id: 'family',     label: 'Family change',    icon: '🏠', color: '#ef4444' },
-      { id: 'medical',    label: 'Medical event',    icon: '⚕', color: '#06b6d4' },
-      { id: 'relationship',label: 'Relationship change', icon: '💔', color: '#f97316' },
-      { id: 'other',      label: 'Other transition', icon: '🔄', color: 'var(--allo-stem-text-soft, #94a3b8)' }
+      { id: 'school', label: 'New school year', color: '#60a5fa' },
+      { id: 'college', label: 'Going to college', color: '#c084fc' },
+      { id: 'job', label: 'New job', color: '#34d399' },
+      { id: 'move', label: 'Moving', color: '#fbbf24' },
+      { id: 'graduation', label: 'Graduation', color: '#f472b6' },
+      { id: 'family', label: 'Family change', color: '#f87171' },
+      { id: 'medical', label: 'Medical event', color: '#22d3ee' },
+      { id: 'relationship', label: 'Relationship change', color: '#fb923c' },
+      { id: 'other', label: 'Other transition', color: '#cbd5e1' }
     ];
-
-    var SCHLOSSBERG_PHASES = [
-      { id: 'pre',     label: '1. Anticipating', icon: '🔮', desc: 'Before it happens. Mental preparation. Identifying needs + supports.' },
-      { id: 'moving_in',label: '2. Moving in', icon: '🚪', desc: 'The transition starts. Identity shift begins. Newness + uncertainty.' },
-      { id: 'through', label: '3. Moving through', icon: '🌊', desc: 'In the middle. Learning the new context. Finding rhythm.' },
-      { id: 'out',     label: '4. Moving out', icon: '🌅', desc: 'Becoming who you are AFTER the transition. Integration + new normal.' }
+    var PHASES = [
+      { id: 'pre', label: 'Anticipating', desc: 'Thinking about a change before it begins.' },
+      { id: 'moving_in', label: 'Moving in', desc: 'Beginning the change and encountering new routines or expectations.' },
+      { id: 'through', label: 'Moving through', desc: 'Learning what helps while the change is underway.' },
+      { id: 'out', label: 'Moving out or integrating', desc: 'Looking back, adapting, or settling into what comes next.' }
     ];
+    var transitions = Array.isArray(data.transitions) ? data.transitions : [];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #fbbf24', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#fef3c7', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fbbf24', background: '#92400e', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+    var secondaryButtonStyle = Object.assign({}, buttonStyle, { background: 'rgba(120,53,15,0.35)', color: '#fef3c7' });
+    var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
-    function createTransition() {
-      if (!newT.title.trim()) return;
-      var t = Object.assign({ id: tkId(), createdAt: todayISO(), checklist: [], phase: 'pre', reflections: {} }, newT);
-      setData({ transitions: [t].concat(data.transitions || []) });
-      setActiveId(t.id);
-      setNewT({ title: '', kind: 'school', startDate: '', preWork: '', concerns: '', supports: '' });
-      setView('edit');
+    function safeDomId(value) { return String(value || 'transition').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function kindFor(id) { return KINDS.filter(function(kind) { return kind.id === id; })[0] || KINDS[0]; }
+    function phaseFor(id) { return PHASES.filter(function(phase) { return phase.id === id; })[0] || PHASES[0]; }
+    function activeTransition() { return transitions.filter(function(transition) { return transition.id === activeId; })[0] || null; }
+    function saveTransitions(nextTransitions) { setData(Object.assign({}, data, { transitions: nextTransitions })); }
+    function updateTransition(patch) { saveTransitions(transitions.map(function(transition) { return transition.id === activeId ? Object.assign({}, transition, patch) : transition; })); }
+
+    function createTransition(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var title = String(newT.title || '').trim();
+      if (!title) {
+        setErrors(Object.assign({}, errors, { title: 'Enter a name for this transition plan.' }));
+        llAnnounce('Transition plan not created. Enter a name.');
+        focusById('learning-lab-transition-title');
+        return;
+      }
+      var transition = Object.assign({ id: tkId(), createdAt: todayISO(), checklist: [], phase: 'pre', reflections: {} }, newT, { title: title, kind: kindFor(newT.kind).id });
+      saveTransitions([transition].concat(transitions));
+      setActiveId(transition.id); setNewT(emptyTransition); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); setView('edit');
+      llAnnounce('Transition plan created. The plan editor is open.'); focusById('learning-lab-transition-editor-heading');
     }
-    function getTrans() { return (data.transitions || []).filter(function(t) { return t.id === activeId; })[0]; }
-    function updateTrans(patch) {
-      setData({ transitions: (data.transitions || []).map(function(t) { return t.id === activeId ? Object.assign({}, t, patch) : t; }) });
+    function openTransition(transition) { setActiveId(transition.id); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); setView('edit'); llAnnounce('Transition plan opened.'); focusById('learning-lab-transition-editor-heading'); }
+    function returnToList(previousId) { setView('list'); setActiveId(null); setChecklistDraft(''); setErrors({ title: '', checklist: '' }); llAnnounce('Returned to saved transition plans.'); focusById('learning-lab-transition-open-' + safeDomId(previousId)); }
+    function changePhase(phase) { updateTransition({ phase: phase.id }); llAnnounce('Current reflection phase changed to ' + phase.label + '.'); }
+    function addChecklistItem(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var text = String(checklistDraft || '').trim(); var transition = activeTransition();
+      if (!text) { setErrors(Object.assign({}, errors, { checklist: 'Enter a checklist item.' })); llAnnounce('Checklist item not added. Enter an item.'); focusById('learning-lab-transition-checklist-new'); return; }
+      if (!transition) return;
+      updateTransition({ checklist: (Array.isArray(transition.checklist) ? transition.checklist : []).concat([{ id: tkId(), text: text, done: false, createdAt: todayISO() }]) });
+      setChecklistDraft(''); setErrors(Object.assign({}, errors, { checklist: '' })); llAnnounce('Checklist item added.'); focusById('learning-lab-transition-checklist-new');
     }
-    function removeTrans(id) {
-      if (!confirm('Delete this transition plan?')) return;
-      setData({ transitions: (data.transitions || []).filter(function(t) { return t.id !== id; }) });
+    function toggleChecklist(item) {
+      var transition = activeTransition(); if (!transition) return;
+      var nextDone = !item.done;
+      updateTransition({ checklist: (Array.isArray(transition.checklist) ? transition.checklist : []).map(function(savedItem) { return savedItem.id === item.id ? Object.assign({}, savedItem, { done: nextDone }) : savedItem; }) });
+      llAnnounce(String(item.text || 'Checklist item') + (nextDone ? ' marked complete.' : ' marked not complete.'));
     }
-    function addChecklistItem(text) {
-      if (!text.trim()) return;
-      var t = getTrans();
-      updateTrans({ checklist: (t.checklist || []).concat([{ id: tkId(), text: text.trim(), done: false }]) });
+    function removeChecklist(item) {
+      askLearningLabConfirmation('Remove the checklist item “' + String(item.text || 'Untitled item') + '”? This cannot be undone.', { title: 'Remove checklist item?', confirmText: 'Remove item' }).then(function(accepted) {
+        if (!accepted) return; var transition = activeTransition(); if (!transition) return;
+        updateTransition({ checklist: (Array.isArray(transition.checklist) ? transition.checklist : []).filter(function(savedItem) { return savedItem.id !== item.id; }) });
+        llAnnounce('Checklist item removed.'); focusById('learning-lab-transition-checklist-new');
+      });
     }
-    function toggleChecklist(id) {
-      var t = getTrans();
-      updateTrans({ checklist: t.checklist.map(function(c) { return c.id === id ? Object.assign({}, c, { done: !c.done }) : c; }) });
-    }
-    function removeChecklist(id) {
-      var t = getTrans();
-      updateTrans({ checklist: t.checklist.filter(function(c) { return c.id !== id; }) });
-    }
-    function updateReflection(phaseId, text) {
-      var t = getTrans();
-      updateTrans({ reflections: Object.assign({}, t.reflections || {}, (function() { var o = {}; o[phaseId] = text; return o; })()) });
+    function updateReflection(phaseId, text) { var transition = activeTransition(); if (!transition) return; var next = Object.assign({}, transition.reflections || {}); next[phaseId] = text; updateTransition({ reflections: next }); }
+    function removeTransition(transition, fromEditor) {
+      askLearningLabConfirmation('Remove the transition plan “' + String(transition.title || 'Untitled transition') + '”? This cannot be undone.', { title: 'Remove transition plan?', confirmText: 'Remove plan' }).then(function(accepted) {
+        if (!accepted) return;
+        saveTransitions(transitions.filter(function(savedTransition) { return savedTransition.id !== transition.id; }));
+        if (fromEditor) { setView('list'); setActiveId(null); }
+        llAnnounce('Transition plan removed.'); focusById('learning-lab-transition-list-heading');
+      });
     }
 
     if (view === 'edit') {
-      var t = getTrans();
-      if (!t) { setView('list'); return null; }
-      var kind = KINDS.filter(function(k) { return k.id === t.kind; })[0] || KINDS[0];
-      var checklist = t.checklist || [];
-      var done = checklist.filter(function(c) { return c.done; }).length;
+      var transition = activeTransition();
+      if (!transition) return hh('div', { style: { padding: 14 } },
+        tkSectionHeader('', 'Transition Planner', 'The requested plan is not available.', '#fbbf24'),
+        hh('section', { 'aria-labelledby': 'learning-lab-transition-missing-heading', style: { padding: 14, borderRadius: 10, border: '1px solid #f87171', background: 'rgba(127,29,29,0.25)' } },
+          hh('h2', { id: 'learning-lab-transition-missing-heading', tabIndex: -1, style: { margin: '0 0 7px', color: '#fee2e2', fontSize: 15 } }, 'This transition plan could not be found'),
+          hh('p', { style: { margin: '0 0 10px', color: '#f8fafc', fontSize: 11 } }, 'It may have been removed in another window.'),
+          hh('button', { type: 'button', onClick: function() { setView('list'); setActiveId(null); focusById('learning-lab-transition-list-heading'); }, style: secondaryButtonStyle }, 'Return to saved plans')
+        )
+      );
+      var kind = kindFor(transition.kind); var checklist = Array.isArray(transition.checklist) ? transition.checklist : []; var done = checklist.filter(function(item) { return !!item.done; }).length; var progressText = checklist.length ? done + ' of ' + checklist.length + ' checklist items marked complete.' : 'No checklist items saved.';
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(kind.icon, t.title, kind.label + (t.startDate ? ' · ' + t.startDate : ''), kind.color),
-
-        // Phase tracker
-        hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)', marginBottom: 14 } },
-          hh('div', { style: { fontSize: 11, fontWeight: 800, color: kind.color, marginBottom: 10, textTransform: 'uppercase' } }, '📍 Where am I in this transition?'),
-          hh('div', { style: { display: 'flex', gap: 4 } },
-            SCHLOSSBERG_PHASES.map(function(p) {
-              var on = t.phase === p.id;
-              return hh('button', { key: 'sp-' + p.id,
-                onClick: function() { updateTrans({ phase: p.id }); },
-                style: { flex: 1, padding: '10px 4px', borderRadius: 6, background: on ? kind.color + '30' : 'rgba(15,23,42,0.5)', color: on ? kind.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1.5px solid ' + (on ? kind.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textAlign: 'center' }
-              },
-                hh('div', { style: { fontSize: 16, marginBottom: 2 } }, p.icon),
-                hh('div', null, p.label),
-                on ? hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, fontStyle: 'italic', fontWeight: 400 } }, p.desc) : null
-              );
-            })
+        tkSectionHeader('', 'Transition Planner', 'Edit an optional planning aid for a change you are experiencing or anticipating.', kind.color),
+        hh('section', { 'aria-labelledby': 'learning-lab-transition-editor-heading' },
+          hh('h2', { id: 'learning-lab-transition-editor-heading', tabIndex: -1, style: { margin: '0 0 4px', color: '#fef3c7', fontSize: 17, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(transition.title || 'Untitled transition')),
+          hh('p', { style: { margin: '0 0 12px', color: '#e2e8f0', fontSize: 11 } }, kind.label, transition.startDate ? hh('span', null, ' · Planned date: ', hh('time', { dateTime: transition.startDate }, transition.startDate)) : null),
+          hh('aside', { 'aria-labelledby': 'learning-lab-transition-editor-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(120,53,15,0.25)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+            hh('h3', { id: 'learning-lab-transition-editor-context-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 13 } }, 'Use only what fits'),
+            hh('p', { style: { margin: '0 0 5px' } }, 'The four phases below are optional reflection prompts. Real transitions can overlap, repeat, skip phases, or not fit this framework at all. There is no correct pace or order.'),
+            hh('p', { style: { margin: 0 } }, 'This private planning aid does not provide medical, mental-health, legal, school, or workplace advice. Use appropriate trusted or professional support when a change involves safety, health, rights, or urgent needs.')
+          ),
+          hh('fieldset', { style: { margin: '0 0 14px', padding: 12, borderRadius: 10, border: '1px solid #fbbf24', background: 'rgba(2,6,23,0.45)' } },
+            hh('legend', { style: { padding: '0 5px', color: '#fef3c7', fontSize: 12, fontWeight: 900 } }, 'Current reflection phase'),
+            hh('p', { style: helpStyle }, 'Choose the prompt that feels most useful now. You can change it at any time.'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 7 } }, PHASES.map(function(phase) { var phaseId = 'learning-lab-transition-phase-' + phase.id; var selected = phaseFor(transition.phase).id === phase.id; return hh('label', { key: phase.id, htmlFor: phaseId, style: { display: 'flex', minHeight: 44, alignItems: 'flex-start', gap: 8, padding: 9, borderRadius: 7, border: '2px solid ' + (selected ? kind.color : '#64748b'), background: selected ? 'rgba(120,53,15,0.34)' : 'rgba(15,23,42,0.68)', color: '#f8fafc', cursor: 'pointer' } },
+              hh('input', { id: phaseId, type: 'radio', name: 'learning-lab-transition-phase', value: phase.id, checked: selected, onChange: function() { changePhase(phase); }, style: { width: 20, height: 20, margin: 0, flexShrink: 0, accentColor: kind.color } }),
+              hh('span', null, hh('strong', { style: { display: 'block', color: '#fef3c7', fontSize: 11 } }, phase.label, selected ? ' — selected' : ''), hh('span', { style: { display: 'block', marginTop: 3, color: '#e2e8f0', fontSize: 10, lineHeight: 1.45 } }, phase.desc))
+            ); }))
+          ),
+          tkCard(kind.color,
+            hh('div', null,
+              hh('h3', { style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 14 } }, 'Preparation notes'),
+              hh('p', { id: 'learning-lab-transition-autosave-help', style: helpStyle }, 'These optional notes save automatically in this browser and may be sensitive. Avoid private details on a shared device.'),
+              hh('label', { htmlFor: 'learning-lab-transition-prework', style: labelStyle }, 'Actions I may want to take before or during this change'),
+              hh('textarea', { id: 'learning-lab-transition-prework', value: String(transition.preWork || ''), rows: 3, maxLength: 6000, 'aria-describedby': 'learning-lab-transition-autosave-help', onChange: function(event) { updateTransition({ preWork: event.target.value }); }, style: Object.assign({}, fieldStyle, { minHeight: 92, resize: 'vertical', marginBottom: 10 }) }),
+              hh('label', { htmlFor: 'learning-lab-transition-concerns', style: labelStyle }, 'Questions, concerns, or uncertainties I want to record'),
+              hh('textarea', { id: 'learning-lab-transition-concerns', value: String(transition.concerns || ''), rows: 3, maxLength: 6000, 'aria-describedby': 'learning-lab-transition-autosave-help', onChange: function(event) { updateTransition({ concerns: event.target.value }); }, style: Object.assign({}, fieldStyle, { minHeight: 92, resize: 'vertical', marginBottom: 10 }) }),
+              hh('label', { htmlFor: 'learning-lab-transition-supports', style: labelStyle }, 'People, services, resources, routines, or accommodations that may support me'),
+              hh('textarea', { id: 'learning-lab-transition-supports', value: String(transition.supports || ''), rows: 3, maxLength: 6000, 'aria-describedby': 'learning-lab-transition-autosave-help', onChange: function(event) { updateTransition({ supports: event.target.value }); }, style: Object.assign({}, fieldStyle, { minHeight: 92, resize: 'vertical' }) })
+            )
+          ),
+          tkCard(kind.color,
+            hh('section', { 'aria-labelledby': 'learning-lab-transition-checklist-heading' },
+              hh('h3', { id: 'learning-lab-transition-checklist-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 14 } }, 'Optional checklist'),
+              hh('p', { style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, progressText),
+              hh('progress', { value: done, max: Math.max(checklist.length, 1), 'aria-label': progressText, style: { width: '100%', minHeight: 18, accentColor: kind.color, marginBottom: 10 } }, progressText),
+              hh('form', { onSubmit: addChecklistItem, 'aria-labelledby': 'learning-lab-transition-checklist-add-heading' },
+                hh('h4', { id: 'learning-lab-transition-checklist-add-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 12 } }, 'Add a checklist item'),
+                hh('label', { htmlFor: 'learning-lab-transition-checklist-new', style: labelStyle }, 'Item (required)'),
+                hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 7 } },
+                  hh('input', { id: 'learning-lab-transition-checklist-new', type: 'text', value: checklistDraft, required: true, maxLength: 2000, onChange: function(event) { setChecklistDraft(event.target.value); if (errors.checklist) setErrors(Object.assign({}, errors, { checklist: '' })); }, 'aria-invalid': errors.checklist ? 'true' : undefined, 'aria-describedby': errors.checklist ? 'learning-lab-transition-checklist-error' : undefined, style: Object.assign({}, fieldStyle, { flex: '1 1 240px' }) }),
+                  hh('button', { type: 'submit', style: buttonStyle }, 'Add item')
+                ),
+                errors.checklist ? hh('p', { id: 'learning-lab-transition-checklist-error', role: 'alert', style: { margin: '5px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.checklist) : null
+              ),
+              checklist.length === 0 ? hh('p', { style: { margin: '10px 0 0', color: '#cbd5e1', fontSize: 11 } }, 'No checklist items saved. Add one only if it would help.') :
+              hh('ul', { 'aria-label': 'Transition checklist', style: { margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 7 } }, checklist.map(function(item) { var itemId = 'learning-lab-transition-check-' + safeDomId(item.id); return hh('li', { key: item.id, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: 8, borderRadius: 7, background: 'rgba(2,6,23,0.48)' } },
+                hh('input', { id: itemId, type: 'checkbox', checked: !!item.done, onChange: function() { toggleChecklist(item); }, style: { width: 24, height: 24, margin: 0, flexShrink: 0, accentColor: kind.color } }),
+                hh('label', { htmlFor: itemId, style: { flex: '1 1 180px', minWidth: 0, color: '#f8fafc', fontSize: 11, lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', textDecoration: item.done ? 'line-through' : 'none' } }, String(item.text || 'Untitled item'), hh('span', { style: { display: 'block', color: '#cbd5e1', fontSize: 10 } }, item.done ? 'Marked complete' : 'Not marked complete')),
+                hh('button', { type: 'button', onClick: function() { removeChecklist(item); }, 'aria-label': 'Remove checklist item: ' + String(item.text || 'untitled item'), style: dangerButtonStyle }, 'Remove')
+              ); }))
+            )
+          ),
+          hh('section', { 'aria-labelledby': 'learning-lab-transition-reflections-heading', style: { marginTop: 14 } },
+            hh('h3', { id: 'learning-lab-transition-reflections-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 14 } }, 'Optional reflections'),
+            hh('p', { style: helpStyle }, 'Use any prompt at any time. These notes save automatically.'),
+            PHASES.map(function(phase) { var reflectionId = 'learning-lab-transition-reflection-' + phase.id; return hh('div', { key: phase.id, style: { marginBottom: 10, padding: 10, borderRadius: 8, borderLeft: '3px solid ' + (phaseFor(transition.phase).id === phase.id ? kind.color : '#64748b'), background: 'rgba(15,23,42,0.58)' } },
+              hh('label', { htmlFor: reflectionId, style: labelStyle }, phase.label + (phaseFor(transition.phase).id === phase.id ? ' — currently selected' : '')),
+              hh('p', { id: reflectionId + '-help', style: helpStyle }, phase.desc + ' Record anything that feels useful.'),
+              hh('textarea', { id: reflectionId, value: String((transition.reflections || {})[phase.id] || ''), rows: 2, maxLength: 6000, 'aria-describedby': reflectionId + '-help learning-lab-transition-autosave-help', onChange: function(event) { updateReflection(phase.id, event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical' }) })
+            ); })
+          ),
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginTop: 14 } },
+            hh('button', { type: 'button', onClick: function() { returnToList(transition.id); }, style: secondaryButtonStyle }, 'Return to saved plans'),
+            hh('button', { type: 'button', onClick: function() { removeTransition(transition, true); }, 'aria-label': 'Remove transition plan: ' + String(transition.title || 'untitled transition'), style: dangerButtonStyle }, 'Remove plan')
           )
-        ),
-
-        // The 3 prep fields
-        tkCard(kind.color,
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: kind.color, marginBottom: 8 } }, '📋 Pre-transition prep'),
-            hh('label', { style: { fontSize: 10, fontWeight: 700, color: kind.color, display: 'block', marginBottom: 4 } }, '🎯 What do I need to DO before this happens?'),
-            tkTextarea(t.preWork, function(v) { updateTrans({ preWork: v }); }, 'Concrete actions: paperwork, conversations, learning new things, gathering supplies', 3, { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 700, color: kind.color, display: 'block', marginBottom: 4 } }, '😰 What worries me about this transition?'),
-            tkTextarea(t.concerns, function(v) { updateTrans({ concerns: v }); }, 'Be honest. Naming the worry shrinks it.', 3, { marginBottom: 10 }),
-            hh('label', { style: { fontSize: 10, fontWeight: 700, color: kind.color, display: 'block', marginBottom: 4 } }, '🤝 Who/what supports me through this?'),
-            tkTextarea(t.supports, function(v) { updateTrans({ supports: v }); }, 'People, services, resources, places, things, rituals', 3)
-          )
-        ),
-
-        // Checklist
-        tkCard(kind.color,
-          hh('div', null,
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
-              hh('div', { style: { fontSize: 12, fontWeight: 800, color: kind.color } }, '✓ My checklist'),
-              hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: kind.color + '20', color: kind.color, fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + checklist.length)
-            ),
-            hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
-              (function() {
-                var inp = R.useState(''); var v = inp[0]; var setV = inp[1];
-                return hh(R.Fragment || 'div', null,
-                  tkInput(v, setV, 'Add a checklist item', { flex: 1 }),
-                  tkBtn('+', function() { addChecklistItem(v); setV(''); }, 'primary', { padding: '8px 14px' })
-                );
-              })()
-            ),
-            checklist.length === 0 ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'center', fontStyle: 'italic', padding: 12 } }, 'No items yet.')
-            : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-                checklist.map(function(c) {
-                  return hh('div', { key: 'cl-' + c.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
-                    hh('button', { onClick: function() { toggleChecklist(c.id); },
-                      style: { width: 20, height: 20, borderRadius: 4, background: c.done ? kind.color : 'transparent', border: '1.5px solid ' + kind.color, color: '#0f172a', fontSize: 12, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
-                    }, c.done ? '✓' : ''),
-                    hh('span', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: c.done ? 'line-through' : 'none', opacity: c.done ? 0.6 : 1 } }, c.text),
-                    hh('button', { onClick: function() { removeChecklist(c.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                  );
-                })
-              )
-          )
-        ),
-
-        // Per-phase reflections
-        hh('div', { style: { marginTop: 14 } },
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: kind.color, marginBottom: 10, textTransform: 'uppercase' } }, '📔 Reflections by phase'),
-          SCHLOSSBERG_PHASES.map(function(p) {
-            var current = t.phase === p.id;
-            return hh('div', { key: 'pr-' + p.id, style: { marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (current ? kind.color : 'rgba(100,116,139,0.30)') } },
-              hh('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: current ? kind.color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, p.icon + ' ' + p.label + (current ? ' (current)' : '')),
-              tkTextarea((t.reflections || {})[p.id], function(v) { updateReflection(p.id, v); }, 'What\'s coming up for you in this phase?', 2)
-            );
-          })
-        ),
-
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14 } },
-          tkBtn('← All transitions', function() { setView('list'); setActiveId(null); }, 'ghost'),
-          tkBtn('🗑 Delete', function() { removeTrans(t.id); setView('list'); }, 'bad')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌉', 'Transition Planner', 'Plan major life transitions using Schlossberg\'s 4-phase model. Especially for ND students who struggle with change.', '#fbbf24'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#fbbf24' } }, '🌉 Schlossberg 1981 transition theory: '),
-        'Major transitions move through 4 phases — Anticipating, Moving In, Moving Through, Moving Out. Each phase has its own work + its own emotional terrain. Knowing where you are helps you know what to do next.'
+      tkSectionHeader('', 'Transition Planner', 'Create an optional, flexible plan for an upcoming or ongoing change.', '#fbbf24'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-transition-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(120,53,15,0.25)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-transition-context-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 14 } }, 'A flexible reflection aid, not a required path'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'This planner offers four optional prompts adapted from a transition framework. A change may overlap, repeat, skip, or not fit these phases, and there is no correct emotional response, pace, or outcome.'),
+        hh('p', { style: { margin: 0 } }, 'The tool does not assess readiness or provide medical, mental-health, legal, school, or workplace advice. Plans save in this browser and may contain sensitive information; avoid private details on a shared device.')
       ),
-
       tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '+ New transition'),
-          tkInput(newT.title, function(v) { setNewT(Object.assign({}, newT, { title: v })); }, 'e.g., "Starting 10th grade", "Mom\'s surgery", "Moving to Boston"', { marginBottom: 8 }),
-          hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
-            KINDS.map(function(k) {
-              var on = newT.kind === k.id;
-              return hh('button', { key: 'tk-' + k.id,
-                onClick: function() { setNewT(Object.assign({}, newT, { kind: k.id })); },
-                style: { padding: '6px 10px', borderRadius: 6, background: on ? k.color + '30' : 'rgba(15,23,42,0.5)', color: on ? k.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (on ? k.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-              }, k.icon + ' ' + k.label);
-            })
-          ),
-          hh('input', { type: 'date', value: newT.startDate,
-            onChange: function(e) { setNewT(Object.assign({}, newT, { startDate: e.target.value })); },
-            style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#fbbf24', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 8 }
-          }),
-          tkBtn('🌉 Create plan', createTransition, 'primary')
+        hh('form', { onSubmit: createTransition, 'aria-labelledby': 'learning-lab-transition-form-heading', 'aria-describedby': 'learning-lab-transition-form-help' },
+          hh('h2', { id: 'learning-lab-transition-form-heading', style: { margin: '0 0 5px', color: '#fef3c7', fontSize: 15 } }, 'Create a transition plan'),
+          hh('p', { id: 'learning-lab-transition-form-help', style: helpStyle }, 'Only a plan name is required. You can add, change, or remove everything later.'),
+          hh('label', { htmlFor: 'learning-lab-transition-title', style: labelStyle }, 'Plan name (required)'),
+          hh('input', { id: 'learning-lab-transition-title', type: 'text', value: newT.title, required: true, maxLength: 1000, onChange: function(event) { setNewT(Object.assign({}, newT, { title: event.target.value })); if (errors.title) setErrors(Object.assign({}, errors, { title: '' })); }, 'aria-invalid': errors.title ? 'true' : undefined, 'aria-describedby': 'learning-lab-transition-form-help' + (errors.title ? ' learning-lab-transition-title-error' : ''), style: fieldStyle }),
+          errors.title ? hh('p', { id: 'learning-lab-transition-title-error', role: 'alert', style: { margin: '5px 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.title) : null,
+          hh('label', { htmlFor: 'learning-lab-transition-kind', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Type of change'),
+          hh('select', { id: 'learning-lab-transition-kind', value: kindFor(newT.kind).id, onChange: function(event) { setNewT(Object.assign({}, newT, { kind: event.target.value })); }, style: fieldStyle }, KINDS.map(function(kind) { return hh('option', { key: kind.id, value: kind.id }, kind.label); })),
+          hh('label', { htmlFor: 'learning-lab-transition-date', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Planned or approximate date (optional)'),
+          hh('p', { id: 'learning-lab-transition-date-help', style: helpStyle }, 'Leave this blank if the date is unknown or not relevant.'),
+          hh('input', { id: 'learning-lab-transition-date', type: 'date', value: newT.startDate, 'aria-describedby': 'learning-lab-transition-date-help', onChange: function(event) { setNewT(Object.assign({}, newT, { startDate: event.target.value })); }, style: fieldStyle }),
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Create plan')
         )
       ),
-
-      (data.transitions || []).length === 0 ? tkEmptyState('🌉', 'No transitions planned. Useful for any upcoming change.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
-          (data.transitions || []).map(function(t) {
-            var k = KINDS.filter(function(x) { return x.id === t.kind; })[0] || KINDS[0];
-            var done = (t.checklist || []).filter(function(c) { return c.done; }).length;
-            var total = (t.checklist || []).length;
-            return hh('button', { key: 'tr-' + t.id,
-              onClick: function() { setActiveId(t.id); setView('edit'); },
-              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + k.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + k.color + '40', borderLeft: '4px solid ' + k.color, cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('strong', { style: { fontSize: 13, color: k.color } }, k.icon + ' ' + t.title),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeTrans(t.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, k.label + ' · ' + (t.startDate || 'no date set')),
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 8, padding: '4px 8px', background: 'rgba(2,6,23,0.4)', borderRadius: 6 } },
-                hh('span', { style: { fontSize: 10, color: k.color } }, '📍 ' + (SCHLOSSBERG_PHASES.filter(function(p) { return p.id === t.phase; })[0] || SCHLOSSBERG_PHASES[0]).label),
-                total > 0 ? hh('span', { style: { fontSize: 10, color: k.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, done + '/' + total + ' ✓') : null
-              )
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-transition-list-heading' },
+        hh('h2', { id: 'learning-lab-transition-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 15 } }, 'Saved transition plans'),
+        transitions.length === 0 ? hh('p', { style: { margin: 0, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.55)', color: '#e2e8f0', fontSize: 11 } }, 'No transition plans saved. Create one only if it would be useful.') :
+        hh('ul', { 'aria-label': 'Saved transition plans', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } }, transitions.map(function(transition) { var domId = safeDomId(transition.id); var headingId = 'learning-lab-transition-card-heading-' + domId; var kind = kindFor(transition.kind); var checklist = Array.isArray(transition.checklist) ? transition.checklist : []; var done = checklist.filter(function(item) { return !!item.done; }).length; var progressText = checklist.length ? done + ' of ' + checklist.length + ' checklist items marked complete.' : 'No checklist items saved.'; return hh('li', { key: transition.id },
+          hh('article', { 'aria-labelledby': headingId, style: { height: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, borderLeft: '4px solid ' + kind.color, background: 'rgba(15,23,42,0.64)' } },
+            hh('h3', { id: headingId, style: { margin: '0 0 5px', color: kind.color, fontSize: 14, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(transition.title || 'Untitled transition')),
+            hh('p', { style: { margin: '0 0 5px', color: '#e2e8f0', fontSize: 11 } }, kind.label, transition.startDate ? hh('span', null, ' · Planned date: ', hh('time', { dateTime: transition.startDate }, transition.startDate)) : ' · No date set'),
+            hh('p', { style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 11 } }, 'Selected reflection phase: ' + phaseFor(transition.phase).label),
+            hh('p', { style: { margin: '0 0 3px', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, progressText),
+            hh('progress', { value: done, max: Math.max(checklist.length, 1), 'aria-label': 'Checklist for ' + String(transition.title || 'untitled transition') + ': ' + progressText, style: { width: '100%', minHeight: 18, accentColor: kind.color } }, progressText),
+            transition.createdAt ? hh('p', { style: { margin: '5px 0 8px', color: '#cbd5e1', fontSize: 10 } }, 'Added ', hh('time', { dateTime: transition.createdAt }, relDate(transition.createdAt))) : null,
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 8 } },
+              hh('button', { id: 'learning-lab-transition-open-' + domId, type: 'button', onClick: function() { openTransition(transition); }, 'aria-label': 'Open transition plan: ' + String(transition.title || 'untitled transition'), style: buttonStyle }, 'Open plan'),
+              hh('button', { type: 'button', onClick: function() { removeTransition(transition, false); }, 'aria-label': 'Remove transition plan: ' + String(transition.title || 'untitled transition'), style: dangerButtonStyle }, 'Remove')
+            )
+          )
+        ); }))
+      )
     );
   }
+
 
   // ── KKKK. PERSONAL ACCOMMODATION REQUEST BUILDER (Wave 21) ──
   // Formal-letter-style request generator for IEP / 504 / college
