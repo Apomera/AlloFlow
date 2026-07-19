@@ -40,6 +40,18 @@ describe('Tier-1 allowlist + write-path source pins (AlloFlowANTI.txt)', () => {
     expect(leavesBlock).toMatch(/wsProbeResult[\s\S]*?TRANSPORT, not storage/);
   });
 
+  it('SESSION_TIER1_LEAVES allows aiPolicy with justification, and writeToSession shape-enforces it', () => {
+    const leavesBlock = anti.slice(anti.indexOf('const SESSION_TIER1_LEAVES'), anti.indexOf(']);', anti.indexOf('const SESSION_TIER1_LEAVES')));
+    expect(leavesBlock).toContain("'aiPolicy'");
+    // Justification: teacher-set enum only, no student-typed content.
+    expect(leavesBlock).toMatch(/aiPolicy[\s\S]*?Enum-only, teacher-set/);
+    // The write path must coerce to the strict enum shape (fail-closed to 'off'):
+    // without this, the allowlisted leaf could carry arbitrary objects.
+    const writeBlock = anti.slice(anti.indexOf('const writeToSession'), anti.indexOf('return updateDoc(sessionRef, safePayload);'));
+    expect(writeBlock).toMatch(/hasOwnProperty\.call\(safePayload, 'aiPolicy'\)/);
+    expect(writeBlock).toMatch(/studentAi === 'student-byok' \? 'student-byok' : 'off'/);
+  });
+
   it('student practice-progress effect writes roster.{uid}.wsProgress (debounced, probe-excluded)', () => {
     expect(anti).toMatch(/roster\.\$\{user\.uid\}\.wsProgress/);
     const effect = anti.slice(anti.indexOf('const wsProgressSigRef'), anti.indexOf('const wsProbeBankedRef'));
