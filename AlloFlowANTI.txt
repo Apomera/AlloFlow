@@ -10886,6 +10886,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     harmonyScore: 10,
     earnedBadges: []
   });
+  const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
   const [personaAutoRead, setPersonaAutoRead] = useState(false);
   const [personaAutoReadEpoch, setPersonaAutoReadEpoch] = useState(0);
   const createPersonaTtsMessageKey = (message, index) => {
@@ -15554,7 +15555,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [languageInput, setLanguageInput] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
-  const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
   const [showSourceGen, setShowSourceGen] = useState(false);
   const [sourceTopic, setSourceTopic] = useState('');
   const [sourceTone, setSourceTone] = useState('Informative');
