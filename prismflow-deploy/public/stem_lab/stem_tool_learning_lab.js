@@ -10407,123 +10407,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { entries: [] };
     var setData = props.setData;
-    var fs = R.useState({ g1: '', g2: '', g3: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var EMPTY_FORM = { g1: '', g2: '', g3: '' };
+    var fs = R.useState(EMPTY_FORM); var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var gratitudeError = es[0]; var setGratitudeError = es[1];
-
-    function save() {
-      if (!form.g1.trim() && !form.g2.trim() && !form.g3.trim()) {
-        setGratitudeError('Add at least one gratitude before saving.');
-        setTimeout(function() { var field = document.getElementById('learning-lab-gratitude-1'); if (field) field.focus(); }, 0);
-        return;
-      }
-      var entry = { id: tkId(), date: todayISO(), g1: form.g1.trim(), g2: form.g2.trim(), g3: form.g3.trim() };
-      setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
-      setForm({ g1: '', g2: '', g3: '' });
-      setGratitudeError('');
-      var count = [entry.g1, entry.g2, entry.g3].filter(Boolean).length;
-      llAnnounce('Gratitude log saved with ' + count + ' item' + (count === 1 ? '.' : 's.'));
-    }
-    async function remove(id) {
-      var entry = (data.entries || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (entry ? ' the gratitude log from ' + entry.date : ' this gratitude log') + '.', {
-        title: 'Delete this gratitude log?', confirmText: 'Delete log'
-      }))) return;
-      setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Gratitude log deleted.');
-    }
-
+    var pendingFocusRef = R.useRef(null);
     var entries = data.entries || [];
     var today = todayISO();
     var todayEntry = entries.filter(function(entry) { return entry.date === today; })[0];
-
-    function streak() {
-      var dates = entries.map(function(entry) { return entry.date; }).filter(function(date, index, all) { return all.indexOf(date) === index; });
-      var result = 0;
-      for (var index = 0; index < 365; index++) {
-        var date = new Date(); date.setDate(date.getDate() - index);
-        var iso = date.toISOString().slice(0, 10);
-        if (dates.indexOf(iso) >= 0) result++;
-        else if (index > 0) break;
-      }
-      return result;
-    }
-
-    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(16,185,129,0.5)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid #6ee7b7', background: '#0f172a', color: '#f8fafc', font: 'inherit' };
     var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
+    var wrapText = { overflowWrap: 'anywhere', wordBreak: 'break-word' };
 
+    function requestFocus(id) { pendingFocusRef.current = id; }
+    R.useLayoutEffect(function() {
+      var id = pendingFocusRef.current;
+      if (!id) return;
+      pendingFocusRef.current = null;
+      var node = document.getElementById(id);
+      if (node && typeof node.focus === 'function') node.focus();
+    });
     function gratitudeItems(entry) {
-      return [entry.g1, entry.g2, entry.g3].filter(Boolean);
+      return [entry && entry.g1, entry && entry.g2, entry && entry.g3].map(function(item) { return String(item || '').trim(); }).filter(Boolean);
+    }
+    function safeDateTime(entry) {
+      var value = entry && (entry.createdAt || entry.date);
+      if (!value) return undefined;
+      var parsed = typeof value === 'number' ? new Date(value) : new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? value + 'T12:00:00' : value);
+      return isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+    }
+    function visibleDate(entry) {
+      var dateTime = safeDateTime(entry);
+      return dateTime ? new Date(dateTime).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Date not recorded';
+    }
+    function guidance() {
+      return hh('section', { 'aria-labelledby': 'learning-lab-gratitude-guidance-heading', style: { padding: 10, marginBottom: 12, borderRadius: 8, background: 'rgba(16,185,129,0.09)', border: '1px solid rgba(110,231,183,0.55)', color: '#e2e8f0', fontSize: 11, lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-gratitude-guidance-heading', style: { margin: '0 0 4px', color: '#a7f3d0', fontSize: 12 } }, 'Optional reflection, not forced positivity'),
+        hh('p', { style: { margin: '0 0 4px' } }, 'Use this only when an appreciation reflection fits. You may skip any day, write one item instead of three, or choose another kind of reflection. Difficult feelings and experiences do not need to be minimized, balanced, or reframed here.'),
+        hh('p', { style: { margin: '0 0 4px' } }, 'Research on structured gratitude exercises has found mixed average results across studies and populations. This activity does not promise better mood, sleep, optimism, physical health, or treatment of any condition.'),
+        hh('p', { style: { margin: 0 } }, 'Notes may contain sensitive information and are stored with other Learning Lab data. Saving here does not itself notify a teacher, school, family member, or clinician. Avoid unnecessary identifying details on shared devices and follow applicable privacy procedures on managed devices or accounts.')
+      );
+    }
+    function save(event) {
+      if (event) event.preventDefault();
+      var items = [form.g1, form.g2, form.g3].map(function(item) { return item.trim(); });
+      if (!items.some(Boolean)) { setGratitudeError('Enter at least one optional appreciation note before saving.'); requestFocus('learning-lab-gratitude-1'); return; }
+      var entry = { id: tkId(), date: today, createdAt: Date.now(), g1: items[0], g2: items[1], g3: items[2] };
+      setData(Object.assign({}, data, { entries: [entry].concat(entries) }));
+      setForm(EMPTY_FORM); setGratitudeError(''); requestFocus('learning-lab-gratitude-today-status');
+      var count = gratitudeItems(entry).length;
+      llAnnounce('Optional appreciation entry saved with ' + count + ' note' + (count === 1 ? '.' : 's.'));
+    }
+    async function remove(id, legacyEntry) {
+      var entry = id ? entries.filter(function(item) { return item.id === id; })[0] : legacyEntry;
+      if (!(await askLearningLabConfirmation('This removes the optional appreciation entry from ' + visibleDate(entry) + '.', { title: 'Delete this appreciation entry?', confirmText: 'Delete entry' }))) return;
+      var remaining = entries.filter(function(item) { return id ? item.id !== id : item !== legacyEntry; });
+      setData(Object.assign({}, data, { entries: remaining }));
+      var removedToday = entry && entry.date === today;
+      requestFocus(removedToday || !remaining.length ? 'learning-lab-gratitude-form-heading' : 'learning-lab-gratitude-history-heading');
+      llAnnounce('Optional appreciation entry deleted.');
     }
 
+    var totalNotes = entries.reduce(function(sum, entry) { return sum + gratitudeItems(entry).length; }, 0);
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🙏', 'Gratitude Log', 'Three things you\'re grateful for, daily. Based on Emmons and McCullough (2003).', '#10b981'),
-
-      hh('section', { 'aria-label': 'Gratitude summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: 'Total entries', value: entries.length, color: '#10b981', icon: '🙏' },
-          { label: 'Day streak', value: streak() + 'd', color: '#fbbf24', icon: '🔥' },
-          { label: 'Gratitudes', value: entries.reduce(function(sum, entry) { return sum + gratitudeItems(entry).length; }, 0), color: '#a855f7', icon: '✨' }
-        ].map(function(stat, index) {
-          return hh('div', { key: 'gs-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
-            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label)
+      tkSectionHeader('\uD83C\uDF3F', 'Optional appreciation notes', 'Record one or more observations only when this reflection fits.', '#10b981', 'learning-lab-gratitude-heading'),
+      guidance(),
+      hh('section', { 'aria-labelledby': 'learning-lab-gratitude-summary-heading', style: { marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-gratitude-summary-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#a7f3d0' } }, 'Entry summary'),
+        hh('dl', { style: { margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 } },
+          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.65)', border: '1px solid #6ee7b7', textAlign: 'center' } }, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Saved entries'), hh('dd', { style: { margin: '4px 0 0', fontSize: 16, fontWeight: 800, color: '#a7f3d0' } }, String(entries.length))),
+          hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.65)', border: '1px solid #6ee7b7', textAlign: 'center' } }, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Saved notes'), hh('dd', { style: { margin: '4px 0 0', fontSize: 16, fontWeight: 800, color: '#a7f3d0' } }, String(totalNotes)))
+        )
+      ),
+      todayEntry ? hh('section', { id: 'learning-lab-gratitude-today-status', tabIndex: -1, role: 'status', 'aria-labelledby': 'learning-lab-gratitude-today-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid #6ee7b7', marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-gratitude-today-heading', style: { fontSize: 12, color: '#a7f3d0', margin: '0 0 6px' } }, 'Today has an optional appreciation entry'),
+        hh('ul', { style: { margin: 0, paddingLeft: 22, fontSize: 11, color: '#e2e8f0', lineHeight: 1.7 } }, gratitudeItems(todayEntry).map(function(item, index) { return hh('li', { key: index, style: wrapText }, item); })),
+        hh('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#cbd5e1' } }, 'Delete today\'s entry in the history if you need to replace it.')
+      ) : tkCard('#10b981', hh('form', { noValidate: true, onSubmit: save, 'aria-labelledby': 'learning-lab-gratitude-form-heading' },
+        hh('h3', { id: 'learning-lab-gratitude-form-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#a7f3d0', margin: '0 0 5px' } }, 'Add an optional appreciation entry'),
+        hh('p', { style: { margin: '0 0 10px', fontSize: 10, color: '#cbd5e1' } }, 'Enter one, two, or three notes. There is no daily requirement or streak.'),
+        [1, 2, 3].map(function(number) {
+          var key = 'g' + number; var fieldId = 'learning-lab-gratitude-' + number;
+          return hh('div', { key: key, style: { marginBottom: 8 } },
+            hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#a7f3d0', marginBottom: 4 } }, 'Appreciation note ' + number + (number === 1 ? ' (at least one note required to save)' : ' (optional)')),
+            hh('input', { id: fieldId, type: 'text', value: form[key], maxLength: 300, 'aria-invalid': gratitudeError && number === 1 ? 'true' : undefined, 'aria-describedby': gratitudeError && number === 1 ? 'learning-lab-gratitude-error learning-lab-gratitude-limit-' + number : 'learning-lab-gratitude-limit-' + number,
+              onChange: function(event) { var patch = {}; patch[key] = event.target.value; setForm(Object.assign({}, form, patch)); if (gratitudeError) setGratitudeError(''); }, 'data-ll-focusable': true, style: inputStyle }),
+            hh('div', { id: 'learning-lab-gratitude-limit-' + number, style: { marginTop: 3, fontSize: 10, color: '#cbd5e1' } }, 'Up to 300 characters.')
           );
-        })
-      ),
-
-      todayEntry ? hh('section', { role: 'status', 'aria-labelledby': 'learning-lab-gratitude-today-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', marginBottom: 12 } },
-        hh('h3', { id: 'learning-lab-gratitude-today-heading', style: { fontSize: 11, color: '#10b981', fontWeight: 700, margin: '0 0 6px' } }, '✓ Today\'s gratitudes'),
-        hh('ol', { style: { margin: 0, paddingLeft: 24, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-          gratitudeItems(todayEntry).map(function(item, index) { return hh('li', { key: 'today-gratitude-' + index }, item); })
-        )
-      ) : tkCard('#10b981',
-        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-gratitude-form-heading' },
-          hh('h3', { id: 'learning-lab-gratitude-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#10b981', margin: '0 0 10px' } }, '🙏 Things I\'m grateful for today'),
-          [1, 2, 3].map(function(number) {
-            var key = 'g' + number;
-            var fieldId = 'learning-lab-gratitude-' + number;
-            return hh('div', { key: 'gf-' + number, style: { marginBottom: 8 } },
-              hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, 'Gratitude ' + number + (number === 1 ? ' (at least one required)' : ' (optional)')),
-              hh('input', { id: fieldId, type: 'text', value: form[key], maxLength: 300, 'aria-invalid': gratitudeError && number === 1 ? 'true' : undefined, 'aria-describedby': gratitudeError && number === 1 ? 'learning-lab-gratitude-error' : undefined, placeholder: 'Anything — big or small', onChange: function(event) { var patch = {}; patch[key] = event.target.value; setForm(Object.assign({}, form, patch)); if (gratitudeError) setGratitudeError(''); }, 'data-ll-focusable': true, style: inputStyle })
-            );
-          }),
-          hh('div', { id: 'learning-lab-gratitude-error', role: 'alert', style: { minHeight: gratitudeError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: gratitudeError ? 8 : 0 } }, gratitudeError),
-          hh('div', { style: { textAlign: 'right' } },
-            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save gratitude log')
-          )
-        )
-      ),
-
-      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-gratitude-history-heading' },
-        hh('h3', { id: 'learning-lab-gratitude-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 History'),
-        hh('ul', { style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 6 }) },
-          entries.slice(0, 30).map(function(entry) {
-            return hh('li', { key: 'ge-' + entry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #10b981' } },
-              hh('article', { 'aria-label': 'Gratitude log from ' + entry.date },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  hh('span', null, entry.date + ' · ' + relDate(entry.date)),
-                  hh('button', { type: 'button', 'aria-label': 'Delete gratitude log from ' + entry.date, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
-                ),
-                hh('ol', { style: { margin: 0, paddingLeft: 24, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-                  gratitudeItems(entry).map(function(item, index) { return hh('li', { key: 'gratitude-' + index }, item); })
-                )
-              )
-            );
-          })
-        )
-      ) : null,
-
-      hh('aside', { 'aria-label': 'Why gratitude practice can help', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#10b981' } }, '🎓 Why this works: '),
-        'Emmons and McCullough (2003) found that daily gratitude practice over ten weeks improved well-being, sleep quality, optimism, and physical health compared with neutral-event journaling. Even one line counts, including on a hard day.'
+        }),
+        gratitudeError ? hh('div', { id: 'learning-lab-gratitude-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: 8 } }, gratitudeError) : null,
+        hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save optional entry')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-gratitude-history-heading' },
+        hh('h3', { id: 'learning-lab-gratitude-history-heading', tabIndex: -1, style: { fontSize: 12, color: '#a7f3d0', margin: '0 0 8px' } }, 'All optional appreciation entries'),
+        !entries.length ? hh('p', { style: { fontSize: 11, color: '#cbd5e1' } }, 'No appreciation entries saved. Skipping this activity is always an option.')
+        : hh('ul', { 'aria-label': 'All optional appreciation entries', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 8 }) }, entries.map(function(entry, index) {
+          var entryId = entry.id || ('legacy-appreciation-' + index);
+          return hh('li', { key: entryId }, hh('article', { 'aria-labelledby': 'learning-lab-gratitude-entry-heading-' + entryId, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.65)', border: '1px solid #6ee7b7' } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+              hh('h4', { id: 'learning-lab-gratitude-entry-heading-' + entryId, style: { margin: 0, fontSize: 12, color: '#a7f3d0' } }, 'Optional entry from ', hh('time', { dateTime: safeDateTime(entry) }, visibleDate(entry))),
+              hh('button', { type: 'button', 'aria-label': 'Delete appreciation entry from ' + visibleDate(entry), onClick: function() { remove(entry.id, entry); }, 'data-ll-focusable': true, style: { minWidth: 52, minHeight: 44, padding: 6, borderRadius: 6, border: '1px solid #f87171', background: 'rgba(127,29,29,0.30)', color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+            ),
+            hh('ul', { style: { margin: '7px 0 0', paddingLeft: 22, fontSize: 11, color: '#e2e8f0', lineHeight: 1.7 } }, gratitudeItems(entry).map(function(item, itemIndex) { return hh('li', { key: itemIndex, style: wrapText }, item); }))
+          ));
+        }))
       )
     );
   }
 
-  // Books read + reflections + reading-list management. Read more often
-  // = literacy growth, regardless of what you read (Krashen 2004).
   function PersonalReadingTracker(props) {
     if (!R) return null;
     var data = props.data || { books: [] };
@@ -10898,7 +10888,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (openTaskCount > 3) suggestions.push(openTaskCount + ' open tasks. Consider closing one or two today to maintain momentum.');
     if (avgSleep !== '—' && parseFloat(avgSleep) < 7) suggestions.push('Average sleep is ' + avgSleep + ' hours, below seven. Consider what could shift earlier tonight.');
     if (reflections.length === 0) suggestions.push('No weekly reflections yet. A five-minute reflection can support metacognition.');
-    if (gratitudes.length === 0) suggestions.push('No gratitude log yet. One to three items can be completed in about a minute.');
     if (suggestions.length === 0) suggestions.push('Your tracked items look current. Choose the next action that best supports your goals.');
 
     return hh('div', { style: { padding: 14 } },
@@ -20300,7 +20289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkMastery',icon: '📚', label: __alloT('stem.learning_lab.subject_mastery', 'Subject Mastery'),      desc: __alloT('stem.learning_lab.track_mastery_per_topic_per_subject_ac', 'Track optional topic learning-status reflections without an average score.') },
               { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Optional start/end times, how-it-felt rating, and context observations; not diagnostic.') },
               { id: 'mytkJournal',icon: '📓', label: __alloT('stem.learning_lab.learning_journal', 'Learning Journal'),     desc: __alloT('stem.learning_lab.free_form_journal_with_subject_mood_ta', 'Optional personal learning notes with searchable subject, mood, and tags; review privacy before use.') },
-              { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', '3 daily gratitudes (Emmons + McCullough 2003) — strongest single positive-psychology intervention.') },
+              { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', 'Optional appreciation notes with privacy and non-treatment guidance; use only when this reflection fits.') },
               { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Books read + want-to-read + reflections + page counter (Krashen 2004).') },
               { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).') },
               { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Single overview of every toolkit tool with 14-day activity strip + suggestions.') },
