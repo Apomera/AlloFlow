@@ -313,6 +313,58 @@ describe('getSprintScoreSummary (origin is not a quiz stop)', () => {
   });
 });
 
+describe('REAL_CITIES (Natural Earth populated places)', () => {
+  it('has thousands of cities with sane fields, sorted by population desc', () => {
+    expect(FS.REAL_CITIES.length).toBeGreaterThan(3500);
+    expect(FS.REAL_CITIES.length).toBeLessThan(5000);
+    let prevPop = Infinity;
+    for (const c of FS.REAL_CITIES) {
+      expect(typeof c[0]).toBe('string');
+      expect(c[0].length).toBeGreaterThan(0);
+      expect(c[1]).toBeGreaterThanOrEqual(-90);
+      expect(c[1]).toBeLessThanOrEqual(90);
+      expect(c[2]).toBeGreaterThanOrEqual(-180);
+      expect(c[2]).toBeLessThanOrEqual(180);
+      expect(c[3]).toBeGreaterThanOrEqual(50); // filtered at pop_max ≥ 50k
+      expect(c[3]).toBeLessThanOrEqual(prevPop);
+      prevPop = c[3];
+    }
+  });
+  it('contains the anchors: Tokyo, New York, London, Sydney — and Portland, Maine', () => {
+    const find = (name, lat, lon) => FS.REAL_CITIES.find(
+      (c) => c[0] === name && Math.abs(c[1] - lat) < 0.2 && Math.abs(c[2] - lon) < 0.2);
+    expect(find('Tokyo', 35.69, 139.75)).toBeTruthy();
+    expect(find('New York', 40.72, -74.0)).toBeTruthy();
+    expect(find('London', 51.5, -0.12)).toBeTruthy();
+    expect(find('Sydney', -33.87, 151.2)).toBeTruthy();
+    const pme = find('Portland', 43.67, -70.25); // the sim's home turf
+    expect(pme).toBeTruthy();
+    expect(pme[3]).toBeGreaterThan(100); // ~136k urban area
+  });
+  it('is pure ASCII (no encoding hazards in the embedded data)', () => {
+    for (const c of FS.REAL_CITIES) expect(/^[\x20-\x7E]+$/.test(c[0])).toBe(true);
+  });
+});
+
+describe('nearestRealCities', () => {
+  it('from over PWM, Portland ME is the nearest city and within 10 nm', () => {
+    const near = FS.nearestRealCities(43.646, -70.309, 20, 3);
+    expect(near.length).toBeGreaterThan(0);
+    expect(near[0].name).toBe('Portland');
+    expect(near[0].distNm).toBeLessThan(10);
+  });
+  it('respects maxNm and maxCount, sorted nearest-first', () => {
+    const wide = FS.nearestRealCities(40.72, -74.0, 60);
+    expect(wide.length).toBeGreaterThan(5); // NYC metro is dense
+    for (const c of wide) expect(c.distNm).toBeLessThanOrEqual(60);
+    for (let i = 1; i < wide.length; i++) expect(wide[i].distNm).toBeGreaterThanOrEqual(wide[i - 1].distNm);
+    expect(FS.nearestRealCities(40.72, -74.0, 60, 4)).toHaveLength(4);
+  });
+  it('mid-ocean finds nothing', () => {
+    expect(FS.nearestRealCities(38, -40, 100)).toHaveLength(0);
+  });
+});
+
 describe('pushTrackPoint (minimap breadcrumb sampler)', () => {
   it('records the first point and points spaced ≥ minNm', () => {
     const trail = [];
