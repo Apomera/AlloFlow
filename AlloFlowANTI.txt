@@ -3269,7 +3269,12 @@ const TEACHER_ONLY_TYPES = [
     'udl-advice',
     'brainstorm',
     'alignment-report',
-    'video-ref'
+    'video-ref',
+    'persona-transcript',
+    'persona-reflection',
+    'persona-summary',
+    'persona-session',
+    'persona-session-read-aloud'
 ];
 let globalAudioCtx = null;
 let globalTtsUrlCache = _ttsState.urlCache;
@@ -8019,7 +8024,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=a1627a42e');
     loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=a1627a42e');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=a1627a42e');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=a1627a42e');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=c03c8186');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=a1627a42e');
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=a1627a42e');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=a1627a42e');
@@ -8027,8 +8032,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=a1627a42e');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=a1627a42e');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=a1627a42e');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a1627a42e');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=a1627a42e');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=fc82a966');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=b6fcbb70');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=a1627a42e');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=a1627a42e');
     loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=a1627a42e');
@@ -8093,7 +8098,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=a1627a42e');
     window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=a1627a42e'); }; })();
     window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=a1627a42e'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
     window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=a1627a42e'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=a1627a42e'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
@@ -8187,6 +8192,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=a1627a42e');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=1d1891ac');
+    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
+    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
+    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=a1627a42e');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=a1627a42e');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=a1627a42e');
@@ -8213,7 +8221,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=a1627a42e');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=a1627a42e');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=a1627a42e');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=a1627a42e');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=ecec9c60');
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=a1627a42e');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=a1627a42e');
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=a1627a42e');
@@ -23874,6 +23882,40 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
+  const prepareReadAloudArtifactAudio = async (options = {}) => {
+      const moduleValue = window.AlloModules && window.AlloModules.ReadAloudArtifactAudio;
+      if (!moduleValue || typeof moduleValue.create !== 'function') {
+          const error = new Error('Read-aloud artifact audio is still loading. Please try again.');
+          error.code = 'artifact-audio-unavailable';
+          throw error;
+      }
+      const preparer = moduleValue.create({ callTTS });
+      return preparer.prepare({
+          ...options,
+          defaultVoice: options.defaultVoice || selectedVoice || 'Kore',
+          language: options.language || leveledTextLanguage || currentUiLanguage || 'English',
+          speed: options.speed || voiceSpeed || 1,
+      });
+  };
+  const _getPrivatePersonaArtifactStorage = async () => {
+      if (!window.__alloDeviceStoragePromise) {
+          window.__alloDeviceStoragePromise = window.alloDeviceStorage
+              ? Promise.resolve(window.alloDeviceStorage)
+              : new Promise((resolve, reject) => {
+                  const script = document.createElement('script');
+                  script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+                  script.onload = () => window.alloDeviceStorage
+                      ? resolve(window.alloDeviceStorage)
+                      : reject(new Error('Device storage is unavailable.'));
+                  script.onerror = () => reject(new Error('Device storage failed to load.'));
+                  document.head.appendChild(script);
+              });
+      }
+      const storage = await window.__alloDeviceStoragePromise;
+      if (!storage || typeof storage.ready !== 'function') throw new Error('Device storage is unavailable.');
+      await storage.ready();
+      return storage;
+  };
   _exportLiveRef.current = {
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
       profiles, adventureState,
@@ -23881,7 +23923,137 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       externalCBMScores, interventionLogs,
       setIsProcessing, setShowStorybookExportModal,
       addToast, parseMarkdownToHTML, generateResourceHTML, rehydrateHistoryWithImages,
+      prepareReadAloudArtifactAudio, selectedVoice, voiceSpeed,
+      leveledTextLanguage, currentUiLanguage,
       t,
+  };
+  const handleSavePrivatePersonaSession = async () => {
+      const runtime = window.AlloModules && window.AlloModules.PersonaSessionArtifact;
+      if (!runtime || typeof runtime.buildPrivateSessionArtifact !== 'function') {
+          addToast('Private Persona session tools are still loading. Please try again.', 'error');
+          return null;
+      }
+      const chatHistory = Array.isArray(personaState && personaState.chatHistory)
+          ? personaState.chatHistory : [];
+      if (!chatHistory.length) return null;
+      const participants = personaState.mode === 'panel'
+          ? (personaState.selectedCharacters || []).slice(0, 2)
+          : [personaState.selectedCharacter].filter(Boolean);
+      const participantNames = participants.map(character => String(character && character.name || '').trim()).filter(Boolean);
+      const defaultVoice = selectedVoice || 'Kore';
+      const language = leveledTextLanguage || currentUiLanguage || 'English';
+      const voiceBySpeaker = {};
+      participants.forEach(character => {
+          const name = String(character && character.name || '').trim();
+          const voice = String(character && character.voice || '').trim();
+          if (name && voice) {
+              voiceBySpeaker[name] = voice;
+              voiceBySpeaker[name.toLocaleLowerCase()] = voice;
+          }
+      });
+      const sessionId = 'persona-session-' + Date.now();
+      const resourceId = generatedContent && generatedContent.id
+          ? String(generatedContent.id) : undefined;
+      const input = {
+          sessionId,
+          sessionKey: sessionId,
+          resourceId,
+          title: participantNames.length
+              ? 'Private conversation with ' + participantNames.join(' & ')
+              : 'Private Persona conversation',
+          language,
+          selectedVoice: defaultVoice,
+          defaultVoice,
+          voiceBySpeaker,
+          personaState,
+      };
+      setIsProcessing(true);
+      addToast('Preparing a private Persona session and its narration...', 'info');
+      try {
+          const runtimeOptions = {
+              maxChunkChars: 280,
+              selectedVoice: defaultVoice,
+              defaultVoice,
+              voiceBySpeaker,
+              voiceByRole: { learner: defaultVoice, persona: defaultVoice },
+              synthesisRate: voiceSpeed || 1,
+          };
+          const normalized = runtime.normalizePersonaSession(input, runtimeOptions);
+          const plannedSegments = normalized.narrationPlan.map(plan => ({
+              segmentId: plan.chunkId,
+              text: plan.text,
+              voice: voiceBySpeaker[plan.speaker]
+                  || voiceBySpeaker[String(plan.speaker || '').toLocaleLowerCase()]
+                  || defaultVoice,
+              language: plan.language || language,
+              speed: voiceSpeed || 1,
+          }));
+          let audioBatch = { audioBySegmentId: {}, total: plannedSegments.length, prepared: 0, failed: plannedSegments.length, errors: [] };
+          try {
+              audioBatch = await prepareReadAloudArtifactAudio({
+                  ownerApproved: true,
+                  resourceId: sessionId,
+                  resourceType: 'persona-session-read-aloud',
+                  adapterId: 'persona-session-artifact',
+                  scopeId: 'transcript',
+                  source: 'persona-owner-save',
+                  defaultVoice,
+                  language,
+                  speed: voiceSpeed || 1,
+                  segments: plannedSegments,
+              });
+          } catch (error) {
+              warnLog('[PersonaArtifact] Narration unavailable; saving the complete text session', error);
+          }
+          const built = await runtime.buildPrivateSessionArtifact(input, {
+              ...runtimeOptions,
+              prepareNarration: async request => {
+                  const audio = audioBatch.audioBySegmentId[request.chunkId];
+                  if (audio) return audio;
+                  const error = new Error('Narration was unavailable for this transcript chunk.');
+                  error.code = 'narration-unavailable';
+                  throw error;
+              },
+          });
+          let persistence = null;
+          let download = null;
+          let persistenceError = null;
+          let downloadError = null;
+          try {
+              const deviceStorage = await _getPrivatePersonaArtifactStorage();
+              persistence = await runtime.persistPrivateSessionArtifact(built.artifact, { deviceStorage });
+          } catch (error) {
+              persistenceError = error;
+              warnLog('[PersonaArtifact] Device persistence failed', error);
+          }
+          try {
+              download = runtime.downloadOwnerCopy(built.artifact, {
+                  ownerInitiated: true,
+                  filename: built.artifact.title,
+              });
+          } catch (error) {
+              downloadError = error;
+              warnLog('[PersonaArtifact] Owner download failed', error);
+          }
+          if (!persistence && !download) throw (persistenceError || downloadError || new Error('Private session could not be saved.'));
+          const clipMessage = built.narration.failures.length
+              ? ' ' + built.narration.embedded + '/' + built.narration.attempted + ' narration clips were included.'
+              : ' ' + built.narration.embedded + ' narration clips were included.';
+          if (persistence && download) {
+              addToast('Private Persona session saved on this device and downloaded.' + clipMessage, 'success');
+          } else if (download) {
+              addToast('Private Persona session downloaded; on-device persistence was unavailable.' + clipMessage, 'warning');
+          } else {
+              addToast('Private Persona session saved on this device; the download was unavailable.' + clipMessage, 'warning');
+          }
+          return built.artifact;
+      } catch (error) {
+          warnLog('[PersonaArtifact] Save failed', error);
+          addToast('Could not save the private Persona session: ' + (error && error.message ? error.message : 'Unknown error'), 'error');
+          return null;
+      } finally {
+          setIsProcessing(false);
+      }
   };
   const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
   const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
@@ -35604,7 +35776,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             handleClosePersonaChat, handleGenerateReflectionPrompt,
             handlePanelChatSubmit, handlePersonaChatSubmit, generatePersonaFollowUps, generatePanelFollowUps,
             handlePersonaTopicSpark, handleRetryPortraitGeneration,
-            handleSavePersonaChat, handleSaveReflection, handleGeneratePersonaSummary,
+            handleSavePersonaChat: handleSavePrivatePersonaSession, handleSaveReflection, handleGeneratePersonaSummary,
             handleSetIsPersonaReflectionOpenToFalse,
             handleSetPersonaDefinitionDataToNull,
             handleSpeak, handleTogglePersonaAutoSend,

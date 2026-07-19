@@ -36,12 +36,35 @@
     return obj;
   }
 
+  // Persona transcripts, reflections, summaries, and read-aloud session
+  // artifacts are device-private learning records. They must never be
+  // serialized into Firestore history/session resource payloads.
+  const PRIVATE_PERSONA_HISTORY_TYPES = new Set([
+    'persona-transcript',
+    'persona-reflection',
+    'persona-summary',
+    'persona-session-read-aloud',
+  ]);
+
+  function isPrivatePersonaHistoryItem(item) {
+    if (!item || typeof item !== 'object') return false;
+    const candidateTypes = [
+      item.type,
+      item.artifactType,
+      item.data && typeof item.data === 'object' ? item.data.type : '',
+      item.data && typeof item.data === 'object' ? item.data.artifactType : '',
+    ];
+    return candidateTypes.some(candidate =>
+      typeof candidate === 'string' && PRIVATE_PERSONA_HISTORY_TYPES.has(candidate.trim().toLowerCase())
+    );
+  }
+
   // Strip large/binary fields (image URLs, sceneImage blobs, avatars) from
   // history items before writing to Firestore. Keeps the rest of the item
   // intact so reload-from-cloud preserves structure even if visuals are
   // regenerated locally.
   function sanitizeHistoryForCloud(historyItems) {
-    return historyItems.map(item => {
+    return historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(item => {
         if (item.type === 'glossary' && Array.isArray(item.data)) {
             const cleanData = item.data.map(gItem => {
                 const { image, ...rest } = gItem;
@@ -82,7 +105,7 @@
         }
         if (item.type === 'persona' && Array.isArray(item.data)) {
              const cleanData = item.data.map(p => {
-                 const { avatarUrl, ...rest } = p;
+                 const { avatarUrl, chatHistory, savedDialogue, ...rest } = p;
                  return rest;
              });
              return { ...item, data: cleanData };

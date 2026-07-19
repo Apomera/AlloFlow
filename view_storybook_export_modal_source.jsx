@@ -1,19 +1,16 @@
 /**
  * AlloFlow — Storybook Export Modal Module
  *
- * Modal for choosing between text-only and image-included storybook export
- * formats for adventure mode.
- *
- * Extracted from AlloFlowANTI.txt lines 21683-21742 (May 2026).
+ * Chooses the Storybook visual format and optionally requests a durable,
+ * narrated download. Export progress stays in the dialog for screen-reader
+ * and sighted feedback while the asynchronous TTS preparation runs.
  *
  * Required props:
- *   handleExportStorybook                     — function(includeImages: bool) — kicks export
- *   handleSetShowStorybookExportModalToFalse  — close handler (also fires for backdrop click)
- *   isProcessing                              — bool, disables buttons while exporting
- *   setShowStorybookExportModal               — direct setter used after format chosen
- *   t                                         — translation function
- *
- * Icons (read from window globals): BookOpen, ImageIcon, Type
+ *   handleExportStorybook                    — function(bool | options)
+ *   handleSetShowStorybookExportModalToFalse — close handler
+ *   isProcessing                             — bool
+ *   setShowStorybookExportModal              — direct setter
+ *   t                                        — translation function
  */
 function StorybookExportModal({
   handleExportStorybook,
@@ -25,62 +22,146 @@ function StorybookExportModal({
   const BookOpen = window.BookOpen || (() => null);
   const ImageIcon = window.ImageIcon || (() => null);
   const Type = window.Type || (() => null);
+  const [includeNarration, setIncludeNarration] = React.useState(false);
+  const [localProcessing, setLocalProcessing] = React.useState(false);
+  const [progress, setProgress] = React.useState(null);
+  const busy = !!isProcessing || localProcessing;
+
+  const runExport = async (includeImages) => {
+    if (busy) return;
+    setLocalProcessing(true);
+    setProgress({ phase: 'story', completed: 0, total: 0, message: 'Preparing your Storybook…' });
+    try {
+      const result = await handleExportStorybook({
+        includeImages,
+        includeNarration,
+        keepModalOpen: true,
+        onProgress: (update) => setProgress(update || null),
+      });
+      if (result !== false) {
+        setShowStorybookExportModal(false);
+      } else {
+        setProgress({ phase: 'error', completed: 0, total: 0, message: 'Storybook export could not be completed.' });
+      }
+    } catch (_) {
+      setProgress({ phase: 'error', completed: 0, total: 0, message: 'Storybook export could not be completed.' });
+    } finally {
+      setLocalProcessing(false);
+    }
+  };
+
+  const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
+  const progressCompleted = progressTotal ? Math.min(Number(progress.completed) || 0, progressTotal) : 0;
+  const progressMessage = progress && progress.message
+    ? progress.message
+    : (busy ? 'Preparing your Storybook…' : '');
 
   return (
     <div
       className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200"
-      onClick={handleSetShowStorybookExportModalToFalse}
+      onClick={(event) => {
+        if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
+      }}
     >
       <div
         className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-300"
-        role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="storybook-export-title"
+        aria-describedby="storybook-export-description storybook-export-progress"
+        aria-busy={busy}
+        onClick={event => event.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-            <BookOpen size={24} className="text-indigo-600" />
+            <BookOpen size={24} className="text-indigo-600" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-800">{t('adventure.storybook')}</h3>
+            <h3 id="storybook-export-title" className="text-xl font-bold text-slate-800">{t('adventure.storybook')}</h3>
             <p className="text-sm text-slate-600">{t('adventure.export_options')}</p>
           </div>
         </div>
-        <p className="text-slate-600 mb-6">
+        <p id="storybook-export-description" className="text-slate-600 mb-5">
           {t('adventure.storybook_export_description')}
         </p>
+
+        <div className="mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+          <div className="flex items-start gap-3">
+            <input
+              id="storybook-include-narration"
+              type="checkbox"
+              checked={includeNarration}
+              onChange={event => setIncludeNarration(event.target.checked)}
+              disabled={busy}
+              className="mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label htmlFor="storybook-include-narration" className="cursor-pointer text-sm text-slate-800">
+              <span className="block font-bold">Include narrated TTS audio</span>
+              <span className="mt-1 block text-xs leading-relaxed text-slate-600">
+                Creates self-contained HTML and JSON downloads. Audio is not saved in the AlloHaven browser store.
+              </span>
+            </label>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-3">
           <button
+            type="button"
             aria-label={t('common.toggle_images')}
-            onClick={() => {
-              setShowStorybookExportModal(false);
-              handleExportStorybook(true);
-            }}
-            disabled={isProcessing} aria-busy={isProcessing}
+            onClick={() => runExport(true)}
+            disabled={busy}
+            aria-busy={busy}
             className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             data-help-key="export_storybook_images"
           >
-            <ImageIcon size={20} />
+            <ImageIcon size={20} aria-hidden="true" />
             {t('adventure.include_images')}
           </button>
           <button
-            onClick={() => {
-              setShowStorybookExportModal(false);
-              handleExportStorybook(false);
-            }}
-            disabled={isProcessing} aria-busy={isProcessing}
+            type="button"
+            onClick={() => runExport(false)}
+            disabled={busy}
+            aria-busy={busy}
             className="w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             data-help-key="export_storybook_text"
           >
-            <Type size={20} />
+            <Type size={20} aria-hidden="true" />
             {t('adventure.text_only')}
           </button>
           <button
+            type="button"
             onClick={handleSetShowStorybookExportModalToFalse}
-            className="w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors"
+            disabled={busy}
+            className="w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('common.cancel')}
           </button>
         </div>
-        <p className="text-xs text-slate-600 text-center mt-4">
+
+        <div
+          id="storybook-export-progress"
+          className={`mt-4 min-h-6 text-center text-sm ${progress && progress.phase === 'error' ? 'text-red-700' : 'text-slate-700'}`}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {busy && (
+            <span
+              className="mr-2 inline-block h-4 w-4 animate-spin motion-reduce:animate-none rounded-full border-2 border-indigo-200 border-t-indigo-600 align-[-0.15em]"
+              aria-hidden="true"
+            />
+          )}
+          {progressMessage}
+          {busy && progressTotal > 0 && (
+            <progress
+              className="mt-2 block h-2 w-full"
+              max={progressTotal}
+              value={progressCompleted}
+              aria-label="Narration export progress"
+            />
+          )}
+        </div>
+        <p className="text-xs text-slate-600 text-center mt-3">
           {t('adventure.storybook_image_warning')}
         </p>
       </div>

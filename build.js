@@ -260,6 +260,21 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ReadAloudArtifactContractModule',
+        filename: 'read_aloud_artifact_contract_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ReadAloudArtifactAudioModule',
+        filename: 'read_aloud_artifact_audio_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PersonaSessionArtifactModule',
+        filename: 'persona_session_artifact_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'GenerationHelpersModule',
         filename: 'generation_helpers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1706,6 +1721,14 @@ const CONTENT_HASH_PINNED = new Set([
     'view_socratic_chat_module.js',
     'karaoke_audio_store_module.js',
     'read_aloud_audio_service_module.js',
+    'read_aloud_artifact_contract_module.js',
+    'read_aloud_artifact_audio_module.js',
+    'persona_session_artifact_module.js',
+    'export_module.js',
+    'view_storybook_export_modal_module.js',
+    'personas_module.js',
+    'view_persona_chat_module.js',
+    'firestore_sync_module.js',
     'view_faq_module.js',
     'immersive_reader_module.js',
     'view_simplified_module.js',

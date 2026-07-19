@@ -127,6 +127,10 @@
   var reflectionSubmitPending = _reflectionSubmitPendingState[0];
   var setReflectionSubmitPending = _reflectionSubmitPendingState[1];
   var reflectionSubmitPendingRef = React.useRef(false);
+  var _transcriptSavePendingState = React.useState(false);
+  var transcriptSavePending = _transcriptSavePendingState[0];
+  var setTranscriptSavePending = _transcriptSavePendingState[1];
+  var transcriptSavePendingRef = React.useRef(false);
   var personaReflectionText = typeof personaReflectionInput === 'string' ? personaReflectionInput : '';
   var reflectionBusy = Boolean(isGradingReflection || reflectionSubmitPending);
   var summaryBusy = Boolean(personaState.isGeneratingSummary || summaryRequestPending);
@@ -174,6 +178,17 @@
     }).catch(function () {}).finally(function () {
       reflectionSubmitPendingRef.current = false;
       setReflectionSubmitPending(false);
+    });
+  };
+  var _savePersonaTranscript = function () {
+    if (transcriptSavePendingRef.current || personaState.isLoading || !(personaState.chatHistory || []).length || typeof handleSavePersonaChat !== 'function') return;
+    transcriptSavePendingRef.current = true;
+    setTranscriptSavePending(true);
+    return Promise.resolve().then(function () {
+      return handleSavePersonaChat();
+    }).catch(function () {}).finally(function () {
+      transcriptSavePendingRef.current = false;
+      setTranscriptSavePending(false);
     });
   };
   var personaCloseHandlerRef = React.useRef(handleClosePersonaChat);
@@ -890,13 +905,17 @@
     className: "w-px h-6 bg-slate-300 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.save'),
+    "aria-label": transcriptSavePending ? 'Saving private Persona session' : 'Save private Persona session with narration',
     "data-help-key": "persona_save_chat",
-    onClick: handleSavePersonaChat,
-    disabled: personaState.chatHistory.length === 0 || personaState.isLoading,
+    onClick: _savePersonaTranscript,
+    disabled: personaState.chatHistory.length === 0 || personaState.isLoading || transcriptSavePending,
+    "aria-busy": transcriptSavePending ? 'true' : 'false',
     className: "p-2 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2",
-    title: t('persona.save_tooltip')
-  }, /*#__PURE__*/React.createElement(Save, {
+    title: transcriptSavePending ? 'Saving private Persona session' : 'Save private Persona session with narration'
+  }, transcriptSavePending ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16,
+    className: "animate-spin motion-reduce:animate-none"
+  }) : /*#__PURE__*/React.createElement(Save, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1696,12 +1715,16 @@
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_save_chat",
-    onClick: handleSavePersonaChat,
-    disabled: personaState.chatHistory.length === 0 || personaState.isLoading,
+    onClick: _savePersonaTranscript,
+    disabled: personaState.chatHistory.length === 0 || personaState.isLoading || transcriptSavePending,
+    "aria-busy": transcriptSavePending ? 'true' : 'false',
     className: "p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
-    title: t('persona.chat_save'),
-    "aria-label": t('persona.chat_save')
-  }, /*#__PURE__*/React.createElement(Save, {
+    title: transcriptSavePending ? 'Saving private Persona session' : 'Save private Persona session with narration',
+    "aria-label": transcriptSavePending ? 'Saving private Persona session' : 'Save private Persona session with narration'
+  }, transcriptSavePending ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16,
+    className: "animate-spin motion-reduce:animate-none"
+  }) : /*#__PURE__*/React.createElement(Save, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2304,12 +2327,16 @@
     className: "w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 sm:w-auto"
   }, t('persona.summary.back_to_chat')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: handleSavePersonaChat,
-    disabled: (personaState.chatHistory || []).length === 0 || personaState.isLoading,
+    onClick: _savePersonaTranscript,
+    disabled: (personaState.chatHistory || []).length === 0 || personaState.isLoading || transcriptSavePending,
+    "aria-busy": transcriptSavePending ? 'true' : 'false',
     className: "inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50 sm:w-auto"
-  }, /*#__PURE__*/React.createElement(Save, {
+  }, transcriptSavePending ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 15,
+    className: "animate-spin motion-reduce:animate-none"
+  }), " Saving private session...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Save, {
     size: 15
-  }), " ", t('persona.chat_save')), personaSummary && /*#__PURE__*/React.createElement("button", {
+  }), " Save private session with narration")), personaSummary && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _retryPersonaSummary,
     disabled: summaryBusy || !canGeneratePersonaSummary,

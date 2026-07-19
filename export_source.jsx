@@ -144,6 +144,117 @@ const createExport = (deps) => {
         const cp = char.codePointAt(0);
         return cp === 0x9 || cp === 0xA || cp === 0xD || (cp >= 0x20 && cp <= 0xD7FF) || (cp >= 0xE000 && cp <= 0xFFFD) || (cp >= 0x10000 && cp <= 0x10FFFF);
     }).join(''));
+    const _normalizeStorybookExportOptions = (value) => {
+        if (typeof value === 'boolean') {
+            return { includeImages: value, includeNarration: false, keepModalOpen: false, onProgress: null, signal: null };
+        }
+        const input = value && typeof value === 'object' ? value : {};
+        return {
+            includeImages: !!input.includeImages,
+            includeNarration: !!input.includeNarration,
+            keepModalOpen: !!input.keepModalOpen,
+            onProgress: typeof input.onProgress === 'function' ? input.onProgress : null,
+            signal: input.signal || null,
+        };
+    };
+    const _storybookProgress = (options, update) => {
+        if (!options.onProgress) return;
+        try { options.onProgress(Object.assign({ phase: 'export', completed: 0, total: 0 }, update || {})); }
+        catch (_) {}
+    };
+    const _normalizeStorybookScenes = (fullStory, summary, labels) => {
+        const scenes = [];
+        const addSegment = (scene, kind, rawText, speaker) => {
+            const text = String(rawText == null ? '' : rawText).trim();
+            if (!text) return;
+            const sameKindCount = scene.segments.filter((segment) => segment.kind === kind).length;
+            const suffix = kind === 'epilogue' ? 'summary' : `${kind}:${sameKindCount}`;
+            scene.segments.push({
+                segmentId: `${scene.sceneId}:${suffix}`,
+                order: scene.segments.length,
+                kind,
+                text: kind === 'feedback' ? text.replace(/\([+-]?\d+ XP\)/g, '').trim() : text,
+                speaker: speaker || '',
+            });
+        };
+        const epilogueText = String(summary == null ? '' : summary).trim();
+        if (epilogueText) {
+            const epilogue = { sceneId: 'epilogue', order: scenes.length, title: labels.epilogueTitle, image: null, segments: [] };
+            addSegment(epilogue, 'epilogue', epilogueText, '');
+            scenes.push(epilogue);
+        }
+        let currentScene = null;
+        let turnNumber = 0;
+        (Array.isArray(fullStory) ? fullStory : []).forEach((entry) => {
+            if (!entry) return;
+            const kind = entry.type === 'scene' ? 'scene' : (entry.type === 'choice' ? 'choice' : 'feedback');
+            const text = String(entry.text == null ? '' : entry.text).trim();
+            if (!text) return;
+            if (kind === 'scene') {
+                turnNumber += 1;
+                currentScene = {
+                    sceneId: `turn:${turnNumber}:scene`,
+                    order: scenes.length,
+                    title: `${labels.sceneTitle} ${turnNumber}`,
+                    image: entry.image || null,
+                    segments: [],
+                };
+                addSegment(currentScene, 'scene', text, '');
+                scenes.push(currentScene);
+                return;
+            }
+            if (!currentScene) {
+                turnNumber += 1;
+                currentScene = {
+                    sceneId: `turn:${turnNumber}:scene`,
+                    order: scenes.length,
+                    title: `${labels.sceneTitle} ${turnNumber}`,
+                    image: null,
+                    segments: [],
+                };
+                scenes.push(currentScene);
+            }
+            addSegment(currentScene, kind, text, kind === 'choice' ? labels.studentSpeaker : '');
+        });
+        return scenes.filter((scene) => scene.segments.length > 0).map((scene, order) => Object.assign({}, scene, { order }));
+    };
+    const _storybookContractScenes = (scenes, audioBySegmentId) => (scenes || []).map((scene) => ({
+        sceneId: scene.sceneId,
+        order: scene.order,
+        title: scene.title || '',
+        segments: scene.segments.map((segment) => {
+            const output = {
+                segmentId: segment.segmentId,
+                order: segment.order,
+                text: segment.text,
+                speaker: segment.speaker || '',
+            };
+            const audio = audioBySegmentId && audioBySegmentId[segment.segmentId];
+            if (audio) output.audio = audio;
+            return output;
+        }),
+    }));
+    const _storybookAudioResultMap = (result) => {
+        const source = result && result.audioBySegmentId != null ? result.audioBySegmentId : null;
+        if (!source) return {};
+        if (typeof Map !== 'undefined' && source instanceof Map) {
+            const output = {};
+            source.forEach((value, key) => { output[String(key)] = value; });
+            return output;
+        }
+        return source && typeof source === 'object' ? source : {};
+    };
+    const _downloadStorybookFile = (content, mime, filename) => {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
 
     // exportLanguagePack NOT extracted — it stays inside useTranslation hook
     // because it closes over languagePack + targetLanguage state that aren't
@@ -1164,31 +1275,37 @@ const createExport = (deps) => {
     };
 
     // ─── handleExportStorybook ────────────────────────────────────────
-    const handleExportStorybook = async (includeImages = false) => {
+    const handleExportStorybook = async (rawOptions = false) => {
+        const options = _normalizeStorybookExportOptions(rawOptions);
+        const { includeImages, includeNarration } = options;
+        const current = liveRef.current || {};
         const {
-            adventureState, sourceTopic,
+            adventureState, sourceTopic, generatedContent,
             setShowStorybookExportModal, setIsProcessing,
             rehydrateHistoryWithImages, parseMarkdownToHTML,
+            prepareReadAloudArtifactAudio,
+            selectedVoice, voiceSpeed, leveledTextLanguage, currentUiLanguage,
             addToast, t,
-        } = liveRef.current;
-        if (adventureState.history.length === 0 && !adventureState.currentScene) return;
-        setShowStorybookExportModal(false);
-        setIsProcessing(true);
-        addToast(t('adventure.storybook_toast_writing'), "info");
+        } = current;
+        if (!adventureState || (!Array.isArray(adventureState.history) && !adventureState.currentScene)) return false;
+        if ((!adventureState.history || adventureState.history.length === 0) && !adventureState.currentScene) return false;
+        if (!options.keepModalOpen && typeof setShowStorybookExportModal === 'function') setShowStorybookExportModal(false);
+        if (typeof setIsProcessing === 'function') setIsProcessing(true);
+        if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_writing'), "info");
+        _storybookProgress(options, { phase: 'story', message: 'Preparing your Storybook…' });
         try {
-            const fullStory = await rehydrateHistoryWithImages(adventureState.history, adventureState.imageCache);
+            const hydrated = typeof rehydrateHistoryWithImages === 'function'
+                ? await rehydrateHistoryWithImages(adventureState.history || [], adventureState.imageCache || {})
+                : (adventureState.history || []).slice();
+            const fullStory = Array.isArray(hydrated) ? hydrated.slice() : [];
             if (adventureState.currentScene) {
-                fullStory.push({
-                    type: 'scene',
-                    text: adventureState.currentScene.text,
-                    image: adventureState.sceneImage
-                });
+                fullStory.push({ type: 'scene', text: adventureState.currentScene.text, image: adventureState.sceneImage });
             }
-            const historyText = fullStory.map(h =>
-                h.type === 'scene' ? `Scene: ${h.text}` :
-                h.type === 'choice' ? `Student Action: ${h.text}` :
-                `Outcome/Feedback: ${h.text}`
-            ).join('\n\n');
+            const historyText = fullStory.map((entry) => (
+                entry.type === 'scene' ? `Scene: ${entry.text}` :
+                entry.type === 'choice' ? `Student Action: ${entry.text}` :
+                `Outcome/Feedback: ${entry.text}`
+            )).join('\n\n');
             const prompt = `
               You are a storyteller writing an epilogue for a student's educational adventure.
               Topic: ${sourceTopic || "General"}
@@ -1199,8 +1316,8 @@ const createExport = (deps) => {
               Write in the second person ("You started by... then you decided to...").
               Return ONLY the narrative text.
             `;
-            const summary = await window.callGemini(prompt);
-            const title = sourceTopic || t('adventure.title');
+            const summary = String(await window.callGemini(prompt) || '').trim();
+            const title = String(sourceTopic || t('adventure.title'));
             const date = new Date().toLocaleDateString();
             const strPageTitle = t('export.storybook.page_title', { title });
             const strSubtitle = t('export.storybook.subtitle');
@@ -1211,23 +1328,261 @@ const createExport = (deps) => {
             const strFooter = t('output.generated_via');
             const strUser = t('export.storybook.user_label');
             const strSeparator = t('export.storybook.chapter_separator');
+            const normalizedScenes = _normalizeStorybookScenes(fullStory, summary, {
+                epilogueTitle: String(strEpilogue || 'Epilogue'),
+                sceneTitle: 'Scene',
+                studentSpeaker: String(strUser || 'Student'),
+            });
+            const exportLang = _exportLanguage();
+            const exportDir = _exportDirection();
+            const ts = Date.now();
+            const createdAt = new Date(ts).toISOString();
+            const fileTitle = title.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'adventure-storybook';
+            const htmlFilename = `${fileTitle}-storybook-${ts}.html`;
+            const jsonFilename = `${fileTitle}-storybook-read-aloud-${ts}.json`;
+            const contract = window.AlloModules && window.AlloModules.ReadAloudArtifactContract;
+            let readAloudArtifact = null;
+            let serializedReadAloudArtifact = '';
+            let readAloudStats = { audioClips: 0, totalAudioBytes: 0 };
+            let narrationWarning = '';
+            if (includeNarration) {
+                if (!contract || typeof contract.buildAdventureStorybookArtifact !== 'function' ||
+                    typeof contract.serializeReadAloudArtifact !== 'function') {
+                    narrationWarning = 'Narration export is not available in this build yet. The complete text Storybook will still be downloaded.';
+                    if (typeof warnLog === 'function') warnLog('Storybook narration contract unavailable');
+                } else {
+                    const identitySeed = generatedContent && generatedContent.id
+                        ? String(generatedContent.id)
+                        : String(sourceTopic || title || 'adventure');
+                    const storyId = contract.stableIdFromParts('adventure-story', [identitySeed]);
+                    const resourceId = generatedContent && generatedContent.id
+                        ? contract.stableIdFromParts('adventure-resource', [String(generatedContent.id)])
+                        : null;
+                    const makeArtifactInput = (acceptedAudio) => ({
+                        storyId,
+                        resourceId,
+                        title,
+                        language: exportLang,
+                        scenes: _storybookContractScenes(normalizedScenes, acceptedAudio),
+                    });
+                    try {
+                        readAloudArtifact = contract.buildAdventureStorybookArtifact(makeArtifactInput({}));
+                        if (typeof prepareReadAloudArtifactAudio === 'function') {
+                            if (options.signal && options.signal.aborted) {
+                                const abortError = new Error('Storybook export cancelled.');
+                                abortError.name = 'AbortError';
+                                throw abortError;
+                            }
+                            const totalSegments = normalizedScenes.reduce((count, scene) => count + scene.segments.length, 0);
+                            _storybookProgress(options, {
+                                phase: 'narration', completed: 0, total: totalSegments,
+                                message: 'Preparing narrated audio…',
+                            });
+                            let prepared;
+                            try {
+                                const narrationVoice = String(selectedVoice || 'Kore');
+                                const narrationLanguage = String(leveledTextLanguage || currentUiLanguage || exportLang || 'English');
+                                const numericSpeed = Number(voiceSpeed);
+                                const narrationSpeed = Number.isFinite(numericSpeed) && numericSpeed > 0 ? numericSpeed : 1;
+                                prepared = await prepareReadAloudArtifactAudio({
+                                    ownerApproved: true,
+                                    resourceId: storyId,
+                                    resourceType: 'adventure-storybook-read-aloud',
+                                    adapterId: 'adventure-storybook-artifact',
+                                    scopeId: 'story',
+                                    source: 'adventure-owner-export',
+                                    defaultVoice: narrationVoice,
+                                    language: narrationLanguage,
+                                    speed: narrationSpeed,
+                                    segments: normalizedScenes.flatMap((scene) => scene.segments.map((segment) => ({
+                                        segmentId: segment.segmentId,
+                                        text: segment.text,
+                                        voice: narrationVoice,
+                                        language: narrationLanguage,
+                                        speed: narrationSpeed,
+                                    }))),
+                                    signal: options.signal,
+                                    onProgress: (progress) => {
+                                        const update = progress && typeof progress === 'object' ? progress : {};
+                                        const completed = Number.isFinite(Number(update.completed)) ? Number(update.completed) : 0;
+                                        const total = Number.isFinite(Number(update.total)) ? Number(update.total) : totalSegments;
+                                        _storybookProgress(options, {
+                                            phase: 'narration', completed, total,
+                                            message: update.message || (total ? `Preparing narration ${Math.min(completed, total)} of ${total}…` : 'Preparing narrated audio…'),
+                                        });
+                                    },
+                                });
+                            } catch (audioError) {
+                                if (audioError && audioError.name === 'AbortError') throw audioError;
+                                if (typeof warnLog === 'function') warnLog('Storybook narration preparation failed', audioError);
+                                narrationWarning = 'Narrated audio could not be prepared. The complete text Storybook will still be downloaded.';
+                            }
+                            const preparedAudio = _storybookAudioResultMap(prepared);
+                            const acceptedAudio = {};
+                            let rejectedClips = 0;
+                            normalizedScenes.forEach((scene) => scene.segments.forEach((segment) => {
+                                const audio = preparedAudio[segment.segmentId];
+                                if (!audio) return;
+                                acceptedAudio[segment.segmentId] = audio;
+                                try {
+                                    readAloudArtifact = contract.buildAdventureStorybookArtifact(makeArtifactInput(acceptedAudio));
+                                } catch (clipError) {
+                                    delete acceptedAudio[segment.segmentId];
+                                    rejectedClips += 1;
+                                    if (typeof warnLog === 'function') warnLog(`Storybook narration clip rejected: ${segment.segmentId}`, clipError);
+                                }
+                            }));
+                            readAloudArtifact = contract.buildAdventureStorybookArtifact(makeArtifactInput(acceptedAudio));
+                            if (rejectedClips) {
+                                narrationWarning = `${rejectedClips} narration clip${rejectedClips === 1 ? '' : 's'} could not be included. The Storybook text remains complete.`;
+                            } else if (!Object.keys(acceptedAudio).length && !narrationWarning) {
+                                narrationWarning = 'No narrated audio was returned. The complete text Storybook will still be downloaded.';
+                            }
+                        } else {
+                            narrationWarning = 'Narration is not connected in this build yet. The complete text Storybook will still be downloaded.';
+                            if (typeof warnLog === 'function') warnLog('prepareReadAloudArtifactAudio was not injected for Storybook export');
+                        }
+                        serializedReadAloudArtifact = contract.serializeReadAloudArtifact(readAloudArtifact);
+                        if (typeof contract.validateReadAloudArtifact === 'function') {
+                            const validation = contract.validateReadAloudArtifact(readAloudArtifact);
+                            if (validation && validation.ok && validation.stats) readAloudStats = validation.stats;
+                        }
+                    } catch (contractError) {
+                        if (contractError && contractError.name === 'AbortError') throw contractError;
+                        if (typeof warnLog === 'function') warnLog('Storybook read-aloud artifact could not be built', contractError);
+                        readAloudArtifact = null;
+                        serializedReadAloudArtifact = '';
+                        narrationWarning = 'Narration could not be packaged safely. The complete text Storybook will still be downloaded.';
+                    }
+                }
+                if (narrationWarning && typeof addToast === 'function') addToast(narrationWarning, 'warning');
+            }
+            const artifactAudioBySegmentId = {};
+            if (readAloudArtifact) {
+                readAloudArtifact.scenes.forEach((scene) => scene.segments.forEach((segment) => {
+                    if (segment.audio) artifactAudioBySegmentId[segment.segmentId] = segment.audio;
+                }));
+            }
+            const safeTitle = _escapeExportText(title);
+            const safePageTitle = _escapeExportText(strPageTitle);
+            const safeEpilogue = _escapeExportText(strEpilogue);
+            const safeUser = _escapeExportText(strUser);
+            const safeSeparator = _escapeExportText(strSeparator);
+            const renderMarkdown = (value) => {
+                if (typeof parseMarkdownToHTML === 'function') return parseMarkdownToHTML(value);
+                return `<p>${_escapeExportText(value)}</p>`;
+            };
+            const renderAudio = (segment, sceneTitle) => {
+                const audio = artifactAudioBySegmentId[segment.segmentId];
+                if (!audio) return '';
+                return `<audio class="narration-audio" controls preload="metadata" aria-label="${_escapeExportText(`Narration for ${sceneTitle}`)}"><source src="data:${_escapeExportText(audio.mime)};base64,${audio.base64}" type="${_escapeExportText(audio.mime)}" /></audio>`;
+            };
+            const epilogueScene = normalizedScenes.find((scene) => scene.sceneId === 'epilogue');
+            const journeyScenes = normalizedScenes.filter((scene) => scene.sceneId !== 'epilogue');
+            const epilogueHtml = epilogueScene
+                ? epilogueScene.segments.map((segment) => `${renderMarkdown(segment.text)}${renderAudio(segment, epilogueScene.title)}`).join('')
+                : renderMarkdown(summary);
+            let chaptersHtml = '';
+            journeyScenes.forEach((scene, sceneIndex) => {
+                const safeImage = /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(String(scene.image || ''))
+                    ? String(scene.image)
+                    : '';
+                const segmentHtml = scene.segments.map((segment) => {
+                    const audioHtml = renderAudio(segment, scene.title);
+                    if (segment.kind === 'choice') {
+                        return `<div class="choice" data-segment-id="${_escapeExportText(segment.segmentId)}">${safeUser}: ${_escapeExportText(segment.text)}${audioHtml}</div>`;
+                    }
+                    if (segment.kind === 'feedback') {
+                        return `<div class="feedback" data-segment-id="${_escapeExportText(segment.segmentId)}">${_escapeExportText(segment.text)}${audioHtml}</div>`;
+                    }
+                    return `<div class="scene" data-segment-id="${_escapeExportText(segment.segmentId)}">${renderMarkdown(segment.text)}${audioHtml}</div>`;
+                }).join('');
+                chaptersHtml += `
+                  <div class="chapter" data-scene-id="${_escapeExportText(scene.sceneId)}">
+                      ${includeImages && safeImage ? `<img loading="lazy" src="${_escapeExportText(safeImage)}" class="scene-img" alt="Scene visualization" />` : ''}
+                      ${segmentHtml}
+                  </div>
+                  ${sceneIndex < journeyScenes.length - 1 ? `<div class="chapter-separator">${safeSeparator}</div>` : ''}
+                `;
+            });
+            const embeddedArtifact = serializedReadAloudArtifact
+                ? `<script type="application/json" id="alloflow-read-aloud-artifact">${_jsonForHtmlScript(readAloudArtifact)}</script>`
+                : '';
+            const storyHtml = `
+              <!DOCTYPE html>
+              <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>${safePageTitle}</title>
+                  <style>
+                      body { font-family: 'Georgia', serif; line-height: 1.8; color: #2c3e50; max-width: 800px; margin: 0 auto; padding: 40px; background: #fffdf5; }
+                      .cover { text-align: center; padding: 60px 0; border-bottom: 4px double #d4af37; margin-bottom: 40px; }
+                      h1 { font-size: 3em; margin-bottom: 10px; color: #2c3e50; font-family: sans-serif; }
+                      .meta { font-style: italic; color: #7f8c8d; }
+                      .summary-box { background: white; padding: 40px; border: 1px solid #e0e0e0; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 50px; position: relative; }
+                      .epilogue-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fffdf5; padding: 0 15px; color: #9a7620; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8em; }
+                      .log-section { margin-top: 40px; }
+                      .chapter { margin-bottom: 30px; page-break-inside: avoid; }
+                      .scene { margin-bottom: 10px; text-align: justify; }
+                      .scene-img { width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto 20px auto; border-radius: 4px; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                      .choice { margin: 10px 0 10px 20px; padding-left: 15px; border-left: 3px solid #3498db; font-family: sans-serif; font-weight: bold; color: #1f6695; font-size: 0.95em; }
+                      .feedback { margin: 10px 0 20px 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; color: #4b5563; font-size: 0.9em; font-style: italic; border: 1px solid #dce1e5; }
+                      .chapter-separator { text-align: center; color: #cbd5e1; margin: 20px 0; }
+                      .narration-audio { display: block; width: min(100%, 34rem); margin: 0.75rem 0 1rem; }
+                      .print-btn { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; }
+                      .print-btn:hover { transform: scale(1.05); background: #34495e; }
+                      @media print {
+                          .print-btn, .narration-audio { display: none; }
+                          body { background: white; padding: 0; }
+                          .summary-box { box-shadow: none; border: 1px solid #ccc; }
+                      }
+                  </style>
+              </head>
+              <body>
+                  <button class="print-btn" onclick="window.print()">${_escapeExportText(strPrint)}</button>
+                  <div class="cover">
+                      <h1>${safeTitle}</h1>
+                      <p class="meta">${_escapeExportText(strSubtitle)}</p>
+                      <p class="meta">${_escapeExportText(strMeta)}</p>
+                  </div>
+                  <div class="summary-box" data-scene-id="epilogue">
+                      <div class="epilogue-badge">${safeEpilogue}</div>
+                      ${epilogueHtml}
+                  </div>
+                  <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 40px;">${_escapeExportText(strLogHeader)}</h2>
+                  <div class="log-section">${chaptersHtml}</div>
+                  <div style="text-align: center; margin-top: 50px; color: #64748b; font-size: 0.8em;">${_escapeExportText(strFooter)}</div>
+                  ${embeddedArtifact}
+              </body>
+              </html>
+            `;
+            const storyItems = normalizedScenes.flatMap((scene) => scene.segments.map((segment) => ({
+                id: segment.segmentId,
+                title: segment.kind === 'epilogue' ? 'Epilogue' :
+                    segment.kind === 'choice' ? 'Student choice' :
+                    segment.kind === 'feedback' ? 'Outcome' : scene.title,
+                text: segment.text,
+                image: includeImages && segment.kind === 'scene' ? scene.image || null : null,
+                toolLabel: 'Adventure Mode',
+                privacy: 'full',
+            }))).filter((item) => item.text.trim());
+            const readAloudReference = includeNarration ? {
+                status: readAloudArtifact && readAloudStats.audioClips > 0 ? 'downloaded-with-audio' :
+                    (readAloudArtifact ? 'downloaded-text-only' : 'unavailable'),
+                artifactId: readAloudArtifact ? readAloudArtifact.artifactId : null,
+                schema: readAloudArtifact ? readAloudArtifact.schema : null,
+                schemaVersion: readAloudArtifact ? readAloudArtifact.schemaVersion : null,
+                artifactType: readAloudArtifact ? readAloudArtifact.artifactType : null,
+                transport: 'download',
+                htmlFilename,
+                jsonFilename: serializedReadAloudArtifact ? jsonFilename : null,
+                sceneCount: readAloudArtifact ? readAloudArtifact.transcript.sceneCount : normalizedScenes.length,
+                segmentCount: readAloudArtifact ? readAloudArtifact.transcript.segmentCount : storyItems.length,
+                audioClipCount: Number(readAloudStats.audioClips) || 0,
+                totalAudioBytes: Number(readAloudStats.totalAudioBytes) || 0,
+            } : null;
             try {
-                const ts = Date.now();
-                const createdAt = new Date(ts).toISOString();
-                const storyItems = [{
-                    id: 'epilogue',
-                    title: 'Epilogue',
-                    text: summary,
-                    toolLabel: 'Adventure Mode',
-                    privacy: 'full',
-                }].concat(fullStory.map((entry, idx) => ({
-                    id: `adventure-${idx}`,
-                    title: entry.type === 'choice' ? 'Student choice' : entry.type === 'feedback' ? 'Outcome' : `Scene ${idx + 1}`,
-                    text: entry.text || '',
-                    image: includeImages ? entry.image || null : null,
-                    toolLabel: 'Adventure Mode',
-                    privacy: 'full',
-                }))).filter(item => (item.text || '').trim());
                 const artifact = {
                     id: `adventure-storybook-${ts}`,
                     type: 'adventure-storybook',
@@ -1237,7 +1592,9 @@ const createExport = (deps) => {
                     title,
                     summary: `Student-controlled Adventure Mode storybook with ${Math.max(0, storyItems.length - 1)} journey entries`,
                     privacy: 'student-controlled',
-                    privacySummary: 'Student-controlled. Storybook text is saved on this device for the AlloHaven Portfolio.',
+                    privacySummary: includeNarration
+                        ? 'Student-controlled. Storybook text and a lightweight download reference are saved on this device; narration audio remains only in downloaded files.'
+                        : 'Student-controlled. Storybook text is saved on this device for the AlloHaven Portfolio.',
                     sourceSummary: 'Saved from Adventure Mode storybook export',
                     lifecycleStatus: 'saved',
                     version: 1,
@@ -1250,6 +1607,8 @@ const createExport = (deps) => {
                         summary,
                         level: adventureState.level,
                         includeImages,
+                        includeNarration,
+                        readAloudReference,
                         items: storyItems,
                     },
                 };
@@ -1267,110 +1626,49 @@ const createExport = (deps) => {
                     window.__alloflowStudentArtifacts = next;
                     localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
                     window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
-                        detail: { source: 'adventure', sourceLabel: 'Adventure Mode', kindLabel: 'Adventure Storybook', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact, count: next.length }
+                        detail: { source: 'adventure', sourceLabel: 'Adventure Mode', kindLabel: 'Adventure Storybook', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact, count: next.length },
                     }));
                 }
-                addToast('Saved new student-controlled Adventure Mode storybook to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', "success");
-            } catch (_) {}
-            const exportLang = _exportLanguage();
-            const exportDir = _exportDirection();
-            const safeTitle = _escapeExportText(title);
-            const safePageTitle = _escapeExportText(strPageTitle);
-            const safeEpilogue = _escapeExportText(strEpilogue);
-            const safeUser = _escapeExportText(strUser);
-            const safeSeparator = _escapeExportText(strSeparator);
-            let storyHtml = `
-              <!DOCTYPE html>
-              <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
-              <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <title>${safePageTitle}</title>
-                  <style>
-                      body { font-family: 'Georgia', serif; line-height: 1.8; color: #2c3e50; max-width: 800px; margin: 0 auto; padding: 40px; background: #fffdf5; }
-                      .cover { text-align: center; padding: 60px 0; border-bottom: 4px double #d4af37; margin-bottom: 40px; }
-                      h1 { font-size: 3em; margin-bottom: 10px; color: #2c3e50; font-family: sans-serif; }
-                      .meta { font-style: italic; color: #7f8c8d; }
-                      .summary-box { background: white; padding: 40px; border: 1px solid #e0e0e0; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 50px; position: relative; }
-                      .epilogue-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fffdf5; padding: 0 15px; color: #d4af37; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8em; }
-                      .log-section { margin-top: 40px; }
-                      .chapter { margin-bottom: 30px; page-break-inside: avoid; }
-                      .scene { margin-bottom: 10px; text-align: justify; }
-                      .scene-img { width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto 20px auto; border-radius: 4px; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                      .choice { margin: 10px 0 10px 20px; padding-left: 15px; border-left: 3px solid #3498db; font-family: sans-serif; font-weight: bold; color: #2980b9; font-size: 0.95em; }
-                      .feedback { margin: 10px 0 20px 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; color: #57606f; font-size: 0.9em; font-style: italic; border: 1px solid #ecf0f1; }
-                      .print-btn { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: #2c3e50; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; }
-                      .print-btn:hover { transform: scale(1.05); background: #34495e; }
-                      @media print {
-                          .print-btn { display: none; }
-                          body { background: white; padding: 0; }
-                          .summary-box { box-shadow: none; border: 1px solid #ccc; }
-                      }
-                  </style>
-              </head>
-              <body>
-                  <button class="print-btn" onclick="window.print()">${_escapeExportText(strPrint)}</button>
-                  <div class="cover">
-                      <h1>${safeTitle}</h1>
-                      <p class="meta">${_escapeExportText(strSubtitle)}</p>
-                      <p class="meta">${_escapeExportText(strMeta)}</p>
-                  </div>
-                  <div class="summary-box">
-                      <div class="epilogue-badge">${safeEpilogue}</div>
-                      ${parseMarkdownToHTML(summary)}
-                  </div>
-                  <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #bdc3c7; margin-bottom: 40px;">${_escapeExportText(strLogHeader)}</h2>
-                  <div class="log-section">
-            `;
-            let currentBlock = { scene: null, image: null, choice: null, feedback: null };
-            fullStory.forEach((item) => {
-                if (item.type === 'scene') {
-                    if (currentBlock.scene) {
-                        storyHtml += `
-                          <div class="chapter">
-                              ${includeImages && currentBlock.image ? `<img loading="lazy" src="${_escapeExportText(currentBlock.image)}" class="scene-img" alt="Scene visualization" />` : ''}
-                              <div class="scene">${parseMarkdownToHTML(currentBlock.scene)}</div>
-                              ${currentBlock.choice ? `<div class="choice">${safeUser}: ${_escapeExportText(currentBlock.choice)}</div>` : ''}
-                              ${currentBlock.feedback ? `<div class="feedback">${_escapeExportText(currentBlock.feedback.replace(/\([+-]?\d+ XP\)/, ''))}</div>` : ''}
-                          </div>
-                          <div style="text-align: center; color: #ecf0f1; margin: 20px 0;">${safeSeparator}</div>
-                        `;
-                    }
-                    currentBlock = { scene: item.text, image: item.image || null, choice: null, feedback: null };
-                } else if (item.type === 'choice') {
-                    currentBlock.choice = item.text;
-                } else if (item.type === 'feedback') {
-                    currentBlock.feedback = item.text;
+                if (typeof addToast === 'function') {
+                    addToast('Saved new student-controlled Adventure Mode storybook to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', "success");
                 }
-            });
-            if (currentBlock.scene) {
-                storyHtml += `
-                  <div class="chapter">
-                      ${includeImages && currentBlock.image ? `<img loading="lazy" src="${_escapeExportText(currentBlock.image)}" class="scene-img" alt="Scene visualization" />` : ''}
-                      <div class="scene">${parseMarkdownToHTML(currentBlock.scene)}</div>
-                      ${currentBlock.choice ? `<div class="choice">${safeUser}: ${_escapeExportText(currentBlock.choice)}</div>` : ''}
-                      ${currentBlock.feedback ? `<div class="feedback">${_escapeExportText(currentBlock.feedback)}</div>` : ''}
-                  </div>
-                `;
+            } catch (saveError) {
+                if (typeof warnLog === 'function') warnLog('Storybook manifest could not be saved', saveError);
             }
-            storyHtml += `
-                  </div>
-                  <div style="text-align: center; margin-top: 50px; color: #95a5a6; font-size: 0.8em;">${_escapeExportText(strFooter)}</div>
-              </body>
-              </html>
-            `;
-            const printWindow = window.open('', '_blank');
-            if (printWindow) {
-                printWindow.document.write(storyHtml);
-                printWindow.document.close();
+            _storybookProgress(options, { phase: 'download', message: 'Finishing your Storybook download…' });
+            if (includeNarration) {
+                _downloadStorybookFile(storyHtml, 'text/html;charset=utf-8', htmlFilename);
+                if (serializedReadAloudArtifact) {
+                    _downloadStorybookFile(serializedReadAloudArtifact, 'application/json;charset=utf-8', jsonFilename);
+                }
+                if (typeof addToast === 'function') {
+                    addToast(readAloudStats.audioClips > 0
+                        ? 'Downloaded the narrated Storybook as self-contained HTML and JSON files.'
+                        : 'Downloaded the Storybook as text-first HTML and JSON files.', 'success');
+                }
             } else {
-                addToast(t('adventure.storybook_toast_popup'), "error");
+                const printWindow = window.open('', '_blank');
+                if (printWindow) {
+                    printWindow.document.write(storyHtml);
+                    printWindow.document.close();
+                } else if (typeof addToast === 'function') {
+                    addToast(t('adventure.storybook_toast_popup'), "error");
+                    return false;
+                }
             }
-        } catch (e) {
-            warnLog("Storybook Export Error", e);
-            addToast(t('adventure.storybook_toast_error'), "error");
+            _storybookProgress(options, { phase: 'complete', completed: 1, total: 1, message: 'Storybook ready.' });
+            return true;
+        } catch (error) {
+            if (error && error.name === 'AbortError') {
+                _storybookProgress(options, { phase: 'cancelled', message: 'Storybook export cancelled.' });
+                return false;
+            }
+            if (typeof warnLog === 'function') warnLog("Storybook Export Error", error);
+            if (typeof addToast === 'function') addToast(t('adventure.storybook_toast_error'), "error");
+            _storybookProgress(options, { phase: 'error', message: 'Storybook export could not be completed.' });
+            return false;
         } finally {
-            setIsProcessing(false);
+            if (typeof setIsProcessing === 'function') setIsProcessing(false);
         }
     };
 

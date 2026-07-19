@@ -400,11 +400,15 @@ const createPersonas = deps => {
       setGeneratedContent,
       setHistory
     } = liveRef.current;
+    const sanitizeCandidate = candidate => {
+      const { chatHistory: _chatHistory, savedDialogue: _savedDialogue, ...safeCandidate } = candidate || {};
+      return safeCandidate;
+    };
     const updateResource = item => {
       if (!item || item.type !== 'persona' || item.id !== resourceId || !Array.isArray(item.data)) return item;
       return {
         ...item,
-        data: item.data.map(candidate => candidate && candidate.name === characterName ? updateCandidate(candidate) : candidate)
+        data: item.data.map(candidate => candidate && candidate.name === characterName ? sanitizeCandidate(updateCandidate(candidate)) : candidate)
       };
     };
     setGeneratedContent(prev => updateResource(prev));
@@ -1407,8 +1411,6 @@ const createPersonas = deps => {
           updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
             ...candidate,
             avatarUrl: liveCharacter.avatarUrl || candidate.avatarUrl || null,
-            chatHistory: persistedChatHistory,
-            savedDialogue: persistedChatHistory,
             rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
             quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : candidate.quests || [],
             accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
@@ -1424,8 +1426,6 @@ const createPersonas = deps => {
         updateStoredPersona(resourceId, liveCharacter.name, candidate => ({
           ...candidate,
           avatarUrl: liveCharacter.avatarUrl || personaState.avatarUrl || candidate.avatarUrl || null,
-          chatHistory: persistedChatHistory,
-          savedDialogue: persistedChatHistory,
           rapport: liveCharacter.rapport ?? candidate.rapport ?? candidate.initialRapport,
           quests: Array.isArray(liveCharacter.quests) ? liveCharacter.quests : candidate.quests || [],
           accumulatedXP: liveCharacter.accumulatedXP ?? candidate.accumulatedXP ?? 0,
@@ -2286,8 +2286,6 @@ const createPersonas = deps => {
         updateStoredPersona(resourceId, personaState.selectedCharacter.name, candidate => ({
           ...candidate,
           avatarUrl: personaState.avatarUrl || personaState.selectedCharacter.avatarUrl || candidate.avatarUrl || null,
-          chatHistory: finalHistory,
-          savedDialogue: finalHistory,
           rapport: newRapportPreview,
           quests: (candidate.quests || []).map(q => completedQuestId === q.id ? {
             ...q,

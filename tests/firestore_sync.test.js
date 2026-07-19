@@ -62,6 +62,39 @@ describe('sanitizeHistoryForCloud — cloud privacy boundary', () => {
     expect(persona.data[0].name).toBe('Ada');
   });
 
+  it('strips legacy Persona session fields while preserving the reusable character profile', () => {
+    const item = {
+      type: 'persona',
+      data: [{
+        id: 'ada',
+        name: 'Ada',
+        description: 'Computing pioneer',
+        avatarUrl: 'data:image/png;base64,AAAA',
+        chatHistory: [{ role: 'user', text: 'A private question' }],
+        savedDialogue: [{ role: 'model', text: 'A private answer' }],
+      }],
+    };
+
+    const [out] = sanitize([item]);
+    expect(out.data[0]).toEqual({ id: 'ada', name: 'Ada', description: 'Computing pioneer' });
+    expect(item.data[0].chatHistory).toHaveLength(1);
+    expect(item.data[0].savedDialogue).toHaveLength(1);
+  });
+
+  it('excludes private Persona-derived records and nested Persona session artifacts', () => {
+    const safe = { id: 'safe', type: 'leveled-text', data: { text: 'Keep me' } };
+    const privateItems = [
+      { id: 'transcript', type: 'persona-transcript', data: { text: 'private' } },
+      { id: 'reflection', type: 'persona-reflection', data: { text: 'private' } },
+      { id: 'summary', type: 'persona-summary', data: { text: 'private' } },
+      { id: 'read-aloud', type: 'persona-session-read-aloud', data: { messages: [] } },
+      { id: 'direct-artifact', artifactType: 'persona-session-read-aloud', messages: [] },
+      { id: 'wrapped', type: 'artifact', data: { artifactType: 'persona-session-read-aloud', messages: [] } },
+    ];
+
+    expect(sanitize([safe, ...privateItems])).toEqual([safe]);
+  });
+
   it('nulls an adventure sceneImage + inventory images', () => {
     const [out] = sanitize([{ type: 'adventure', data: { sceneImage: 'data:...', inventory: [{ name: 'key', image: 'data:...' }], snapshot: { xp: 5, gold: 2 } } }]);
     expect(out.data.sceneImage).toBeNull();
@@ -110,6 +143,19 @@ describe('prepareSessionResourcesForWrite — live session Firestore size guard'
     expect(serialized).not.toContain('data:audio/webm;base64');
     expect(out.resources[0].data.imageUrl).toBeNull();
     expect(out.resources[0].data.nested.audioRecording).toBeNull();
+  });
+
+  it('excludes private Persona-derived records before live session sync', () => {
+    const out = prepareResources([
+      { id: 'safe', type: 'quiz', data: { title: 'Keep me' } },
+      { id: 'transcript', type: 'persona-transcript', data: { text: 'private' } },
+      { id: 'reflection', type: 'persona-reflection', data: { text: 'private' } },
+      { id: 'summary', type: 'persona-summary', data: { text: 'private' } },
+      { id: 'read-aloud', type: 'persona-session-read-aloud', data: { messages: [] } },
+    ], { maxBytes: 20000 });
+
+    expect(out.resources.map((item) => item.id)).toEqual(['safe']);
+    expect(JSON.stringify(out.resources)).not.toContain('private');
   });
 
   it('keeps the newest resources when the payload must be trimmed', () => {
