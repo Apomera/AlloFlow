@@ -40,9 +40,10 @@ describe('Learning Lab Mindfulness Practice accessibility', () => {
     expect(mindfulness).toContain("llAnnounce(practice.label + ' timer restarted.')");
   });
 
-  it('uses a named control group and exposes pause state', () => {
+  it('uses a named control group with label-based toggle state', () => {
     expect(mindfulness).toContain("role: 'group', 'aria-label': 'Mindfulness timer controls'");
-    expect(mindfulness).toContain("'aria-pressed': playing ? 'true' : 'false'");
+    expect(mindfulness).toContain("var toggleLabel = seconds <= 0 ? 'Restart timer' : playing ? 'Pause timer' : 'Resume timer'");
+    expect(mindfulness).not.toContain("'aria-pressed'");
     expect(mindfulness).toContain("type: 'button'");
   });
 
@@ -58,8 +59,39 @@ describe('Learning Lab Mindfulness Practice accessibility', () => {
   });
 
   it('preserves unrelated section data when saving a session', () => {
-    expect(mindfulness).toContain("setData(Object.assign({}, data, { sessions: [session].concat(data.sessions || []) }))");
+    expect(mindfulness).toContain("setData(Object.assign({}, data, { sessions: [session].concat(rawSessions) }))");
     expect(mindfulness).not.toContain('setData({ sessions:');
+  });
+
+  it('handles malformed legacy session data without crashing', () => {
+    expect(mindfulness).toContain("var rawSessions = Array.isArray(data.sessions) ? data.sessions : [];");
+    expect(mindfulness).toContain("Number(session && session.duration) || 0");
+    expect(source).toContain("stat: (Array.isArray((data.mytkMind || {}).sessions) ? (data.mytkMind || {}).sessions.length : 0) + ' sessions'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(mindfulness).toContain('if (!pendingFocusId) return;');
+    expect(mindfulness).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(mindfulness).toContain("function focusById(id) { setPendingFocusId(id); }");
+    expect(mindfulness).not.toContain('setTimeout(function() { var target = document.getElementById(id)');
+  });
+
+  it('explains optional use, local saving, and non-communication', () => {
+    expect(mindfulness).toContain('These practices are optional.');
+    expect(mindfulness).toContain('saving a session does not notify a teacher, school, employer, clinician, or family member');
+    expect(mindfulness).toContain('Mindfulness practice is not therapy and does not replace professional support.');
+    expect(mindfulness).toContain('If a practice brings up strong or uncomfortable feelings, it is okay to stop and choose a different kind of support.');
+  });
+
+  it('describes practices without unsupported clinical effect claims', () => {
+    expect(mindfulness).toContain('about:');
+    expect(mindfulness).not.toContain('research:');
+    expect(mindfulness).not.toContain('Reduces anxiety and chronic pain');
+    expect(mindfulness).not.toContain('parasympathetic');
+    expect(mindfulness).not.toContain('Reduces rumination');
+    expect(mindfulness).not.toContain('doubles retention');
+    expect(mindfulness).not.toContain('Builds cognitive flexibility');
+    expect(mindfulness).not.toContain('Trains attention');
   });
 
   it('announces start, pause or resume, save, and cancellation', () => {
