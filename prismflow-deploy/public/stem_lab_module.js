@@ -3743,7 +3743,7 @@
               {
                 // @tool magnetism
                 id: 'magnetism', icon: '🧲', label: 'Magnetism Lab',
-                desc: 'See magnetic field lines with a live compass, build an electromagnet, spin a DC motor with real forces, and explore Earth’s magnetic shield.',
+                desc: 'See magnetic field lines with a live compass, build an electromagnet, spin a DC motor, generate electricity with Faraday’s law, and explore Earth’s magnetic shield.',
                 color: 'rose', ready: true
               },
               {
