@@ -9798,6 +9798,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           moonSprite.scale.set(16000, 16000, 1);
           scene.add(moonSprite);
 
+          // ── Sky life ── ambient airliners with contrails, hot-air
+          // balloons, bird flocks. All camera-relative (orbits / toroidal
+          // wrap) so the sky is never empty; all were 2D-fallback-only.
+          var ambientJets = [];
+          for (var aj = 0; aj < 3; aj++) {
+            var jetGroup = new THREE.Group();
+            var jetDotMat = new THREE.MeshBasicMaterial({ color: 0xe5e9f0 });
+            jetDotMat.fog = false;
+            var jetDot = new THREE.Mesh(new THREE.BoxGeometry(1300, 160, 160), jetDotMat);
+            jetDot.rotation.y = Math.PI / 2; // long axis along the group's +Z travel axis
+            jetGroup.add(jetDot);
+            var trailMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, depthWrite: false });
+            trailMat.fog = false;
+            var trail = new THREE.Mesh(new THREE.BoxGeometry(110, 110, 16000), trailMat);
+            trail.position.set(0, 0, -8600); // streams behind the jet
+            jetGroup.add(trail);
+            jetGroup.userData = { dotMat: jetDotMat, trailMat: trailMat };
+            scene.add(jetGroup);
+            ambientJets.push(jetGroup);
+          }
+
+          var mkBalloonTex = function(hue) {
+            var bc = document.createElement('canvas');
+            bc.width = 64; bc.height = 96;
+            var bg = bc.getContext('2d');
+            bg.fillStyle = 'hsl(' + hue + ',70%,55%)';
+            bg.beginPath(); bg.ellipse(32, 34, 26, 32, 0, 0, Math.PI * 2); bg.fill();
+            bg.fillStyle = 'hsl(' + ((hue + 40) % 360) + ',70%,62%)';
+            for (var bs = -2; bs <= 2; bs += 2) {
+              bg.beginPath(); bg.ellipse(32 + bs * 8, 34, 5, 31, 0, 0, Math.PI * 2); bg.fill();
+            }
+            bg.fillStyle = 'rgba(30,20,10,0.9)';
+            bg.fillRect(27, 74, 10, 9); // basket
+            bg.strokeStyle = 'rgba(60,45,25,0.8)'; bg.lineWidth = 1;
+            bg.beginPath(); bg.moveTo(24, 60); bg.lineTo(28, 75); bg.moveTo(40, 60); bg.lineTo(36, 75); bg.stroke();
+            return new THREE.CanvasTexture(bc);
+          };
+          var balloons = [];
+          for (var hb = 0; hb < 4; hb++) {
+            var balMat = new THREE.SpriteMaterial({ map: mkBalloonTex([15, 205, 275, 130][hb]), transparent: true, depthWrite: false });
+            var bal = new THREE.Sprite(balMat);
+            bal.scale.set(340, 510, 1);
+            var bh1 = ((Math.sin(hb * 91.3 + 7.7) * 43758.5453) % 1 + 1) % 1;
+            var bh2 = ((Math.sin(hb * 53.1 + 3.9) * 28001.8384) % 1 + 1) % 1;
+            bal.userData = { ox: (bh1 - 0.5) * 44000, oz: (bh2 - 0.5) * 44000, baseY: 1600 + bh1 * 2200 };
+            scene.add(bal);
+            balloons.push(bal);
+          }
+
+          var birdCanvas = document.createElement('canvas');
+          birdCanvas.width = 96; birdCanvas.height = 32;
+          var brg = birdCanvas.getContext('2d');
+          brg.strokeStyle = 'rgba(30,34,40,0.95)'; brg.lineWidth = 2;
+          [[48, 8], [36, 14], [60, 14], [24, 20], [72, 20], [12, 26], [84, 26]].forEach(function(bp) {
+            brg.beginPath();
+            brg.moveTo(bp[0] - 5, bp[1] + 3); brg.lineTo(bp[0], bp[1]); brg.lineTo(bp[0] + 5, bp[1] + 3);
+            brg.stroke();
+          });
+          var birdTex = new THREE.CanvasTexture(birdCanvas);
+          var birdFlocks = [];
+          for (var bf = 0; bf < 2; bf++) {
+            var bfMat = new THREE.SpriteMaterial({ map: birdTex, transparent: true, depthWrite: false });
+            var flock = new THREE.Sprite(bfMat);
+            flock.scale.set(700, 240, 1);
+            flock.userData = { ox: (bf === 0 ? -1 : 1) * 6000, oz: (bf === 0 ? 4000 : -7000), baseY: 700 + bf * 900 };
+            scene.add(flock);
+            birdFlocks.push(flock);
+          }
+
           var cloudGroup = new THREE.Group();
           for (var cl = 0; cl < 24; cl++) {
             var clh1 = ((Math.sin(cl * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
@@ -9820,6 +9889,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             cloudGroup: cloudGroup,
             sunSprite: sunSprite,
             moonSprite: moonSprite,
+            ambientJets: ambientJets,
+            balloons: balloons,
+            birdFlocks: birdFlocks,
             aircraft: null,
             terrainMesh: null,
             runwayMeshes: {},
@@ -10586,6 +10658,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (resources.dirLight) {
           if (sunElev > 0.02) resources.dirLight.position.copy(sunDir).multiplyScalar(100000);
           else if (moonElev > 0.02) resources.dirLight.position.set(Math.cos(moonTh) * 100000, Math.sin(moonElev) * 100000, Math.sin(moonTh) * 100000);
+        }
+
+        // ── Sky life animation ── deterministic, camera-relative, cheap.
+        var lifeT = timeRef.current;
+        var lifeDark = 1 - Math.min(1, (dayNight.brightness != null ? dayNight.brightness : 1) * 1.2);
+        if (resources.ambientJets) {
+          // Airliners orbit the camera at 30-38k ft: from below they read as
+          // straight-line crossings with contrails. By day the contrail
+          // carries the look; at night it fades and the hull point glows
+          // like distant nav lights.
+          for (var aj2 = 0; aj2 < resources.ambientJets.length; aj2++) {
+            var jet = resources.ambientJets[aj2];
+            var jSpd = 0.006 + aj2 * 0.0025;
+            var jAng = lifeT * jSpd + aj2 * 2.1;
+            var jRad = 42000 + aj2 * 16000;
+            jet.position.set(
+              camera.position.x + Math.cos(jAng) * jRad,
+              30000 + aj2 * 4000,
+              camera.position.z + Math.sin(jAng) * jRad);
+            jet.rotation.y = -jAng; // +Z aligned with the orbit tangent
+            jet.userData.trailMat.opacity = 0.38 * (1 - lifeDark);
+            jet.userData.dotMat.color.setRGB(0.9 + lifeDark * 0.1, 0.9 - lifeDark * 0.35, 0.9 - lifeDark * 0.45);
+          }
+        }
+        if (resources.balloons) {
+          // Balloons wrap toroidally in a ±22k ft square, bobbing gently.
+          // Grounded (invisible) at night and above the balloon layer.
+          var balVisible = lifeDark < 0.5 && state.altitude < 12000;
+          for (var hb2 = 0; hb2 < resources.balloons.length; hb2++) {
+            var bal2 = resources.balloons[hb2];
+            bal2.visible = balVisible;
+            if (!balVisible) continue;
+            var bWrap = 22000;
+            var bx = camera.position.x + bal2.userData.ox + Math.sin(lifeT * 0.03 + hb2) * 2500;
+            var bz = camera.position.z + bal2.userData.oz + Math.cos(lifeT * 0.02 + hb2 * 2) * 2500;
+            bx = camera.position.x + ((((bx - camera.position.x) % (bWrap * 2)) + bWrap * 3) % (bWrap * 2)) - bWrap;
+            bz = camera.position.z + ((((bz - camera.position.z) % (bWrap * 2)) + bWrap * 3) % (bWrap * 2)) - bWrap;
+            bal2.position.set(bx, bal2.userData.baseY + Math.sin(lifeT * 0.35 + hb2 * 1.7) * 60, bz);
+          }
+        }
+        if (resources.birdFlocks) {
+          // Bird Vs live low in the biosphere: day only, below 6,000 ft.
+          var birdVisible = lifeDark < 0.4 && state.altitude < 6000;
+          for (var bf2 = 0; bf2 < resources.birdFlocks.length; bf2++) {
+            var flock2 = resources.birdFlocks[bf2];
+            flock2.visible = birdVisible;
+            if (!birdVisible) continue;
+            var fWrap = 9000;
+            var fx = camera.position.x + flock2.userData.ox + lifeT * (30 + bf2 * 14);
+            var fz = camera.position.z + flock2.userData.oz + Math.sin(lifeT * 0.11 + bf2) * 1800;
+            fx = camera.position.x + ((((fx - camera.position.x) % (fWrap * 2)) + fWrap * 3) % (fWrap * 2)) - fWrap;
+            fz = camera.position.z + ((((fz - camera.position.z) % (fWrap * 2)) + fWrap * 3) % (fWrap * 2)) - fWrap;
+            flock2.position.set(fx, flock2.userData.baseY + Math.sin(lifeT * 0.5 + bf2 * 2.3) * 45, fz);
+          }
+        }
+        // Own contrail — chase view at jet altitudes: a streamer pinned
+        // behind the aircraft along the ground track. Fades in above 25k ft.
+        if (!resources.ownContrail) {
+          var ocMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
+          ocMat.fog = false;
+          resources.ownContrail = new THREE.Mesh(new THREE.BoxGeometry(70, 70, 9000), ocMat);
+          scene.add(resources.ownContrail);
+        }
+        var ocOn = d.thirdPerson && state.altitude > 25000;
+        resources.ownContrail.visible = !!ocOn;
+        if (ocOn) {
+          var ocBehind = new THREE.Vector3(-Math.sin(headingRad), 0, Math.cos(headingRad));
+          resources.ownContrail.position.copy(acMesh.position).add(ocBehind.multiplyScalar(4700));
+          resources.ownContrail.rotation.y = -headingRad;
+          resources.ownContrail.material.opacity = Math.min(0.5, (state.altitude - 25000) / 12000) * (1 - lifeDark * 0.7);
         }
 
         // ── Real-city skylines (Natural Earth REAL_CITIES) ──
