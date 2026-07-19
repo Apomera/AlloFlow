@@ -8255,6 +8255,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_titration.js',
         'stem_lab/stem_tool_volume.js', 'stem_lab/stem_tool_numberline.js', 'stem_lab/stem_tool_areamodel.js',
         'stem_lab/stem_tool_arithmetic.js',
+        'stem_lab/stem_tool_ratios.js',
         'stem_lab/stem_tool_fractions.js', 'stem_lab/stem_tool_manipulatives.js', 'stem_lab/stem_tool_money.js',
         'stem_lab/stem_tool_coordgrid.js', 'stem_lab/stem_tool_angles.js', 'stem_lab/stem_tool_archstudio.js',
         'stem_lab/stem_tool_physics.js', 'stem_lab/stem_tool_brainatlas.js', 'stem_lab/stem_tool_inequality.js',

@@ -181,7 +181,7 @@
     challenges: CHALLENGES
   };
 
-  root.StemLab.registerTool('ratioLab', {
+  window.StemLab.registerTool('ratioLab', {
     icon: '\uD83D\uDCCA',
     label: 'Ratios, Rates & Proportions Lab',
     desc: 'Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.',

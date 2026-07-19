@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
 import {
   React,
   ReactDOMClient,
@@ -86,5 +87,14 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(document.body.textContent).toContain('Correct!');
     expect(awardXP).toHaveBeenCalledWith('ratioLab', 15, 'Ratio Lab challenge');
     await React.act(async () => { root.unmount(); });
+  });
+  it('is wired into the host catalog, plugin allowlist, lazy loader, and deployment mirrors', () => {
+    const host = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const deployedHost = fs.readFileSync('prismflow-deploy/public/stem_lab/stem_lab_module.js', 'utf8');
+    const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    expect(host).toContain("id: 'ratioLab'");
+    expect(host).toContain('ratioLab: true');
+    expect(deployedHost).toBe(host);
+    expect(app).toContain("'stem_lab/stem_tool_ratios.js'");
   });
 });

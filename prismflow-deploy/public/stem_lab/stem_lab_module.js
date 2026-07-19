@@ -3460,6 +3460,14 @@
                 ready: true
               },
               {
+                id: 'ratioLab',
+                icon: '\uD83D\uDCCA',
+                label: 'Ratios, Rates & Proportions Lab',
+                desc: 'Explore ratio tables, double number lines, unit rates, percents, and proportional relationships.',
+                color: 'indigo',
+                ready: true
+              },
+              {
                 id: 'fractionViz',
                 aliases: ['fractions'],
                 icon: '🍕',
@@ -5386,6 +5394,7 @@
             math: true, moneyMath: true, multtable: true, numberline: true,
             probability: true, protractor: true, volume: true,
             arithmeticStudio: true,
+            ratioLab: true,
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
