@@ -365,6 +365,42 @@ describe('nearestRealCities', () => {
   });
 });
 
+describe('isWaterMask (Natural Earth 0.1° land/water mask)', () => {
+  it('knows the continents', () => {
+    expect(FS.isWaterMask(38, -98)).toBe(false);    // Kansas
+    expect(FS.isWaterMask(51.5, -0.1)).toBe(false); // London
+    expect(FS.isWaterMask(25, 10)).toBe(false);     // Sahara
+    expect(FS.isWaterMask(43.65, -70.25)).toBe(false); // Portland ME peninsula
+    expect(FS.isWaterMask(-33.87, 151.1)).toBe(false); // Sydney
+  });
+  it('knows the oceans, seas, and Great Lakes', () => {
+    expect(FS.isWaterMask(40, -40)).toBe(true);     // mid-Atlantic
+    expect(FS.isWaterMask(0, -160)).toBe(true);     // central Pacific
+    expect(FS.isWaterMask(35, 18)).toBe(true);      // Mediterranean
+    expect(FS.isWaterMask(43.2, -69.3)).toBe(true); // Gulf of Maine
+    expect(FS.isWaterMask(47.6, -87.5)).toBe(true); // Lake Superior
+  });
+  it('handles poles and antimeridian without throwing', () => {
+    expect(typeof FS.isWaterMask(89.9, 0)).toBe('boolean');
+    expect(typeof FS.isWaterMask(-89.9, 0)).toBe('boolean');
+    expect(FS.isWaterMask(0, 180)).toBe(FS.isWaterMask(0, -180)); // same meridian
+    expect(FS.isWaterMask(-89.9, 45)).toBe(false);  // Antarctica is land
+  });
+  it('world land fraction is earthlike (~29-36%)', () => {
+    let landN = 0, total = 0;
+    for (let lat = -89; lat <= 89; lat += 2) {
+      for (let lon = -179; lon <= 179; lon += 2) {
+        total++;
+        if (!FS.isWaterMask(lat, lon)) landN++;
+      }
+    }
+    // Unweighted lat/lon sampling over-counts polar rows (Antarctica),
+    // so accept a generous band around the true ~29%.
+    expect(landN / total).toBeGreaterThan(0.2);
+    expect(landN / total).toBeLessThan(0.45);
+  });
+});
+
 describe('pushTrackPoint (minimap breadcrumb sampler)', () => {
   it('records the first point and points spaced ≥ minNm', () => {
     const trail = [];
