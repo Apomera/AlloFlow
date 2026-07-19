@@ -7377,213 +7377,234 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // prioritized study strategies ranked by Dunlosky 2013 evidence + fit.
   function PersonalStrategyWizard(props) {
     if (!R) return null;
-    var data = props.data || { savedPlans: [] };
+    var data = props.data || {};
     var setData = props.setData;
-    var fs = R.useState({
-      subject: '', assessment: 'test', days: 7, prior: 'some',
-      format: 'mixed', notes: ''
-    });
+    var fs = R.useState({ subject: '', assessment: 'test', days: 7, prior: 'some' });
     var form = fs[0]; var setForm = fs[1];
     var rs = R.useState(null); var result = rs[0]; var setResult = rs[1];
+    var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
+    var ss = R.useState(false); var resultSaved = ss[0]; var setResultSaved = ss[1];
+    var fts = R.useState(null); var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var STRATEGIES = [
-      { id: 'practiceTest', label: 'Practice testing (flashcards, mock quizzes)', utility: 'HIGH', icon: '🃏', color: '#10b981',
-        fitTest: function(f) {
-          return f.assessment === 'test' || f.assessment === 'memorize' ? 10
-            : f.assessment === 'essay' || f.assessment === 'project' ? 6 : 8;
-        },
-        why: 'Karpicke + Roediger 2006. Strongest single study finding. Always relevant.'
-      },
-      { id: 'spaced', label: 'Distributed practice (study over days, not all at once)', utility: 'HIGH', icon: '⏰', color: '#10b981',
-        fitTest: function(f) { return f.days >= 5 ? 10 : f.days >= 3 ? 6 : 2; },
-        why: 'Cepeda et al. 2008. Spacing wins by 30-50% on retention. Useless if <3 days.'
-      },
-      { id: 'selfExplain', label: 'Self-explanation as you study', utility: 'MODERATE', icon: '💬', color: '#fbbf24',
-        fitTest: function(f) {
-          return f.assessment === 'essay' || f.assessment === 'apply' ? 9 : f.prior === 'some' || f.prior === 'much' ? 7 : 4;
-        },
-        why: 'Chi et al. 1994. Strong in math + science. Requires baseline knowledge.'
-      },
-      { id: 'interleave', label: 'Interleaved practice (mix topic types)', utility: 'MODERATE', icon: '🔀', color: '#fbbf24',
-        fitTest: function(f) { return f.assessment === 'test' && f.prior !== 'none' ? 8 : 4; },
-        why: 'Rohrer + Taylor 2007. Mostly for math + similar problem types.'
-      },
-      { id: 'elaborative', label: 'Elaborative interrogation ("why is this true?")', utility: 'MODERATE', icon: '❓', color: '#fbbf24',
-        fitTest: function(f) { return f.prior === 'some' || f.prior === 'much' ? 7 : 3; },
-        why: 'McDaniel + Donnelly 1996. Works for factual material. Needs some baseline.'
-      },
-      { id: 'cornell', label: 'Cornell-style note-taking + summary', utility: 'MODERATE', icon: '📓', color: '#3b82f6',
-        fitTest: function(f) { return f.assessment === 'test' || f.assessment === 'essay' ? 6 : 3; },
-        why: 'Pauk 1989. Helps if you actively re-engage with the notes (review + summary).'
-      },
-      { id: 'concept', label: 'Concept mapping (connect ideas visually)', utility: 'MODERATE', icon: '🕸', color: '#a855f7',
-        fitTest: function(f) { return f.assessment === 'essay' || f.assessment === 'apply' ? 8 : 4; },
-        why: 'Novak + Gowin 1984. Strong for synthesis-heavy material.'
-      },
-      { id: 'mock', label: 'Take a full mock test under timed conditions', utility: 'HIGH', icon: '⏱', color: '#10b981',
-        fitTest: function(f) { return f.assessment === 'test' && f.days >= 2 ? 10 : 3; },
-        why: 'Combines retrieval + reduces test anxiety. Best 2-5 days before real test.'
-      },
-      { id: 'teach', label: 'Teach the material to someone (or pretend)', utility: 'MODERATE', icon: '🗣', color: '#fbbf24',
-        fitTest: function(f) { return f.prior === 'much' ? 9 : f.prior === 'some' ? 7 : 4; },
-        why: 'Feynman technique. Forces synthesis. Best as final-week confidence check.'
-      },
-      { id: 'summarize', label: 'Write a 1-page summary per chapter', utility: 'LOW', icon: '📋', color: '#ef4444',
-        fitTest: function(f) { return f.assessment === 'essay' ? 5 : 2; },
-        why: 'Dunlosky 2013 LOW. Helpful only if you actively reorganize, not just shorten.'
-      },
-      { id: 'highlight', label: 'Highlight / underline as you read', utility: 'LOW', icon: '🖍', color: '#ef4444',
-        fitTest: function() { return 1; },
-        why: 'Dunlosky 2013 LOW. Feels productive, almost no transfer. Skip.'
-      },
-      { id: 'reread', label: 'Re-read your notes or textbook', utility: 'LOW', icon: '📖', color: '#ef4444',
-        fitTest: function() { return 2; },
-        why: 'Dunlosky 2013 LOW. Comfortable, almost no benefit beyond first read. Skip.'
-      }
+      { id: 'practiceTest', label: 'Practice testing, such as flashcards or mock questions', utility: 'HIGH', icon: '\ud83c\udccf', color: '#6ee7b7',
+        matchTest: function(input) { return input.assessment === 'test' || input.assessment === 'memorize' ? 10 : input.assessment === 'essay' || input.assessment === 'project' ? 6 : 8; },
+        evidence: 'Dunlosky et al. (2013) rated practice testing as high utility across varied learning conditions. The most useful question format and feedback depend on the material and learner.' },
+      { id: 'spaced', label: 'Distributed practice across available study days', utility: 'HIGH', icon: '\u23f0', color: '#6ee7b7',
+        matchTest: function(input) { return input.days >= 5 ? 10 : input.days >= 3 ? 6 : 2; },
+        evidence: 'Dunlosky et al. (2013) rated distributed practice as high utility. The spacing schedule should fit the available time, content, and retrieval difficulty.' },
+      { id: 'selfExplain', label: 'Self-explanation while studying', utility: 'MODERATE', icon: '\ud83d\udcac', color: '#fde68a',
+        matchTest: function(input) { return input.assessment === 'essay' || input.assessment === 'apply' ? 9 : input.prior === 'some' || input.prior === 'much' ? 7 : 4; },
+        evidence: 'Dunlosky et al. (2013) rated self-explanation as moderate utility. Prompts, subject matter, and prior knowledge can affect results.' },
+      { id: 'interleave', label: 'Interleaved practice that mixes problem or topic types', utility: 'MODERATE', icon: '\ud83d\udd00', color: '#fde68a',
+        matchTest: function(input) { return input.assessment === 'test' && input.prior !== 'none' ? 8 : 4; },
+        evidence: 'Dunlosky et al. (2013) rated interleaved practice as moderate utility, with evidence varying by task and the kinds of categories learners must distinguish.' },
+      { id: 'elaborative', label: 'Elaborative questions, such as “why might this be true?”', utility: 'MODERATE', icon: '\u2753', color: '#fde68a',
+        matchTest: function(input) { return input.prior === 'some' || input.prior === 'much' ? 7 : 3; },
+        evidence: 'Dunlosky et al. (2013) rated elaborative interrogation as moderate utility. Accuracy checks and some relevant prior knowledge may be important.' },
+      { id: 'cornell', label: 'Structured notes with active review and a summary', utility: 'CONTEXT', icon: '\ud83d\udcd3', color: '#93c5fd',
+        matchTest: function(input) { return input.assessment === 'test' || input.assessment === 'essay' ? 6 : 3; },
+        evidence: 'This specific note format was not one of the ten techniques rated by Dunlosky et al. (2013). Active review and retrieval matter more than the page layout alone.' },
+      { id: 'concept', label: 'Concept mapping to connect ideas visually', utility: 'CONTEXT', icon: '\ud83d\udd78', color: '#93c5fd',
+        matchTest: function(input) { return input.assessment === 'essay' || input.assessment === 'apply' ? 8 : 4; },
+        evidence: 'Concept mapping was not one of the ten techniques rated in Dunlosky et al. (2013). It may support relationship-building when learners receive appropriate guidance.' },
+      { id: 'mock', label: 'A mock assessment using representative conditions', utility: 'HIGH', icon: '\u23f1', color: '#6ee7b7',
+        matchTest: function(input) { return input.assessment === 'test' && input.days >= 2 ? 10 : 3; },
+        evidence: 'A mock assessment is a form of practice testing. Conditions should reflect the task and any approved accessibility accommodations; timed practice is not appropriate for every goal.' },
+      { id: 'teach', label: 'Explain the material to another person or an imagined audience', utility: 'CONTEXT', icon: '\ud83d\udde3', color: '#93c5fd',
+        matchTest: function(input) { return input.prior === 'much' ? 9 : input.prior === 'some' ? 7 : 4; },
+        evidence: 'Explaining can combine retrieval and self-explanation, but this named technique was not independently rated by Dunlosky et al. (2013).' },
+      { id: 'summarize', label: 'Write a concise summary in your own words', utility: 'LOW', icon: '\ud83d\udccb', color: '#fca5a5',
+        matchTest: function(input) { return input.assessment === 'essay' ? 5 : 2; },
+        evidence: 'Dunlosky et al. (2013) rated summarization as low utility overall, while noting that training and the quality of the summary can matter.' },
+      { id: 'highlight', label: 'Highlight or underline selectively while reading', utility: 'LOW', icon: '\ud83d\udd8d', color: '#fca5a5',
+        matchTest: function() { return 1; },
+        evidence: 'Dunlosky et al. (2013) rated highlighting and underlining as low utility when used alone. Marking text may still help organize later active study.' },
+      { id: 'reread', label: 'Reread notes or assigned material', utility: 'LOW', icon: '\ud83d\udcd6', color: '#fca5a5',
+        matchTest: function() { return 2; },
+        evidence: 'Dunlosky et al. (2013) rated rereading as low utility relative to stronger techniques. That rating does not mean rereading has no benefit in every context.' }
     ];
-
     var ASSESSMENT_TYPES = [
-      { id: 'test',     label: 'Test / quiz (factual)', icon: '📝' },
-      { id: 'apply',    label: 'Application / problem-solving', icon: '🔧' },
-      { id: 'essay',    label: 'Essay / writing', icon: '✍️' },
-      { id: 'project',  label: 'Project / presentation', icon: '🎬' },
-      { id: 'memorize', label: 'Pure memorization (vocab, formulas)', icon: '🧠' }
+      { id: 'test', label: 'Test or factual quiz', icon: '\ud83d\udcdd' },
+      { id: 'apply', label: 'Application or problem-solving', icon: '\ud83d\udd27' },
+      { id: 'essay', label: 'Essay or writing', icon: '\u270d\ufe0f' },
+      { id: 'project', label: 'Project or presentation', icon: '\ud83c\udfac' },
+      { id: 'memorize', label: 'Recall of terms or formulas', icon: '\ud83e\udde0' }
     ];
     var PRIOR_LEVELS = [
-      { id: 'none',   label: 'No clue', icon: '😵', color: '#ef4444' },
-      { id: 'little', label: 'A little', icon: '🤏', color: '#fbbf24' },
-      { id: 'some',   label: 'Solid base', icon: '👍', color: '#10b981' },
-      { id: 'much',   label: 'Pretty strong', icon: '💪', color: '#06b6d4' }
+      { id: 'none', label: 'New to this', icon: '\ud83c\udf31', color: '#fca5a5' },
+      { id: 'little', label: 'Some familiarity', icon: '\ud83c\udf24', color: '#fde68a' },
+      { id: 'some', label: 'Working knowledge', icon: '\ud83c\udf3f', color: '#6ee7b7' },
+      { id: 'much', label: 'Strong familiarity', icon: '\ud83c\udf33', color: '#67e8f9' }
     ];
 
-    function generate() {
-      var scored = STRATEGIES.map(function(s) {
-        return Object.assign({}, s, { fit: s.fitTest(form) });
-      }).sort(function(a, b) { return b.fit - a.fit; });
-      setResult({
-        form: Object.assign({}, form),
-        recommendations: scored,
-        generatedAt: todayISO()
-      });
-      llAnnounce('Study strategy plan generated. Recommendations are ready below.');
+    R.useEffect(function() {
+      if (!focusTarget || typeof document === 'undefined') return;
+      var target = document.getElementById(focusTarget);
+      if (target && typeof target.focus === 'function') target.focus();
+      setFocusTarget(null);
+    }, [focusTarget, result, data.savedPlans]);
+
+    function assessmentLabel(id) {
+      var item = ASSESSMENT_TYPES.filter(function(option) { return option.id === id; })[0];
+      return item ? item.label : id;
+    }
+    function priorLabel(id) {
+      var item = PRIOR_LEVELS.filter(function(option) { return option.id === id; })[0];
+      return item ? item.label : id;
+    }
+    function updateForm(patch) {
+      setForm(Object.assign({}, form, patch));
+      setFormError('');
+      setResult(null);
+      setResultSaved(false);
+    }
+    function generate(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var days = Number(form.days);
+      if (!Number.isFinite(days) || days < 1 || days > 60) {
+        setFormError('Enter a number of days from 1 to 60.');
+        setFocusTarget('learning-lab-strategy-days');
+        llAnnounce('Days until the assessment must be from 1 to 60.');
+        return;
+      }
+      var normalized = Object.assign({}, form, { subject: String(form.subject || '').trim(), days: Math.round(days) });
+      var recommendations = STRATEGIES.map(function(strategy) {
+        return Object.assign({}, strategy, { match: strategy.matchTest(normalized) });
+      }).sort(function(a, b) { return b.match - a.match; });
+      setForm(normalized);
+      setResult({ form: normalized, recommendations: recommendations, generatedAt: todayISO() });
+      setResultSaved(false);
+      setFormError('');
+      setFocusTarget('learning-lab-strategy-results-title');
+      llAnnounce('Study strategy plan generated. Heuristic matches are ready below.');
     }
     function savePlan() {
-      if (!result) return;
-      var plan = { id: tkId(), savedAt: todayISO(), subject: form.subject || 'Untitled', form: form, top3: result.recommendations.slice(0, 3) };
-      setData({ savedPlans: [plan].concat(data.savedPlans || []) });
+      if (!result || resultSaved) return;
+      var plan = {
+        id: tkId(), savedAt: todayISO(), subject: result.form.subject || 'Untitled plan', form: Object.assign({}, result.form),
+        top3: result.recommendations.slice(0, 3).map(function(item) { return { id: item.id, label: item.label, utility: item.utility, match: item.match }; })
+      };
+      setData(Object.assign({}, data, { savedPlans: [plan].concat(data.savedPlans || []) }));
+      setResultSaved(true);
+      setFocusTarget('learning-lab-strategy-saved-heading');
       llAnnounce('Study strategy plan saved.');
     }
-    function deletePlan(id) {
-      setData({ savedPlans: (data.savedPlans || []).filter(function(p) { return p.id !== id; }) });
+    async function deletePlan(plan) {
+      if (!(await askLearningLabConfirmation('This permanently removes the saved strategy plan for “' + plan.subject + '”.', {
+        title: 'Delete this saved plan?', confirmText: 'Delete plan'
+      }))) return;
+      var remaining = (data.savedPlans || []).filter(function(candidate) { return candidate.id !== plan.id; });
+      setData(Object.assign({}, data, { savedPlans: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-strategy-saved-heading' : 'learning-lab-strategy-form-heading');
+      llAnnounce('Saved strategy plan deleted.');
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🪄', 'Strategy Wizard', 'Tell the wizard about your situation. Get a prioritized study plan based on Dunlosky 2013 + your context.', '#a855f7'),
-
-      // Input form
-      tkCard('#a855f7',
-        hh('div', null,
-          hh('label', { htmlFor: 'learning-lab-strategy-subject', style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject / topic'),
-          hh('input', { id: 'learning-lab-strategy-subject', type: 'text', value: form.subject, onChange: function(e) { setForm(Object.assign({}, form, { subject: e.target.value })); }, placeholder: 'e.g., "Biology Chapter 5 — cells"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
-
+      tkSectionHeader('\ud83e\ude84', 'Strategy Wizard', 'Compare optional study approaches using your timeline, task type, and current familiarity.', '#c4b5fd', 'learning-lab-strategy-heading'),
+      tkCard('#c4b5fd',
+        hh('form', { 'aria-labelledby': 'learning-lab-strategy-form-heading', onSubmit: generate },
+          hh('h3', { id: 'learning-lab-strategy-form-heading', tabIndex: -1, style: { margin: '0 0 10px', fontSize: 13, color: '#ddd6fe' } }, 'Plan inputs'),
+          hh('label', { htmlFor: 'learning-lab-strategy-subject', style: { fontSize: 11, fontWeight: 800, color: '#ddd6fe', display: 'block', marginBottom: 4 } }, 'Subject or topic (optional)'),
+          hh('input', { id: 'learning-lab-strategy-subject', type: 'text', value: form.subject, maxLength: 240,
+            onChange: function(event) { updateForm({ subject: event.target.value }); }, placeholder: 'For example: Biology, cell structure',
+            style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(196,181,253,0.65)', borderRadius: 6, boxSizing: 'border-box' }
+          }),
           hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
-            hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 4 } }, 'What kind of assessment?'),
-            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-              ASSESSMENT_TYPES.map(function(a) {
-                return hh('button', { key: 'a-' + a.id, type: 'button', 'aria-pressed': form.assessment === a.id,
-                  onClick: function() { setForm(Object.assign({}, form, { assessment: a.id })); },
-                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 6, background: form.assessment === a.id ? '#a855f7' : 'rgba(168,85,247,0.10)', color: form.assessment === a.id ? '#fff' : '#c084fc', border: '1px solid rgba(168,85,247,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                }, a.icon + ' ' + a.label);
+            hh('legend', { style: { fontSize: 11, fontWeight: 800, color: '#ddd6fe', marginBottom: 6 } }, 'Assessment or task type'),
+            hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              ASSESSMENT_TYPES.map(function(option) {
+                var selected = form.assessment === option.id;
+                return hh('button', { key: 'a-' + option.id, type: 'button', 'aria-pressed': selected, onClick: function() { updateForm({ assessment: option.id }); },
+                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 6, background: selected ? '#7e22ce' : 'rgba(168,85,247,0.12)', color: selected ? '#fff' : '#ddd6fe', border: '1px solid rgba(196,181,253,0.65)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, hh('span', { 'aria-hidden': 'true' }, option.icon + ' '), option.label);
               })
             )
           ),
-
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 12 } },
             hh('div', null,
-              hh('label', { htmlFor: 'learning-lab-strategy-days', style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Days until ' + (form.assessment || 'assessment')),
-              hh('input', { id: 'learning-lab-strategy-days', type: 'number', min: 1, max: 60, value: form.days,
-                onChange: function(e) { setForm(Object.assign({}, form, { days: parseInt(e.target.value, 10) })); },
-                style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: '#a855f7', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
-              })
+              hh('label', { htmlFor: 'learning-lab-strategy-days', style: { fontSize: 11, fontWeight: 800, color: '#ddd6fe', display: 'block', marginBottom: 4 } }, 'Days until assessment or due date'),
+              hh('input', { id: 'learning-lab-strategy-days', type: 'number', min: 1, max: 60, required: true, value: form.days,
+                'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-strategy-days-error' : 'learning-lab-strategy-days-help',
+                onChange: function(event) { updateForm({ days: event.target.value }); },
+                style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: '#ddd6fe', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(196,181,253,0.65)', borderRadius: 6, boxSizing: 'border-box', textAlign: 'center', fontWeight: 800 }
+              }),
+              hh('p', { id: 'learning-lab-strategy-days-help', style: { margin: '4px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Enter 1 to 60 days.')
             ),
-            hh('div', null,
-              hh('fieldset', { style: { border: 0, padding: 0, margin: 0 } },
-                hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 4 } }, 'Current knowledge'),
-                hh('div', { style: { display: 'flex', gap: 4 } },
-                  PRIOR_LEVELS.map(function(p) {
-                    return hh('button', { key: 'p-' + p.id, type: 'button', 'aria-label': p.label, 'aria-pressed': form.prior === p.id,
-                      onClick: function() { setForm(Object.assign({}, form, { prior: p.id })); },
-                      style: { flex: 1, minWidth: 44, minHeight: 44, padding: '8px 4px', borderRadius: 6, background: form.prior === p.id ? p.color + '30' : 'rgba(15,23,42,0.5)', color: form.prior === p.id ? p.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (form.prior === p.id ? p.color : 'rgba(100,116,139,0.30)'), fontSize: 14, cursor: 'pointer' }
-                    }, p.icon);
-                  })
-                )
+            hh('fieldset', { style: { border: 0, padding: 0, margin: 0 } },
+              hh('legend', { style: { fontSize: 11, fontWeight: 800, color: '#ddd6fe', marginBottom: 6 } }, 'Current familiarity'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6 } },
+                PRIOR_LEVELS.map(function(option) {
+                  var selected = form.prior === option.id;
+                  return hh('button', { key: 'p-' + option.id, type: 'button', 'aria-pressed': selected, onClick: function() { updateForm({ prior: option.id }); },
+                    style: { minHeight: 44, padding: '8px 6px', borderRadius: 6, background: selected ? option.color + '30' : 'rgba(15,23,42,0.5)', color: selected ? option.color : 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + (selected ? option.color : 'rgba(148,163,184,0.55)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, hh('span', { 'aria-hidden': 'true' }, option.icon + ' '), option.label);
+                })
               )
             )
           ),
-
-          tkBtn('🪄 Generate study plan', generate, 'primary', { padding: '12px 24px', fontSize: 12, width: '100%', textAlign: 'center' })
+          formError ? hh('p', { id: 'learning-lab-strategy-days-error', role: 'alert', style: { margin: '0 0 10px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formError) : null,
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1.5px solid #c4b5fd', background: '#7e22ce', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Generate study-plan comparison')
         )
       ),
-
-      // Result
-      result ? tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 } },
-            hh('h3', { id: 'learning-lab-strategy-results-title', style: { margin: 0, fontSize: 13, fontWeight: 800, color: '#c084fc' } }, '✨ Your prioritized plan'),
-            tkBtn('💾 Save this plan', savePlan, 'good', { minHeight: 44, padding: '8px 12px', fontSize: 10 })
+      result ? hh('section', { 'aria-labelledby': 'learning-lab-strategy-results-title', style: { marginTop: 12 } },
+        tkCard('#c4b5fd', hh('div', null,
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
+            hh('h3', { id: 'learning-lab-strategy-results-title', tabIndex: -1, style: { margin: 0, fontSize: 14, color: '#ddd6fe' } }, 'Generated strategy comparison'),
+            hh('button', { type: 'button', onClick: savePlan, disabled: resultSaved, 'data-ll-focusable': true,
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1.5px solid #6ee7b7', background: resultSaved ? 'rgba(71,85,105,0.7)' : '#047857', color: '#fff', fontWeight: 800, cursor: resultSaved ? 'default' : 'pointer' }
+            }, resultSaved ? 'Plan saved' : 'Save this plan')
           ),
-          hh('div', { role: 'list', 'aria-labelledby': 'learning-lab-strategy-results-title', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            result.recommendations.map(function(s, i) {
-              var rank = i + 1;
-              var rankColor = rank <= 3 ? '#10b981' : rank <= 6 ? '#fbbf24' : '#94a3b8';
-              return hh('div', { key: 'rec-' + s.id, role: 'listitem', style: {
-                display: 'flex', alignItems: 'flex-start', gap: 8,
-                padding: 10, borderRadius: 8,
-                background: 'rgba(15,23,42,0.5)',
-                border: '1px solid ' + s.color + '30',
-                borderLeft: '3px solid ' + s.color,
-                opacity: rank > 6 ? 0.5 : 1
-              } },
-                hh('div', { style: { width: 26, height: 26, borderRadius: '50%', background: rankColor + '20', color: rankColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 } }, '#' + rank),
-                hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
-                    hh('span', null, s.icon),
-                    hh('strong', { style: { fontSize: 12, color: s.color } }, s.label),
-                    hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: s.color + '20', color: s.color, fontSize: 9, fontWeight: 800 } }, s.utility),
-                    hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: rankColor + '15', color: rankColor, fontSize: 9, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'fit: ' + s.fit + '/10')
-                  ),
-                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } }, s.why)
-                )
+          hh('p', { id: 'learning-lab-strategy-results-help', style: { margin: '0 0 10px', fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Order is based on a simple, non-validated match heuristic. A higher match score is not a prediction that a strategy will work for you.'),
+          hh('dl', { 'aria-label': 'Inputs used for this comparison', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, margin: '0 0 12px' } },
+            [
+              ['Topic', result.form.subject || 'Not specified'], ['Task type', assessmentLabel(result.form.assessment)],
+              ['Timeline', result.form.days + (result.form.days === 1 ? ' day' : ' days')], ['Familiarity', priorLabel(result.form.prior)]
+            ].map(function(item) { return hh('div', { key: item[0] }, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, item[0]), hh('dd', { style: { margin: '2px 0 0', fontSize: 11, color: '#fff', fontWeight: 700, overflowWrap: 'anywhere' } }, item[1])); })
+          ),
+          hh('ol', { 'aria-describedby': 'learning-lab-strategy-results-help', style: { display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 24, margin: 0 } },
+            result.recommendations.map(function(strategy) {
+              return hh('li', { key: 'rec-' + strategy.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.65)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + strategy.color + '66', borderLeft: '3px solid ' + strategy.color } },
+                hh('h4', { style: { margin: '0 0 5px', fontSize: 12, color: strategy.color, overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, strategy.icon + ' '), strategy.label),
+                hh('p', { style: { margin: '0 0 5px', display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: strategy.color + '22', color: strategy.color, fontSize: 10, fontWeight: 800 } }, 'Evidence category: ' + strategy.utility),
+                  hh('span', { style: { padding: '2px 6px', borderRadius: 4, background: 'rgba(147,197,253,0.15)', color: '#bfdbfe', fontSize: 10, fontWeight: 800 } }, 'Heuristic match: ' + strategy.match + ' out of 10')
+                ),
+                hh('p', { style: { margin: 0, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, strategy.evidence)
               );
             })
           )
-        )
+        ))
       ) : null,
-
-      // Saved plans
-      (data.savedPlans || []).length > 0 ? hh('div', { style: { marginTop: 14 } },
-        hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📚 Saved plans'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          (data.savedPlans || []).map(function(p) {
-            return hh('div', { key: 'sp-' + p.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(168,85,247,0.30)', borderLeft: '3px solid #a855f7' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
-                hh('div', { style: { fontSize: 12, color: '#c084fc', fontWeight: 700 } }, p.subject),
-                hh('div', { style: { display: 'flex', gap: 4 } },
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, relDate(p.savedAt)),
-                  hh('button', { type: 'button', 'aria-label': 'Delete saved plan: ' + p.subject, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the saved strategy plan for "' + p.subject + '".', { title: 'Delete this saved plan?', confirmText: 'Delete plan' })) deletePlan(p.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
+      (data.savedPlans || []).length ? hh('section', { 'aria-labelledby': 'learning-lab-strategy-saved-heading', style: { marginTop: 14 } },
+        hh('h3', { id: 'learning-lab-strategy-saved-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#ddd6fe' } }, 'Saved plans'),
+        hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 } },
+          (data.savedPlans || []).map(function(plan) {
+            return hh('li', { key: 'sp-' + plan.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(196,181,253,0.55)', borderLeft: '3px solid #c4b5fd' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                hh('div', null,
+                  hh('h4', { style: { margin: 0, fontSize: 12, color: '#ddd6fe', overflowWrap: 'anywhere' } }, plan.subject || 'Untitled plan'),
+                  hh('p', { style: { margin: '3px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Saved ', hh('time', { dateTime: plan.savedAt }, plan.savedAt), ' (', relDate(plan.savedAt), ')')
+                ),
+                hh('button', { type: 'button', 'aria-label': 'Delete saved plan: ' + (plan.subject || 'Untitled plan'), onClick: function() { deletePlan(plan); },
+                  style: { minWidth: 44, minHeight: 44, padding: 8, background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(252,165,165,0.55)', borderRadius: 6, color: '#fecaca', fontSize: 11, cursor: 'pointer' }
+                }, 'Delete')
               ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                (p.top3 || []).map(function(t, i) { return (i + 1) + '. ' + t.icon + ' ' + t.label; }).join(' · ')
+              hh('ol', { 'aria-label': 'Top strategies for ' + (plan.subject || 'Untitled plan'), style: { margin: '8px 0 0', paddingLeft: 22, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                (plan.top3 || []).map(function(item, index) { return hh('li', { key: (item.id || index), style: { marginBottom: 3, fontSize: 10, overflowWrap: 'anywhere' } }, item.label || 'Saved strategy'); })
               )
             );
           })
         )
-      ) : null
+      ) : null,
+      hh('aside', { 'aria-labelledby': 'learning-lab-strategy-evidence-heading', style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.40)' } },
+        hh('h3', { id: 'learning-lab-strategy-evidence-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#ddd6fe' } }, 'Evidence and limits'),
+        hh('p', { style: { margin: 0, fontSize: 10, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Evidence categories reference the broad review by Dunlosky et al. (2013) where applicable. The match scores in this tool are author-defined rules, not a validated assessment, diagnosis, or guarantee. Learners may need different approaches, instruction, assistive technology, or approved accommodations.')
+      )
     );
   }
 
-  // ── N. PERSONAL COGNITIVE LOAD MONITOR (Wave 3) ──
+  // N. PERSONAL COGNITIVE LOAD MONITOR (Wave 3)
   // Daily check-in. Rate today's cognitive load on three Sweller dimensions.
   // Identify overwhelm triggers. Adaptive suggestions to reduce load.
   function PersonalCognitiveLoadMonitor(props) {
@@ -19785,7 +19806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkTasks',  icon: '✂', label: __alloT('stem.learning_lab.task_breaker', 'Task Breaker'),          desc: __alloT('stem.learning_lab.decompose_big_assignments_into_2_5_min', 'Decompose big assignments into 2-5 minute steps with time estimates.') },
               { id: 'mytkHabits', icon: '✅', label: __alloT('stem.learning_lab.habit_tracker', 'Habit Tracker'),        desc: __alloT('stem.learning_lab.daily_check_ins_streak_heatmap_lally_2', 'Daily check-ins + streak heatmap + Lally 2009 evidence.') },
               { id: 'mytkReflect',icon: '📔', label: __alloT('stem.learning_lab.weekly_reflection', 'Weekly Reflection'),    desc: __alloT('stem.learning_lab.5_prompt_structured_journal_zimmerman_', 'Optional structured journal for reviewing a week and planning next steps.') },
-              { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Adaptive study-plan generator based on Dunlosky 2013 + your context.') },
+              { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Optional comparison of study approaches using a disclosed heuristic.') },
               { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.') },
               { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Self-Determination Theory check (autonomy / competence / relatedness).') },
               { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'One-page self-snapshot you control — printable for teachers / IEP.') },
