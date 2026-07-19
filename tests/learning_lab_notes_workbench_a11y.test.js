@@ -9,66 +9,76 @@ describe('Learning Lab Notes Workbench accessibility', () => {
   const source = read('stem_lab/stem_tool_learning_lab.js');
   const start = source.indexOf('  function PersonalNotesWorkbench(props) {');
   const end = source.indexOf('  function PersonalDailyAgenda(props) {', start);
-  const notesWorkbench = source.slice(start, end);
+  const notes = source.slice(start, end);
 
-  it('uses an accessible form dialog to add unique notebooks', () => {
-    expect(notesWorkbench).toContain("title: 'Add a notebook'");
-    expect(notesWorkbench).toContain("fields: [{ name: 'name', label: 'Notebook name', required: true, maxLength: 80");
-    expect(notesWorkbench).toContain("'A notebook with that name already exists.'");
-    expect(notesWorkbench).not.toContain("prompt('Notebook name?");
+  it('adds unique bounded notebook names through an accessible dialog', () => {
+    expect(notes).toContain("title: 'Add a notebook'");
+    expect(notes).toContain("fields: [{ name: 'name', label: 'Notebook name', required: true, maxLength: 80");
+    expect(notes).toContain("'A notebook with that name already exists.'");
+    expect(notes).not.toContain("prompt('Notebook name?");
   });
 
-  it('uses app-controlled confirmation for destructive note and notebook actions', () => {
-    expect(notesWorkbench).toContain("title: 'Delete this note?', confirmText: 'Delete note'");
-    expect(notesWorkbench).toContain("confirmText: 'Delete notebook'");
-    expect(notesWorkbench).not.toContain("confirm('Delete this note?')");
-    expect(notesWorkbench).not.toContain("confirm('Delete notebook");
-    expect(notesWorkbench).not.toContain("alert('Cannot delete General notebook.')");
+  it('preserves sibling data for all notebook and note writes', () => {
+    expect(notes.match(/setData\(Object\.assign\(\{\}, data,/g)).toHaveLength(4);
+    expect(notes).not.toContain('setData({');
   });
 
-  it('associates the required note title and reports errors inline', () => {
-    expect(notesWorkbench).toContain("htmlFor: 'learning-lab-note-title'");
-    expect(notesWorkbench).toContain("id: 'learning-lab-note-title', type: 'text', value: form.title, required: true");
-    expect(notesWorkbench).toContain("id: 'learning-lab-note-title-error', role: 'alert'");
-    expect(notesWorkbench).toContain("document.getElementById('learning-lab-note-title')");
-    expect(notesWorkbench).not.toContain("alert('Need a title.')");
+  it('uses a native bounded note form with explicit save and privacy guidance', () => {
+    expect(notes).toContain("hh('form', { 'aria-labelledby': 'learning-lab-note-editor-heading', onSubmit: saveNote, noValidate: true }");
+    expect(notes).toContain("type: 'submit'");
+    expect(notes).toContain('Your changes are not saved until you choose Save note.');
+    expect(notes).toContain("id: 'learning-lab-notes-privacy'");
+    expect(notes).toContain("required: true, maxLength: 160");
+    expect(notes).toContain("rows: 12, maxLength: 12000");
+    expect(notes).toContain("rows: 12, maxLength: 20000");
+    expect(notes).toContain("rows: 3, maxLength: 4000");
+    expect(notes).not.toContain('with auto-save');
   });
 
-  it('associates Cornell note fields with their labels and instructions', () => {
-    for (const field of ['cue', 'main', 'summary']) {
-      expect(notesWorkbench).toContain(`htmlFor: 'learning-lab-note-${field}'`);
-      expect(notesWorkbench).toContain(`id: 'learning-lab-note-${field}'`);
-      expect(notesWorkbench).toContain(`'aria-describedby': 'learning-lab-note-${field}-help'`);
+  it('labels every field and reports title errors inline with focus', () => {
+    for (const field of ['title', 'cue', 'main', 'summary']) {
+      expect(notes).toContain("htmlFor: 'learning-lab-note-" + field + "'");
+      expect(notes).toContain("id: 'learning-lab-note-" + field + "'");
     }
-    expect(notesWorkbench).toContain("gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))'");
+    expect(notes).toContain("id: 'learning-lab-note-title-error', role: 'alert'");
+    expect(notes).toContain("focusId('learning-lab-note-title')");
   });
 
-  it('labels note search and announces its result count', () => {
-    expect(notesWorkbench).toContain("htmlFor: 'learning-lab-notes-search'");
-    expect(notesWorkbench).toContain("id: 'learning-lab-notes-search', type: 'search'");
-    expect(notesWorkbench).toContain("role: 'status', 'aria-live': 'polite'");
-    expect(notesWorkbench).toContain("' match your search.'");
+  it('confirms destructive actions and unsaved-change discard', () => {
+    expect(notes).toContain("title: 'Delete this note?', confirmText: 'Delete note'");
+    expect(notes).toContain("confirmText: 'Delete notebook'");
+    expect(notes).toContain("title: 'Discard changes to this note?', confirmText: 'Discard changes'");
+    expect(notes).toContain('function formIsDirty()');
   });
 
-  it('provides named 44-pixel note actions', () => {
-    expect(notesWorkbench).toContain("'aria-label': 'Edit note: ' + n.title");
-    expect(notesWorkbench).toContain("'aria-label': 'Delete note: ' + n.title");
-    expect(notesWorkbench.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(3);
+  it('provides semantic notebook and note collections with meaningful dates', () => {
+    expect(notes).toContain("hh('ul', { 'aria-label': 'Notebooks'");
+    expect(notes).toContain("hh('article', { 'aria-labelledby': 'learning-lab-note-card-title-' + note.id");
+    expect(notes).toContain("hh('time', { dateTime: note.updatedAt || note.createdAt");
+    expect(notes).toContain("'aria-labelledby': 'learning-lab-note-results-heading'");
   });
 
-  it('keeps notebook deletion separate from the notebook open button', () => {
-    expect(notesWorkbench).toContain("'aria-label': 'Delete notebook: ' + nbName");
-    expect(notesWorkbench).toContain("return hh('div', { key: 'nb-' + nbName, style: { position: 'relative', minHeight: 80 } }");
-    expect(notesWorkbench).not.toContain("hh('span', { onClick: function(e) { e.stopPropagation(); removeNotebook(nbName);");
+  it('labels search, exposes a visible result heading, and announces counts', () => {
+    expect(notes).toContain("htmlFor: 'learning-lab-notes-search'");
+    expect(notes).toContain("id: 'learning-lab-notes-search', type: 'search'");
+    expect(notes).toContain("id: 'learning-lab-note-search-status', role: 'status', 'aria-live': 'polite'");
+    expect(notes).toContain("id: 'learning-lab-note-results-heading', tabIndex: -1");
   });
 
-  it('announces completed save, add, and delete actions', () => {
-    expect(notesWorkbench).toContain("llAnnounce('Note saved.')");
-    expect(notesWorkbench).toContain("llAnnounce('Note deleted.')");
-    expect(notesWorkbench).toContain("llAnnounce('Notebook added: ' + values.name + '.')");
+  it('restores focus and announces navigation, saving, and deletion', () => {
+    for (const id of ['learning-lab-notebook-heading', 'learning-lab-notebooks-heading', 'learning-lab-note-editor-heading', 'learning-lab-note-results-heading']) {
+      expect(notes).toContain("focusId('" + id + "')");
+    }
+    expect(notes).toContain("llAnnounce('Note saved: '");
+    expect(notes).toContain("llAnnounce('Note deleted: '");
+    expect(notes).toContain("llAnnounce('Notebook deleted: '");
   });
 
-  it('keeps the deployed mirror identical', () => {
+  it('qualifies the optional learning strategy and keeps the deployed mirror identical', () => {
+    expect(notes).toContain('It may help some learners organize and revisit information');
+    expect(notes).toContain('Use, rename, or leave fields blank based on what helps you.');
+    expect(notes).toContain('does not assess note quality or guarantee learning');
+    expect(notes).not.toContain('active-processing magic');
     expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });
