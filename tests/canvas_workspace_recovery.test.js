@@ -221,6 +221,28 @@ describe('Canvas workspace recovery integration contracts', () => {
     expect(anti).toContain("setCanvasRecoverySaveStatus('saved')");
   });
 
+  it('keeps Canvas recovery above and ahead of the landing page', () => {
+    const predicateStart = anti.indexOf('const shouldShowLaunchPad =');
+    const predicateEnd = anti.indexOf('return (', predicateStart);
+    const predicate = anti.slice(predicateStart, predicateEnd);
+    const firstLaunchPadGate = anti.indexOf('{shouldShowLaunchPad &&', predicateEnd);
+    const secondLaunchPadGate = anti.indexOf('{shouldShowLaunchPad &&', firstLaunchPadGate + 1);
+    const recoveryGate = anti.indexOf('{isCanvas && isAppReady && canvasRecoveryDialogMode && (', predicateEnd);
+    const recoveryGateHeader = anti.slice(recoveryGate, anti.indexOf('role="dialog"', recoveryGate));
+
+    expect(predicateStart).toBeGreaterThan(-1);
+    expect(predicate).toContain('isAppReady');
+    expect(predicate).toContain('!hasSelectedMode');
+    expect(predicate).toContain('(!isCanvas || canvasRecoveryDecisionMade)');
+    expect(firstLaunchPadGate).toBeGreaterThan(recoveryGate);
+    expect(secondLaunchPadGate).toBeGreaterThan(firstLaunchPadGate);
+    expect(anti.slice(firstLaunchPadGate, secondLaunchPadGate)).toContain('LaunchPadView');
+    expect(anti.slice(secondLaunchPadGate, secondLaunchPadGate + 500)).toContain('OnboardingCoach');
+    expect(recoveryGateHeader).toContain('data-canvas-recovery-gate=');
+    expect(recoveryGateHeader).toContain('z-[13000]');
+    expect(recoveryGateHeader).toContain("canvasRecoveryDecisionMade ? 'bg-slate-950/75' : 'bg-slate-950'");
+  });
+
   it('offers an accessible decision flow and protects live student entry', () => {
     expect(anti).toContain("setCanvasRecoveryDialogMode('choice')");
     expect(anti).toContain('Continue previous work');

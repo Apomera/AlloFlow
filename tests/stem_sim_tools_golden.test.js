@@ -265,6 +265,21 @@ describe('Space Explorer mission dossier contract', () => {
     expect(forecast.category).toMatch(/systems|science/);
     expect(forecast.recommendedSystem).toBeTruthy();
     expect(forecast.summary).toContain('consider');
+
+    const objectives = pure.buildMissionObjectives(dest, dossier, protocol);
+    expect(objectives).toHaveLength(3);
+    const objectiveReport = pure.evaluateMissionObjectives(objectives, [
+      { turn: 1, title: 'Ice Fault', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues.' },
+      { turn: 2, title: 'Bio Trace', quality: 'optimal', concept: 'astrobiology', note: 'Compared astrobiology evidence.' }
+    ], [
+      { title: 'Ice Fault', quality: 'optimal' },
+      { title: 'Bio Trace', quality: 'optimal' }
+    ], { o2: 40, hull: 55, power: 60, fuel: 70, morale: 80, science: 0 }, [
+      { turn: 1, protocol: protocol.label },
+      { turn: 2, protocol: protocol.label }
+    ]);
+    expect(objectiveReport.completed).toBe(3);
+    expect(objectiveReport.totalBonus).toBeGreaterThan(0);
   });
 
   it('renders dossier, evidence tracker, and debrief review surfaces', () => {
@@ -288,6 +303,8 @@ describe('Space Explorer mission dossier contract', () => {
     expect(briefing).toContain('data-spaceexplorer-protocol');
     expect(briefing).toContain('Evidence-first protocol');
     expect(briefing).toContain('data-spaceexplorer-deck-lens');
+    expect(briefing).toContain('data-spaceexplorer-objectives');
+    expect(briefing).toContain('Optional Mission Objectives');
 
     const allocate = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, { missionPhase: 'allocate', powerAllocation: { life: 0, science: 2, shields: 0, comms: 0 } }) });
     expect(allocate).toContain('data-spaceexplorer-forecast');
@@ -301,12 +318,14 @@ describe('Space Explorer mission dossier contract', () => {
     expect(explore).toContain('Expedition Evidence');
     expect(explore).toContain('Latest observation');
     expect(explore).toContain('Hypothesis status');
+    expect(explore).toContain('data-spaceexplorer-objectives-live');
 
     const debrief = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
       missionPhase: 'debrief',
       missionResult: 'success',
       turn: 4,
       protocolLog: [{ turn: 1, protocol: 'Evidence-first protocol', effects: { science: 3, power: -1 }, note: 'Protocol applied.' }],
+      objectiveBonusScience: 20,
       decisionLog: [{ title: 'Ice Fault', chosen: 'Map it', quality: 'optimal', optimal: 'Map it', lesson: 'Evidence before action.' }],
       missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }]
     }) });
@@ -315,5 +334,7 @@ describe('Space Explorer mission dossier contract', () => {
     expect(debrief).toContain('data-spaceexplorer-intent-review');
     expect(debrief).toContain('HYPOTHESIS REVIEW');
     expect(debrief).toContain('Protocol tested');
+    expect(debrief).toContain('data-spaceexplorer-objectives-review');
+    expect(debrief).toContain('MISSION OBJECTIVES');
   });
 });

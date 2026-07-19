@@ -4,6 +4,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 
 if (!process.argv.includes('--confirm-current-independent-review')) {
   throw new Error('Refusing to bind review evidence without --confirm-current-independent-review.');
@@ -47,7 +48,7 @@ for (const name of reviewFiles) {
       learningLibrarySha256: sha256(libraryBytes),
     };
   });
-  fs.writeFileSync(file, JSON.stringify(evidence, null, 2) + '\n', 'utf8');
+  writeGeneratedFile(file, JSON.stringify(evidence, null, 2) + '\n', 'utf8');
 }
 
 console.log('Frozen exact source/library artifact bindings into ' + reviewFiles.length + ' independent group reviews.');

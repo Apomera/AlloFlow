@@ -11,15 +11,19 @@ const { canonical, validPackVersion } = require('../dev-tools/apply_test_prep_in
 
 describe('manifest-backed independent test-prep additions', () => {
   it('preserves arithmetic operators in content canonicalization', () => {
-    const forms = ['12 - 5', '12 + 5', '12 * 5', '12 / 5', '12 × 5', '12 ÷ 5', '12 ≤ 5', '12 ≥ 5', '12 ≠ 5'];
+    const forms = ['12 - 5', '12 + 5', '12 * 5', '12 / 5', '12 \u00d7 5', '12 \u00f7 5', '12 \u2264 5', '12 \u2265 5', '12 \u2260 5'];
     expect(new Set(forms.map((value) => canonical(value))).size).toBe(forms.length - 2);
-    expect(canonical('12 * 5')).toBe(canonical('12 × 5'));
-    expect(canonical('12 / 5')).toBe(canonical('12 ÷ 5'));
+    expect(canonical('12 * 5')).toBe(canonical('12 \u00d7 5'));
+    expect(canonical('12 / 5')).toBe(canonical('12 \u00f7 5'));
     expect(canonical('x - 2')).not.toBe(canonical('x + 2'));
   });
 
-  it('keeps --check read-only across source and deploy pack artifacts', () => {
-    const targets = ['parapro', 'early_childhood_5025', 'audiology_5343'].flatMap((stem) =>
+  it('keeps --check read-only across every manifest pack source and deploy artifact', () => {
+    const manifest = JSON.parse(fs.readFileSync(
+      path.join(root, 'dev-tools', 'authored', 'test_prep_independent_additions_manifest.json'),
+      'utf8',
+    ));
+    const targets = Object.keys(manifest.packs).sort().flatMap((stem) =>
       ['test_prep', 'prismflow-deploy/public/test_prep'].flatMap((dir) =>
         [`${dir}/${stem}_pack.json`, `${dir}/${stem}_items.json`],
       ),
@@ -33,10 +37,16 @@ describe('manifest-backed independent test-prep additions', () => {
     expect(Object.fromEntries(targets.map((file) => [file, digest(file)]))).toEqual(before);
   }, 20000);
 
-  it('registers exact hash-bound 100-item banks for every manifest pack', () => {
+  it('registers exact hash-bound 100-item banks for every one-bank manifest pack', () => {
     const authoredDir = path.join(root, 'dev-tools', 'authored');
     const manifest = JSON.parse(fs.readFileSync(path.join(authoredDir, 'test_prep_independent_additions_manifest.json'), 'utf8'));
-    for (const stem of ['early_childhood_5025', 'audiology_5343', 'school_librarian_5312', 'educational_leadership_5412']) {
+    for (const stem of [
+      'early_childhood_5025',
+      'audiology_5343',
+      'school_librarian_5312',
+      'educational_leadership_5412',
+      'school_counselor_5422',
+    ]) {
       const batches = manifest.packs[stem];
       expect(batches).toHaveLength(1);
       expect(batches[0]).toMatchObject({
@@ -71,6 +81,7 @@ describe('manifest-backed independent test-prep additions', () => {
       ['audiology_5343', 'Audiology (5343)'],
       ['school_librarian_5312', 'School Librarian (5312)'],
       ['educational_leadership_5412', 'Educational Leadership: Administration and Supervision (5412)'],
+      ['school_counselor_5422', 'School Counselor (5422)'],
     ]) {
       const pack = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', `${stem}_pack.json`), 'utf8'));
       expect(pack.title).toContain(credential);

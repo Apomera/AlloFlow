@@ -103,14 +103,17 @@
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (!data || data.type !== 'allodatalab-snapshot-request') return;
-    var requestId = data.id;
+    if (event.source !== window.top) return;
+    var requestId = typeof data.id === 'string' ? data.id.slice(0, 80) : '';
+    if (!requestId) return;
+    var responseOrigin = event.origin && event.origin !== 'null' ? event.origin : '*';
     Promise.resolve()
       .then(buildSnapshot)
       .then(function (snapshot) {
-        (event.source || window.top).postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: connected, snapshot: snapshot }, '*');
+        window.top.postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: connected, snapshot: snapshot }, responseOrigin);
       })
       .catch(function (error) {
-        (event.source || window.top).postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: false, error: String((error && error.message) || error).slice(0, 120) }, '*');
+        window.top.postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: false, error: String((error && error.message) || error).slice(0, 120) }, responseOrigin);
       });
   });
 

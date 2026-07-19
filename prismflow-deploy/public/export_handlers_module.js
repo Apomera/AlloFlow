@@ -78,6 +78,29 @@
     if (addToast && t) addToast(t('export_status.html_success'), 'success');
   };
 
+  // ── _alloDownloadFiles ───────────────────────────────────────────
+  // Download a small set of files as separate browser downloads instead
+  // of bundling them into a zip. Kinder for teachers who find extracting
+  // archives confusing — but only used for 2–3 files, since browsers
+  // prompt/block once a page fires more than a few downloads. Files are
+  // triggered ~300ms apart because some browsers silently drop a second
+  // download fired in the same tick.
+  const _alloDownloadFiles = async (files) => {
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const url = URL.createObjectURL(f.blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = f.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Revoke a beat later so the browser has grabbed the blob first.
+      setTimeout((function(u) { return function() { URL.revokeObjectURL(u); }; })(url), 4000);
+      if (i < files.length - 1) await new Promise(function(r) { setTimeout(r, 300); });
+    }
+  };
+
   // ── executeExportFromPreview ─────────────────────────────────────
   // Orchestrates an export driven by the preview iframe. If the iframe
   // has substantive edited content, that wins; otherwise we regenerate
@@ -947,14 +970,20 @@
       if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
       return false;
     } else if (mode === 'html') {
+      // Name files after the lesson (from its <title>) so a teacher's
+      // downloads folder reads "photosynthesis.html" instead of N identical
+      // "index.html" files.
+      const _htmlName = _alloExportFilename(htmlContent, 'alloflow-export');
       // Single-file option: skip the zip and download just the self-contained
       // .html (images are base64-inlined), so teachers can email one file that
-      // offline students double-click. The zip path still bundles allo-project.json.
-      if (window.JSZip && !_wantSingleFile) {
+      // offline students double-click.
+      if (window.JSZip && !_wantSingleFile && _audioAssets.length > 0) {
+        // Read-aloud attached separate audio files — keep the zip as the
+        // container, since that's too many loose files to download one by one.
         if (addToast) addToast((t && t('export_status.bundling_zip')) || 'Bundling export...', 'info');
         const zip = new window.JSZip();
-        zip.file('index.html', htmlContent);
-        zip.file('allo-project.json', JSON.stringify(history, null, 2));
+        zip.file(_htmlName + '.html', htmlContent);
+        zip.file(_htmlName + '-project.json', JSON.stringify(history, null, 2));
         for (let _aa = 0; _aa < _audioAssets.length; _aa++) {
           const _asset = _audioAssets[_aa];
           if (_asset && _asset.path && _asset.blob) zip.file(_asset.path, _asset.blob);
@@ -963,9 +992,18 @@
         const url = URL.createObjectURL(content);
         const link = document.createElement('a');
         link.href = url;
-        link.download = _alloExportFilename(htmlContent, 'alloflow-export') + '-' + new Date().toISOString().split('T')[0] + '.zip';
+        link.download = _htmlName + '-' + new Date().toISOString().split('T')[0] + '.zip';
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
         URL.revokeObjectURL(url);
+        if (addToast) addToast('Export downloaded!', 'success');
+      } else if (!_wantSingleFile) {
+        // Just the lesson + its data (2 files) — download them separately so
+        // teachers never have to extract a zip. Distinct names avoid collisions.
+        if (addToast) addToast('Downloading files…', 'info');
+        await _alloDownloadFiles([
+          { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) },
+          { name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) }
+        ]);
         if (addToast) addToast('Export downloaded!', 'success');
       } else {
         const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -1053,39 +1091,23 @@
         if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
       }
     } else {
-      if (window.JSZip) {
-        if (addToast && t) addToast(t('export_status.bundling_zip'), 'info');
-        const zip = new window.JSZip();
-        zip.file('index.html', htmlContent);
-        const projectJson = JSON.stringify(history, null, 2);
-        zip.file('allo-project.json', projectJson);
-        const readmeContent = (t ? t('export.readme_title') : 'AlloFlow Export') + '\n'
-          + (t ? t('export.readme_generated', { date: new Date().toLocaleString() }) : 'Generated: ' + new Date().toLocaleString()) + '\n'
-          + (t ? t('export.readme_topic', { topic: sourceTopic || (t && t('common.untitled')) || 'Untitled' }) : 'Topic: ' + (sourceTopic || 'Untitled')) + '\n'
-          + (t ? t('export.readme_contents') : 'Contents:') + '\n'
-          + (t ? t('export.readme_html_desc') : '- index.html: rendered lesson') + '\n'
-          + (t ? t('export.readme_json_desc') : '- allo-project.json: source data');
-        zip.file('readme.txt', readmeContent);
-        try {
-          const content = await zip.generateAsync({ type: 'blob' });
-          const url = URL.createObjectURL(content);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = (t ? t('export.filenames.zip_pack') : 'alloflow-pack') + '-' + new Date().toISOString().split('T')[0] + '.zip';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          if (addToast && t) addToast(t('export.bundle_downloaded'), 'success');
-          if (alloBotRef && alloBotRef.current && t) {
-            alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
-          }
-        } catch (err) {
-          if (typeof warnLog === 'function') warnLog('Zip generation failed', err);
-          if (addToast && t) addToast(t('export_status.zip_error'), 'error');
-          downloadHtmlBlob(htmlContent, deps);
+      // Direct HTML export (no preview, no read-aloud audio): the lesson plus
+      // its source data — two files. Download them separately with distinct,
+      // lesson-derived names so teachers never have to extract a zip. The old
+      // readme.txt only described the zip's contents, so it's dropped here.
+      const _htmlName = _alloExportFilename(htmlContent, (t ? t('export.filenames.html_pack') : 'alloflow-export'));
+      try {
+        if (addToast) addToast('Downloading files…', 'info');
+        await _alloDownloadFiles([
+          { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) },
+          { name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) }
+        ]);
+        if (addToast && t) addToast(t('export.bundle_downloaded'), 'success');
+        if (alloBotRef && alloBotRef.current && t) {
+          alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
         }
-      } else {
+      } catch (err) {
+        if (typeof warnLog === 'function') warnLog('Export download failed', err);
         downloadHtmlBlob(htmlContent, deps);
       }
     }

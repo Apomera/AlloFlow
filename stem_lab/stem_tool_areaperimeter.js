@@ -64,6 +64,27 @@
     return countAllowed(normalizeChallengeProgress(map), AREA_CHALLENGE_IDS);
   }
 
+  function isValidTileKey(key, width, height) {
+    var match = String(key).match(/^(\d+)-(\d+)$/);
+    if (!match) return false;
+    var column = Number(match[1]);
+    var row = Number(match[2]);
+    return String(column) + '-' + String(row) === String(key) &&
+      column < Number(width) && row < Number(height);
+  }
+
+  function validTileMap(map, width, height) {
+    var valid = {};
+    Object.keys(map || {}).forEach(function(key) {
+      if (map[key] && isValidTileKey(key, width, height)) valid[key] = true;
+    });
+    return valid;
+  }
+
+  function countValidTiles(map, width, height) {
+    return Object.keys(validTileMap(map, width, height)).length;
+  }
+
   function clampInteger(value, min, max) {
     value = Number(value);
     if (!isFinite(value)) value = min;
@@ -128,6 +149,8 @@
     isCorrectNumericAnswer: isCorrectNumericAnswer,
     normalizeChallengeProgress: normalizeChallengeProgress,
     challengeProgressCount: challengeProgressCount,
+    isValidTileKey: isValidTileKey,
+    countValidTiles: countValidTiles,
     challengeIds: Object.freeze(AREA_CHALLENGE_IDS.slice())
   });
 
@@ -194,12 +217,12 @@
         page: '#0f172a', panel: '#172033', panelAlt: '#111827', text: '#f8fafc',
         muted: '#cbd5e1', border: '#475569', soft: '#1e293b', teal: '#2dd4bf',
         tealDark: '#99f6e4', blue: '#60a5fa', amber: '#fbbf24', red: '#f87171',
-        green: '#4ade80', tile: '#0f766e', tileSoft: '#134e4a', onTeal: '#0f172a'
+        green: '#4ade80', tile: '#2dd4bf', tileSoft: '#134e4a', onTeal: '#0f172a'
       } : {
         page: '#f8fafc', panel: '#ffffff', panelAlt: '#f0fdfa', text: '#0f172a',
         muted: '#475569', border: '#cbd5e1', soft: '#e2e8f0', teal: '#0f766e',
         tealDark: '#115e59', blue: '#2563eb', amber: '#b45309', red: '#b91c1c',
-        green: '#15803d', tile: '#14b8a6', tileSoft: '#ccfbf1', onTeal: '#ffffff'
+        green: '#15803d', tile: '#0f766e', tileSoft: '#ccfbf1', onTeal: '#ffffff'
       };
 
       function clamp(value, min, max) {
@@ -247,15 +270,9 @@
       var cutWidth = composite.cutWidth;
       var compositeArea = composite.area;
       var compositePerimeter = composite.perimeter;
-      var validRevealed = Object.keys(revealedTiles).filter(function(key) {
-        var bits = key.split('-');
-        return Number(bits[0]) < width && Number(bits[1]) < height;
-      }).length;
+      var validRevealed = countValidTiles(revealedTiles, width, height);
       var focusedTile = typeof state.focusedTile === 'string' ? state.focusedTile : '0-0';
-      var focusedBits = focusedTile.split('-');
-      if (focusedBits.length !== 2 || Number(focusedBits[0]) < 0 || Number(focusedBits[0]) >= width || Number(focusedBits[1]) < 0 || Number(focusedBits[1]) >= height) {
-        focusedTile = '0-0';
-      }
+      if (!isValidTileKey(focusedTile, width, height)) focusedTile = '0-0';
 
       var MODES = [
         { id: 'explore', icon: '\uD83E\uDDF1', label: 'Tile Explorer', short: 'Tile' },
@@ -299,6 +316,8 @@
           onClick: onClick,
           disabled: disabled,
           'aria-pressed': options.pressed == null ? undefined : !!options.pressed,
+          'aria-expanded': options.expanded == null ? undefined : !!options.expanded,
+          'aria-controls': options.controls,
           'aria-label': options.ariaLabel,
           className: 'rounded-xl border font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500',
           style: Object.assign({
@@ -401,9 +420,9 @@
 
       function toggleTile(column, row) {
         var key = column + '-' + row;
-        var nextTiles = Object.assign({}, revealedTiles);
+        var nextTiles = validTileMap(revealedTiles, width, height);
         if (nextTiles[key]) delete nextTiles[key]; else nextTiles[key] = true;
-        var count = Object.keys(nextTiles).length;
+        var count = countValidTiles(nextTiles, width, height);
         patch({ revealedTiles: nextTiles, revealedBest: Math.max(state.revealedBest || 0, count) });
         speak((nextTiles[key] ? 'Revealed' : 'Hid') + ' unit square at column ' + (column + 1) + ', row ' + (row + 1) + '. ' + count + ' of ' + area + ' revealed.');
       }
@@ -811,18 +830,22 @@
           { id: 'stretch', label: 'Stretch' }
         ];
         var visibleIndexes = CHALLENGES.map(function(item, index) { return item.difficulty === difficulty || difficulty === 'all' ? index : -1; }).filter(function(index) { return index >= 0; });
-        if (visibleIndexes.indexOf(challengeIndex) < 0) challengeIndex = visibleIndexes[0];
+        var challengeSubstituted = visibleIndexes.indexOf(challengeIndex) < 0;
+        if (challengeSubstituted) challengeIndex = visibleIndexes[0];
         var challenge = CHALLENGES[challengeIndex];
         var challengePosition = visibleIndexes.indexOf(challengeIndex);
         var feedback = state.feedback;
+        if (feedback && feedback.challengeId !== challenge.id) feedback = null;
         var solvedMap = normalizeChallengeProgress(state.solvedChallenges);
         var missedMap = normalizeChallengeProgress(state.missedChallenges);
         var challengeSolved = !!solvedMap[challenge.id];
         var submitLocked = challengeSolved;
-        var displayedAnswer = challengeSolved ? String(challenge.answer) : answer;
+        var challengeAnswer = challengeSubstituted ? '' : answer;
+        var displayedAnswer = challengeSolved ? String(challenge.answer) : challengeAnswer;
+        var showHint = !challengeSubstituted && !!state.showHint;
         var missedIndexes = CHALLENGES.map(function(item, index) { return missedMap[item.id] && !solvedMap[item.id] ? index : -1; }).filter(function(index) { return index >= 0; });
         var missedCount = missedIndexes.length;
-        if (challengeSolved && !feedback) feedback = { correct: true, text: 'Solved previously. ' + challenge.explanation };
+        if (challengeSolved && !feedback) feedback = { correct: true, challengeId: challenge.id, text: 'Solved previously. ' + challenge.explanation };
 
         function selectChallenge(nextIndex, nextDifficulty, message) {
           var nextChallenge = CHALLENGES[nextIndex];
@@ -856,14 +879,14 @@
         function submit(event) {
           if (event && typeof event.preventDefault === 'function') event.preventDefault();
           if (submitLocked) return;
-          var numeric = Number(answer);
-          if (answer.trim() === '' || !isFinite(numeric)) {
-            patch({ feedback: { correct: false, text: 'Enter a number before checking.' } });
+          var numeric = Number(challengeAnswer);
+          if (challengeAnswer.trim() === '' || !isFinite(numeric)) {
+            patch({ feedback: { correct: false, challengeId: challenge.id, text: 'Enter a number before checking.' } });
             return;
           }
-          var correct = isCorrectNumericAnswer(answer, challenge.answer);
+          submitLocked = true;
+          var correct = isCorrectNumericAnswer(challengeAnswer, challenge.answer);
           if (correct) {
-            submitLocked = true;
             var firstSolve = !solvedMap[challenge.id];
             patch(function(current) {
               var nextSolved = normalizeChallengeProgress(current.solvedChallenges);
@@ -878,7 +901,7 @@
                 missedChallenges: nextMissed,
                 streak: nextStreak,
                 bestStreak: Math.max(current.bestStreak || 0, nextStreak),
-                feedback: { correct: true, text: 'Correct! ' + challenge.explanation }
+                feedback: { correct: true, challengeId: challenge.id, text: 'Correct! ' + challenge.explanation }
               };
             });
             if (firstSolve) {
@@ -890,7 +913,7 @@
               var currentScore = current.score || { correct: 0, attempts: 0 };
               var nextMissed = normalizeChallengeProgress(current.missedChallenges);
               nextMissed[challenge.id] = true;
-              return { score: { correct: challengeProgressCount(current.solvedChallenges), attempts: (currentScore.attempts || 0) + 1 }, missedChallenges: nextMissed, streak: 0, feedback: { correct: false, text: 'Not yet. This challenge is saved for retry. Check whether the problem asks for inside space, outside distance, or a missing side.' } };
+              return { score: { correct: challengeProgressCount(current.solvedChallenges), attempts: (currentScore.attempts || 0) + 1 }, missedChallenges: nextMissed, streak: 0, feedback: { correct: false, challengeId: challenge.id, text: 'Not yet. This challenge is saved for retry. Check whether the problem asks for inside space, outside distance, or a missing side.' } };
             });
           }
         }
@@ -911,22 +934,23 @@
             h('div', { key: 'difficulty', role: 'group', 'aria-label': 'Challenge practice focus', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' } }, difficultyOptions.map(function(item) {
               return actionButton(item.label, function() { setDifficulty(item.id); }, { key: 'difficulty-' + item.id, compact: true, pressed: difficulty === item.id, primary: difficulty === item.id });
             })),
-            h('p', { key: 'prompt', style: { color: COLORS.text, fontSize: '1.08rem', lineHeight: 1.55, fontWeight: 650, margin: '18px 0 8px' } }, challenge.prompt),
+            h('p', { key: 'prompt', id: 'ap-challenge-prompt', style: { color: COLORS.text, fontSize: '1.08rem', lineHeight: 1.55, fontWeight: 650, margin: '18px 0 8px' } }, challenge.prompt),
             challengeSvg(challenge),
             h('form', { key: 'form', onSubmit: submit, style: { display: 'flex', gap: '9px', alignItems: 'flex-end', flexWrap: 'wrap', marginTop: '8px' } }, [
               h('label', { key: 'label', htmlFor: 'ap-answer', style: { color: COLORS.text, fontWeight: 800, flex: '1 1 210px' } }, [
                 h('span', { key: 'text', style: { display: 'block', marginBottom: '6px' } }, 'Your answer (' + challenge.unit + ')'),
                 h('input', {
                   key: 'input', id: 'ap-answer', type: 'number', inputMode: 'decimal', value: displayedAnswer, disabled: challengeSolved,
-                  onChange: function(event) { patch({ answer: event.target.value, feedback: null }); },
+                  onChange: function(event) { patch({ challengeId: challenge.id, challengeIndex: challengeIndex, answer: event.target.value, feedback: null }); },
                   style: { width: '100%', boxSizing: 'border-box', padding: '11px 12px', borderRadius: '10px', border: '2px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.text, fontSize: '1rem' },
-                  'aria-describedby': feedback ? 'ap-feedback' : undefined
+                  'aria-invalid': !!(feedback && !feedback.correct),
+                  'aria-describedby': 'ap-challenge-prompt' + (feedback ? ' ap-feedback' : '')
                 })
               ]),
               actionButton(challengeSolved ? 'Solved' : 'Check answer', null, { type: 'submit', primary: true, disabled: challengeSolved }),
-              actionButton(state.showHint ? 'Hide hint' : 'Show hint', function() { patch({ showHint: !state.showHint }); }, {})
+              actionButton(showHint ? 'Hide hint' : 'Show hint', function() { patch({ challengeId: challenge.id, challengeIndex: challengeIndex, showHint: !showHint }); }, { expanded: showHint, controls: 'ap-challenge-hint' })
             ]),
-            state.showHint ? h('p', { key: 'hint', style: { padding: '12px', borderRadius: '10px', background: isDark ? '#422006' : '#fffbeb', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? '#a16207' : '#fcd34d') } }, challenge.kind === 'composite' ? 'Find the whole rectangle, then subtract the missing corner.' : challenge.find.indexOf('Perimeter') >= 0 ? 'Trace the entire outside boundary and add every side.' : challenge.find.indexOf('Missing') >= 0 || challenge.find.indexOf('Side') >= 0 ? 'Work backward from the area or perimeter formula.' : 'Area counts square units inside; perimeter counts unit lengths around.') : null,
+            showHint ? h('p', { key: 'hint', id: 'ap-challenge-hint', style: { padding: '12px', borderRadius: '10px', background: isDark ? '#422006' : '#fffbeb', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? '#a16207' : '#fcd34d') } }, challenge.kind === 'composite' ? 'Find the whole rectangle, then subtract the missing corner.' : challenge.find.indexOf('Perimeter') >= 0 ? 'Trace the entire outside boundary and add every side.' : challenge.find.indexOf('Missing') >= 0 || challenge.find.indexOf('Side') >= 0 ? 'Work backward from the area or perimeter formula.' : 'Area counts square units inside; perimeter counts unit lengths around.') : null,
             feedback ? h('div', {
               key: 'feedback', id: 'ap-feedback', role: 'status', 'aria-live': 'polite',
               style: { marginTop: '12px', padding: '13px', borderRadius: '11px', border: '1px solid ' + (feedback.correct ? COLORS.green : COLORS.red), background: feedback.correct ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2'), color: feedback.correct ? (isDark ? '#bbf7d0' : '#166534') : (isDark ? '#fecaca' : '#991b1b'), fontWeight: 700 }

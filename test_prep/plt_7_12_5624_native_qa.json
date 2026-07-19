@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T05:50:11.666Z",
+  "generatedAt": "2026-07-19T17:49:14.298Z",
   "packId": "praxis-plt-grades-7-12-5624",
   "standard": {
     "label": "AlloFlow PLT Grades 7–12 5624 source, structure, feedback, case-practice, linkage, and grade-band QA v2",
@@ -79,7 +79,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
-    "learningLibrarySha256": "de650307d654bb23f09d08469ac1a2e42fde02f1b50e5cf43efa430bf4ad0e01",
+    "learningLibrarySha256": "2b19cfafd5bee565560c02211ab8631304da91a3cf202a4f6ef4a4cb4ba461ac",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

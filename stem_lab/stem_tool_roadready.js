@@ -1512,6 +1512,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   // A modest crown drains water toward both shoulders. Divided highways use
   // a slightly gentler cross-slope, with the median as the shared high point.
+  // Return the crossing point when a movement segment intersects a finite
+  // feature laid perpendicular to a road's local tangent (speed bump, gate,
+  // stop bar). Coordinates and heading use the simulation grid's X/Y plane.
+  function crossedFiniteRoadFeature(previousX, previousY, nextX, nextY, feature) {
+    var source = feature || {};
+    var heading = Number(source.heading) || 0;
+    var centerX = Number(source.centerX != null ? source.centerX : source.gridX) || 0;
+    var centerY = Number(source.centerY != null ? source.centerY : source.gridY) || 0;
+    var halfWidth = Math.max(0, Number(source.halfWidth) || 0);
+    var tangentX = Math.sin(heading), tangentY = Math.cos(heading);
+    var perpX = Math.cos(heading), perpY = -Math.sin(heading);
+    var prevDx = previousX - centerX, prevDy = previousY - centerY;
+    var nextDx = nextX - centerX, nextDy = nextY - centerY;
+    var prevLong = prevDx * tangentX + prevDy * tangentY;
+    var nextLong = nextDx * tangentX + nextDy * tangentY;
+    var longitudinalDelta = nextLong - prevLong;
+    if (Math.abs(longitudinalDelta) < 1e-9 || prevLong * nextLong > 0) return null;
+    var progress = -prevLong / longitudinalDelta;
+    if (progress < 0 || progress > 1) return null;
+    var hitX = previousX + (nextX - previousX) * progress;
+    var hitY = previousY + (nextY - previousY) * progress;
+    var lateral = (hitX - centerX) * perpX + (hitY - centerY) * perpY;
+    if (Math.abs(lateral) > halfWidth) return null;
+    return { progress: progress, lateral: lateral, x: hitX, y: hitY };
+  }
+
+  function railroadCrossingState(simTime, cycleOffset) {
+    var cycleLength = 40;
+    var absolute = Math.max(0, Number(simTime) || 0) + (Number(cycleOffset) || 0);
+    var cycle = Math.floor(absolute / cycleLength);
+    var phase = ((absolute % cycleLength) + cycleLength) % cycleLength;
+    var gateProgress = 0;
+    if (phase >= 20 && phase < 23) gateProgress = (phase - 20) / 3;
+    else if (phase >= 23 && phase < 31) gateProgress = 1;
+    else if (phase >= 31 && phase < 34) gateProgress = 1 - (phase - 31) / 3;
+    var trainProgress = phase >= 22 && phase <= 32 ? (phase - 22) / 10 : null;
+    return { phase: phase, cycle: cycle, stopRequired: phase >= 20 && phase < 34,
+      occupied: phase >= 22 && phase <= 32, gateProgress: Math.max(0, Math.min(1, gateProgress)),
+      trainProgress: trainProgress == null ? null : Math.max(0, Math.min(1, trainProgress)) };
+  }
+
   function roadCrownHeight(lateralOffset, profileOrChunk, halfWidthOverride) {
     var source = profileOrChunk || {};
     var halfWidth = Number(halfWidthOverride);
@@ -5124,7 +5165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // a residential speed bump. `intensity` scales the damped sine shake
       // applied to camera.position.y; `startTime` anchors the decay. The
       // render camera pass reads this each frame and decays it over ~0.4 s.
-      var bumpShakeRef = useRef({ intensity: 0, startTime: 0, lastBumpIdx: -1 });
+      var bumpShakeRef = useRef({ intensity: 0, startTime: 0, lastBumpId: null });
       var eventToastRef = useRef({ msg: null, until: 0 });
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
@@ -7412,18 +7453,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (Math.abs(car.speed) < 1) return; // Crawling? no jolt.
             for (var bi = 0; bi < bumps.length; bi++) {
               var sb = bumps[bi];
-              var prevDelta = car.y - sb.gridY;
-              var newDelta = newY - sb.gridY;
-              // Sign flipped = crossed the bump's Y line this frame
-              if ((prevDelta >= 0) === (newDelta >= 0)) continue;
-              // Within the bump's lateral extent?
-              var latDx = Math.abs(((newX + car.x) * 0.5) - sb.gridX);
-              if (latDx > (sb.width || 4.5) * 0.5) continue;
-              if (bumpShakeRef.current.lastBumpIdx === bi && (timeRef.current - bumpShakeRef.current.startTime) < 0.6) continue;
+              var bumpHit = crossedFiniteRoadFeature(car.x, car.y, newX, newY, sb);
+              if (!bumpHit) continue;
+              var bumpId = sb.chunkIdx != null ? sb.chunkIdx : bi;
+              if (bumpShakeRef.current.lastBumpId === bumpId &&
+                  (timeRef.current - bumpShakeRef.current.startTime) < 0.6) continue;
               var jSpeedFactor = Math.min(1, Math.abs(car.speed) / 8);
               bumpShakeRef.current.intensity = 0.22 + 0.28 * jSpeedFactor;
               bumpShakeRef.current.startTime = timeRef.current;
-              bumpShakeRef.current.lastBumpIdx = bi;
+              bumpShakeRef.current.lastBumpId = bumpId;
               if (typeof playThump === 'function') {
                 try { playThump(Math.min(10, Math.abs(car.speed) * 0.7 + 2)); } catch (e) {}
               }
@@ -7435,6 +7473,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 eventToastRef.current = { msg: '🐢 Speed bump — ease off the gas next time.', until: timeRef.current + 2.5 };
                 bumpShakeRef.current._tipped = true;
                 setTimeout(function() { if (bumpShakeRef.current) bumpShakeRef.current._tipped = false; }, 12000);
+              }
+              break;
+            }
+          })();
+          // Active railroad gates are physical controls. Select the stop bar on
+          // the vehicle's approach side in the road-local frame, then block and
+          // penalize any swept crossing while the warning system is active.
+          (function() {
+            var rrWorld = infiniteWorldRef.current;
+            var crossings = rrWorld && rrWorld._railroadCrossings;
+            if (!crossings || !crossings.length) return;
+            for (var rci = 0; rci < crossings.length; rci++) {
+              var crossing = crossings[rci];
+              var rrState = railroadCrossingState(timeRef.current, crossing.cycleOffset);
+              if (!rrState.stopRequired) continue;
+              var tanX = Math.sin(crossing.heading || 0), tanY = Math.cos(crossing.heading || 0);
+              var prevLong = (car.x - crossing.centerX) * tanX + (car.y - crossing.centerY) * tanY;
+              var approachSign = prevLong < 0 ? -1 : 1;
+              var stopFeature = { centerX: crossing.centerX + approachSign * 2.2 * tanX,
+                centerY: crossing.centerY + approachSign * 2.2 * tanY,
+                heading: crossing.heading, halfWidth: crossing.halfWidth };
+              if (!crossedFiniteRoadFeature(car.x, car.y, newX, newY, stopFeature)) continue;
+              newX = car.x; newY = car.y; car.speed = 0;
+              if (crossing._lastPlayerViolationCycle !== rrState.cycle) {
+                crossing._lastPlayerViolationCycle = rrState.cycle;
+                statsRef.current.safetyScore = Math.max(0, statsRef.current.safetyScore - 25);
+                statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+                addToast('RAILROAD GATE VIOLATION! -25 safety');
+                eventToastRef.current = { msg: 'Stop at the active railroad gate. Never drive around lowered gates.', until: timeRef.current + 4 };
               }
               break;
             }
@@ -8150,6 +8217,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     }
                   }
                 }
+              }
+            });
+            // Active railroad crossings participate in the same distance-aware AI
+            // braking model as red lights. The stop bar is selected on the car's
+            // approach side of the track and projected through the curved-road frame.
+            var rrControls = infiniteWorldRef.current && infiniteWorldRef.current._railroadCrossings;
+            if (!t.crossStreet && rrControls) rrControls.forEach(function(rrControl) {
+              var rrControlState = railroadCrossingState(timeRef.current, rrControl.cycleOffset);
+              if (!rrControlState.stopRequired) return;
+              var rrTanX = Math.sin(rrControl.heading || 0), rrTanY = Math.cos(rrControl.heading || 0);
+              var rrLong = (t.x - rrControl.centerX) * rrTanX + (t.y - rrControl.centerY) * rrTanY;
+              var rrApproachSign = rrLong < 0 ? -1 : 1;
+              var rrStopX = rrControl.centerX + rrApproachSign * 2.2 * rrTanX;
+              var rrStopY = rrControl.centerY + rrApproachSign * 2.2 * rrTanY;
+              var rrAhead = aheadOf(rrStopX, rrStopY).ahead;
+              if (rrAhead > 0 && rrAhead < signalDetectRange) {
+                slowFor = Math.max(slowFor, 2);
+                if (rrAhead < activeControlDist) { activeControl = rrControl; activeControlDist = rrAhead; }
               }
             });
             // Left-turners wait behind the stop bar for a safe opposing gap even
@@ -13783,6 +13868,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // school-zone signage. Only active during daytime scenarios
           // (real flashers turn off outside school hours — we proxy "school
           // hours" with scn.time === 'day').
+          if (s3.railroadCrossingsByChunk) {
+            Object.keys(s3.railroadCrossingsByChunk).forEach(function(rrKey) {
+              var rrVisual = s3.railroadCrossingsByChunk[rrKey];
+              if (!rrVisual || !rrVisual.crossing) return;
+              var rrState = railroadCrossingState(timeRef.current, rrVisual.crossing.cycleOffset);
+              rrVisual.gates.forEach(function(gate) {
+                gate.rotation.z = (1 - rrState.gateProgress) * Math.PI / 2;
+              });
+              if (rrVisual.train) {
+                rrVisual.train.visible = rrState.trainProgress != null;
+                if (rrState.trainProgress != null) {
+                  var trainLat = -35 + rrState.trainProgress * 70;
+                  rrVisual.train.position.set(rrVisual.centerX + trainLat * rrVisual.perpX,
+                    rrVisual.baseY + 0.08, rrVisual.centerZ + trainLat * rrVisual.perpZ);
+                }
+              }
+            });
+          }
           if (s3.schoolBeaconsByChunk && scn.time !== 'night') {
             var schBlinkOn = Math.floor(timeRef.current * 2.5) % 2;
             Object.keys(s3.schoolBeaconsByChunk).forEach(function(schKey) {
@@ -13865,8 +13968,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Walk up parents: if we ever lose the scene root, mesh was removed
               var n = b.mesh; while (n.parent) n = n.parent;
               if (n !== s3.scene) return false;
-              var lit = (beaconTick === b.phase);
-              b.mesh.material.opacity = lit ? 1.0 : 0.25;
+              var crossingActive = !b.crossing || railroadCrossingState(timeRef.current,
+                b.crossing.cycleOffset).stopRequired;
+              var lit = crossingActive && (beaconTick === b.phase);
+              b.mesh.material.opacity = lit ? 1.0 : (b.crossing ? 0.16 : 0.25);
               // Per-beacon colors (amber default; railroad crossbucks push red).
               b.mesh.material.color.setHex(lit ? (b.onColor || 0xffd900) : (b.offColor || 0x8a6a00));
               return true;
@@ -18119,45 +18224,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var rrPerpZ = -Math.sin(rrHd);
                 var rrTanX = Math.sin(rrHd);
                 var rrTanZ = Math.cos(rrHd);
+                iw._railroadCrossings = iw._railroadCrossings || [];
+                var rrCrossingRecord = null;
+                for (var rrci = 0; rrci < iw._railroadCrossings.length; rrci++) {
+                  if (iw._railroadCrossings[rrci].chunkIdx === ci) { rrCrossingRecord = iw._railroadCrossings[rrci]; break; }
+                }
+                if (!rrCrossingRecord) {
+                  rrCrossingRecord = { chunkIdx: ci, centerX: rrCtr + MAP_SIZE / 2,
+                    centerY: ci * CHUNK_SIZE + CHUNK_SIZE * 0.6, heading: rrHd,
+                    halfWidth: Math.max(0.5, roadHalfW - 0.3), cycleOffset: ((ci * 7) % 40 + 40) % 40 };
+                  iw._railroadCrossings.push(rrCrossingRecord);
+                }
                 // ── Ballast bed (dark gray gravel) spanning the road + shoulders ──
+                var rrSurfaceHeightAt = function(lateralOffset, forwardOffset) {
+                  var rrWorldX = rrCtr + lateralOffset * rrPerpX + forwardOffset * rrTanX;
+                  var rrWorldZ = rrZ + lateralOffset * rrPerpZ + forwardOffset * rrTanZ;
+                  return roadSurfacePoseAt(iw, rrWorldX + MAP_SIZE / 2, rrWorldZ + MAP_SIZE / 2).height;
+                };
+                // Segment long cross-road features so they follow crown and bank.
+                var addRailroadStrip = function(material, forwardOffset, stripDepth, lateralSpan, lift) {
+                  var stripCount = Math.max(3, Math.ceil(lateralSpan / 1.0));
+                  var stripSegment = lateralSpan / stripCount;
+                  for (var rsi = 0; rsi < stripCount; rsi++) {
+                    var stripLat = -lateralSpan / 2 + stripSegment * (rsi + 0.5);
+                    var strip = new T.Mesh(new T.PlaneGeometry(stripSegment + 0.025, stripDepth), material);
+                    strip.rotation.x = -Math.PI / 2;
+                    strip.rotation.z = rrHd;
+                    strip.position.set(rrCtr + stripLat * rrPerpX + forwardOffset * rrTanX,
+                      rrSurfaceHeightAt(stripLat, forwardOffset) + lift,
+                      rrZ + stripLat * rrPerpZ + forwardOffset * rrTanZ);
+                    chunkGroup.add(strip);
+                  }
+                };
+                var rrLateralSpan = roadHalfW * 2 + 3;
                 var ballastMat = new T.MeshBasicMaterial({ color: 0x423832 });
-                var ballast = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 + 3, 3.2), ballastMat);
-                ballast.rotation.x = -Math.PI / 2;
-                ballast.rotation.z = rrHd;
-                ballast.position.set(rrCtr, rrHt + 0.009, rrZ);
-                chunkGroup.add(ballast);
-                // ── Wood ties (crossties) — 14 parallel brown rectangles ──
+                addRailroadStrip(ballastMat, 0, 3.2, rrLateralSpan, 0.009);
+                // Rails travel across the roadway; ties run perpendicular to them.
                 var tieMat = new T.MeshBasicMaterial({ color: 0x4a321a });
                 var tieCount = 14;
-                var tieSpanZ = 3.0;
-                var tieStepZ = tieSpanZ / tieCount;
+                var tieStep = rrLateralSpan / tieCount;
                 for (var tti = 0; tti < tieCount; tti++) {
-                  var tieFwd = -tieSpanZ / 2 + tti * tieStepZ + tieStepZ / 2;
-                  var tie = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 + 2.4, tieStepZ * 0.65), tieMat);
+                  var tieLat = -rrLateralSpan / 2 + tieStep * (tti + 0.5);
+                  var tie = new T.Mesh(new T.PlaneGeometry(tieStep * 0.62, 2.7), tieMat);
                   tie.rotation.x = -Math.PI / 2;
                   tie.rotation.z = rrHd;
-                  tie.position.set(rrCtr + tieFwd * rrTanX, rrHt + 0.011, rrZ + tieFwd * rrTanZ);
+                  tie.position.set(rrCtr + tieLat * rrPerpX,
+                    rrSurfaceHeightAt(tieLat, 0) + 0.011, rrZ + tieLat * rrPerpZ);
                   chunkGroup.add(tie);
                 }
-                // ── Two steel rails running perpendicular to the road (along Z axis) ──
                 var railMat = new T.MeshBasicMaterial({ color: 0x9aa0a8 });
-                [-0.7, 0.7].forEach(function(railXOff) {
-                  var rail = new T.Mesh(new T.PlaneGeometry(0.10, 3.2), railMat);
-                  rail.rotation.x = -Math.PI / 2;
-                  rail.rotation.z = rrHd;
-                  rail.position.set(rrCtr + railXOff * rrPerpX, rrHt + 0.013, rrZ + railXOff * rrPerpZ);
-                  chunkGroup.add(rail);
+                [-0.72, 0.72].forEach(function(railForwardOff) {
+                  addRailroadStrip(railMat, railForwardOff, 0.10, rrLateralSpan, 0.014);
                 });
-                // ── White stop line painted BEFORE the tracks (both approach directions) ──
                 var rrStopMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
                 [-2.2, 2.2].forEach(function(stopOff) {
-                  var rrStop = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 * 0.95, 0.3), rrStopMat);
-                  rrStop.rotation.x = -Math.PI / 2;
-                  rrStop.rotation.z = rrHd;
-                  rrStop.position.set(rrCtr + stopOff * rrTanX, rrHt + 0.014, rrZ + stopOff * rrTanZ);
-                  chunkGroup.add(rrStop);
+                  addRailroadStrip(rrStopMat, stopOff, 0.3, roadHalfW * 2 * 0.95, 0.015);
                 });
-                // ── Big painted "RR" on the road, both directions ──
                 try {
                   if (!iw._rrPaintTex) {
                     var rrCan = document.createElement('canvas');
@@ -18182,7 +18304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var paintLat = approachSide * 0.7;       // lateral offset (across road)
                     rrPaint.position.set(
                       rrCtr + paintLat * rrPerpX + paintOff * rrTanX,
-                      rrHt + 0.0125,
+                      rrSurfaceHeightAt(paintLat, paintOff) + 0.0125,
                       rrZ + paintLat * rrPerpZ + paintOff * rrTanZ
                     );
                     chunkGroup.add(rrPaint);
@@ -18192,13 +18314,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // The pole sits on the road shoulder offset to the side; each shoulder
                 // position projects through the perpendicular basis so on curves the
                 // crossbucks stay at the actual road edges.
+                s3.railroadCrossingsByChunk = s3.railroadCrossingsByChunk || {};
+                var rrVisual = { crossing: rrCrossingRecord, gates: [], lamps: [], train: null,
+                  centerX: rrCtr, centerZ: rrZ, baseY: rrSurfaceHeightAt(0, 0),
+                  perpX: rrPerpX, perpZ: rrPerpZ };
+                s3.railroadCrossingsByChunk[ci] = rrVisual;
                 [-1, 1].forEach(function(cbSide) {
                   var cbLat = cbSide * (roadHalfW + 0.9);
                   var cbWorldX = rrCtr + cbLat * rrPerpX;
                   var cbWorldZ = rrZ + cbLat * rrPerpZ;
+                  var cbGroundHt = rrSurfaceHeightAt(cbLat, 0);
+                  // Counterweighted gate arm pivots from each shoulder toward
+                  // the centerline. The animation rotates this group from vertical
+                  // (clear) to horizontal (stop) using the shared crossing state.
+                  var gateLength = roadHalfW + 0.5;
+                  var rrGatePivot = new T.Group();
+                  rrGatePivot.position.set(cbWorldX, cbGroundHt + 1.05, cbWorldZ);
+                  rrGatePivot.rotation.order = 'ZYX';
+                  rrGatePivot.rotation.y = rrHd + (cbSide > 0 ? Math.PI : 0);
+                  rrGatePivot.rotation.z = Math.PI / 2;
+                  var rrGateArm = new T.Mesh(new T.BoxGeometry(gateLength, 0.12, 0.12),
+                    new T.MeshBasicMaterial({ color: 0xf8fafc }));
+                  rrGateArm.position.x = gateLength * 0.5;
+                  rrGatePivot.add(rrGateArm);
+                  for (var gateBand = 0; gateBand < 3; gateBand++) {
+                    var rrGateBand = new T.Mesh(new T.BoxGeometry(0.42, 0.135, 0.135),
+                      new T.MeshBasicMaterial({ color: 0xdc2626 }));
+                    rrGateBand.position.x = 0.65 + gateBand * Math.max(0.55, (gateLength - 1.1) / 3);
+                    rrGatePivot.add(rrGateBand);
+                  }
+                  chunkGroup.add(rrGatePivot);
+                  rrVisual.gates.push(rrGatePivot);
                   // Pole
                   var cbPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 4.0, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
-                  cbPole.position.set(cbWorldX, rrHt + 2.0, cbWorldZ);
+                  cbPole.position.set(cbWorldX, cbGroundHt + 2.0, cbWorldZ);
                   chunkGroup.add(cbPole);
                   // Crossbuck: two white boards in an X shape at ~45°. The boards rotate
                   // around Z (in their own frame) for the X shape, plus around Y by -rrHd
@@ -18209,7 +18358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     cb.rotation.order = 'YZX';
                     cb.rotation.y = -rrHd;
                     cb.rotation.z = diag * Math.PI / 4;
-                    cb.position.set(cbWorldX, rrHt + 3.5, cbWorldZ);
+                    cb.position.set(cbWorldX, cbGroundHt + 3.5, cbWorldZ);
                     chunkGroup.add(cb);
                   });
                   // Twin red warning lamps below the crossbuck. The 0.35 lampOff is a
@@ -18224,18 +18373,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var cbLamp = new T.Mesh(new T.SphereGeometry(0.14, 10, 10), cbLampMat);
                     cbLamp.position.set(
                       cbWorldX + lampOff * rrPerpX,
-                      rrHt + 2.8,
+                      cbGroundHt + 2.8,
                       cbWorldZ + lampOff * rrPerpZ
                     );
                     chunkGroup.add(cbLamp);
-                    s3.flashingBeacons.push({ mesh: cbLamp, phase: cbIdx % 2, onColor: 0xff2020, offColor: 0x3a0000 });
+                    var rrLampEntry = { mesh: cbLamp, phase: cbIdx % 2, onColor: 0xff2020,
+                      offColor: 0x3a0000, crossing: rrCrossingRecord };
+                    s3.flashingBeacons.push(rrLampEntry);
+                    rrVisual.lamps.push(rrLampEntry);
                   });
                   // Small "RR XING" placard below the lamps. Box geometry rotates around
                   // Y so its face stays perpendicular to the road tangent.
                   var rrPlacard = new T.Mesh(new T.BoxGeometry(0.7, 0.3, 0.02), new T.MeshBasicMaterial({ color: 0xfffbeb }));
                   rrPlacard.rotation.y = -rrHd;
-                  rrPlacard.position.set(cbWorldX, rrHt + 2.35, cbWorldZ);
+                  rrPlacard.position.set(cbWorldX, cbGroundHt + 2.35, cbWorldZ);
                   chunkGroup.add(rrPlacard);
+                  if (cbSide > 0 && !rrVisual.train) {
+                    var rrTrain = new T.Group();
+                    rrTrain.rotation.y = rrHd;
+                    var engine = new T.Mesh(new T.BoxGeometry(5.2, 1.6, 1.7),
+                      new T.MeshLambertMaterial({ color: 0x1f4f78 }));
+                    engine.position.y = 0.9; rrTrain.add(engine);
+                    var cab = new T.Mesh(new T.BoxGeometry(1.6, 1.0, 1.55),
+                      new T.MeshLambertMaterial({ color: 0xf59e0b }));
+                    cab.position.set(1.25, 1.9, 0); rrTrain.add(cab);
+                    [-5.2, -10.4].forEach(function(carOff, trainCarIdx) {
+                      var freight = new T.Mesh(new T.BoxGeometry(4.7, 1.7, 1.65),
+                        new T.MeshLambertMaterial({ color: trainCarIdx ? 0x7c3f24 : 0x3f6b42 }));
+                      freight.position.set(carOff, 0.95, 0); rrTrain.add(freight);
+                    });
+                    rrTrain.visible = false;
+                    chunkGroup.add(rrTrain);
+                    rrVisual.train = rrTrain;
+                  }
                 });
               }
               // ── Shoulder rumble strips: short dark dashes just OUTSIDE each edge line ──
@@ -18756,7 +18926,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (chunk.biome === 'residential' && !chunk.hasIntersection && (ci % 2 === 1)) {
                   var bumpZ = chunkWorldZ + CHUNK_SIZE * 0.35;
                   var bumpCtrX = markCenterAtZ(bumpZ);
-                  var bumpHt = iw.spline ? iw.spline.heightAt(bumpZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var bumpGridY = ci * CHUNK_SIZE + CHUNK_SIZE * 0.35;
+                  var bumpGridX = iw.spline ? iw.spline.centerAt(bumpGridY) : MAP_SIZE / 2 + bumpCtrX;
+                  var bumpHeading = iw.spline ? iw.spline.headingAt(bumpGridY) : 0;
                   // Register bump in the world-shared list so the physics loop
                   // can detect when the player crosses it and trigger the
                   // camera jolt + thump sound. Deduped by chunk index so
@@ -18768,11 +18940,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // is `ci * CHUNK_SIZE + CHUNK_SIZE * 0.35`.
                     iw._speedBumps.push({
                       chunkIdx: ci,
-                      gridY: ci * CHUNK_SIZE + CHUNK_SIZE * 0.35,
-                      // Grid X = MAP_SIZE/2 + bumpCtrX (inverse of the world
-                      // transform `x - MAP_SIZE / 2`).
-                      gridX: MAP_SIZE / 2 + bumpCtrX,
-                      width: roadHalfW,
+                      centerY: bumpGridY,
+                      centerX: bumpGridX,
+                      heading: bumpHeading,
+                      halfWidth: Math.max(0.5, roadHalfW - 0.3),
                     });
                   }
                   // Painted yellow chevron band — two rows of triangular
@@ -18787,7 +18958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // lateral offset (chvI * 0.85) projects through the perpendicular
                     // basis at the bump Z; the chevron geometry is rotated to point
                     // along the tangent.
-                    var bumpHd = iw.spline ? iw.spline.headingAt(bumpZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                    var bumpHd = bumpHeading;
                     var bumpPerpX = Math.cos(bumpHd);
                     var bumpPerpZ = -Math.sin(bumpHd);
                     var bumpTanX = Math.sin(bumpHd);
@@ -18805,10 +18976,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var chv = new T.Mesh(chvGeo, chevronMat);
                       chv.rotation.y = -bumpHd;
                       var chvLat = chvI * 0.85;
+                      var chvWorldZ = bumpZ + chvLat * bumpPerpZ + chevZOff * bumpTanZ;
                       chv.position.set(
                         bumpCtrX + chvLat * bumpPerpX + chevZOff * bumpTanX,
-                        bumpHt + 0.014,
-                        bumpZ + chvLat * bumpPerpZ + chevZOff * bumpTanZ
+                        markRoadSurfaceHeightAt(chvWorldZ, chvLat) + 0.014,
+                        chvWorldZ
                       );
                       chunkGroup.add(chv);
                     }
@@ -18820,18 +18992,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // in world Z very short (0.6m) so driving over it reads
                   // as a brief jolt rather than a ramp.
                   var slabMat = new T.MeshLambertMaterial({ color: 0x4a2f1b });
-                  var slabGeo = new T.CylinderGeometry(0.18, 0.18, roadHalfW * 2 - 0.6, 8, 1, false, 0, Math.PI);
-                  var slab = new T.Mesh(slabGeo, slabMat);
-                  // CylinderGeometry's axis is +Y by default. Lay it along the
-                  // road perpendicular direction: rotate.z = π/2 puts the cylinder
-                  // along world +X, then rotation.y = -bumpHd swings it onto the
-                  // road's perpendicular axis on curves.
-                  var slabBumpHd = iw.spline ? iw.spline.headingAt(bumpZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  slab.rotation.order = 'YZX';
-                  slab.rotation.y = -slabBumpHd;
-                  slab.rotation.z = Math.PI / 2;
-                  slab.position.set(bumpCtrX, bumpHt + 0.04, bumpZ);
-                  chunkGroup.add(slab);
+                  var slabBumpHd = bumpHeading;
+                  var slabSpan = roadHalfW * 2 - 0.6;
+                  var slabSegmentCount = Math.max(5, Math.ceil(slabSpan / 1.0));
+                  var slabSegmentWidth = slabSpan / slabSegmentCount;
+                  var slabPerpX = Math.cos(slabBumpHd), slabPerpZ = -Math.sin(slabBumpHd);
+                  for (var slabI = 0; slabI < slabSegmentCount; slabI++) {
+                    var slabLat = -slabSpan / 2 + slabSegmentWidth * (slabI + 0.5);
+                    var slabGeo = new T.CylinderGeometry(0.18, 0.18, slabSegmentWidth + 0.025, 8, 1, false, 0, Math.PI);
+                    var slab = new T.Mesh(slabGeo, slabMat);
+                    slab.rotation.order = 'YZX';
+                    slab.rotation.y = -slabBumpHd;
+                    slab.rotation.z = Math.PI / 2;
+                    slab.position.set(bumpCtrX + slabLat * slabPerpX,
+                      markRoadSurfaceHeightAt(bumpZ, slabLat) + 0.04,
+                      bumpZ + slabLat * slabPerpZ);
+                    chunkGroup.add(slab);
+                  }
                   // Yellow stripes painted along the length of the bump for
                   // high visibility at night — three alternating yellow dashes.
                   var bumpStripeMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
@@ -18842,7 +19019,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var bs = new T.Mesh(new T.PlaneGeometry(1.2, 0.18), bumpStripeMat);
                     bs.rotation.x = -Math.PI / 2;
                     bs.rotation.z = slabBumpHd;
-                    bs.position.set(bumpCtrX + bsLat * bsPerpX, bumpHt + 0.08, bumpZ + bsLat * bsPerpZ);
+                    bs.position.set(bumpCtrX + bsLat * bsPerpX,
+                      markRoadSurfaceHeightAt(bumpZ, bsLat) + 0.08, bumpZ + bsLat * bsPerpZ);
                     chunkGroup.add(bs);
                   }
                   // Small "SPEED BUMP" or "SLOW" painted warning 4m before it.
@@ -19745,6 +19923,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (s3.trafficLampsByChunk && s3.trafficLampsByChunk[ki]) {
                   delete s3.trafficLampsByChunk[ki];
                 }
+                if (s3.railroadCrossingsByChunk && s3.railroadCrossingsByChunk[ki]) {
+                  delete s3.railroadCrossingsByChunk[ki];
+                }
                 // School-zone beacon bookkeeping for this chunk. The animator only
                 // prunes this map during DAYTIME frames (its whole block is gated
                 // on scn.time !== 'night'), so night drives accumulated entries.
@@ -19762,6 +19943,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // removed, so long Free Explore drives grew it without bound.
                 if (iw._speedBumps) {
                   iw._speedBumps = iw._speedBumps.filter(function(b) { return b.chunkIdx !== ki; });
+                }
+                if (iw._railroadCrossings) {
+                  iw._railroadCrossings = iw._railroadCrossings.filter(function(c) { return c.chunkIdx !== ki; });
                 }
               }
             });
@@ -31710,6 +31894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       createIntersectionTurnPath: createIntersectionTurnPath, intersectionTurnPoint: intersectionTurnPoint,
       playerControlApproach: playerControlApproach,
       crossStreetCorridorAt: crossStreetCorridorAt,
+      crossedFiniteRoadFeature: crossedFiniteRoadFeature, railroadCrossingState: railroadCrossingState,
       roadCrownHeight: roadCrownHeight,
       roadBankAngleAt: roadBankAngleAt,
       roadSurfacePoseAt: roadSurfacePoseAt, roadsideOffsetFor: roadsideOffsetFor,

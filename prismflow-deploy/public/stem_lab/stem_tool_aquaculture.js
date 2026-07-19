@@ -7605,6 +7605,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var tab = tabHook[0], setTab = tabHook[1];
     var navSearchHook = useState('');
     var navSearch = navSearchHook[0], setNavSearch = navSearchHook[1];
+    var libraryOpenHook = useState(false);
+    var libraryOpen = libraryOpenHook[0], setLibraryOpen = libraryOpenHook[1];
+    var comfortableReadingHook = useState(!!stateInit.comfortableReading);
+    var comfortableReading = comfortableReadingHook[0], setComfortableReading = comfortableReadingHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
@@ -7627,6 +7631,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       s.region = region;
       saveState(s);
     }, [region]);
+    useEffect(function() {
+      var s = loadState();
+      s.comfortableReading = comfortableReading;
+      saveState(s);
+    }, [comfortableReading]);
 
     function pushStatus(ev) {
       setStatus(function(prev) { return (prev || []).concat([ev]).slice(-8); });
@@ -7937,6 +7946,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         });
       }
       var shownMatches = searchMatches.slice(0, 30);
+      var topicSequence = [];
+      TAB_GROUPS.forEach(function(group) {
+        group.tabs.forEach(function(topic) { topicSequence.push({ topic: topic, group: group }); });
+      });
+      var activeTopicIndex = topicSequence.findIndex(function(item) { return item.topic.id === tab; });
+      var previousTopic = activeTopicIndex > 0 ? topicSequence[activeTopicIndex - 1] : null;
+      var nextTopic = activeTopicIndex >= 0 && activeTopicIndex < topicSequence.length - 1 ? topicSequence[activeTopicIndex + 1] : null;
+
+      function moveToTopic(item) {
+        if (!item) return;
+        setTab(item.topic.id);
+        setNavSearch('');
+        setLibraryOpen(false);
+        aqAnnounce(item.topic.label + ' open');
+      }
 
       function topicButton(topic, group, showGroup) {
         var selected = tab === topic.id;
@@ -7945,6 +7969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           onClick: function() {
             setTab(topic.id);
             setNavSearch('');
+            setLibraryOpen(false);
             aqAnnounce(topic.label + ' open');
           },
           style: { minHeight: 44, padding: '9px 11px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
@@ -7959,22 +7984,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         marginBottom: 16, padding: 12, borderRadius: 14, background: '#071f1d',
         border: '1px solid #4f7c76', boxShadow: '0 10px 26px rgba(0,0,0,0.18)'
       } },
-        h('div', { style: { marginBottom: 10 } },
-          h('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.09em' } }, 'Aquaculture Lab'),
-          h('div', { style: { marginTop: 3, fontSize: 14, fontWeight: 800, color: '#f8fafc' } },
-            'Viewing: ', h('span', { style: { color: activeGroup.color } }, activeTopic.label),
-            h('span', { style: { color: '#aebdca', fontWeight: 650 } }, ' · ' + activeGroup.label))),
+        h('div', { className: 'aq-nav-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+          h('div', null,
+            h('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.09em' } }, 'Aquaculture Lab'),
+            h('div', { style: { marginTop: 3, fontSize: 14, fontWeight: 800, color: '#f8fafc' } },
+              'Viewing: ', h('span', { style: { color: activeGroup.color } }, activeTopic.label),
+              h('span', { style: { color: '#aebdca', fontWeight: 650 } }, ' · ' + activeGroup.label))),
+          h('button', { type: 'button', className: 'aq-btn aq-reading-toggle', 'aria-pressed': comfortableReading,
+            onClick: function() {
+              var nextReadingMode = !comfortableReading;
+              setComfortableReading(nextReadingMode);
+              aqAnnounce('Comfortable text ' + (nextReadingMode ? 'on' : 'off'));
+            },
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 800,
+              background: comfortableReading ? '#fbbf24' : '#163f3b', color: comfortableReading ? '#2a1900' : '#f8fafc',
+              border: '1px solid ' + (comfortableReading ? '#fde68a' : '#789b97') } },
+            comfortableReading ? 'Comfortable text: On' : 'Comfortable text')),
         h('div', { className: 'aq-primary-nav', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
           primaryTopics.map(function(topic) {
             var selected = tab === topic.id;
             return h('button', { key: topic.id, type: 'button', className: 'aq-btn',
               'aria-current': selected ? 'page' : undefined,
-              onClick: function() { setTab(topic.id); setNavSearch(''); aqAnnounce(topic.label + ' open'); },
+              onClick: function() { setTab(topic.id); setNavSearch(''); setLibraryOpen(false); aqAnnounce(topic.label + ' open'); },
               style: { minHeight: 40, padding: '8px 13px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 800,
                 background: selected ? '#5eead4' : '#0d302d', color: selected ? '#032522' : '#f1f5f9',
                 border: '1px solid ' + (selected ? '#99f6e4' : '#5c8580') } }, topic.label);
           })),
-        h('details', { style: { borderTop: '1px solid #527a75', paddingTop: 9 } },
+        h('div', { className: 'aq-topic-pager', 'aria-label': 'Topic sequence navigation', style: {
+          display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)', gap: 8,
+          alignItems: 'center', marginBottom: 10, padding: 8, borderRadius: 9,
+          background: '#061a18', border: '1px solid #416c67'
+        } },
+          h('button', { type: 'button', className: 'aq-btn', disabled: !previousTopic,
+            'aria-label': previousTopic ? 'Previous topic: ' + previousTopic.topic.label : 'No previous topic',
+            onClick: function() { moveToTopic(previousTopic); },
+            style: { minHeight: 42, padding: '8px 10px', borderRadius: 7, textAlign: 'left',
+              cursor: previousTopic ? 'pointer' : 'not-allowed', opacity: previousTopic ? 1 : 0.5,
+              background: '#0d302d', color: '#f1f5f9', border: '1px solid #5c8580', fontSize: 12, fontWeight: 750 } },
+            previousTopic ? '← ' + previousTopic.topic.label : 'Start of library'),
+          h('div', { 'aria-live': 'polite', style: { color: '#cbd5e1', fontSize: 11.5, fontWeight: 800, textAlign: 'center', whiteSpace: 'nowrap' } },
+            activeTopicIndex >= 0 ? (activeTopicIndex + 1) + ' of ' + topicSequence.length : ''),
+          h('button', { type: 'button', className: 'aq-btn', disabled: !nextTopic,
+            'aria-label': nextTopic ? 'Next topic: ' + nextTopic.topic.label : 'No next topic',
+            onClick: function() { moveToTopic(nextTopic); },
+            style: { minHeight: 42, padding: '8px 10px', borderRadius: 7, textAlign: 'right',
+              cursor: nextTopic ? 'pointer' : 'not-allowed', opacity: nextTopic ? 1 : 0.5,
+              background: '#0d302d', color: '#f1f5f9', border: '1px solid #5c8580', fontSize: 12, fontWeight: 750 } },
+            nextTopic ? nextTopic.topic.label + ' →' : 'End of library')),
+        h('details', { open: libraryOpen,
+          onToggle: function(event) { setLibraryOpen(event.currentTarget.open); },
+          style: { borderTop: '1px solid #527a75', paddingTop: 9 } },
           h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 11px', borderRadius: 8,
             cursor: 'pointer', color: '#f8fafc', background: '#123a36', border: '1px solid #66928d',
             fontSize: 13, fontWeight: 850, listStylePosition: 'inside' } },
@@ -20378,18 +20437,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Design note: no numeric score, no reveal button, no chip-selection. DO state is shown as a discrete 3-band marker (healthy / stressed / critical), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'));
     }
 
-    return h('div', { className: 'aq-lab-shell', style: {
+    return h('div', { className: 'aq-lab-shell' + (comfortableReading ? ' aq-comfortable-reading' : ''), style: {
       padding: 16, background: '#021816', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
       '--allo-stem-text': '#f8fafc', '--allo-stem-text-soft': '#cbd5e1'
     } },
       h('style', null,
         '.aq-lab-shell{line-height:1.5;overflow-wrap:anywhere;}' +
+        '.aq-comfortable-reading p,.aq-comfortable-reading li,.aq-comfortable-reading td,.aq-comfortable-reading th,.aq-comfortable-reading label{font-size:14px!important;line-height:1.65!important;}' +
+        '.aq-comfortable-reading textarea,.aq-comfortable-reading input:not([type="range"]),.aq-comfortable-reading select{font-size:16px!important;}' +
         '.aq-lab-shell button:focus-visible,.aq-lab-shell input:focus-visible,.aq-lab-shell select:focus-visible,.aq-lab-shell textarea:focus-visible,.aq-lab-shell summary:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;}' +
         '.aq-lab-shell input::placeholder,.aq-lab-shell textarea::placeholder{color:#aebdca;opacity:1;}' +
         '.aq-lab-shell a{color:#7dd3fc;}' +
         '.aq-lab-shell summary,.aq-lab-shell button{touch-action:manipulation;}' +
         '.aq-topic-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}' +
-        '@media(max-width:620px){.aq-lab-shell{padding:10px!important}.aq-topic-nav{padding:10px!important}.aq-primary-nav button{flex:1 1 125px}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}}'),
+        '@media(max-width:620px){.aq-lab-shell{padding:10px!important}.aq-topic-nav{padding:10px!important}.aq-primary-nav button{flex:1 1 125px}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}.aq-topic-pager{grid-template-columns:1fr!important}.aq-topic-pager button{text-align:left!important}.aq-reading-toggle{width:100%}}'),
       tabBar(),
       tab === 'home' ? homeTab() :
       tab === 'sim' ? simTab() :

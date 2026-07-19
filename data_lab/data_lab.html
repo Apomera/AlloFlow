@@ -38,7 +38,7 @@
 <style>
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #4f46e5; --ok: #4ade80; --warn: #fbbf24;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -60,9 +60,10 @@
   form { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line); flex: 0 0 auto; }
   input[type=text] { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
   button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  :where(button, input):focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
   button:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
   button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
-  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; flex: 0 0 auto; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.45; flex: 0 0 auto; }
   .codap { flex: 1 1 auto; min-width: 0; background: #fff; }
   .codap iframe { width: 100%; height: 100%; border: 0; display: block; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .tutor { flex: 0 0 45%; border-right: 0; border-bottom: 1px solid var(--line); } }
@@ -111,6 +112,8 @@
   var pluginWin = null; // the tutor plugin's window (nested inside CODAP) — captured from its alive ping
   var history = [];   // {role:'student'|'tutor', text} — in-memory only
   var pending = {};   // id → {resolve, timer}
+  var openerOrigin = null;
+  var pluginOrigin = null;
 
   function addMsg(cls, text) {
     var div = document.createElement('div');
@@ -150,7 +153,8 @@
   // ── Opener handshake (AI bridge, Video Studio pattern) ──────────────
   function toOpener(payload) {
     try {
-      if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; }
+      var targetOrigin = openerOrigin && openerOrigin !== 'null' ? openerOrigin : '*';
+      if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, targetOrigin); return true; }
     } catch (_) {}
     return false;
   }
@@ -158,19 +162,27 @@
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
+    var fromOpener = !!(window.opener && event.source === window.opener);
     if (data.type === 'allodatalab-ready') {
+      if (!fromOpener) return;
+      openerOrigin = event.origin || openerOrigin;
       openerOk = true;
       aiAvailable = Boolean(data.ai);
       renderAiState();
       return;
     }
     if (data.type === 'allodatalab-plugin-alive') {
+      if (event.origin !== window.location.origin) return;
+      if (pluginWin && event.source !== pluginWin) return;
       pluginAlive = true;
       pluginWin = event.source || pluginWin; // direct line to the plugin, through CODAP's iframe boundary
+      pluginOrigin = event.origin || pluginOrigin;
       renderAiState();
       return;
     }
-    if ((data.type === 'allodatalab-ai-response' || data.type === 'allodatalab-snapshot') && data.id && pending[data.id]) {
+    var trustedResponse = (data.type === 'allodatalab-ai-response' && fromOpener)
+      || (data.type === 'allodatalab-snapshot' && pluginWin && event.source === pluginWin && event.origin === pluginOrigin);
+    if (trustedResponse && data.id && pending[data.id]) {
       var entry = pending[data.id];
       delete pending[data.id];
       clearTimeout(entry.timer);
@@ -189,7 +201,7 @@
     if (!pluginAlive || !pluginWin) return Promise.resolve(null);
     var id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     return requestWithTimeout(function () {
-      try { pluginWin.postMessage({ type: 'allodatalab-snapshot-request', id: id }, '*'); return true; } catch (_) { return false; }
+      try { pluginWin.postMessage({ type: 'allodatalab-snapshot-request', id: id }, pluginOrigin && pluginOrigin !== 'null' ? pluginOrigin : '*'); return true; } catch (_) { return false; }
     }, id, 3500).then(function (res) { return (res && res.ok && res.snapshot) ? res.snapshot : null; });
   }
 

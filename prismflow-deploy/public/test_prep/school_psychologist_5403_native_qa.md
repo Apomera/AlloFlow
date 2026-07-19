@@ -1,6 +1,6 @@
 # Praxis School Psychologist (5403) QA report
 
-Generated: 2026-07-19T05:09:23.893Z
+Generated: 2026-07-19T17:48:50.258Z
 
 ## Result
 
@@ -12,6 +12,5 @@ Generated: 2026-07-19T05:09:23.893Z
 - Optional timed simulation: 125 questions / 125 minutes
 
 > This is not ETS or NASP approval, independent school-psychologist validation, field testing, psychometric calibration, a scaled-score model, psychological evaluation, diagnosis, mental-health treatment, or legal advice.
-
 
 - Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.

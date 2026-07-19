@@ -105,6 +105,28 @@ window.StemLab = window.StemLab || {
             const currency = d.currency || 'USD';
             const challengeMode = !!d.challengeMode;
             const showDollarLab = !!d.showDollarLab;
+            const dollarSide = d.dollarSide === 'back' ? 'back' : 'front';
+            const dollarFrontFeatures = [
+              { color: '#fbbf24', label: __alloT('stem.money.raised_printing', 'Raised printing'), detail: __alloT('stem.money.raised_printing_detail', 'Intaglio printing gives a genuine note its distinctive texture.') },
+              { color: '#a7f3d0', label: __alloT('stem.money.cotton_linen_paper', 'Cotton-linen paper'), detail: __alloT('stem.money.cotton_linen_paper_detail', 'Federal Reserve note paper is 75% cotton and 25% linen.') },
+              { color: '#fb7185', label: __alloT('stem.money.embedded_fibers', 'Red + blue fibers'), detail: __alloT('stem.money.embedded_fibers_detail', 'Tiny red and blue security fibers are embedded throughout the paper.') },
+              { color: '#67e8f9', label: __alloT('stem.money.serial_numbers', 'Two serial numbers'), detail: __alloT('stem.money.serial_numbers_detail', 'The same identifying serial number appears twice on the front.') },
+              { color: '#d1d5db', label: __alloT('stem.money.federal_reserve_bank_seal', 'Federal Reserve seal'), detail: __alloT('stem.money.federal_reserve_bank_seal_detail', 'The black seal identifies the distributing Federal Reserve Bank.') },
+              { color: '#4ade80', label: __alloT('stem.money.treasury_seal', 'Treasury seal'), detail: __alloT('stem.money.treasury_seal_detail', 'The green seal represents the U.S. Department of the Treasury.') }
+            ];
+            const dollarBackFeatures = [
+              { color: '#fbbf24', label: __alloT('stem.money.unfinished_pyramid', 'Unfinished pyramid'), detail: __alloT('stem.money.unfinished_pyramid_detail', 'Thirteen levels symbolize the original states; the pyramid signifies strength and duration.') },
+              { color: '#a7f3d0', label: __alloT('stem.money.eye_of_providence', 'Eye of Providence'), detail: __alloT('stem.money.eye_of_providence_detail', 'The eye above the pyramid appears on the reverse side of the Great Seal.') },
+              { color: '#fb7185', label: __alloT('stem.money.roman_numeral_1776', 'MDCCLXXVI = 1776'), detail: __alloT('stem.money.roman_numeral_1776_detail', 'The Roman numerals at the pyramid base mark the year of American independence.') },
+              { color: '#67e8f9', label: __alloT('stem.money.eagle_and_shield', 'Eagle + shield'), detail: __alloT('stem.money.eagle_and_shield_detail', 'The bald eagle bearing a shield is the obverse side of the Great Seal.') },
+              { color: '#d1d5db', label: __alloT('stem.money.olive_branch_and_arrows', 'Olive branch + arrows'), detail: __alloT('stem.money.olive_branch_and_arrows_detail', 'The eagle holds symbols of peace and readiness to defend the nation.') },
+              { color: '#4ade80', label: __alloT('stem.money.e_pluribus_unum', 'E Pluribus Unum'), detail: __alloT('stem.money.e_pluribus_unum_detail', 'The Latin motto on the eagle scroll means Out of Many, One.') }
+            ];
+            const dollarFeatureGuide = dollarSide === 'back' ? dollarBackFeatures : dollarFrontFeatures;
+            const dollarFeatureIndex = Math.max(0, Math.min(dollarFeatureGuide.length - 1, Number.isFinite(Number(d.dollarFeatureIndex)) ? Number(d.dollarFeatureIndex) : 0));
+            const dollarReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const dollarAutoPlayRequested = d.dollarAutoPlay !== false;
+            const dollarAutoPlay = dollarAutoPlayRequested && !dollarReducedMotion;
 
             // ── Currency definitions ──
             const CURRENCIES = {
@@ -241,6 +263,73 @@ window.StemLab = window.StemLab || {
             const cur = CURRENCIES[currency] || CURRENCIES.USD;
             const isJPY = currency === 'JPY';
             const fmt = (v) => isJPY ? (cur.symbol + Math.round(v).toLocaleString()) : (cur.symbol + v.toFixed(2));
+            const USD_BILL_VISUALS = {
+              1:   { portrait: __alloT('stem.money.george_washington', 'Washington'), tint: '#dfe9d8', accent: '#2f6b4f' },
+              5:   { portrait: __alloT('stem.money.abraham_lincoln', 'Lincoln'), tint: '#e8e0ec', accent: '#665071' },
+              10:  { portrait: __alloT('stem.money.alexander_hamilton', 'Hamilton'), tint: '#f4dfba', accent: '#b35b19' },
+              20:  { portrait: __alloT('stem.money.andrew_jackson', 'Jackson'), tint: '#e2e7d2', accent: '#557c3e' },
+              50:  { portrait: __alloT('stem.money.ulysses_grant', 'Grant'), tint: '#dce8ef', accent: '#934a56' },
+              100: { portrait: __alloT('stem.money.benjamin_franklin', 'Franklin'), tint: '#d7e9ed', accent: '#16718a' }
+            };
+            const renderBillVisual = function (bill, compact) {
+              var width = compact ? 64 : 96;
+              var height = Math.round(width / 2.35);
+              if (currency !== 'USD' || !USD_BILL_VISUALS[bill.value]) {
+                return React.createElement('div', { 'aria-hidden': true, style: {
+                  width: width + 'px', height: height + 'px', borderRadius: compact ? 3 : 5,
+                  background: 'linear-gradient(135deg, ' + bill.color + ', ' + bill.color + 'aa)',
+                  border: '1px solid rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: compact ? 9 : 11, fontWeight: 900, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.35)',
+                  boxShadow: '0 2px 5px rgba(15,23,42,0.18)', position: 'relative', overflow: 'hidden'
+                } }, bill.name);
+              }
+              var metaBill = USD_BILL_VISUALS[bill.value];
+              var numeral = String(bill.value);
+              return React.createElement('div', { 'aria-hidden': true, style: {
+                width: width + 'px', height: height + 'px', borderRadius: compact ? 3 : 5, position: 'relative', overflow: 'hidden',
+                background: 'linear-gradient(110deg, ' + metaBill.tint + ' 0%, #f7f8ef 48%, ' + metaBill.tint + ' 100%)',
+                border: '1.5px solid ' + metaBill.accent, boxShadow: '0 2px 6px rgba(15,23,42,0.18), inset 0 0 0 2px rgba(255,255,255,0.55)',
+                color: '#173f34', fontFamily: 'Georgia, serif'
+              } },
+                React.createElement('div', { style: { position: 'absolute', inset: compact ? 2 : 3, border: '1px solid ' + metaBill.accent + '88', borderRadius: 2 } }),
+                React.createElement('span', { style: { position: 'absolute', left: compact ? 4 : 6, top: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900 } }, numeral),
+                React.createElement('span', { style: { position: 'absolute', right: compact ? 4 : 6, bottom: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900 } }, numeral),
+                React.createElement('div', { style: { position: 'absolute', left: '50%', top: '48%', transform: 'translate(-50%,-50%)', width: compact ? 17 : 25, height: compact ? 20 : 29, borderRadius: '50%', border: '1px solid ' + metaBill.accent, background: 'rgba(255,255,255,0.48)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: metaBill.accent, fontSize: compact ? 8 : 11, fontWeight: 900 } }, metaBill.portrait.charAt(0)),
+                React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: compact ? 2 : 3, transform: 'translateX(-50%)', color: metaBill.accent, fontSize: compact ? 5 : 7, fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '.02em' } }, metaBill.portrait),
+                React.createElement('div', { style: { position: 'absolute', right: compact ? 15 : 23, top: compact ? 6 : 9, width: compact ? 7 : 10, height: compact ? 7 : 10, borderRadius: '50%', border: '1px solid ' + metaBill.accent, opacity: .75 } }),
+                bill.value === 100 && React.createElement('div', { style: { position: 'absolute', left: '57%', top: 1, bottom: 1, width: compact ? 2 : 3, background: '#1d9bb6aa', transform: 'rotate(-2deg)' } })
+              );
+            };
+
+            const USD_COIN_VISUALS = {
+              '0.01': { diameter: 19.05, face: '1¢', metal: '#b8734f', rim: '#7c4028', edge: __alloT('stem.money.plain_edge', 'Plain edge'), edgeType: 'plain' },
+              '0.05': { diameter: 21.21, face: '5¢', metal: '#bec5c8', rim: '#737b80', edge: __alloT('stem.money.plain_edge', 'Plain edge'), edgeType: 'plain' },
+              '0.1':  { diameter: 17.91, face: '10¢', metal: '#d8dde0', rim: '#69737a', edge: __alloT('stem.money.reeded_edge', 'Reeded edge'), edgeType: 'reeded' },
+              '0.25': { diameter: 24.26, face: '25¢', metal: '#d4d9dc', rim: '#657078', edge: __alloT('stem.money.reeded_edge', 'Reeded edge'), edgeType: 'reeded' },
+              '0.5':  { diameter: 30.61, face: '50¢', metal: '#d2d7da', rim: '#626c73', edge: __alloT('stem.money.reeded_edge', 'Reeded edge'), edgeType: 'reeded' },
+              '1':    { diameter: 26.49, face: '$1', metal: '#d5b85f', rim: '#8d7228', edge: __alloT('stem.money.lettered_edge', 'Lettered edge'), edgeType: 'lettered' }
+            };
+            const renderCoinVisual = function (coin, compact) {
+              var metaCoin = currency === 'USD' ? USD_COIN_VISUALS[String(coin.value)] : null;
+              var size = metaCoin ? Math.round(metaCoin.diameter * (compact ? 1.35 : 1.75)) : Math.round(coin.size * (compact ? .9 : 1.15));
+              var metal = metaCoin ? metaCoin.metal : coin.color;
+              var rim = metaCoin ? metaCoin.rim : 'rgba(0,0,0,.28)';
+              var edgeBackground = metaCoin && metaCoin.edgeType === 'reeded' ? 'repeating-conic-gradient(' + rim + ' 0deg 3deg, #eef1f2 3deg 6deg)' : 'linear-gradient(135deg, rgba(255,255,255,.65), ' + rim + ')';
+              return React.createElement('div', { 'aria-hidden': true, style: {
+                width: size + 'px', height: size + 'px', borderRadius: '50%', padding: compact ? 2 : 3, boxSizing: 'border-box',
+                background: edgeBackground, border: metaCoin && metaCoin.edgeType === 'lettered' ? '2px dashed ' + rim : '1px solid ' + rim,
+                boxShadow: '0 3px 7px rgba(15,23,42,.24), inset 0 1px 1px rgba(255,255,255,.65)', position: 'relative', flexShrink: 0
+              } },
+                React.createElement('div', { style: { width: '100%', height: '100%', borderRadius: '50%', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'radial-gradient(circle at 30% 24%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.18) 28%, transparent 30%), radial-gradient(circle at 52% 55%, ' + metal + ', ' + rim + ')',
+                  border: '1px solid rgba(255,255,255,.45)', color: metaCoin && coin.value === .01 ? '#4b2518' : '#263238', textShadow: '0 1px 0 rgba(255,255,255,.55)'
+                } },
+                  React.createElement('div', { style: { position: 'absolute', inset: compact ? 3 : 4, borderRadius: '50%', border: '1px solid rgba(40,50,55,.32)' } }),
+                  React.createElement('span', { style: { fontSize: compact ? Math.max(8, size * .27) : Math.max(10, size * .25), lineHeight: 1, fontWeight: 900, zIndex: 1 } }, metaCoin ? metaCoin.face : coin.label),
+                  !compact && React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: Math.max(3, size * .10), transform: 'translateX(-50%)', fontSize: Math.max(7, size * .12), fontWeight: 900, letterSpacing: '.05em', whiteSpace: 'nowrap', opacity: .76 } }, metaCoin ? (metaCoin.edgeType === 'reeded' ? 'REEDS' : metaCoin.edgeType === 'lettered' ? 'EDGE' : 'PLAIN') : '')
+                )
+              );
+            };
 
             // ── Approximate exchange rates (for educational use) ──
             const RATES = { USD: 1, EUR: 0.92, GBP: 0.79, CAD: 1.36, JPY: 149.5, MXN: 17.1, AUD: 1.54, INR: 83.1 };
@@ -258,12 +347,51 @@ window.StemLab = window.StemLab || {
             // ── Board state for coin counting ──
             var placed = d.placed || [];
             var boardTotal = placed.reduce(function (s, p) { return s + p.value; }, 0);
+            var isPlacedBill = function (item) {
+              if (item && item.id != null && String(item.id).indexOf('-b') >= 0) return true;
+              return !!(item && cur.bills.some(function (bill) { return bill.name === item.name; }));
+            };
+            var cashGroups = placed.reduce(function (groups, item) {
+              var billItem = isPlacedBill(item);
+              var key = (billItem ? 'bill|' : 'coin|') + item.name + '|' + item.value;
+              var existing = groups.find(function (group) { return group.key === key; });
+              if (existing) existing.count += 1;
+              else groups.push({ key: key, name: item.name, value: item.value, count: 1, isBill: billItem });
+              return groups;
+            }, []).sort(function (a, b) { return b.value - a.value || (a.isBill === b.isBill ? 0 : a.isBill ? -1 : 1); });
+            var cashBillSubtotal = cashGroups.reduce(function (sum, group) { return sum + (group.isBill ? group.value * group.count : 0); }, 0);
+            var cashCoinSubtotal = cashGroups.reduce(function (sum, group) { return sum + (!group.isBill ? group.value * group.count : 0); }, 0);
 
             // ── Making Change state ──
             var changePrice = typeof d.changePrice === 'number' ? d.changePrice : 0;
             var changePaid = typeof d.changePaid === 'number' ? d.changePaid : 0;
             var changeAnswer = typeof d.changeAnswer === 'number' ? d.changeAnswer : null;
             var changeFeedback = d.changeFeedback || null;
+            var changeScale = isJPY ? 1 : 100;
+            var changeDue = Math.max(0, Math.round((changePaid - changePrice) * changeScale) / changeScale);
+            var changeDenominations = cur.bills.map(function (item) {
+              return { name: item.name, value: item.value, units: Math.round(item.value * changeScale), isBill: true, definition: item };
+            }).concat(cur.coins.map(function (item) {
+              return { name: item.name, value: item.value, units: Math.round(item.value * changeScale), isBill: false, definition: item };
+            })).filter(function (item) { return item.units > 0; }).sort(function (a, b) {
+              return b.units - a.units || (a.isBill === b.isBill ? 0 : a.isBill ? -1 : 1);
+            }).filter(function (item, index, list) {
+              return index === list.findIndex(function (candidate) { return candidate.units === item.units; });
+            });
+            var changeRemainderUnits = Math.round(changeDue * changeScale);
+            var changePieces = changeDenominations.reduce(function (pieces, denomination) {
+              var count = Math.floor(changeRemainderUnits / denomination.units);
+              if (count > 0) {
+                pieces.push(Object.assign({}, denomination, { count: count, subtotal: count * denomination.value }));
+                changeRemainderUnits -= count * denomination.units;
+              }
+              return pieces;
+            }, []);
+            var changeRunningUnits = Math.round(changePrice * changeScale);
+            var changeCountSteps = changePieces.slice().reverse().map(function (piece) {
+              changeRunningUnits += piece.count * piece.units;
+              return Object.assign({}, piece, { reaches: changeRunningUnits / changeScale });
+            });
 
             // ── Store state ──
             var cart = d.cart || [];
@@ -1068,10 +1196,17 @@ window.StemLab = window.StemLab || {
             var genChangeProblem = function () {
               var maxVal = gc.maxPrice;
               var price = isJPY ? (Math.floor(Math.random() * (maxVal * 0.8)) + 10) : (Math.floor(Math.random() * maxVal * 100) / 100 + 0.25);
-              price = isJPY ? Math.round(price / 10) * 10 : Math.round(price * 100) / 100;
-              var overpay = isJPY ? [100, 500, 1000, 5000, 10000] : [1, 5, 10, 20, 50, 100];
-              var paid = overpay.find(function (v) { return v >= price; }) || overpay[overpay.length - 1];
-              if (paid < price) paid = Math.ceil(price / 10) * 10;
+              var smallestCashUnit = Math.min.apply(null, cur.coins.map(function (coin) { return coin.value; }));
+              price = Math.max(smallestCashUnit, Math.round(price / smallestCashUnit) * smallestCashUnit);
+              price = isJPY ? Math.round(price) : Math.round(price * 100) / 100;
+              var paymentValues = cur.coins.concat(cur.bills).map(function (item) { return item.value; }).filter(function (value, index, list) {
+                return list.indexOf(value) === index;
+              }).sort(function (a, b) { return a - b; });
+              var paid = paymentValues.find(function (value) { return value > price; });
+              if (!paid) {
+                var largestPayment = paymentValues[paymentValues.length - 1] || 1;
+                paid = Math.ceil((price + smallestCashUnit) / largestPayment) * largestPayment;
+              }
               upd('changePrice', price);
               upd('changePaid', paid);
               upd('changeAnswer', null);
@@ -1641,21 +1776,17 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", { key: ci, onClick: function () {
                           upd('placed', [].concat(placed, [{ name: coin.name, value: coin.value, id: Date.now() + '-' + ci }]));
                         },
-                        className: "flex flex-col items-center gap-1 group transition-transform hover:scale-110",
+                        'aria-label': __alloT('stem.money.add_coin', 'Add coin') + ': ' + coin.name + ' (' + fmt(coin.value) + ')',
+                        className: "flex flex-col items-center gap-1 group transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-full",
                         title: coin.name + ' = ' + fmt(coin.value)
                       },
-                        React.createElement("div", { style: {
-                          width: coin.size + 'px', height: coin.size + 'px', borderRadius: '50%',
-                          background: 'radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 36%), radial-gradient(circle at 35% 35%, ' + coin.color + ', ' + coin.color + 'cc)',
-                          border: '2px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: Math.round(Math.max(9, coin.size / 3.5)) + 'px', fontWeight: 'bold', color: '#333',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4)',
-                          cursor: 'pointer', transition: 'all 0.15s'
-                        } }, coin.label),
-                        React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, coin.name)
+                        renderCoinVisual(coin, false),
+                        React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, coin.name),
+                        currency === 'USD' && USD_COIN_VISUALS[String(coin.value)] && React.createElement('span', { className: 'text-[10px] leading-tight text-amber-800/80 -mt-1' }, USD_COIN_VISUALS[String(coin.value)].edge)
                       );
                     })
                   ),
+                  currency === 'USD' && React.createElement('p', { className: 'mt-2 text-[10px] leading-relaxed text-amber-800 text-center' }, __alloT('stem.money.coin_visual_notice', 'Relative diameters and edge types follow U.S. Mint specifications. Surface artwork is simplified for counting practice.')),
                   // Bill palette
                   React.createElement("h3", { className: "text-sm font-bold text-green-800 mt-4 mb-3" }, "\uD83D\uDCB5 " + cur.name + " Bills"),
                   React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
@@ -1663,18 +1794,16 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", { key: bi, onClick: function () {
                           upd('placed', [].concat(placed, [{ name: bill.name, value: bill.value, id: Date.now() + '-b' + bi }]));
                         },
-                        className: "group transition-transform hover:scale-105"
+                        'aria-label': __alloT('stem.money.add_bill', 'Add bill') + ': ' + bill.name + ' (' + fmt(bill.value) + ')',
+                        title: bill.name + ' = ' + fmt(bill.value),
+                        className: "group transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-md"
                       },
-                        React.createElement("div", { style: {
-                          width: '72px', height: '32px', borderRadius: '4px',
-                          background: 'linear-gradient(135deg, ' + bill.color + ', ' + bill.color + 'aa)',
-                          border: '1px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '11px', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.15)', cursor: 'pointer'
-                        } }, bill.name)
+                        renderBillVisual(bill, false)
+
                       );
                     })
-                  )
+                  ),
+                  currency === 'USD' && React.createElement('p', { className: 'mt-2 text-[10px] leading-relaxed text-emerald-800 text-center' }, __alloT('stem.money.bill_visual_notice', 'Portrait initials and color families help distinguish denominations. Simplified educational illustrations - not reproductions.'))
                 ),
                 // Counting board
                 React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 border border-slate-400" },
@@ -1684,6 +1813,9 @@ window.StemLab = window.StemLab || {
                       challengeMode
                         ? React.createElement("span", { className: "text-lg font-black text-amber-500" }, __alloT('stem.money.str', '\uD83C\uDFAF ?'))
                         : React.createElement("span", { className: "text-lg font-black text-emerald-600" }, fmt(boardTotal)),
+                      placed.length > 1 && React.createElement('button', { type: 'button', onClick: function () {
+                        upd('placed', placed.slice().sort(function (a, b) { return b.value - a.value || (isPlacedBill(a) === isPlacedBill(b) ? 0 : isPlacedBill(a) ? -1 : 1); }));
+                      }, 'aria-label': __alloT('stem.money.organize_cash_aria', 'Organize cash from highest to lowest denomination'), className: 'px-2 py-1 rounded-md text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:bg-slate-200 transition-colors' }, __alloT('stem.money.organize_cash', '↕ Organize')),
                       placed.length > 0 && React.createElement("button", { "aria-label": __alloT('stem.money.clear', "Clear"), onClick: function () { upd('placed', []); upd('coinGuess', null); upd('coinGuessFb', null); },
                         className: "transition-colors text-[11px] text-red-400 hover:text-red-600 font-bold"
                       }, __alloT('stem.money.clear_2', "\u2715 Clear"))
@@ -1696,7 +1828,7 @@ window.StemLab = window.StemLab || {
                       )
                     : React.createElement("div", { className: "flex flex-wrap gap-1.5 min-h-[100px]" },
                         placed.map(function (p, pi) {
-                          var isBill = p.id != null ? String(p.id).indexOf('-b') >= 0 : (p.value >= (isJPY ? 1000 : 1) && !p.name.toLowerCase().includes('coin') && !p.name.toLowerCase().includes('penny') && !p.name.toLowerCase().includes('cent') && !p.name.toLowerCase().includes('dime') && !p.name.toLowerCase().includes('nickel') && !p.name.toLowerCase().includes('quarter') && !p.name.toLowerCase().includes('loonie') && !p.name.toLowerCase().includes('toonie'));
+                          var isBill = isPlacedBill(p);
                           return React.createElement("button", { "aria-label": "Remove " + p.name, key: p.id || pi, onClick: function () {
                               upd('placed', placed.filter(function (_, idx) { return idx !== pi; }));
                               upd('coinGuess', null); upd('coinGuessFb', null);
@@ -1704,8 +1836,8 @@ window.StemLab = window.StemLab || {
                             className: "transition-all hover:scale-110 hover:opacity-70 cursor-pointer animate-in zoom-in fade-in duration-300"
                           },
                             isBill
-                              ? (function () { var bd = cur.bills.find(function (k) { return k.name === p.name; }) || { color: '#85bb65' }; return React.createElement("div", { style: { width: '56px', height: '24px', borderRadius: '3px', background: 'linear-gradient(135deg, ' + bd.color + ', ' + bd.color + 'aa)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, challengeMode ? p.name : fmt(p.value)); })()
-                              : (function () { var cd = cur.coins.find(function (k) { return k.name === p.name; }) || { color: '#C0C0C0', size: 28 }; return React.createElement("div", { style: { width: cd.size + 'px', height: cd.size + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, ' + cd.color + ', ' + cd.color + 'cc)', border: '1px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 'bold', color: '#333' } }, challengeMode ? p.name.substring(0, 3) : fmt(p.value)); })()
+                              ? (function () { var bd = cur.bills.find(function (k) { return k.name === p.name; }) || { name: p.name, value: p.value, color: '#85bb65' }; return renderBillVisual(bd, true); })()
+                              : (function () { var cd = cur.coins.find(function (k) { return k.name === p.name; }) || { name: p.name, value: p.value, color: '#C0C0C0', size: 28, label: fmt(p.value) }; return renderCoinVisual(cd, true); })()
                           );
                         })
                       ),
@@ -1723,11 +1855,38 @@ window.StemLab = window.StemLab || {
                     ),
                     d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg)
                   ),
-                  // Normal mode: show total
-                  !challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200" },
-                    React.createElement("div", { className: "flex justify-between text-xs" },
-                      React.createElement("span", { className: "text-slate-600" }, placed.length + " items on board"),
-                      React.createElement("span", { className: "font-bold text-emerald-600" }, "Total: " + fmt(boardTotal))
+                  // Normal mode: grouped denomination breakdown and equation.
+                  !challengeMode && placed.length > 0 && React.createElement('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
+                    React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                      React.createElement('div', null,
+                        React.createElement('p', { className: 'text-xs font-black text-slate-700' }, __alloT('stem.money.cash_breakdown', 'Cash breakdown')),
+                        React.createElement('p', { className: 'text-[10px] text-slate-600' }, placed.length + ' ' + __alloT('stem.money.pieces_grouped', 'pieces grouped by denomination'))
+                      ),
+                      React.createElement('span', { className: 'text-lg font-black text-emerald-700' }, fmt(boardTotal))
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
+                      cashGroups.map(function (group) {
+                        var definition = group.isBill ? (cur.bills.find(function (bill) { return bill.name === group.name; }) || { name: group.name, value: group.value, color: '#85bb65' }) : (cur.coins.find(function (coin) { return coin.name === group.name; }) || { name: group.name, value: group.value, color: '#C0C0C0', size: 28, label: fmt(group.value) });
+                        return React.createElement('div', { key: group.key, role: 'group', 'aria-label': group.count + ' times ' + group.name + ' equals ' + fmt(group.count * group.value), className: 'relative flex items-center gap-2 min-w-0 rounded-lg border border-slate-200 bg-white p-2 shadow-sm' },
+                          React.createElement('div', { className: 'relative flex-shrink-0' },
+                            group.isBill ? renderBillVisual(definition, true) : renderCoinVisual(definition, true),
+                            React.createElement('span', { className: 'absolute -top-2 -right-2 min-w-[20px] h-5 px-1 rounded-full bg-slate-800 text-white text-[10px] font-black flex items-center justify-center shadow-sm' }, '×' + group.count)
+                          ),
+                          React.createElement('div', { className: 'min-w-0' },
+                            React.createElement('p', { className: 'text-[10px] font-bold text-slate-600 truncate' }, group.name),
+                            React.createElement('p', { className: 'text-xs font-black text-emerald-700' }, fmt(group.value * group.count))
+                          )
+                        );
+                      })
+                    ),
+                    React.createElement('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
+                      React.createElement('div', { className: 'rounded-lg bg-amber-50 border border-amber-200 p-2 text-center' }, React.createElement('p', { className: 'text-[10px] text-amber-800 font-bold' }, __alloT('stem.money.coins_subtotal', 'Coins')), React.createElement('p', { className: 'text-xs font-black text-amber-700' }, fmt(cashCoinSubtotal))),
+                      React.createElement('div', { className: 'rounded-lg bg-emerald-50 border border-emerald-200 p-2 text-center' }, React.createElement('p', { className: 'text-[10px] text-emerald-800 font-bold' }, __alloT('stem.money.bills_subtotal', 'Bills')), React.createElement('p', { className: 'text-xs font-black text-emerald-700' }, fmt(cashBillSubtotal))),
+                      React.createElement('div', { className: 'rounded-lg bg-sky-50 border border-sky-200 p-2 text-center' }, React.createElement('p', { className: 'text-[10px] text-sky-800 font-bold' }, __alloT('stem.money.total_3', 'Total')), React.createElement('p', { className: 'text-xs font-black text-sky-700' }, fmt(boardTotal)))
+                    ),
+                    React.createElement('div', { className: 'mt-2 rounded-lg bg-slate-900 px-3 py-2 text-center overflow-x-auto' },
+                      React.createElement('p', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-300 mb-1' }, __alloT('stem.money.grouped_equation', 'Grouped equation')),
+                      React.createElement('p', { className: 'text-xs font-mono font-bold text-emerald-300 whitespace-nowrap' }, cashGroups.map(function (group) { return group.count + ' × ' + fmt(group.value); }).join(' + ') + ' = ' + fmt(boardTotal))
                     )
                   )
                 )
@@ -1761,9 +1920,10 @@ window.StemLab = window.StemLab || {
                           )
                         )
                       ),
-                      React.createElement("div", { className: "flex items-center gap-3" },
-                        React.createElement("label", { className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.your_answer', "Your answer:")),
-                        React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
+                      React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
+                        React.createElement("label", { htmlFor: "money-change-answer", className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.your_answer', "Your answer:")),
+                        React.createElement("input", { id: "money-change-answer", type: "number", inputMode: "decimal", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
+                          'aria-label': __alloT('stem.money.change_answer_aria', 'Enter the amount of change due'),
                           value: changeAnswer !== null ? changeAnswer : '',
                           onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
                           className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
@@ -1779,7 +1939,48 @@ window.StemLab = window.StemLab || {
                           className: "px-5 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
                         }, __alloT('stem.money.check_4', "\u2714 Check"))
                       ),
-                      changeFeedback && React.createElement("p", { className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
+                      changeFeedback && React.createElement("p", { role: "status", 'aria-live': "polite", className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
+                      changeFeedback && React.createElement('section', { 'aria-label': __alloT('stem.money.count_up_change_aria', 'Count up from the price to the amount paid'), className: 'bg-white border-2 border-emerald-200 rounded-xl p-3' },
+                        React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+                          React.createElement('div', null,
+                            React.createElement('h4', { className: 'text-sm font-black text-emerald-800' }, __alloT('stem.money.count_up_change', 'Count up the change')),
+                            React.createElement('p', { className: 'text-[10px] text-slate-600' }, __alloT('stem.money.smallest_to_largest', 'Start with the smallest useful coins, then move to larger money.'))
+                          ),
+                          React.createElement('span', { className: 'px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black' }, __alloT('stem.money.give_back', 'Give back') + ' ' + fmt(changeDue))
+                        ),
+                        React.createElement('div', { role: 'list', 'aria-label': __alloT('stem.money.counting_up_steps', 'Counting-up steps'), className: 'flex flex-wrap items-stretch gap-2 mb-3' },
+                          React.createElement('div', { role: 'listitem', className: 'min-w-[92px] rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-center' },
+                            React.createElement('p', { className: 'text-[10px] font-bold uppercase text-red-600' }, __alloT('stem.money.start_at_price', 'Start at price')),
+                            React.createElement('p', { className: 'text-sm font-black text-red-700' }, fmt(changePrice))
+                          ),
+                          changeCountSteps.map(function (piece) {
+                            return React.createElement('div', { key: 'count-' + piece.name + '-' + piece.value, role: 'listitem', 'aria-label': 'Add ' + piece.count + ' times ' + fmt(piece.value) + ' to reach ' + fmt(piece.reaches), className: 'flex items-center gap-2' },
+                              React.createElement('span', { 'aria-hidden': true, className: 'text-emerald-500 text-lg font-black' }, '\u2192'),
+                              React.createElement('div', { className: 'min-w-[100px] rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-center' },
+                                React.createElement('p', { className: 'text-[10px] font-bold text-emerald-700' }, '+' + piece.count + ' \u00D7 ' + fmt(piece.value)),
+                                React.createElement('p', { className: 'text-xs font-black text-slate-700' }, __alloT('stem.money.reach', 'Reach') + ' ' + fmt(piece.reaches))
+                              )
+                            );
+                          })
+                        ),
+                        React.createElement('div', { className: 'rounded-lg bg-slate-50 border border-slate-200 p-3' },
+                          React.createElement('p', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-2' }, __alloT('stem.money.cash_to_return', 'Cash to return')),
+                          React.createElement('div', { role: 'list', className: 'grid grid-cols-2 sm:grid-cols-3 gap-2' },
+                            changePieces.map(function (piece) {
+                              return React.createElement('div', { key: 'return-' + piece.name + '-' + piece.value, role: 'listitem', 'aria-label': piece.count + ' times ' + piece.name + ', subtotal ' + fmt(piece.subtotal), className: 'relative flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2 min-w-0' },
+                                React.createElement('div', { className: 'relative flex-shrink-0' },
+                                  piece.isBill ? renderBillVisual(piece.definition, true) : renderCoinVisual(piece.definition, true),
+                                  React.createElement('span', { className: 'absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center shadow' }, '\u00D7' + piece.count)
+                                ),
+                                React.createElement('div', { className: 'min-w-0' },
+                                  React.createElement('p', { className: 'text-[10px] font-bold text-slate-700 truncate' }, piece.name),
+                                  React.createElement('p', { className: 'text-xs font-black text-emerald-700' }, fmt(piece.subtotal))
+                                )
+                              );
+                            })
+                          )
+                        )
+                      ),
                       // \u2500\u2500 Column subtraction worked-example shown after answer is checked \u2500\u2500
                       // Makes the "paid \u2212 price = change" step visible the way it's done on paper.
                       changeFeedback && (function() {
@@ -3399,7 +3600,7 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
                   React.createElement('div', null,
                     React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, __alloT('stem.money.one_dollar_feature_map', 'U.S. $1 Note - Accurate feature map')),
-                    React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.money.dollar_lab_summary_accurate', 'Explore the front design, identifiers, paper, and genuine security features of the current $1 note.'))
+                    React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.money.dollar_lab_summary_front_back', 'Flip between both sides to explore the current $1 note, its identifiers, materials, symbols, and genuine security features.'))
                   ),
                   React.createElement('button', {
                     type: 'button',
@@ -3408,14 +3609,41 @@ window.StemLab = window.StemLab || {
                     className: 'px-3 py-2 rounded-lg text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
                   }, showDollarLab ? __alloT('stem.money.hide_dollar_lab', 'Hide mini lab') : __alloT('stem.money.open_dollar_lab', 'Open mini lab'))
                 ),
-                showDollarLab && React.createElement('div', { className: 'mt-3 rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', height: 'clamp(380px, 70vw, 430px)' } },
+                showDollarLab && React.createElement('div', { className: 'mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2' },
+                  React.createElement('div', { role: 'group', 'aria-label': __alloT('stem.money.choose_note_side', 'Choose which side of the one-dollar note to explore'), className: 'inline-flex rounded-lg border border-emerald-300 bg-emerald-50 p-1 self-start' },
+                    React.createElement('button', { type: 'button', 'aria-pressed': dollarSide === 'front', onClick: function () { sfxMoneyClick(); upd('dollarSide', 'front'); upd('dollarFeatureIndex', 0); }, className: 'px-3 py-1.5 rounded-md text-xs font-bold transition-colors ' + (dollarSide === 'front' ? 'bg-emerald-700 text-white shadow-sm' : 'text-emerald-800 hover:bg-emerald-100') }, __alloT('stem.money.front_obverse', 'Front (obverse)')),
+                    React.createElement('button', { type: 'button', 'aria-pressed': dollarSide === 'back', onClick: function () { sfxMoneyClick(); upd('dollarSide', 'back'); upd('dollarFeatureIndex', 0); }, className: 'px-3 py-1.5 rounded-md text-xs font-bold transition-colors ' + (dollarSide === 'back' ? 'bg-emerald-700 text-white shadow-sm' : 'text-emerald-800 hover:bg-emerald-100') }, __alloT('stem.money.back_reverse', 'Back (reverse)'))
+                  ),
+                  React.createElement('p', { className: 'text-[11px] text-slate-600' }, dollarSide === 'back' ? __alloT('stem.money.back_side_hint', 'Explore both sides of the Great Seal and their symbols.') : __alloT('stem.money.front_side_hint', 'Explore portrait, identifiers, seals, paper, and printing.'))
+                ),
+                showDollarLab && React.createElement('div', { className: 'mt-2 rounded-xl border border-emerald-200 bg-emerald-50/70 p-2.5' },
+                  React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                    React.createElement('p', { className: 'text-[11px] font-bold uppercase tracking-wide text-emerald-800' }, __alloT('stem.money.feature_callouts', 'Feature callouts')),
+                    React.createElement('button', { type: 'button', disabled: dollarReducedMotion, onClick: function () { sfxMoneyClick(); upd('dollarAutoPlay', !dollarAutoPlayRequested); }, 'aria-pressed': dollarAutoPlay, className: 'px-2.5 py-1 rounded-md border text-[11px] font-bold transition-colors ' + (dollarReducedMotion ? 'border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed' : dollarAutoPlay ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-emerald-400 bg-white text-emerald-800 hover:bg-emerald-100') }, dollarReducedMotion ? __alloT('stem.money.auto_tour_reduced_motion', 'Auto tour off - reduced motion') : dollarAutoPlay ? __alloT('stem.money.stop_auto_tour', 'Pause auto tour') : __alloT('stem.money.start_auto_tour', 'Start auto tour'))
+                  ),
+                  React.createElement('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5' },
+                    dollarFeatureGuide.map(function (feature, fi) {
+                      var isSelected = !dollarAutoPlay && dollarFeatureIndex === fi;
+                      return React.createElement('button', { key: dollarSide + '-feature-' + fi, type: 'button', 'aria-pressed': isSelected, onClick: function () { sfxMoneyClick(); upd('dollarFeatureIndex', fi); upd('dollarAutoPlay', false); }, className: 'min-h-[38px] px-2 py-1.5 rounded-md border text-[10px] font-bold leading-tight text-left transition-colors ' + (isSelected ? 'border-emerald-600 bg-emerald-700 text-white shadow-sm' : 'border-emerald-200 bg-white text-emerald-900 hover:border-emerald-400 hover:bg-emerald-100') },
+                        React.createElement('span', { className: 'inline-flex items-center justify-center w-4 h-4 rounded-full mr-1 text-[9px]', style: { background: feature.color, color: '#052e2b' } }, fi + 1),
+                        feature.label
+                      );
+                    })
+                  ),
+                  React.createElement('p', { 'aria-live': 'polite', className: 'mt-2 text-[11px] leading-relaxed text-slate-700' }, dollarAutoPlay ? __alloT('stem.money.auto_tour_status', 'Auto tour is cycling through the callouts. Choose any feature to pause and inspect it.') : React.createElement(React.Fragment, null, React.createElement('strong', { className: 'text-emerald-800' }, dollarFeatureGuide[dollarFeatureIndex].label + ': '), dollarFeatureGuide[dollarFeatureIndex].detail))
+                ),
+                showDollarLab && React.createElement('div', { className: 'mt-2 rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', height: 'clamp(380px, 70vw, 430px)' } },
                   React.createElement('canvas', {
                     'role': 'img',
                     tabIndex: 0,
-                    'aria-label': __alloT('stem.money.detailed_view_of_a_us_one_dollar_note', 'Detailed educational diagram of the front of a U.S. one-dollar note. Callouts identify raised printing, cotton-linen paper, embedded red and blue fibers, two serial numbers, the Federal Reserve Bank seal, and the Treasury seal. The one-dollar note does not have a watermark, security thread, or color-shifting ink.'),
+                    'aria-label': dollarSide === 'back' ? __alloT('stem.money.detailed_back_of_one_dollar_note', 'Detailed educational diagram of the back of a U.S. one-dollar note. Callouts identify the unfinished pyramid, Eye of Providence, Roman numeral 1776, bald eagle and shield, olive branch and arrows, and E Pluribus Unum motto.') : __alloT('stem.money.detailed_view_of_a_us_one_dollar_note', 'Detailed educational diagram of the front of a U.S. one-dollar note. Callouts identify raised printing, cotton-linen paper, embedded red and blue fibers, two serial numbers, the Federal Reserve Bank seal, and the Treasury seal. The one-dollar note does not have a watermark, security thread, or color-shifting ink.'),
                     ref: function(cvEl) {
                       if (!cvEl) return;
-                      if (cvEl._dbAnim) return;
+                      cvEl._dbSide = dollarSide;
+                      cvEl._dbFeatures = dollarFeatureGuide;
+                      cvEl._dbFeatureIndex = dollarFeatureIndex;
+                      cvEl._dbAutoPlay = dollarAutoPlay;
+                      if (cvEl._dbAnim) { cvEl._dbForcePaint = true; return; }
                       var c2 = cvEl.getContext('2d');
                       var W = cvEl.offsetWidth || 600;
                       var H = cvEl.offsetHeight || 180;
@@ -3423,21 +3651,19 @@ window.StemLab = window.StemLab || {
                       c2.scale(2, 2);
                       var start = performance.now();
                       var lastBlink = -1;
+                      var lastSide = '';
                       function drawDb() {
                         if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); if (cvEl._dbRO) cvEl._dbRO.disconnect(); return; }
                         var t = (performance.now() - start) / 1000;
-                        var features = [
-                          { color: '#fbbf24', label: __alloT('stem.money.raised_printing', 'Raised printing'), detail: __alloT('stem.money.raised_printing_detail', 'Intaglio printing gives a genuine note its distinctive texture.') },
-                          { color: '#a7f3d0', label: __alloT('stem.money.cotton_linen_paper', 'Cotton-linen paper'), detail: __alloT('stem.money.cotton_linen_paper_detail', 'Federal Reserve note paper is 75% cotton and 25% linen.') },
-                          { color: '#fb7185', label: __alloT('stem.money.embedded_fibers', 'Red + blue fibers'), detail: __alloT('stem.money.embedded_fibers_detail', 'Tiny red and blue security fibers are embedded throughout the paper.') },
-                          { color: '#67e8f9', label: __alloT('stem.money.serial_numbers', 'Two serial numbers'), detail: __alloT('stem.money.serial_numbers_detail', 'The same identifying serial number appears twice on the front.') },
-                          { color: '#d1d5db', label: __alloT('stem.money.federal_reserve_bank_seal', 'Federal Reserve seal'), detail: __alloT('stem.money.federal_reserve_bank_seal_detail', 'The black seal identifies the distributing Federal Reserve Bank.') },
-                          { color: '#4ade80', label: __alloT('stem.money.treasury_seal', 'Treasury seal'), detail: __alloT('stem.money.treasury_seal_detail', 'The green seal represents the U.S. Department of the Treasury.') }
-                        ];
-                        var blink = Math.floor((t * 0.42) % features.length);
-                        // Only the highlighted feature changes; skip the full redraw
-                        // on frames where the callout is unchanged.
-                        if (blink === lastBlink) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
+                        var side = cvEl._dbSide || 'front';
+                        var features = cvEl._dbFeatures || [];
+                        var manualFeature = Math.max(0, Math.min(features.length - 1, Number(cvEl._dbFeatureIndex) || 0));
+                        var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                        var blink = cvEl._dbAutoPlay && !reduceMotion ? Math.floor((t * 0.42) % features.length) : manualFeature;
+                        // Repaint when the highlighted feature or selected side changes.
+                        if (side !== lastSide) { lastSide = side; lastBlink = -1; }
+                        if (blink === lastBlink && !cvEl._dbForcePaint) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
+                        cvEl._dbForcePaint = false;
                         lastBlink = blink;
                         var compact = W < 620;
                         var bx = compact ? W * 0.08 : W * 0.045;
@@ -3464,7 +3690,7 @@ window.StemLab = window.StemLab || {
                         }
 
                         c2.fillStyle = '#022c22'; c2.fillRect(0, 0, W, H);
-                        c2.fillStyle = '#a7f3d0'; fitText(__alloT('stem.money.front_educational_illustration', 'FRONT - EDUCATIONAL ILLUSTRATION'), bx, 17, bw, compact ? 10 : 12, 'bold');
+                        c2.fillStyle = '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.back_educational_illustration', 'BACK - EDUCATIONAL ILLUSTRATION') : __alloT('stem.money.front_educational_illustration', 'FRONT - EDUCATIONAL ILLUSTRATION'), bx, 17, bw, compact ? 10 : 12, 'bold');
                         c2.fillStyle = paper; c2.fillRect(bx, by, bw, bh);
                         c2.strokeStyle = ink; c2.lineWidth = 2; c2.strokeRect(bx, by, bw, bh);
                         c2.strokeStyle = fineInk; c2.lineWidth = 0.8; c2.strokeRect(bx + 5, by + 5, bw - 10, bh - 10); c2.strokeRect(bx + 10, by + 10, bw - 20, bh - 20);
@@ -3480,23 +3706,64 @@ window.StemLab = window.StemLab || {
                         });
 
                         // Note typography, identifiers, seals, and a stylized portrait vignette.
-                        var fs = Math.max(6, Math.min(11, bw / 54));
-                        c2.fillStyle = ink; c2.textAlign = 'center'; c2.font = 'bold ' + fs + 'px serif'; c2.fillText('FEDERAL RESERVE NOTE', bx + bw / 2, by + 18);
-                        c2.font = 'bold ' + (fs * 1.12) + 'px serif'; c2.fillText('THE UNITED STATES OF AMERICA', bx + bw / 2, by + 33);
-                        fitText('THIS NOTE IS LEGAL TENDER FOR ALL DEBTS, PUBLIC AND PRIVATE', bx + bw / 2, by + 44, bw * 0.62, fs * 0.72, '', 'center');
-                        var px = bx + bw * 0.5, py = by + bh * 0.54, prx = bw * 0.115, pry = bh * 0.34;
-                        c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); c2.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); c2.stroke();
-                        c2.fillStyle = '#b8c9b2'; c2.beginPath(); c2.arc(px, py - pry * 0.22, pry * 0.25, 0, Math.PI * 2); c2.fill();
-                        c2.beginPath(); c2.ellipse(px, py + pry * 0.34, prx * 0.55, pry * 0.38, 0, Math.PI, Math.PI * 2); c2.fill();
-                        c2.fillStyle = ink; c2.font = 'bold ' + (fs * 0.72) + 'px serif'; c2.fillText('WASHINGTON', px, by + bh - 17);
-                        drawSeal(bx + bw * 0.26, by + bh * 0.55, Math.max(14, bh * 0.18), '#202923', 'FEDERAL', 'B', 'RESERVE');
-                        drawSeal(bx + bw * 0.74, by + bh * 0.55, Math.max(14, bh * 0.18), '#207149', 'TREASURY', '1789', 'SEAL');
-                        c2.fillStyle = '#207149'; c2.textAlign = 'left'; c2.font = 'bold ' + (fs * 1.1) + 'px monospace'; c2.fillText('B 12345678 G', bx + bw * 0.13, by + bh * 0.30); c2.fillText('B 12345678 G', bx + bw * 0.64, by + bh * 0.82);
-                        c2.fillStyle = ink; c2.font = (fs * 0.68) + 'px serif'; c2.fillText('SERIES 2021', bx + bw * 0.67, by + bh * 0.68);
-                        c2.textAlign = 'center'; c2.font = 'bold ' + (fs * 1.15) + 'px serif'; c2.fillText('ONE DOLLAR', bx + bw / 2, by + bh - 6);
-                        c2.font = 'bold ' + Math.max(18, bh * 0.20) + 'px serif'; c2.fillText('1', bx + 19, by + 29); c2.fillText('1', bx + bw - 19, by + 29); c2.fillText('1', bx + 19, by + bh - 10); c2.fillText('1', bx + bw - 19, by + bh - 10);
+                        if (side === 'back') {
+                          // Reverse: both sides of the Great Seal and their major symbols.
+                          var backFs = Math.max(6, Math.min(11, bw / 54));
+                          c2.fillStyle = ink; c2.textAlign = 'center'; c2.font = 'bold ' + (backFs * 1.15) + 'px serif'; c2.fillText('THE UNITED STATES OF AMERICA', bx + bw / 2, by + 22);
+                          c2.font = 'bold ' + Math.max(22, bh * 0.22) + 'px serif'; c2.fillStyle = 'rgba(23,63,52,.16)'; c2.fillText('ONE', bx + bw / 2, by + bh * 0.63);
+                          c2.fillStyle = ink; c2.font = 'bold ' + (backFs * 0.9) + 'px serif'; c2.fillText('IN GOD WE TRUST', bx + bw / 2, by + 39);
+                          var leftX = bx + bw * 0.27, rightX = bx + bw * 0.73, sealY = by + bh * 0.54, sealR = Math.min(bw * 0.16, bh * 0.34);
+                          c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); c2.arc(leftX, sealY, sealR, 0, Math.PI * 2); c2.stroke(); c2.beginPath(); c2.arc(rightX, sealY, sealR, 0, Math.PI * 2); c2.stroke();
 
-                        var anchors = [[bx + bw * .5, by + 18],[bx + bw * .4, by + bh * .88],[bx + bw * .17, by + bh * .73],[bx + bw * .2, by + bh * .3],[bx + bw * .26, by + bh * .55],[bx + bw * .74, by + bh * .55]];
+                          // Reverse of the Great Seal: Eye of Providence and 13-level unfinished pyramid.
+                          var pyramidTop = sealY - sealR * 0.34, pyramidBase = sealY + sealR * 0.54;
+                          c2.strokeStyle = ink; c2.lineWidth = 1;
+                          for (var si = 0; si < 13; si++) {
+                            var sy = pyramidTop + si * ((pyramidBase - pyramidTop) / 12);
+                            var half = sealR * (0.10 + si * 0.047);
+                            c2.beginPath(); c2.moveTo(leftX - half, sy); c2.lineTo(leftX + half, sy); c2.stroke();
+                          }
+                          c2.beginPath(); c2.moveTo(leftX - sealR * .67, pyramidBase); c2.lineTo(leftX, pyramidTop); c2.lineTo(leftX + sealR * .67, pyramidBase); c2.stroke();
+                          c2.beginPath(); c2.ellipse(leftX, sealY - sealR * .62, sealR * .24, sealR * .12, 0, 0, Math.PI * 2); c2.stroke();
+                          c2.fillStyle = ink; c2.beginPath(); c2.arc(leftX, sealY - sealR * .62, 1.8, 0, Math.PI * 2); c2.fill();
+                          c2.font = 'bold ' + (backFs * .62) + 'px serif'; c2.fillText('ANNUIT COEPTIS', leftX, sealY - sealR * .82); c2.fillText('NOVUS ORDO SECLORUM', leftX, sealY + sealR * .78);
+                          c2.font = 'bold ' + (backFs * .68) + 'px serif'; c2.fillText('MDCCLXXVI', leftX, pyramidBase + backFs);
+
+                          // Obverse of the Great Seal: eagle, shield, olive branch, arrows, and scroll.
+                          c2.fillStyle = '#b8c9b2'; c2.strokeStyle = ink; c2.lineWidth = 1.1;
+                          c2.beginPath(); c2.moveTo(rightX, sealY - sealR * .12); c2.bezierCurveTo(rightX - sealR * .25, sealY - sealR * .62, rightX - sealR * .78, sealY - sealR * .58, rightX - sealR * .72, sealY - sealR * .05); c2.bezierCurveTo(rightX - sealR * .42, sealY - sealR * .28, rightX - sealR * .25, sealY + sealR * .05, rightX, sealY + sealR * .24); c2.fill(); c2.stroke();
+                          c2.beginPath(); c2.moveTo(rightX, sealY - sealR * .12); c2.bezierCurveTo(rightX + sealR * .25, sealY - sealR * .62, rightX + sealR * .78, sealY - sealR * .58, rightX + sealR * .72, sealY - sealR * .05); c2.bezierCurveTo(rightX + sealR * .42, sealY - sealR * .28, rightX + sealR * .25, sealY + sealR * .05, rightX, sealY + sealR * .24); c2.fill(); c2.stroke();
+                          c2.beginPath(); c2.ellipse(rightX, sealY, sealR * .23, sealR * .39, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.beginPath(); c2.arc(rightX + sealR * .12, sealY - sealR * .36, sealR * .13, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.fillStyle = '#dfe8d8'; c2.fillRect(rightX - sealR * .21, sealY - sealR * .05, sealR * .42, sealR * .43); c2.strokeRect(rightX - sealR * .21, sealY - sealR * .05, sealR * .42, sealR * .43);
+                          for (var stripe = 1; stripe < 7; stripe++) { c2.beginPath(); c2.moveTo(rightX - sealR * .21 + stripe * sealR * .06, sealY + sealR * .10); c2.lineTo(rightX - sealR * .21 + stripe * sealR * .06, sealY + sealR * .38); c2.stroke(); }
+                          c2.beginPath(); c2.moveTo(rightX - sealR * .62, sealY + sealR * .47); c2.lineTo(rightX - sealR * .18, sealY + sealR * .31); c2.stroke();
+                          for (var leaf = 0; leaf < 4; leaf++) { c2.beginPath(); c2.ellipse(rightX - sealR * (.55 - leaf * .11), sealY + sealR * (.42 - leaf * .04), sealR * .07, sealR * .035, -.45, 0, Math.PI * 2); c2.stroke(); }
+                          for (var arrow = 0; arrow < 3; arrow++) { var ay = sealY + sealR * (.37 + arrow * .055); c2.beginPath(); c2.moveTo(rightX + sealR * .20, ay); c2.lineTo(rightX + sealR * .63, ay + sealR * .10); c2.stroke(); }
+                          c2.fillStyle = '#eef3e9'; c2.beginPath(); c2.ellipse(rightX, sealY - sealR * .54, sealR * .51, sealR * .12, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.fillStyle = ink; c2.font = 'bold ' + (backFs * .62) + 'px serif'; c2.fillText('E PLURIBUS UNUM', rightX, sealY - sealR * .51);
+                          c2.font = 'bold ' + (backFs * .55) + 'px serif'; c2.fillText('THE GREAT SEAL', leftX, by + bh - 19); c2.fillText('OF THE UNITED STATES', rightX, by + bh - 19);
+                          c2.font = 'bold ' + (backFs * 1.15) + 'px serif'; c2.fillText('ONE DOLLAR', bx + bw / 2, by + bh - 6);
+                          c2.font = 'bold ' + Math.max(18, bh * .20) + 'px serif'; c2.fillText('1', bx + 19, by + 29); c2.fillText('1', bx + bw - 19, by + 29); c2.fillText('1', bx + 19, by + bh - 10); c2.fillText('1', bx + bw - 19, by + bh - 10);
+                        } else {
+                          var fs = Math.max(6, Math.min(11, bw / 54));
+                          c2.fillStyle = ink; c2.textAlign = 'center'; c2.font = 'bold ' + fs + 'px serif'; c2.fillText('FEDERAL RESERVE NOTE', bx + bw / 2, by + 18);
+                          c2.font = 'bold ' + (fs * 1.12) + 'px serif'; c2.fillText('THE UNITED STATES OF AMERICA', bx + bw / 2, by + 33);
+                          fitText('THIS NOTE IS LEGAL TENDER FOR ALL DEBTS, PUBLIC AND PRIVATE', bx + bw / 2, by + 44, bw * 0.62, fs * 0.72, '', 'center');
+                          var px = bx + bw * 0.5, py = by + bh * 0.54, prx = bw * 0.115, pry = bh * 0.34;
+                          c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); c2.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); c2.stroke();
+                          c2.fillStyle = '#b8c9b2'; c2.beginPath(); c2.arc(px, py - pry * 0.22, pry * 0.25, 0, Math.PI * 2); c2.fill();
+                          c2.beginPath(); c2.ellipse(px, py + pry * 0.34, prx * 0.55, pry * 0.38, 0, Math.PI, Math.PI * 2); c2.fill();
+                          c2.fillStyle = ink; c2.font = 'bold ' + (fs * 0.72) + 'px serif'; c2.fillText('WASHINGTON', px, by + bh - 17);
+                          drawSeal(bx + bw * 0.26, by + bh * 0.55, Math.max(14, bh * 0.18), '#202923', 'FEDERAL', 'B', 'RESERVE');
+                          drawSeal(bx + bw * 0.74, by + bh * 0.55, Math.max(14, bh * 0.18), '#207149', 'TREASURY', '1789', 'SEAL');
+                          c2.fillStyle = '#207149'; c2.textAlign = 'left'; c2.font = 'bold ' + (fs * 1.1) + 'px monospace'; c2.fillText('B 12345678 G', bx + bw * 0.13, by + bh * 0.30); c2.fillText('B 12345678 G', bx + bw * 0.64, by + bh * 0.82);
+                          c2.fillStyle = ink; c2.font = (fs * 0.68) + 'px serif'; c2.fillText('SERIES 2021', bx + bw * 0.67, by + bh * 0.68);
+                          c2.textAlign = 'center'; c2.font = 'bold ' + (fs * 1.15) + 'px serif'; c2.fillText('ONE DOLLAR', bx + bw / 2, by + bh - 6);
+                          c2.font = 'bold ' + Math.max(18, bh * 0.20) + 'px serif'; c2.fillText('1', bx + 19, by + 29); c2.fillText('1', bx + bw - 19, by + 29); c2.fillText('1', bx + 19, by + bh - 10); c2.fillText('1', bx + bw - 19, by + bh - 10);
+                        }
+
+                        var anchors = side === 'back' ? [[bx + bw * .27, by + bh * .61],[bx + bw * .27, by + bh * .33],[bx + bw * .27, by + bh * .77],[bx + bw * .73, by + bh * .53],[bx + bw * .73, by + bh * .72],[bx + bw * .73, by + bh * .35]] : [[bx + bw * .5, by + 18],[bx + bw * .4, by + bh * .88],[bx + bw * .17, by + bh * .73],[bx + bw * .2, by + bh * .3],[bx + bw * .26, by + bh * .55],[bx + bw * .74, by + bh * .55]];
                         anchors.forEach(function(a, ai) {
                           var selected = ai === blink;
                           c2.fillStyle = features[ai].color; c2.strokeStyle = selected ? '#fff' : '#064e3b'; c2.lineWidth = selected ? 2.5 : 1;
@@ -3519,7 +3786,7 @@ window.StemLab = window.StemLab || {
                         });
                         c2.fillStyle = 'rgba(0,0,0,.76)'; c2.fillRect(8, H - 50, W - 16, 42);
                         c2.fillStyle = features[blink].color; fitText(features[blink].label + ': ' + features[blink].detail, W / 2, H - 31, W - 30, compact ? 9 : 11, 'bold', 'center');
-                        c2.fillStyle = '#a7f3d0'; fitText(__alloT('stem.money.one_dollar_no_modern_features', 'Important: the $1 note has no watermark, security thread, or color-shifting ink.'), W / 2, H - 15, W - 30, compact ? 8 : 10, '', 'center');
+                        c2.fillStyle = '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.great_seal_1935_fact', 'Both sides of the Great Seal first appeared together on $1 paper money in 1935.') : __alloT('stem.money.one_dollar_no_modern_features', 'Important: the $1 note has no watermark, security thread, or color-shifting ink.'), W / 2, H - 15, W - 30, compact ? 8 : 10, '', 'center');
                         cvEl._dbAnim = requestAnimationFrame(drawDb);
                       }
                       drawDb();

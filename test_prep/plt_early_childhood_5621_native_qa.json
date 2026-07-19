@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T05:50:11.268Z",
+  "generatedAt": "2026-07-19T17:49:13.924Z",
   "packId": "praxis-plt-early-childhood-5621",
   "standard": {
     "label": "AlloFlow PLT Early Childhood 5621 source, structure, feedback, case-practice, linkage, and grade-band QA v2",
@@ -79,7 +79,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
-    "learningLibrarySha256": "4cb2c6d6681b59808723f13a2d30fa7f2f0b2d6f55991f121af896f100fb0961",
+    "learningLibrarySha256": "3b477c9662e876b342e6dbdd8d65c3989fa0cc46f52aaa993ba1c49d6dedb215",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

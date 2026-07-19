@@ -1,6 +1,6 @@
 # Praxis Reading Specialist (5302) QA report
 
-Generated: 2026-07-19T05:09:24.912Z
+Generated: 2026-07-19T17:48:51.053Z
 
 ## Result
 
@@ -13,6 +13,5 @@ Generated: 2026-07-19T05:09:24.912Z
 - Separate constructed-response workshops: 6
 
 > This is not ETS or ILA approval, independent reading-specialist validation, field testing, psychometric calibration, an official constructed-response score, a scaled-score model, diagnosis, eligibility decision, supervision, or legal advice.
-
 
 - Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.

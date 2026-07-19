@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const skillBanks = require('./speech_language_pathology_5331/item_content.cjs');
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
@@ -90,7 +91,7 @@ const itemOutput = JSON.stringify(items, null, 2) + '\n';
 const packOutput = JSON.stringify(pack, null, 2) + '\n';
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'speech_language_pathology_5331_items.json'), itemOutput, 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'speech_language_pathology_5331_pack.json'), packOutput, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'speech_language_pathology_5331_items.json'), itemOutput, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'speech_language_pathology_5331_pack.json'), packOutput, 'utf8');
 }
 console.log('Built Praxis Speech-Language Pathology 5331: 200 items in two 100-item batches; each batch = 34/33/33 domains and 25/25/25/25 answer positions.');

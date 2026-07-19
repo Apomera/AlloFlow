@@ -39,6 +39,12 @@
       motionStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
       document.head.appendChild(motionStyle);
     }
+    if (!document.getElementById('allo-ratio-lab-focus-css')) {
+      var focusStyle = document.createElement('style');
+      focusStyle.id = 'allo-ratio-lab-focus-css';
+      focusStyle.textContent = '.ratio-challenge-answer:focus-visible{outline:3px solid var(--ratio-focus-color,#4f46e5);outline-offset:2px;}';
+      document.head.appendChild(focusStyle);
+    }
     if (!document.getElementById('allo-live-ratio-lab')) {
       var liveRegion = document.createElement('div');
       liveRegion.id = 'allo-live-ratio-lab';
@@ -58,6 +64,10 @@
     { id: 'percent', icon: '%', short: 'Percents', title: 'Percent Problems', desc: 'Connect the part, whole, and percent.' },
     { id: 'proportional', icon: '\uD83D\uDCC8', short: 'Proportional?', title: 'Proportional or Not?', desc: 'Use tables, unit rates, and graphs as evidence.' }
   ];
+
+  var MAX_PERCENT = 1000;
+  var MAX_PERCENT_QUANTITY = 1000000;
+  var MAX_UNIT_RATE_VALUE = 1000000;
 
   var CHALLENGES = {
     ratioTable: [
@@ -119,7 +129,12 @@
 
   function roundTo(value, places) {
     var power = Math.pow(10, places == null ? 2 : places);
-    return Math.round((value + Number.EPSILON) * power) / power;
+    if (!isFinite(value) || !isFinite(power) || power === 0) return value;
+    var adjusted = value + Number.EPSILON;
+    if (!isFinite(adjusted)) adjusted = value;
+    var scaled = adjusted * power;
+    if (!isFinite(scaled)) return value;
+    return Math.round(scaled) / power;
   }
 
   function formatNumber(value, places) {
@@ -138,7 +153,8 @@
   }
 
   function percentTapeModel(value, maxTapes) {
-    var percent = Math.max(0, finiteNumber(value, 0));
+    var requestedPercent = Math.max(0, finiteNumber(value, 0));
+    var percent = clamp(requestedPercent, 0, MAX_PERCENT);
     var visibleLimit = clamp(Math.floor(finiteNumber(maxTapes, 6)), 1, 12);
     var wholeCount = Math.floor(percent / 100);
     var remainderPercent = roundTo(percent - wholeCount * 100, 6);
@@ -162,6 +178,7 @@
 
     return {
       percent: percent,
+      limited: requestedPercent > MAX_PERCENT,
       wholeCount: wholeCount,
       remainderPercent: remainderPercent,
       totalTapeCount: Math.max(1, wholeCount + reserveForPartial),
@@ -186,7 +203,39 @@
   }
 
   function nearlyEqual(a, b) {
+    if (!isFinite(a) || !isFinite(b)) return false;
     return Math.abs(a - b) <= 0.000001 * Math.max(1, Math.abs(a), Math.abs(b));
+  }
+
+  function pairsShareUnitRate(reference, candidate) {
+    if (!reference || !candidate || reference.x === 0 || candidate.x === 0) return false;
+    if (![reference.x, reference.y, candidate.x, candidate.y].every(isFinite)) return false;
+    if (reference.y === 0 || candidate.y === 0) return reference.y === candidate.y;
+    var referenceScale = Math.max(Math.abs(reference.x), Math.abs(reference.y));
+    var candidateScale = Math.max(Math.abs(candidate.x), Math.abs(candidate.y));
+    var left = (reference.y / referenceScale) * (candidate.x / candidateScale);
+    var right = (candidate.y / candidateScale) * (reference.x / referenceScale);
+    var magnitude = Math.max(Math.abs(left), Math.abs(right));
+    if (magnitude === 0) {
+      var referenceLogRate = Math.log(Math.abs(reference.y)) - Math.log(Math.abs(reference.x));
+      var candidateLogRate = Math.log(Math.abs(candidate.y)) - Math.log(Math.abs(candidate.x));
+      return Math.abs(referenceLogRate - candidateLogRate) <= 64 * Number.EPSILON * Math.max(1, Math.abs(referenceLogRate), Math.abs(candidateLogRate));
+    }
+    return Math.abs(left - right) <= 64 * Number.EPSILON * magnitude;
+  }
+
+  function positiveAxisMaximum(values) {
+    var maximum = 0;
+    (values || []).forEach(function(value) {
+      if (isFinite(value) && value > maximum) maximum = value;
+    });
+    return maximum > 0 ? maximum : 1;
+  }
+
+  function canonicalChallengeAnswer(challenge) {
+    if (!challenge) return '';
+    if (challenge.answer != null) return String(challenge.answer);
+    return challenge.answers && challenge.answers.length ? String(challenge.answers[0]) : '';
   }
 
   function normalizeAnswer(value) {
@@ -246,11 +295,12 @@
     var rates = nonzeroPairs.map(function(pair) { return pair.y / pair.x; });
     var complete = diagnostic.complete !== false && errors.length === 0;
     var valid = complete && pairs.length >= 2 && nonzeroPairs.length > 0;
+    var constantRate = valid && nonzeroPairs.every(function(pair) { return pairsShareUnitRate(nonzeroPairs[0], pair); });
     return {
       valid: valid,
-      proportional: valid && !hasInvalidOrigin && rates.every(function(rate) { return nearlyEqual(rate, rates[0]); }),
+      proportional: constantRate && !hasInvalidOrigin,
       rates: rates,
-      constant: valid && rates.every(function(rate) { return nearlyEqual(rate, rates[0]); }) ? rates[0] : null,
+      constant: constantRate && !hasInvalidOrigin && isFinite(rates[0]) ? rates[0] : null,
       hasInvalidOrigin: hasInvalidOrigin,
       errors: errors.slice(),
       complete: complete
@@ -262,10 +312,14 @@
     parsePairs: parsePairs,
     parsePairInput: parsePairInput,
     analyzeProportionalPairs: analyzeProportionalPairs,
+    pairsShareUnitRate: pairsShareUnitRate,
+    positiveAxisMaximum: positiveAxisMaximum,
+    roundTo: roundTo,
     percentSegmentFills: percentSegmentFills,
     percentTapeModel: percentTapeModel,
     percentTapeSummary: percentTapeSummary,
     challengeIsCorrect: challengeIsCorrect,
+    canonicalChallengeAnswer: canonicalChallengeAnswer,
     challenges: CHALLENGES
   };
 
@@ -315,8 +369,8 @@
       var soft = isContrast ? '#101010' : (isDark ? '#101827' : '#f4f7ff');
       var border = isContrast ? '#ffffff' : (isDark ? '#3a4961' : '#cbd5e1');
       var accent = isContrast ? '#ffff00' : (isDark ? '#a5b4fc' : '#4f46e5');
-      var accentStrong = isContrast ? '#ffff00' : '#4338ca';
-      var accentText = isContrast ? '#000000' : '#ffffff';
+      var accentStrong = isContrast ? '#ffff00' : (isDark ? '#a5b4fc' : '#4338ca');
+      var accentText = isContrast ? '#000000' : (isDark ? '#111827' : '#ffffff');
       var success = isContrast ? '#00ff66' : (isDark ? '#6ee7b7' : '#047857');
       var warning = isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#a16207');
       var cardStyle = { background: panel, border: '1px solid ' + border };
@@ -355,10 +409,18 @@
           var cursors = Object.assign({}, current.challengeCursorByMode || {});
           visited[mode] = true;
           visited[nextMode] = true;
-          cursors[mode] = challengeIndex;
+          cursors[mode] = challenge.id;
           var nextChallenges = CHALLENGES[nextMode] || [];
-          var nextIndex = clamp(Math.floor(finiteNumber(cursors[nextMode], 0)), 0, Math.max(0, nextChallenges.length - 1));
-          return { mode: nextMode, modesVisited: visited, challengeCursorByMode: cursors, challengeIndex: nextIndex, challengeAnswer: '', challengeFeedback: null };
+          var savedCursor = cursors[nextMode];
+          var nextIndex = typeof savedCursor === 'string'
+            ? nextChallenges.findIndex(function(item) { return item.id === savedCursor; })
+            : -1;
+          if (nextIndex < 0) nextIndex = clamp(Math.floor(finiteNumber(savedCursor, 0)), 0, Math.max(0, nextChallenges.length - 1));
+          var nextChallenge = nextChallenges[nextIndex] || nextChallenges[0];
+          if (nextChallenge) cursors[nextMode] = nextChallenge.id;
+          return { mode: nextMode, modesVisited: visited, challengeCursorByMode: cursors,
+            challengeId: nextChallenge ? nextChallenge.id : null, challengeIndex: nextIndex,
+            challengeAnswer: '', challengeAnswerId: null, challengeFeedback: null };
         });
         var selected = MODES.filter(function(item) { return item.id === nextMode; })[0];
         announce((selected ? selected.title : nextMode) + ' opened.');
@@ -390,7 +452,12 @@
             min: options.min,
             max: options.max,
             step: options.step || 1,
-            onChange: function(event) { var patch = {}; patch[key] = finiteNumber(event.target.value, 0); update(patch); },
+            onChange: function(event) {
+              var nextValue = finiteNumber(event.target.value, 0);
+              if (options.min != null) nextValue = Math.max(options.min, nextValue);
+              if (options.max != null) nextValue = Math.min(options.max, nextValue);
+              var patch = {}; patch[key] = nextValue; update(patch);
+            },
             className: 'w-full rounded-lg px-3 py-2 text-sm',
             style: inputStyle,
             'aria-label': label
@@ -491,27 +558,31 @@
       }
 
       function renderUnitRates() {
-        var amountA = Math.max(0, finiteNumber(d.amountA, 12));
-        var costA = Math.max(0, finiteNumber(d.costA, 3.6));
-        var amountB = Math.max(0, finiteNumber(d.amountB, 20));
-        var costB = Math.max(0, finiteNumber(d.costB, 5.4));
-        var rateA = amountA > 0 ? costA / amountA : null;
-        var rateB = amountB > 0 ? costB / amountB : null;
+        var amountA = clamp(finiteNumber(d.amountA, 12), 0, MAX_UNIT_RATE_VALUE);
+        var costA = clamp(finiteNumber(d.costA, 3.6), 0, MAX_UNIT_RATE_VALUE);
+        var amountB = clamp(finiteNumber(d.amountB, 20), 0, MAX_UNIT_RATE_VALUE);
+        var costB = clamp(finiteNumber(d.costB, 5.4), 0, MAX_UNIT_RATE_VALUE);
+        var computedRateA = amountA > 0 ? costA / amountA : null;
+        var computedRateB = amountB > 0 ? costB / amountB : null;
+        var rateA = computedRateA !== null && isFinite(computedRateA) ? computedRateA : null;
+        var rateB = computedRateB !== null && isFinite(computedRateB) ? computedRateB : null;
         var comparison = 'Enter an amount greater than zero for both options.';
         if (rateA !== null && rateB !== null) {
           comparison = nearlyEqual(rateA, rateB) ? 'Both options have the same cost per unit.' : (rateA < rateB ? 'Option A has the lower cost per unit.' : 'Option B has the lower cost per unit.');
+        } else if (amountA > 0 && amountB > 0) {
+          comparison = 'Adjust the values so both unit rates stay within the learning-model range.';
         }
 
         function optionCard(name, amount, cost, amountKey, costKey, rate) {
           return h('fieldset', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('legend', { className: 'px-2 font-bold' }, name),
             h('div', { className: 'grid grid-cols-2 gap-3' },
-              numericField(name + ' quantity', amount, amountKey, { min: 0, step: 0.1 }),
-              numericField(name + ' cost in dollars', cost, costKey, { min: 0, step: 0.01 })
+              numericField(name + ' quantity', amount, amountKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.1 }),
+              numericField(name + ' cost in dollars', cost, costKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.01 })
             ),
             h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
               h('div', { className: 'text-xs', style: { color: muted } }, 'Cost for 1 unit'),
-              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, rate === null ? 'Needs a quantity' : '$' + formatNumber(rate)),
+              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, rate === null ? (amount > 0 ? 'Rate outside model range' : 'Needs a quantity') : '$' + formatNumber(rate)),
               rate !== null && h('div', { className: 'text-xs', style: { color: muted } }, '$' + formatNumber(cost) + ' \u00F7 ' + formatNumber(amount))
             )
           );
@@ -534,12 +605,13 @@
 
       function renderPercent() {
         var kind = ['findPart', 'findPercent', 'findWhole'].indexOf(d.percentKind) >= 0 ? d.percentKind : 'findPart';
-        var percent = Math.max(0, finiteNumber(d.percentValue, 25));
-        var whole = Math.max(0, finiteNumber(d.percentWhole, 80));
-        var part = Math.max(0, finiteNumber(d.percentPart, 20));
+        var percent = clamp(finiteNumber(d.percentValue, 25), 0, MAX_PERCENT);
+        var whole = clamp(finiteNumber(d.percentWhole, 80), 0, MAX_PERCENT_QUANTITY);
+        var part = clamp(finiteNumber(d.percentPart, 20), 0, MAX_PERCENT_QUANTITY);
         var result;
         var formula;
         var resultLabel;
+        var resultIssue = '';
         if (kind === 'findPercent') {
           result = whole > 0 ? part / whole * 100 : null;
           formula = 'part \u00F7 whole \u00D7 100';
@@ -553,11 +625,18 @@
           formula = 'whole \u00D7 (percent \u00F7 100)';
           resultLabel = 'Part';
         }
+        var resultLimit = kind === 'findPercent' ? MAX_PERCENT : MAX_PERCENT_QUANTITY;
+        if (result != null && (!isFinite(result) || result > resultLimit)) {
+          result = null;
+          resultIssue = kind === 'findPercent'
+            ? 'This example is above the 1000% learning-model limit. Adjust the part or whole.'
+            : 'This result is above the 1,000,000 quantity limit. Adjust the example values.';
+        }
         var tapePercent = kind === 'findPercent' ? (result == null ? 0 : result) : percent;
         var tapeModel = percentTapeModel(tapePercent, 6);
-        var tapeSummary = result == null
+        var tapeSummary = resultIssue || (result == null
           ? (kind === 'findPercent' ? 'The percent is not defined when the whole is zero. Enter a positive whole to build the tape.' : 'The whole is not defined when the percent is zero. Enter a positive percent to build the tape.')
-          : percentTapeSummary(tapeModel);
+          : percentTapeSummary(tapeModel));
 
         function renderPercentTape(tape, tapeIndex) {
           var wholeNumber = tape.complete ? tapeIndex + 1 : tapeModel.wholeCount + 1;
@@ -624,9 +703,10 @@
                 h('option', { value: 'findWhole' }, 'Find the whole')
               )
             ),
-            kind !== 'findWhole' && numericField('Whole', whole, 'percentWhole', { min: 0, step: 0.1 }),
-            kind !== 'findPercent' && numericField('Percent', percent, 'percentValue', { min: 0, step: 0.1 }),
-            kind !== 'findPart' && numericField('Part', part, 'percentPart', { min: 0, step: 0.1 })
+            kind !== 'findWhole' && numericField('Whole', whole, 'percentWhole', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
+            kind !== 'findPercent' && numericField('Percent', percent, 'percentValue', { min: 0, max: MAX_PERCENT, step: 0.1 }),
+            kind !== 'findPart' && numericField('Part', part, 'percentPart', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
+            h('p', { className: 'text-xs', style: { color: muted }, role: 'note' }, 'Learning-model range: 0% to 1000%; quantities up to 1,000,000.')
           ),
           h('div', { className: 'rounded-xl p-4 space-y-4', style: cardStyle },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3' },
@@ -656,8 +736,8 @@
         var proportional = analysis.proportional;
         var validForDecision = analysis.valid;
         var graphPairs = pairInput.complete ? pairs.slice().sort(function(a, b) { return a.x - b.x; }) : [];
-        var maxX = Math.max.apply(null, [1].concat(graphPairs.map(function(pair) { return pair.x; })));
-        var maxY = Math.max.apply(null, [1].concat(graphPairs.map(function(pair) { return pair.y; })));
+        var maxX = positiveAxisMaximum(graphPairs.map(function(pair) { return pair.x; }));
+        var maxY = positiveAxisMaximum(graphPairs.map(function(pair) { return pair.y; }));
         function scaleX(value) { return 42 + (value / maxX) * 290; }
         function scaleY(value) { return 185 - (value / maxY) * 145; }
         var includesOrigin = graphPairs.some(function(pair) { return pair.x === 0 && pair.y === 0; });
@@ -712,14 +792,14 @@
               )
             ),
             h('div', { className: 'rounded-xl p-3', style: cardStyle },
-              h('svg', { viewBox: '0 0 360 220', className: 'w-full min-h-[220px]', role: 'img', 'aria-labelledby': 'ratio-graph-title ratio-graph-desc' },
+              h('svg', { viewBox: '0 0 360 220', className: 'w-full min-h-[220px]', role: 'img', 'aria-labelledby': 'ratio-graph-title ratio-graph-desc', 'data-axis-max-x': formatNumber(maxX, 6), 'data-axis-max-y': formatNumber(maxY, 6) },
                 h('title', { id: 'ratio-graph-title' }, 'Relationship graph'),
                 h('desc', { id: 'ratio-graph-desc' }, graphPairs.length ? 'Graph of ' + graphPairs.length + ' plotted table points. ' + (proportional && !includesOrigin ? 'A proportional model ray is extended through the origin. ' : '') + verdict : 'No complete set of points is available to graph. ' + verdict),
                 h('line', { x1: 42, y1: 185, x2: 340, y2: 185, stroke: text, strokeWidth: 2 }),
                 h('line', { x1: 42, y1: 185, x2: 42, y2: 28, stroke: text, strokeWidth: 2 }),
                 h('text', { x: 340, y: 205, textAnchor: 'end', style: { fill: muted, fontSize: '11px' } }, 'x'),
                 h('text', { x: 24, y: 35, style: { fill: muted, fontSize: '11px' } }, 'y'),
-                validForDecision && proportional && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, 'data-proportional-ray': 'true' }),
+                validForDecision && proportional && analysis.constant !== null && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, 'data-proportional-ray': 'true' }),
                 graphPairs.map(function(pair, index) {
                   return h('g', { key: index },
                     h('circle', { cx: scaleX(pair.x), cy: scaleY(pair.y), r: 5, fill: accentStrong, stroke: panel, strokeWidth: 2 }, h('title', null, '(' + pair.x + ', ' + pair.y + ')')),
@@ -746,27 +826,44 @@
 
       var modeInfo = MODES.filter(function(item) { return item.id === mode; })[0] || MODES[0];
       var modeChallenges = CHALLENGES[mode];
-      var challengeIndex = clamp(Math.floor(finiteNumber(d.challengeIndex, 0)), 0, modeChallenges.length - 1);
+      var savedModeCursor = (d.challengeCursorByMode || {})[mode];
+      var cursorChallengeIndex = typeof savedModeCursor === 'string'
+        ? modeChallenges.findIndex(function(item) { return item.id === savedModeCursor; })
+        : -1;
+      var directChallengeIndex = typeof d.challengeId === 'string'
+        ? modeChallenges.findIndex(function(item) { return item.id === d.challengeId; })
+        : -1;
+      var legacyCursor = cursorChallengeIndex < 0 && (typeof savedModeCursor === 'number' || /^\d+$/.test(String(savedModeCursor == null ? '' : savedModeCursor)))
+        ? savedModeCursor : d.challengeIndex;
+      var legacyChallengeIndex = clamp(Math.floor(finiteNumber(legacyCursor, 0)), 0, modeChallenges.length - 1);
+      var challengeIndex = cursorChallengeIndex >= 0 ? cursorChallengeIndex : (directChallengeIndex >= 0 ? directChallengeIndex : legacyChallengeIndex);
       var challenge = modeChallenges[challengeIndex];
-      var feedback = d.challengeFeedback;
       var challengeSolved = !!((d.solvedChallenges || {})[challenge.id]);
+      var feedback = d.challengeFeedback;
+      if (feedback && feedback.challengeId !== challenge.id) feedback = null;
+      if (challengeSolved && (!feedback || !feedback.correct)) {
+        feedback = { challengeId: challenge.id, correct: true, message: 'Solved previously. ' + challenge.explain };
+      }
+      var scopedChallengeAnswer = d.challengeAnswerId === challenge.id && d.challengeAnswer != null ? d.challengeAnswer : '';
+      var displayedChallengeAnswer = challengeSolved ? canonicalChallengeAnswer(challenge) : scopedChallengeAnswer;
       var challengeCheckPending = false;
 
       function checkChallenge() {
         if (challengeSolved || challengeCheckPending) return;
-        if (!normalizeAnswer(d.challengeAnswer)) {
-          update({ challengeFeedback: { correct: false, message: 'Enter an answer before checking.' } });
+        if (!normalizeAnswer(scopedChallengeAnswer)) {
+          update({ challengeId: challenge.id, challengeIndex: challengeIndex,
+            challengeFeedback: { challengeId: challenge.id, correct: false, message: 'Enter an answer before checking.' } });
           announce('Enter an answer before checking.');
           return;
         }
-        var correct = challengeIsCorrect(challenge, d.challengeAnswer);
+        var correct = challengeIsCorrect(challenge, scopedChallengeAnswer);
         if (correct) {
           challengeCheckPending = true;
           var firstSolve = !((d.solvedChallenges || {})[challenge.id]);
           update(function(current) {
             var solved = Object.assign({}, current.solvedChallenges || {});
             solved[challenge.id] = true;
-            return { solvedChallenges: solved, challengeFeedback: { correct: true, message: 'Correct! ' + challenge.explain } };
+            return { solvedChallenges: solved, challengeFeedback: { challengeId: challenge.id, correct: true, message: 'Correct! ' + challenge.explain } };
           });
           announce('Correct. ' + challenge.explain);
           if (firstSolve && typeof ctx.awardXP === 'function') {
@@ -774,17 +871,19 @@
           }
           if (firstSolve) notify('Challenge solved! +15 XP', 'success');
         } else {
-          update({ challengeFeedback: { correct: false, message: 'Not yet. ' + challenge.hint } });
+          update({ challengeFeedback: { challengeId: challenge.id, correct: false, message: 'Not yet. ' + challenge.hint } });
           announce('Not yet. ' + challenge.hint);
         }
       }
 
       function nextChallenge() {
         var next = (challengeIndex + 1) % modeChallenges.length;
+        var nextChallengeItem = modeChallenges[next];
         update(function(current) {
           var cursors = Object.assign({}, current.challengeCursorByMode || {});
-          cursors[mode] = next;
-          return { challengeCursorByMode: cursors, challengeIndex: next, challengeAnswer: '', challengeFeedback: null };
+          cursors[mode] = nextChallengeItem.id;
+          return { challengeCursorByMode: cursors, challengeId: nextChallengeItem.id,
+            challengeIndex: next, challengeAnswer: '', challengeAnswerId: null, challengeFeedback: null };
         });
         announce('Challenge ' + (next + 1) + ' of ' + modeChallenges.length + '.');
       }
@@ -853,20 +952,36 @@
             ),
             h('button', { type: 'button', onClick: nextChallenge, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: panel, color: text, border: '1px solid ' + border } }, 'Next challenge')
           ),
-          h('p', { className: 'text-sm sm:text-base font-semibold' }, challenge.prompt),
-          h('form', { className: 'flex flex-col sm:flex-row gap-2', onSubmit: function(event) { event.preventDefault(); checkChallenge(); } },
-            h('label', { className: 'flex-1' },
-              h('span', { className: 'sr-only' }, 'Challenge answer'),
-              h('div', { className: 'flex items-center rounded-lg overflow-hidden', style: inputStyle },
+          h('p', { id: 'ratio-challenge-prompt', className: 'text-sm sm:text-base font-semibold' }, challenge.prompt),
+          h('form', { className: 'flex flex-col sm:flex-row gap-2', 'aria-labelledby': 'ratio-challenge-prompt', onSubmit: function(event) { event.preventDefault(); checkChallenge(); } },
+            h('label', { className: 'flex-1', htmlFor: 'ratio-challenge-answer' },
+              h('span', { id: 'ratio-challenge-answer-label', className: 'sr-only' }, 'Challenge answer'),
+              h('div', { className: 'flex items-center rounded-lg', style: inputStyle },
                 challenge.prefix && h('span', { className: 'pl-3 font-bold', 'aria-hidden': 'true' }, challenge.prefix),
                 h('input', {
-                  value: d.challengeAnswer == null ? '' : d.challengeAnswer,
-                  onChange: function(event) { update({ challengeAnswer: event.target.value, challengeFeedback: null }); },
+                  id: 'ratio-challenge-answer',
+                  value: displayedChallengeAnswer,
+                  onChange: function(event) {
+                    if (challengeSolved) return;
+                    var nextAnswer = event.target.value;
+                    update(function(current) {
+                      var cursors = Object.assign({}, current.challengeCursorByMode || {});
+                      cursors[mode] = challenge.id;
+                      return { challengeCursorByMode: cursors, challengeId: challenge.id,
+                        challengeIndex: challengeIndex, challengeAnswer: nextAnswer,
+                        challengeAnswerId: challenge.id, challengeFeedback: null };
+                    });
+                  },
+                  readOnly: challengeSolved,
+                  'aria-readonly': challengeSolved,
                   inputMode: challenge.answer != null ? 'decimal' : 'text',
-                  className: 'w-full px-3 py-2.5 bg-transparent outline-none',
-                  style: { color: text },
+                  className: 'ratio-challenge-answer w-full rounded-lg px-3 py-2.5 bg-transparent',
+                  style: { color: text, '--ratio-focus-color': accent },
                   placeholder: challenge.answers ? 'Type your answer' : 'Enter a number',
-                  'aria-describedby': feedback ? 'ratio-challenge-feedback' : undefined
+                  'aria-labelledby': 'ratio-challenge-prompt ratio-challenge-answer-label',
+                  'aria-describedby': feedback ? 'ratio-challenge-feedback' : undefined,
+                  'aria-invalid': feedback && !feedback.correct ? 'true' : undefined,
+                  'data-solved-answer': challengeSolved ? 'true' : undefined
                 }),
                 challenge.suffix && h('span', { className: 'pr-3 text-xs font-bold', 'aria-hidden': 'true' }, challenge.suffix)
               )

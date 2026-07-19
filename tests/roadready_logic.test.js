@@ -158,6 +158,45 @@ describe('physical road layouts', () => {
       + RR.roadCrownHeight(0, chunk, pose.width * 0.5), 6);
   });
 
+  it('coordinates railroad warning, occupied, and clearing phases deterministically', () => {
+    expect(RR.railroadCrossingState(0, 0)).toMatchObject({ stopRequired: false, occupied: false, gateProgress: 0 });
+    const lowering = RR.railroadCrossingState(21.5, 0);
+    expect(lowering.stopRequired).toBe(true);
+    expect(lowering.occupied).toBe(false);
+    expect(lowering.gateProgress).toBeCloseTo(0.5, 8);
+    const occupied = RR.railroadCrossingState(25, 0);
+    expect(occupied).toMatchObject({ stopRequired: true, occupied: true, gateProgress: 1 });
+    expect(occupied.trainProgress).toBeCloseTo(0.3, 8);
+    const clearing = RR.railroadCrossingState(32.5, 0);
+    expect(clearing.stopRequired).toBe(true);
+    expect(clearing.gateProgress).toBeCloseTo(0.5, 8);
+    expect(RR.railroadCrossingState(34, 0)).toMatchObject({ stopRequired: false, occupied: false, gateProgress: 0 });
+    expect(RR.railroadCrossingState(14, 7)).toEqual(RR.railroadCrossingState(21, 0));
+  });
+
+  it('detects finite transverse road features on straight and curved headings', () => {
+    const straight = { centerX: 10, centerY: 20, heading: 0, halfWidth: 3 };
+    const hit = RR.crossedFiniteRoadFeature(12, 18, 12, 22, straight);
+    expect(hit).not.toBeNull();
+    expect(hit.progress).toBeCloseTo(0.5, 8);
+    expect(hit.lateral).toBeCloseTo(2, 8);
+    expect(RR.crossedFiniteRoadFeature(14, 18, 14, 22, straight)).toBeNull();
+    expect(RR.crossedFiniteRoadFeature(8, 18, 12, 18, straight)).toBeNull();
+
+    const heading = 0.55;
+    const tangent = { x: Math.sin(heading), y: Math.cos(heading) };
+    const perp = { x: Math.cos(heading), y: -Math.sin(heading) };
+    const curved = { centerX: 40, centerY: 60, heading, halfWidth: 3 };
+    const previous = { x: 40 - tangent.x * 2 + perp.x * 2.5,
+      y: 60 - tangent.y * 2 + perp.y * 2.5 };
+    const next = { x: 40 + tangent.x * 2 + perp.x * 2.5,
+      y: 60 + tangent.y * 2 + perp.y * 2.5 };
+    const curvedHit = RR.crossedFiniteRoadFeature(previous.x, previous.y, next.x, next.y, curved);
+    expect(curvedHit).not.toBeNull();
+    expect(curvedHit.lateral).toBeCloseTo(2.5, 8);
+    expect(RR.crossedFiniteRoadFeature(next.x, next.y, previous.x, previous.y, curved)).not.toBeNull();
+  });
+
   it('models drainage crown consistently on main and divided roads', () => {
     expect(RR.roadCrownHeight(0, { roadHalfWidth: 3.5 })).toBeCloseTo(0.07, 8);
     expect(RR.roadCrownHeight(1.5, { roadHalfWidth: 3.5 })).toBeCloseTo(0.04, 8);

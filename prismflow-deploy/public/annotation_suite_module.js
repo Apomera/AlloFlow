@@ -849,18 +849,17 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
     if (isErase) {
       return;
     }
-    setStroke(function(prev) {
-      if (!prev || typeof onCommit !== "function") return null;
-      if (prev.shape === "free") {
-        if (prev.points.length < 2) return null;
-        onCommit(prev);
-      } else {
-        const dx = prev.end.x - prev.start.x, dy = prev.end.y - prev.start.y;
-        if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return null;
-        onCommit(prev);
-      }
-      return null;
-    });
+    const prev = stroke;
+    setStroke(null);
+    if (!prev || typeof onCommit !== "function") return;
+    if (prev.shape === "free") {
+      if (prev.points.length < 2) return;
+      onCommit(prev);
+    } else {
+      const dx = prev.end.x - prev.start.x, dy = prev.end.y - prev.start.y;
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+      onCommit(prev);
+    }
   }
   function pointerLeave() {
     if (isErase) setEraseCursor(null);

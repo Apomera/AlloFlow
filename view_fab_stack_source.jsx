@@ -27,7 +27,7 @@ function FabStack(props) {
     activeView, addToast, focusMode, generatedContent, handleSetIsSyntaxGameToTrue,
     handleSetShowStudyTimerModalToTrue, handleToggleFocusMode, handleToggleIsFabExpanded,
     handleToggleReadingRuler, handleToggleShowSocraticChat, handleToggleVisualSupports,
-    interactionMode, isCompareMode, isDictationMode, isFabExpanded, isFluencyMode,
+    interactionMode, isCompareMode, isDictationMode, dictationStatus, isFabExpanded, isFluencyMode,
     isLineFocusMode, isStudyTimerRunning, isTeacherMode, readingRuler, runTour,
     setFocusedParagraphIndex, setInteractionMode, setIsCompareMode, setIsDictationMode,
     setIsFluencyMode, setIsLineFocusMode, setRevisionData, setSelectionMenu,
@@ -36,6 +36,9 @@ function FabStack(props) {
   } = props;
   const panelRef = React.useRef(null);
   const toggleRef = React.useRef(null);
+  const dictationPhase = dictationStatus?.state || (isDictationMode ? 'listening' : 'idle');
+  const dictationEngineLabel = dictationStatus?.engineLabel || '';
+  const dictationBusy = dictationPhase === 'starting' || dictationPhase === 'transcribing';
 
   React.useEffect(() => {
     if (!isFabExpanded) return undefined;
@@ -225,21 +228,33 @@ function FabStack(props) {
                     type="button"
                     onClick={(e) => {
                         e.preventDefault();
-                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                        if (!SpeechRecognition) {
+                        const voice = window.AlloFlowVoice;
+                        const supported = voice && typeof voice.isDictationSupported === 'function'
+                          ? voice.isDictationSupported()
+                          : !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+                        if (!supported) {
                             addToast(t('roles.voice_not_supported'), "error");
                             return;
                         }
                         setIsDictationMode(!isDictationMode);
                     }}
-                    className={`p-3 rounded-full transition-all shadow-sm ${isDictationMode ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('toolbar.dictation_toggle')}
+                    disabled={dictationPhase === 'transcribing'}
+                    className={`p-3 rounded-full transition-all shadow-sm disabled:cursor-wait ${isDictationMode || dictationBusy ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+                    title={[t('toolbar.dictation_toggle'), dictationEngineLabel].filter(Boolean).join(' — ')}
                     aria-label={isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start')}
                     aria-pressed={isDictationMode}
+                    aria-busy={dictationBusy}
+                    data-dictation-engine={dictationStatus?.engine || ''}
                     data-help-key="fab_dictation"
                   >
-                    {isDictationMode ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
+                    {isDictationMode || dictationBusy ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
                   </button>
+                  )}
+                  {dictationStatus && dictationPhase !== 'idle' && (
+                    <div role="status" aria-live="polite" className={`fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === 'error' ? 'text-rose-700' : 'text-slate-700'}`}>
+                      <div className="font-bold">{dictationStatus.message || dictationEngineLabel}</div>
+                      {dictationStatus.privacy && <div className="mt-0.5 text-slate-600">{dictationStatus.privacy}</div>}
+                    </div>
                   )}
               </div>
           )}

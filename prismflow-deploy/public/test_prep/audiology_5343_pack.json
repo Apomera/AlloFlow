@@ -23475,36 +23475,6 @@
   "officialConstructedResponseCount": 0,
   "officialTotalTimeMinutes": 120,
   "simulationDomainCountsBasis": "release-declared-selected-response-allocation",
-  "independentAdditionReview": {
-    "schemaVersion": 1,
-    "status": "integrated-final-expansion",
-    "manifestSchemaVersion": 2,
-    "packId": "praxis-audiology-5343",
-    "packVersion": "1.0.0",
-    "sourceItems": 200,
-    "assistantAuthoredIndependentItems": 100,
-    "independentPracticeItems": 300,
-    "reviewedAt": "2026-07-18",
-    "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
-    "batches": [
-      {
-        "id": "independent-diagnostic-batch-3",
-        "reviewedAt": "2026-07-18",
-        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
-        "files": [
-          {
-            "file": "audiology_5343_batch3.json",
-            "reviewReport": "audiology_5343_batch3.review.json",
-            "itemCount": 100,
-            "sha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da"
-          }
-        ]
-      }
-    ],
-    "finalIndependentPracticeItems": 300,
-    "finalGuidedReviewItems": 200
-  },
-  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "lastReviewedAt": "2026-07-18",
@@ -23558,5 +23528,35 @@
     ],
     "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. It currently contains 204 distinct independent content kernels; 296 newly authored independent questions remain to reach 500."
+  "independentAdditionReview": {
+    "schemaVersion": 1,
+    "status": "integrated-final-expansion",
+    "manifestSchemaVersion": 2,
+    "packId": "praxis-audiology-5343",
+    "packVersion": "1.0.0",
+    "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 100,
+    "independentPracticeItems": 300,
+    "reviewedAt": "2026-07-18",
+    "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+    "batches": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "reviewedAt": "2026-07-18",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          {
+            "file": "audiology_5343_batch3.json",
+            "reviewReport": "audiology_5343_batch3.review.json",
+            "itemCount": 100,
+            "sha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da"
+          }
+        ]
+      }
+    ],
+    "finalIndependentPracticeItems": 300,
+    "finalGuidedReviewItems": 200
+  },
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. It currently contains 204 distinct independent content kernels; 296 newly authored independent questions remain to reach 500.",
+  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

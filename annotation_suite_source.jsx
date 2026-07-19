@@ -961,19 +961,23 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
       // Eraser deletions happen live during pointermove — nothing to commit
       return;
     }
-    setStroke(function (prev) {
-      if (!prev || typeof onCommit !== 'function') return null;
-      // Reject zero-area drawings
-      if (prev.shape === 'free') {
-        if (prev.points.length < 2) return null;
-        onCommit(prev);
-      } else {
-        const dx = prev.end.x - prev.start.x, dy = prev.end.y - prev.start.y;
-        if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return null;
-        onCommit(prev);
-      }
-      return null;
-    });
+    // Read the finished stroke from the current closure and clear it. The
+    // commit must NOT happen inside a setStroke updater: React runs updater
+    // functions during DrawingCapture's render phase, and calling onCommit
+    // (a parent setState) from there triggers "Cannot update a component
+    // while rendering a different component". Commit as a plain side effect.
+    const prev = stroke;
+    setStroke(null);
+    if (!prev || typeof onCommit !== 'function') return;
+    // Reject zero-area drawings
+    if (prev.shape === 'free') {
+      if (prev.points.length < 2) return;
+      onCommit(prev);
+    } else {
+      const dx = prev.end.x - prev.start.x, dy = prev.end.y - prev.start.y;
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+      onCommit(prev);
+    }
   }
   function pointerLeave() {
     if (isErase) setEraseCursor(null);

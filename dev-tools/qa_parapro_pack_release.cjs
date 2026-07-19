@@ -30,10 +30,8 @@ const mergedItems = mergedUntypedItems.map((item) => {
 });
 const pack = {
   ...sourcePack,
-  title: 'ParaPro Assessment (1755) - 200-Item Diagnostic Bank',
   shortTitle: 'ParaPro diagnostic batches 1-2',
   description: 'Two independently authored 100-question diagnostic batches connected to a 12-chapter learning library, targeted practice, and an optional 90-question timed simulation. The official ParaPro Assessment currently has 90 questions; AlloFlow practice is not an official form or score.',
-  version: '0.7.0',
   contentReview: '200 source-reviewed questions plus 12 chapters, 60 checks, 75 flashcards, and 20 memory aids; independent educator review pending',
   batchSize: 100,
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS. The official ParaPro Assessment currently has 90 questions; these expanded 100-item diagnostic batches are not official-length simulations. Practice results are not official or scaled ParaPro scores, pass predictions, certifications, or substitutes for current state and local requirements.',
@@ -48,7 +46,7 @@ const pack = {
   ],
   items: mergedItems,
 };
-const packForWrite = expandedSourceMode ? { ...pack, items: mergedItems.concat(expandedTail) } : pack;
+const packForWrite = expandedSourceMode ? { ...sourcePack, items: mergedItems.concat(expandedTail) } : pack;
 const blueprintUrl = 'https://www.ets.org/pdfs/parapro/1755.pdf';
 const domains = ['reading', 'mathematics', 'writing'];
 const allowedHosts = new Set(['ets.org', 'www.ets.org', 'ies.ed.gov', 'openstax.org']);
@@ -160,11 +158,11 @@ const report = {
   summary: { totalItems: pack.items.length, passedItems, reviewRequiredItems: pack.items.length - passedItems, answerPositions, packFindings: findings.map((finding) => finding.message), status },
   items: reports,
 };
-const markdown = `# ParaPro 200-item diagnostic bank QA report
+const markdown = `# ParaPro diagnostic-bank QA report
 
 Generated: ${generatedAt}
 
-Pack: ${pack.title} v${pack.version}
+Pack: ${packForWrite.title} v${packForWrite.version}
 
 Blueprint: [ETS ParaPro Assessment 1755 Study Companion](${blueprintUrl})
 
@@ -213,8 +211,8 @@ for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismfl
   writeGeneratedFile(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(packForWrite, null, 2) + '\n', 'utf8');
   if (!expandedSourceMode) {
     writeGeneratedFile(path.join(outputRoot, 'parapro_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-    writeGeneratedFile(path.join(outputRoot, 'parapro_native_qa.md'), markdown, 'utf8');
   }
+  writeGeneratedFile(path.join(outputRoot, 'parapro_native_qa.md'), markdown, 'utf8');
 }
 console.log('ParaPro QA: ' + passedItems + '/' + pack.items.length + ' base items passed; pack status ' + status + (expandedSourceMode ? '; preserved ' + packForWrite.items.length + '-item expanded pack and expansion QA.' : '.') );
 if (status !== 'pass') {

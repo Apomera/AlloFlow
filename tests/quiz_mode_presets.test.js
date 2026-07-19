@@ -6,6 +6,8 @@ import { loadAlloModule } from './setup.js';
 const root = process.cwd();
 const panelSource = () => readFileSync(resolve(root, 'view_sidebar_panels_source.jsx'), 'utf8');
 const dispatcherSource = () => readFileSync(resolve(root, 'generate_dispatcher_source.jsx'), 'utf8');
+const quizSource = () => readFileSync(resolve(root, 'view_quiz_source.jsx'), 'utf8');
+const appSource = () => readFileSync(resolve(root, 'AlloFlowANTI.txt'), 'utf8');
 
 let strategies;
 let aggregators;
@@ -45,10 +47,10 @@ describe('quiz modes as customizable presets', () => {
   it('passes exact custom counts, including zero, from the panel to generation', () => {
     const source = panelSource();
     expect(source).toContain('min="0"');
-    expect(source).toContain('quizMcqCount: clampCount(quizMcqCount, 20)');
+    expect(source).toContain('quizMcqCount: clampCount(effectiveMix.mcq || 0, 20)');
     expect(source).toContain('quizReflectionCount: reflectionTotal');
     expect(source).toContain('itemTypes: effectiveMix');
-    expect(source).toContain('handleModeChange(ev.target.value)');
+    expect(source).toContain('handleModeChange(event.target.value)');
     expect(source).toContain("{isCustomized ? 'Customized' : 'Recommended preset'}");
     expect(source).toContain('Closing reflection');
     expect(source).not.toContain("{quizMode === 'exit-ticket' && (");
@@ -58,7 +60,7 @@ describe('quiz modes as customizable presets', () => {
 
   it('separates unscored reflections and groups scored formats by evidence', () => {
     const source = panelSource();
-    expect(source).toContain('Assessment questions');
+    expect(source).toContain('Customize questions');
     expect(source).toContain('Closing reflection');
     expect(source).toContain('(unscored)');
     expect(source).toContain('max="2"');
@@ -100,6 +102,79 @@ describe('quiz modes as customizable presets', () => {
     expect(source).toContain('content.itemCountMismatch = _countMismatch');
   });
 
+  it('uses a purpose-first unified builder with time guidance and reusable presets', () => {
+    const source = panelSource();
+    expect(source.indexOf('1. Assessment purpose')).toBeLessThan(source.indexOf('2. Customize questions'));
+    expect(source).toContain("{ key: 'mcq', label: 'Multiple Choice'");
+    expect(source).toContain('No format is treated as an “extra.”');
+    expect(source).toContain('estimatedLow');
+    expect(source).toContain('estimatedHigh');
+    expect(source).toContain('ASSESSMENT_PRESET_STORAGE_KEY');
+    expect(source).toContain('persistAssessmentPresets');
+  });
+
+  it('persists explicit scoring policy and supports teacher-reviewed writing', () => {
+    const panel = panelSource();
+    const dispatcher = dispatcherSource();
+    const quiz = quizSource();
+    expect(panel).toContain('scoringPolicy,');
+    expect(panel).toContain('Allow partial credit');
+    expect(panel).toContain('Submit for teacher review');
+    expect(dispatcher).toContain('content.scoringPolicy = Object.assign({}, _scoringPolicy)');
+    expect(quiz).toContain("writtenResponseMode === 'teacher-review'");
+    expect(quiz).toContain("p.scoringPolicy.partialCredit !== false");
+  });
+
+  it('provides full-format author controls and accessible voice dictation', () => {
+    const quiz = quizSource();
+    const app = appSource();
+    expect(quiz).toContain('function AssessmentItemEditor');
+    expect(quiz).toContain('function AssessmentCoreFields');
+    expect(quiz).toContain('function AssessmentDiagnosticFields');
+    expect(quiz).toContain('Regenerate item');
+    expect(quiz).toContain('Dictate response');
+    expect(quiz).toContain('window.SpeechRecognition || window.webkitSpeechRecognition');
+    expect(app).toContain('const handleQuizQuestionAction');
+    for (const action of ['patch', 'delete', 'duplicate', 'move', 'replace-all', 'append']) {
+      expect(app).toContain("action === '" + action + "'");
+    }
+  });
+
+  it('uses one permission-aware dictation service for written, numeric, and reflection responses', () => {
+    const quiz = quizSource();
+    const app = appSource();
+    expect(quiz).toContain('voice.createDictationController');
+    expect(quiz).toContain('props.studentProjectSettings.allowDictation === false');
+    expect(quiz).toContain('Dictate written response');
+    expect(quiz).toContain('Dictate number or units');
+    expect(quiz.match(/Dictate reflection/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(app).toContain('window.AlloFlowVoice');
+    expect(app).toContain('dictationStatus={dictationStatus}');
+    expect(app).toContain('target.isContentEditable');
+  });
+
+  it('renders every supported question type on the presentation board', () => {
+    const quiz = quizSource();
+    expect(quiz).toContain('function AssessmentPresentationItem');
+    expect(quiz).toContain('data-presentation-question-type={type}');
+    expect(quiz).toContain('Reveal answer guide');
+    expect(quiz).toContain('Correct selections:');
+    expect(quiz).toContain('Expected fill:');
+    expect(quiz).toContain('Correct order:');
+    expect(quiz).toContain('Fix the mismatch:');
+    expect(quiz).toContain('Part 1 - answer options');
+    expect(quiz).toContain('Expected value:');
+    expect(quiz).not.toContain("if (!q || (q.type && q.type !== 'mcq') || !Array.isArray(q.options)) return null;");
+  });
+  it('shows a persistent structural quality review with one-click repair', () => {
+    const quiz = quizSource();
+    expect(quiz).toContain('function _quizAuditAssessment');
+    expect(quiz).toContain('function AssessmentQualityPanel');
+    expect(quiz).toContain('Requested vs generated');
+    expect(quiz).toContain('Fix flagged and missing items');
+    expect(quiz).toContain('async function repairAssessmentQuality');
+    expect(quiz).toContain('async function regenerateAssessmentQuestion');
+  });
   it('keeps rebuilt quiz modules identical to deployed copies', () => {
     for (const name of ['view_sidebar_panels_module.js', 'generate_dispatcher_module.js', 'quiz_mode_strategies.js']) {
       expect(readFileSync(resolve(root, 'prismflow-deploy/public', name), 'utf8'))

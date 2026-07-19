@@ -21,10 +21,10 @@
   if (window.StemLab.isRegistered && window.StemLab.isRegistered('arithmeticStudio')) return;
 
   var OPERATIONS = {
-    add: { symbol: '+', label: 'Addition', color: '#2563eb', soft: '#dbeafe' },
-    subtract: { symbol: '\u2212', label: 'Subtraction', color: '#dc2626', soft: '#fee2e2' },
-    multiply: { symbol: '\u00d7', label: 'Multiplication', color: '#7c3aed', soft: '#ede9fe' },
-    divide: { symbol: '\u00f7', label: 'Division', color: '#059669', soft: '#d1fae5' }
+    add: { symbol: '+', label: 'Addition', color: '#2563eb', soft: '#dbeafe', darkText: '#93c5fd' },
+    subtract: { symbol: '\u2212', label: 'Subtraction', color: '#dc2626', soft: '#fee2e2', darkText: '#fca5a5' },
+    multiply: { symbol: '\u00d7', label: 'Multiplication', color: '#7c3aed', soft: '#ede9fe', darkText: '#c4b5fd' },
+    divide: { symbol: '\u00f7', label: 'Division', color: '#047857', soft: '#d1fae5', darkText: '#6ee7b7' }
   };
 
   var PRACTICE = [
@@ -90,6 +90,22 @@
   function countSolved(map, allowedIds) {
     var ids = allowedIds || Object.keys(map || {});
     return ids.filter(function (id) { return !!(map || {})[id]; }).length;
+  }
+
+  function successfulOperationMap(data) {
+    var completed = Object.assign({}, (data && data.operationsCompleted) || {});
+    PRACTICE.forEach(function (problem) {
+      if (data && data.practiceSolved && data.practiceSolved[problem.id]) completed[problem.op] = true;
+    });
+    WORD_PROBLEMS.forEach(function (problem) {
+      if (data && data.wordSolvedCases && data.wordSolvedCases[problem.id]) completed[problem.op] = true;
+    });
+    return completed;
+  }
+
+  function successfulOperationCount(data) {
+    var completed = successfulOperationMap(data);
+    return Object.keys(OPERATIONS).filter(function (op) { return !!completed[op]; }).length;
   }
 
   function wordProblemById(id) {
@@ -250,9 +266,13 @@
       return { estimate: planA * planB, left: planA, right: planB, expression: planA + ' ' + symbol + ' ' + planB };
     }
     if (b === 0) return { estimate: null, left: a, right: b, expression: 'Division by zero is undefined' };
-    var quotient = a / b >= 0 ? Math.floor(a / b) : Math.ceil(a / b);
-    var compatibleDividend = quotient * b;
-    return { estimate: quotient, left: compatibleDividend, right: b, expression: compatibleDividend + ' ' + symbol + ' ' + b };
+    if (Math.abs(a) < Math.abs(b)) return { estimate: 0, left: 0, right: b, expression: '0 ' + symbol + ' ' + b };
+    var rawQuotient = a / b;
+    var magnitude = Math.abs(rawQuotient);
+    var step = magnitude < 10 ? 1 : magnitude < 20 ? 5 : magnitude < 100 ? 10 : Math.pow(10, Math.max(1, String(Math.floor(magnitude)).length - 1));
+    var friendlyQuotient = roundFriendly(rawQuotient, step);
+    var compatibleDividend = friendlyQuotient * b;
+    return { estimate: friendlyQuotient, left: compatibleDividend, right: b, expression: compatibleDividend + ' ' + symbol + ' ' + b };
   }
 
   function estimateFor(op, a, b) {
@@ -284,6 +304,7 @@
     missedWordProblemIds: missedWordProblemIds,
     nextWordProblemId: nextWordProblemId,
     wordResultExplanation: wordResultExplanation,
+    successfulOperationMap: successfulOperationMap,
     practice: PRACTICE.slice(),
     errors: ERROR_CASES.slice(),
     wordProblems: WORD_PROBLEMS.slice()
@@ -297,7 +318,7 @@
     category: 'math',
     questHooks: [
       { id: 'practice_5', label: 'Solve 5 arithmetic challenges', icon: '\ud83c\udfaf', check: function (d) { return countSolved(d.practiceSolved, PRACTICE_IDS) >= 5; }, progress: function (d) { return countSolved(d.practiceSolved, PRACTICE_IDS) + '/5 correct'; } },
-      { id: 'all_operations', label: 'Use all four operations', icon: '\ud83c\udf08', check: function (d) { return Object.keys(d.operationsUsed || {}).filter(function (op) { return OPERATIONS[op] && d.operationsUsed[op]; }).length >= 4; }, progress: function (d) { return Object.keys(d.operationsUsed || {}).filter(function (op) { return OPERATIONS[op] && d.operationsUsed[op]; }).length + '/4 operations'; } },
+      { id: 'all_operations', label: 'Successfully use all four operations', icon: '\ud83c\udf08', check: function (d) { return successfulOperationCount(d) >= 4; }, progress: function (d) { return successfulOperationCount(d) + '/4 operations'; } },
       { id: 'error_detective', label: 'Explain 3 common mistakes', icon: '\ud83d\udd0e', check: function (d) { return countSolved(d.errorSolvedCases, ERROR_IDS) >= 3; }, progress: function (d) { return countSolved(d.errorSolvedCases, ERROR_IDS) + '/3 mistakes'; } }
     ],
     render: function (ctx) {
@@ -318,6 +339,7 @@
       var tab = TAB_IDS.indexOf(d.tab) >= 0 ? d.tab : 'learn';
       var operation = OPERATIONS[d.operation] ? d.operation : 'add';
       var opMeta = OPERATIONS[operation];
+      var accentText = isDark ? opMeta.darkText : opMeta.color;
       var level = clampInt(d.level, 1, 3, 1);
       var a = clampInt(d.a, 0, 99999, 58);
       var bMax = operation === 'subtract' ? Math.min(9999, a) : 9999;
@@ -327,9 +349,18 @@
       var customSteps = strategySteps(operation, a, b);
       var showModel = d.showModel !== false;
       var showSteps = !!d.showSteps;
-      var candidates = PRACTICE.filter(function (p) { return p.op === operation && p.level <= level; });
-      var practiceIndex = clampInt(d.practiceIndex, 0, Math.max(0, candidates.length - 1), 0);
+      var candidates = PRACTICE.filter(function (p) { return p.op === operation && p.level === level; });
+      var hasPracticeProblemId = typeof d.practiceProblemId === 'string' && d.practiceProblemId !== '';
+      var requestedPracticeProblemId = PRACTICE_IDS.indexOf(d.practiceProblemId) >= 0 ? d.practiceProblemId : null;
+      var requestedPracticeIndex = requestedPracticeProblemId ? candidates.findIndex(function (p) { return p.id === requestedPracticeProblemId; }) : -1;
+      var practiceIndex = requestedPracticeIndex >= 0 ? requestedPracticeIndex : clampInt(d.practiceIndex, 0, Math.max(0, candidates.length - 1), 0);
       var problem = candidates[practiceIndex % candidates.length];
+      var legacyCandidates = PRACTICE.filter(function (p) { return p.op === operation && p.level <= level; });
+      var legacyPracticeIndex = clampInt(d.practiceIndex, 0, Math.max(0, legacyCandidates.length - 1), 0);
+      var legacyPracticeProblem = legacyCandidates[legacyPracticeIndex % legacyCandidates.length];
+      var practiceStateMatches = hasPracticeProblemId
+        ? requestedPracticeProblemId === problem.id
+        : !!(legacyPracticeProblem && legacyPracticeProblem.id === problem.id);
       var errorIndex = clampInt(d.errorIndex, 0, ERROR_CASES.length - 1, 0);
       var errorCase = ERROR_CASES[errorIndex];
       var wordProblem = wordProblemFromState(d);
@@ -339,9 +370,10 @@
       var wordAnswerInput = d.wordAnswer == null ? '' : String(d.wordAnswer);
       var wordRemainderInput = d.wordRemainder == null ? '' : String(d.wordRemainder);
       var wordMissedIds = missedWordProblemIds(d);
-      var practiceEstimateInput = d.estimateInput == null ? '' : String(d.estimateInput);
-      var practiceAnswerInput = d.answerInput == null ? '' : String(d.answerInput);
-      var practiceRemainderInput = d.remainderInput == null ? '' : String(d.remainderInput);
+      var practiceEstimateInput = practiceStateMatches && d.estimateInput != null ? String(d.estimateInput) : '';
+      var practiceAnswerInput = practiceStateMatches && d.answerInput != null ? String(d.answerInput) : '';
+      var practiceRemainderInput = practiceStateMatches && d.remainderInput != null ? String(d.remainderInput) : '';
+      var practiceFeedback = practiceStateMatches ? d.feedback : null;
 
       function update(patch) {
         if (typeof ctx.setToolData !== 'function') return;
@@ -353,15 +385,25 @@
         });
       }
 
+      function updatePracticeInput(key, value) {
+        var patch = { practiceProblemId: problem.id, practiceIndex: practiceIndex, feedback: null };
+        if (!practiceStateMatches) {
+          patch.estimateInput = '';
+          patch.answerInput = '';
+          patch.remainderInput = '';
+        }
+        patch[key] = value;
+        update(patch);
+      }
+
       function announce(message) {
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(message);
       }
 
       function markOperation(op) {
         update(function (current) {
-          var used = Object.assign({}, current.operationsUsed || {}); used[op] = true;
           var nextB = op === 'subtract' ? Math.min(clampInt(current.b, 0, 9999, 27), clampInt(current.a, 0, 99999, 58)) : current.b;
-          return { operation: op, b: nextB, operationsUsed: used, practiceIndex: 0, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, wordAnswer: '', wordRemainder: '', wordFeedback: null };
+          return { operation: op, b: nextB, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, wordAnswer: '', wordRemainder: '', wordFeedback: null };
         });
         announce(OPERATIONS[op].label + ' selected.');
       }
@@ -371,7 +413,7 @@
         if (practiceCheckPending || (d.practiceSolved && d.practiceSolved[problem.id])) return;
         practiceCheckPending = true;
         var answer = Number(practiceAnswerInput);
-        var remainder = Number(practiceRemainderInput || 0);
+        var remainder = problem.op === 'divide' ? (practiceRemainderInput === '' ? null : Number(practiceRemainderInput)) : 0;
         var exactCorrect = answer === problem.answer && remainder === (problem.remainder || 0);
         var estimateCheck = assessEstimate(problem.op, problem.a, problem.b, practiceEstimateInput, estimateFor(problem.op, problem.a, problem.b));
         var complete = exactCorrect && estimateCheck.reasonable;
@@ -379,12 +421,22 @@
         var firstSolve = complete && !(d.practiceSolved && d.practiceSolved[problem.id]);
         update(function (current) {
           var solved = Object.assign({}, current.practiceSolved || {});
-          if (complete) solved[problem.id] = true;
+          var used = Object.assign({}, current.operationsUsed || {});
+          var completedOperations = Object.assign({}, current.operationsCompleted || {});
+          if (complete) {
+            solved[problem.id] = true;
+            used[problem.op] = true;
+            completedOperations[problem.op] = true;
+          }
           return {
             attempts: (current.attempts || 0) + 1,
             correct: countSolved(solved, PRACTICE_IDS),
             feedback: feedback,
-            practiceSolved: solved
+            practiceProblemId: problem.id,
+            practiceIndex: practiceIndex,
+            practiceSolved: solved,
+            operationsUsed: used,
+            operationsCompleted: completedOperations
           };
         });
         if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 4, 'Arithmetic strategy challenge');
@@ -392,12 +444,13 @@
       }
 
       function nextPractice() {
-        update({ practiceIndex: (practiceIndex + 1) % candidates.length, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false });
+        var nextIndex = (practiceIndex + 1) % candidates.length;
+        update({ practiceIndex: nextIndex, practiceProblemId: candidates[nextIndex].id, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false });
       }
 
       var errorCheckPending = false;
       function checkError(choice) {
-        if (errorCheckPending) return;
+        if (errorCheckPending || (d.errorSolvedCases && d.errorSolvedCases[errorCase.id])) return;
         var correct = choice === errorCase.answer;
         var firstSolve = correct && !(d.errorSolvedCases && d.errorSolvedCases[errorCase.id]);
         if (correct) errorCheckPending = true;
@@ -425,11 +478,13 @@
           var missed = Object.assign({}, current.wordMissedCases || {});
           var attempts = Object.assign({}, current.wordAttempts || {});
           var used = Object.assign({}, current.operationsUsed || {});
+          var completedOperations = Object.assign({}, current.operationsCompleted || {});
           attempts[wordProblem.id] = (attempts[wordProblem.id] || 0) + 1;
           if (correct) {
             solved[wordProblem.id] = true;
             delete missed[wordProblem.id];
             used[wordProblem.op] = true;
+            completedOperations[wordProblem.op] = true;
           } else {
             missed[wordProblem.id] = true;
           }
@@ -441,7 +496,8 @@
             wordMissedCases: missed,
             wordAttempts: attempts,
             wordSolved: countSolved(solved, WORD_IDS),
-            operationsUsed: used
+            operationsUsed: used,
+            operationsCompleted: completedOperations
           };
         });
         if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 3, 'Arithmetic word problem');
@@ -521,7 +577,7 @@
         var places = ['ones', 'tens', 'hundreds', 'thousands', 'ten-thousands'].slice(0, maxDigits).reverse();
         function digits(n) { return String(Math.abs(n)).padStart(maxDigits, '0').split(''); }
         return h('details', { className: 'rounded-xl p-2', style: { border: '1px solid ' + border } },
-          h('summary', { className: 'cursor-pointer text-xs font-bold', style: { color: opMeta.color } }, 'Place-value table and text alternative'),
+          h('summary', { className: 'cursor-pointer text-xs font-bold', style: { color: accentText } }, 'Place-value table and text alternative'),
           h('div', { className: 'overflow-x-auto mt-2' },
             h('table', { className: 'w-full text-center text-xs' },
               h('caption', { className: 'sr-only' }, 'Place-value alignment for ' + left + ' and ' + right),
@@ -539,7 +595,7 @@
         if (op === 'add' || op === 'subtract') {
           var leftParts = splitPlaceValue(left), rightParts = splitPlaceValue(right);
           return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': 'Place-value decomposition: ' + left + ' equals ' + leftParts.join(' plus ') + '; ' + right + ' equals ' + rightParts.join(' plus ') + '.', style: { background: card, border: '1px solid ' + border } },
-            h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, 'Place-value model'),
+            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, 'Place-value model'),
             h('p', { className: 'font-mono text-sm' }, left + ' = ' + leftParts.join(' + ')),
             h('p', { className: 'font-mono text-sm' }, right + ' = ' + rightParts.join(' + ')),
             h('div', { className: 'mt-2 flex flex-wrap gap-1' }, leftParts.concat(rightParts).map(function (part, i) {
@@ -550,16 +606,16 @@
         if (op === 'multiply') {
           if (left === 0 || right === 0) {
             return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
-              h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, 'Zero-product model'),
+              h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, 'Zero-product model'),
               h('div', { role: 'img', 'aria-label': left + ' times ' + right + ' has no dots because one factor is zero; the product is zero.', className: 'rounded-lg p-4 text-center text-sm font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, 'One factor is 0, so there are no equal groups to draw. Product: 0.')
             );
           }
           var rows = Math.min(left, 12), cols = Math.min(right, 12);
           return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
-            h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, left <= 12 && right <= 12 ? 'Array model' : 'Area-model decomposition'),
+            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, left <= 12 && right <= 12 ? 'Array model' : 'Area-model decomposition'),
             left <= 12 && right <= 12 ? h('div', { role: 'img', 'aria-label': rows + ' rows of ' + cols + ' dots, ' + (rows * cols) + ' total', style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
               Array.from({ length: rows * cols }).map(function (_, i) { return h('span', { key: i, style: { width: 12, height: 12, borderRadius: '50%', background: opMeta.color } }); })
-            ) : h('div', { role: 'img', 'aria-label': 'Area model showing partial products for ' + left + ' times ' + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold' },
+            ) : h('div', { role: 'img', 'aria-label': 'Area model showing partial products for ' + left + ' times ' + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold', style: { color: '#0f172a' } },
               h('div', { className: 'p-3', style: { background: '#ddd6fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
               h('div', { className: 'p-3', style: { background: '#ede9fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + right % 10),
               h('div', { className: 'p-3', style: { background: '#ede9fe' } }, left % 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
@@ -569,7 +625,7 @@
         }
         var division = calculate('divide', left, right);
         return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': left + ' objects divided into groups of ' + right + ' gives ' + division.answer + ' groups with ' + division.remainder + ' left over', style: { background: card, border: '1px solid ' + border } },
-          h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, 'Equal-groups model'),
+          h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, 'Equal-groups model'),
           h('div', { className: 'h-6 rounded-full overflow-hidden flex', style: { background: '#e2e8f0' } },
             h('div', { style: { width: (left > 0 ? ((left - division.remainder) / left * 100) : 0) + '%', background: opMeta.color } }),
             division.remainder > 0 && h('div', { style: { flex: 1, background: '#f59e0b' } })
@@ -602,7 +658,7 @@
           h('div', { className: 'flex flex-wrap gap-2' },
             h('button', { onClick: function () { update({ showModel: !showModel }); }, 'aria-pressed': showModel, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showModel ? opMeta.color : card, color: showModel ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showModel ? 'Hide model' : 'Show model'),
             h('button', { onClick: function () { update({ showSteps: !showSteps }); }, 'aria-expanded': showSteps, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showSteps ? opMeta.color : card, color: showSteps ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showSteps ? 'Hide strategy steps' : 'Reveal strategy steps'),
-            typeof ctx.callTTS === 'function' && h('button', { onClick: readCurrent, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: opMeta.color, border: '1px solid ' + opMeta.color }, 'aria-label': 'Read strategy aloud' }, 'Read aloud')
+            typeof ctx.callTTS === 'function' && h('button', { onClick: readCurrent, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color }, 'aria-label': 'Read strategy aloud' }, 'Read aloud')
           ),
           renderModel(operation, a, b),
           showSteps && h('ol', { className: 'space-y-2', 'aria-label': 'Strategy steps' }, customSteps.map(function (step, i) { return h('li', { key: i, className: 'rounded-xl p-3 text-sm flex gap-3', style: { background: card, border: '1px solid ' + border } }, h('span', { className: 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-black text-white', style: { background: opMeta.color } }, i + 1), h('span', null, step)); })),
@@ -612,40 +668,47 @@
       }
 
       function renderPractice() {
-        var solved = d.practiceSolved && d.practiceSolved[problem.id];
+        var solved = !!(d.practiceSolved && d.practiceSolved[problem.id]);
+        var displayedPracticeEstimate = solved ? String(problem.estimate == null ? estimateFor(problem.op, problem.a, problem.b) : problem.estimate) : practiceEstimateInput;
+        var displayedPracticeAnswer = solved ? String(problem.answer) : practiceAnswerInput;
+        var displayedPracticeRemainder = solved && problem.op === 'divide' ? String(problem.remainder || 0) : practiceRemainderInput;
+        var visiblePracticeFeedback = solved ? 'correct' : practiceFeedback;
         return h(React.Fragment, null,
           h('div', { className: 'flex items-center justify-between gap-2' },
             h('div', null, h('h2', { className: 'text-base font-black' }, 'Estimate, solve, and check'), h('p', { className: 'text-xs', style: { color: muted } }, 'Estimation is a safety check, not a replacement for exact reasoning.')),
             h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, countSolved(d.practiceSolved, PRACTICE_IDS) + '/' + (d.attempts || 0) + ' correct')
           ),
-          renderEquation(problem.a, problem.b, problem.op),
+          h('div', { 'data-practice-problem-id': problem.id }, renderEquation(problem.a, problem.b, problem.op)),
           h('div', { className: 'grid sm:grid-cols-3 gap-2' },
-            h('label', { className: 'text-xs font-bold' }, 'Estimate', h('input', { type: 'number', required: true, 'aria-required': 'true', value: practiceEstimateInput, onChange: function (e) { update({ estimateInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Quotient' : 'Exact answer', h('input', { type: 'number', value: practiceAnswerInput, onChange: function (e) { update({ answerInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            operation === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, max: problem.b - 1, value: practiceRemainderInput, onChange: function (e) { update({ remainderInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
+            h('label', { className: 'text-xs font-bold' }, 'Estimate', h('input', { type: 'number', required: true, 'aria-required': 'true', value: displayedPracticeEstimate, disabled: solved, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            h('label', { className: 'text-xs font-bold' }, problem.op === 'divide' ? 'Quotient' : 'Exact answer', h('input', { type: 'number', required: true, 'aria-required': 'true', value: displayedPracticeAnswer, disabled: solved, onChange: function (e) { updatePracticeInput('answerInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            problem.op === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, max: problem.b - 1, required: true, 'aria-required': 'true', value: displayedPracticeRemainder, disabled: solved, onChange: function (e) { updatePracticeInput('remainderInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
           ),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? 'Solved' : 'Check answer'),
-            h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: opMeta.color, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? 'Hide hint' : 'Strategy hint'),
+            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || (problem.op === 'divide' && practiceRemainderInput === '') || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? 'Solved' : 'Check answer'),
+            h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? 'Hide hint' : 'Strategy hint'),
             h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, 'Next problem')
           ),
           d.showPracticeHint && h('div', { className: 'rounded-xl p-3 text-sm', style: { background: opMeta.soft, color: '#0f172a' } }, strategySteps(problem.op, problem.a, problem.b)[0]),
-          feedbackBox(d.feedback, 'Correct. Your exact answer and estimate support each other.', d.feedback === 'estimate' ? 'Your exact answer is right. Revise the estimate so it is within a reasonable range of about ' + estimateFor(problem.op, problem.a, problem.b) + '.' : 'Not yet. Recheck each place and compare with your estimate.', d.feedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
+          feedbackBox(visiblePracticeFeedback, 'Correct. Your exact answer and estimate support each other.', visiblePracticeFeedback === 'estimate' ? 'Your exact answer is right. Revise the estimate so it is within a reasonable range of about ' + estimateFor(problem.op, problem.a, problem.b) + '.' : 'Not yet. Recheck each place and compare with your estimate.', visiblePracticeFeedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
         );
       }
 
       function renderErrors() {
+        var errorSolved = !!(d.errorSolvedCases && d.errorSolvedCases[errorCase.id]);
+        var visibleErrorChoice = errorSolved ? errorCase.answer : d.errorChoice;
+        var visibleErrorFeedback = errorSolved ? 'correct' : d.errorFeedback;
         return h(React.Fragment, null,
           h('div', null, h('h2', { className: 'text-base font-black' }, 'Error Detective'), h('p', { className: 'text-xs', style: { color: muted } }, 'Diagnose the reasoning, not the learner. Mistakes are evidence about the next useful model.')),
-          h('div', { className: 'rounded-xl p-4', style: { background: card, border: '1px solid ' + border } },
+          h('div', { className: 'rounded-xl p-4', 'data-error-case-id': errorCase.id, style: { background: card, border: '1px solid ' + border } },
             h('p', { className: 'font-black' }, errorCase.prompt),
             h('p', { className: 'mt-2 rounded-lg p-2 font-mono text-sm', style: { background: bg } }, errorCase.work)
           ),
           h('div', { role: 'group', 'aria-label': 'Choose the most important error', className: 'space-y-2' }, errorCase.choices.map(function (choice) {
-            var selected = d.errorChoice === choice.id;
-            return h('button', { key: choice.id, onClick: function () { checkError(choice.id); }, 'aria-pressed': selected, disabled: d.errorFeedback === 'correct', className: 'w-full rounded-xl p-3 text-left text-sm font-semibold disabled:opacity-70', style: { background: selected ? opMeta.soft : card, color: text, border: '1px solid ' + (selected ? opMeta.color : border) } }, choice.label);
+            var selected = visibleErrorChoice === choice.id;
+            return h('button', { key: choice.id, type: 'button', 'data-error-choice': choice.id, onClick: function () { checkError(choice.id); }, 'aria-pressed': selected, disabled: errorSolved, className: 'w-full rounded-xl p-3 text-left text-sm font-semibold disabled:opacity-70', style: { background: selected ? opMeta.soft : card, color: selected ? '#0f172a' : text, border: '1px solid ' + (selected ? opMeta.color : border) } }, choice.label);
           })),
-          feedbackBox(d.errorFeedback, 'Good diagnosis.', 'Look again at what happened to each place or partial result.', d.errorFeedback === 'correct' ? errorCase.explain : null),
+          feedbackBox(visibleErrorFeedback, 'Good diagnosis.', 'Look again at what happened to each place or partial result.', visibleErrorFeedback === 'correct' ? errorCase.explain : null),
           h('button', { onClick: function () { update({ errorIndex: (errorIndex + 1) % ERROR_CASES.length, errorChoice: null, errorFeedback: null }); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: opMeta.color, color: '#fff' } }, 'Next mistake')
         );
       }
@@ -707,6 +770,8 @@
               type: 'number',
               min: 0,
               max: wordProblem.b - 1,
+              required: true,
+              'aria-required': 'true',
               value: displayedWordRemainder,
               disabled: wordSolved,
               onChange: function (e) { update({ wordProblemId: wordProblem.id, wordIndex: wordProblemIndex, wordRemainder: e.target.value, wordFeedback: null }); },
@@ -756,10 +821,10 @@
             h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-blue-100' }, 'Concrete \u2192 visual \u2192 symbolic'), h('h1', { className: 'text-xl sm:text-2xl font-black' }, '\ud83e\uddee Arithmetic Strategy Studio'), h('p', { className: 'mt-1 text-sm text-blue-50' }, 'Build meaning first, compare strategies, and use estimation to check every result.'))
           )
         ),
-        tab !== 'apply' && renderOperationPicker(),
-        tab !== 'apply' && h('div', { className: 'flex flex-wrap items-center gap-2' },
-          h('span', { className: 'text-xs font-bold', style: { color: muted } }, 'NUMBER RANGE:'),
-          [1, 2, 3].map(function (n) { return h('button', { key: n, onClick: function () { update({ level: n, practiceIndex: 0, feedback: null }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? 'Foundations' : n === 2 ? 'Multi-digit' : 'Challenge'); })
+        (tab === 'learn' || tab === 'practice') && renderOperationPicker(),
+        tab === 'practice' && h('div', { className: 'flex flex-wrap items-center gap-2' },
+          h('span', { className: 'text-xs font-bold', style: { color: muted } }, 'PRACTICE LEVEL:'),
+          [1, 2, 3].map(function (n) { return h('button', { key: n, type: 'button', onClick: function () { update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? 'Foundations' : n === 2 ? 'Multi-digit' : 'Challenge'); })
         ),
         h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': 'Arithmetic Studio sections', style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item, index) {
           var active = tab === item.id;

@@ -5601,12 +5601,13 @@ window.StemLab = window.StemLab || {
       function DinoFieldStation3D(props) {
         var canvasRef = React.useRef(null);
         var statusRef = React.useRef(null);
-        var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35 });
+        var cameraReadoutRef = React.useRef(null);
+        var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 });
         var autoRotateRef = React.useRef(props.autoRotate);
         var readySpeciesRef = React.useRef(null);
         var canvasFocusState = React.useState(false), canvasFocused = canvasFocusState[0], setCanvasFocused = canvasFocusState[1];
         autoRotateRef.current = props.autoRotate;
-        if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: -0.35 };
+        if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 };
 
         React.useEffect(function () {
           var canvas = canvasRef.current;
@@ -5618,6 +5619,10 @@ window.StemLab = window.StemLab || {
           var camera = null;
           var model = null;
           var resizeObserver = null;
+          var intersectionObserver = null;
+          var inViewport = true;
+          var pageVisible = document.visibilityState !== 'hidden';
+          var lastCameraReadout = '';
           var cleanupFns = [];
 
           function setStatus(msg) {
@@ -5663,16 +5668,44 @@ window.StemLab = window.StemLab || {
             var bodyColor = props.dietColor || '#38bdf8';
             var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
             var yaw = yawRef.current.value;
+            var pitch = Number(yawRef.current.pitch);
+            var zoom = Number(yawRef.current.zoom);
+            if (!isFinite(pitch)) pitch = 0.18;
+            if (!isFinite(zoom)) zoom = 1;
             var dragging = false;
             var lastX = 0;
+            var lastY = 0;
+            var interactionPauseUntil = 0;
+            function clampView(value, min, max) { return Math.max(min, Math.min(max, value)); }
+            function pauseAutoRotate(ms) { interactionPauseUntil = Math.max(interactionPauseUntil, performance.now() + (ms || 0)); }
 
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0f172a);
+            var skyCanvas = document.createElement('canvas');
+            skyCanvas.width = 2;
+            skyCanvas.height = 256;
+            var skyContext = skyCanvas.getContext('2d');
+            if (skyContext) {
+              var skyGradient = skyContext.createLinearGradient(0, 0, 0, 256);
+              skyGradient.addColorStop(0, '#07111f');
+              skyGradient.addColorStop(0.55, '#10263f');
+              skyGradient.addColorStop(1, '#29384a');
+              skyContext.fillStyle = skyGradient;
+              skyContext.fillRect(0, 0, 2, 256);
+              scene.background = new THREE.CanvasTexture(skyCanvas);
+              if (THREE.sRGBEncoding !== undefined) scene.background.encoding = THREE.sRGBEncoding;
+            } else {
+              scene.background = new THREE.Color(0x0f172a);
+            }
             scene.fog = new THREE.Fog(0x0f172a, Math.max(18, len * 0.7), Math.max(45, len * 2.4));
 
             camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            if (THREE.sRGBEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
+            if (THREE.ACESFilmicToneMapping !== undefined) {
+              renderer.toneMapping = THREE.ACESFilmicToneMapping;
+              renderer.toneMappingExposure = 1.08;
+            }
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -5681,6 +5714,16 @@ window.StemLab = window.StemLab || {
             var sun = new THREE.DirectionalLight(0xfff4df, 0.95);
             sun.position.set(-8, 14, 10);
             sun.castShadow = true;
+            sun.shadow.mapSize.width = 1024;
+            sun.shadow.mapSize.height = 1024;
+            sun.shadow.camera.near = 0.5;
+            sun.shadow.camera.far = Math.max(60, len * 3.2);
+            var shadowSpan = Math.max(12, len * 0.82);
+            sun.shadow.camera.left = -shadowSpan;
+            sun.shadow.camera.right = shadowSpan;
+            sun.shadow.camera.top = shadowSpan;
+            sun.shadow.camera.bottom = -shadowSpan;
+            sun.shadow.bias = -0.0005;
             scene.add(sun);
             var fill = new THREE.DirectionalLight(0x9ddcff, 0.35);
             fill.position.set(10, 6, -8);
@@ -5719,11 +5762,34 @@ window.StemLab = window.StemLab || {
             grid.position.y = 0.01;
             scene.add(grid);
 
+            var contactShadowCanvas = document.createElement('canvas');
+            contactShadowCanvas.width = 128;
+            contactShadowCanvas.height = 128;
+            var contactShadowContext = contactShadowCanvas.getContext('2d');
+            if (contactShadowContext) {
+              var contactShadowGradient = contactShadowContext.createRadialGradient(64, 64, 8, 64, 64, 62);
+              contactShadowGradient.addColorStop(0, 'rgba(0,0,0,0.50)');
+              contactShadowGradient.addColorStop(0.62, 'rgba(0,0,0,0.20)');
+              contactShadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+              contactShadowContext.fillStyle = contactShadowGradient;
+              contactShadowContext.fillRect(0, 0, 128, 128);
+              var contactShadowTexture = new THREE.CanvasTexture(contactShadowCanvas);
+              var contactShadow = new THREE.Mesh(
+                new THREE.PlaneGeometry(Math.max(5.5, len * 0.92), Math.max(2.8, ht * 1.18)),
+                new THREE.MeshBasicMaterial({ map: contactShadowTexture, transparent: true, opacity: 0.76, depthWrite: false })
+              );
+              contactShadow.rotation.x = -Math.PI / 2;
+              contactShadow.position.set(len * 0.03, 0.066, 0);
+              contactShadow.renderOrder = 1;
+              scene.add(contactShadow);
+            }
+
             model = new THREE.Group();
             scene.add(model);
 
             var boneMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 42 });
             var jointMat = new THREE.MeshPhongMaterial({ color: 0xfacc15, shininess: 32 });
+            var anatomyCalloutMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.62, depthWrite: false });
             var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.32, shininess: 25, side: THREE.DoubleSide });
             var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.44, shininess: 30 });
             var anatomyAccentMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.68, shininess: 38, side: THREE.DoubleSide });
@@ -5851,7 +5917,7 @@ window.StemLab = window.StemLab || {
               return mesh;
             }
 
-            function addTextLabel(text, pos, color) {
+            function addTextLabel(text, pos, color, scaleFactor) {
               var labelCanvas = document.createElement('canvas');
               labelCanvas.width = 256;
               labelCanvas.height = 96;
@@ -5874,7 +5940,8 @@ window.StemLab = window.StemLab || {
               var material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
               var sprite = new THREE.Sprite(material);
               sprite.position.copy(pos);
-              sprite.scale.set(Math.max(1.25, len * 0.13), Math.max(0.46, ht * 0.15), 1);
+              var labelScale = scaleFactor == null ? 1 : scaleFactor;
+              sprite.scale.set(Math.max(1.25, len * 0.13) * labelScale, Math.max(0.46, ht * 0.15) * labelScale, 1);
               sprite.renderOrder = 20;
               model.add(sprite);
               return sprite;
@@ -5909,6 +5976,17 @@ window.StemLab = window.StemLab || {
               var tickHalf = rt % 5 === 0 ? 0.20 : 0.11;
               addSceneCylinder(vec(tickX, 0.052, rulerZ - tickHalf), vec(tickX, 0.052, rulerZ + tickHalf), Math.max(0.008, rulerR * 0.66), rulerMat);
             }
+            var heightGuideMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+            var heightGuideX = snout.x - Math.max(0.42, len * 0.035);
+            var heightGuideZ = -Math.max(1.0, bodyDepth * 2.2);
+            var heightGuideTop = Math.max(0.5, ht);
+            addSceneCylinder(vec(heightGuideX, 0.04, heightGuideZ), vec(heightGuideX, heightGuideTop, heightGuideZ), Math.max(0.010, rulerR * 0.82), heightGuideMat);
+            var heightTicks = Math.min(30, Math.max(1, Math.ceil(heightGuideTop)));
+            for (var htick = 0; htick <= heightTicks; htick++) {
+              var tickY = Math.min(heightGuideTop, htick);
+              var heightTickHalf = htick % 5 === 0 ? 0.24 : 0.13;
+              addSceneCylinder(vec(heightGuideX - heightTickHalf, tickY, heightGuideZ), vec(heightGuideX + heightTickHalf, tickY, heightGuideZ), Math.max(0.008, rulerR * 0.64), heightGuideMat);
+            }
             var surveyPostMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 24 });
             var surveyRopeMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
             var surveyHalfX = Math.max(4.6, len * 0.56);
@@ -5924,6 +6002,16 @@ window.StemLab = window.StemLab || {
               var nextCorner = surveyCorners[(cornerIndex + 1) % surveyCorners.length];
               addSceneCylinder(vec(corner.x, 0.38, corner.z), vec(nextCorner.x, 0.38, nextCorner.z), Math.max(0.010, ht * 0.003), surveyRopeMat);
             });
+            var compassRadius = Math.max(0.26, ht * 0.065);
+            var compassCenter = vec(-surveyHalfX * 0.78, 0.055, -surveyHalfZ * 0.70);
+            var compassRing = new THREE.Mesh(new THREE.TorusGeometry(compassRadius, Math.max(0.010, ht * 0.003), 8, 36), surveyRopeMat);
+            compassRing.position.copy(compassCenter);
+            compassRing.rotation.x = Math.PI / 2;
+            scene.add(compassRing);
+            var compassNorth = vec(compassCenter.x, compassCenter.y, compassCenter.z - compassRadius * 1.55);
+            addSceneCylinder(compassCenter, compassNorth, Math.max(0.012, ht * 0.0035), surveyRopeMat);
+            addSceneCylinder(compassNorth, vec(compassNorth.x - compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
+            addSceneCylinder(compassNorth, vec(compassNorth.x + compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
 
             addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
             addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)), Math.max(0.12, ht * 0.055), Math.max(0.10, ht * 0.050)), headMat);
@@ -5969,6 +6057,25 @@ window.StemLab = window.StemLab || {
               } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
                 var crestBase = head.clone().add(vec(len * 0.012, ht * 0.045, 0));
                 addAccentCone(crestBase, crestBase.clone().add(vec(Math.max(0.24, len * 0.050), Math.max(0.18, ht * 0.090), 0)), Math.max(0.06, ht * 0.024));
+              } else if (/Pachycephalosaur/i.test(cladeName)) {
+                addEllipsoid(head.clone().add(vec(0, Math.max(0.08, ht * 0.055), 0)), vec(Math.max(0.14, len * 0.035), Math.max(0.11, ht * 0.050), Math.max(0.12, bodyDepth * 0.62)), anatomyAccentMat);
+              } else if (/Therizinosaur/i.test(cladeName)) {
+                [-1, 1].forEach(function (side) {
+                  for (var clawIndex = -1; clawIndex <= 1; clawIndex++) {
+                    var clawBase = shoulder.clone().add(vec(-len * 0.040, -ht * 0.12, side * (bodyDepth * 0.46 + clawIndex * bodyDepth * 0.12)));
+                    addAccentCone(clawBase, clawBase.clone().add(vec(-Math.max(0.34, len * 0.095), -Math.max(0.06, ht * 0.025), side * clawIndex * bodyDepth * 0.08)), Math.max(0.018, ht * 0.006));
+                  }
+                });
+              } else if (/Dromaeosaur|Troodont/i.test(cladeName)) {
+                [-1, 1].forEach(function (side) {
+                  for (var featherIndex = 0; featherIndex < 5; featherIndex++) {
+                    var featherT = 0.28 + featherIndex * 0.11;
+                    var featherBase = new THREE.Vector3().copy(hip).lerp(tail, featherT);
+                    var featherTip = featherBase.clone().add(vec(-len * 0.018, Math.max(0.08, ht * 0.035), side * Math.max(0.18, bodyDepth * (0.58 + featherIndex * 0.07))));
+                    var feather = addAccentCone(featherBase, featherTip, Math.max(0.012, ht * 0.0045));
+                    if (feather) feather.scale.x = 0.58;
+                  }
+                });
               }
             }
 
@@ -5977,6 +6084,49 @@ window.StemLab = window.StemLab || {
             addBone(shoulder, head, Math.max(0.035, ht * (isSauropod ? 0.014 : 0.011)));
             addBone(head, snout, Math.max(0.030, ht * 0.010));
             [tail, hip, shoulder, head, snout].forEach(function (p) { addJoint(p, Math.max(0.055, ht * 0.020)); });
+            if (props.showSkeleton) {
+              var ribCount = 6;
+              for (var ribIndex = 0; ribIndex < ribCount; ribIndex++) {
+                var ribT = (ribIndex + 1) / (ribCount + 1);
+                var ribX = shoulder.x + (hip.x - shoulder.x) * ribT;
+                var ribRadius = Math.max(0.13, bodyDepth * (0.62 + Math.sin(ribT * Math.PI) * 0.24));
+                var ribMesh = new THREE.Mesh(new THREE.TorusGeometry(ribRadius, Math.max(0.010, ht * 0.004), 8, 30), boneMat);
+                ribMesh.position.set(ribX, bodyCenter.y, 0);
+                ribMesh.rotation.y = Math.PI / 2;
+                ribMesh.scale.y = Math.max(0.58, bodyHeight / ribRadius * 0.82);
+                ribMesh.castShadow = true;
+                model.add(ribMesh);
+              }
+              var pelvisHalf = Math.max(0.16, bodyDepth * 0.72);
+              addBone(vec(hip.x, hip.y, -pelvisHalf), vec(hip.x, hip.y, pelvisHalf), Math.max(0.035, ht * 0.013));
+              addJoint(vec(hip.x, hip.y, -pelvisHalf), Math.max(0.045, ht * 0.017));
+              addJoint(vec(hip.x, hip.y, pelvisHalf), Math.max(0.045, ht * 0.017));
+              for (var spineIndex = 1; spineIndex < 6; spineIndex++) {
+                var spineT = spineIndex / 6;
+                addJoint(new THREE.Vector3().copy(shoulder).lerp(hip, spineT), Math.max(0.032, ht * 0.011));
+              }
+              for (var tailJointIndex = 1; tailJointIndex < 7; tailJointIndex++) {
+                var tailT = tailJointIndex / 7;
+                addJoint(new THREE.Vector3().copy(hip).lerp(tail, tailT), Math.max(0.024, ht * 0.008));
+              }
+              for (var neckIndex = 1; neckIndex < 4; neckIndex++) {
+                var neckT = neckIndex / 4;
+                addJoint(new THREE.Vector3().copy(shoulder).lerp(head, neckT), Math.max(0.028, ht * 0.009));
+              }
+              var jawDrop = Math.max(0.06, ht * 0.028);
+              addBone(head.clone().add(vec(0, -jawDrop, 0)), snout.clone().add(vec(0, -jawDrop * 0.72, 0)), Math.max(0.020, ht * 0.007));
+              function addAnatomyCallout(label, anchor, offset) {
+                var labelPoint = anchor.clone().add(offset);
+                addModelCylinder(anchor, labelPoint, Math.max(0.008, ht * 0.0028), anatomyCalloutMat, 18);
+                addTextLabel(label, labelPoint, '#f8fafc', 0.70);
+              }
+              var calloutLift = Math.max(0.42, ht * 0.14);
+              var tailCalloutPoint = new THREE.Vector3().copy(hip).lerp(tail, 0.58);
+              addAnatomyCallout('Skull', head, vec(-len * 0.025, calloutLift, bodyDepth * 0.72));
+              addAnatomyCallout('Spine', bodyCenter, vec(-len * 0.025, calloutLift * 1.15, -bodyDepth * 0.92));
+              addAnatomyCallout('Pelvis', hip, vec(len * 0.018, calloutLift, bodyDepth * 0.88));
+              addAnatomyCallout('Tail', tailCalloutPoint, vec(len * 0.035, calloutLift * 0.72, -bodyDepth * 0.76));
+            }
 
             function addLeg(x, z, front) {
               var top = front ? shoulder : hip;
@@ -6194,8 +6344,25 @@ window.StemLab = window.StemLab || {
 
             var modelCenter = vec(len * 0.02, Math.max(0.5, ht * 0.42), 0);
             var radius = Math.max(len * 0.84, ht * 1.9, 5.5);
-            camera.position.set(len * 0.12, Math.max(2.4, ht * 0.95), radius * 1.55);
-            camera.lookAt(modelCenter);
+            function updateCameraReadout() {
+              var rotationDegrees = Math.round((((yaw * 180 / Math.PI) + 180) % 360 + 360) % 360 - 180);
+              var elevationDegrees = Math.round(pitch * 180 / Math.PI);
+              var zoomPercent = Math.round(100 / zoom);
+              var nextReadout = 'Rotation ' + rotationDegrees + ' degrees | Elevation ' + elevationDegrees + ' degrees | Zoom ' + zoomPercent + ' percent';
+              if (nextReadout !== lastCameraReadout && cameraReadoutRef.current) {
+                cameraReadoutRef.current.textContent = nextReadout;
+                lastCameraReadout = nextReadout;
+              }
+            }
+            function updateCameraView() {
+              var distance = radius * 1.55 * zoom;
+              camera.position.set(len * 0.12, modelCenter.y + Math.sin(pitch) * distance, Math.cos(pitch) * distance);
+              camera.lookAt(modelCenter);
+              yawRef.current.pitch = pitch;
+              yawRef.current.zoom = zoom;
+              updateCameraReadout();
+            }
+            updateCameraView();
 
             function resize() {
               if (!alive || !renderer || !camera) return;
@@ -6213,43 +6380,95 @@ window.StemLab = window.StemLab || {
               window.addEventListener('resize', resize);
               cleanupFns.push(function () { window.removeEventListener('resize', resize); });
             }
+            function visibilityChanged() {
+              pageVisible = document.visibilityState !== 'hidden';
+              syncAnimation();
+            }
+            document.addEventListener('visibilitychange', visibilityChanged);
+            cleanupFns.push(function () { document.removeEventListener('visibilitychange', visibilityChanged); });
+            if (window.IntersectionObserver) {
+              intersectionObserver = new window.IntersectionObserver(function (entries) {
+                var entry = entries && entries[0];
+                inViewport = !entry || entry.isIntersecting;
+                syncAnimation();
+              }, { rootMargin: '80px 0px' });
+              intersectionObserver.observe(canvas);
+            }
 
-            function pointerDown(ev) { try { canvas.focus(); } catch (e) {} dragging = true; lastX = ev.clientX || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
-            function pointerMove(ev) { if (!dragging) return; var x = ev.clientX || 0; yaw += (x - lastX) * 0.009; yawRef.current.value = yaw; lastX = x; }
-            function pointerUp(ev) { dragging = false; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
+            function pointerDown(ev) { try { canvas.focus(); } catch (e) {} dragging = true; pauseAutoRotate(60000); lastX = ev.clientX || 0; lastY = ev.clientY || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
+            function pointerMove(ev) {
+              if (!dragging) return;
+              var x = ev.clientX || 0;
+              var y = ev.clientY || 0;
+              yaw += (x - lastX) * 0.009;
+              pitch = clampView(pitch + (y - lastY) * 0.006, 0.04, 0.62);
+              yawRef.current.value = yaw;
+              lastX = x;
+              lastY = y;
+              updateCameraView();
+            }
+            function pointerUp(ev) { dragging = false; interactionPauseUntil = performance.now() + 2200; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
             function keyDown(ev) {
               var key = ev.key;
+              pauseAutoRotate(2400);
               if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
                 ev.preventDefault(); yaw -= Math.PI / 12; yawRef.current.value = yaw; setStatus('Reconstruction rotated left.');
               } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
                 ev.preventDefault(); yaw += Math.PI / 12; yawRef.current.value = yaw; setStatus('Reconstruction rotated right.');
+              } else if (key === 'ArrowUp') {
+                ev.preventDefault(); pitch = clampView(pitch + 0.08, 0.04, 0.62); updateCameraView(); setStatus('Camera raised.');
+              } else if (key === 'ArrowDown') {
+                ev.preventDefault(); pitch = clampView(pitch - 0.08, 0.04, 0.62); updateCameraView(); setStatus('Camera lowered.');
+              } else if (key === 'PageUp') {
+                ev.preventDefault(); zoom = clampView(zoom * 0.90, 0.68, 1.65); updateCameraView(); setStatus('Camera zoomed in.');
+              } else if (key === 'PageDown') {
+                ev.preventDefault(); zoom = clampView(zoom * 1.10, 0.68, 1.65); updateCameraView(); setStatus('Camera zoomed out.');
               } else if (key === 'Home') {
-                ev.preventDefault(); yaw = -0.35; yawRef.current.value = yaw; setStatus('Reconstruction returned to its starting view.');
+                ev.preventDefault(); yaw = -0.35; pitch = 0.18; zoom = 1; yawRef.current.value = yaw; updateCameraView(); setStatus('Reconstruction returned to its starting view.');
               }
+            }
+            function wheelZoom(ev) {
+              ev.preventDefault();
+              pauseAutoRotate(2400);
+              zoom = clampView(zoom * Math.exp((ev.deltaY || 0) * 0.001), 0.68, 1.65);
+              updateCameraView();
+              setStatus(ev.deltaY > 0 ? 'Camera zoomed out.' : 'Camera zoomed in.');
             }
             canvas.addEventListener('pointerdown', pointerDown);
             canvas.addEventListener('pointermove', pointerMove);
             canvas.addEventListener('pointerup', pointerUp);
             canvas.addEventListener('pointerleave', pointerUp);
             canvas.addEventListener('keydown', keyDown);
+            canvas.addEventListener('wheel', wheelZoom, { passive: false });
             cleanupFns.push(function () {
               canvas.removeEventListener('pointerdown', pointerDown);
               canvas.removeEventListener('pointermove', pointerMove);
               canvas.removeEventListener('pointerup', pointerUp);
               canvas.removeEventListener('pointerleave', pointerUp);
               canvas.removeEventListener('keydown', keyDown);
+              canvas.removeEventListener('wheel', wheelZoom);
             });
 
             var sameSpeciesRefresh = readySpeciesRef.current === props.species.id;
-            setStatus(sameSpeciesRefresh ? '3D evidence view updated. Camera angle preserved.' : '3D reconstruction loaded. Drag, or use the left and right arrow keys, to rotate it.');
+            setStatus(sameSpeciesRefresh ? '3D evidence view updated. Camera view preserved.' : '3D reconstruction loaded. Drag to orbit, use the wheel to zoom, or use the arrow keys.');
             readySpeciesRef.current = props.species.id;
-            function animate() {
+            function syncAnimation() {
               if (!alive) return;
-              frame = window.requestAnimationFrame(animate);
+              if (inViewport && pageVisible) {
+                if (!frame) frame = window.requestAnimationFrame(animate);
+              } else if (frame) {
+                window.cancelAnimationFrame(frame);
+                frame = 0;
+              }
+            }
+            function animate() {
+              frame = 0;
+              if (!alive || !renderer || !scene || !camera) return;
               if (model) {
-                if (!dragging && !reducedMotion && autoRotateRef.current !== false) yaw += 0.0035;
+                if (!dragging && !reducedMotion && autoRotateRef.current !== false && performance.now() >= interactionPauseUntil) yaw += 0.0035;
                 yawRef.current.value = yaw;
                 model.rotation.y = yaw;
+                updateCameraReadout();
                 if (!reducedMotion && scanPulse) {
                   var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
                   scanPulse.scale.set(pulse, pulse, pulse);
@@ -6271,8 +6490,9 @@ window.StemLab = window.StemLab || {
                 });
               }
               renderer.render(scene, camera);
+              syncAnimation();
             }
-            animate();
+            syncAnimation();
           });
 
           return function () {
@@ -6280,6 +6500,8 @@ window.StemLab = window.StemLab || {
             if (frame) window.cancelAnimationFrame(frame);
             cleanupFns.forEach(function (fn) { try { fn(); } catch (e) {} });
             if (resizeObserver) { try { resizeObserver.disconnect(); } catch (e) {} }
+            if (intersectionObserver) { try { intersectionObserver.disconnect(); } catch (e) {} }
+            if (scene && scene.background && scene.background.dispose) { try { scene.background.dispose(); } catch (e) {} }
             disposeObject(scene);
             if (renderer && renderer.dispose) renderer.dispose();
           };
@@ -6292,11 +6514,11 @@ window.StemLab = window.StemLab || {
         var statusId = 'dino3d-status-' + props.species.id;
         var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 };
         var layerSummary = [props.showSkeleton ? 'skeleton proxy' : null, props.showBody ? 'body outline' : null, props.showHuman ? 'human scale' : null, props.showEvidence ? 'evidence markers' : null].filter(Boolean).join(', ') || 'no visual layers enabled';
-        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate the reconstruction; Home returns to the starting view.';
+        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.';
 
         return el('div', { style: { position: 'relative', minHeight: 420, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
           el('div', { id: viewerDescId, style: srOnlyStyle }, viewerSummary),
-          el('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag to rotate, or use left and right arrow keys. Home returns to the starting view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: 420, display: 'block', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
+          el('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: 420, display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
           el('div', { style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM), 'rgba(56,189,248,0.55)'),
             readoutChip('Height ' + fmtLength(props.species.heightM), 'rgba(250,204,21,0.55)'),
@@ -6308,6 +6530,7 @@ window.StemLab = window.StemLab || {
             props.claimEvidenceTrailLabel ? readoutChip('Trail ' + props.claimEvidenceTrailLabel, 'rgba(94,234,212,0.75)') : null,
             readoutChip('Mass ' + fmtWeight(props.species.weightKg), 'rgba(167,139,250,0.55)')
           ),
+          el('div', { ref: cameraReadoutRef, 'aria-label': 'Current 3D camera view', style: { position: 'absolute', right: 10, bottom: 56, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
           el('div', { id: statusId, ref: statusRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         );
       }
@@ -6715,9 +6938,9 @@ window.StemLab = window.StemLab || {
         }
         var visualKeyPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Visual key'),
-          keyItem('#f8fafc', 'Skeleton proxy', 'White rods and joints show the inferred bone layout.'),
+          keyItem('#f8fafc', 'Skeleton proxy', 'White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout. Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow.'),
           keyItem(dColor(dn.diet), 'Body inference', 'Translucent color shows estimated soft tissue volume.'),
-          keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, plates, sails, armor, or crests appear for supported clades. They are diagram cues, not specimen scans.'),
+          keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, plates, sails, armor, crests, domes, claws, or feather fans appear for supported clades. They are diagram cues, not specimen scans.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
           keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),
           keyItem('#22c55e', 'Logged anchor', 'Green rings show evidence points already recorded in the observation log.'),
@@ -6726,7 +6949,9 @@ window.StemLab = window.StemLab || {
           keyItem('#f59e0b', 'Scan focus', 'Amber ring pulses around the current evidence target.'),
           keyItem('#0f172a', 'Anchor label', 'Floating labels identify skull, shoulder, and hip evidence points.'),
           keyItem('#94a3b8', 'Human scale', 'Gray figure keeps size estimates concrete.'),
-          keyItem('#38bdf8', 'Length guide', 'Cyan floor line spans snout to tail for scale.')
+          keyItem('#38bdf8', 'Length guide', 'Cyan floor line spans snout to tail with one-meter ticks.'),
+          keyItem('#facc15', 'Height guide', 'Gold vertical staff marks estimated standing height with one-meter ticks.'),
+          keyItem('#f59e0b', 'Survey compass', 'Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid.')
         ], { marginBottom: 12 });
         var challengePanel = panel([
           el('div', { key: 'h', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6 } },

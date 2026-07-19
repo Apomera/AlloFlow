@@ -303,6 +303,269 @@ const createExport = (deps) => {
     };
 
     // ─── handleExportQTI ───────────────────────────────────────────────
+    const _qtiItemMetadataXml = (itemType, questionType, options = {}) => {
+        const fields = [
+            ['question_type', questionType],
+            ['alloflow_item_type', itemType],
+            ['alloflow_scoring', options.manual ? 'manual' : 'automatic']
+        ];
+        if (options.scoringGuide) fields.push(['alloflow_scoring_guide', options.scoringGuide]);
+        return '\n      <itemmetadata>\n        <qtimetadata>' + fields.map(([label, value]) =>
+            '\n          <qtimetadatafield>\n            <fieldlabel>' + _escapeExportText(label) + '</fieldlabel>\n            <fieldentry>' + _escapeExportText(value) + '</fieldentry>\n          </qtimetadatafield>'
+        ).join('') + '\n        </qtimetadata>\n      </itemmetadata>';
+    };
+
+    const _qtiChoiceLabelsXml = (values, prefix) => (Array.isArray(values) ? values : []).map((value, index) =>
+        '\n            <response_label ident="' + prefix + '_' + index + '">\n              <material>\n                <mattext texttype="text/plain">' + _escapeExportText(value) + '</mattext>\n              </material>\n            </response_label>'
+    ).join('');
+
+    const _qtiWrapItemXml = ({ itemId, title, metadata, presentation, processing }) =>
+        '\n    <item ident="' + itemId + '" title="' + _escapeExportText(title) + '">' +
+        (metadata || '') +
+        '\n      <presentation>' + presentation + '\n      </presentation>' +
+        (processing || '') +
+        '\n    </item>';
+
+    const _qtiScoreOutcomeXml = (maxValue = 1) =>
+        '\n      <resprocessing>\n        <outcomes>\n          <decvar varname="SCORE" vartype="Decimal" defaultval="0" minvalue="0" maxvalue="' + _escapeExportText(maxValue) + '"/>\n        </outcomes>';
+
+    const _qtiAutoTextItemXml = ({ q, index, itemType, acceptedAnswers }) => {
+        const responseId = 'RESPONSE_' + index;
+        const answers = (acceptedAnswers || []).map(value => String(value == null ? '' : value).trim()).filter(Boolean);
+        if (!String(q.question == null ? '' : q.question).trim() || !answers.length) return null;
+        const answerConditions = answers.map(answer =>
+            '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '" case="No">' + _escapeExportText(answer) + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>'
+        ).join('');
+        const presentation =
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <response_str ident="' + responseId + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="1" maxchars="250">\n            <response_label ident="' + responseId + '_LABEL"/>\n          </render_fib>\n        </response_str>';
+        return _qtiWrapItemXml({
+            itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
+            title: 'Question ' + (index + 1),
+            metadata: _qtiItemMetadataXml(itemType, 'short_answer_question'),
+            presentation,
+            processing: _qtiScoreOutcomeXml(1) + answerConditions + '\n      </resprocessing>'
+        });
+    };
+
+    const _qtiManualTextItemXml = ({ q, index, itemType, prompt, scoringGuide, title }) => {
+        const text = String(prompt == null ? q.question : prompt).trim();
+        if (!text) return null;
+        const responseId = 'RESPONSE_' + index;
+        const presentation =
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(text) + '</mattext>\n        </material>' +
+            '\n        <response_str ident="' + responseId + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="6" columns="80">\n            <response_label ident="' + responseId + '_LABEL"/>\n          </render_fib>\n        </response_str>';
+        return _qtiWrapItemXml({
+            itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
+            title: title || 'Question ' + (index + 1),
+            metadata: _qtiItemMetadataXml(itemType, 'essay_question', { manual: true, scoringGuide }),
+            presentation
+        });
+    };
+    const _qtiSingleChoiceItemXml = (q, index) => {
+        const options = Array.isArray(q.options) ? q.options : [];
+        const correctIndex = options.findIndex(option => String(option) === String(q.correctAnswer));
+        if (!String(q.question == null ? '' : q.question).trim() || options.length < 2 || correctIndex < 0) return null;
+        const responseId = 'RESPONSE_' + index;
+        const presentation =
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <response_lid ident="' + responseId + '" rcardinality="Single">\n          <render_choice shuffle="No">' +
+            _qtiChoiceLabelsXml(options, 'OPT') +
+            '\n          </render_choice>\n        </response_lid>';
+        const processing = _qtiScoreOutcomeXml(1) +
+            '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '">OPT_' + correctIndex + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>\n      </resprocessing>';
+        return _qtiWrapItemXml({
+            itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
+            title: 'Question ' + (index + 1),
+            metadata: _qtiItemMetadataXml('mcq', 'multiple_choice_question'),
+            presentation,
+            processing
+        });
+    };
+
+    const _qtiMultiSelectItemXml = (q, index, partialCredit) => {
+        const options = Array.isArray(q.options) ? q.options : [];
+        const answers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+        const correctIndices = answers.map(answer => options.findIndex(option => String(option) === String(answer)));
+        if (!String(q.question == null ? '' : q.question).trim() || options.length < 3 || !correctIndices.length || correctIndices.some(value => value < 0)) return null;
+        const responseId = 'RESPONSE_' + index;
+        const presentation =
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <response_lid ident="' + responseId + '" rcardinality="Multiple">\n          <render_choice shuffle="No" minnumber="1" maxnumber="' + options.length + '">' +
+            _qtiChoiceLabelsXml(options, 'OPT') +
+            '\n          </render_choice>\n        </response_lid>';
+        let conditions = '';
+        if (partialCredit) {
+            const weight = (1 / correctIndices.length).toFixed(6);
+            options.forEach((option, optionIndex) => {
+                const isCorrect = correctIndices.includes(optionIndex);
+                conditions +=
+                    '\n        <respcondition continue="Yes" title="' + (isCorrect ? 'Correct selection' : 'Incorrect selection') + '">' +
+                    '\n          <conditionvar>\n            <varequal respident="' + responseId + '">OPT_' + optionIndex + '</varequal>\n          </conditionvar>' +
+                    '\n          <setvar action="Add" varname="SCORE">' + (isCorrect ? weight : '-' + weight) + '</setvar>\n        </respcondition>';
+            });
+        } else {
+            const exactConditions = options.map((option, optionIndex) => {
+                const test = '<varequal respident="' + responseId + '">OPT_' + optionIndex + '</varequal>';
+                return correctIndices.includes(optionIndex) ? test : '<not>' + test + '</not>';
+            }).join('\n              ');
+            conditions =
+                '\n        <respcondition continue="No" title="All correct selections">' +
+                '\n          <conditionvar>\n            <and>\n              ' + exactConditions + '\n            </and>\n          </conditionvar>' +
+                '\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>';
+        }
+        return _qtiWrapItemXml({
+            itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
+            title: 'Question ' + (index + 1),
+            metadata: _qtiItemMetadataXml('multi-select', 'multiple_answers_question'),
+            presentation,
+            processing: _qtiScoreOutcomeXml(1) + conditions + '\n      </resprocessing>'
+        });
+    };
+
+    const _qtiAnswerEvidenceItemXml = (q, index, partialCredit) => {
+        const answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+        const evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+        const correctAnswerIndex = answers.findIndex(option => String(option) === String(q.correctAnswer));
+        const correctEvidenceIndex = evidence.findIndex(option => String(option) === String(q.correctEvidence));
+        if (!String(q.question == null ? '' : q.question).trim() || answers.length < 2 || evidence.length < 2 || correctAnswerIndex < 0 || correctEvidenceIndex < 0) return null;
+        const answerId = 'ANSWER_' + index;
+        const evidenceId = 'EVIDENCE_' + index;
+        const evidencePrompt = q.evidencePrompt || 'Which evidence or reason best supports that answer?';
+        const presentation =
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <response_lid ident="' + answerId + '" rcardinality="Single">\n          <render_choice shuffle="No">' +
+            _qtiChoiceLabelsXml(answers, 'ANS') +
+            '\n          </render_choice>\n        </response_lid>' +
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(evidencePrompt) + '</mattext>\n        </material>' +
+            '\n        <response_lid ident="' + evidenceId + '" rcardinality="Single">\n          <render_choice shuffle="No">' +
+            _qtiChoiceLabelsXml(evidence, 'EVID') +
+            '\n          </render_choice>\n        </response_lid>';
+        let conditions;
+        if (partialCredit) {
+            conditions =
+                '\n        <respcondition continue="Yes" title="Correct answer">\n          <conditionvar>\n            <varequal respident="' + answerId + '">ANS_' + correctAnswerIndex + '</varequal>\n          </conditionvar>\n          <setvar action="Add" varname="SCORE">0.5</setvar>\n        </respcondition>' +
+                '\n        <respcondition continue="Yes" title="Correct evidence">\n          <conditionvar>\n            <varequal respident="' + evidenceId + '">EVID_' + correctEvidenceIndex + '</varequal>\n          </conditionvar>\n          <setvar action="Add" varname="SCORE">0.5</setvar>\n        </respcondition>';
+        } else {
+            conditions =
+                '\n        <respcondition continue="No" title="Correct answer and evidence">\n          <conditionvar>\n            <and>\n              <varequal respident="' + answerId + '">ANS_' + correctAnswerIndex + '</varequal>\n              <varequal respident="' + evidenceId + '">EVID_' + correctEvidenceIndex + '</varequal>\n            </and>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>';
+        }
+        return _qtiWrapItemXml({
+            itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
+            title: 'Question ' + (index + 1),
+            metadata: _qtiItemMetadataXml('answer-evidence', 'multiple_dropdowns_question'),
+            presentation,
+            processing: _qtiScoreOutcomeXml(1) + conditions + '\n      </resprocessing>'
+        });
+    };
+    const _qtiNumericItemXml = (q, index, partialCredit) => {
+        const prompt = String(q.question == null ? '' : q.question).trim();
+        const correctValue = Number(q.correctValue);
+        const tolerance = Number(q.tolerance == null ? 0 : q.tolerance);
+        if (!prompt || !Number.isFinite(correctValue) || !Number.isFinite(tolerance) || tolerance < 0) return null;
+
+        const valueId = 'NUM_' + index;
+        const unitId = 'UNIT_' + index;
+        const units = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : [])
+            .map(value => String(value == null ? '' : value).trim())
+            .filter((value, unitIndex, values) => value && values.findIndex(candidate => candidate.toLowerCase() === value.toLowerCase()) === unitIndex);
+        const lower = correctValue - tolerance;
+        const upper = correctValue + tolerance;
+        const valueCondition = tolerance > 0
+            ? '<and><vargte respident="' + valueId + '">' + _escapeExportText(lower) + '</vargte><varlte respident="' + valueId + '">' + _escapeExportText(upper) + '</varlte></and>'
+            : '<varequal respident="' + valueId + '">' + _escapeExportText(correctValue) + '</varequal>';
+        const unitTests = units.map(unit => '<varequal respident="' + unitId + '" case="No">' + _escapeExportText(unit) + '</varequal>');
+        const unitCondition = unitTests.length > 1 ? '<or>' + unitTests.join('') + '</or>' : unitTests[0];
+
+        let presentation =
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(prompt) + '</mattext>\n        </material>' +
+            '\n        <response_num ident="' + valueId + '" rcardinality="Single" numtype="Decimal">\n          <render_fib fibtype="Decimal" rows="1" maxchars="40">\n            <response_label ident="' + valueId + '_LABEL"/>\n          </render_fib>\n        </response_num>';
+        if (units.length) {
+            presentation +=
+                '\n        <material>\n          <mattext texttype="text/plain">Unit</mattext>\n        </material>' +
+                '\n        <response_str ident="' + unitId + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="1" maxchars="40">\n            <response_label ident="' + unitId + '_LABEL"/>\n          </render_fib>\n        </response_str>';
+        }
+
+        let conditions;
+        if (!units.length) {
+            conditions =
+                '\n        <respcondition continue="No" title="Correct value">\n          <conditionvar>' + valueCondition + '</conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>';
+        } else if (partialCredit) {
+            conditions =
+                '\n        <respcondition continue="Yes" title="Correct value">\n          <conditionvar>' + valueCondition + '</conditionvar>\n          <setvar action="Add" varname="SCORE">0.5</setvar>\n        </respcondition>' +
+                '\n        <respcondition continue="Yes" title="Correct unit">\n          <conditionvar>' + unitCondition + '</conditionvar>\n          <setvar action="Add" varname="SCORE">0.5</setvar>\n        </respcondition>';
+        } else {
+            conditions =
+                '\n        <respcondition continue="No" title="Correct value and unit">\n          <conditionvar><and>' + valueCondition + unitCondition + '</and></conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>';
+        }
+
+        return _qtiWrapItemXml({
+            itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
+            title: 'Question ' + (index + 1),
+            metadata: _qtiItemMetadataXml('numeric-response', 'numerical_question'),
+            presentation,
+            processing: _qtiScoreOutcomeXml(1) + conditions + '\n      </resprocessing>'
+        });
+    };
+
+    const _qtiDiagnosticManualPrompt = (q, type) => {
+        if (type === 'sequence-sense') {
+            const items = Array.isArray(q.items) ? q.items : [];
+            const order = Array.isArray(q.presentedOrder) && q.presentedOrder.length ? q.presentedOrder : items.map((item, index) => index);
+            const displayed = order.map((itemIndex, displayIndex) => (displayIndex + 1) + '. ' + String(items[itemIndex] == null ? '' : items[itemIndex])).join('\n');
+            const canonical = items.map((item, itemIndex) => (itemIndex + 1) + '. ' + String(item == null ? '' : item)).join('\n');
+            return {
+                prompt: String(q.question || 'Review the sequence.') + '\n\nDisplayed sequence:\n' + displayed + '\n\nState whether the sequence is correct. If not, identify the misplaced step and explain the ordering principle.',
+                guide: 'Canonical order:\n' + canonical + (q.intentionallyWrongIndex == null ? '' : '\nIntentionally misplaced displayed position: ' + (Number(q.intentionallyWrongIndex) + 1)) + (q.orderingPrinciple ? '\nOrdering principle: ' + q.orderingPrinciple : '')
+            };
+        }
+        const pairs = Array.isArray(q.pairs) ? q.pairs : [];
+        const displayedPairs = pairs.map((pair, pairIndex) => {
+            const left = Array.isArray(pair) ? pair[0] : pair && (pair.left || pair.term);
+            const right = Array.isArray(pair) ? pair[1] : pair && (pair.right || pair.match);
+            return (pairIndex + 1) + '. ' + String(left == null ? '' : left) + ' ↔ ' + String(right == null ? '' : right);
+        }).join('\n');
+        return {
+            prompt: String(q.question || 'Review the relationships.') + '\n\nDisplayed pairs:\n' + displayedPairs + '\n\nIdentify the mismatched pair and provide the correct partner.',
+            guide: (q.wrongPairIndex == null ? '' : 'Mismatched pair: ' + (Number(q.wrongPairIndex) + 1)) + (q.correctPartnerForWrong ? '\nCorrect partner: ' + q.correctPartnerForWrong : '')
+        };
+    };
+
+    const _qtiQuestionItemXml = (q, index, scoringPolicy) => {
+        if (!q || typeof q !== 'object') return null;
+        const type = q.type || 'mcq';
+        const partialCredit = !scoringPolicy || scoringPolicy.partialCredit !== false;
+        if (type === 'mcq') return _qtiSingleChoiceItemXml(q, index);
+        if (type === 'multi-select') return _qtiMultiSelectItemXml(q, index, partialCredit);
+        if (type === 'fill-blank') {
+            return _qtiAutoTextItemXml({
+                q,
+                index,
+                itemType: type,
+                acceptedAnswers: [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [])
+            });
+        }
+        if (type === 'short-answer') {
+            return _qtiManualTextItemXml({ q, index, itemType: type, scoringGuide: q.expectedAnswer });
+        }
+        if (type === 'self-explanation') {
+            return _qtiManualTextItemXml({ q, index, itemType: type, scoringGuide: q.rubric || q.expectedAnswer });
+        }
+        if (type === 'sequence-sense' || type === 'relation-mismatch') {
+            const diagnostic = _qtiDiagnosticManualPrompt(q, type);
+            return _qtiManualTextItemXml({ q, index, itemType: type, prompt: diagnostic.prompt, scoringGuide: diagnostic.guide });
+        }
+        if (type === 'answer-evidence') return _qtiAnswerEvidenceItemXml(q, index, partialCredit);
+        if (type === 'numeric-response') return _qtiNumericItemXml(q, index, partialCredit);
+        return _qtiManualTextItemXml({
+            q,
+            index,
+            itemType: type,
+            scoringGuide: q.rubric || q.expectedAnswer,
+            title: 'Question ' + (index + 1) + ' (' + type + ')'
+        });
+    };
+
     const handleExportQTI = async (options = {}) => {
         const live = liveRef.current;
         const generatedContent = options.generatedContent || live.generatedContent;
@@ -355,79 +618,47 @@ const createExport = (deps) => {
         const rawQuestions = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.questions)
             ? generatedContent.data.questions
             : [];
-        const questions = rawQuestions.filter((q) => {
-            if (!q || !String(q.question == null ? '' : q.question).trim() || !Array.isArray(q.options) || q.options.length < 2) return false;
-            return q.options.some((option) => String(option) === String(q.correctAnswer));
-        });
-        if (!questions.length) {
-            addToast('No valid multiple-choice questions are ready for QTI export.', "error");
+        const scoringPolicy = Object.assign(
+            { partialCredit: true },
+            generatedContent && generatedContent.data && generatedContent.data.scoringPolicy
+                ? generatedContent.data.scoringPolicy
+                : {}
+        );
+        const questionItems = rawQuestions.map((question, questionIndex) =>
+            _qtiQuestionItemXml(question, questionIndex, scoringPolicy)
+        );
+        const validQuestionItems = questionItems.filter(Boolean);
+        const reflectionEntries = (Array.isArray(generatedContent && generatedContent.data && generatedContent.data.reflections)
+            ? generatedContent.data.reflections
+            : [])
+            .map((ref) => {
+                if (typeof ref === 'string') return ref.trim();
+                if (!ref || typeof ref !== 'object') return '';
+                return String(ref.text || ref.prompt || ref.question || '').trim();
+            })
+            .filter(Boolean);
+
+        if (!validQuestionItems.length && !reflectionEntries.length) {
+            addToast('No valid assessment questions or reflections are ready for QTI export.', "error");
             return;
         }
-        if (questions.length < rawQuestions.length) {
-            addToast(`${rawQuestions.length - questions.length} malformed quiz question(s) were omitted from the QTI package.`, "warning");
+        itemsXml += validQuestionItems.join('');
+        if (validQuestionItems.length < rawQuestions.length) {
+            addToast(`${rawQuestions.length - validQuestionItems.length} malformed or unsupported assessment item(s) were omitted from the QTI package.`, "warning");
         }
-        questions.forEach((q, i) => {
-            const itemId = `Q_${i}_${generateUUID().slice(0,8)}`;
-            const responseId = `RESPONSE_${i}`;
-            const correctIndex = q.options.findIndex((option) => String(option) === String(q.correctAnswer));
-            const correctIdent = `OPT_${correctIndex}`;
-            let choicesXml = "";
-            q.options.forEach((opt, optIdx) => {
-                choicesXml += `
-        <response_label ident="OPT_${optIdx}">
-          <material>
-            <mattext texttype="text/plain">${_escapeExportText(opt)}</mattext>
-          </material>
-        </response_label>`;
-            });
-            itemsXml += `
-    <item ident="${itemId}" title="${_escapeExportText(t('common.question_i_1') || 'Question')}">
-      <presentation>
-        <material>
-          <mattext texttype="text/plain">${_escapeExportText(q.question)}</mattext>
-        </material>
-        <response_lid ident="${responseId}" rcardinality="Single">
-          <render_choice>
-            ${choicesXml}
-          </render_choice>
-        </response_lid>
-      </presentation>
-      <resprocessing>
-        <outcomes>
-          <decvar varname="SCORE" vartype="Integer" defaultval="0"/>
-        </outcomes>
-        <respcondition title="${_escapeExportText(t('common.correct') || 'Correct')}">
-          <conditionvar>
-            <varequal respident="${responseId}">${correctIdent}</varequal>
-          </conditionvar>
-          <setvar action="Set" varname="SCORE">1</setvar>
-        </respcondition>
-      </resprocessing>
-    </item>`;
-        });
-        const reflections = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.reflections)
-            ? generatedContent.data.reflections.filter((ref) => ref != null)
-            : [];
-        reflections.forEach((ref, i) => {
-            const text = typeof ref === 'string' ? ref : ref.text;
+
+        reflectionEntries.forEach((text, i) => {
             const itemId = `REF_${i}_${generateUUID().slice(0,8)}`;
             const responseId = `REF_RESP_${i}`;
             itemsXml += `
     <item ident="${itemId}" title="${_escapeExportText(t('common.reflection_i_1') || 'Reflection')}">
-      <itemmetadata>
-        <qtimetadata>
-          <qtimetadatafield>
-            <fieldlabel>question_type</fieldlabel>
-            <fieldentry>essay_question</fieldentry>
-          </qtimetadatafield>
-        </qtimetadata>
-      </itemmetadata>
+      ${_qtiItemMetadataXml('reflection', 'essay_question', { manual: true })}
       <presentation>
         <material>
           <mattext texttype="text/plain">${_escapeExportText(text)}</mattext>
         </material>
         <response_str ident="${responseId}" rcardinality="Single">
-          <render_fib rows="5">
+          <render_fib fibtype="String" rows="5" columns="80">
             <response_label ident="${responseId}_LABEL"/>
           </render_fib>
         </response_str>
@@ -525,80 +756,201 @@ const createExport = (deps) => {
         let h5pJson;
         let contentJson;
         let omitted = 0;
+        let adapted = 0;
+        let manualReview = 0;
         let libraryLabel = '';
         let fileSuffix = 'activity';
 
         if (type === 'quiz') {
             const rawQuestions = Array.isArray(generatedContent?.data?.questions) ? generatedContent.data.questions : [];
-            const choices = rawQuestions.map((question) => {
-                const prompt = plain(question && question.question);
-                const optionsList = Array.isArray(question && question.options) ? question.options.map(plain) : [];
-                let correctIndex = Number.isInteger(question && question.correctIndex) ? question.correctIndex : -1;
-                if (correctIndex < 0) correctIndex = optionsList.findIndex((option) => option === plain(question && question.correctAnswer));
-                if (!prompt || optionsList.length < 2 || optionsList.length > 4 || optionsList.some((option) => !option) || correctIndex < 0 || correctIndex >= optionsList.length) {
-                    omitted += 1;
-                    return null;
+            const allSingleChoice = rawQuestions.length > 0 && rawQuestions.every((q) => !q || !q.type || q.type === 'mcq');
+            if (allSingleChoice) {
+                const choices = rawQuestions.map((question) => {
+                    const prompt = plain(question && question.question);
+                    const optionsList = Array.isArray(question && question.options) ? question.options.map(plain) : [];
+                    let correctIndex = Number.isInteger(question && question.correctIndex) ? question.correctIndex : -1;
+                    if (correctIndex < 0) correctIndex = optionsList.findIndex((option) => option === plain(question && question.correctAnswer));
+                    if (!prompt || optionsList.length < 2 || optionsList.length > 4 || optionsList.some((option) => !option) || correctIndex < 0 || correctIndex >= optionsList.length) {
+                        omitted += 1;
+                        return null;
+                    }
+                    const orderedAnswers = [optionsList[correctIndex], ...optionsList.filter((_, index) => index !== correctIndex)];
+                    return { subContentId: generateUUID(), question: richText(prompt), answers: orderedAnswers.map(richText) };
+                }).filter(Boolean);
+                if (!choices.length) {
+                    addToast('No H5P-compatible quiz questions are ready. Questions need 2–4 options and one identified correct answer.', "error");
+                    return false;
                 }
-                const orderedAnswers = [optionsList[correctIndex], ...optionsList.filter((_, index) => index !== correctIndex)];
-                return {
-                    subContentId: generateUUID(),
-                    question: richText(prompt),
-                    answers: orderedAnswers.map(richText),
+                h5pJson = {
+                    title, language: h5pLanguage, mainLibrary: 'H5P.SingleChoiceSet', embedTypes: ['iframe'], license: 'U',
+                    authorComments: 'Generated by AlloFlow. Requires H5P.SingleChoiceSet 1.11 on the destination.',
+                    preloadedDependencies: [{ machineName: 'H5P.SingleChoiceSet', majorVersion: 1, minorVersion: 11 }],
                 };
-            }).filter(Boolean);
-            if (!choices.length) {
-                addToast('No H5P-compatible quiz questions are ready. Questions need 2–4 options and one identified correct answer.', "error");
-                return false;
+                contentJson = {
+                    choices,
+                    overallFeedback: [{ from: 0, to: 100, feedback: '' }],
+                    behaviour: { autoContinue: false, timeoutCorrect: 2000, timeoutWrong: 3000, soundEffectsEnabled: false, enableRetry: true, enableSolutionsButton: true, passPercentage: 70 },
+                    l10n: {
+                        nextButtonLabel: tx('common.next', 'Next'), nextButton: tx('common.next', 'Next'),
+                        showResultsButtonLabel: tx('quiz.results', 'Show results'), retryButtonLabel: tx('common.retry', 'Retry'),
+                        solutionViewTitle: tx('quiz.solution_list', 'Solution list'), correctText: tx('common.correct', 'Correct') + '!',
+                        incorrectText: tx('common.incorrect', 'Incorrect') + '!', shouldSelect: tx('quiz.should_select', 'Should have been selected'),
+                        shouldNotSelect: tx('quiz.should_not_select', 'Should not have been selected'), muteButtonLabel: tx('a11y.mute_all_audio', 'Mute feedback sound'),
+                        closeButtonLabel: tx('common.close', 'Close'), slideOfTotal: tx('quiz.slide_of_total', 'Slide :num of :total'),
+                        scoreBarLabel: tx('quiz.score_bar_label', 'You got :num out of :total points'), solutionListQuestionNumber: tx('common.question_i_1', 'Question') + ' :num',
+                        a11yShowSolution: tx('quiz.a11y_show_solution', 'Show the solution. The task will be marked with its correct solution.'),
+                        a11yRetry: tx('quiz.a11y_retry', 'Retry the task. Reset all responses and start the task over again.'),
+                        resultHeader: tx('quiz.your_result', 'Your result:'), totalScore: tx('quiz.total_score', ':score of :maxScore correct'),
+                        resultTableHeader: tx('common.question_i_1', 'Question'), resultScoreTableHeader: tx('common.score', 'Score'),
+                        correctAnswerIntroduction: tx('quiz.correct_answer', 'Correct answer'),
+                    },
+                };
+                libraryLabel = 'H5P.SingleChoiceSet 1.11';
+                fileSuffix = 'quiz';
+            } else {
+                const questions = [];
+                const used = new Set();
+                const addMulti = (prompt, options, correctIndices) => {
+                    const clean = Array.isArray(options) ? options.map(plain) : [];
+                    const keys = (correctIndices || []).filter((index) => Number.isInteger(index) && index >= 0 && index < clean.length);
+                    if (!plain(prompt) || clean.length < 2 || clean.some((option) => !option) || !keys.length) return false;
+                    questions.push({
+                        library: 'H5P.MultiChoice 1.16', subContentId: generateUUID(),
+                        params: {
+                            question: richText(prompt),
+                            answers: clean.map((option, index) => ({ correct: keys.includes(index), tipsAndFeedback: { tip: '', chosenFeedback: '', notChosenFeedback: '' }, text: richText(option) })),
+                            overallFeedback: [{ from: 0, to: 100, feedback: '' }],
+                            behaviour: { enableRetry: true, enableSolutionsButton: true, enableCheckButton: true, type: keys.length > 1 ? 'multi' : 'single', singlePoint: false, randomAnswers: false, showSolutionsRequiresInput: true, confirmCheckDialog: false, confirmRetryDialog: false, autoCheck: false, passPercentage: 100, showScorePoints: true },
+                            UI: { checkAnswerButton: 'Check', submitAnswerButton: 'Submit', showSolutionButton: 'Show solution', tryAgainButton: 'Retry', tipsLabel: 'Show tip', scoreBarLabel: 'You got :num out of :total points', tipAvailable: 'Tip available', feedbackAvailable: 'Feedback available', correctAnswer: 'Correct answer', shouldCheck: 'Should have been checked', shouldNotCheck: 'Should not have been checked', noInput: 'Please answer before viewing the solution', a11yCheck: 'Check the answers.', a11yShowSolution: 'Show the solution.', a11yRetry: 'Retry the task.' },
+                        },
+                    });
+                    used.add('H5P.MultiChoice');
+                    return true;
+                };
+                const addBlanks = (prompt, answerValues) => {
+                    const answers = Array.from(new Set((answerValues || []).map((value) => plain(value).replace(/[*/:]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean)));
+                    if (!plain(prompt) || !answers.length) return false;
+                    const token = 'ALLOFLOWBLANKTOKEN';
+                    const withToken = /_{3,}/.test(prompt) ? plain(prompt).replace(/_{3,}/, token) : plain(prompt) + ' ' + token;
+                    const line = richText(withToken).replace(token, '*' + answers.map(_escapeExportText).join('/') + '*');
+                    questions.push({
+                        library: 'H5P.Blanks 1.14', subContentId: generateUUID(),
+                        params: {
+                            text: richText('Fill in the missing answer.'), questions: [line], overallFeedback: [{ from: 0, to: 100, feedback: '' }],
+                            showSolutions: 'Show solution', tryAgain: 'Retry', checkAnswer: 'Check', submitAnswer: 'Submit',
+                            notFilledOut: 'Please fill in the blank to view the solution', answerIsCorrect: "':ans' is correct", answerIsWrong: "':ans' is wrong",
+                            answeredCorrectly: 'Answered correctly', answeredIncorrectly: 'Answered incorrectly', solutionLabel: 'Correct answer:',
+                            inputLabel: 'Blank input @num of @total', inputHasTipLabel: 'Tip available', tipLabel: 'Tip',
+                            behaviour: { enableRetry: true, allowRetryIfCorrect: false, enableSolutionsButton: true, enableCheckButton: true, autoCheck: false, caseSensitive: false, showSolutionsRequiresInput: true, separateLines: false, confirmCheckDialog: false, confirmRetryDialog: false, acceptSpellingErrors: false },
+                            scoreBarLabel: 'You got :num out of :total points', a11yCheck: 'Check the answers.', a11yShowSolution: 'Show the solution.', a11yRetry: 'Retry the task.', a11yCheckingModeHeader: 'Checking mode',
+                        },
+                    });
+                    used.add('H5P.Blanks');
+                    return true;
+                };
+                const addEssay = (prompt, sample) => {
+                    if (!plain(prompt)) return false;
+                    questions.push({
+                        library: 'H5P.Essay 1.5', subContentId: generateUUID(),
+                        params: {
+                            taskDescription: richText(prompt), placeholderText: 'Type your response here.',
+                            solution: { introduction: richText('Use this sample to review your response.'), sample: sample ? richText(sample) : '' },
+                            keywords: [{ keyword: '/./', alternatives: [], options: { points: 0, occurrences: 1, caseSensitive: false, forgiveMistakes: true, feedbackIncluded: '', feedbackMissed: '', feedbackIncludedWord: 'none', feedbackMissedWord: 'none' } }],
+                            overallFeedback: [{ from: 0, to: 100, feedback: '' }],
+                            behaviour: { minimumLength: 1, inputFieldSize: '10', enableRetry: true, ignoreScoring: true, pointsHost: 1, linebreakReplacement: ' ' },
+                            checkAnswer: 'Submit', submitAnswer: 'Submit', tryAgain: 'Retry', showSolution: 'Show solution',
+                            feedbackHeader: 'Feedback', solutionTitle: 'Sample answer', remainingChars: 'Remaining characters: @chars',
+                            notEnoughChars: 'You must enter at least @chars characters!', messageSave: 'saved', ariaYourResult: 'Response submitted.',
+                            ariaNavigatedToSolution: 'Navigated to sample solution.', ariaCheck: 'Submit the response.', ariaShowSolution: 'Show the sample solution.', ariaRetry: 'Retry the task.',
+                        },
+                    });
+                    used.add('H5P.Essay');
+                    return true;
+                };
+                rawQuestions.forEach((question) => {
+                    const q = question || {};
+                    const kind = q.type || 'mcq';
+                    const prompt = plain(q.question);
+                    let included = false;
+                    if (kind === 'mcq') {
+                        const options = Array.isArray(q.options) ? q.options.map(plain) : [];
+                        const key = Number.isInteger(q.correctIndex) ? q.correctIndex : options.indexOf(plain(q.correctAnswer));
+                        included = addMulti(prompt, options, [key]);
+                    } else if (kind === 'multi-select') {
+                        const options = Array.isArray(q.options) ? q.options.map(plain) : [];
+                        const keys = Array.isArray(q.correctAnswers) ? q.correctAnswers.map(plain) : [];
+                        const indices = options.map((option, index) => keys.includes(option) ? index : -1).filter((index) => index >= 0);
+                        included = indices.length === keys.length && addMulti(prompt, options, indices);
+                    } else if (kind === 'fill-blank') {
+                        included = addBlanks(prompt, [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []));
+                    } else if (kind === 'short-answer' || kind === 'self-explanation') {
+                        included = addEssay(prompt, plain(q.expectedAnswer || q.rubric));
+                        if (included) manualReview += 1;
+                    } else if (kind === 'sequence-sense') {
+                        const items = Array.isArray(q.items) ? q.items.map(plain).filter(Boolean) : [];
+                        const displayed = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder.map((index) => items[index]).filter(Boolean) : items;
+                        included = items.length >= 3 && addEssay(prompt + ' Displayed order: ' + displayed.join(' → ') + '. State whether it is correct and explain the ordering principle.', 'Expected order: ' + items.join(' → ') + (q.orderingPrinciple ? '. Principle: ' + plain(q.orderingPrinciple) : ''));
+                        if (included) { adapted += 1; manualReview += 1; }
+                    } else if (kind === 'relation-mismatch') {
+                        const pairs = Array.isArray(q.pairs) ? q.pairs.filter((pair) => pair && plain(pair.left) && plain(pair.right)) : [];
+                        const wrong = Number(q.wrongPairIndex);
+                        const candidates = Array.isArray(q.candidatePartners) ? q.candidatePartners.map(plain).filter(Boolean) : [];
+                        const repair = candidates.indexOf(plain(q.correctPartnerForWrong));
+                        if (prompt && pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < pairs.length && candidates.length >= 2 && repair >= 0) {
+                            included = addMulti(prompt + ' Which displayed pair is the mismatch?', pairs.map((pair) => plain(pair.left) + ' ↔ ' + plain(pair.right)), [wrong])
+                                && addMulti('What should ' + plain(pairs[wrong].left) + ' pair with?', candidates, [repair]);
+                            if (included) adapted += 1;
+                        }
+                    } else if (kind === 'answer-evidence') {
+                        const answers = Array.isArray(q.answerOptions) ? q.answerOptions.map(plain) : [];
+                        const evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions.map(plain) : [];
+                        const answerKey = answers.indexOf(plain(q.correctAnswer));
+                        const evidenceKey = evidence.indexOf(plain(q.correctEvidence));
+                        if (prompt && answers.length >= 2 && evidence.length >= 2 && answerKey >= 0 && evidenceKey >= 0) {
+                            included = addMulti(prompt, answers, [answerKey]) && addMulti(plain(q.evidencePrompt) || 'Which evidence best supports the answer?', evidence, [evidenceKey]);
+                            if (included) adapted += 1;
+                        }
+                    } else if (kind === 'numeric-response') {
+                        const expected = Number(q.correctValue);
+                        if (prompt && Number.isFinite(expected)) {
+                            const units = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(plain).filter(Boolean);
+                            if (Number(q.tolerance) > 0) {
+                                included = addEssay(prompt + ' This exported item requires manual review because H5P exact-answer fields do not preserve numeric tolerance.', String(expected) + (plain(q.unit) ? ' ' + plain(q.unit) : '') + ' (±' + Number(q.tolerance) + ')');
+                                if (included) manualReview += 1;
+                            } else {
+                                included = addBlanks(prompt, units.length ? units.map((unit) => String(expected) + ' ' + unit) : [String(expected)]);
+                            }
+                            if (included) adapted += 1;
+                        }
+                    }
+                    if (!included) omitted += 1;
+                });
+                if (!questions.length) {
+                    addToast('No H5P-compatible assessment items are ready. Complete the prompts and answer keys before exporting.', "error");
+                    return false;
+                }
+                const dependencies = [{ machineName: 'H5P.QuestionSet', majorVersion: 1, minorVersion: 21 }];
+                if (used.has('H5P.MultiChoice')) dependencies.push({ machineName: 'H5P.MultiChoice', majorVersion: 1, minorVersion: 16 });
+                if (used.has('H5P.Blanks')) dependencies.push({ machineName: 'H5P.Blanks', majorVersion: 1, minorVersion: 14 });
+                if (used.has('H5P.Essay')) dependencies.push({ machineName: 'H5P.Essay', majorVersion: 1, minorVersion: 5 });
+                h5pJson = {
+                    title, language: h5pLanguage, mainLibrary: 'H5P.QuestionSet', embedTypes: ['iframe'], license: 'U',
+                    authorComments: 'Generated by AlloFlow. Requires H5P.QuestionSet 1.21 and the referenced child libraries on the destination.',
+                    preloadedDependencies: dependencies,
+                };
+                contentJson = {
+                    introPage: { showIntroPage: false, title: richText(title), introduction: '', startButtonText: 'Start quiz' },
+                    progressType: 'textual', passPercentage: 70, questions,
+                    texts: { prevButton: 'Previous question', previous: 'Previous', nextButton: 'Next question', next: 'Next', finishButton: 'Finish', submitButton: 'Submit', textualProgress: 'Question: @current of @total questions', jumpToQuestion: 'Question %d of %total', questionLabel: 'Question', readSpeakerProgress: 'Question @current of @total', unansweredText: 'Unanswered', answeredText: 'Answered', currentQuestionText: 'Current question', navigationLabel: 'Questions', questionSetInstruction: 'Choose question to display' },
+                    disableBackwardsNavigation: false, randomQuestions: false,
+                    endGame: { showResultPage: true, showSolutionButton: true, showRetryButton: true, noResultMessage: 'Finished', message: 'Results', amountCorrect: '@finals of @totals correct', scoreBarLabel: 'You got @finals out of @totals points', scoreHeader: 'Score', overallFeedback: [{ from: 0, to: 100, feedback: '' }] },
+                    solutionButtonText: 'Show solution', retryButtonText: 'Retry', finishButtonText: 'Finish', submitButtonText: 'Submit',
+                    override: { checkButton: true, showSolutionButton: 'on', retryButton: 'on' },
+                };
+                libraryLabel = 'H5P.QuestionSet 1.21 with ' + Array.from(used).join(', ');
+                fileSuffix = 'quiz';
             }
-            h5pJson = {
-                title,
-                language: h5pLanguage,
-                mainLibrary: 'H5P.SingleChoiceSet',
-                embedTypes: ['iframe'],
-                license: 'U',
-                authorComments: 'Generated by AlloFlow. Requires H5P.SingleChoiceSet 1.11 on the destination.',
-                preloadedDependencies: [{ machineName: 'H5P.SingleChoiceSet', majorVersion: 1, minorVersion: 11 }],
-            };
-            contentJson = {
-                choices,
-                overallFeedback: [{ from: 0, to: 100, feedback: '' }],
-                behaviour: {
-                    autoContinue: false,
-                    timeoutCorrect: 2000,
-                    timeoutWrong: 3000,
-                    soundEffectsEnabled: false,
-                    enableRetry: true,
-                    enableSolutionsButton: true,
-                    passPercentage: 70,
-                },
-                l10n: {
-                    nextButtonLabel: tx('common.next', 'Next'),
-                    nextButton: tx('common.next', 'Next'),
-                    showResultsButtonLabel: tx('quiz.results', 'Show results'),
-                    retryButtonLabel: tx('common.retry', 'Retry'),
-                    solutionViewTitle: tx('quiz.solution_list', 'Solution list'),
-                    correctText: `${tx('common.correct', 'Correct')}!`,
-                    incorrectText: `${tx('common.incorrect', 'Incorrect')}!`,
-                    shouldSelect: tx('quiz.should_select', 'Should have been selected'),
-                    shouldNotSelect: tx('quiz.should_not_select', 'Should not have been selected'),
-                    muteButtonLabel: tx('a11y.mute_all_audio', 'Mute feedback sound'),
-                    closeButtonLabel: tx('common.close', 'Close'),
-                    slideOfTotal: tx('quiz.slide_of_total', 'Slide :num of :total'),
-                    scoreBarLabel: tx('quiz.score_bar_label', 'You got :num out of :total points'),
-                    solutionListQuestionNumber: `${tx('common.question_i_1', 'Question')} :num`,
-                    a11yShowSolution: tx('quiz.a11y_show_solution', 'Show the solution. The task will be marked with its correct solution.'),
-                    a11yRetry: tx('quiz.a11y_retry', 'Retry the task. Reset all responses and start the task over again.'),
-                    resultHeader: tx('quiz.your_result', 'Your result:'),
-                    totalScore: tx('quiz.total_score', ':score of :maxScore correct'),
-                    resultTableHeader: tx('common.question_i_1', 'Question'),
-                    resultScoreTableHeader: tx('common.score', 'Score'),
-                    correctAnswerIntroduction: tx('quiz.correct_answer', 'Correct answer'),
-                },
-            };
-            libraryLabel = 'H5P.SingleChoiceSet 1.11';
-            fileSuffix = 'quiz';
-        } else {
-            const rawData = generatedContent && generatedContent.data;
+        } else {            const rawData = generatedContent && generatedContent.data;
             const rawCards = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.cards) ? rawData.cards : (Array.isArray(rawData?.items) ? rawData.items : []));
             const dialogs = rawCards.map((card, index) => {
                 const front = plain(type === 'glossary' ? (card?.term ?? card?.word ?? card?.phrase) : (card?.front ?? card?.term ?? card?.question));
@@ -690,6 +1042,8 @@ const createExport = (deps) => {
             return false;
         }
         if (omitted) addToast(`${omitted} incompatible or incomplete item(s) were omitted from the H5P package.`, "warning");
+        if (adapted) addToast(`${adapted} assessment item(s) were adapted to equivalent H5P interactions.`, "info");
+        if (manualReview) addToast(`${manualReview} exported written, sequence, or tolerance-based item(s) are ungraded and require manual review.`, "warning");
         if (mediaOmitted) addToast(`${mediaOmitted} external, unsupported, or oversized media asset(s) were omitted from the H5P package.`, "warning");
 
         try {

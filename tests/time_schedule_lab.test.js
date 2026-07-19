@@ -111,6 +111,266 @@ describe('Time & Schedule Lab', () => {
     expect(html).toContain('A movie starts at 11:35 PM');
   });
 
+  it('uses semantic schedule-question IDs and normalizes legacy positional progress', () => {
+    loadTool(FILE, ID);
+    const pure = window.TimeSchedulePure;
+    const legacyIds = [
+      'event-duration', 'between-events-gap', 'event-start-24h', 'full-schedule-span',
+    ];
+    expect(pure.scheduleQuestions(pure.schedules.school).map((question) => question.id)).toEqual(legacyIds);
+    expect(pure.legacyScheduleQuestionIds).toEqual(legacyIds);
+    expect(Object.isFrozen(pure.legacyScheduleQuestionIds)).toBe(true);
+    expect(pure.normalizeScheduleSolvedMap({
+      'school:0': true,
+      'school:event-duration': true,
+      'overnight:3': true,
+      'school:99': true,
+      bogus: true,
+    })).toEqual({
+      'school:event-duration': true,
+      'overnight:full-schedule-span': true,
+    });
+  });
+
+  it('falls back safely from stale retry persistence and restores solved challenge details', () => {
+    loadTool(FILE, ID);
+    const stale = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengePracticeMode: 'retry', challengeDifficulty: 'stretch',
+        challengeId: 'removed-challenge', challengeAnswer: '12:25 AM',
+        challengeFeedback: { ok: true, challengeId: 'removed-challenge', message: 'stale' },
+        missedChallenges: { 'read-clock-0735': true },
+      },
+    });
+    expect(stale).toContain('Challenge 1 of 3');
+    expect(stale).toContain('A movie starts at 11:35 PM');
+    expect(stale).not.toContain('undefined');
+    document.body.innerHTML = stale;
+    const allChallenges = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'All challenges');
+    const retryMissed = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Retry missed (0)');
+    expect(allChallenges.getAttribute('aria-pressed')).toBe('true');
+    expect(retryMissed.getAttribute('aria-pressed')).toBe('false');
+    expect(retryMissed.disabled).toBe(true);
+    expect(document.getElementById('ts-challenge-answer').value).toBe('');
+
+    const solved = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengeId: 'convert-1840-24h', challengeAnswer: 'stale',
+        solvedChallenges: { 'convert-1840-24h': true },
+      },
+    });
+    expect(solved).toContain('value="18:40"');
+    expect(solved).toContain('disabled=""');
+    expect(solved).toContain('Solved previously.');
+    expect(solved).toContain('6 + 12 = 18');
+  });
+
+  it('trusts successful retry feedback only when normalized solved progress confirms it', () => {
+    loadTool(FILE, ID);
+    const unsolved = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengePracticeMode: 'retry', challengeDifficulty: 'stretch',
+        challengeId: 'overnight-movie-end',
+        challengeFeedback: {
+          ok: true, challengeId: 'overnight-movie-end', message: 'Unconfirmed success.',
+        },
+      },
+    });
+    document.body.innerHTML = unsolved;
+    let allChallenges = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'All challenges');
+    let retryMissed = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Retry missed (0)');
+    expect(allChallenges.getAttribute('aria-pressed')).toBe('true');
+    expect(retryMissed.getAttribute('aria-pressed')).toBe('false');
+    expect(document.getElementById('ts-challenge-answer').disabled).toBe(false);
+    expect(document.body.textContent).not.toContain('Unconfirmed success.');
+
+    const legacySolved = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengePracticeMode: 'retry', challengeDifficulty: 'stretch',
+        challengeId: 'overnight-movie-end', solvedChallenges: { 7: true },
+        challengeFeedback: {
+          ok: true, challengeId: 'overnight-movie-end', message: 'Confirmed legacy solve.',
+        },
+      },
+    });
+    document.body.innerHTML = legacySolved;
+    allChallenges = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'All challenges');
+    retryMissed = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Retry missed (0)');
+    expect(allChallenges.getAttribute('aria-pressed')).toBe('false');
+    expect(retryMissed.getAttribute('aria-pressed')).toBe('true');
+    expect(document.getElementById('ts-challenge-answer').disabled).toBe(true);
+    expect(document.body.textContent).toContain('Confirmed legacy solve.');
+  });
+
+  it('drops fully unscoped feedback while retaining legacy index-scoped feedback', () => {
+    loadTool(FILE, ID);
+    const unscopedSchedule = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'schedule', scheduleFeedback: { ok: false, message: 'Unscoped schedule result.' },
+      },
+    });
+    document.body.innerHTML = unscopedSchedule;
+    let input = document.getElementById('ts-schedule-answer');
+    expect(document.getElementById('ts-schedule-feedback')).toBeNull();
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.getAttribute('aria-describedby')).toBe('ts-schedule-prompt');
+    expect(document.body.textContent).not.toContain('Unscoped schedule result.');
+
+    const legacySchedule = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'schedule', scheduleFeedback: {
+          ok: false, schedule: 'school', index: 0, message: 'Legacy schedule result.',
+        },
+      },
+    });
+    document.body.innerHTML = legacySchedule;
+    input = document.getElementById('ts-schedule-answer');
+    expect(document.getElementById('ts-schedule-feedback')).toBeTruthy();
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(document.body.textContent).toContain('Legacy schedule result.');
+
+    const unscopedChallenge = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengeIndex: 2,
+        challengeFeedback: { ok: false, message: 'Unscoped challenge result.' },
+      },
+    });
+    document.body.innerHTML = unscopedChallenge;
+    input = document.getElementById('ts-challenge-answer');
+    expect(document.getElementById('ts-challenge-feedback')).toBeNull();
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.getAttribute('aria-describedby')).toBe('ts-challenge-prompt');
+    expect(document.body.textContent).not.toContain('Unscoped challenge result.');
+
+    const legacyChallenge = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengeIndex: 2,
+        challengeFeedback: { ok: false, index: 2, message: 'Legacy challenge result.' },
+      },
+    });
+    document.body.innerHTML = legacyChallenge;
+    input = document.getElementById('ts-challenge-answer');
+    expect(document.getElementById('ts-challenge-feedback')).toBeTruthy();
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(document.body.textContent).toContain('Legacy challenge result.');
+  });
+
+  it('checks a blank derived answer after stale fallback and aligns identity on edit', async () => {
+    const tool = loadTool(FILE, ID);
+    const awardXP = vi.fn();
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _timeSchedule: {
+          tab: 'challenge', challengePracticeMode: 'retry', challengeDifficulty: 'stretch',
+          challengeId: 'removed-challenge', challengeAnswer: '12:25 AM',
+          challengeFeedback: { ok: true, challengeId: 'removed-challenge', message: 'stale' },
+          missedChallenges: { 'read-clock-0735': true },
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+
+    document.body.innerHTML = '<div id="root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    let input = document.getElementById('ts-challenge-answer');
+    expect(input.value).toBe('');
+    let check = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); });
+    expect(latest._timeSchedule.solvedChallenges).toEqual({});
+    expect(latest._timeSchedule.challengeFeedback).toMatchObject({
+      ok: false, challengeId: 'overnight-movie-end',
+    });
+    expect(awardXP).not.toHaveBeenCalled();
+
+    input = document.getElementById('ts-challenge-answer');
+    await enterText(input, '12:25 AM');
+    expect(latest._timeSchedule.challengeId).toBe('overnight-movie-end');
+    check = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); });
+    expect(latest._timeSchedule.solvedChallenges['overnight-movie-end']).toBe(true);
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('associates schedule and challenge inputs with their prompts and feedback', () => {
+    loadTool(FILE, ID);
+    const schedule = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'schedule', scheduleKey: 'school', scheduleQuestionIndex: 0,
+        scheduleAnswer: '49',
+        scheduleFeedback: {
+          ok: false, schedule: 'school', questionId: 'event-duration', message: 'Try the timeline.',
+        },
+      },
+    });
+    document.body.innerHTML = schedule;
+    const scheduleInput = document.getElementById('ts-schedule-answer');
+    expect(document.querySelector('label[for="ts-schedule-answer"]')).toBeTruthy();
+    expect(document.getElementById('ts-schedule-prompt')).toBeTruthy();
+    expect(document.getElementById('ts-schedule-feedback')).toBeTruthy();
+    expect(scheduleInput.getAttribute('aria-invalid')).toBe('true');
+    expect(scheduleInput.getAttribute('aria-describedby')).toBe(
+      'ts-schedule-prompt ts-schedule-feedback',
+    );
+
+    const challenge = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengeId: 'interval-1320-1455', challengeAnswer: '90',
+        challengeFeedback: {
+          ok: false, challengeId: 'interval-1320-1455', message: 'Try the timeline.',
+        },
+      },
+    });
+    document.body.innerHTML = challenge;
+    const challengeInput = document.getElementById('ts-challenge-answer');
+    expect(document.querySelector('label[for="ts-challenge-answer"]')).toBeTruthy();
+    expect(document.getElementById('ts-challenge-prompt')).toBeTruthy();
+    expect(document.getElementById('ts-challenge-feedback')).toBeTruthy();
+    expect(challengeInput.getAttribute('aria-invalid')).toBe('true');
+    expect(challengeInput.getAttribute('aria-describedby')).toBe(
+      'ts-challenge-prompt ts-challenge-feedback',
+    );
+  });
+
+  it('uses contrast-safe active direction and schedule action colors', () => {
+    loadTool(FILE, ID);
+    document.body.innerHTML = renderTool(ID, {
+      _timeSchedule: { tab: 'elapsed', elapsedDirection: 1 },
+    });
+    let active = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Count forward');
+    expect(active.classList.contains('bg-emerald-700')).toBe(true);
+    expect(active.classList.contains('bg-emerald-600')).toBe(false);
+
+    document.body.innerHTML = renderTool(ID, {
+      _timeSchedule: { tab: 'elapsed', elapsedDirection: -1 },
+    });
+    active = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Count backward');
+    expect(active.classList.contains('bg-amber-800')).toBe(true);
+    expect(active.classList.contains('bg-amber-600')).toBe(false);
+
+    document.body.innerHTML = renderTool(ID, {
+      _timeSchedule: { tab: 'schedule' },
+    });
+    const check = [...document.querySelectorAll('button')]
+      .find((button) => button.textContent === 'Check answer');
+    expect(check.classList.contains('bg-amber-800')).toBe(true);
+    expect(check.classList.contains('hover:bg-amber-900')).toBe(true);
+  });
+
   it('builds friendly jumps across midnight in both directions', () => {
     loadTool(FILE, ID);
     const pure = window.TimeSchedulePure;
@@ -246,7 +506,8 @@ describe('Time & Schedule Lab', () => {
     await React.act(async () => { root.render(React.createElement(App)); });
     const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
     await React.act(async () => { check.click(); });
-    expect(latest._timeSchedule.scheduleSolvedKeys['school:0']).toBe(true);
+    expect(latest._timeSchedule.scheduleSolvedKeys['school:event-duration']).toBe(true);
+    expect(latest._timeSchedule.scheduleSolvedKeys['school:0']).toBeUndefined();
     expect(latest._timeSchedule.scheduleSolved).toBe(1);
     expect(awardXP).toHaveBeenCalledWith('timeSchedule', 5, 'schedule reasoning');
 
@@ -255,6 +516,35 @@ describe('Time & Schedule Lab', () => {
     await React.act(async () => { check.click(); });
     expect(latest._timeSchedule.scheduleSolved).toBe(1);
     expect(latest.outside).toEqual({ keep: true });
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('migrates legacy schedule progress when another question is solved', async () => {
+    const tool = loadTool(FILE, ID);
+    const awardXP = vi.fn();
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _timeSchedule: {
+          tab: 'schedule', scheduleKey: 'school', scheduleQuestionIndex: 1,
+          scheduleAnswer: '15', scheduleSolvedKeys: { 'school:0': true },
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); });
+    expect(latest._timeSchedule.scheduleSolvedKeys).toEqual({
+      'school:event-duration': true,
+      'school:between-events-gap': true,
+    });
+    expect(latest._timeSchedule.scheduleSolved).toBe(2);
     expect(awardXP).toHaveBeenCalledTimes(1);
     await React.act(async () => { root.unmount(); });
   });
@@ -309,7 +599,7 @@ describe('Time & Schedule Lab', () => {
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     await React.act(async () => { root.render(React.createElement(App)); });
     let check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
-    await React.act(async () => { check.click(); });
+    await React.act(async () => { check.click(); check.click(); });
     expect(latest._timeSchedule.missedChallenges['interval-1320-1455']).toBe(true);
     expect(latest._timeSchedule.challengeAttempts['interval-1320-1455']).toBe(1);
     expect(latest._timeSchedule.score).toEqual({ correct: 0, total: 1 });

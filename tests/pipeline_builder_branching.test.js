@@ -37,5 +37,28 @@ describe('Pipeline Builder state and branching contract', () => {
     expect(rendererSource).toContain("t('outline.paths_merge_here')");
     expect(rendererSource).toContain("t('outline.branches_to')");
     expect(rendererSource).toContain('!hasNonLinearFlow');
+    expect(rendererSource).toContain("t('outline.decision_point')");
+    expect(rendererSource).toContain('border-t-2 border-amber-400');
+  });
+
+  it('keeps a branch source active until all outgoing paths are selected', () => {
+    expect(gamesSource).toContain('const remainingBranches = Math.max(0, requiredOut - outgoingTargets.size)');
+    expect(gamesSource).toContain('setConnectingFrom(remainingBranches > 0 ? connectingFrom : null)');
+    expect(gamesSource).toContain('setKeyboardSelectedId(remainingBranches > 0 ? keyboardSelectedId : null)');
+  });
+
+  it('reports missing paths, aggregates mixed edge results, and prevents score farming', () => {
+    expect(gamesSource).toContain('const missingCount = Math.max(0, totalRequired - correctCount)');
+    expect(gamesSource).toContain('incidentResults.every(result => result.correct)');
+    expect(gamesSource).toContain('rewardedConnectionKeysRef.current.has(connKey)');
+    expect(gamesSource).toContain('const points = newlyCorrectCount * 20 - incorrectCount * 5');
+    expect(gamesSource).toContain("const retryGuidance = incorrectCount > 0");
+  });
+
+  it('cancels delayed validation cleanup when data resets, replay starts, or the game closes', () => {
+    expect(gamesSource).toContain('const validationTimerRef = useRef(null)');
+    expect(gamesSource).toContain('validationTimerRef.current = window.setTimeout');
+    expect(gamesSource).toContain('window.clearTimeout(validationTimerRef.current)');
+    expect(gamesSource).toContain('validationTimerRef.current = null');
   });
 });

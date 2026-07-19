@@ -2445,6 +2445,18 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             _hasOwnConfig('quizReflectionCount') ? configOverride.quizReflectionCount : quizReflectionCount,
             2
         );
+        const _requestedScoringPolicy = configOverride && configOverride.scoringPolicy && typeof configOverride.scoringPolicy === 'object'
+            ? configOverride.scoringPolicy
+            : {};
+        const _scoringPolicy = {
+            partialCredit: _requestedScoringPolicy.partialCredit !== false,
+            writtenResponseMode: _requestedScoringPolicy.writtenResponseMode === 'teacher-review'
+                ? 'teacher-review'
+                : 'ai-provisional',
+        };
+        const _scoringInstruction = _scoringPolicy.writtenResponseMode === 'teacher-review'
+            ? 'Written responses will be reviewed by the teacher. Still provide complete reference answers and rubrics so the teacher has a clear key.'
+            : 'Written responses receive provisional AI feedback. Provide specific reference answers and observable rubrics; avoid vague criteria.';
         // Slice 5: visual MCQ mode read from configOverride
         const _mcqVisualMode = (configOverride && configOverride.mcqVisualMode) || 'none';
         // Plan T v3+ Chunk 10: optional image-style hint. Empty preserves
@@ -2539,6 +2551,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Generate exactly ${_resolvedItemCount} assessed items using this exact item-type recipe:
           ${_itemTypeInstructions}
           ${_reflectionInstruction}
+          ${_scoringInstruction}
           Follow the requested JSON example for each item type exactly. MCQs must have exactly 4 options and correctAnswer must exactly match one option. Every assessed item must include a short lowercase conceptLabel.
           ${_useMisconceptionDistractors ? 'Build MCQ distractors from common student misconceptions or predictable errors, not random wrong answers.' : ''}
           ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
@@ -2567,6 +2580,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Include the following item types:
           ${_itemTypeInstructions}
           ${_reflectionInstruction}
+          ${_scoringInstruction}
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
           IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
@@ -2896,6 +2910,7 @@ ${_itemsBlock}`;
             content.modeLabel = _modeStrategy ? _modeStrategy.label : 'Exit Ticket';
             content.modeIcon = _modeStrategy ? _modeStrategy.icon : '📝';
             content.mcqVisualMode = _mcqVisualMode;
+            content.scoringPolicy = Object.assign({}, _scoringPolicy);
             // Plan T v3+ Chunk 10: persist style hint for the refine pipeline.
             if (_imageStyle) content.imageStyle = _imageStyle;
             if (usesLocalTextBackend) content.localModelGenerated = true;

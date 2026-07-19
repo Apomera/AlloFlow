@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const skillBanks = require('./educational_leadership_5412/item_content.cjs');
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
@@ -119,7 +120,7 @@ const itemOutput = JSON.stringify(items, null, 2) + '\n';
 const packOutput = JSON.stringify(pack, null, 2) + '\n';
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'educational_leadership_5412_items.json'), itemOutput, 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'educational_leadership_5412_pack.json'), packOutput, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'educational_leadership_5412_items.json'), itemOutput, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'educational_leadership_5412_pack.json'), packOutput, 'utf8');
 }
 console.log('Built Praxis Educational Leadership 5412: 200 items in two 100-item batches; each batch = 17/23/18/16/13/13 domains and 25/25/25/25 answer positions.');

@@ -20713,7 +20713,6 @@
   "parallelSourceVariants": 0,
   "newIndependentItemsNeeded": 0,
   "expansionVersion": "source-kernel-audit-plus-independent-batches-and-guided-review-v2",
-  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "lastReviewedAt": "2026-07-18",
@@ -20853,5 +20852,6 @@
     ],
     "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. It currently contains 500 distinct independent content kernels; 0 newly authored independent questions remain to reach 500."
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. It currently contains 500 distinct independent content kernels; 0 newly authored independent questions remain to reach 500.",
+  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

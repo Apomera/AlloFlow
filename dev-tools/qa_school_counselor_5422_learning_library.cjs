@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const root = path.resolve(__dirname, '..');
 const library = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'school_counselor_5422_learning_library.json'), 'utf8'));
 const allowedHosts = new Set(['praxis.ets.org', 'schoolcounselor.org', 'www.schoolcounselor.org', 'studentprivacy.ed.gov', 'sites.ed.gov', 'www.ed.gov', 'ies.ed.gov']);
@@ -79,8 +80,8 @@ const markdown = `# Praxis School Counselor (5422) learning library QA report\n\
 
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'school_counselor_5422_learning_library_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'school_counselor_5422_learning_library_qa.md'), markdown, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'school_counselor_5422_learning_library_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'school_counselor_5422_learning_library_qa.md'), markdown, 'utf8');
 }
 
 console.log('Praxis School Counselor 5422 learning-library QA: ' + status + ' (' + findings.length + ' finding' + (findings.length === 1 ? '' : 's') + ').');

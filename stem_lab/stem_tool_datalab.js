@@ -40,6 +40,12 @@
     return cdnUrl;
   }
   var DATA_LAB_URL = companionUrl('data_lab/data_lab.html?v=1', DATA_LAB_CDN_URL);
+  var DATA_LAB_ORIGIN = '';
+  try { DATA_LAB_ORIGIN = new URL(DATA_LAB_URL, window.location.href).origin; } catch (_) {}
+
+  function safeSnapshotText(snapshot) {
+    try { return JSON.stringify(snapshot).slice(0, 2500); } catch (_) { return ''; }
+  }
 
   function buildTutorPrompt(question, snapshot, history) {
     var lines = [
@@ -53,7 +59,8 @@
     ];
     if (snapshot && snapshot.contexts && snapshot.contexts.length) {
       lines.push('THE SHAPE OF THEIR WORKSPACE RIGHT NOW (names and counts only — you cannot see values):');
-      lines.push(JSON.stringify(snapshot).slice(0, 2500));
+      var snapshotText = safeSnapshotText(snapshot);
+      lines.push(snapshotText || '[Workspace shape could not be summarized safely.]');
     } else {
       lines.push('You cannot see their workspace right now — ask what they are working with.');
     }
@@ -91,18 +98,17 @@
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
-      var labToolData = ctx.toolData || {};
-      var slice = labToolData._dataLab || {};
 
       var _win = React.useRef(null);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
 
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
 
-      function updSlice(patch) {
+      function markOpened() {
         setLabToolData(function (prev) {
           var cur = Object.assign({}, (prev && prev._dataLab) || {});
-          Object.keys(patch).forEach(function (k) { cur[k] = patch[k]; });
+          cur.opened = true;
+          cur.openedCount = (cur.openedCount || 0) + 1;
           var next = Object.assign({}, prev); next._dataLab = cur; return next;
         });
       }
@@ -112,8 +118,11 @@
         function onMsg(ev) {
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
+          var sourceIsPopup = !!(_win.current && ev.source === _win.current);
+          var originMatches = !DATA_LAB_ORIGIN || DATA_LAB_ORIGIN === 'null' || ev.origin === DATA_LAB_ORIGIN;
+          if (!sourceIsPopup || !originMatches) return;
           if (data.type === 'allodatalab-hello') {
-            try { if (ev.source) ev.source.postMessage({ type: 'allodatalab-ready', ai: aiOn }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'allodatalab-ready', ai: aiOn }, DATA_LAB_ORIGIN && DATA_LAB_ORIGIN !== 'null' ? DATA_LAB_ORIGIN : '*'); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -121,16 +130,18 @@
           if (data.type !== 'allodatalab-ai-request' || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
-            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allodatalab-ai-response', id: data.id }, payload), '*'); } catch (_) {}
+            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allodatalab-ai-response', id: data.id }, payload), DATA_LAB_ORIGIN && DATA_LAB_ORIGIN !== 'null' ? DATA_LAB_ORIGIN : '*'); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
+          var question = typeof data.question === 'string' ? data.question.trim().slice(0, 400) : '';
+          if (!question) { respond({ error: 'invalid-question' }); return; }
           // Functional update — the closure's slice can be stale mid-conversation.
           setLabToolData(function (prev) {
             var cur = Object.assign({}, (prev && prev._dataLab) || {});
             cur.askedCount = (cur.askedCount || 0) + 1;
             var next = Object.assign({}, prev); next._dataLab = cur; return next;
           });
-          var prompt = buildTutorPrompt(data.question, data.snapshot, data.history);
+          var prompt = buildTutorPrompt(question, data.snapshot, data.history);
           Promise.resolve().then(function () {
             return ctx.callGemini(prompt, false, false, 0.7);
           }).then(function (resp) {
@@ -144,11 +155,23 @@
         return function () { window.removeEventListener('message', onMsg); };
       }, [aiOn]);
 
+      React.useEffect(function () {
+        if (popupState !== 'opening' && popupState !== 'open') return;
+        var timer = setInterval(function () {
+          var popup = _win.current;
+          if (popup && popup.closed) {
+            _win.current = null;
+            setPopupState('closed');
+          }
+        }, 750);
+        return function () { clearInterval(timer); };
+      }, [popupState]);
+
       function openDataLab() {
         var existing = _win.current;
-        if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
+        if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} setPopupState('open'); return; }
         var w = null;
-        try { w = window.open(DATA_LAB_URL, 'alloflow-data-lab', 'width=1280,height=840'); } catch (_) { w = null; }
+        try { w = window.open(DATA_LAB_URL, 'alloflow-data-lab', 'width=1280,height=840,resizable=yes,scrollbars=yes'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.dataLab.popup_blocked', 'The Data Lab window was blocked. Allow pop-ups for this page, then try again.'));
@@ -156,7 +179,7 @@
         }
         _win.current = w;
         setPopupState('opening');
-        updSlice({ opened: true, openedCount: (slice.openedCount || 0) + 1 });
+        markOpened();
         if (announceToSR) announceToSR(t('stem.dataLab.opened_sr', 'Opened the Data Lab in a new window.'));
       }
 
@@ -189,13 +212,13 @@
           className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 shadow-md shadow-indigo-600/20 transition-all w-fit',
           'aria-label': t('stem.dataLab.open_title', 'Open the Data Lab in a new window (CODAP workspace with the AlloFlow tutor)')
         }, t('stem.dataLab.open', '📊 Open Data Lab')),
-        popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },
+        popupState === 'opening' && h('p', { className: 'text-xs text-sky-300', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.opening_note', 'Opening Data Lab. If it does not appear, check your pop-up settings.')),
-        popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300' },
+        popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
-        popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
+        popupState === 'open' && h('p', { className: 'text-xs text-emerald-300', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.open_note', 'Data Lab is open. Keep this AlloFlow window open too — it powers the AI tutor.')),
-        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
           t('stem.dataLab.closed_note', 'Data Lab was closed. You can reopen it whenever you are ready.')),
         h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
           t('stem.dataLab.credit', 'CODAP is free and open source (MIT) from the Concord Consortium. The workspace loads from codap.concord.org, so the Data Lab needs internet; an offline School Box copy is on the roadmap.'))

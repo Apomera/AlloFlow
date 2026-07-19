@@ -140,10 +140,17 @@ describe('ParaPro 1755 diagnostic bank', () => {
     const deployPack = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/parapro_pack.json'), 'utf8');
     const rootQa = fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_native_qa.json'), 'utf8');
     const deployQa = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/parapro_native_qa.json'), 'utf8');
+    const rootQaMarkdown = fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_native_qa.md'), 'utf8');
+    const deployQaMarkdown = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/parapro_native_qa.md'), 'utf8');
+    const currentPack = JSON.parse(rootPack);
     const report = JSON.parse(rootQa);
 
     expect(deployPack).toBe(rootPack);
     expect(deployQa).toBe(rootQa);
+    expect(deployQaMarkdown).toBe(rootQaMarkdown);
+    expect(rootQaMarkdown).toContain('# ParaPro diagnostic-bank QA report');
+    expect(rootQaMarkdown).not.toMatch(/^# ParaPro \d+-item diagnostic bank QA report/m);
+    expect(rootQaMarkdown).toContain(`Pack: ${currentPack.title} v${currentPack.version}`);
     expect(report.summary).toMatchObject({ totalItems: 500, passedItems: 500, reviewRequiredItems: 0, status: 'pass' });
     expect(report.blueprint.categories).toEqual({
       reading: { total: 30, skills: 20, application: 10 },

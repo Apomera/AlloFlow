@@ -3376,8 +3376,8 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </button>
 </div>
 <div style="position:relative;min-height:420px;border-radius:14px;overflow:hidden;border:1px solid rgba(148,163,184,0.26);background:#0f172a">
-<div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate the reconstruction; Home returns to the starting view.</div>
-<canvas tabindex="0" role="application" aria-roledescription="Interactive 3D dinosaur reconstruction" aria-keyshortcuts="ArrowLeft ArrowRight A D Home" aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus" aria-label="T. rex procedural 3D reconstruction viewer. Drag to rotate, or use left and right arrow keys. Home returns to the starting view." style="width:100%;height:420px;display:block;outline:none;outline-offset:-3px">
+<div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.</div>
+<canvas tabindex="0" role="application" aria-roledescription="Interactive 3D dinosaur reconstruction" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home" aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus" aria-label="T. rex procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view." style="width:100%;height:420px;display:block;touch-action:none;outline:none;outline-offset:-3px">
 </canvas>
 <div style="position:absolute;left:10px;top:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none">
 <span style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(56,189,248,0.55);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Length 12.3 m</span>
@@ -3388,6 +3388,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <span style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(167,139,250,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Assembly 0/6</span>
 <span style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(167,139,250,0.55);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Mass 8.4 t</span>
 </div>
+<div aria-label="Current 3D camera view" style="position:absolute;right:10px;bottom:56px;padding:5px 8px;border-radius:8px;background:rgba(15,23,42,0.78);color:#e2e8f0;font-size:11px;font-weight:800;pointer-events:none">Camera view loading...</div>
 <div id="dino3d-status-tyrannosaurus" role="status" aria-live="polite" aria-atomic="true" style="position:absolute;left:10px;bottom:10px;right:10px;padding:7px 10px;border-radius:9px;background:rgba(15,23,42,0.78);color:#cbd5e1;font-size:11px;pointer-events:none">Loading 3D reconstruction...</div>
 </div>
 <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px">
@@ -3537,7 +3538,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </span>
 <span>
 <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Skeleton proxy</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">White rods and joints show the inferred bone layout.</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout. Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow.</span>
 </span>
 </div>
 <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
@@ -3553,7 +3554,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </span>
 <span>
 <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Species anatomy cues</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Simplified horns, plates, sails, armor, or crests appear for supported clades. They are diagram cues, not specimen scans.</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Simplified horns, plates, sails, armor, crests, domes, claws, or feather fans appear for supported clades. They are diagram cues, not specimen scans.</span>
 </span>
 </div>
 <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
@@ -3625,7 +3626,23 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </span>
 <span>
 <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Length guide</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Cyan floor line spans snout to tail for scale.</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Cyan floor line spans snout to tail with one-meter ticks.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#facc15;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Height guide</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Gold vertical staff marks estimated standing height with one-meter ticks.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#f59e0b;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Survey compass</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid.</span>
 </span>
 </div>
 </div>

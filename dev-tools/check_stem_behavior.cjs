@@ -100,17 +100,43 @@ const TEST_SUITES = [
         },
       },
       {
-        name: 'All AI cars within map bounds',
+        name: 'All AI cars within active course bounds',
         fn: (state) => {
           const traffic = (state.trafficRef && state.trafficRef.current) || [];
           const MAP_SIZE = (state.constants && state.constants.MAP_SIZE) || 96;
           if (traffic.length === 0) return { pass: true, message: 'no traffic (skipped)' };
-          const offmap = traffic.filter(t => t.x < -5 || t.x > MAP_SIZE + 5 || t.y < -5 || t.y > MAP_SIZE + 5);
+          // Continuous RoadReady scenarios stream chunks along an unbounded world-Y
+          // axis. In that mode, a negative or >MAP_SIZE y value is expected; only
+          // the finite lateral course width remains bounded. Finite-map scenarios
+          // still require both axes to stay near the 0..MAP_SIZE tile.
+          const continuousWorld = !!(state.infiniteWorldRef && state.infiniteWorldRef.current
+            && state.infiniteWorldRef.current.hasRoadHeightAtY);
+          const offmap = traffic.filter(t => {
+            // Streamed cross streets are authored in an intersection-local frame.
+            // Their rotated endpoints can legitimately extend past global x=96;
+            // validate native cross traffic against that local road instead.
+            if (continuousWorld && t.crossStreet) {
+              if (!t._crossPose || t._turnedFromMain) return false;
+              const pose = t._crossPose;
+              const c = Math.cos(pose.heading || 0), s = Math.sin(pose.heading || 0);
+              const dx = t.x - pose.x, dy = t.y - pose.y;
+              const longitudinal = dx * c - dy * s;
+              const lateral = dx * s + dy * c;
+              const halfLength = (Number(pose.length) || MAP_SIZE) * 0.5 + 2;
+              const expectedLateral = typeof t.laneOffset === 'number' ? t.laneOffset : 0;
+              return Math.abs(longitudinal) > halfLength + 0.5
+                || Math.abs(lateral - expectedLateral) > 2;
+            }
+            return t.x < -5 || t.x > MAP_SIZE + 5
+              || (!continuousWorld && (t.y < -5 || t.y > MAP_SIZE + 5));
+          });
           if (offmap.length > 0) {
             const sample = offmap[0];
-            return { pass: false, message: offmap.length + '/' + traffic.length + ' cars off-map (e.g., x=' + sample.x.toFixed(1) + ', y=' + sample.y.toFixed(1) + ')' };
+            return { pass: false, message: offmap.length + '/' + traffic.length + ' cars outside active course bounds (e.g., x=' + sample.x.toFixed(1) + ', y=' + sample.y.toFixed(1) + ')' };
           }
-          return { pass: true, message: 'all ' + traffic.length + ' cars within map [0,' + MAP_SIZE + ']' };
+          return { pass: true, message: continuousWorld
+            ? 'all ' + traffic.length + ' cars within streamed course width; world-Y is intentionally unbounded'
+            : 'all ' + traffic.length + ' cars within map [0,' + MAP_SIZE + ']' };
         },
       },
       {
@@ -320,12 +346,17 @@ const TEST_SUITES = [
           const c = (state.constants) || {};
           const centerX = c.CENTER_X || 48;
           const sidewalkOffset = c.SIDEWALK_OFFSET || 4.5;
-          const sidewalkLeft = centerX - sidewalkOffset;
-          const sidewalkRight = centerX + sidewalkOffset;
           const TOLERANCE = 2;  // peds can be at crosswalks (slightly off sidewalk)
           // A ped is "safe" if they are on a sidewalk, or actively crossing along
           // the marked crosswalk span between sidewalks at their crosswalk row.
           const inRoad = peds.filter(p => {
+            // Curved and streamed roads record the actual sidewalk pair at each
+            // pedestrian's crosswalk. Fall back to the legacy fixed-center pair
+            // only for older finite-map entities that do not carry those fields.
+            const sidewalkLeft = typeof p.sidewalkLeft === 'number'
+              ? p.sidewalkLeft : centerX - sidewalkOffset;
+            const sidewalkRight = typeof p.sidewalkRight === 'number'
+              ? p.sidewalkRight : centerX + sidewalkOffset;
             const distLeft = Math.abs(p.x - sidewalkLeft);
             const distRight = Math.abs(p.x - sidewalkRight);
             const onSidewalk = distLeft <= TOLERANCE || distRight <= TOLERANCE;

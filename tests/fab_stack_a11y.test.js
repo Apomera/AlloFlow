@@ -32,6 +32,14 @@ describe('Floating student-tools stack accessibility', () => {
     expect(source).toContain('aria-pressed={isDictationMode}');
   });
 
+  it('reports the shared dictation engine, privacy boundary, and busy state', () => {
+    expect(source).toContain('voice.isDictationSupported()');
+    expect(source).toContain('data-dictation-engine');
+    expect(source).toContain('dictationStatus.privacy');
+    expect(source).toContain('role="status"');
+    expect(source).toContain('aria-busy={dictationBusy}');
+    expect(source).toContain("dictationPhase === 'transcribing'");
+  });
   it('respects reduced motion and hides decorative artwork', () => {
     expect(source).toContain('animate-pulse motion-reduce:animate-none');
     expect(source).toContain('slide-in-from-bottom-4 fade-in duration-200 motion-reduce:animate-none');

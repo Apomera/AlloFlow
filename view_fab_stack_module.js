@@ -40,6 +40,7 @@ function FabStack(props) {
     interactionMode,
     isCompareMode,
     isDictationMode,
+    dictationStatus,
     isFabExpanded,
     isFluencyMode,
     isLineFocusMode,
@@ -64,6 +65,9 @@ function FabStack(props) {
   } = props;
   const panelRef = React.useRef(null);
   const toggleRef = React.useRef(null);
+  const dictationPhase = dictationStatus?.state || (isDictationMode ? "listening" : "idle");
+  const dictationEngineLabel = dictationStatus?.engineLabel || "";
+  const dictationBusy = dictationPhase === "starting" || dictationPhase === "transcribing";
   React.useEffect(() => {
     if (!isFabExpanded) return void 0;
     const focusTimer = window.setTimeout(() => {
@@ -272,21 +276,26 @@ function FabStack(props) {
         type: "button",
         onClick: (e) => {
           e.preventDefault();
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          if (!SpeechRecognition) {
+          const voice = window.AlloFlowVoice;
+          const supported = voice && typeof voice.isDictationSupported === "function" ? voice.isDictationSupported() : !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+          if (!supported) {
             addToast(t("roles.voice_not_supported"), "error");
             return;
           }
           setIsDictationMode(!isDictationMode);
         },
-        className: `p-3 rounded-full transition-all shadow-sm ${isDictationMode ? "bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50" : "bg-white text-slate-600 hover:bg-slate-100"}`,
-        title: t("toolbar.dictation_toggle"),
+        disabled: dictationPhase === "transcribing",
+        className: `p-3 rounded-full transition-all shadow-sm disabled:cursor-wait ${isDictationMode || dictationBusy ? "bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-red-500/50" : "bg-white text-slate-600 hover:bg-slate-100"}`,
+        title: [t("toolbar.dictation_toggle"), dictationEngineLabel].filter(Boolean).join(" \u2014 "),
         "aria-label": isDictationMode ? t("toolbar.dictation_stop") : t("toolbar.dictation_start"),
         "aria-pressed": isDictationMode,
+        "aria-busy": dictationBusy,
+        "data-dictation-engine": dictationStatus?.engine || "",
         "data-help-key": "fab_dictation"
       },
-      isDictationMode ? /* @__PURE__ */ React.createElement(Mic, { size: 20, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(MicOff, { size: 20, "aria-hidden": "true" })
-    )
+      isDictationMode || dictationBusy ? /* @__PURE__ */ React.createElement(Mic, { size: 20, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(MicOff, { size: 20, "aria-hidden": "true" })
+    ),
+    dictationStatus && dictationPhase !== "idle" && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === "error" ? "text-rose-700" : "text-slate-700"}` }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, dictationStatus.message || dictationEngineLabel), dictationStatus.privacy && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-slate-600" }, dictationStatus.privacy))
   ), /* @__PURE__ */ React.createElement(
     "button",
     {

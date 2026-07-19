@@ -34,6 +34,12 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(pure.analyzeProportionalPairs([{ x: 0, y: 2 }, { x: 1, y: 3 }, { x: 2, y: 6 }])).toMatchObject({
       proportional: false, hasInvalidOrigin: true,
     });
+    expect(pure.analyzeProportionalPairs([
+      { x: 1, y: 1_000_000_000_000 }, { x: 2, y: 2_000_000_000_001 },
+    ]).proportional).toBe(false);
+    expect(pure.analyzeProportionalPairs([
+      { x: 1, y: 1_000_000_000_000 }, { x: 2, y: 2_000_000_000_000 },
+    ]).proportional).toBe(true);
 
     const mismatched = pure.parsePairInput('0,1,2', '0,3');
     expect(mismatched.complete).toBe(false);
@@ -58,6 +64,11 @@ describe('Ratios, Rates & Proportions Lab', () => {
     });
     expect(pure.percentTapeModel(235).tapes.map((tape) => tape.percent)).toEqual([100, 100, 35]);
     expect(pure.percentTapeSummary(pure.percentTapeModel(235))).toBe('235% equals 2 complete wholes plus 35% of another whole.');
+    expect(pure.percentTapeModel(Number.MAX_VALUE)).toMatchObject({ percent: 1000, limited: true, wholeCount: 10 });
+    expect(Number.isFinite(pure.roundTo(Number.MAX_VALUE, 3))).toBe(true);
+    expect(pure.roundTo(1.005, 2)).toBe(1.01);
+    expect(pure.positiveAxisMaximum([0, 0.1, 0.4])).toBe(0.4);
+    expect(pure.positiveAxisMaximum([0, 0])).toBe(1);
 
     const explorer = tool.questHooks.find((hook) => hook.id === 'ratio_explorer');
     const challenger = tool.questHooks.find((hook) => hook.id === 'ratio_challenger');
@@ -81,6 +92,22 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(multiWhole).toContain('Whole 3 percent tape: 35% filled');
     expect(multiWhole).toContain('data-fill-fraction="0.5"');
     expect(multiWhole).toContain('aria-labelledby="ratio-percent-tape-title-2 ratio-percent-tape-desc-2"');
+  });
+
+  it('bounds extreme percent models without leaking Infinity', () => {
+    loadTool(FILE, ID);
+    const hugePart = renderTool(ID, {
+      _ratioLab: { mode: 'percent', percentKind: 'findPart', percentValue: Number.MAX_VALUE, percentWhole: Number.MAX_VALUE },
+    });
+    expect(hugePart).toContain('This result is above the 1,000,000 quantity limit');
+    expect(hugePart).toContain('Learning-model range: 0% to 1000%; quantities up to 1,000,000');
+    expect(hugePart).not.toContain('Infinity');
+
+    const hugeRate = renderTool(ID, {
+      _ratioLab: { mode: 'percent', percentKind: 'findPercent', percentPart: 1_000_000, percentWhole: Number.MIN_VALUE },
+    });
+    expect(hugeRate).toContain('This example is above the 1000% learning-model limit');
+    expect(hugeRate).not.toContain('Infinity');
   });
 
   it('renders all five representations without degraded output', () => {
@@ -113,6 +140,45 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(table).not.toContain('NaN');
   });
 
+  it('scales proportional graphs to their actual positive decimal maxima', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _ratioLab: { mode: 'proportional', propX: '0.1,0.2,0.4', propY: '0.15,0.3,0.6' },
+    });
+    expect(html).toContain('data-axis-max-x="0.4"');
+    expect(html).toContain('data-axis-max-y="0.6"');
+    expect(html).toContain('cx="332"');
+    expect(html).toContain('cy="40"');
+    expect(html).toContain('Proportional: the unit rate is constant');
+  });
+
+  it('bounds unit-rate modeling and never treats non-finite rates as equal', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _ratioLab: { mode: 'unitRates', amountA: 0.1, costA: 1e308, amountB: 1, costB: 1 },
+    });
+    expect(html).toContain('Option B has the lower cost per unit.');
+    expect(html).toContain('max="1000000"');
+    expect(html).not.toContain('Infinity');
+    expect(html).not.toContain('Both options have the same cost per unit.');
+  });
+
+  it('scopes challenge answers, feedback, and cursors to stable challenge IDs', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _ratioLab: {
+        mode: 'ratioTable', challengeIndex: 0, challengeId: 'ratio-paint',
+        challengeCursorByMode: { ratioTable: 'ratio-scale' },
+        challengeAnswer: '12', challengeAnswerId: 'ratio-paint',
+        challengeFeedback: { correct: true, message: 'Stale positional feedback' },
+      },
+    });
+    document.body.innerHTML = html;
+    expect(document.getElementById('ratio-challenge-prompt').textContent).toContain('Scale the ratio 7:4');
+    expect(document.getElementById('ratio-challenge-answer').value).toBe('');
+    expect(document.body.textContent).not.toContain('Stale positional feedback');
+  });
+
   it('marks a deterministic mounted challenge solved and awards scoped XP', async () => {
     const tool = loadTool(FILE, ID);
     let latest;
@@ -120,7 +186,11 @@ describe('Ratios, Rates & Proportions Lab', () => {
 
     function App() {
       const [state, setState] = React.useState({
-        _ratioLab: { mode: 'ratioTable', challengeAnswer: '12' },
+        _ratioLab: {
+          mode: 'ratioTable', challengeId: 'ratio-paint',
+          challengeCursorByMode: { ratioTable: 'ratio-paint' },
+          challengeAnswer: '12', challengeAnswerId: 'ratio-paint',
+        },
       });
       latest = state;
       return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
@@ -136,8 +206,46 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(document.body.textContent).toContain('Solved');
     expect(awardXP).toHaveBeenCalledWith('ratioLab', 15, 'Ratio Lab challenge');
     expect(awardXP).toHaveBeenCalledTimes(1);
+    const next = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Next challenge');
+    await React.act(async () => { next.click(); });
+    expect(latest._ratioLab.challengeId).toBe('ratio-simplify');
+    expect(latest._ratioLab.challengeCursorByMode.ratioTable).toBe('ratio-simplify');
+    expect(latest._ratioLab.challengeAnswerId).toBeNull();
     await React.act(async () => { root.unmount(); });
   });
+  it('restores and locks the canonical answer and explanation for solved challenges', async () => {
+    const tool = loadTool(FILE, ID);
+
+    function App() {
+      const [state, setState] = React.useState({
+        _ratioLab: {
+          mode: 'ratioTable',
+          challengeAnswer: '',
+          challengeFeedback: { correct: false, message: 'Stale feedback' },
+          solvedChallenges: { 'ratio-paint': true },
+        },
+      });
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const input = document.getElementById('ratio-challenge-answer');
+    expect(input.value).toBe('12');
+    expect(input.readOnly).toBe(true);
+    expect(input.dataset.solvedAnswer).toBe('true');
+    expect(input.getAttribute('aria-labelledby')).toBe('ratio-challenge-prompt ratio-challenge-answer-label');
+    expect(document.getElementById('ratio-challenge-prompt').textContent).toContain('paint mix');
+    expect(document.getElementById('ratio-challenge-answer-label')).toBeTruthy();
+    expect(document.getElementById('allo-ratio-lab-focus-css').textContent).toContain(':focus-visible');
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    expect(document.body.textContent).toContain('Solved previously.');
+    expect(document.body.textContent).toContain('both quantities were multiplied by 4');
+    expect([...document.querySelectorAll('button')].find((button) => button.textContent === 'Solved').disabled).toBe(true);
+    await React.act(async () => { root.unmount(); });
+  });
+
   it('refuses malformed coordinate verdicts and models omitted origins honestly', () => {
     loadTool(FILE, ID);
     const mismatched = renderTool(ID, { _ratioLab: { mode: 'proportional', propX: '0,1,2', propY: '0,3' } });
@@ -165,6 +273,16 @@ describe('Ratios, Rates & Proportions Lab', () => {
     const table = renderTool(ID, { _ratioLab: { mode: 'ratioTable', ratioFactor: 4 } }, { isContrast: true });
     expect(table).toContain('background:#ffff00;color:#000000');
     expect(table).not.toContain('background:#eef2ff;color:#ffffff');
+  });
+
+  it('uses a readable dark accent and preserves the challenge focus treatment', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, { _ratioLab: { mode: 'ratioTable' } }, { isDark: true });
+    expect(html).toContain('background:#a5b4fc;color:#111827');
+    expect(html).not.toContain('background:#4338ca;color:#ffffff');
+    expect(html).toContain('class="ratio-challenge-answer');
+    expect(html).not.toContain('outline-none');
+    expect(html).toContain('aria-labelledby="ratio-challenge-prompt ratio-challenge-answer-label"');
   });
 
   it('supports Arrow, Home, and End navigation in the mode tablist', async () => {

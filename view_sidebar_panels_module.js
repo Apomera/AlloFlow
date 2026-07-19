@@ -1625,6 +1625,23 @@ function GlossaryPanel(props) {
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
   ));
 }
+const ASSESSMENT_PRESET_STORAGE_KEY = "alloflow_assessment_custom_presets_v1";
+function loadAssessmentPresets() {
+  if (typeof window === "undefined" || !window.localStorage) return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(ASSESSMENT_PRESET_STORAGE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed.filter((preset) => preset && preset.name && preset.itemTypes).slice(0, 12) : [];
+  } catch (e) {
+    return [];
+  }
+}
+function persistAssessmentPresets(presets) {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    window.localStorage.setItem(ASSESSMENT_PRESET_STORAGE_KEY, JSON.stringify((presets || []).slice(0, 12)));
+  } catch (e) {
+  }
+}
 function QuizPanel(props) {
   const {
     InfoTooltip,
@@ -1652,50 +1669,52 @@ function QuizPanel(props) {
     setQuizItemTypeMix,
     t
   } = props;
-  const [itemMixOpen, setItemMixOpen] = useState(false);
+  const [itemMixOpen, setItemMixOpen] = React.useState(false);
+  const [scoringOpen, setScoringOpen] = React.useState(false);
+  const [presetsOpen, setPresetsOpen] = React.useState(false);
+  const [savedPresets, setSavedPresets] = React.useState(loadAssessmentPresets);
+  const [selectedPresetId, setSelectedPresetId] = React.useState("");
+  const [presetName, setPresetName] = React.useState("");
+  const [presetStatus, setPresetStatus] = React.useState("");
+  const [scoringPolicy, setScoringPolicy] = React.useState({
+    partialCredit: true,
+    writtenResponseMode: "ai-provisional"
+  });
   const _modeStrategy = window.AlloModules && window.AlloModules.QuizModeStrategies ? window.AlloModules.QuizModeStrategies.getStrategy(quizMode) : null;
   const allowedTypes = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.allowedItemTypes ? _modeStrategy.generation.allowedItemTypes : ["mcq"];
   const defaultMix = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.defaultItemTypeMix ? _modeStrategy.generation.defaultItemTypeMix : { mcq: quizMcqCount };
   const defaultReflectionCount = _modeStrategy && _modeStrategy.generation ? Number(_modeStrategy.generation.defaultReflectionCount) || 0 : 0;
   const CORE_TYPES = [
-    { key: "multi-select", label: "Multi-Select", emoji: "\u2611", desc: "Select every correct answer; partial credit supported" },
-    { key: "fill-blank", label: "Fill-in-the-Blank", emoji: "\u270F", desc: "Recall a precise word or phrase" },
-    { key: "short-answer", label: "Brief Written Response", emoji: "\u{1F4AC}", desc: "Demonstrate understanding in 1-2 sentences" },
-    { key: "self-explanation", label: "Explain Your Reasoning", emoji: "\u{1F9E0}", desc: "Explain a concept in 3-5 sentences against a rubric" },
-    { key: "numeric-response", label: "Numeric Response", emoji: "#", desc: "Enter a value with optional units and tolerance" }
+    { key: "mcq", label: "Multiple Choice", emoji: "\u25C9", desc: "Choose one best answer", minutes: 1 },
+    { key: "multi-select", label: "Multi-Select", emoji: "\u2611", desc: "Select every correct answer", minutes: 1.5 },
+    { key: "fill-blank", label: "Fill-in-the-Blank", emoji: "\u270F", desc: "Recall a precise word or phrase", minutes: 1 },
+    { key: "short-answer", label: "Brief Written Response", emoji: "\u{1F4AC}", desc: "Demonstrate understanding in 1\u20132 sentences", minutes: 3 },
+    { key: "self-explanation", label: "Explain Your Reasoning", emoji: "\u{1F9E0}", desc: "Explain a concept against a rubric", minutes: 5 },
+    { key: "numeric-response", label: "Numeric Response", emoji: "#", desc: "Enter a value with optional units", minutes: 2 }
   ];
   const DIAGNOSTIC_TYPES = [
-    { key: "sequence-sense", label: "Sequence Sense", emoji: "\u2195", desc: "Diagnose an order and its principle" },
-    { key: "relation-mismatch", label: "Relation Mismatch", emoji: "\u2194", desc: "Find and repair an incorrect pair" },
-    { key: "answer-evidence", label: "Answer + Evidence", emoji: "\u{1F50E}", desc: "Answer, then identify the supporting evidence or reason" }
+    { key: "sequence-sense", label: "Sequence Sense", emoji: "\u2195", desc: "Diagnose an order and its principle", minutes: 2.5 },
+    { key: "relation-mismatch", label: "Relation Mismatch", emoji: "\u2194", desc: "Find and repair an incorrect pair", minutes: 2.5 },
+    { key: "answer-evidence", label: "Answer + Evidence", emoji: "\u{1F50E}", desc: "Answer, then identify supporting evidence", minutes: 2.5 }
   ];
-  const EXTRA_TYPES = CORE_TYPES.concat(DIAGNOSTIC_TYPES);
-  const visibleTypes = EXTRA_TYPES.filter((et) => allowedTypes.indexOf(et.key) !== -1);
-  const visibleCoreTypes = CORE_TYPES.filter((et) => allowedTypes.indexOf(et.key) !== -1);
-  const visibleDiagnosticTypes = DIAGNOSTIC_TYPES.filter((et) => allowedTypes.indexOf(et.key) !== -1);
+  const ALL_TYPES = CORE_TYPES.concat(DIAGNOSTIC_TYPES);
+  const visibleCoreTypes = CORE_TYPES.filter((item) => allowedTypes.indexOf(item.key) !== -1);
+  const visibleDiagnosticTypes = DIAGNOSTIC_TYPES.filter((item) => allowedTypes.indexOf(item.key) !== -1);
+  const visibleTypes = visibleCoreTypes.concat(visibleDiagnosticTypes);
   const clampCount = (value, max) => Math.max(0, Math.min(max, Number.isFinite(Number(value)) ? Math.floor(Number(value)) : 0));
   const effectiveMix = Object.assign({}, quizItemTypeMix || defaultMix, {
     mcq: clampCount(quizMcqCount, 20)
   });
-  const handleMcqCountChange = (value) => {
-    const next = clampCount(value, 20);
-    setQuizMcqCount(next);
-    setQuizItemTypeMix && setQuizItemTypeMix(Object.assign({}, effectiveMix, { mcq: next }));
-  };
-  const handleReflectionCountChange = (value) => {
-    setQuizReflectionCount(clampCount(value, 2));
-  };
   const handleMixChange = (key, value) => {
+    const next = clampCount(value, key === "mcq" ? 20 : 5);
     const newMix = Object.assign({}, effectiveMix);
-    const next = clampCount(value, 5);
-    if (next <= 0) {
-      delete newMix[key];
-    } else {
-      newMix[key] = next;
-    }
-    newMix.mcq = clampCount(quizMcqCount, 20);
+    if (next <= 0) delete newMix[key];
+    else newMix[key] = next;
+    if (key === "mcq") setQuizMcqCount(next);
+    else newMix.mcq = clampCount(quizMcqCount, 20);
     setQuizItemTypeMix && setQuizItemTypeMix(newMix);
   };
+  const handleReflectionCountChange = (value) => setQuizReflectionCount(clampCount(value, 2));
   const handleModeChange = (nextMode) => {
     const strategies = window.AlloModules && window.AlloModules.QuizModeStrategies;
     const nextStrategy = strategies ? strategies.getStrategy(nextMode) : null;
@@ -1705,55 +1724,92 @@ function QuizPanel(props) {
     setQuizMcqCount(clampCount(nextMix.mcq || 0, 20));
     setQuizReflectionCount(clampCount(nextReflections, 2));
     setQuizItemTypeMix && setQuizItemTypeMix(null);
+    setPresetStatus("");
   };
   const handleResetMix = () => {
     setQuizMcqCount(clampCount(defaultMix.mcq || 0, 20));
     setQuizReflectionCount(clampCount(defaultReflectionCount, 2));
     setQuizItemTypeMix && setQuizItemTypeMix(null);
+    setScoringPolicy({ partialCredit: true, writtenResponseMode: "ai-provisional" });
+    setPresetStatus("");
   };
-  const extraTotal = visibleTypes.reduce((sum, et) => sum + clampCount(effectiveMix[et.key] || 0, 5), 0);
-  const assessedTotal = clampCount(effectiveMix.mcq || 0, 20) + extraTotal;
+  const assessedTotal = visibleTypes.reduce((sum, item) => sum + clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5), 0);
   const reflectionTotal = clampCount(quizReflectionCount, 2);
-  const isCustomized = !!quizItemTypeMix || clampCount(quizMcqCount, 20) !== clampCount(defaultMix.mcq || 0, 20) || reflectionTotal !== defaultReflectionCount;
-  if (!expandedTools || !expandedTools.includes("quiz")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-teal-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-teal-700 mb-2" }, "Assessment questions ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold normal-case tracking-normal text-slate-500" }, "(scored)")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.mcq_count"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Exact number of multiple-choice questions. Set to 0 to build an assessment from other item types." })), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("quiz.mcq_count") || "Multiple-choice question count",
-      "data-help-key": "quiz_question_count",
-      type: "number",
-      min: "0",
-      max: "20",
-      value: quizMcqCount,
-      onChange: (e) => handleMcqCountChange(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md p-1.5 focus:ring-emerald-200 focus:border-emerald-300"
+  const estimatedMinutes = Math.max(1, Math.round(
+    visibleTypes.reduce((sum, item) => sum + clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5) * item.minutes, 0) + reflectionTotal * 2
+  ));
+  const estimatedLow = Math.max(1, Math.round(estimatedMinutes * 0.8));
+  const estimatedHigh = Math.max(estimatedLow, Math.round(estimatedMinutes * 1.2));
+  const isCustomized = !!quizItemTypeMix || clampCount(quizMcqCount, 20) !== clampCount(defaultMix.mcq || 0, 20) || reflectionTotal !== defaultReflectionCount || scoringPolicy.partialCredit !== true || scoringPolicy.writtenResponseMode !== "ai-provisional";
+  const savePreset = () => {
+    const name = String(presetName || "").trim().slice(0, 50);
+    if (!name) {
+      setPresetStatus("Enter a name first.");
+      return;
     }
-  )))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap rounded-lg border border-teal-200 bg-white px-2.5 py-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full " + (isCustomized ? "bg-indigo-100 text-indigo-700" : "bg-teal-100 text-teal-700") }, isCustomized ? "Customized" : "Recommended preset"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, assessedTotal + " assessed item" + (assessedTotal === 1 ? "" : "s") + (reflectionTotal > 0 ? " + " + reflectionTotal + " reflection" + (reflectionTotal === 1 ? "" : "s") : "")), isCustomized && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetMix, className: "ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold" }, "Reset to preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Set cognitive complexity. Level 1 (Recall) -> Level 4 (Extended Thinking)." })), /* @__PURE__ */ React.createElement(
+    const nextPreset = {
+      id: "assessment-" + Date.now(),
+      name,
+      quizMode,
+      itemTypes: Object.assign({}, effectiveMix),
+      reflectionCount: reflectionTotal,
+      dokLevel: dokLevel || "",
+      scoringPolicy: Object.assign({}, scoringPolicy),
+      mcqVisualMode: mcqVisualMode || "none",
+      imageStyle: imageStyle || ""
+    };
+    const withoutSameName = savedPresets.filter((preset) => String(preset.name).toLowerCase() !== name.toLowerCase());
+    const next = [nextPreset].concat(withoutSameName).slice(0, 12);
+    setSavedPresets(next);
+    persistAssessmentPresets(next);
+    setSelectedPresetId(nextPreset.id);
+    setPresetName("");
+    setPresetStatus("Saved \u201C" + name + "\u201D.");
+  };
+  const applyPreset = (presetId) => {
+    setSelectedPresetId(presetId);
+    const preset = savedPresets.find((item) => item.id === presetId);
+    if (!preset) return;
+    const mix = Object.assign({}, preset.itemTypes || {});
+    setQuizMode(preset.quizMode || "exit-ticket");
+    setQuizMcqCount(clampCount(mix.mcq || 0, 20));
+    setQuizItemTypeMix && setQuizItemTypeMix(mix);
+    setQuizReflectionCount(clampCount(preset.reflectionCount || 0, 2));
+    if (preset.dokLevel !== void 0) setDokLevel(preset.dokLevel);
+    setScoringPolicy(Object.assign({ partialCredit: true, writtenResponseMode: "ai-provisional" }, preset.scoringPolicy || {}));
+    if (preset.mcqVisualMode) setMcqVisualMode(preset.mcqVisualMode);
+    if (preset.imageStyle !== void 0) setImageStyle(preset.imageStyle);
+    setPresetStatus("Loaded \u201C" + preset.name + "\u201D.");
+  };
+  const deleteSelectedPreset = () => {
+    if (!selectedPresetId) return;
+    const next = savedPresets.filter((item) => item.id !== selectedPresetId);
+    setSavedPresets(next);
+    persistAssessmentPresets(next);
+    setSelectedPresetId("");
+    setPresetStatus("Preset deleted.");
+  };
+  if (!expandedTools || !expandedTools.includes("quiz")) return null;
+  const groups = [
+    { label: "Core formats", types: visibleCoreTypes },
+    { label: "Diagnostic formats", types: visibleDiagnosticTypes }
+  ].filter((group) => group.types.length > 0);
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "block text-[10px] font-black uppercase tracking-wider text-teal-700 mb-1" }, "1. Assessment purpose"), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("common.selection"),
-      "data-help-key": "quiz_dok",
-      value: dokLevel,
-      onChange: (e) => setDokLevel(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+      id: "quiz-mode-select",
+      value: quizMode,
+      onChange: (event) => handleModeChange(event.target.value),
+      disabled: isProcessing,
+      "data-help-key": "quiz_pedagogical_mode_select",
+      className: "w-full text-sm font-semibold px-2.5 py-2 rounded-lg border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 disabled:opacity-50",
+      "aria-label": t("quiz.mode_aria") || "Assessment purpose"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")),
-    /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for quiz",
-      "data-help-key": "quiz_custom_instructions",
-      value: quizCustomInstructions,
-      onChange: (e) => setQuizCustomInstructions(e.target.value),
-      placeholder: t("quiz.custom_placeholder"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16"
-    }
-  )), (generatedContent?.data?.analysis || history.some((h) => h && h.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 mt-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), visibleTypes.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "exit-ticket" }, t("quiz.mode_exit_ticket") || "\u{1F4DD} Exit Ticket"),
+    /* @__PURE__ */ React.createElement("option", { value: "pre-check" }, t("quiz.mode_pre_check") || "\u{1F3AF} Pre-Check (Readiness)"),
+    /* @__PURE__ */ React.createElement("option", { value: "formative" }, t("quiz.mode_formative") || "\u{1F321}\uFE0F Formative Check"),
+    /* @__PURE__ */ React.createElement("option", { value: "review" }, t("quiz.mode_review") || "\u{1F501} Spaced Review")
+  ), _modeStrategy && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-600 mt-1.5" }, _modeStrategy.description, " This loads a recommended recipe that you can customize.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full " + (isCustomized ? "bg-indigo-100 text-indigo-700" : "bg-teal-100 text-teal-700") }, isCustomized ? "Customized" : "Recommended preset"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, assessedTotal + " scored question" + (assessedTotal === 1 ? "" : "s") + (reflectionTotal ? " + " + reflectionTotal + " unscored reflection" + (reflectionTotal === 1 ? "" : "s") : "")), isCustomized && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetMix, className: "ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold" }, "Reset")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700" }, "About ", estimatedLow, "\u2013", estimatedHigh, " minutes"), estimatedHigh > 30 && /* @__PURE__ */ React.createElement("span", { className: "rounded bg-amber-100 px-2 py-1 font-semibold text-amber-800" }, "Long assessment\u2014consider reducing the mix."))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1761,98 +1817,55 @@ function QuizPanel(props) {
       "aria-expanded": itemMixOpen,
       "aria-controls": "quiz-item-mix-panel",
       "data-help-key": "quiz_item_mix_toggle",
-      className: "w-full px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/50 transition-colors motion-reduce:transition-none"
+      className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Settings2, { size: 12 }), "Item Mix", extraTotal > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-medium bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full" }, "+", extraTotal, " extra")),
-    /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none duration-200" + (itemMixOpen ? " rotate-180" : "") })
-  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { id: "quiz-item-mix-panel", className: "px-3 pb-3 pt-1 space-y-2 animate-in motion-reduce:animate-none slide-in-from-top-1 duration-150 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 leading-snug" }, t("quiz.item_mix_help") || "Choose the scored formats in this assessment. Reflections are configured separately below."), [{ label: "Core formats", types: visibleCoreTypes }, { label: "Diagnostic formats", types: visibleDiagnosticTypes }].filter((group) => group.types.length > 0).map((group) => /* @__PURE__ */ React.createElement("div", { key: group.label, className: "space-y-1.5 pt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, group.label), group.types.map((et) => {
-    const count = effectiveMix[et.key] || 0;
-    return /* @__PURE__ */ React.createElement("div", { key: et.key, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, et.emoji), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, et.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600 leading-tight" }, et.desc)), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Settings2, { size: 13 }), "2. Customize questions"),
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (itemMixOpen ? "rotate-180" : "") })
+  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { id: "quiz-item-mix-panel", className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, "Set the exact number of every scored format. No format is treated as an \u201Cextra.\u201D"), groups.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.label, className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, group.label), group.types.map((item) => {
+    const count = clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5);
+    return /* @__PURE__ */ React.createElement("div", { key: item.key, className: "flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, item.emoji), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, item.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600 leading-tight" }, item.desc)), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "number",
         min: "0",
-        max: "5",
+        max: item.key === "mcq" ? 20 : 5,
         value: count,
-        onChange: (e) => handleMixChange(et.key, e.target.value),
-        "aria-label": t("quiz.item_count_aria", { type: et.label }) || et.label + " count",
-        className: "w-12 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
+        onChange: (event) => handleMixChange(item.key, event.target.value),
+        "aria-label": item.label + " count",
+        className: "w-14 text-center text-sm border border-slate-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
       }
     ));
-  }))), isCustomized && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: handleResetMix,
-      className: "text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors motion-reduce:transition-none"
-    },
-    t("quiz.reset_mix") || "\u21A9 Reset to mode defaults"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "mx-3 my-3 rounded-xl border border-indigo-200 bg-indigo-50/60 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-reflection-count", className: "text-xs font-bold text-indigo-900 flex items-center gap-1" }, "Closing reflection ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, "(unscored)"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Optional prompts shown after the assessment. They do not affect the score." })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 mt-0.5" }, "Use 1 for a quick close; choose 0 to omit it.")), /* @__PURE__ */ React.createElement(
+  }))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-reflection-count", className: "text-xs font-bold text-indigo-900 flex items-center gap-1" }, "3. Closing reflection ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, "(unscored)"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Optional prompts shown after the assessment. They never affect the score." })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 mt-0.5" }, "Use 1 for a quick close; choose 0 to omit it.")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "quiz-reflection-count",
-      "aria-label": t("quiz.reflections") || "Closing reflection count",
-      "data-help-key": "quiz_reflection_count",
+      "aria-label": "Closing reflection count",
       type: "number",
       min: "0",
       max: "2",
       value: quizReflectionCount,
-      onChange: (e) => handleReflectionCountChange(e.target.value),
+      onChange: (event) => handleReflectionCountChange(event.target.value),
       className: "w-14 text-center text-sm border-indigo-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
     }
-  ))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.mode_label") || "Mode:"), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      id: "quiz-mode-select",
-      value: quizMode,
-      onChange: (ev) => handleModeChange(ev.target.value),
-      disabled: isProcessing,
-      "data-help-key": "quiz_pedagogical_mode_select",
-      className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50",
-      "aria-label": t("quiz.mode_aria") || "Quiz mode",
-      title: t("quiz.mode_tooltip") || "Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "exit-ticket" }, t("quiz.mode_exit_ticket") || "\u{1F4DD} Exit Ticket"),
-    /* @__PURE__ */ React.createElement("option", { value: "pre-check" }, t("quiz.mode_pre_check") || "\u{1F3AF} Pre-Check (Readiness)"),
-    /* @__PURE__ */ React.createElement("option", { value: "formative" }, t("quiz.mode_formative") || "\u{1F321}\uFE0F Formative Check"),
-    /* @__PURE__ */ React.createElement("option", { value: "review" }, t("quiz.mode_review") || "\u{1F501} Spaced Review")
-  )), _modeStrategy && _modeStrategy.description && /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-600" }, _modeStrategy.description, " Choosing a mode loads its recommended mix; changing any count creates a custom setup."), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-1 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      id: "quiz-visuals-select",
-      value: mcqVisualMode,
-      onChange: (ev) => setMcqVisualMode(ev.target.value),
-      disabled: isProcessing,
-      "data-help-key": "quiz_visual_mode_select",
-      className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50",
-      "aria-label": t("quiz.visuals_aria") || "MCQ visual mode",
-      title: t("quiz.visuals_tooltip") || "Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"),
-    /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "\u{1F5BC}\uFE0F Question images"),
-    /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "\u{1F3B4} Option images"),
-    /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "\u{1F5BC}\uFE0F\u{1F3B4} Both")
-  )), mcqVisualMode !== "none" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-0 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-image-style-input", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.style_label") || "Style:"), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "quiz-image-style-input",
-      type: "text",
-      value: imageStyle,
-      onChange: (ev) => setImageStyle(ev.target.value),
-      disabled: isProcessing,
-      "data-help-key": "quiz_image_style_input",
-      placeholder: t("quiz.style_placeholder") || "e.g. watercolor, flat vector, photorealistic, line drawing",
-      maxLength: 120,
-      className: "flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50 placeholder:italic placeholder:text-slate-400",
-      "aria-label": t("quiz.style_aria") || "Image style hint",
-      title: t("quiz.style_tooltip") || "Optional. Applied to every image in the quiz (question + options). Empty = default style. Persisted with the quiz so refine actions stay on-brand."
+  ))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setScoringOpen(!scoringOpen), "aria-expanded": scoringOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, "4. Scoring and feedback"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (scoringOpen ? "rotate-180" : "") })), scoringOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: scoringPolicy.partialCredit, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked })), className: "mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Allow partial credit"), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600" }, "Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-written-scoring", className: "block text-xs font-semibold text-slate-700 mb-1" }, "Written-response feedback"), /* @__PURE__ */ React.createElement("select", { id: "quiz-written-scoring", value: scoringPolicy.writtenResponseMode, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { writtenResponseMode: event.target.value })), className: "w-full text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "ai-provisional" }, "Immediate AI feedback (provisional)"), /* @__PURE__ */ React.createElement("option", { value: "teacher-review" }, "Submit for teacher review")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.writtenResponseMode === "ai-provisional" ? "Students receive immediate guidance; teachers can override it." : "Written responses are collected without an automatic correctness judgment.")))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPresetsOpen(!presetsOpen), "aria-expanded": presetsOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, "Save or reuse this setup"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (presetsOpen ? "rotate-180" : "") })), presetsOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 bg-slate-50/60" }, savedPresets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": "Saved assessment presets", value: selectedPresetId, onChange: (event) => applyPreset(event.target.value), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose a saved preset\u2026"), savedPresets.map((preset) => /* @__PURE__ */ React.createElement("option", { key: preset.id, value: preset.id }, preset.name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedPreset, disabled: !selectedPresetId, className: "px-2 text-xs font-semibold rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-40" }, "Delete")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("input", { "aria-label": "New preset name", value: presetName, onChange: (event) => setPresetName(event.target.value), onKeyDown: (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      savePreset();
     }
-  )), /* @__PURE__ */ React.createElement(
+  }, maxLength: "50", placeholder: "e.g. Friday concept check", className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Save")), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-[10px] text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Set cognitive complexity. Level 1 (Recall) through Level 4 (Extended Thinking)." })), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.selection"), "data-help-key": "quiz_dok", value: dokLevel, onChange: (event) => setDokLevel(event.target.value), className: "w-full text-sm border-slate-300 rounded-md p-1.5" }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")), /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed")), /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")), /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")), /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")), /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("textarea", { "aria-label": t("input.custom_instructions") || "Custom instructions for assessment", "data-help-key": "quiz_custom_instructions", value: quizCustomInstructions, onChange: (event) => setQuizCustomInstructions(event.target.value), placeholder: t("quiz.custom_placeholder"), className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16" })), (generatedContent?.data?.analysis || history.some((item) => item && item.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement("select", { id: "quiz-visuals-select", value: mcqVisualMode, onChange: (event) => setMcqVisualMode(event.target.value), disabled: isProcessing, "data-help-key": "quiz_visual_mode_select", className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.visuals_aria") || "MCQ visual mode" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"), /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "Question images"), /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "Option images"), /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "Question + option images"))), mcqVisualMode !== "none" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-0 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-image-style-input", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.style_label") || "Style:"), /* @__PURE__ */ React.createElement("input", { id: "quiz-image-style-input", type: "text", value: imageStyle, onChange: (event) => setImageStyle(event.target.value), disabled: isProcessing, maxLength: "120", placeholder: t("quiz.style_placeholder") || "e.g. flat vector or line drawing", className: "flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.style_aria") || "Image style hint" })), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("quiz", null, false, null, { quizMode, quizMcqCount: clampCount(quizMcqCount, 20), quizReflectionCount: reflectionTotal, itemTypes: effectiveMix, mcqVisualMode, imageStyle }),
+      onClick: () => handleGenerate("quiz", null, false, null, {
+        quizMode,
+        quizMcqCount: clampCount(effectiveMix.mcq || 0, 20),
+        quizReflectionCount: reflectionTotal,
+        itemTypes: effectiveMix,
+        scoringPolicy,
+        mcqVisualMode,
+        imageStyle
+      }),
       "data-help-key": "quiz_generate_button",
       disabled: !hasSourceOrAnalysis || isProcessing || assessedTotal <= 0,
       "aria-busy": isProcessing,

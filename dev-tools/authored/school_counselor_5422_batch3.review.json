@@ -1,0 +1,424 @@
+{
+  "reviewedFile": "dev-tools/authored/school_counselor_5422_batch3.json",
+  "reviewedAt": "2026-07-19",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 100,
+  "verdict": "pass — independently authored School Counselor 5422 draft; credential, safety, equity, editorial, originality, and structural review complete",
+  "blockers": [],
+  "correctionsMade": [
+    {
+      "correctionId": "privacy-recognizability-clarification",
+      "category": "privacy-and-confidentiality",
+      "itemIds": [
+        "sc5422-b3-024"
+      ],
+      "globalItemNumbers": [
+        24
+      ],
+      "summary": "Clarified that removing a student name does not make a case nonidentifiable when distinctive contextual details remain recognizable in a small community. The keyed response now directs the counselor to avoid presenting the recognizable case and instead use a genuinely nonidentifiable composite or other privacy-protecting program evidence after required review.",
+      "retainedKeyedConceptChanged": false
+    },
+    {
+      "correctionId": "material-originality-replacements",
+      "category": "substantive-independence",
+      "itemIds": [
+        "sc5422-b3-068",
+        "sc5422-b3-092"
+      ],
+      "globalItemNumbers": [
+        68,
+        92
+      ],
+      "replacements": [
+        {
+          "itemId": "sc5422-b3-068",
+          "summary": "Replaced the testing-duty and time-allocation scenario, which substantially overlapped the released bank, with a distinct restorative-practices priority alignment, capacity, and program-crosswalk scenario."
+        },
+        {
+          "itemId": "sc5422-b3-092",
+          "summary": "Replaced the duplicate small-cell privacy scenario with a distinct results-reporting item about separating urgent and routine wait times, describing the distribution, and disclosing incomplete records."
+        }
+      ],
+      "replacementScope": "complete prompt, key, distractors, feedback, and rationale"
+    },
+    {
+      "correctionId": "distractor-and-answer-length-rebalance",
+      "category": "editorial-and-warning-remediation",
+      "itemIds": [
+        "sc5422-b3-001",
+        "sc5422-b3-010",
+        "sc5422-b3-016",
+        "sc5422-b3-017",
+        "sc5422-b3-022",
+        "sc5422-b3-023",
+        "sc5422-b3-024",
+        "sc5422-b3-044",
+        "sc5422-b3-052",
+        "sc5422-b3-055",
+        "sc5422-b3-063",
+        "sc5422-b3-072",
+        "sc5422-b3-079",
+        "sc5422-b3-086",
+        "sc5422-b3-087",
+        "sc5422-b3-088",
+        "sc5422-b3-089",
+        "sc5422-b3-090",
+        "sc5422-b3-091",
+        "sc5422-b3-093",
+        "sc5422-b3-094",
+        "sc5422-b3-095",
+        "sc5422-b3-096",
+        "sc5422-b3-097",
+        "sc5422-b3-098",
+        "sc5422-b3-099",
+        "sc5422-b3-100"
+      ],
+      "globalItemNumbers": [
+        1,
+        10,
+        16,
+        17,
+        22,
+        23,
+        24,
+        44,
+        52,
+        55,
+        63,
+        72,
+        79,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "summary": "Revised distractors and choice-specific feedback where needed to remove asymmetric extreme wording, strengthen plausible-but-wrong distinctions, and reduce keyed-answer length signaling.",
+      "retainedKeyedConceptChanged": false,
+      "answerPositionsChanged": 0,
+      "finalValidation": {
+        "actionableWarningsRemaining": 0,
+        "keyedLongestOrTiedCount": 31,
+        "maximumAllowedKeyedLongestOrTiedCount": 35
+      }
+    }
+  ],
+  "checks": {
+    "lineByLineCredentialReview": {
+      "status": "pass",
+      "reviewedItems": 100,
+      "reviewedItemIds": [
+        "sc5422-b3-001",
+        "sc5422-b3-002",
+        "sc5422-b3-003",
+        "sc5422-b3-004",
+        "sc5422-b3-005",
+        "sc5422-b3-006",
+        "sc5422-b3-007",
+        "sc5422-b3-008",
+        "sc5422-b3-009",
+        "sc5422-b3-010",
+        "sc5422-b3-011",
+        "sc5422-b3-012",
+        "sc5422-b3-013",
+        "sc5422-b3-014",
+        "sc5422-b3-015",
+        "sc5422-b3-016",
+        "sc5422-b3-017",
+        "sc5422-b3-018",
+        "sc5422-b3-019",
+        "sc5422-b3-020",
+        "sc5422-b3-021",
+        "sc5422-b3-022",
+        "sc5422-b3-023",
+        "sc5422-b3-024",
+        "sc5422-b3-025",
+        "sc5422-b3-026",
+        "sc5422-b3-027",
+        "sc5422-b3-028",
+        "sc5422-b3-029",
+        "sc5422-b3-030",
+        "sc5422-b3-031",
+        "sc5422-b3-032",
+        "sc5422-b3-033",
+        "sc5422-b3-034",
+        "sc5422-b3-035",
+        "sc5422-b3-036",
+        "sc5422-b3-037",
+        "sc5422-b3-038",
+        "sc5422-b3-039",
+        "sc5422-b3-040",
+        "sc5422-b3-041",
+        "sc5422-b3-042",
+        "sc5422-b3-043",
+        "sc5422-b3-044",
+        "sc5422-b3-045",
+        "sc5422-b3-046",
+        "sc5422-b3-047",
+        "sc5422-b3-048",
+        "sc5422-b3-049",
+        "sc5422-b3-050",
+        "sc5422-b3-051",
+        "sc5422-b3-052",
+        "sc5422-b3-053",
+        "sc5422-b3-054",
+        "sc5422-b3-055",
+        "sc5422-b3-056",
+        "sc5422-b3-057",
+        "sc5422-b3-058",
+        "sc5422-b3-059",
+        "sc5422-b3-060",
+        "sc5422-b3-061",
+        "sc5422-b3-062",
+        "sc5422-b3-063",
+        "sc5422-b3-064",
+        "sc5422-b3-065",
+        "sc5422-b3-066",
+        "sc5422-b3-067",
+        "sc5422-b3-068",
+        "sc5422-b3-069",
+        "sc5422-b3-070",
+        "sc5422-b3-071",
+        "sc5422-b3-072",
+        "sc5422-b3-073",
+        "sc5422-b3-074",
+        "sc5422-b3-075",
+        "sc5422-b3-076",
+        "sc5422-b3-077",
+        "sc5422-b3-078",
+        "sc5422-b3-079",
+        "sc5422-b3-080",
+        "sc5422-b3-081",
+        "sc5422-b3-082",
+        "sc5422-b3-083",
+        "sc5422-b3-084",
+        "sc5422-b3-085",
+        "sc5422-b3-086",
+        "sc5422-b3-087",
+        "sc5422-b3-088",
+        "sc5422-b3-089",
+        "sc5422-b3-090",
+        "sc5422-b3-091",
+        "sc5422-b3-092",
+        "sc5422-b3-093",
+        "sc5422-b3-094",
+        "sc5422-b3-095",
+        "sc5422-b3-096",
+        "sc5422-b3-097",
+        "sc5422-b3-098",
+        "sc5422-b3-099",
+        "sc5422-b3-100"
+      ],
+      "scope": [
+        "one-best-answer credential accuracy",
+        "100 keys and 300 distractors",
+        "four-choice feedback",
+        "K-12 role and safety boundaries",
+        "equity, accessibility, privacy, and bias",
+        "source, skill, chapter, difficulty, and cognitive-level linkage"
+      ]
+    },
+    "blueprintAlignment": {
+      "status": "pass",
+      "expectedDomainCounts": {
+        "define": 25,
+        "deliver": 40,
+        "manage": 20,
+        "assess": 15
+      },
+      "actualDomainCounts": {
+        "define": 25,
+        "deliver": 40,
+        "manage": 20,
+        "assess": 15
+      },
+      "expectedSkillCounts": {
+        "counselor-role-national-model": 8,
+        "development-learning-family-systems": 8,
+        "ethics-law-equity-wellness": 9,
+        "individual-counseling-academic-career": 14,
+        "group-classroom-crisis-prevention": 13,
+        "consultation-collaboration-mtss-referrals": 13,
+        "program-foundations-alignment": 7,
+        "program-goals-data-psychometrics": 7,
+        "program-operations-technology-resources": 6,
+        "program-assessment-implementation": 5,
+        "results-data-interpretation-reporting": 5,
+        "continuous-improvement-advocacy": 5
+      },
+      "actualSkillCounts": {
+        "counselor-role-national-model": 8,
+        "development-learning-family-systems": 8,
+        "ethics-law-equity-wellness": 9,
+        "individual-counseling-academic-career": 14,
+        "group-classroom-crisis-prevention": 13,
+        "consultation-collaboration-mtss-referrals": 13,
+        "program-foundations-alignment": 7,
+        "program-goals-data-psychometrics": 7,
+        "program-operations-technology-resources": 6,
+        "program-assessment-implementation": 5,
+        "results-data-interpretation-reporting": 5,
+        "continuous-improvement-advocacy": 5
+      },
+      "officialBlueprint": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf"
+    },
+    "answerPositionBalance": {
+      "status": "pass",
+      "countsByZeroBasedIndex": {
+        "0": 25,
+        "1": 25,
+        "2": 25,
+        "3": 25
+      },
+      "expectedCountsByZeroBasedIndex": {
+        "0": 25,
+        "1": 25,
+        "2": 25,
+        "3": 25
+      }
+    },
+    "independentAuthorshipAndOriginality": {
+      "status": "pass",
+      "authorship": "assistant-authored-independent",
+      "releasedComparisonItems": 200,
+      "exactPromptCollisionsAgainstReleasedSource": 0,
+      "responseKernelCollisionsAgainstReleasedSource": 0,
+      "contentKernelCollisionsAgainstReleasedSource": 0,
+      "intraBatchPromptCollisions": 0,
+      "intraBatchResponseKernelCollisions": 0,
+      "intraBatchContentKernelCollisions": 0,
+      "maximumPromptTokenJaccardAgainstReleasedSource200": 0.4118,
+      "closestPromptPairAgainstReleasedSource": {
+        "score": 0.4117647058823529,
+        "newItemId": "sc5422-b3-055",
+        "comparisonItemId": "sc5422-b2-060"
+      },
+      "maximumIntraBatchPromptTokenJaccard": 0.2667,
+      "closestIntraBatchPromptPair": {
+        "score": 0.26666666666666666,
+        "newItemId": "sc5422-b3-038",
+        "comparisonItemId": "sc5422-b3-048"
+      },
+      "maximumRationaleTokenJaccardAgainstReleasedSource": 0.2609,
+      "closestRationalePairAgainstReleasedSource": {
+        "score": 0.2608695652173913,
+        "newItemId": "sc5422-b3-005",
+        "comparisonItemId": "sc5422-b1-090"
+      }
+    },
+    "keysDistractorsAndFeedback": {
+      "status": "pass",
+      "keysReviewed": 100,
+      "distractorsReviewed": 300,
+      "choiceFeedbackEntriesReviewed": 400,
+      "unresolvedWrongKeys": 0,
+      "unresolvedMultipleCorrectChoices": 0,
+      "unresolvedImplausibleDistractors": 0,
+      "unresolvedGenericFeedback": 0
+    },
+    "warningHeuristicReview": {
+      "status": "pass",
+      "actionableWarningsRemaining": 0,
+      "lexicalAdvisoriesReviewedAsNonclues": 43,
+      "lexicalAdvisoryItemIds": [
+        "sc5422-b3-002",
+        "sc5422-b3-003",
+        "sc5422-b3-005",
+        "sc5422-b3-007",
+        "sc5422-b3-011",
+        "sc5422-b3-013",
+        "sc5422-b3-018",
+        "sc5422-b3-024",
+        "sc5422-b3-025",
+        "sc5422-b3-026",
+        "sc5422-b3-028",
+        "sc5422-b3-029",
+        "sc5422-b3-030",
+        "sc5422-b3-031",
+        "sc5422-b3-034",
+        "sc5422-b3-036",
+        "sc5422-b3-037",
+        "sc5422-b3-038",
+        "sc5422-b3-041",
+        "sc5422-b3-042",
+        "sc5422-b3-043",
+        "sc5422-b3-044",
+        "sc5422-b3-046",
+        "sc5422-b3-048",
+        "sc5422-b3-049",
+        "sc5422-b3-050",
+        "sc5422-b3-051",
+        "sc5422-b3-054",
+        "sc5422-b3-056",
+        "sc5422-b3-059",
+        "sc5422-b3-063",
+        "sc5422-b3-066",
+        "sc5422-b3-070",
+        "sc5422-b3-072",
+        "sc5422-b3-074",
+        "sc5422-b3-075",
+        "sc5422-b3-076",
+        "sc5422-b3-077",
+        "sc5422-b3-080",
+        "sc5422-b3-084",
+        "sc5422-b3-091",
+        "sc5422-b3-092",
+        "sc5422-b3-097"
+      ]
+    },
+    "answerLengthBalance": {
+      "status": "pass",
+      "keyedLongestOrTiedCount": 31,
+      "nonKeyedStrictlyLongerCount": 69,
+      "maximumAllowedKeyedLongestOrTiedCount": 35,
+      "keyPositionsChanged": 0
+    },
+    "credentialScopeAccessibilityAndBias": {
+      "status": "pass",
+      "schoolCounselorRoleBoundariesReviewed": 100,
+      "unresolvedLegalOrPolicyOverclaims": 0,
+      "unresolvedUnsafeCrisisOrDisclosureGuidance": 0,
+      "unresolvedDiagnosisOrLongTermTreatmentRoleDrift": 0,
+      "unresolvedStereotypeOrDeficitFraming": 0,
+      "unresolvedPrivacyOrStudentDignityHarmsInKeys": 0,
+      "unresolvedAccessibilityBarriersInKeys": 0
+    },
+    "referencesAndLearningLinks": {
+      "status": "pass",
+      "itemsWithOfficialEtsBlueprint": 100,
+      "itemsWithResolvedNamedReferences": 100,
+      "itemsWithResolvedSkillAndChapter": 100
+    }
+  },
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "c0ab89b834605d770a01e059b034c0c3f146688b90f0f9eef4bc07709a974b7e"
+  },
+  "integration": {
+    "packId": "praxis-school-counselor-5422",
+    "batchNumber": 3,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100,
+    "manifestSchemaVersion": 2,
+    "expectedManifestEntry": {
+      "id": "independent-diagnostic-batch-3",
+      "expectedPackId": "praxis-school-counselor-5422",
+      "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+      "files": [
+        "school_counselor_5422_batch3.json"
+      ],
+      "reviewReports": [
+        "school_counselor_5422_batch3.review.json"
+      ]
+    }
+  }
+}

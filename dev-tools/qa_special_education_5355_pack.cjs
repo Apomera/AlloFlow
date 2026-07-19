@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const root = path.resolve(__dirname, '..');
 const pack = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'special_education_5355_pack.json'), 'utf8'));
 const sourceItems = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'special_education_5355_items.json'), 'utf8'));
@@ -119,8 +120,8 @@ const markdown = `# Praxis Special Education: Foundational Knowledge (5355) QA r
 
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'special_education_5355_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'special_education_5355_native_qa.md'), markdown, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'special_education_5355_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'special_education_5355_native_qa.md'), markdown, 'utf8');
 }
 
 console.log('Praxis Special Education 5355 pack QA: ' + status + ' (' + passedItems + '/' + reports.length + ' items passed; ' + allFindings.length + ' findings).');

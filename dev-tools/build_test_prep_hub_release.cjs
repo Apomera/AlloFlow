@@ -5,7 +5,7 @@ const { execFileSync: rawExecFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const waitBuffer = new Int32Array(new SharedArrayBuffer(4));
-function execFileSync(file,args,options){let error;for(let attempt=1;attempt<=4;attempt++){try{return rawExecFileSync(file,args,options)}catch(caught){error=caught;if(attempt<4)Atomics.wait(waitBuffer,0,0,250*attempt)}}throw error}
+function execFileSync(file,args,options){let error;for(let attempt=1;attempt<=12;attempt++){try{return rawExecFileSync(file,args,options)}catch(caught){error=caught;if(attempt<12)Atomics.wait(waitBuffer,0,0,Math.min(1000,200*attempt))}}throw error}
 function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data,'utf8');return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
 
 const root = path.resolve(__dirname, '..');

@@ -113,6 +113,21 @@
           "educational_leadership_5412_batch3.review.json"
         ]
       }
+    ],
+    "school_counselor_5422": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-19",
+        "expectedPackId": "praxis-school-counselor-5422",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          "school_counselor_5422_batch3.json"
+        ],
+        "reviewReports": [
+          "school_counselor_5422_batch3.review.json"
+        ]
+      }
     ]
   },
   "legacyReviewEvidencePacks": []

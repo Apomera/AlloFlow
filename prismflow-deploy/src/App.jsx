@@ -8240,7 +8240,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'd2c66e384';
+    var pluginCdnVersion = '1784491423311';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -8477,38 +8477,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=d2c66e384');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=d2c66e384');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=d2c66e384');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=d2c66e384');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=d2c66e384');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=c03c8186');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=d2c66e384');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=d2c66e384');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=d2c66e384');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=d2c66e384');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=d2c66e384');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=d2c66e384');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=d2c66e384');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=2a953579');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=d2c66e384');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=d2c66e384');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=d2c66e384');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=d2c66e384');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=d2c66e384');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=d2c66e384');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=d2c66e384');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=d2c66e384');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=d2c66e384');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=d2c66e384'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=d2c66e384'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -8517,84 +8517,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=d2c66e384');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=d2c66e384');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=d2c66e384');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=d2c66e384');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=d2c66e384');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=d2c66e384');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=d2c66e384');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=d2c66e384');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=d2c66e384');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=d2c66e384');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=d2c66e384');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=d2c66e384');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=d2c66e384');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=d2c66e384'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=d2c66e384');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=d2c66e384');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=d2c66e384');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=d2c66e384');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=d2c66e384');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=d2c66e384');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=d2c66e384');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=d2c66e384');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=d2c66e384'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=d2c66e384');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=d2c66e384');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=d2c66e384'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=d2c66e384');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=d2c66e384');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=d2c66e384');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=d2c66e384');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=d2c66e384');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=d2c66e384');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=d2c66e384');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=d2c66e384'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=d2c66e384'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=d2c66e384'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=d2c66e384'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=d2c66e384'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=d2c66e384');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=d2c66e384');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=d2c66e384');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=d2c66e384');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=d2c66e384');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=d2c66e384');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=d2c66e384');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=d2c66e384');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=d2c66e384');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=d2c66e384');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=d2c66e384');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=d2c66e384');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=d2c66e384');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=d2c66e384');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -8631,71 +8631,71 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=8c891bde');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=d2c66e384');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=d2c66e384');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=d2c66e384');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=d2c66e384');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=d2c66e384');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=d2c66e384');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=d2c66e384');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=d2c66e384');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=d2c66e384');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=d2c66e384');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=d2c66e384');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=d2c66e384');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=d2c66e384');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=d2c66e384');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=d2c66e384');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=1d1891ac');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=d2c66e384');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=d2c66e384');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=d2c66e384');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=d2c66e384');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=d2c66e384');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=d2c66e384');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=d2c66e384');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=d2c66e384');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=d2c66e384');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=d2c66e384');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=d2c66e384');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=d2c66e384');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=d2c66e384');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=d2c66e384');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=d2c66e384');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=d2c66e384');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=d2c66e384');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=d2c66e384');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=4d7e68c6');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=d2c66e384');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=d2c66e384');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=d2c66e384');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=d2c66e384');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=d2c66e384');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=d2c66e384');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=d12e82b7');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=d2c66e384');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=d2c66e384');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=d2c66e384');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=d2c66e384');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=d2c66e384');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=d2c66e384');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=d2c66e384');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=d2c66e384');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=d2c66e384');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=d2c66e384');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=d2c66e384');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=d2c66e384');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=d2c66e384');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -8758,6 +8758,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_lifeskills.js',
         'stem_lab/stem_tool_spacecolony.js',
         'stem_lab/stem_tool_spacestation.js',
+        'stem_lab/stem_tool_coasterlab.js',
         'stem_lab/stem_tool_worldbuilder.js',
         'stem_lab/stem_tool_flightsim.js',
         'stem_lab/stem_tool_atctower.js',
@@ -10724,6 +10725,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setReadingTheme = (v) => { try { safeSetItem('allo_reading_theme', v); } catch {} _setReadingTheme(v); };
   const [isAnalyzingPos, setIsAnalyzingPos] = useState(false);
   const [isDictationMode, setIsDictationMode] = useState(false);
+  const [dictationStatus, setDictationStatus] = useState({ state: 'idle', engine: null, engineLabel: '', privacy: '', message: '' });
   const recognitionRef = useRef(null);
   const fluencyRecognitionRef = useRef(null);
   const fluencyStartTimeRef = useRef(0);
@@ -12535,9 +12537,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [addToast]);
   useEffect(() => {
       const handleFocusIn = (e) => {
-          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-              lastFocusedInputRef.current = e.target;
-          }
+          const target = e.target;
+          const tag = target && target.tagName;
+          const type = tag === 'INPUT' ? String(target.type || 'text').toLowerCase() : '';
+          const textInput = tag === 'INPUT' && ['text', 'search', 'email', 'tel', 'url', 'password'].includes(type);
+          const writable = target && !target.disabled && !target.readOnly && (tag === 'TEXTAREA' || textInput || target.isContentEditable);
+          if (writable) lastFocusedInputRef.current = target;
       };
       window.addEventListener('focusin', handleFocusIn);
       return () => window.removeEventListener('focusin', handleFocusIn);
@@ -17852,7 +17857,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isHistoryMaximized, setIsHistoryMaximized] = useState(false);
   const [showQuizAnswers, setShowQuizAnswers] = useState(false);
   const [quizMcqCount, setQuizMcqCount] = useState(3);
-  const [quizReflectionCount, setQuizReflectionCount] = useState(3);
+  const [quizReflectionCount, setQuizReflectionCount] = useState(1);
   const [quizCustomInstructions, setQuizCustomInstructions] = useState('');
   const [quizItemTypeMix, setQuizItemTypeMix] = useState(null);
   const [passAnalysisToQuiz, setPassAnalysisToQuiz] = useState(false);
@@ -18186,187 +18191,152 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       isDictationActiveRef.current = isDictationMode;
   }, [isDictationMode]);
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    // No early return when SR is missing (2026-07-06): Electron ships NO
-    // working SpeechRecognition (needs Google's speech service), which made
-    // dictation silently DEAD on desktop. A dummy keeps the handler wiring
-    // harmless; the local-whisper facade below carries desktop dictation.
-    let recognition;
-    try {
-        recognition = SpeechRecognition ? new SpeechRecognition() : null;
-    } catch (e) {
-        warnLog("SpeechRecognition constructor failed", e);
-        recognition = null;
-    }
-    if (!recognition) recognition = { start() { throw new Error('SpeechRecognition unavailable'); }, stop() {}, abort() {} };
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = getSpeechLangCode(currentUiLanguage);
-    // Shared delivery: SR results and local-whisper transcripts land through
-    // the SAME insertion logic (focused input / UDL chat / honest toast).
-    const _deliverDictationTranscript = (transcript) => {
+    let controller = null;
+    const resultListeners = new Set();
+    const isWritableTarget = (target) => {
+        if (!target || target.isConnected === false || target.disabled || target.readOnly) return false;
+        const tag = target.tagName;
+        const type = tag === 'INPUT' ? String(target.type || 'text').toLowerCase() : '';
+        return tag === 'TEXTAREA' || (tag === 'INPUT' && ['text', 'search', 'email', 'tel', 'url', 'password'].includes(type)) || target.isContentEditable;
+    };
+    const deliverTranscript = (rawTranscript) => {
+        const transcript = String(rawTranscript || '').trim();
+        if (!transcript) return;
         if (isConversationModeRef.current) {
-            setUdlInput(prev => {
-                const spacer = prev.length > 0 && !prev.endsWith(' ') ? ' ' : '';
-                return prev + spacer + transcript;
-            });
+            setUdlInput(prev => prev + (prev && !prev.endsWith(' ') ? ' ' : '') + transcript);
             return;
         }
-        let activeElement = document.activeElement;
-        if (!activeElement || (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA')) {
-            if (lastFocusedInputRef.current) {
-                activeElement = lastFocusedInputRef.current;
-                try { activeElement.focus(); } catch(e) { warnLog('Caught error:', e?.message || e); }
-            }
+        let target = isWritableTarget(document.activeElement) ? document.activeElement : null;
+        if (!target && isWritableTarget(lastFocusedInputRef.current)) {
+            target = lastFocusedInputRef.current;
+            try { target.focus(); } catch (e) {}
         }
-        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-            const start = activeElement.selectionStart || 0;
-            const end = activeElement.selectionEnd || 0;
-            const currentValue = activeElement.value || '';
-            const textToInsert = (currentValue.length > 0 && start > 0 && currentValue[start-1] !== ' ' ? ' ' : '') + transcript;
-            const newValue = currentValue.substring(0, start) + textToInsert + currentValue.substring(end);
-            try {
-                const proto = activeElement.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
-                if (nativeInputValueSetter) {
-                    nativeInputValueSetter.call(activeElement, newValue);
-                } else {
-                    activeElement.value = newValue;
-                }
-                const ev = new Event('input', { bubbles: true });
-                activeElement.dispatchEvent(ev);
-            } catch (err) {
-                warnLog("Failed to set input value programmatically", err);
-                activeElement.value = newValue;
-            }
-        } else {
-            if (addToastRef.current) {
-                addToastRef.current(t('toasts.click_textbox'), "info");
-            }
+        if (!target) {
+            if (addToastRef.current) addToastRef.current(t('toasts.click_textbox'), 'info');
+            return;
         }
-    };
-    recognition.onresult = (event) => { // slim: guards here, delivery shared above
-        if (isBotSpeakingRef.current || isPlayingRef.current || isSystemAudioActiveRef.current) return;
-        if (Date.now() - lastAudioEndTimeRef.current < 1000) return;
-        const resultsLength = event.results?.length;
-        if (!resultsLength) return;
-        const lastResult = event.results[resultsLength - 1];
-        if (!lastResult || !lastResult[0]) return;
-        _deliverDictationTranscript(lastResult[0].transcript);
-    };
-    recognition.onerror = (event) => {
-        if (event.error === 'no-speech') return;
-        warnLog("Dictation Error:", event.error);
-        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-            isDictationActiveRef.current = false;
-            setIsDictationMode(false);
-            if (addToastRef.current) {
-                addToastRef.current(t('toasts.mic_access_denied'), "error");
+        const spacer = target.textContent && !/\s$/.test(target.textContent) ? ' ' : '';
+        if (target.isContentEditable) {
+            const selection = window.getSelection && window.getSelection();
+            const value = spacer + transcript;
+            if (selection && selection.rangeCount && target.contains(selection.anchorNode)) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                const node = document.createTextNode(value);
+                range.insertNode(node);
+                range.setStartAfter(node);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                target.appendChild(document.createTextNode(value));
             }
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
         }
-    };
-    recognition.onend = () => {
-        if (isDictationActiveRef.current) {
-            const now = Date.now();
-            const timeSinceStart = now - lastDictationStartRef.current;
-            if (timeSinceStart < 1000) {
-                warnLog("Rapid restart detected. Applying backoff strategy...");
-                setTimeout(() => {
-                    if (isDictationActiveRef.current) {
-                        try {
-                            debugLog("Attempting recovery restart...");
-                            lastDictationStartRef.current = Date.now();
-                            recognition.start();
-                        } catch (e) {
-                            warnLog("Recovery failed, user must restart manually.");
-                            setIsDictationMode(false);
-                        }
-                    }
-                }, 1500);
-                return;
-            }
-            setTimeout(() => {
-                if (isDictationActiveRef.current) {
-                    try {
-                        lastDictationStartRef.current = Date.now();
-                        recognition.start();
-                    } catch (e) {
-                    }
-                }
-            }, 200);
-        }
-    };
-    // ── Local-first dictation (2026-07-06): when the managed whisper server
-    // is ON, record on-device and transcribe via the same-origin proxy when
-    // dictation toggles OFF (push-to-talk semantics — no fake interim text).
-    // Browser SR stays the fallback where it exists; on desktop Electron it
-    // never did, so this is the first working dictation there. The 12
-    // remaining module surfaces migrate with this exact pattern — see
-    // docs/NEXT_STEPS_HANDOFF_2026-07-06.md ("Dictation unification").
-    const _localDict = { rec: null, stream: null };
-    const _localDictStop = (discard) => {
-        try { if (_localDict.rec && _localDict.rec.state !== 'inactive') { if (discard) _localDict.rec.ondataavailable = null; _localDict.rec.stop(); } } catch (_) {}
-        try { if (discard && _localDict.stream) _localDict.stream.getTracks().forEach(tr => tr.stop()); } catch (_) {}
-        _localDict.rec = null; _localDict.stream = null;
-    };
-    const _localDictStart = async () => {
-        let st = null;
-        try { const r = await fetch('/api/asr/status'); if (r.ok) st = await r.json(); } catch (_) {}
-        if (!(st && st.running)) return false;
+        const currentValue = target.value || '';
+        const startAt = typeof target.selectionStart === 'number' ? target.selectionStart : currentValue.length;
+        const endAt = typeof target.selectionEnd === 'number' ? target.selectionEnd : startAt;
+        const textToInsert = (startAt > 0 && currentValue[startAt - 1] !== ' ' ? ' ' : '') + transcript;
+        const newValue = currentValue.substring(0, startAt) + textToInsert + currentValue.substring(endAt);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const rec = new MediaRecorder(stream);
-            const chunks = [];
-            rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-            rec.onstop = async () => {
-                try {
-                    stream.getTracks().forEach(tr => tr.stop());
-                    if (!chunks.length) return;
-                    const form = new FormData();
-                    form.append('file', new Blob(chunks, { type: rec.mimeType || 'audio/webm' }), 'dictation.webm');
-                    form.append('response_format', 'json');
-                    form.append('temperature', '0');
-                    const res = await fetch(st.proxyUrl || '/api/asr/transcribe', { method: 'POST', body: form });
-                    if (!res.ok) { warnLog('[Dictation] local transcription HTTP ' + res.status); return; }
-                    const data = await res.json();
-                    // whisper emits bracket tokens ([BLANK_AUDIO], [MUSIC]) — never dictate those.
-                    const text = String((data && (data.text || data.transcription)) || '').replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim();
-                    if (text) _deliverDictationTranscript(text);
-                    else if (addToastRef.current) addToastRef.current(t('toasts.dictation_no_speech') || 'No speech detected in that recording.', 'info');
-                } catch (e) { warnLog('[Dictation] local transcription failed:', e?.message); }
-            };
-            rec.start();
-            _localDict.rec = rec; _localDict.stream = stream;
-            if (addToastRef.current) addToastRef.current(t('toasts.dictation_local_on') || '🎙️ Listening on this device — your words appear when you turn dictation off.', 'info');
-            return true;
-        } catch (e) {
-            warnLog('[Dictation] local start failed:', e?.message);
-            return false;
+            const proto = target.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+            const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+            if (setter) setter.call(target, newValue); else target.value = newValue;
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            const caret = startAt + textToInsert.length;
+            if (typeof target.setSelectionRange === 'function') target.setSelectionRange(caret, caret);
+        } catch (error) {
+            warnLog('Failed to insert dictation text', error);
         }
     };
-    // Facade keeps the start/stop contract the toggle effect already uses.
-    recognitionRef.current = {
+    const createFallback = () => {
+        let rec = null;
+        let intentionallyStopped = false;
+        const api = {
+            start: () => {
+                if (rec) return true;
+                const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!Recognition) throw new Error('SpeechRecognition unavailable');
+                intentionallyStopped = false;
+                rec = new Recognition();
+                rec.continuous = true;
+                rec.interimResults = false;
+                rec.lang = getSpeechLangCode(currentUiLanguage);
+                rec.onstart = () => setDictationStatus({ state: 'listening', engine: window.__alloLocalSRShim ? 'local-whisper' : 'web-speech', engineLabel: window.__alloLocalSRShim ? 'On-device Whisper' : 'Browser speech service', privacy: window.__alloLocalSRShim ? 'Audio stays on this device.' : 'Your browser may send audio to its speech provider.', message: 'Listening...' });
+                rec.onresult = (event) => {
+                    if (isBotSpeakingRef.current || isPlayingRef.current || isSystemAudioActiveRef.current || Date.now() - lastAudioEndTimeRef.current < 1000) return;
+                    const last = event.results && event.results[event.results.length - 1];
+                    if (last && last[0]) deliverTranscript(last[0].transcript);
+                    resultListeners.forEach(listener => { try { listener(event); } catch (e) {} });
+                };
+                rec.onerror = (event) => {
+                    if (event.error === 'no-speech' || intentionallyStopped) return;
+                    setDictationStatus({ state: 'error', engine: 'web-speech', engineLabel: 'Browser speech service', privacy: '', message: 'Dictation is unavailable.' });
+                    isDictationActiveRef.current = false;
+                    setIsDictationMode(false);
+                };
+                rec.onend = () => {
+                    rec = null;
+                    if (isDictationActiveRef.current && !intentionallyStopped) setTimeout(() => { try { api.start(); } catch (e) {} }, 250);
+                };
+                rec.start();
+                return true;
+            },
+            stop: () => { intentionallyStopped = true; try { if (rec) rec.stop(); } catch (e) {} rec = null; setDictationStatus(prev => ({ ...prev, state: 'idle', message: '' })); },
+            abort: () => { intentionallyStopped = true; try { if (rec) rec.abort(); } catch (e) {} rec = null; setDictationStatus(prev => ({ ...prev, state: 'idle', message: '' })); },
+            addEventListener: (type, listener) => { if (type === 'result') resultListeners.add(listener); },
+            removeEventListener: (type, listener) => { if (type === 'result') resultListeners.delete(listener); }
+        };
+        return api;
+    };
+    const facade = {
         start: () => {
-            _localDictStart().then((ok) => {
-                if (!ok) {
-                    try { lastDictationStartRef.current = Date.now(); recognition.start(); }
-                    catch (e) {
-                        warnLog('[Dictation] no speech recognition available:', e?.message);
-                        isDictationActiveRef.current = false;
-                        setIsDictationMode(false);
-                        if (addToastRef.current) addToastRef.current(t('toasts.dictation_unavailable') || 'Speech-to-text is not available — turn it on from the desktop Setup Health card.', 'info');
-                    }
+            if (!controller) {
+                const voice = window.AlloFlowVoice;
+                if (voice && typeof voice.createDictationController === 'function') {
+                    controller = voice.createDictationController({
+                        lang: getSpeechLangCode(currentUiLanguage),
+                        continuous: true,
+                        restartOnEnd: true,
+                        onTranscript: (transcript) => {
+                            if (!isBotSpeakingRef.current && !isPlayingRef.current && !isSystemAudioActiveRef.current && Date.now() - lastAudioEndTimeRef.current >= 1000) deliverTranscript(transcript);
+                        },
+                        onStateChange: (status) => {
+                            setDictationStatus(status);
+                            if (status.state === 'error') {
+                                isDictationActiveRef.current = false;
+                                setIsDictationMode(false);
+                                if (addToastRef.current) addToastRef.current(status.message || t('toasts.dictation_unavailable'), 'error');
+                            } else if (status.state === 'idle' && (status.reason === 'completed' || status.reason === 'replaced') && isDictationActiveRef.current) {
+                                isDictationActiveRef.current = false;
+                                setIsDictationMode(false);
+                            }
+                        }
+                    });
+                    resultListeners.forEach(listener => controller.addEventListener('result', listener));
+                } else {
+                    controller = createFallback();
                 }
-            });
+            }
+            lastDictationStartRef.current = Date.now();
+            return controller.start();
         },
-        stop: () => { if (_localDict.rec) { _localDictStop(false); } else { try { recognition.stop(); } catch (_) {} } },
-        abort: () => { if (_localDict.rec) { _localDictStop(true); } else { try { recognition.abort(); } catch (_) {} } }
+        stop: () => { if (controller) controller.stop(); },
+        abort: () => { if (controller) controller.abort('paused'); },
+        addEventListener: (type, listener) => { if (type === 'result') { resultListeners.add(listener); if (controller && controller.addEventListener) controller.addEventListener(type, listener); } },
+        removeEventListener: (type, listener) => { if (type === 'result') { resultListeners.delete(listener); if (controller && controller.removeEventListener) controller.removeEventListener(type, listener); } }
     };
+    recognitionRef.current = facade;
+    const resumeTimer = isDictationActiveRef.current ? setTimeout(() => {
+        try { facade.start(); } catch (e) {}
+    }, 100) : null;
     return () => {
-        if (recognitionRef.current) recognitionRef.current.abort();
+        if (resumeTimer) clearTimeout(resumeTimer);
+        try { facade.abort(); } catch (e) {}
+        if (recognitionRef.current === facade) recognitionRef.current = null;
     };
-  }, [currentUiLanguage]);
-  useEffect(() => {
+  }, [currentUiLanguage]);  useEffect(() => {
       if (!recognitionRef.current) return;
       if (isDictationMode) {
           const _dictationTimer = setTimeout(() => {
@@ -23265,18 +23235,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     } catch (_) { return null; }
   };
   const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
-    const resourceId = targetResourceId || (generatedContent && generatedContent.id);
+    const liveResourceId = generatedContent && (generatedContent.id || generatedContent.resourceId);
+    const resourceId = targetResourceId && targetResourceId !== 'unsaved'
+      ? targetResourceId
+      : (liveResourceId || null);
     try {
       setGeneratedContent(gc => {
         if (!gc) return gc;
-        if (resourceId && gc.id !== resourceId) return gc;
+        const currentId = gc.id || gc.resourceId || null;
+        if (resourceId && currentId && String(currentId) !== String(resourceId)) return gc;
         return Object.assign({}, gc, { [field]: payload });
       });
     } catch (_) {}
     try {
       if (resourceId) {
         setHistory(prev => Array.isArray(prev)
-          ? prev.map(item => item && item.id === resourceId ? Object.assign({}, item, { [field]: payload }) : item)
+          ? prev.map(item => item && String(item.id || item.resourceId || '') === String(resourceId)
+            ? Object.assign({}, item, { [field]: payload })
+            : item)
           : prev);
       }
     } catch (_) {}
@@ -23658,13 +23634,21 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       : String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
     const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
     if (_karaokeCaptureInFlight.has(captureKey)) return _karaokeCaptureInFlight.get(captureKey);
-    const capture = Promise.resolve(bridge.capturePlayed(sentence, url));
+    const capture = Promise.resolve().then(() => bridge.capturePlayed(sentence, url));
     _karaokeCaptureInFlight.set(captureKey, capture);
+    let saved = false;
     try {
-      return await capture;
+      saved = !!(await capture);
     } finally {
       if (_karaokeCaptureInFlight.get(captureKey) === capture) _karaokeCaptureInFlight.delete(captureKey);
     }
+    // A bridge runtime failure must not silently turn "Save played TTS" into
+    // a no-op. The retained legacy implementation snapshots the same played URL
+    // and is the compatibility path for this release. Avoid duplicate work when
+    // the bridge did store the clip but returned false.
+    const store = _ensureKaraokeStore('reference');
+    if (saved || (store && store.has(sentence) && !_karaokeAiVoiceMismatch(store, sentence))) return true;
+    return _legacyReadAloudApi.capturePlayed(sentence, url);
   };
   window.__alloStoreStudentSentenceAudio = async (sentence, blob) => {
     const bridge = _getReadAloudBridge();
@@ -30392,6 +30376,54 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     newQuestions[qIndex] = updatedQuestion;
     newData.questions = newQuestions;
+    const updatedContent = { ...generatedContent, data: newData };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
+  };
+  // Unified author action path for every assessment format. This keeps edits,
+  // reordering, duplication, deletion, and AI repairs in history together.
+  const handleQuizQuestionAction = (qIndex, action, payload = null) => {
+    if (!generatedContent || generatedContent.type !== 'quiz' || !generatedContent.data) return;
+    const newData = { ...generatedContent.data };
+    const newQuestions = Array.isArray(newData.questions) ? [...newData.questions] : [];
+    const index = Math.max(0, Math.min(newQuestions.length - 1, Number(qIndex) || 0));
+    if (action === 'patch' && newQuestions[index]) {
+        newQuestions[index] = { ...newQuestions[index], ...(payload || {}), factCheck: null };
+    } else if (action === 'replace' && payload && typeof payload === 'object' && newQuestions[index]) {
+        newQuestions[index] = { ...payload, type: payload.type || newQuestions[index].type || 'mcq', factCheck: null };
+    } else if (action === 'delete' && newQuestions[index]) {
+        newQuestions.splice(index, 1);
+    } else if (action === 'duplicate' && newQuestions[index]) {
+        const clone = JSON.parse(JSON.stringify(newQuestions[index]));
+        clone.id = 'assessment-item-' + Date.now();
+        clone.question = (clone.question || 'Question') + ' (copy)';
+        clone.factCheck = null;
+        newQuestions.splice(index + 1, 0, clone);
+    } else if (action === 'move' && newQuestions[index]) {
+        const delta = Number(payload) < 0 ? -1 : 1;
+        const target = index + delta;
+        if (target < 0 || target >= newQuestions.length) return;
+        const moved = newQuestions[index];
+        newQuestions[index] = newQuestions[target];
+        newQuestions[target] = moved;
+    } else if (action === 'replace-all' && payload && Array.isArray(payload.questions)) {
+        newQuestions.splice(0, newQuestions.length, ...payload.questions.filter(Boolean));
+    } else if (action === 'append' && payload && Array.isArray(payload.questions)) {
+        newQuestions.push(...payload.questions.filter(Boolean));
+    } else {
+        return;
+    }
+    newData.questions = newQuestions;
+    const actualMix = {};
+    newQuestions.forEach((question) => {
+        const key = question && question.type ? question.type : 'mcq';
+        actualMix[key] = (actualMix[key] || 0) + 1;
+    });
+    newData.actualItemTypeMix = actualMix;
+    if (newData.requestedItemTypeMix && typeof newData.requestedItemTypeMix === 'object') {
+        const keys = new Set([...Object.keys(newData.requestedItemTypeMix), ...Object.keys(actualMix)]);
+        newData.itemCountMismatch = Array.from(keys).some(key => (newData.requestedItemTypeMix[key] || 0) !== (actualMix[key] || 0));
+    }
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
@@ -39287,7 +39319,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     addToast, handleConceptSpacePersist
                 })}
                 {activeView === 'quiz' && window.AlloModules && window.AlloModules.QuizView && React.createElement(window.AlloModules.QuizView, {
-                    t, isTeacherMode, isParentMode, isIndependentMode,
+                    t, isTeacherMode, isParentMode, isIndependentMode, studentProjectSettings,
                     // Merged session view: peer-to-peer quiz answers layered over
                     // the Firestore fallback (see quizMergedSessionData).
                     activeSessionCode, sessionData: quizMergedSessionData,
@@ -39310,7 +39342,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     handleReviewTileClick, handleAwardPoints, closeReviewModal,
                     handlePresentationOptionClick, togglePresentationAnswer,
                     togglePresentationExplanation, resetPresentation,
-                    handleQuizChange, handleQuizImageRefine, handleQuizBulkOptionChange, handleReflectionChange, handleFactCheck,
+                    handleQuizChange, handleQuizQuestionAction, handleQuizImageRefine, handleQuizBulkOptionChange, handleReflectionChange, handleFactCheck,
                     endCollaborativeEscapeRoom, resetEscapeRoom,
                     launchCollaborativeEscapeRoom, openEscapeRoomSettings,
                     generateEscapeRoom, handlePuzzleSolved, handleSelectObject,
@@ -40302,7 +40334,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         {isHelpMode ? <X size={16}/> : '?'}
       </button>
       )}
-      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} studentAiFeaturesHidden={studentAiFeaturesHidden} t={t} />
+      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} dictationStatus={dictationStatus} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} studentAiFeaturesHidden={studentAiFeaturesHidden} t={t} />
       </>
       )}
       {activeView === 'dashboard' && isTeacherMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">

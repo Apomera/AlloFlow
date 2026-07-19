@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-19T02:56:11.621Z
+Generated: 2026-07-19T19:29:26.421Z
 
 ## Scope
 
@@ -13,9 +13,9 @@ Generated: 2026-07-19T02:56:11.621Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 39 |
+| Total findings | 40 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 15 |
+| Tool-level warnings | 16 |
 | Review notices | 24 |
 | Tools with any finding | 35 |
 | Tools with high-confidence errors | 0 |
@@ -28,6 +28,7 @@ Generated: 2026-07-19T02:56:11.621Z
 | warning | `tiny-text` | 12 | 12 | base10, calculus, coordinate, geologyExplorer, inequality, multtable, particleLab3d, plateTectonics, protractor, unitConvert, universe, volume | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `canvas-focus` | 2 | 2 | particleLab3d, skatelab | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `inline-contrast` | 1 | 1 | appLab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `svg-name` | 1 | 1 | birdLab | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 19 | 19 | accessLens, archStudio, birdLab, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 5 | 5 | areaPerimeter, birdLab, brainAtlas, plateTectonics, playlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
@@ -50,7 +51,7 @@ Generated: 2026-07-19T02:56:11.621Z
 | `alphaFoldExplorer` AlphaFold Explorer | science | standard | 5 | 0 | 0 | 0 | 0 | 0 |  |
 | `anatomy` Human Anatomy Explorer | science | standard | 79 | 1 | 1 | 0 | 0 | 0 |  |
 | `appLab` AppLab | technology | standard | 26 | 7 | 0 | 0 | 1 | 0 | inline-contrast x1 |
-| `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 144 | 0 | 0 | 0 | 0 | 0 |  |
+| `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 152 | 1 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 27 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 23 | 0 | 0 | 0 | 0 | 0 |  |
 | `archStudio` Architecture Studio | explore | standard | 83 | 2 | 0 | 0 | 0 | 1 | metadata x1 |
@@ -67,7 +68,7 @@ Generated: 2026-07-19T02:56:11.621Z
 | `beehive` Beehive Simulator | science | standard | 74 | 5 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
-| `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 1 | 0 | 0 | 0 | 2 | horizontal-overflow-risk x1, metadata x1 |
+| `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 1 | 0 | 0 | 1 | 2 | horizontal-overflow-risk x1, metadata x1, svg-name x1 |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 54 | 1 | 1 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 8 | 0 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 1 | 0 | tiny-text x1 |

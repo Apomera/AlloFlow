@@ -519,6 +519,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
   }
 
+  function buildMissionObjectives(dest, dossier, protocol) {
+    var goals = (dossier && dossier.evidenceGoals) || [];
+    var primary = goals[0] ? goals[0].label : 'mission evidence';
+    var objectives = [
+      { id: 'evidence_chain', label: 'Evidence chain', icon: '\uD83E\uDDEA', target: Math.min(2, Math.max(1, goals.length)), reward: 20, prompt: 'Connect observations to at least two dossier science goals.', focus: primary },
+      protocol
+        ? { id: 'protocol_trial', label: 'Protocol trial', icon: protocol.icon || '\u2696\uFE0F', target: 2, reward: 15, prompt: 'Trigger the generated protocol twice with adequate or optimal decisions.', focus: protocol.label }
+        : { id: 'decision_discipline', label: 'Decision discipline', icon: '\u2B50', target: 2, reward: 15, prompt: 'Make at least two optimal evidence-based decisions.', focus: 'optimal decisions' },
+      { id: 'safe_return', label: 'Safe return margin', icon: '\uD83D\uDEE1\uFE0F', target: 25, reward: 20, prompt: 'Finish with O2 and Hull both at or above 25%.', focus: (dest && dest.name) || 'mission' }
+    ];
+    return objectives;
+  }
+
+  function evaluateMissionObjectives(objectives, evidence, decisionLog, resources, protocolLog) {
+    var ev = evidence || [];
+    var dec = decisionLog || [];
+    var res = resources || {};
+    var pLog = protocolLog || [];
+    var items = (objectives || []).map(function(obj) {
+      var progress = 0;
+      var progressText = '0/' + obj.target;
+      var completed = false;
+      if (obj.id === 'evidence_chain') {
+        var seen = [];
+        ev.forEach(function(item) {
+          var c = (item.concept || '').toLowerCase();
+          if (c && seen.indexOf(c) < 0) seen.push(c);
+        });
+        progress = Math.min(obj.target, seen.length);
+        completed = progress >= obj.target;
+        progressText = progress + '/' + obj.target + ' science links';
+      } else if (obj.id === 'protocol_trial') {
+        progress = Math.min(obj.target, pLog.length);
+        completed = progress >= obj.target;
+        progressText = progress + '/' + obj.target + ' protocol triggers';
+      } else if (obj.id === 'decision_discipline') {
+        progress = Math.min(obj.target, dec.filter(function(d) { return d.quality === 'optimal'; }).length);
+        completed = progress >= obj.target;
+        progressText = progress + '/' + obj.target + ' optimal decisions';
+      } else if (obj.id === 'safe_return') {
+        var margin = Math.min(res.o2 == null ? 0 : res.o2, res.hull == null ? 0 : res.hull);
+        progress = margin;
+        completed = margin >= obj.target;
+        progressText = margin + '% minimum margin';
+      }
+      return Object.assign({}, obj, { progress: progress, progressText: progressText, completed: completed });
+    });
+    var completedItems = items.filter(function(item) { return item.completed; });
+    var totalBonus = completedItems.reduce(function(sum, item) { return sum + (item.reward || 0); }, 0);
+    return {
+      items: items,
+      completed: completedItems.length,
+      total: items.length,
+      totalBonus: totalBonus,
+      summary: completedItems.length + '/' + items.length + ' objectives complete'
+    };
+  }
+
   window.StemLab.spaceExplorerPure = {
     buildMissionDossier: buildMissionDossier,
     buildLocalMissionEvent: buildLocalMissionEvent,
@@ -527,6 +585,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     applyMissionProtocol: applyMissionProtocol,
     buildProtocolEventLens: buildProtocolEventLens,
     buildMissionForecast: buildMissionForecast,
+    buildMissionObjectives: buildMissionObjectives,
+    evaluateMissionObjectives: evaluateMissionObjectives,
     normalizeAllocation: normalizeAllocation,
     applyTurnDrain: applyTurnDrain
   };
@@ -844,6 +904,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var missionReflection = d.missionReflection || '';
       var missionIntentAssessment = missionDossier ? assessMissionIntent(missionIntent, missionEvidence, missionDossier) : null;
       var missionProtocol = missionDossier ? buildMissionProtocol(missionIntent, missionDossier, destination) : null;
+      var missionObjectives = missionDossier ? buildMissionObjectives(destination, missionDossier, missionProtocol) : [];
+      var missionObjectiveReport = evaluateMissionObjectives(missionObjectives, missionEvidence, decisionLog, resources, d.protocolLog || []);
       var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
       var isCompactViewport = viewportWidth < 640;
 
@@ -1137,6 +1199,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             // Calculate optimal % for quest tracking
             var optC = newDecLog.filter(function(x) { return x.quality === 'optimal'; }).length;
             var optPct = newDecLog.length > 0 ? Math.round(optC / newDecLog.length * 100) : 0;
+            var objectiveReport = evaluateMissionObjectives(buildMissionObjectives(destination, missionDossier, missionProtocol), newEvidence, newDecLog, newRes, newProtocolLog);
+            var objectiveBonus = objectiveReport.totalBonus || 0;
+            if (objectiveBonus > 0 && newRes.science !== undefined) {
+              newRes.science = Math.max(0, Math.min(RESOURCES.science.max, (newRes.science || 0) + objectiveBonus));
+            }
             // Track per-destination stats
             var destStats = Object.assign({}, d.destStats || {});
             var ds = destStats[destination.id] || { wins: 0, bestPct: 0, totalScience: 0 };
@@ -1151,7 +1218,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               totalScience: totalScience + (newRes.science || 0),
               highestDifficulty: Math.max(highestDifficulty, destination.difficulty),
               bestOptimalPct: Math.max(d.bestOptimalPct || 0, optPct),
-              destStats: destStats
+              destStats: destStats,
+              objectiveReport: objectiveReport,
+              objectiveBonusScience: objectiveBonus
             };
             // Survivor badge: completed with O₂ below 10%
             if (newRes.o2 <= 10 && newRes.o2 > 0) patch.survivorEarned = true;
@@ -1463,6 +1532,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   buildProtocolEventLens(missionProtocol, missionDossier, turn, decisionLog) && h('p', { 'data-spaceexplorer-deck-lens': 'true', className: 'text-[11px] text-cyan-100 leading-snug mt-1' }, buildProtocolEventLens(missionProtocol, missionDossier, turn, decisionLog).playerFacing)
                 )
               ),
+              missionObjectives.length > 0 && h('div', { 'data-spaceexplorer-objectives': 'true', className: 'rounded-lg border border-emerald-600/40 bg-emerald-950/20 p-3' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-emerald-200' }, '\uD83C\uDFAF Optional Mission Objectives'),
+                  h('span', { className: 'text-[10px] font-bold text-slate-300' }, 'Bonus science available')
+                ),
+                h('div', { className: 'grid gap-1 md:grid-cols-3' },
+                  missionObjectives.map(function(obj) {
+                    return h('div', { key: obj.id, className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                      h('div', { className: 'flex items-center justify-between gap-2' },
+                        h('span', { className: 'text-[10px] font-bold text-emerald-200' }, obj.icon + ' ' + obj.label),
+                        h('span', { className: 'text-[10px] text-cyan-200' }, '+' + obj.reward + ' science')
+                      ),
+                      h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, obj.prompt)
+                    );
+                  })
+                )
+              ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, t('stem.spaceexplorer.your_crew', '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW')),
@@ -1705,6 +1791,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             missionEvidence.length > 0 && h('div', { className: 'mt-2 rounded-lg bg-slate-950/50 border border-slate-700 p-2' },
               h('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' }, 'Latest observation'),
               h('p', { className: 'text-[11px] text-slate-200 leading-snug' }, missionEvidence[missionEvidence.length - 1].title + ': ' + missionEvidence[missionEvidence.length - 1].note)
+            )
+          ),
+          missionObjectiveReport && missionObjectiveReport.items.length > 0 && h('div', { 'data-spaceexplorer-objectives-live': 'true', className: 'rounded-xl border border-emerald-700/45 bg-emerald-950/15 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-emerald-200' }, '\uD83C\uDFAF Mission Objectives'),
+              h('span', { className: 'text-[10px] font-bold text-slate-300' }, missionObjectiveReport.summary)
+            ),
+            h('div', { className: 'grid gap-1 md:grid-cols-3' },
+              missionObjectiveReport.items.map(function(obj) {
+                return h('div', { key: obj.id, className: 'rounded-lg p-2 border ' + (obj.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10') },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('span', { className: 'text-[10px] font-bold ' + (obj.completed ? 'text-green-200' : 'text-emerald-200') }, obj.icon + ' ' + obj.label),
+                    h('span', { className: 'text-[10px]' }, obj.completed ? '\u2713 +' + obj.reward : obj.progressText)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, obj.prompt)
+                );
+              })
             )
           ),
           // Ship status canvas — shows destination planet + crew. Always
@@ -2120,6 +2223,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }),
             h('div', { className: 'mt-1 text-[10px] text-slate-400 text-right' }, (missionReflection || '').length + '/260')
+          ),
+          missionObjectiveReport && missionObjectiveReport.items.length > 0 && h('div', { 'data-spaceexplorer-objectives-review': 'true', className: 'bg-emerald-500/5 rounded-xl p-3 border border-emerald-500/20' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('h3', { className: 'text-[11px] text-emerald-200 font-bold' }, '\uD83C\uDFAF MISSION OBJECTIVES'),
+              h('span', { className: 'text-[10px] font-bold text-cyan-200' }, '+' + (d.objectiveBonusScience || missionObjectiveReport.totalBonus || 0) + ' science bonus')
+            ),
+            h('div', { className: 'grid gap-1 md:grid-cols-3' },
+              missionObjectiveReport.items.map(function(obj) {
+                return h('div', { key: obj.id, className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('span', { className: 'text-[10px] font-bold ' + (obj.completed ? 'text-green-200' : 'text-slate-300') }, obj.icon + ' ' + obj.label),
+                    h('span', { className: 'text-[10px] ' + (obj.completed ? 'text-green-300' : 'text-slate-400') }, obj.completed ? 'complete' : obj.progressText)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, obj.completed ? '+' + obj.reward + ' science earned.' : obj.prompt)
+                );
+              })
+            )
           ),
           // Decision analysis
           decisionLog.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },

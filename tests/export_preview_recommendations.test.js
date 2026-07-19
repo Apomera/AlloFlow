@@ -45,6 +45,16 @@ describe('Document Builder export recommendations', () => {
     });
     expect(quiz).toMatchObject({ library: 'Single Choice Set 1.11', total: 2, valid: 1, omitted: 1, ready: true });
 
+    const mixed = helpers._builderH5PCompatibility({
+      type: 'quiz',
+      data: { questions: [
+        { type: 'multi-select', question: 'Select both', options: ['A', 'B', 'C'], correctAnswers: ['A', 'C'] },
+        { type: 'short-answer', question: 'Explain why.', expectedAnswer: 'Because.' },
+        { type: 'numeric-response', question: 'How much?', correctValue: 5, tolerance: 0.2 },
+      ] },
+    });
+    expect(mixed).toMatchObject({ library: 'Question Set 1.21', total: 3, valid: 3, adapted: 1, manualReview: 2, omitted: 0, ready: true });
+
     const cards = helpers._builderH5PCompatibility({
       type: 'glossary',
       data: [

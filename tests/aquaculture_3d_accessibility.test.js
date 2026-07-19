@@ -74,4 +74,19 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("className: 'aq-primary-nav'");
     expect(source).toContain('@media(max-width:620px)');
   });
+
+  it('supports persistent comfortable reading and sequential topic flow', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    expect(source).toContain('var comfortableReadingHook = useState(!!stateInit.comfortableReading)');
+    expect(source).toContain('s.comfortableReading = comfortableReading');
+    expect(source).toContain("'aria-pressed': comfortableReading");
+    expect(source).toContain("comfortableReading ? ' aq-comfortable-reading' : ''");
+    expect(source).toContain('var topicSequence = []');
+    expect(source).toContain("'aria-label': previousTopic ? 'Previous topic: '");
+    expect(source).toContain("'aria-label': nextTopic ? 'Next topic: '");
+    expect(source).toContain("h('details', { open: libraryOpen");
+    expect(source).toContain('onToggle: function(event) { setLibraryOpen(event.currentTarget.open); }');
+    expect(source).toContain('setLibraryOpen(false)');
+    expect(source).toContain('.aq-topic-pager{grid-template-columns:1fr!important}');
+  });
 });

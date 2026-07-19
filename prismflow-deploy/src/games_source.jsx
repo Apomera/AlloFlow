@@ -3961,6 +3961,8 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const moveMenuRef = useRef(null);
   const [nodePositions, setNodePositions] = useState({});
   const dragRef = useRef({ active: false, id: null, startX: 0, startY: 0, origX: 0, origY: 0 });
+  const rewardedConnectionKeysRef = useRef(new Set());
+  const validationTimerRef = useRef(null);
 
   const pipelineDataRef = useRef(data);
   pipelineDataRef.current = data;
@@ -3993,6 +3995,10 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 
   useEffect(() => {
     if (!dataFingerprint || !data?.steps?.length) return;
+    if (validationTimerRef.current) {
+      window.clearTimeout(validationTimerRef.current);
+      validationTimerRef.current = null;
+    }
     const steps = data.steps.map((s, i) => ({
       id: `pb-${i}-${Math.random().toString(36).substr(2,6)}`,
       title: typeof s === 'string' ? s : (s.title || s),
@@ -4013,7 +4019,12 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setConnectingFrom(null);
     setChecked(false);
     setNodePositions({});
+    rewardedConnectionKeysRef.current = new Set();
   }, [dataFingerprint, getStepTargets]);
+
+  useEffect(() => () => {
+    if (validationTimerRef.current) window.clearTimeout(validationTimerRef.current);
+  }, []);
 
   // Build the set of correct connections from data
   const correctConnectionSet = useMemo(() => {
@@ -4107,8 +4118,13 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       const requiredOut = getRequiredOutCount(fromStep?.originalIndex);
       addConnection(connectingFrom, nodeId, requiredOut);
       const toStep = shuffledSteps.find(s => s.id === nodeId);
-      setAnnouncement(`Connected "${fromStep?.title}" → "${toStep?.title}".`);
-      setConnectingFrom(null);
+      const outgoingTargets = new Set(connections.filter(c => c.fromId === connectingFrom).map(c => c.toId));
+      outgoingTargets.add(nodeId);
+      const remainingBranches = Math.max(0, requiredOut - outgoingTargets.size);
+      setAnnouncement(remainingBranches > 0
+        ? `Connected "${fromStep?.title}" → "${toStep?.title}". Choose ${remainingBranches} more branch destination${remainingBranches === 1 ? '' : 's'}.`
+        : `Connected "${fromStep?.title}" → "${toStep?.title}".`);
+      setConnectingFrom(remainingBranches > 0 ? connectingFrom : null);
       if (playSound) playSound('click');
     }
   };
@@ -4126,8 +4142,13 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         const kbStep = shuffledSteps.find(s => s.id === keyboardSelectedId);
         const requiredOut = getRequiredOutCount(kbStep?.originalIndex);
         addConnection(keyboardSelectedId, nodeId, requiredOut);
-        setAnnouncement(`Connected steps.`);
-        setKeyboardSelectedId(null);
+        const outgoingTargets = new Set(connections.filter(c => c.fromId === keyboardSelectedId).map(c => c.toId));
+        outgoingTargets.add(nodeId);
+        const remainingBranches = Math.max(0, requiredOut - outgoingTargets.size);
+        setAnnouncement(remainingBranches > 0
+          ? `Connected steps. Select ${remainingBranches} more branch destination${remainingBranches === 1 ? '' : 's'}.`
+          : 'Connected steps.');
+        setKeyboardSelectedId(remainingBranches > 0 ? keyboardSelectedId : null);
         if (playSound) playSound('click');
       } else {
         setKeyboardSelectedId(nodeId);
@@ -4143,18 +4164,25 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     shuffledSteps.forEach(n => { nodeMap[n.id] = n; });
     let correctCount = 0;
     let incorrectCount = 0;
+    let newlyCorrectCount = 0;
     const resultList = connections.map(conn => {
       const fromOrig = nodeMap[conn.fromId].originalIndex;
       const toOrig = nodeMap[conn.toId].originalIndex;
       const connKey = `${fromOrig}->${toOrig}`;
       const isCorrect = correctConnectionSet.has(connKey);
-      if (isCorrect) correctCount++;
-      else incorrectCount++;
+      if (isCorrect) {
+        correctCount++;
+        if (!rewardedConnectionKeysRef.current.has(connKey)) {
+          rewardedConnectionKeysRef.current.add(connKey);
+          newlyCorrectCount++;
+        }
+      } else incorrectCount++;
       return { ...conn, correct: isCorrect };
     });
     setResults(resultList);
     setChecked(true);
-    const points = correctCount * 20 - incorrectCount * 5;
+    const missingCount = Math.max(0, totalRequired - correctCount);
+    const points = newlyCorrectCount * 20 - incorrectCount * 5;
     const newScore = Math.max(0, score + points);
     setScore(newScore);
     if (onScoreUpdate) onScoreUpdate(points);
@@ -4165,8 +4193,11 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setAnnouncement('Pipeline complete! All connections are correct!');
     } else {
       if (playSound) playSound('incorrect');
-      setAnnouncement(`${correctCount} correct, ${incorrectCount} incorrect. Incorrect connections will be removed.`);
-      setTimeout(() => {
+      const retryGuidance = incorrectCount > 0
+        ? 'Incorrect connections will be removed.'
+        : 'Add the missing connections and check again.';
+      setAnnouncement(`${correctCount} correct, ${incorrectCount} incorrect, ${missingCount} still missing. ${retryGuidance}`);
+      validationTimerRef.current = window.setTimeout(() => {
         const correctConns = connections.filter(c => {
           const fromOrig = nodeMap[c.fromId].originalIndex;
           const toOrig = nodeMap[c.toId].originalIndex;
@@ -4175,11 +4206,16 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         setConnections(correctConns);
         setResults(null);
         setChecked(false);
+        validationTimerRef.current = null;
       }, 2500);
     }
   };
 
   const handleReset = () => {
+    if (validationTimerRef.current) {
+      window.clearTimeout(validationTimerRef.current);
+      validationTimerRef.current = null;
+    }
     const steps = [...shuffledSteps];
     for (let i = steps.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -4194,6 +4230,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setIsComplete(false);
     setKeyboardSelectedId(null);
     setNodePositions({});
+    rewardedConnectionKeysRef.current = new Set();
     window.setTimeout(() => pipelineDialogRef.current?.focus(), 0);
   };
 
@@ -4234,7 +4271,9 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 
   const getConnResult = (nodeId) => {
     if (!results) return null;
-    return results.find(r => r.fromId === nodeId || r.toId === nodeId);
+    const incidentResults = results.filter(r => r.fromId === nodeId || r.toId === nodeId);
+    if (incidentResults.length === 0) return null;
+    return { correct: incidentResults.every(result => result.correct) };
   };
 
   const isConnectedFrom = (nodeId) => connections.some(c => c.fromId === nodeId);

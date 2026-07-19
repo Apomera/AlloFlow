@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const crypto = require('crypto');
 
 const root = path.resolve(__dirname, '..');
@@ -691,8 +692,8 @@ const markdown = [
 
 for (const outputRoot of [sourceDir, deployDir]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, reportBase + '.json'), JSON.stringify(report, null, 2) + '\n');
-  fs.writeFileSync(path.join(outputRoot, reportBase + '.md'), markdown + '\n');
+  writeGeneratedFile(path.join(outputRoot, reportBase + '.json'), JSON.stringify(report, null, 2) + '\n');
+  writeGeneratedFile(path.join(outputRoot, reportBase + '.md'), markdown + '\n');
 }
 console.log('Non-EPPP EPPP-guided QA: ' + aggregate.packsReviewed + ' packs; '
   + aggregate.learningActivitiesStructurallyReviewed + ' activities; '

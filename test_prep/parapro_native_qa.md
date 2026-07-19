@@ -1,8 +1,8 @@
-# ParaPro 200-item diagnostic bank QA report
+# ParaPro diagnostic-bank QA report
 
-Generated: 2026-07-19T05:09:22.732Z
+Generated: 2026-07-19T17:48:49.398Z
 
-Pack: ParaPro Assessment (1755) - 200-Item Diagnostic Bank v0.4.0
+Pack: ParaPro Assessment (1755) - 200 Source Questions + 300 Independent Practice Questions v0.7.0
 
 Blueprint: [ETS ParaPro Assessment 1755 Study Companion](https://www.ets.org/pdfs/parapro/1755.pdf)
 
@@ -246,6 +246,5 @@ The official blueprint has 30 questions in each domain, with approximately two-t
 | parapro-writing-application-020 | writing | application | pass | 2 |
 | parapro-writing-application-021 | writing | application | pass | 2 |
 | parapro-writing-application-022 | writing | application | pass | 2 |
-
 
 - Independent-batch audit: 200 original source questions plus 300 assistant-authored independent practice questions produce 500 distinct independent content kernels. 0 additional activities remain guided review only. 0 new independent questions remain to reach 500.

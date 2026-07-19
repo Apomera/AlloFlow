@@ -42,6 +42,10 @@ describe('Arithmetic Strategy Studio', () => {
     expect(pure.estimatePlan('multiply', 23, 14)).toMatchObject({ estimate: 280, expression: '20 \u00d7 14' });
     expect(pure.estimateFor('divide', 42, 6)).toBe(7);
     expect(pure.estimateFor('divide', 53, 5)).toBe(10);
+    expect(pure.estimatePlan('divide', 347, 8)).toMatchObject({ estimate: 40, expression: '320 \u00f7 8' });
+    expect(pure.estimatePlan('divide', 347, 8).estimate).not.toBe(pure.calculate('divide', 347, 8).answer);
+    expect(pure.estimatePlan('divide', 1, 9999)).toMatchObject({ estimate: 0, left: 0, expression: '0 \u00f7 9999' });
+    expect(pure.estimatePlan('divide', 9998, 9999).estimate).toBe(0);
     expect(pure.assessEstimate('add', 27, 35, '', 60).status).toBe('missing');
     expect(pure.assessEstimate('add', 27, 35, 999, 60).reasonable).toBe(false);
 
@@ -61,8 +65,12 @@ describe('Arithmetic Strategy Studio', () => {
       .toEqual({ answer: 9, remainder: 0, requiresRemainder: false, divisionContext: 'round-up' });
 
     const practiceQuest = tool.questHooks.find((hook) => hook.id === 'practice_5');
+    const operationQuest = tool.questHooks.find((hook) => hook.id === 'all_operations');
     const errorQuest = tool.questHooks.find((hook) => hook.id === 'error_detective');
     expect(practiceQuest.progress({ practiceSolved: { bogus: true } })).toBe('0/5 correct');
+    expect(operationQuest.progress({ operationsUsed: { add: true, subtract: true, multiply: true, divide: true } })).toBe('0/4 operations');
+    expect(operationQuest.progress({ practiceSolved: { a1: true, s1: true, m1: true, d1: true } })).toBe('4/4 operations');
+    expect(operationQuest.check({ practiceSolved: { a1: true, s1: true, m1: true, d1: true } })).toBe(true);
     expect(errorQuest.progress({ errorSolvedCases: { bogus: true } })).toBe('0/3 mistakes');
   });
 
@@ -101,6 +109,23 @@ describe('Arithmetic Strategy Studio', () => {
     expect(html).toContain('with 5 left over');
   });
 
+  it('shows operation choices only where meaningful and keeps pale area-model cells readable', () => {
+    loadTool(FILE, ID);
+    const learn = renderTool(ID, { _arithmeticStudio: { tab: 'learn', operation: 'multiply', a: 23, b: 14 } }, { isDark: true });
+    document.body.innerHTML = learn;
+    expect(document.querySelector('[aria-label="Choose an operation"]')).toBeTruthy();
+    const areaModel = document.querySelector('[aria-label="Area model showing partial products for 23 times 14"]');
+    expect(areaModel).toBeTruthy();
+    expect(areaModel.getAttribute('style')).toContain('color:#0f172a');
+
+    const practice = renderTool(ID, { _arithmeticStudio: { tab: 'practice' } });
+    const errors = renderTool(ID, { _arithmeticStudio: { tab: 'errors' } });
+    const apply = renderTool(ID, { _arithmeticStudio: { tab: 'apply' } });
+    expect(practice).toContain('aria-label="Choose an operation"');
+    expect(errors).not.toContain('aria-label="Choose an operation"');
+    expect(apply).not.toContain('aria-label="Choose an operation"');
+  });
+
   it('updates progress after a correct mounted practice interaction', async () => {
     const tool = loadTool(FILE, ID);
     let latest;
@@ -120,6 +145,8 @@ describe('Arithmetic Strategy Studio', () => {
     await React.act(async () => { check.click(); });
     expect(latest._arithmeticStudio.correct).toBe(1);
     expect(latest._arithmeticStudio.attempts).toBe(1);
+    expect(latest._arithmeticStudio.operationsCompleted).toEqual({ add: true });
+    expect(latest._arithmeticStudio.practiceProblemId).toBe('a1');
     expect(document.body.textContent).toContain('Correct. Your exact answer and estimate support each other');
     await React.act(async () => { root.unmount(); });
   });
@@ -139,6 +166,105 @@ describe('Arithmetic Strategy Studio', () => {
     expect(check.disabled).toBe(false);
   });
 
+  it('uses exact practice bands so Challenge opens challenge work', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _arithmeticStudio: { tab: 'practice', operation: 'add', level: 1, answerInput: '62', estimateInput: '60' },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    expect(document.querySelector('[data-practice-problem-id="a1"]')).toBeTruthy();
+    const challenge = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Challenge');
+    await React.act(async () => { challenge.click(); });
+    expect(latest._arithmeticStudio).toMatchObject({ level: 3, practiceIndex: 0, answerInput: '', estimateInput: '' });
+    expect(document.querySelector('[data-practice-problem-id="a5"]')).toBeTruthy();
+    expect(document.body.textContent).toContain('12458 + 7896');
+    expect([...document.querySelectorAll('input[type="number"]')].every((input) => input.value === '')).toBe(true);
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('hydrates attempts by stable problem ID and drops stale cumulative-band state', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _arithmeticStudio: {
+          tab: 'practice', operation: 'add', level: 2, practiceIndex: 0,
+          answerInput: '62', estimateInput: '60', feedback: 'correct', practiceSolved: { a1: true },
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    expect(document.querySelector('[data-practice-problem-id="a3"]')).toBeTruthy();
+    let inputs = [...document.querySelectorAll('input[type="number"]')];
+    expect(inputs.map((input) => input.value)).toEqual(['', '']);
+    expect([...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer').disabled).toBe(true);
+    expect(document.body.textContent).not.toContain('Correct. Your exact answer and estimate support each other.');
+
+    await enterNumber(inputs[0], '800');
+    expect(latest._arithmeticStudio).toMatchObject({
+      practiceProblemId: 'a3', practiceIndex: 0, estimateInput: '800', answerInput: '', remainderInput: '', feedback: null,
+    });
+    inputs = [...document.querySelectorAll('input[type="number"]')];
+    expect(inputs.map((input) => input.value)).toEqual(['800', '']);
+    await React.act(async () => { root.unmount(); });
+
+    document.body.innerHTML = renderTool(ID, {
+      _arithmeticStudio: {
+        tab: 'practice', operation: 'add', level: 2, practiceIndex: 0, practiceProblemId: 'a4',
+        answerInput: '2124', estimateInput: '2100', feedback: 'try',
+      },
+    });
+    expect(document.querySelector('[data-practice-problem-id="a4"]')).toBeTruthy();
+    inputs = [...document.querySelectorAll('input[type="number"]')];
+    expect(inputs.map((input) => input.value)).toEqual(['2100', '2124']);
+  });
+
+  it('requires an explicit division remainder, including an explicit zero', () => {
+    loadTool(FILE, ID);
+    document.body.innerHTML = renderTool(ID, {
+      _arithmeticStudio: { tab: 'practice', operation: 'divide', level: 1, answerInput: '7', estimateInput: '7' },
+    });
+    let inputs = [...document.querySelectorAll('input[type="number"]')];
+    let check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    expect(inputs.map((input) => input.value)).toEqual(['7', '7', '']);
+    expect(inputs[2].required).toBe(true);
+    expect(inputs[2].getAttribute('aria-required')).toBe('true');
+    expect(check.disabled).toBe(true);
+
+    document.body.innerHTML = renderTool(ID, {
+      _arithmeticStudio: { tab: 'practice', operation: 'divide', level: 1, answerInput: '7', estimateInput: '7', remainderInput: 0 },
+    });
+    inputs = [...document.querySelectorAll('input[type="number"]')];
+    check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    expect(inputs[2].value).toBe('0');
+    expect(check.disabled).toBe(false);
+  });
+
+  it('restores and locks canonical practice values and explanation on revisit', () => {
+    loadTool(FILE, ID);
+    document.body.innerHTML = renderTool(ID, {
+      _arithmeticStudio: {
+        tab: 'practice', operation: 'divide', level: 2, practiceIndex: 1,
+        practiceSolved: { d4: true }, estimateInput: '999', answerInput: '0', remainderInput: '0', feedback: 'try',
+      },
+    });
+    expect(document.querySelector('[data-practice-problem-id="d4"]')).toBeTruthy();
+    const inputs = [...document.querySelectorAll('input[type="number"]')];
+    expect(inputs.map((input) => input.value)).toEqual(['40', '43', '3']);
+    expect(inputs.every((input) => input.disabled)).toBe(true);
+    expect(document.body.textContent).toContain('Correct. Your exact answer and estimate support each other.');
+    expect(document.body.textContent).toContain('Result: 43 remainder 3.');
+  });
+
   it('persists the whole-number subtraction clamp when operands change', async () => {
     const tool = loadTool(FILE, ID);
     let latest;
@@ -155,6 +281,7 @@ describe('Arithmetic Strategy Studio', () => {
     const addition = [...document.querySelectorAll('button')].find((button) => button.textContent.includes('Addition'));
     await React.act(async () => { addition.click(); });
     expect(latest._arithmeticStudio).toMatchObject({ operation: 'add', b: 5 });
+    expect(latest._arithmeticStudio.operationsUsed).toBeUndefined();
     await React.act(async () => { root.unmount(); });
   });
 
@@ -175,6 +302,30 @@ describe('Arithmetic Strategy Studio', () => {
     expect(latest._arithmeticStudio).toMatchObject({ errorChoice: 'regroup', errorFeedback: 'correct', errorSolved: 1 });
     expect(awardXP).toHaveBeenCalledTimes(1);
     await React.act(async () => { root.unmount(); });
+  });
+
+  it('restores solved Error Detective choices with dark-safe contrast', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _arithmeticStudio: {
+        tab: 'errors', operation: 'divide', errorIndex: 3,
+        errorSolvedCases: { e4: true }, errorChoice: 'round', errorFeedback: 'try',
+      },
+    }, { isDark: true });
+    document.body.innerHTML = html;
+    const correct = document.querySelector('[data-error-choice="remainder"]');
+    expect(correct.getAttribute('aria-pressed')).toBe('true');
+    expect(correct.disabled).toBe(true);
+    expect(correct.getAttribute('style')).toContain('background:#d1fae5');
+    expect(correct.getAttribute('style')).toContain('color:#0f172a');
+    expect([...document.querySelectorAll('[data-error-choice]')].every((choice) => choice.disabled)).toBe(true);
+    expect(document.body.textContent).toContain('65 = 6');
+    expect(document.body.textContent).toContain('10 + 5');
+
+    const learnDark = renderTool(ID, {
+      _arithmeticStudio: { tab: 'learn', operation: 'divide', a: 65, b: 6 },
+    }, { isDark: true });
+    expect(learnDark).toContain('color:#6ee7b7');
   });
 
   it('renders truthful zero models without invalid numeric styles', () => {

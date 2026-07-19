@@ -178,7 +178,7 @@ describe('Document Builder export boundary hardening', () => {
     await api.handleExportQTI();
 
     expect(zip.generateAsync).not.toHaveBeenCalled();
-    expect(addToast).toHaveBeenCalledWith('No valid multiple-choice questions are ready for QTI export.', 'error');
+    expect(addToast).toHaveBeenCalledWith('No valid assessment questions or reflections are ready for QTI export.', 'error');
   });
 
   it('exports the quiz explicitly selected by the Builder instead of stale generated content', async () => {
@@ -205,6 +205,87 @@ describe('Document Builder export boundary hardening', () => {
     expect(assessment).not.toContain('Stale content');
     expect(zip.generateAsync).toHaveBeenCalledOnce();
 
+  });
+
+  it('exports every Assess item type to QTI with scoring or manual-review metadata', async () => {
+    let zip;
+    window.JSZip = class MockZip {
+      constructor() { zip = this; this.files = new Map(); this.generateAsync = vi.fn().mockResolvedValue(new Blob()); }
+      file(name, value) { this.files.set(name, value); }
+    };
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qti-parity');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const addToast = vi.fn();
+    const api = createExport({ sourceTopic: 'Earth science', addToast, t: (key) => key });
+
+    await api.handleExportQTI({ generatedContent: {
+      type: 'quiz',
+      title: 'Mixed assessment',
+      data: {
+        scoringPolicy: { partialCredit: true },
+        questions: [
+          { type: 'mcq', question: 'Which layer is solid?', options: ['Crust', 'Core'], correctAnswer: 'Crust' },
+          { type: 'multi-select', question: 'Select two rocks.', options: ['Granite', 'Basalt', 'Water'], correctAnswers: ['Granite', 'Basalt'] },
+          { type: 'fill-blank', question: 'Molten rock below ground is ___.', expectedFill: 'magma', acceptableAlternatives: ['magma rock'] },
+          { type: 'short-answer', question: 'Name one weathering process.', expectedAnswer: 'Erosion by water.' },
+          { type: 'self-explanation', question: 'Explain why plates move.', rubric: 'Connect mantle convection to plate movement.' },
+          { type: 'sequence-sense', question: 'Check the rock-cycle order.', items: ['Magma cools', 'Rock forms', 'Rock weathers'], presentedOrder: [1, 0, 2], intentionallyWrongIndex: 0, orderingPrinciple: 'Follow the process over time.' },
+          { type: 'relation-mismatch', question: 'Find the mismatched layer.', pairs: [{ left: 'Crust', right: 'solid' }, { left: 'Mantle', right: 'liquid water' }, { left: 'Core', right: 'metallic' }], wrongPairIndex: 1, correctPartnerForWrong: 'slow-flowing rock', candidatePartners: ['slow-flowing rock', 'liquid water'] },
+          { type: 'answer-evidence', question: 'Which claim is supported?', answerOptions: ['A', 'B'], correctAnswer: 'B', evidencePrompt: 'Choose the evidence.', evidenceOptions: ['E1', 'E2'], correctEvidence: 'E2' },
+          { type: 'numeric-response', question: 'What is the measured distance?', correctValue: 12.5, tolerance: 0.2, unit: 'km', acceptableUnits: ['kilometers'] },
+        ],
+        reflections: [{ prompt: 'What evidence changed your thinking?' }],
+      },
+    } });
+
+    const assessment = zip.files.get('assessment.xml');
+    const parsedAssessment = new DOMParser().parseFromString(assessment, 'application/xml');
+    expect(parsedAssessment.querySelector('parsererror')).toBeNull();
+    for (const type of ['mcq', 'multi-select', 'fill-blank', 'short-answer', 'self-explanation', 'sequence-sense', 'relation-mismatch', 'answer-evidence', 'numeric-response', 'reflection']) {
+      expect(assessment).toContain(`<fieldentry>${type}</fieldentry>`);
+    }
+    expect(assessment.match(/<item ident=/g)).toHaveLength(10);
+    expect(assessment).toContain('rcardinality="Multiple"');
+    expect(assessment).toContain('minnumber="1"');
+    expect(assessment).toContain('<response_num ident="NUM_8"');
+    expect(assessment).toContain('<vargte respident="NUM_8">12.3</vargte>');
+    expect(assessment).toContain('<fieldlabel>alloflow_scoring_guide</fieldlabel>');
+    expect(assessment).toContain('Displayed sequence:');
+    expect(assessment).toContain('Mantle ↔ liquid water');
+    expect(assessment).toContain('What evidence changed your thinking?');
+    expect(zip.generateAsync).toHaveBeenCalledOnce();
+    expect(addToast).not.toHaveBeenCalledWith(expect.stringContaining('omitted'), 'warning');
+  });
+
+  it('preserves all-or-nothing scoring for compound QTI item types', async () => {
+    let zip;
+    window.JSZip = class MockZip {
+      constructor() { zip = this; this.files = new Map(); this.generateAsync = vi.fn().mockResolvedValue(new Blob()); }
+      file(name, value) { this.files.set(name, value); }
+    };
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qti-all-or-nothing');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const api = createExport({ sourceTopic: 'Scoring', addToast: vi.fn(), t: (key) => key });
+
+    await api.handleExportQTI({ generatedContent: {
+      type: 'quiz', title: 'Strict scoring', data: {
+        scoringPolicy: { partialCredit: false },
+        questions: [
+          { type: 'multi-select', question: 'Choose both.', options: ['A', 'B', 'C'], correctAnswers: ['A', 'B'] },
+          { type: 'answer-evidence', question: 'Choose and support.', answerOptions: ['A', 'B'], correctAnswer: 'A', evidenceOptions: ['E1', 'E2'], correctEvidence: 'E1' },
+          { type: 'numeric-response', question: 'Enter value and unit.', correctValue: 4, tolerance: 0, unit: 'm', acceptableUnits: ['meters'] },
+        ],
+      },
+    } });
+
+    const assessment = zip.files.get('assessment.xml');
+    expect(assessment).toContain('title="All correct selections"');
+    expect(assessment).toContain('<not><varequal respident="RESPONSE_0">OPT_2</varequal></not>');
+    expect(assessment).toContain('title="Correct answer and evidence"');
+    expect(assessment).toContain('title="Correct value and unit"');
+    expect(assessment).not.toContain('<setvar action="Add" varname="SCORE">0.5</setvar>');
   });
 
   it('packages the current cleaned Builder document in IMS without rerendering stale history', async () => {
@@ -408,6 +489,52 @@ describe('Document Builder export boundary hardening', () => {
     expect(addToast).toHaveBeenCalledWith('1 incompatible or incomplete item(s) were omitted from the H5P package.', 'warning');
     expect(addToast).toHaveBeenCalledWith('1 external, unsupported, or oversized media asset(s) were omitted from the H5P package.', 'warning');
     expect(addToast).toHaveBeenCalledWith(expect.stringContaining('2 embedded media asset(s) included.'), 'success');
+  });
+
+  it('exports mixed Assess formats as an H5P Question Set with honest adaptations', async () => {
+    let zip;
+    window.JSZip = class MockZip {
+      constructor() { zip = this; this.files = new Map(); this.generateAsync = vi.fn().mockResolvedValue(new Blob()); }
+      file(name, value) { this.files.set(name, value); return this; }
+    };
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:h5p-mixed');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const addToast = vi.fn();
+    const api = createExport({ sourceTopic: 'Mixed assessment', addToast, t: (key) => key });
+
+    expect(await api.handleExportH5P({ generatedContent: {
+      type: 'quiz',
+      title: 'Mixed formats',
+      data: { questions: [
+        { type: 'multi-select', question: 'Select both', options: ['A', 'B', 'C'], correctAnswers: ['A', 'C'] },
+        { type: 'fill-blank', question: 'Water freezes at ___ C.', expectedFill: '0', acceptableAlternatives: ['zero'] },
+        { type: 'short-answer', question: 'Explain the change.', expectedAnswer: 'Particles slow down.' },
+        { type: 'relation-mismatch', question: 'Find the mismatch.', pairs: [{ left: 'A', right: '1' }, { left: 'B', right: '9' }], wrongPairIndex: 1, candidatePartners: ['2', '9'], correctPartnerForWrong: '2' },
+        { type: 'answer-evidence', question: 'Choose and support.', answerOptions: ['Yes', 'No'], correctAnswer: 'Yes', evidencePrompt: 'Best evidence?', evidenceOptions: ['Data', 'Guess'], correctEvidence: 'Data' },
+        { type: 'numeric-response', question: 'Measure it.', correctValue: 10, tolerance: 0.5, unit: 'cm' },
+        { type: 'sequence-sense', question: 'Check the order.', items: ['First', 'Second', 'Third'], presentedOrder: [1, 0, 2], orderingPrinciple: 'chronological' },
+      ] },
+    } })).toBe(true);
+
+    const metadata = JSON.parse(zip.files.get('h5p.json'));
+    expect(metadata.mainLibrary).toBe('H5P.QuestionSet');
+    expect(metadata.preloadedDependencies).toEqual(expect.arrayContaining([
+      { machineName: 'H5P.QuestionSet', majorVersion: 1, minorVersion: 21 },
+      { machineName: 'H5P.MultiChoice', majorVersion: 1, minorVersion: 16 },
+      { machineName: 'H5P.Blanks', majorVersion: 1, minorVersion: 14 },
+      { machineName: 'H5P.Essay', majorVersion: 1, minorVersion: 5 },
+    ]));
+    const content = JSON.parse(zip.files.get('content/content.json'));
+    expect(content.questions).toHaveLength(9);
+    expect(content.questions.map((question) => question.library)).toEqual(expect.arrayContaining([
+      'H5P.MultiChoice 1.16', 'H5P.Blanks 1.14', 'H5P.Essay 1.5',
+    ]));
+    expect(content.questions.find((question) => question.library === 'H5P.Blanks 1.14').params.questions[0]).toContain('*0/zero*');
+    expect(content.questions.filter((question) => question.library === 'H5P.Essay 1.5').every((question) => question.params.behaviour.ignoreScoring)).toBe(true);
+    expect(addToast).toHaveBeenCalledWith('4 assessment item(s) were adapted to equivalent H5P interactions.', 'info');
+    expect(addToast).toHaveBeenCalledWith('3 exported written, sequence, or tolerance-based item(s) are ungraded and require manual review.', 'warning');
+    expect(addToast).toHaveBeenCalledWith(expect.stringContaining('H5P.QuestionSet 1.21'), 'success');
   });
 
   it('refuses unsupported H5P content instead of manufacturing a package', async () => {

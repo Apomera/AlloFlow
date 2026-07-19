@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const itemBanks = require('./speech_language_pathology_5331/item_content.cjs');
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs } = require('./speech_language_pathology_5331/learning_content.cjs');
 const root = path.resolve(__dirname, '..');
@@ -85,6 +86,6 @@ if (chapters.length !== 12 || library.summary.sections !== 48 || library.summary
 const output = JSON.stringify(library, null, 2) + '\n';
 for (const target of [path.join(root, 'test_prep', 'speech_language_pathology_5331_learning_library.json'), path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'speech_language_pathology_5331_learning_library.json')]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, output, 'utf8');
+  writeGeneratedFile(target, output, 'utf8');
 }
 console.log('Built Praxis Speech-Language Pathology 5331 learning library: 12 chapters, 48 sections, 60 checks, 75 flashcards, and 20 memory aids.');

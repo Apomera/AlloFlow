@@ -428,17 +428,35 @@ const renderOutlineContent = (deps) => {
                                         {i + 1}
                                     </div>
                                     <BranchItem branch={b} bIdx={i} colorClass="bg-white border-none shadow-none" />
-                                    {(isBranching || hasExplicitRoute) && (
+                                    {isBranching && (
+                                        <div className="flex items-center gap-1.5 px-4 pb-2 text-[10px] font-black uppercase tracking-wider text-amber-700">
+                                            <GitMerge size={11} aria-hidden="true" /> {t('outline.decision_point') || 'Decision point'}
+                                        </div>
+                                    )}
+                                    {!isBranching && hasExplicitRoute && (
                                         <div className="flex items-center gap-2 px-4 pb-2 flex-wrap">
-                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider flex items-center gap-1"><GitMerge size={11} aria-hidden="true" /> {isBranching ? (t('outline.branches_to') || 'Branches to:') : (t('outline.continues_to') || 'Continues to:')}</span>
+                                            <span className="text-[10px] font-black text-indigo-700 uppercase tracking-wider flex items-center gap-1"><ArrowDown size={11} aria-hidden="true" /> {t('outline.continues_to') || 'Continues to:'}</span>
                                             {targets.map((target) => (
-                                                <span key={target} className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                <span key={target} className="text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-full">
                                                     {t('outline.step_target', { number: target + 1, title: branches[target]?.title || '?' }) || ('Step ' + (target + 1) + ': ' + (branches[target]?.title || '?'))}
                                                 </span>
                                             ))}
                                         </div>
                                     )}
                                 </div>
+                                {isBranching && (
+                                    <div role="group" className="w-full max-w-2xl flex flex-col items-center" aria-label={(t('outline.branches_to') || 'Branches to') + ' ' + targets.map(target => `step ${target + 1}`).join(', ')}>
+                                        <div className="h-5 w-0.5 bg-amber-400" aria-hidden="true"></div>
+                                        <div className="w-4/5 border-t-2 border-amber-400 pt-2 flex flex-wrap justify-around gap-2">
+                                            {targets.map((target) => (
+                                                <div key={target} className="min-w-[10rem] max-w-[16rem] flex-1 text-center text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300 px-3 py-2 rounded-xl shadow-sm">
+                                                    <ArrowDown size={13} className="inline mr-1" aria-hidden="true" />
+                                                    {t('outline.step_target', { number: target + 1, title: branches[target]?.title || '?' }) || ('Step ' + (target + 1) + ': ' + (branches[target]?.title || '?'))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             );
                         })}

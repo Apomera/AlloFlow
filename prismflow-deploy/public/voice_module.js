@@ -328,6 +328,8 @@
     var tickInterval = null;
     var maxDurationTimer = null;
     var isRec = false;
+    var pendingStop = false;
+    var pendingCancel = false;
     var resolveResult, rejectResult;
 
     var resultPromise = new Promise(function (res, rej) {
@@ -374,6 +376,10 @@
       }
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
         stream = s;
+        if (pendingCancel) {
+          cleanup();
+          return;
+        }
         // Fire onStream BEFORE constructing the MediaRecorder so callers
         // (e.g. Oratory) can wire AudioContext + AnalyserNode against the
         // raw stream. We swallow callback errors so a misbehaving observer
@@ -445,6 +451,10 @@
         maxDurationTimer = setTimeout(function () {
           if (isRec) { stopReason = 'auto'; try { rec.stop(); } catch (e) { /* ignore */ } }
         }, maxDurationMs);
+        if (pendingStop && isRec) {
+          stopReason = 'stop';
+          try { rec.stop(); } catch (e) { /* ignore */ }
+        }
       }).catch(function (err) {
         cleanup();
         var msg = (err && err.name === 'NotAllowedError')
@@ -458,14 +468,15 @@
     }
 
     function stopExternal() {
-      if (!isRec || !rec) return;
+      if (!isRec || !rec) { pendingStop = true; return; }
       stopReason = 'stop';
       try { rec.stop(); } catch (e) { /* ignore */ }
     }
 
     function cancelExternal() {
-      if (!isRec) return;
+      pendingCancel = true;
       stopReason = 'cancel';
+      if (!isRec) { rejectResult(new Error('cancelled')); return; }
       try { if (rec) rec.stop(); } catch (e) { /* ignore */ }
       cleanup();
     }
@@ -722,6 +733,277 @@
     return Promise.reject(new Error('Unknown engine: ' + engine));
   }
 
+  // Unified dictation session controller. All microphone entry points can use
+  // this service, which arbitrates a single active session and reports the
+  // actual engine/privacy boundary instead of making each view guess.
+  var activeDictationController = null;
+  var activeDictationStatus = {
+    state: 'idle', engine: null, engineLabel: '', privacy: '', message: ''
+  };
+  var dictationStatusObservers = [];
+
+  function _copyDictationStatus(status) {
+    return Object.assign({}, status || activeDictationStatus);
+  }
+
+  function _publishDictationStatus(status) {
+    activeDictationStatus = _copyDictationStatus(status);
+    for (var i = 0; i < dictationStatusObservers.length; i++) {
+      try { dictationStatusObservers[i](_copyDictationStatus(activeDictationStatus)); } catch (e) { /* observer isolation */ }
+    }
+  }
+
+  function subscribeToDictationStatus(callback) {
+    if (typeof callback !== 'function') return function () {};
+    dictationStatusObservers.push(callback);
+    try { callback(_copyDictationStatus(activeDictationStatus)); } catch (e) { /* observer isolation */ }
+    return function () {
+      var index = dictationStatusObservers.indexOf(callback);
+      if (index !== -1) dictationStatusObservers.splice(index, 1);
+    };
+  }
+
+  function getActiveDictationStatus() {
+    return _copyDictationStatus(activeDictationStatus);
+  }
+
+  function stopActiveDictation(discard) {
+    if (!activeDictationController) return false;
+    if (discard && typeof activeDictationController.abort === 'function') activeDictationController.abort('external');
+    else activeDictationController.stop();
+    return true;
+  }
+
+  function isDictationSupported() {
+    var prefs = loadPreference();
+    if (prefs.engine === 'off') return false;
+    var caps = getCapabilities();
+    return !!(caps.webSpeech || caps.mediaRecorder);
+  }
+
+  function _cleanDictationTranscript(value) {
+    return String(value || '').replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function createDictationController(opts) {
+    opts = opts || {};
+    var session = null;
+    var state = 'idle';
+    var generation = 0;
+    var stoppedByUser = false;
+    var resultListeners = [];
+    var engineMeta = { engine: null, engineLabel: '', privacy: '' };
+
+    function statusFor(nextState, detail) {
+      detail = detail || {};
+      return {
+        state: nextState,
+        engine: detail.engine !== undefined ? detail.engine : engineMeta.engine,
+        engineLabel: detail.engineLabel !== undefined ? detail.engineLabel : engineMeta.engineLabel,
+        privacy: detail.privacy !== undefined ? detail.privacy : engineMeta.privacy,
+        message: detail.message || '',
+        reason: detail.reason || '',
+        error: detail.error || null
+      };
+    }
+
+    function setState(nextState, detail) {
+      state = nextState;
+      var payload = statusFor(nextState, detail);
+      _publishDictationStatus(payload);
+      if (typeof opts.onStateChange === 'function') {
+        try { opts.onStateChange(_copyDictationStatus(payload)); } catch (e) { /* observer isolation */ }
+      }
+      return payload;
+    }
+
+    function releaseActive() {
+      if (activeDictationController === controller) activeDictationController = null;
+    }
+
+    function emitTranscript(raw, isFinal) {
+      var transcript = _cleanDictationTranscript(raw);
+      if (!transcript) return;
+      if (typeof opts.onTranscript === 'function') {
+        try { opts.onTranscript(transcript, isFinal !== false); } catch (e) { /* consumer isolation */ }
+      }
+      var alternative = { transcript: transcript, confidence: 0.9 };
+      var result = [alternative];
+      result.isFinal = isFinal !== false;
+      var event = { results: [result], resultIndex: 0 };
+      resultListeners.slice().forEach(function (listener) {
+        try { listener(event); } catch (e) { /* consumer isolation */ }
+      });
+    }
+    function fail(error, fallbackMessage) {
+      var err = error instanceof Error ? error : new Error((error && error.error) || fallbackMessage || 'Dictation unavailable');
+      releaseActive();
+      setState('error', {
+        message: fallbackMessage || err.message || 'Dictation unavailable.',
+        reason: (error && error.error) || 'error',
+        error: err
+      });
+      if (typeof opts.onError === 'function') {
+        try { opts.onError(error || err); } catch (e) { /* consumer isolation */ }
+      }
+      return false;
+    }
+
+    function startRecordedEngine(requestedEngine, meta, myGeneration) {
+      engineMeta = meta;
+      setState('starting', { message: 'Starting microphone...' });
+      session = recordAudioBlob({
+        maxDurationMs: typeof opts.maxDurationMs === 'number' ? opts.maxDurationMs : 60000,
+        onStream: function () {
+          if (generation === myGeneration && activeDictationController === controller) {
+            setState('listening', { message: meta.engineLabel + ' is listening. Stop when you are finished.' });
+          }
+        }
+      });
+      if (!session.supported) return fail(new Error('Audio recording is not supported.'), 'Audio recording is not supported in this browser.');
+      session.result.then(function (audio) {
+        if (generation !== myGeneration || activeDictationController !== controller) return;
+        setState('transcribing', { message: 'Transcribing with ' + meta.engineLabel + '...' });
+        return transcribeAudio(audio.base64, {
+          engine: requestedEngine,
+          tier: opts.tier || loadPreference().whisperTier,
+          lang: opts.lang || loadPreference().lang,
+          mimeType: audio.mimeType,
+          callGeminiAudio: opts.callGeminiAudio
+        });
+      }).then(function (result) {
+        if (!result || generation !== myGeneration || activeDictationController !== controller) return;
+        emitTranscript(result.transcript, true);
+        releaseActive();
+        setState('idle', { message: result.transcript ? 'Dictation added.' : 'No speech detected.', reason: 'completed' });
+        if (typeof opts.onEnd === 'function') opts.onEnd({ reason: 'completed' });
+      }).catch(function (error) {
+        if (generation !== myGeneration) return;
+        if (error && error.message === 'cancelled') {
+          releaseActive();
+          setState('idle', { message: '', reason: 'cancelled' });
+          return;
+        }
+        fail(error, error && error.message ? error.message : 'Could not transcribe that recording.');
+      });
+      return true;
+    }
+    function startWebSpeech(meta, myGeneration) {
+      engineMeta = meta;
+      setState('starting', { message: 'Starting microphone...' });
+      session = initWebSpeechCapture({
+        lang: opts.lang || loadPreference().lang || 'en-US',
+        continuous: opts.continuous !== false,
+        interimResults: !!opts.interimResults,
+        restartOnEnd: !!opts.restartOnEnd,
+        onTranscript: function (transcript, isFinal) {
+          if (generation === myGeneration && activeDictationController === controller) emitTranscript(transcript, isFinal);
+        },
+        onError: function (error) {
+          if (generation !== myGeneration) return;
+          var code = error && error.error;
+          if (stoppedByUser || code === 'aborted') return;
+          if (code === 'no-speech') {
+            if (!opts.restartOnEnd) {
+              releaseActive();
+              setState('idle', { message: 'No speech detected.', reason: 'no-speech' });
+            }
+            return;
+          }
+          fail(error, code === 'not-allowed' || code === 'permission-denied'
+            ? 'Microphone permission was not granted.'
+            : meta.engineLabel + ' is unavailable.');
+        },
+        onEnd: function () {
+          if (generation !== myGeneration) return;
+          if (opts.restartOnEnd && !stoppedByUser) return;
+          releaseActive();
+          setState('idle', { message: '', reason: stoppedByUser ? 'stopped' : 'completed' });
+          if (typeof opts.onEnd === 'function') opts.onEnd({ reason: stoppedByUser ? 'stopped' : 'completed' });
+        }
+      });
+      if (!session.supported || !session.start()) return fail(new Error('Speech recognition unavailable'), meta.engineLabel + ' is unavailable.');
+      setState('listening', { message: meta.engineLabel + ' is listening.' });
+      return true;
+    }
+
+    function start() {
+      if (state === 'starting' || state === 'listening' || state === 'transcribing') return true;
+      if (activeDictationController && activeDictationController !== controller) {
+        activeDictationController.abort('replaced');
+      }
+      activeDictationController = controller;
+      stoppedByUser = false;
+      generation += 1;
+      var myGeneration = generation;
+      var prefs = loadPreference();
+      var requested = opts.engine || prefs.engine || 'auto';
+      var caps = getCapabilities();
+      var localDesktopWhisper = !!window.__alloLocalSRShim && caps.webSpeech;
+
+      if (requested === 'off') return fail(new Error('Voice input is off'), 'Voice input is turned off in settings.');
+      if (localDesktopWhisper && requested !== 'gemini') {
+        return startWebSpeech({ engine: 'local-whisper', engineLabel: 'On-device Whisper', privacy: 'Audio stays on this device.' }, myGeneration);
+      }
+      if ((requested === 'whisper' || requested === 'best' || (requested === 'auto' && isWhisperLoaded())) && caps.mediaRecorder) {
+        return startRecordedEngine('whisper', { engine: 'browser-whisper', engineLabel: 'Browser Whisper', privacy: 'Audio stays in this browser.' }, myGeneration);
+      }
+      if (requested === 'gemini' && caps.mediaRecorder && typeof opts.callGeminiAudio === 'function') {
+        return startRecordedEngine('gemini', { engine: 'gemini-audio', engineLabel: 'Cloud AI transcription', privacy: 'Audio is sent to the configured AI provider.' }, myGeneration);
+      }
+      if (caps.webSpeech) {
+        return startWebSpeech({ engine: 'web-speech', engineLabel: 'Browser speech service', privacy: 'Your browser may send audio to its speech provider.' }, myGeneration);
+      }
+      if ((requested === 'whisper' || requested === 'best') && !caps.mediaRecorder) {
+        return fail(new Error('MediaRecorder unavailable'), 'Browser Whisper needs audio recording support.');
+      }
+      return fail(new Error('No speech engine available'), 'Speech-to-text is not available on this device.');
+    }
+    function stop() {
+      if (state === 'idle' || state === 'error') return;
+      stoppedByUser = true;
+      if (session && typeof session.stop === 'function') {
+        try { session.stop(); } catch (e) { fail(e, 'Could not stop dictation.'); }
+      }
+      if (engineMeta.engine === 'browser-whisper' || engineMeta.engine === 'gemini-audio') {
+        setState('transcribing', { message: 'Transcribing with ' + engineMeta.engineLabel + '...' });
+      }
+    }
+
+    function abort(reason) {
+      generation += 1;
+      stoppedByUser = true;
+      if (session) {
+        try {
+          if (typeof session.cancel === 'function') session.cancel();
+          else if (typeof session.stop === 'function') session.stop();
+        } catch (e) { /* teardown should be best-effort */ }
+      }
+      session = null;
+      releaseActive();
+      setState('idle', { message: '', reason: reason || 'cancelled' });
+    }
+
+    var controller = {
+      supported: isDictationSupported(),
+      start: start,
+      stop: stop,
+      abort: abort,
+      cancel: abort,
+      isActive: function () { return state === 'starting' || state === 'listening' || state === 'transcribing'; },
+      getState: function () { return state; },
+      getStatus: function () { return statusFor(state, {}); },
+      addEventListener: function (type, listener) {
+        if (type === 'result' && typeof listener === 'function' && resultListeners.indexOf(listener) === -1) resultListeners.push(listener);
+      },
+      removeEventListener: function (type, listener) {
+        if (type !== 'result') return;
+        var index = resultListeners.indexOf(listener);
+        if (index !== -1) resultListeners.splice(index, 1);
+      }
+    };
+    return controller;
+  }
   // ── Gemini multimodal audio (Phase 3v.4) ──────────────────────────
   // Sends audio + a structured rubric prompt to Gemini in a single call.
   // The model returns transcript + 1-20 score + ack + follow-up as JSON,
@@ -893,13 +1175,21 @@
     buildJustificationRubricPrompt: buildJustificationRubricPrompt,
     parseRubricResponse: parseRubricResponse,
 
+    // Phase 3v.5 - shared session arbitration + honest engine status
+    createDictationController: createDictationController,
+    isDictationSupported: isDictationSupported,
+    getActiveDictationStatus: getActiveDictationStatus,
+    subscribeToDictationStatus: subscribeToDictationStatus,
+    stopActiveDictation: stopActiveDictation,
+
     // Phase / version markers — let callers detect what's actually wired.
-    _phase: '3v.4',
+    _phase: '3v.5',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference',
       'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
       'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress',
-      'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse'
+      'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse',
+      'createDictationController', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation'
     ]
   };
 
@@ -914,6 +1204,6 @@
   window.AlloModules.Voice = window.AlloFlowVoice;
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.4');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.5');
   }
 })();

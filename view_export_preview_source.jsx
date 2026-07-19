@@ -118,20 +118,58 @@ function _builderH5PCompatibility(item) {
   const plain = (value) => String(value == null ? '' : value).trim();
   if (type === 'quiz') {
     const questions = Array.isArray(item?.data?.questions) ? item.data.questions : [];
-    const valid = questions.filter((question) => {
-      const options = Array.isArray(question?.options) ? question.options.map(plain) : [];
-      let correctIndex = Number.isInteger(question?.correctIndex) ? question.correctIndex : -1;
-      if (correctIndex < 0) correctIndex = options.findIndex((option) => option === plain(question?.correctAnswer));
-      return plain(question?.question) && options.length >= 2 && options.length <= 4
-        && options.every(Boolean) && correctIndex >= 0 && correctIndex < options.length;
-    }).length;
+    const allMcq = questions.length > 0 && questions.every((question) => !question?.type || question.type === 'mcq');
+    let valid = 0;
+    let adapted = 0;
+    let manualReview = 0;
+    questions.forEach((question = {}) => {
+      const kind = question.type || 'mcq';
+      const prompt = plain(question.question);
+      let ready = false;
+      if (kind === 'mcq') {
+        const options = Array.isArray(question.options) ? question.options.map(plain) : [];
+        const key = Number.isInteger(question.correctIndex) ? question.correctIndex : options.indexOf(plain(question.correctAnswer));
+        ready = !!prompt && options.length >= 2 && (!allMcq || options.length <= 4) && options.every(Boolean) && key >= 0;
+      } else if (kind === 'multi-select') {
+        const options = Array.isArray(question.options) ? question.options.map(plain) : [];
+        const keys = Array.isArray(question.correctAnswers) ? question.correctAnswers.map(plain) : [];
+        ready = !!prompt && options.length >= 2 && keys.length > 0 && keys.every((key) => options.includes(key));
+      } else if (kind === 'fill-blank') {
+        ready = !!prompt && !!plain(question.expectedFill);
+      } else if (kind === 'short-answer' || kind === 'self-explanation') {
+        ready = !!prompt;
+        if (ready) manualReview += 1;
+      } else if (kind === 'sequence-sense') {
+        ready = !!prompt && Array.isArray(question.items) && question.items.length >= 3;
+        if (ready) { adapted += 1; manualReview += 1; }
+      } else if (kind === 'relation-mismatch') {
+        const wrong = Number(question.wrongPairIndex);
+        ready = !!prompt && Array.isArray(question.pairs) && question.pairs.length >= 2
+          && Number.isInteger(wrong) && wrong >= 0 && wrong < question.pairs.length
+          && Array.isArray(question.candidatePartners) && question.candidatePartners.length >= 2 && question.candidatePartners.includes(question.correctPartnerForWrong);
+        if (ready) adapted += 1;
+      } else if (kind === 'answer-evidence') {
+        ready = !!prompt && Array.isArray(question.answerOptions) && question.answerOptions.length >= 2 && question.answerOptions.includes(question.correctAnswer)
+          && Array.isArray(question.evidenceOptions) && question.evidenceOptions.length >= 2 && question.evidenceOptions.includes(question.correctEvidence);
+        if (ready) adapted += 1;
+      } else if (kind === 'numeric-response') {
+        ready = !!prompt && Number.isFinite(Number(question.correctValue));
+        if (ready) {
+          adapted += 1;
+          if (Number(question.tolerance) > 0) manualReview += 1;
+        }
+      }
+      if (ready) valid += 1;
+    });
     return {
       type,
       unit: 'question',
-      library: 'Single Choice Set 1.11',
+      library: allMcq ? 'Single Choice Set 1.11' : 'Question Set 1.21',
       total: questions.length,
       valid,
       omitted: questions.length - valid,
+      adapted,
+      manualReview,
       embeddedMedia: 0,
       omittedMedia: 0,
       ready: valid > 0,
@@ -1637,10 +1675,12 @@ function ExportPreviewView(props) {
                           <div id="h5p-compatibility-summary" role="status" className={`px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? (h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? 'text-amber-700' : 'text-emerald-700') : 'text-red-700'}`}>
                             {h5pCompatibility.valid} of {h5pCompatibility.total} {h5pCompatibility.unit}{h5pCompatibility.total === 1 ? '' : 's'} ready for {h5pCompatibility.library || 'H5P'}.
                             {h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : ''}
+                            {h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : ''}
+                            {h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : ''}
                             {h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : ''}
                             {h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ''}
                           </div>
-                          <div className="px-2 text-[10px] leading-tight text-slate-500">Quiz exports as Single Choice Set; glossary and flashcards export as Dialog Cards. The destination needs that official H5P content type installed.</div>
+                          <div className="px-2 text-[10px] leading-tight text-slate-500">MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.</div>
                         </>}
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Content package</div>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('ims')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'ims' ? 'Building IMS...' : 'IMS content package'}</button>

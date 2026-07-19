@@ -89,6 +89,117 @@ var _lazyIcon = function (name) {
     }
     return copy;
   }
+  var _QUIZ_DRAFT_STORAGE_PREFIX = 'alloflow_assess_draft_v1:';
+  var _QUIZ_DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+  function _quizDraftNamespace(data, sessionCode) {
+    var questions = data && Array.isArray(data.questions) ? data.questions : [];
+    var reflections = data && Array.isArray(data.reflections) ? data.reflections : data && data.reflection ? [data.reflection] : [];
+    var identity = JSON.stringify({
+      title: data && data.title || '',
+      questions: questions.map(function (q) {
+        return {
+          type: q && q.type || 'mcq',
+          question: q && q.question || '',
+          options: q && (q.options || q.answerOptions || q.evidenceOptions || q.items || q.pairs) || [],
+          key: q && (q.correctAnswer || q.correctAnswers || q.expectedFill || q.expectedAnswer || q.correctValue || q.correctPartnerForWrong || q.rubric) || ''
+        };
+      }),
+      reflections: reflections
+    });
+    var hash = 2166136261;
+    for (var i = 0; i < identity.length; i++) {
+      hash ^= identity.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return _QUIZ_DRAFT_STORAGE_PREFIX + String(sessionCode || 'local') + ':' + (hash >>> 0).toString(36);
+  }
+  function _quizReadDraft(namespace) {
+    if (!namespace || typeof window === 'undefined' || !window.localStorage) return null;
+    try {
+      var raw = window.localStorage.getItem(namespace);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || parsed.version !== 1 || !parsed.items || typeof parsed.items !== 'object') return null;
+      if (!Number.isFinite(Number(parsed.updatedAt)) || Date.now() - Number(parsed.updatedAt) > _QUIZ_DRAFT_MAX_AGE_MS) {
+        window.localStorage.removeItem(namespace);
+        return null;
+      }
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+  function _quizReadDraftField(namespace, itemKey, field) {
+    var draft = _quizReadDraft(namespace);
+    var item = draft && draft.items && draft.items[itemKey];
+    return item && Object.prototype.hasOwnProperty.call(item, field) ? { found: true, value: item[field] } : { found: false, value: undefined };
+  }
+  function _quizWriteDraftField(namespace, itemKey, field, value) {
+    if (!namespace || typeof window === 'undefined' || !window.localStorage) return false;
+    try {
+      var draft = _quizReadDraft(namespace) || { version: 1, createdAt: Date.now(), items: {} };
+      draft.items[itemKey] = Object.assign({}, draft.items[itemKey] || {});
+      draft.items[itemKey][field] = value;
+      draft.updatedAt = Date.now();
+      window.localStorage.setItem(namespace, JSON.stringify(draft));
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-saved', { detail: { namespace: namespace, updatedAt: draft.updatedAt } }));
+      } catch (eventError) {}
+      return true;
+    } catch (e) {
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-error', { detail: { namespace: namespace } }));
+      } catch (eventError) {}
+      return false;
+    }
+  }
+  function _quizUseDraftField(namespace, itemKey, field, initialValue) {
+    var restoredRef = React.useRef(false);
+    var mountedRef = React.useRef(false);
+    var state = React.useState(function () {
+      var stored = _quizReadDraftField(namespace, itemKey, field);
+      if (stored.found) {
+        restoredRef.current = true;
+        return stored.value;
+      }
+      return typeof initialValue === 'function' ? initialValue() : initialValue;
+    });
+    React.useEffect(function () {
+      if (!namespace) return;
+      if (!mountedRef.current) {
+        mountedRef.current = true;
+        return;
+      }
+      var timer = window.setTimeout(function () {
+        _quizWriteDraftField(namespace, itemKey, field, state[0]);
+      }, 350);
+      return function () { window.clearTimeout(timer); };
+    }, [namespace, itemKey, field, state[0]]);
+    return [state[0], state[1], restoredRef.current];
+  }
+  function AssessmentDraftStatus(p) {
+    var initial = _quizReadDraft(p.namespace);
+    var statusState = React.useState(initial ? { state: 'restored', updatedAt: initial.updatedAt } : { state: 'idle', updatedAt: null });
+    var status = statusState[0];
+    var setStatus = statusState[1];
+    React.useEffect(function () {
+      function saved(event) {
+        if (event && event.detail && event.detail.namespace === p.namespace) setStatus({ state: 'saved', updatedAt: event.detail.updatedAt });
+      }
+      function failed(event) {
+        if (event && event.detail && event.detail.namespace === p.namespace) setStatus({ state: 'error', updatedAt: null });
+      }
+      window.addEventListener('alloflow:assessment-draft-saved', saved);
+      window.addEventListener('alloflow:assessment-draft-error', failed);
+      return function () {
+        window.removeEventListener('alloflow:assessment-draft-saved', saved);
+        window.removeEventListener('alloflow:assessment-draft-error', failed);
+      };
+    }, [p.namespace]);
+    var timeLabel = status.updatedAt ? new Date(status.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+    var message = status.state === 'restored' ? 'Restored your saved work from this device.' : status.state === 'saved' ? 'Saved locally' + (timeLabel ? ' at ' + timeLabel : '') + '.' : status.state === 'error' ? 'Local autosave is unavailable in this browser.' : 'Answers save automatically on this device.';
+    return <div className={'rounded-lg border px-3 py-2 flex items-center gap-2 text-xs ' + (status.state === 'error' ? 'bg-amber-50 border-amber-300 text-amber-900' : status.state === 'restored' ? 'bg-sky-50 border-sky-200 text-sky-900' : 'bg-white border-slate-200 text-slate-700')} role="status" aria-live="polite"><span aria-hidden="true">{status.state === 'error' ? '⚠' : status.state === 'restored' ? '↻' : '✓'}</span><span><strong>{message}</strong><span className="ml-1 text-slate-500">Drafts expire after 7 days.</span></span></div>;
+  }
   function SequenceSenseCard(p) {
     var q = p.q;
     var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
@@ -166,7 +277,8 @@ var _lazyIcon = function (name) {
         } catch (e) {}
       }
     }
-    var presentedOrderState = React.useState(function () {
+    var draftItemKey = 'q-' + p.questionIdx;
+    var presentedOrderState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'presentedOrder', function () {
       if (Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonicalItems.length) {
         return q.presentedOrder.slice();
       }
@@ -182,19 +294,19 @@ var _lazyIcon = function (name) {
       return indices;
     });
     var presentedOrder = presentedOrderState[0];
-    var stepState = React.useState(1);
+    var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', 1);
     var step = stepState[0];
     var setStep = stepState[1];
-    var verifyState = React.useState(null);
+    var verifyState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'verifyAnswer', null);
     var verifyAnswer = verifyState[0];
     var setVerifyAnswer = verifyState[1];
-    var clickedState = React.useState(null);
+    var clickedState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'clickedIdx', null);
     var clickedIdx = clickedState[0];
     var setClickedIdx = clickedState[1];
-    var principleState = React.useState(null);
+    var principleState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'principleAnswer', null);
     var principleAnswer = principleState[0];
     var setPrincipleAnswer = principleState[1];
-    var gradeState = React.useState(null);
+    var gradeState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'grade', null);
     var grade = gradeState[0];
     var setGrade = gradeState[1];
     function answerVerify(ans) {
@@ -216,8 +328,10 @@ var _lazyIcon = function (name) {
         step2Correct = clickedIdx === intentionallyWrongIndex;
       }
       var step3Correct = p2 === orderingPrinciple;
-      var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
-      var status = score === 3 ? 'correct' : score === 2 ? 'partially-correct' : 'incorrect';
+      var rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+      var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
+      var score = partialCredit ? rawScore : (rawScore === 3 ? 3 : 0);
+      var status = score === 3 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
       setGrade({
         step1Correct: step1Correct,
         step2Correct: step2Correct,
@@ -302,16 +416,17 @@ var _lazyIcon = function (name) {
     var wrongPairIndex = typeof q.wrongPairIndex === 'number' ? q.wrongPairIndex : 0;
     var correctPartnerForWrong = q.correctPartnerForWrong || '';
     var candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
-    var stepState = React.useState(1);
+    var draftItemKey = 'q-' + p.questionIdx;
+    var stepState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'step', 1);
     var step = stepState[0];
     var setStep = stepState[1];
-    var clickedPairState = React.useState(null);
+    var clickedPairState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'clickedPairIdx', null);
     var clickedPairIdx = clickedPairState[0];
     var setClickedPairIdx = clickedPairState[1];
-    var partnerAnswerState = React.useState(null);
+    var partnerAnswerState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'partnerAnswer', null);
     var partnerAnswer = partnerAnswerState[0];
     var setPartnerAnswer = partnerAnswerState[1];
-    var gradeState = React.useState(null);
+    var gradeState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'grade', null);
     var grade = gradeState[0];
     var setGrade = gradeState[1];
     var modeStrat = p.modeStrategy || null;
@@ -393,8 +508,10 @@ var _lazyIcon = function (name) {
       setPartnerAnswer(ans);
       var step1Correct = clickedPairIdx === wrongPairIndex;
       var step2Correct = ans === correctPartnerForWrong;
-      var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0);
-      var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
+      var rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0);
+      var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
+      var score = partialCredit ? rawScore : (rawScore === 2 ? 2 : 0);
+      var status = score === 2 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
       setGrade({
         step1Correct: step1Correct,
         step2Correct: step2Correct,
@@ -1220,7 +1337,8 @@ var _lazyIcon = function (name) {
     var q = p.q;
     var options = Array.isArray(q.options) ? q.options : [];
     var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
-    var selectedState = React.useState([]);
+    var draftItemKey = 'q-' + p.questionIdx;
+    var selectedState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'selected', []);
     var selected = selectedState[0];
     var setSelected = selectedState[1];
     var gradeState = React.useState(null);
@@ -1229,7 +1347,7 @@ var _lazyIcon = function (name) {
     var submittedAnswerState = React.useState(null);
     var submittedAnswer = submittedAnswerState[0];
     var setSubmittedAnswer = submittedAnswerState[1];
-    var confidenceState = React.useState(null);
+    var confidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'confidence', null);
     var confidence = confidenceState[0];
     var setConfidence = confidenceState[1];
     var renderRules = p.modeStrategy && p.modeStrategy.render || {};
@@ -1245,8 +1363,9 @@ var _lazyIcon = function (name) {
       var selectedCorrect = selected.filter(function (idx) { return correctIndices.indexOf(idx) !== -1; }).length;
       var selectedWrong = selected.length - selectedCorrect;
       var earned = Math.max(0, selectedCorrect - selectedWrong);
-      var score = Math.round(100 * earned / Math.max(1, correctIndices.length));
       var exact = selectedWrong === 0 && selectedCorrect === correctIndices.length;
+      var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
+      var score = partialCredit ? Math.round(100 * earned / Math.max(1, correctIndices.length)) : (exact ? 100 : 0);
       var status = exact ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
       var answer = { selectedIndices: selected.slice(), selectedTexts: selected.map(function (idx) { return options[idx]; }), status: status, score: score };
       setGrade({ status: status, score: score, selectedCorrect: selectedCorrect, selectedWrong: selectedWrong, totalCorrect: correctIndices.length });
@@ -1266,7 +1385,7 @@ var _lazyIcon = function (name) {
     function reset() { setSelected([]); setGrade(null); setSubmittedAnswer(null); setConfidence(null); }
     if (options.length === 0) return null;
     var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Multi-select</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><p className="text-[11px] text-slate-500 mt-1">Select every correct answer. Incorrect selections reduce partial credit.</p></div></div><div className="space-y-2">{options.map(function (opt, idx) {
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Multi-select</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><p className="text-[11px] text-slate-500 mt-1">{(!p.scoringPolicy || p.scoringPolicy.partialCredit !== false) ? 'Select every correct answer. Incorrect selections reduce partial credit.' : 'Select every correct answer. This item uses all-or-nothing scoring.'}</p></div></div><div className="space-y-2">{options.map(function (opt, idx) {
       var active = selected.indexOf(idx) !== -1;
       return <button key={idx} type="button" aria-pressed={active} disabled={!!grade} onClick={function () { toggleOption(idx); }} className={'w-full flex items-start gap-2 text-left px-3 py-2 rounded-lg border text-sm transition-colors motion-reduce:transition-none disabled:cursor-default ' + (active ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}><span aria-hidden="true" className={'mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ' + (active ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400')}>{active ? '✓' : ''}</span><span>{opt}</span></button>;
     })}</div>{!grade && <div className="mt-3 flex items-center gap-2 flex-wrap"><button type="button" onClick={submit} disabled={selected.length === 0} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check selections</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ All correct' : grade.status === 'partially-correct' ? grade.score + '% partial credit' : 'Not yet — review your selections'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{grade.selectedCorrect + ' of ' + grade.totalCorrect + ' correct choices selected' + (grade.selectedWrong ? '; ' + grade.selectedWrong + ' incorrect choice' + (grade.selectedWrong === 1 ? '' : 's') + ' selected.' : '.')}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
@@ -1275,10 +1394,11 @@ var _lazyIcon = function (name) {
     var q = p.q;
     var answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
     var evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
-    var answerState = React.useState(null);
+    var draftItemKey = 'q-' + p.questionIdx;
+    var answerState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'answerIdx', null);
     var answerIdx = answerState[0];
     var setAnswerIdx = answerState[1];
-    var evidenceState = React.useState(null);
+    var evidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'evidenceIdx', null);
     var evidenceIdx = evidenceState[0];
     var setEvidenceIdx = evidenceState[1];
     var gradeState = React.useState(null);
@@ -1287,7 +1407,7 @@ var _lazyIcon = function (name) {
     var submittedState = React.useState(null);
     var submitted = submittedState[0];
     var setSubmitted = submittedState[1];
-    var confidenceState = React.useState(null);
+    var confidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'confidence', null);
     var confidence = confidenceState[0];
     var setConfidence = confidenceState[1];
     var renderRules = p.modeStrategy && p.modeStrategy.render || {};
@@ -1295,8 +1415,10 @@ var _lazyIcon = function (name) {
       if (answerIdx === null || evidenceIdx === null) return;
       var answerCorrect = answers[answerIdx] === q.correctAnswer;
       var evidenceCorrect = evidence[evidenceIdx] === q.correctEvidence;
-      var score = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
-      var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
+      var rawScore = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
+      var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
+      var score = partialCredit ? rawScore : (rawScore === 2 ? 2 : 0);
+      var status = score === 2 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
       var payload = { answerIdx: answerIdx, answerText: answers[answerIdx], evidenceIdx: evidenceIdx, evidenceText: evidence[evidenceIdx], answerCorrect: answerCorrect, evidenceCorrect: evidenceCorrect, score: score, status: status };
       setGrade(payload);
       setSubmitted(payload);
@@ -1312,19 +1434,114 @@ var _lazyIcon = function (name) {
     }
     return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Answer + evidence</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p></div></div><div className="space-y-4"><div><p className="text-xs font-bold text-slate-700 mb-2">Part 1 — Choose the best answer</p>{optionGrid(answers, answerIdx, setAnswerIdx, !!grade)}</div>{answerIdx !== null && <div><p className="text-xs font-bold text-slate-700 mb-2">{'Part 2 — ' + (q.evidencePrompt || 'Which evidence or reason best supports your answer?')}</p>{optionGrid(evidence, evidenceIdx, setEvidenceIdx, !!grade)}</div>}</div>{!grade && <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={answerIdx === null || evidenceIdx === null} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check both parts</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'both parts correct' : grade.status === 'partially-correct' ? 'one part correct' : 'needs review')}</div>{grade.status !== 'idk' && <ul className={'mt-1 text-xs text-' + color + '-900'}><li>{(grade.answerCorrect ? '✓ ' : '✗ ') + 'Answer'}</li><li>{(grade.evidenceCorrect ? '✓ ' : '✗ ') + 'Supporting evidence or reason'}</li></ul>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
   }
+  function _quizParseIntegerWords(tokens) {
+    var ones = { zero: 0, oh: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
+    var tens = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+    var total = 0;
+    var current = 0;
+    var consumed = 0;
+    var sawNumber = false;
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i];
+      if (Object.prototype.hasOwnProperty.call(ones, token)) {
+        current += ones[token];
+        sawNumber = true;
+      } else if (Object.prototype.hasOwnProperty.call(tens, token)) {
+        current += tens[token];
+        sawNumber = true;
+      } else if (/^\d+$/.test(token)) {
+        current += Number(token);
+        sawNumber = true;
+      } else if (token === 'hundred' && sawNumber) {
+        current = (current || 1) * 100;
+      } else if ((token === 'thousand' || token === 'million') && sawNumber) {
+        var scale = token === 'million' ? 1000000 : 1000;
+        total += (current || 1) * scale;
+        current = 0;
+      } else if (token === 'and' && sawNumber && i + 1 < tokens.length) {
+      } else {
+        break;
+      }
+      consumed = i + 1;
+    }
+    return sawNumber ? { value: total + current, consumed: consumed } : null;
+  }
+  function _quizParseSpokenNumber(raw) {
+    var tokens = String(raw || '').toLowerCase().replace(/-/g, ' ').replace(/[^a-z0-9.]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (!tokens.length) return null;
+    var sign = 1;
+    if (tokens[0] === 'negative' || tokens[0] === 'minus') {
+      sign = -1;
+      tokens.shift();
+    } else if (tokens[0] === 'positive' || tokens[0] === 'plus') {
+      tokens.shift();
+    }
+    if (!tokens.length) return null;
+    function done(value, consumed) {
+      return { value: sign * value, unit: tokens.slice(consumed).join(' ') };
+    }
+    var denominators = { half: 2, halves: 2, third: 3, thirds: 3, quarter: 4, quarters: 4, fourth: 4, fourths: 4, fifth: 5, fifths: 5, eighth: 8, eighths: 8, tenth: 10, tenths: 10, hundredth: 100, hundredths: 100 };
+    var denominatorIndex = -1;
+    for (var d = 0; d < tokens.length; d++) {
+      if (denominators[tokens[d]]) {
+        denominatorIndex = d;
+        break;
+      }
+    }
+    if (denominatorIndex >= 0) {
+      var andIndex = tokens.slice(0, denominatorIndex).lastIndexOf('and');
+      var whole = 0;
+      var numeratorStart = 0;
+      if (andIndex >= 0) {
+        var wholeParsed = _quizParseIntegerWords(tokens.slice(0, andIndex));
+        if (!wholeParsed || wholeParsed.consumed !== andIndex) return null;
+        whole = wholeParsed.value;
+        numeratorStart = andIndex + 1;
+      }
+      var numeratorTokens = tokens.slice(numeratorStart, denominatorIndex);
+      var numerator = 1;
+      if (numeratorTokens.length && numeratorTokens[0] !== 'a' && numeratorTokens[0] !== 'an') {
+        var numeratorParsed = _quizParseIntegerWords(numeratorTokens);
+        if (!numeratorParsed || numeratorParsed.consumed !== numeratorTokens.length) return null;
+        numerator = numeratorParsed.value;
+      }
+      return done(whole + numerator / denominators[tokens[denominatorIndex]], denominatorIndex + 1);
+    }
+    var pointIndex = tokens.indexOf('point');
+    if (pointIndex >= 0) {
+      var integerPart = pointIndex === 0 ? { value: 0, consumed: 0 } : _quizParseIntegerWords(tokens.slice(0, pointIndex));
+      if (!integerPart || integerPart.consumed !== pointIndex) return null;
+      var digitWords = { zero: '0', oh: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9' };
+      var digits = '';
+      var consumedAfterPoint = 0;
+      for (var p = pointIndex + 1; p < tokens.length; p++) {
+        var digit = Object.prototype.hasOwnProperty.call(digitWords, tokens[p]) ? digitWords[tokens[p]] : /^\d+$/.test(tokens[p]) ? tokens[p] : '';
+        if (!digit) break;
+        digits += digit;
+        consumedAfterPoint += 1;
+      }
+      if (!digits) return null;
+      return done(integerPart.value + Number('0.' + digits), pointIndex + 1 + consumedAfterPoint);
+    }
+    var integer = _quizParseIntegerWords(tokens);
+    return integer ? done(integer.value, integer.consumed) : null;
+  }
   function _quizParseNumericResponse(raw) {
     var text = String(raw || '').trim().replace(/,/g, '');
     var fraction = text.match(/^([+-]?\d+)\s*\/\s*(\d+)(?:\s+(.+))?$/);
     if (fraction && Number(fraction[2]) !== 0) return { value: Number(fraction[1]) / Number(fraction[2]), unit: String(fraction[3] || '').trim() };
     var decimal = text.match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:\s*(.*))?$/i);
-    if (!decimal) return null;
-    var value = Number(decimal[1]);
-    return Number.isFinite(value) ? { value: value, unit: String(decimal[2] || '').trim() } : null;
+    if (decimal) {
+      var value = Number(decimal[1]);
+      return Number.isFinite(value) ? { value: value, unit: String(decimal[2] || '').trim() } : null;
+    }
+    return _quizParseSpokenNumber(text);
   }
   function _quizNormalizeUnit(unit) { return String(unit || '').trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' '); }
   function NumericResponseCard(p) {
     var q = p.q;
-    var responseState = React.useState('');
+    var draftItemKey = 'q-' + p.questionIdx;
+    var responseState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'response', '');
     var response = responseState[0];
     var setResponse = responseState[1];
     var gradeState = React.useState(null);
@@ -1333,7 +1550,7 @@ var _lazyIcon = function (name) {
     var submittedState = React.useState(null);
     var submitted = submittedState[0];
     var setSubmitted = submittedState[1];
-    var confidenceState = React.useState(null);
+    var confidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'confidence', null);
     var confidence = confidenceState[0];
     var setConfidence = confidenceState[1];
     var renderRules = p.modeStrategy && p.modeStrategy.render || {};
@@ -1345,8 +1562,10 @@ var _lazyIcon = function (name) {
       var valueCorrect = Number.isFinite(expected) && Math.abs(parsed.value - expected) <= tolerance + 1e-9;
       var expectedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(_quizNormalizeUnit).filter(Boolean);
       var unitCorrect = expectedUnits.length === 0 || expectedUnits.indexOf(_quizNormalizeUnit(parsed.unit)) !== -1;
-      var score = valueCorrect && unitCorrect ? 100 : valueCorrect || unitCorrect && expectedUnits.length > 0 ? 50 : 0;
-      var status = score === 100 ? 'correct' : score === 50 ? 'partially-correct' : 'incorrect';
+      var partialCredit = !p.scoringPolicy || p.scoringPolicy.partialCredit !== false;
+      var rawScore = valueCorrect && unitCorrect ? 100 : valueCorrect || unitCorrect && expectedUnits.length > 0 ? 50 : 0;
+      var score = partialCredit ? rawScore : (rawScore === 100 ? 100 : 0);
+      var status = score === 100 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
       var payload = { text: response, numericValue: parsed.value, unit: parsed.unit, valueCorrect: valueCorrect, unitCorrect: unitCorrect, status: status, score: score };
       setGrade(payload);
       setSubmitted(payload);
@@ -1356,7 +1575,431 @@ var _lazyIcon = function (name) {
     function updateConfidence(level) { setConfidence(level); if (submitted) _quizEmitDeterministicAnswer(p, 'numeric-response', submitted, level); }
     function reset() { setResponse(''); setGrade(null); setSubmitted(null); setConfidence(null); }
     var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
-    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p>{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input type="text" inputMode="decimal" aria-label="Numeric response" value={response} onChange={function (e) { setResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check value</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}{grade && grade.status === 'invalid' && <span className="text-xs text-rose-700 self-center">Enter a number, optionally followed by its unit.</span>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct value and units' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p>{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input type="text" inputMode="decimal" aria-label="Numeric response" value={response} onChange={function (e) { setResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /><QuizVoiceInputButton value={response} onChange={setResponse} disabled={!!grade && grade.status !== 'invalid'} allowDictation={p.allowDictation} label="Dictate number or units" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check value</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}{grade && grade.status === 'invalid' && <span className="text-xs text-rose-700 self-center">Enter a number, optionally followed by its unit.</span>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct value and units' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
+  }
+  function _quizExtractJson(raw) {
+    var value = raw && typeof raw === 'object' && raw.text ? raw.text : raw;
+    if (value && typeof value === 'object') return value;
+    var text = String(value || '').trim().replace(/^\x60\x60\x60(?:json)?\s*/i, '').replace(/\s*\x60\x60\x60$/i, '');
+    try { return JSON.parse(text); } catch (e) {}
+    var start = text.indexOf('{');
+    var end = text.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      try { return JSON.parse(text.slice(start, end + 1)); } catch (e) {}
+    }
+    return null;
+  }
+  function _quizSchemaForType(type) {
+    var schemas = {
+      mcq: '{type:"mcq",question,options:[4 strings],correctAnswer,conceptLabel}',
+      'multi-select': '{type:"multi-select",question,options:[4-6 strings],correctAnswers:[2-4 exact option strings],conceptLabel}',
+      'fill-blank': '{type:"fill-blank",question:"sentence with ___",expectedFill,acceptableAlternatives:[],conceptLabel}',
+      'short-answer': '{type:"short-answer",question,expectedAnswer,conceptLabel}',
+      'self-explanation': '{type:"self-explanation",question,rubric,conceptLabel}',
+      'sequence-sense': '{type:"sequence-sense",question,items:[canonical strings],presentedOrder:[indices],intentionallyWrongIndex,orderingPrinciple,principleOptions:[],conceptLabel}',
+      'relation-mismatch': '{type:"relation-mismatch",question,pairs:[{left,right}],wrongPairIndex,correctPartnerForWrong,candidatePartners:[],conceptLabel}',
+      'answer-evidence': '{type:"answer-evidence",question,answerOptions:[4 strings],correctAnswer,evidencePrompt,evidenceOptions:[4 strings],correctEvidence,conceptLabel}',
+      'numeric-response': '{type:"numeric-response",question,correctValue:number,tolerance:number,unit,acceptableUnits:[],conceptLabel}'
+    };
+    return schemas[type] || schemas.mcq;
+  }
+  function _quizDuplicateStrings(values) {
+    var seen = {};
+    var duplicates = [];
+    (Array.isArray(values) ? values : []).forEach(function (value) {
+      var normalized = String(value || '').trim().toLowerCase();
+      if (!normalized) return;
+      if (seen[normalized] && duplicates.indexOf(normalized) === -1) duplicates.push(normalized);
+      seen[normalized] = true;
+    });
+    return duplicates;
+  }
+  function _quizAuditAssessment(data) {
+    var questions = data && Array.isArray(data.questions) ? data.questions : [];
+    var requested = data && data.requestedItemTypeMix && typeof data.requestedItemTypeMix === 'object' ? data.requestedItemTypeMix : null;
+    var actual = {};
+    var issues = [];
+    function add(questionIdx, severity, message, code) {
+      issues.push({ questionIdx: questionIdx, severity: severity, message: message, code: code || 'quality' });
+    }
+    questions.forEach(function (q, index) {
+      if (!q || typeof q !== 'object') {
+        add(index, 'error', 'Question data is missing.', 'missing-question');
+        return;
+      }
+      var type = q.type || 'mcq';
+      actual[type] = (actual[type] || 0) + 1;
+      if (!String(q.question || '').trim()) add(index, 'error', 'The question prompt is empty.', 'empty-prompt');
+      if (!String(q.conceptLabel || '').trim()) add(index, 'warning', 'Add a concept label for clearer results and retention tracking.', 'concept-label');
+      if (type === 'mcq') {
+        var mcqOptions = Array.isArray(q.options) ? q.options : [];
+        if (mcqOptions.length < 2) add(index, 'error', 'Multiple choice needs at least two options.', 'mcq-options');
+        if (mcqOptions.indexOf(q.correctAnswer) === -1) add(index, 'error', 'The correct answer must match one option exactly.', 'mcq-key');
+        if (_quizDuplicateStrings(mcqOptions).length) add(index, 'error', 'Multiple-choice options contain duplicates.', 'duplicate-options');
+      } else if (type === 'multi-select') {
+        var multiOptions = Array.isArray(q.options) ? q.options : [];
+        var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+        if (multiOptions.length < 3) add(index, 'error', 'Multi-select needs at least three options.', 'multi-options');
+        if (correctAnswers.length < 2) add(index, 'error', 'Multi-select should identify at least two correct options.', 'multi-key');
+        if (correctAnswers.some(function (answer) { return multiOptions.indexOf(answer) === -1; })) add(index, 'error', 'Every multi-select answer key must match an option exactly.', 'multi-key-match');
+        if (correctAnswers.length >= multiOptions.length && multiOptions.length) add(index, 'warning', 'Every option is marked correct, which makes the item weak.', 'multi-all-correct');
+        if (_quizDuplicateStrings(multiOptions).length) add(index, 'error', 'Multi-select options contain duplicates.', 'duplicate-options');
+      } else if (type === 'fill-blank') {
+        if (String(q.question || '').indexOf('___') === -1) add(index, 'warning', 'The prompt should visibly contain ___ for the blank.', 'blank-marker');
+        if (!String(q.expectedFill || '').trim()) add(index, 'error', 'Fill-in-the-blank needs an expected answer.', 'fill-key');
+      } else if (type === 'short-answer') {
+        if (!String(q.expectedAnswer || '').trim()) add(index, 'error', 'Brief written response needs a reference answer.', 'written-key');
+      } else if (type === 'self-explanation') {
+        if (!String(q.rubric || q.expectedAnswer || '').trim()) add(index, 'error', 'Explain Your Reasoning needs a rubric.', 'rubric');
+      } else if (type === 'sequence-sense') {
+        var items = Array.isArray(q.items) ? q.items : [];
+        var order = Array.isArray(q.presentedOrder) ? q.presentedOrder : [];
+        if (items.length < 3) add(index, 'error', 'Sequence Sense needs at least three steps.', 'sequence-items');
+        if (order.length !== items.length || order.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= items.length; }) || new Set(order).size !== order.length) add(index, 'error', 'Displayed order must use every step index exactly once.', 'sequence-order');
+        if (!String(q.orderingPrinciple || '').trim()) add(index, 'error', 'Sequence Sense needs an ordering principle.', 'sequence-principle');
+      } else if (type === 'relation-mismatch') {
+        var pairs = Array.isArray(q.pairs) ? q.pairs : [];
+        var wrongIndex = Number(q.wrongPairIndex);
+        if (pairs.length < 3) add(index, 'error', 'Relation Mismatch needs at least three pairs.', 'relation-pairs');
+        if (!Number.isInteger(wrongIndex) || wrongIndex < 0 || wrongIndex >= pairs.length) add(index, 'error', 'Choose which displayed pair is incorrect.', 'relation-index');
+        if (!String(q.correctPartnerForWrong || '').trim()) add(index, 'error', 'Provide the correct partner for the mismatched pair.', 'relation-key');
+        if (!Array.isArray(q.candidatePartners) || q.candidatePartners.indexOf(q.correctPartnerForWrong) === -1) add(index, 'error', 'Candidate partners must include the correct repair.', 'relation-candidates');
+      } else if (type === 'answer-evidence') {
+        var answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+        var evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+        if (answers.length < 2 || answers.indexOf(q.correctAnswer) === -1) add(index, 'error', 'Answer + Evidence needs a valid answer key.', 'evidence-answer-key');
+        if (evidence.length < 2 || evidence.indexOf(q.correctEvidence) === -1) add(index, 'error', 'Answer + Evidence needs a valid evidence key.', 'evidence-key');
+        if (_quizDuplicateStrings(answers).length || _quizDuplicateStrings(evidence).length) add(index, 'error', 'Answer or evidence choices contain duplicates.', 'duplicate-options');
+      } else if (type === 'numeric-response') {
+        if (!Number.isFinite(Number(q.correctValue))) add(index, 'error', 'Numeric Response needs a valid numeric answer.', 'numeric-key');
+        if (!Number.isFinite(Number(q.tolerance)) || Number(q.tolerance) < 0) add(index, 'error', 'Numeric tolerance must be zero or greater.', 'numeric-tolerance');
+        var normalizedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(_quizNormalizeUnit).filter(Boolean);
+        if (_quizDuplicateStrings(normalizedUnits).length) add(index, 'warning', 'Accepted units contain duplicate spellings.', 'numeric-units');
+      } else {
+        add(index, 'error', 'Unsupported question type: ' + type + '.', 'unsupported-type');
+      }
+    });
+    var missingMix = {};
+    if (requested) {
+      Object.keys(requested).forEach(function (type) {
+        var difference = Math.max(0, Number(requested[type] || 0) - Number(actual[type] || 0));
+        if (difference > 0) {
+          missingMix[type] = difference;
+          add(null, 'error', 'Missing ' + difference + ' ' + type + ' item' + (difference === 1 ? '' : 's') + ' from the requested recipe.', 'missing-type');
+        }
+      });
+      Object.keys(actual).forEach(function (type) {
+        var extra = Math.max(0, Number(actual[type] || 0) - Number(requested[type] || 0));
+        if (extra > 0) add(null, 'warning', 'Generated ' + extra + ' extra ' + type + ' item' + (extra === 1 ? '' : 's') + '.', 'extra-type');
+      });
+    }
+    var weakItems = data && data.distractorReview && Array.isArray(data.distractorReview.weakItems) ? data.distractorReview.weakItems : [];
+    weakItems.forEach(function (index) {
+      if (!issues.some(function (issue) { return issue.questionIdx === index && issue.code === 'weak-distractor'; })) add(index, 'warning', 'One or more distractors are generic rather than misconception-based.', 'weak-distractor');
+    });
+    return {
+      questions: questions,
+      requestedMix: requested,
+      actualMix: actual,
+      missingMix: missingMix,
+      issues: issues,
+      errorCount: issues.filter(function (issue) { return issue.severity === 'error'; }).length,
+      warningCount: issues.filter(function (issue) { return issue.severity === 'warning'; }).length,
+      ready: issues.filter(function (issue) { return issue.severity === 'error'; }).length === 0
+    };
+  }
+  function _quizH5PPreflight(data) {
+    var questions = data && Array.isArray(data.questions) ? data.questions : [];
+    var allMcq = questions.length > 0 && questions.every(function (q) { return !q || !q.type || q.type === 'mcq'; });
+    var valid = 0;
+    var adapted = 0;
+    var manualReview = 0;
+    questions.forEach(function (q) {
+      q = q || {};
+      var type = q.type || 'mcq';
+      var prompt = String(q.question || '').trim();
+      var okay = false;
+      if (type === 'mcq') {
+        var mcqOptions = Array.isArray(q.options) ? q.options.filter(function (option) { return String(option || '').trim(); }) : [];
+        okay = !!prompt && mcqOptions.length >= 2 && (!allMcq || mcqOptions.length <= 4) && mcqOptions.indexOf(q.correctAnswer) !== -1;
+      } else if (type === 'multi-select') {
+        var multiOptions = Array.isArray(q.options) ? q.options : [];
+        var multiKeys = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+        okay = !!prompt && multiOptions.length >= 2 && multiKeys.length > 0 && multiKeys.every(function (answer) { return multiOptions.indexOf(answer) !== -1; });
+      } else if (type === 'fill-blank') {
+        okay = !!prompt && !!String(q.expectedFill || '').trim();
+      } else if (type === 'short-answer') {
+        okay = !!prompt;
+        manualReview += okay ? 1 : 0;
+      } else if (type === 'self-explanation') {
+        okay = !!prompt;
+        manualReview += okay ? 1 : 0;
+      } else if (type === 'sequence-sense') {
+        okay = !!prompt && Array.isArray(q.items) && q.items.length >= 3;
+        adapted += okay ? 1 : 0;
+        manualReview += okay ? 1 : 0;
+      } else if (type === 'relation-mismatch') {
+        var wrongIndex = Number(q.wrongPairIndex);
+        okay = !!prompt && Array.isArray(q.pairs) && q.pairs.length >= 2 && Number.isInteger(wrongIndex) && wrongIndex >= 0 && wrongIndex < q.pairs.length && Array.isArray(q.candidatePartners) && q.candidatePartners.length >= 2 && q.candidatePartners.indexOf(q.correctPartnerForWrong) !== -1;
+        adapted += okay ? 1 : 0;
+      } else if (type === 'answer-evidence') {
+        okay = !!prompt && Array.isArray(q.answerOptions) && q.answerOptions.length >= 2 && q.answerOptions.indexOf(q.correctAnswer) !== -1 && Array.isArray(q.evidenceOptions) && q.evidenceOptions.length >= 2 && q.evidenceOptions.indexOf(q.correctEvidence) !== -1;
+        adapted += okay ? 1 : 0;
+      } else if (type === 'numeric-response') {
+        okay = !!prompt && Number.isFinite(Number(q.correctValue));
+        adapted += okay ? 1 : 0;
+        manualReview += okay && Number(q.tolerance) > 0 ? 1 : 0;
+      }
+      if (okay) valid += 1;
+    });
+    return {
+      total: questions.length,
+      valid: valid,
+      omitted: questions.length - valid,
+      adapted: adapted,
+      manualReview: manualReview,
+      library: allMcq ? 'Single Choice Set 1.11' : 'Question Set 1.21',
+      ready: valid > 0
+    };
+  }
+  function QuizVoiceInputButton(p) {
+    var statusState = React.useState({ state: 'idle', engineLabel: '', privacy: '', message: '' });
+    var status = statusState[0];
+    var setStatus = statusState[1];
+    var controllerRef = React.useRef(null);
+    var voice = typeof window !== 'undefined' ? window.AlloFlowVoice : null;
+    var nativeSupported = typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    var sharedServicePresent = !!(voice && typeof voice.isDictationSupported === 'function');
+    var sharedSupported = sharedServicePresent && voice.isDictationSupported();
+    var supported = p.allowDictation !== false && (sharedServicePresent ? sharedSupported : nativeSupported);
+    React.useEffect(function () {
+      return function () {
+        try { if (controllerRef.current) controllerRef.current.abort('unmount'); } catch (e) {}
+        controllerRef.current = null;
+      };
+    }, []);
+    function appendTranscript(transcript) {
+      var clean = String(transcript || '').trim();
+      if (!clean || typeof p.onChange !== 'function') return;
+      var prior = String(p.value || '').trim();
+      p.onChange((prior ? prior + ' ' : '') + clean);
+    }
+    function createNativeFallback() {
+      var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) return null;
+      var recognition = new Recognition();
+      var active = false;
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = typeof document !== 'undefined' && document.documentElement.lang ? document.documentElement.lang : 'en-US';
+      recognition.onstart = function () { active = true; setStatus({ state: 'listening', engineLabel: window.__alloLocalSRShim ? 'On-device Whisper' : 'Browser speech service', privacy: window.__alloLocalSRShim ? 'Audio stays on this device.' : 'Your browser may send audio to its speech provider.', message: 'Listening...' }); };
+      recognition.onresult = function (event) {
+        var transcript = event && event.results && event.results[0] && event.results[0][0] ? event.results[0][0].transcript : '';
+        appendTranscript(transcript);
+      };
+      recognition.onerror = function (event) {
+        active = false;
+        setStatus({ state: 'error', engineLabel: '', privacy: '', message: event && event.error === 'not-allowed' ? 'Microphone permission was not granted.' : 'Dictation was unavailable.' });
+      };
+      recognition.onend = function () { active = false; setStatus({ state: 'idle', engineLabel: '', privacy: '', message: 'Dictation added.' }); };
+      return {
+        start: function () { recognition.start(); return true; },
+        stop: function () { recognition.stop(); },
+        abort: function () { try { recognition.abort(); } catch (e) {} },
+        isActive: function () { return active; },
+        getState: function () { return active ? 'listening' : 'idle'; }
+      };
+    }
+    function toggle() {
+      if (!supported || p.disabled) return;
+      var current = controllerRef.current;
+      if (current && current.isActive && current.isActive()) {
+        current.stop();
+        return;
+      }
+      if (voice && typeof voice.createDictationController === 'function') {
+        current = voice.createDictationController({
+          continuous: false,
+          restartOnEnd: false,
+          lang: typeof document !== 'undefined' && document.documentElement.lang ? document.documentElement.lang : 'en-US',
+          onTranscript: appendTranscript,
+          onStateChange: setStatus
+        });
+      } else {
+        current = createNativeFallback();
+      }
+      controllerRef.current = current;
+      if (!current) {
+        setStatus({ state: 'error', engineLabel: '', privacy: '', message: 'Dictation was unavailable.' });
+        return;
+      }
+      try { current.start(); } catch (e) {
+        setStatus({ state: 'error', engineLabel: '', privacy: '', message: 'Dictation was unavailable.' });
+      }
+    }
+    if (!supported) return null;
+    var listening = status.state === 'starting' || status.state === 'listening';
+    var transcribing = status.state === 'transcribing';
+    var buttonLabel = listening ? 'Stop dictation' : transcribing ? 'Transcribing...' : (p.label || 'Dictate response');
+    return <div className="mt-2 flex items-center gap-2 flex-wrap"><button type="button" onClick={toggle} disabled={p.disabled || transcribing} aria-pressed={listening} aria-busy={transcribing} data-dictation-engine={status.engine || ''} className={'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-xs font-semibold disabled:opacity-50 ' + (listening || transcribing ? 'bg-rose-100 border-rose-300 text-rose-800' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50')}><span aria-hidden="true">🎙</span>{buttonLabel}</button>{status.message && <span role="status" aria-live="polite" className="text-[10px] text-slate-600"><span className="font-semibold">{status.message}</span>{status.engineLabel && <span>{' · ' + status.engineLabel}</span>}{status.privacy && <span>{' · ' + status.privacy}</span>}</span>}</div>;
+  }
+  function AssessmentTextListEditor(p) {
+    var values = Array.isArray(p.values) ? p.values : [];
+    function change(index, value) {
+      var next = values.slice();
+      next[index] = value;
+      p.onChange(next);
+    }
+    function remove(index) {
+      if (values.length <= (p.minimum || 0)) return;
+      p.onChange(values.filter(function (_, itemIndex) { return itemIndex !== index; }));
+    }
+    return <div className="space-y-1.5"><label className="block text-xs font-bold text-slate-700">{p.label}</label>{values.map(function (value, index) {
+      return <div key={index} className="flex gap-2 items-center"><input aria-label={p.label + ' ' + (index + 1)} value={value} onChange={function (event) { change(index, event.target.value); }} className="flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" /><button type="button" onClick={function () { remove(index); }} disabled={values.length <= (p.minimum || 0)} className="w-7 h-7 rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-30" aria-label={'Remove ' + p.label + ' ' + (index + 1)}>×</button></div>;
+    })}<button type="button" onClick={function () { p.onChange(values.concat([''])); }} className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900">+ Add {p.itemLabel || 'item'}</button></div>;
+  }
+  function AssessmentItemActions(p) {
+    var action = p.onAction;
+    var disabled = typeof action !== 'function';
+    var q = p.q || {};
+    var deleteConfirmState = React.useState(false);
+    var deleteConfirmOpen = deleteConfirmState[0];
+    var setDeleteConfirmOpen = deleteConfirmState[1];
+    return <div className="ml-9 mb-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2 space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <button type="button" disabled={disabled || p.questionIdx <= 0} onClick={function () { action(p.questionIdx, 'move', -1); }} className="px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30">Move up</button>
+        <button type="button" disabled={disabled || p.questionIdx >= p.totalQuestions - 1} onClick={function () { action(p.questionIdx, 'move', 1); }} className="px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30">Move down</button>
+        <button type="button" disabled={disabled} onClick={function () { action(p.questionIdx, 'duplicate'); }} className="px-2 py-1 rounded bg-white border border-slate-300 text-xs font-semibold disabled:opacity-30">Duplicate</button>
+        <button type="button" disabled={disabled || p.regenerating} onClick={function () { if (typeof p.onRegenerate === 'function') p.onRegenerate(p.questionIdx, q); }} className="px-2 py-1 rounded bg-indigo-600 text-white text-xs font-semibold disabled:opacity-40">{p.regenerating ? 'Regenerating…' : 'Regenerate item'}</button>
+        {!deleteConfirmOpen ? <button type="button" disabled={disabled} onClick={function () { setDeleteConfirmOpen(true); }} className="ml-auto px-2 py-1 rounded bg-white border border-rose-300 text-rose-700 text-xs font-semibold disabled:opacity-30">Delete</button> : <span className="ml-auto inline-flex items-center gap-1" role="group" aria-label="Confirm question deletion"><button type="button" autoFocus onClick={function () { action(p.questionIdx, 'delete'); }} className="px-2 py-1 rounded bg-rose-700 text-white text-xs font-semibold">Confirm delete</button><button type="button" onClick={function () { setDeleteConfirmOpen(false); }} className="px-2 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Cancel</button></span>}
+      </div>
+      {q.type === 'mcq' && Array.isArray(q.options) && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <label className="text-[11px] font-semibold text-slate-700">Correct answer<select value={q.correctAnswer || ''} onChange={function (event) { action(p.questionIdx, 'patch', { correctAnswer: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white"><option value="">Choose answer…</option>{q.options.map(function (option, index) { return <option key={index} value={option}>{option || 'Option ' + (index + 1)}</option>; })}</select></label>
+        <label className="text-[11px] font-semibold text-slate-700">Concept label<input value={q.conceptLabel || ''} onChange={function (event) { action(p.questionIdx, 'patch', { conceptLabel: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded p-1.5 bg-white" /></label>
+      </div>}
+    </div>;
+  }
+  function AssessmentCoreFields(p) {
+    var q = p.q || {};
+    var type = q.type || '';
+    var patch = p.patch;
+    function updateList(field, values) {
+      var update = {};
+      update[field] = values;
+      if (type === 'multi-select' && field === 'options') {
+        var oldOptions = Array.isArray(q.options) ? q.options : [];
+        update.correctAnswers = (Array.isArray(q.correctAnswers) ? q.correctAnswers : []).map(function (answer) {
+          var index = oldOptions.indexOf(answer);
+          return index >= 0 && values[index] !== undefined ? values[index] : answer;
+        });
+      }
+      if (type === 'answer-evidence' && field === 'answerOptions') {
+        var oldAnswers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+        var answerIndex = oldAnswers.indexOf(q.correctAnswer);
+        if (answerIndex >= 0 && values[answerIndex] !== undefined) update.correctAnswer = values[answerIndex];
+      }
+      if (type === 'answer-evidence' && field === 'evidenceOptions') {
+        var oldEvidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+        var evidenceIndex = oldEvidence.indexOf(q.correctEvidence);
+        if (evidenceIndex >= 0 && values[evidenceIndex] !== undefined) update.correctEvidence = values[evidenceIndex];
+      }
+      patch(update);
+    }
+    if (type === 'multi-select') return <><AssessmentTextListEditor label="Answer options" itemLabel="option" values={q.options || []} minimum={3} onChange={function (values) { updateList('options', values); }} /><div><div className="text-xs font-bold text-slate-700 mb-1">Correct options</div><div className="space-y-1">{(q.options || []).map(function (option, index) {
+      var checked = (q.correctAnswers || []).indexOf(option) !== -1;
+      return <label key={index} className="flex items-center gap-2 text-xs text-slate-700"><input type="checkbox" aria-label={'Mark option ' + (index + 1) + ' as correct'} checked={checked} onChange={function (event) {
+        var next = (q.correctAnswers || []).filter(function (answer) { return answer !== option; });
+        if (event.target.checked) next.push(option);
+        patch({ correctAnswers: next });
+      }} />{option || 'Option ' + (index + 1)}</label>;
+    })}</div></div></>;
+    if (type === 'fill-blank') return <><label className="block text-xs font-bold text-slate-700">Expected answer<input value={q.expectedFill || ''} onChange={function (event) { patch({ expectedFill: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Accepted alternatives" itemLabel="alternative" values={q.acceptableAlternatives || []} minimum={0} onChange={function (values) { patch({ acceptableAlternatives: values }); }} /></>;
+    if (type === 'short-answer') return <label className="block text-xs font-bold text-slate-700">Reference answer<textarea value={q.expectedAnswer || ''} onChange={function (event) { patch({ expectedAnswer: event.target.value }); }} rows="3" className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 resize-y" /></label>;
+    if (type === 'self-explanation') return <label className="block text-xs font-bold text-slate-700">Scoring rubric<textarea value={q.rubric || q.expectedAnswer || ''} onChange={function (event) { patch({ rubric: event.target.value }); }} rows="4" className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 resize-y" /></label>;
+    if (type === 'answer-evidence') return <><AssessmentTextListEditor label="Answer choices" itemLabel="answer" values={q.answerOptions || []} minimum={2} onChange={function (values) { updateList('answerOptions', values); }} /><label className="block text-xs font-bold text-slate-700">Correct answer<select value={q.correctAnswer || ''} onChange={function (event) { patch({ correctAnswer: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose answer…</option>{(q.answerOptions || []).map(function (option, index) { return <option key={index} value={option}>{option || 'Answer ' + (index + 1)}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Evidence prompt<input value={q.evidencePrompt || ''} onChange={function (event) { patch({ evidencePrompt: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Evidence choices" itemLabel="evidence choice" values={q.evidenceOptions || []} minimum={2} onChange={function (values) { updateList('evidenceOptions', values); }} /><label className="block text-xs font-bold text-slate-700">Correct evidence<select value={q.correctEvidence || ''} onChange={function (event) { patch({ correctEvidence: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose evidence…</option>{(q.evidenceOptions || []).map(function (option, index) { return <option key={index} value={option}>{option || 'Evidence ' + (index + 1)}</option>; })}</select></label></>;
+    if (type === 'numeric-response') return <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><label className="text-xs font-bold text-slate-700">Correct value<input type="number" step="any" value={q.correctValue == null ? '' : q.correctValue} onChange={function (event) { patch({ correctValue: event.target.value === '' ? '' : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="text-xs font-bold text-slate-700">Tolerance<input type="number" min="0" step="any" value={q.tolerance == null ? 0 : q.tolerance} onChange={function (event) { patch({ tolerance: event.target.value === '' ? '' : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="text-xs font-bold text-slate-700">Preferred unit<input value={q.unit || ''} onChange={function (event) { patch({ unit: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><div className="sm:col-span-3"><AssessmentTextListEditor label="Accepted unit spellings" itemLabel="unit spelling" values={q.acceptableUnits || []} minimum={0} onChange={function (values) { patch({ acceptableUnits: values }); }} /></div></div>;
+    return null;
+  }
+  function AssessmentDiagnosticFields(p) {
+    var q = p.q || {};
+    var type = q.type || '';
+    var patch = p.patch;
+    var items = Array.isArray(q.items) ? q.items : [];
+    var pairs = Array.isArray(q.pairs) ? q.pairs : [];
+    if (type === 'sequence-sense') return <><AssessmentTextListEditor label="Steps in canonical order" itemLabel="step" values={items} minimum={3} onChange={function (values) {
+      patch({ items: values, presentedOrder: values.map(function (_, index) { return index; }), intentionallyWrongIndex: null });
+    }} /><label className="block text-xs font-bold text-slate-700">Displayed order <span className="font-normal text-slate-500">(1-based, comma-separated)</span><input aria-label="Displayed sequence order using one-based positions" value={(q.presentedOrder || []).map(function (value) { return Number(value) + 1; }).join(', ')} onChange={function (event) {
+      var order = event.target.value.split(',').map(function (value) { return Number(value.trim()) - 1; }).filter(function (value) { return Number.isInteger(value); });
+      patch({ presentedOrder: order });
+    }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><label className="block text-xs font-bold text-slate-700">Misplaced displayed position<select value={q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? '' : q.intentionallyWrongIndex} onChange={function (event) { patch({ intentionallyWrongIndex: event.target.value === '' ? null : Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Order is correct</option>{items.map(function (_, index) { return <option key={index} value={index}>Position {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Ordering principle<input value={q.orderingPrinciple || ''} onChange={function (event) { patch({ orderingPrinciple: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Principle choices" itemLabel="choice" values={q.principleOptions || []} minimum={3} onChange={function (values) { patch({ principleOptions: values }); }} /></>;
+    if (type === 'relation-mismatch') return <><div className="space-y-1.5"><div className="text-xs font-bold text-slate-700">Displayed pairs</div>{pairs.map(function (pair, index) {
+      return <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2"><input aria-label={'Pair ' + (index + 1) + ' left'} value={pair.left || ''} onChange={function (event) {
+        var next = pairs.map(function (item, itemIndex) { return itemIndex === index ? Object.assign({}, item, { left: event.target.value }) : item; });
+        patch({ pairs: next });
+      }} className="text-xs border-slate-300 rounded p-2" /><input aria-label={'Pair ' + (index + 1) + ' right'} value={pair.right || ''} onChange={function (event) {
+        var next = pairs.map(function (item, itemIndex) { return itemIndex === index ? Object.assign({}, item, { right: event.target.value }) : item; });
+        patch({ pairs: next });
+      }} className="text-xs border-slate-300 rounded p-2" /><button type="button" disabled={pairs.length <= 3} onClick={function () { patch({ pairs: pairs.filter(function (_, itemIndex) { return itemIndex !== index; }) }); }} className="w-7 rounded border border-rose-200 text-rose-700 disabled:opacity-30" aria-label={'Remove pair ' + (index + 1)}>×</button></div>;
+    })}<button type="button" onClick={function () { patch({ pairs: pairs.concat([{ left: '', right: '' }]) }); }} className="text-[11px] font-semibold text-indigo-700">+ Add pair</button></div><label className="block text-xs font-bold text-slate-700">Incorrect pair<select value={Number.isInteger(Number(q.wrongPairIndex)) ? Number(q.wrongPairIndex) : ''} onChange={function (event) { patch({ wrongPairIndex: Number(event.target.value) }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2 bg-white"><option value="">Choose pair…</option>{pairs.map(function (_, index) { return <option key={index} value={index}>Pair {index + 1}</option>; })}</select></label><label className="block text-xs font-bold text-slate-700">Correct partner<input value={q.correctPartnerForWrong || ''} onChange={function (event) { patch({ correctPartnerForWrong: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" /></label><AssessmentTextListEditor label="Candidate partners" itemLabel="candidate" values={q.candidatePartners || []} minimum={2} onChange={function (values) { patch({ candidatePartners: values }); }} /></>;
+    return null;
+  }
+  function AssessmentItemEditor(p) {
+    var q = p.q || {};
+    var type = q.type || 'mcq';
+    var action = p.onAction;
+    function patch(values) { if (typeof action === 'function') action(p.questionIdx, 'patch', values); }
+    var labels = {
+      'multi-select': 'Multi-Select',
+      'fill-blank': 'Fill-in-the-Blank',
+      'short-answer': 'Brief Written Response',
+      'self-explanation': 'Explain Your Reasoning',
+      'sequence-sense': 'Sequence Sense',
+      'relation-mismatch': 'Relation Mismatch',
+      'answer-evidence': 'Answer + Evidence',
+      'numeric-response': 'Numeric Response'
+    };
+    return <div className="bg-white p-5 rounded-xl border-2 border-indigo-300 shadow-sm">
+      <div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">{p.itemNumber}</span><div className="flex-1"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 mb-2">{labels[type] || type}</span><textarea aria-label="Edit question prompt" value={q.question || ''} onChange={function (event) { patch({ question: event.target.value }); }} rows="2" className="w-full text-sm font-semibold border-slate-300 rounded-md p-2 resize-y" /></div></div>
+      <div className="ml-9 space-y-3">
+        <label className="block text-xs font-bold text-slate-700">Concept label<input value={q.conceptLabel || ''} onChange={function (event) { patch({ conceptLabel: event.target.value }); }} className="block w-full mt-1 text-xs border-slate-300 rounded-md p-2" placeholder="e.g. fraction equivalents" /></label>
+        <AssessmentCoreFields q={q} patch={patch} />
+        <AssessmentDiagnosticFields q={q} patch={patch} />
+      </div>
+      <div className="mt-4"><AssessmentItemActions q={q} questionIdx={p.questionIdx} totalQuestions={p.totalQuestions} onAction={action} onRegenerate={p.onRegenerate} regenerating={p.regenerating} /></div>
+    </div>;
+  }
+  function AssessmentQualityPanel(p) {
+    var audit = p.audit;
+    var h5p = p.h5p || { total: 0, valid: 0, omitted: 0, adapted: 0, manualReview: 0, library: '', ready: false };
+    var openState = React.useState(!audit.ready);
+    var open = openState[0];
+    var setOpen = openState[1];
+    React.useEffect(function () { if (!audit.ready) setOpen(true); }, [audit.errorCount]);
+    var mixKeys = Array.from(new Set(Object.keys(audit.requestedMix || {}).concat(Object.keys(audit.actualMix || {}))));
+    return <div className={'rounded-xl border-2 mb-4 ' + (audit.ready ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50')} role="region" aria-label="Assessment quality review">
+      <button type="button" onClick={function () { setOpen(!open); }} aria-expanded={open} className="w-full p-3 flex items-center gap-3 text-left">
+        <span aria-hidden="true" className="text-xl">{audit.ready ? '✓' : '⚠'}</span>
+        <span className="flex-1"><span className={'block text-sm font-black ' + (audit.ready ? 'text-emerald-900' : 'text-amber-900')}>{audit.ready ? 'Ready to share' : 'Review before sharing'}</span><span className="block text-[11px] text-slate-700">{audit.errorCount + ' required fix' + (audit.errorCount === 1 ? '' : 'es') + ' · ' + audit.warningCount + ' suggestion' + (audit.warningCount === 1 ? '' : 's') + ' · delivery preflight included'}</span></span>
+        <span className="text-xs font-bold text-slate-600">{open ? 'Hide' : 'Review'}</span>
+      </button>
+      {open && <div className="px-3 pb-3 space-y-3">
+        <div><div className="text-[10px] font-black uppercase tracking-wider text-slate-600 mb-1">Delivery preflight</div><div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className={'rounded-lg border p-2 ' + (audit.ready ? 'bg-white border-emerald-200' : 'bg-rose-50 border-rose-200')}><div className="text-[10px] font-black uppercase text-slate-600">In-app assessment</div><div className={'text-xs font-bold mt-0.5 ' + (audit.ready ? 'text-emerald-800' : 'text-rose-800')}>{audit.ready ? 'Answer keys and structure ready' : audit.errorCount + ' blocking fix' + (audit.errorCount === 1 ? '' : 'es')}</div></div>
+          <div className="rounded-lg border border-sky-200 bg-white p-2"><div className="text-[10px] font-black uppercase text-slate-600">Live + presentation</div><div className="text-xs font-bold text-sky-800 mt-0.5">{audit.questions.length + ' item' + (audit.questions.length === 1 ? '' : 's') + ' available across supported formats'}</div></div>
+          <div className={'rounded-lg border p-2 ' + (h5p.omitted ? 'bg-amber-50 border-amber-300' : 'bg-white border-indigo-200')}><div className="text-[10px] font-black uppercase text-slate-600">H5P export</div><div className={'text-xs font-bold mt-0.5 ' + (h5p.omitted ? 'text-amber-900' : 'text-indigo-800')}>{h5p.valid + ' / ' + h5p.total + ' items · ' + h5p.library}</div>{h5p.adapted > 0 && <div className="text-[10px] text-slate-600 mt-0.5">{h5p.adapted + ' adapted' + (h5p.manualReview ? ' · ' + h5p.manualReview + ' ungraded/manual-review' : '')}</div>}{h5p.omitted > 0 && <div className="text-[10px] font-semibold text-amber-800 mt-0.5">{h5p.omitted + ' incomplete item' + (h5p.omitted === 1 ? '' : 's') + ' would be omitted'}</div>}</div>
+        </div></div>
+        {mixKeys.length > 0 && <div><div className="text-[10px] font-black uppercase tracking-wider text-slate-600 mb-1">Requested vs generated</div><div className="flex gap-1.5 flex-wrap">{mixKeys.map(function (key) {
+          var requested = audit.requestedMix ? audit.requestedMix[key] || 0 : audit.actualMix[key] || 0;
+          var actual = audit.actualMix[key] || 0;
+          return <span key={key} className={'text-[10px] font-semibold px-2 py-1 rounded border ' + (requested === actual ? 'bg-white border-emerald-200 text-emerald-800' : 'bg-white border-amber-300 text-amber-900')}>{key + ': ' + actual + ' / ' + requested}</span>;
+        })}</div></div>}
+        {audit.issues.length > 0 ? <ul className="space-y-1.5">{audit.issues.map(function (issue, index) {
+          return <li key={index} className={'text-xs rounded-md border p-2 ' + (issue.severity === 'error' ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-white border-amber-200 text-amber-900')}><strong>{issue.questionIdx === null ? 'Recipe' : 'Q' + (issue.questionIdx + 1)}:</strong> {' ' + issue.message}</li>;
+        })}</ul> : <p className="text-xs text-emerald-800">All answer keys, required fields, counts, and structural checks passed.</p>}
+        {audit.issues.length > 0 && <button type="button" onClick={p.onRepairAll} disabled={p.repairing || typeof p.onRepairAll !== 'function'} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">{p.repairing ? 'Repairing assessment…' : 'Fix flagged and missing items'}</button>}
+        <p className="text-[10px] text-slate-600">This automated check verifies structure, answer-key consistency, and delivery compatibility. H5P adaptations preserve the prompt and answer guide, but written responses, sequencing, and tolerance-based numeric items may require manual review after export. Teachers should still review content accuracy and instructional fit.</p>
+      </div>}
+    </div>;
   }
   function FreeformItemsBlock(p) {
     var allQuestions = Array.isArray(p.questions) ? p.questions : [];
@@ -1369,23 +2012,26 @@ var _lazyIcon = function (name) {
       return entry.q && (entry.q.type === 'multi-select' || entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch' || entry.q.type === 'answer-evidence' || entry.q.type === 'numeric-response');
     });
     if (freeform.length === 0) return null;
-    return <div className="space-y-4 mt-6"><h4 className="font-bold text-slate-700 flex items-center gap-2 text-base"><span aria-hidden="true">＋</span> Additional Assessment Items</h4><p className="text-xs text-slate-600 mb-2">Interactive formats are graded instantly. Written responses receive immediate AI feedback.</p>{freeform.map(function (entry) {
+    return <div className="space-y-4 mt-6"><h4 className="font-bold text-slate-700 flex items-center gap-2 text-base"><span aria-hidden="true">＋</span> Additional Assessment Items</h4><p className="text-xs text-slate-600 mb-2">{p.isEditingQuiz ? 'Edit the prompt, answer key, rubric, and format-specific settings below.' : (p.scoringPolicy && p.scoringPolicy.writtenResponseMode === 'teacher-review' ? 'Interactive formats are graded instantly. Written responses are submitted for teacher review.' : 'Interactive formats are graded instantly. Written responses receive provisional AI feedback.')}</p>{freeform.map(function (entry) {
+        if (p.isEditingQuiz) {
+          return <AssessmentItemEditor key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} totalQuestions={allQuestions.length} onAction={p.onQuestionAction} onRegenerate={p.onRegenerateQuestion} regenerating={!!(p.regeneratingQuestions && p.regeneratingQuestions[entry.idx])} />;
+        }
         if (entry.q.type === 'multi-select') {
-          return <MultiSelectCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} />;
+          return <MultiSelectCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} draftNamespace={p.draftNamespace} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} scoringPolicy={p.scoringPolicy} />;
         }
         if (entry.q.type === 'answer-evidence') {
-          return <AnswerEvidenceCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} />;
+          return <AnswerEvidenceCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} draftNamespace={p.draftNamespace} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} scoringPolicy={p.scoringPolicy} />;
         }
         if (entry.q.type === 'numeric-response') {
-          return <NumericResponseCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} />;
+          return <NumericResponseCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} draftNamespace={p.draftNamespace} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} scoringPolicy={p.scoringPolicy} allowDictation={p.allowDictation} />;
         }
         if (entry.q.type === 'sequence-sense') {
-          return <SequenceSenseCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} />;
+          return <SequenceSenseCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} draftNamespace={p.draftNamespace} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} scoringPolicy={p.scoringPolicy} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} />;
         }
         if (entry.q.type === 'relation-mismatch') {
-          return <RelationMismatchCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} />;
+          return <RelationMismatchCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} draftNamespace={p.draftNamespace} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} scoringPolicy={p.scoringPolicy} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} />;
         }
-        return <FreeformItemCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} QuizAIHelpers={p.QuizAIHelpers} modeStrategy={p.modeStrategy} onSubmitLiveAnswer={p.onSubmitLiveAnswer} />;
+        return <FreeformItemCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} draftNamespace={p.draftNamespace} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} QuizAIHelpers={p.QuizAIHelpers} modeStrategy={p.modeStrategy} scoringPolicy={p.scoringPolicy} onSubmitLiveAnswer={p.onSubmitLiveAnswer} allowDictation={p.allowDictation} />;
       })}</div>;
   }
   function FreeformItemCard(p) {
@@ -1394,7 +2040,10 @@ var _lazyIcon = function (name) {
     var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
     var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
     var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
-    var responseState = React.useState('');
+    var scoringPolicy = p.scoringPolicy || { partialCredit: true, writtenResponseMode: 'ai-provisional' };
+    var teacherReviewWritten = scoringPolicy.writtenResponseMode === 'teacher-review' && (q.type === 'short-answer' || q.type === 'self-explanation');
+    var draftItemKey = 'q-' + p.questionIdx;
+    var responseState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'response', '');
     var response = responseState[0];
     var setResponse = responseState[1];
     var gradeState = React.useState({
@@ -1404,7 +2053,7 @@ var _lazyIcon = function (name) {
     });
     var grade = gradeState[0];
     var setGrade = gradeState[1];
-    var confidenceState = React.useState(null);
+    var confidenceState = _quizUseDraftField(p.draftNamespace, draftItemKey, 'confidence', null);
     var confidence = confidenceState[0];
     var setConfidence = confidenceState[1];
     var explainerState = React.useState({
@@ -1433,6 +2082,14 @@ var _lazyIcon = function (name) {
     function submitGrade() {
       if (!response || !response.trim()) return;
       emitLiveAnswer();
+      if (teacherReviewWritten) {
+        setGrade({
+          status: 'submitted',
+          feedback: 'Your response was submitted for teacher review. No automatic correctness judgment was applied.',
+          loading: false
+        });
+        return;
+      }
       if (!p.QuizAIHelpers) {
         setGrade({
           status: 'error',
@@ -1526,8 +2183,8 @@ var _lazyIcon = function (name) {
         });
       });
     }
-    var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
-    var statusLabel = grade.status === 'correct' ? '✓ Correct' : grade.status === 'partially-correct' ? '~ Close' : grade.status === 'incorrect' ? '✗ Not yet' : grade.status === 'unclear' ? '? Unclear' : grade.status === 'error' ? '! Error' : grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : '';
+    var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'submitted' ? 'indigo' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
+    var statusLabel = grade.status === 'correct' ? 'Correct' : grade.status === 'partially-correct' ? 'Close' : grade.status === 'submitted' ? 'Submitted for review' : grade.status === 'incorrect' ? 'Not yet' : grade.status === 'unclear' ? 'Unclear' : grade.status === 'error' ? 'Error' : grade.status === 'idk' ? 'Marked I do not know' : '';
     var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' : q.type === 'self-explanation' ? 'Explain your reasoning' : 'Brief written response';
     return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">{typeLabel}</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p></div></div>{q.type === 'fill-blank' ? <input aria-label={t("a11y.fill_in_blank")} type="text" value={response} onChange={function (ev) {
         setResponse(ev.target.value);
@@ -1536,22 +2193,22 @@ var _lazyIcon = function (name) {
           ev.preventDefault();
           submitGrade();
         }
-      }} placeholder={t("placeholders.missing_word_or_phrase")} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /> : <textarea aria-label={typeLabel + " response"} value={response} onChange={function (ev) {
+      }} placeholder={t("placeholders.missing_word_or_phrase")} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" /> : <textarea aria-label={typeLabel + " response"} value={response} onChange={function (ev) {
         setResponse(ev.target.value);
-      }} placeholder={q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...'} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk'} rows={q.type === 'self-explanation' ? 5 : 3} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y" />}<div className="flex items-center justify-between gap-2 mt-2 flex-wrap"><div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={submitGrade} disabled={!response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk'} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none">{grade.loading ? 'Grading…' : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : 'Grade my answer'}</button>{allowIDK && !grade.status && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain_concept")}><span aria-hidden="true">🤔 </span>{t("ui_common.i_dont_know")}</button>}</div>{grade.status && grade.status !== 'correct' && grade.status !== 'idk' && <button type="button" onClick={function () {
+      }} placeholder={q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...'} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} rows={q.type === 'self-explanation' ? 5 : 3} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm  focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y" />}<QuizVoiceInputButton value={response} onChange={setResponse} disabled={grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} allowDictation={p.allowDictation} label="Dictate written response" /><div className="flex items-center justify-between gap-2 mt-2 flex-wrap"><div className="flex items-center gap-2 flex-wrap"><button type="button" onClick={submitGrade} disabled={!response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk' || grade.status === 'submitted'} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none">{grade.loading ? 'Grading…' : grade.status === 'submitted' ? 'Submitted' : grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : teacherReviewWritten ? 'Submit response' : 'Grade my answer'}</button>{allowIDK && !grade.status && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors motion-reduce:transition-none" aria-label="I don't know — skip without penalty" title={t("tooltips.skip_ai_explain_concept")}><span aria-hidden="true">🤔 </span>{t("ui_common.i_dont_know")}</button>}</div>{grade.status && grade.status !== 'correct' && grade.status !== 'idk' && <button type="button" onClick={function () {
           setGrade({
             status: null,
             feedback: '',
             loading: false
           });
-          setResponse('');
+          if (grade.status !== 'submitted') setResponse('');
           setExplainer({
             open: false,
             loading: false,
             text: '',
             error: ''
           });
-        }} className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors motion-reduce:transition-none">{t("ui_common.try_again")}</button>}</div>{grade.status && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-1 flex-wrap"><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{statusLabel}</span>{aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && <button type="button" onClick={requestExplainer} className="ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors motion-reduce:transition-none" title={t("tooltips.quick_ai_explanation")}>🤖 Explain this</button>}</div>{grade.feedback && <p className={'text-sm text-' + statusColor + '-900 mb-2'}>{grade.feedback}</p>}{explainer.open && <div className="mt-2 p-3 bg-white border border-indigo-200 rounded-lg"><div className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <p className="text-sm text-slate-800 leading-relaxed">{explainer.text}</p>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
+        }} className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors motion-reduce:transition-none">{grade.status === 'submitted' ? 'Revise response' : t("ui_common.try_again")}</button>}</div>{grade.status && <div className={'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300'} role="status" aria-live="polite"><div className="flex items-center gap-2 mb-1 flex-wrap"><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900'}>{statusLabel}</span>{aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && <button type="button" onClick={requestExplainer} className="ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors motion-reduce:transition-none" title={t("tooltips.quick_ai_explanation")}>🤖 Explain this</button>}</div>{grade.feedback && <p className={'text-sm text-' + statusColor + '-900 mb-2'}>{grade.feedback}</p>}{explainer.open && <div className="mt-2 p-3 bg-white border border-indigo-200 rounded-lg"><div className="text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1">🤖 Quick explanation</div>{explainer.loading && <p className="text-sm text-indigo-700 italic">Generating explanation…</p>}{explainer.text && <p className="text-sm text-slate-800 leading-relaxed">{explainer.text}</p>}{explainer.error && <p className="text-sm text-rose-700">{explainer.error}</p>}{explainer.text && typeof p.callTTS === 'function' && <button type="button" onClick={function () {
             if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainer.text);
             else p.callTTS(explainer.text);
           }} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900" aria-label={t("a11y.read_aloud")}>🔊 Read aloud</button>}</div>}</div>}{allowConfidence && grade.status && grade.status !== 'idk' && <div className="mt-2 flex items-center gap-2 flex-wrap text-xs"><span className="text-slate-600 font-semibold">How sure were you?</span>{['knew', 'guessed', 'no-idea'].map(function (lvl) {
@@ -1567,18 +2224,143 @@ var _lazyIcon = function (name) {
           }} className={'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')}>{labels[lvl]}</button>;
         })}</div>}</div>;
   }
+  function _quizPresentationTypeLabel(type) {
+    var labels = {
+      'multi-select': 'Select all that apply',
+      'fill-blank': 'Fill in the blank',
+      'short-answer': 'Short answer',
+      'self-explanation': 'Explain your thinking',
+      'sequence-sense': 'Sequence sense',
+      'relation-mismatch': 'Find the mismatch',
+      'answer-evidence': 'Answer + evidence',
+      'numeric-response': 'Numeric response'
+    };
+    return labels[type] || 'Assessment item';
+  }
+  function AssessmentPresentationItem(p) {
+    var q = p.q || {};
+    var type = q.type || 'short-answer';
+    var showAnswer = !!p.showAnswer;
+    var renderText = typeof p.formatInlineText === 'function' ? function (value) { return p.formatInlineText(String(value || ''), false); } : function (value) { return String(value || ''); };
+    var body = null;
+    var answerGuide = null;
+    if (type === 'multi-select') {
+      var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+      body = <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{(q.options || []).map(function (option, index) {
+        var correct = correctAnswers.indexOf(option) !== -1;
+        return <div key={index} className={'p-5 rounded-xl border-2 text-lg font-semibold flex gap-3 ' + (showAnswer && correct ? 'bg-green-50 border-green-500 text-green-900' : showAnswer ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-slate-300 text-slate-800')}><span className="w-7 h-7 rounded border-2 border-current flex items-center justify-center shrink-0">{showAnswer && correct ? '✓' : ''}</span>{renderText(option)}</div>;
+      })}</div>;
+      answerGuide = <div><span className="font-bold">Correct selections: </span>{correctAnswers.join('; ')}</div>;
+    } else if (type === 'fill-blank') {
+      body = <div className="p-6 rounded-xl bg-slate-50 border-2 border-dashed border-slate-300 text-2xl text-center">{renderText(q.question || '')}</div>;
+      var alternatives = Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives.filter(Boolean) : [];
+      answerGuide = <div><span className="font-bold">Expected fill: </span>{q.expectedFill || 'Teacher review'}{alternatives.length > 0 && <div className="mt-1 text-sm">Also accept: {alternatives.join(', ')}</div>}</div>;
+    } else if (type === 'short-answer') {
+      body = <div className="h-36 rounded-xl border-2 border-slate-200 bg-[repeating-linear-gradient(to_bottom,white,white_34px,#cbd5e1_35px)]" aria-label="Short-answer response space" />;
+      answerGuide = <div><span className="font-bold">Expected answer: </span>{q.expectedAnswer || q.sampleAnswer || 'Teacher review'}</div>;
+    } else if (type === 'self-explanation') {
+      body = <div className="h-48 rounded-xl border-2 border-indigo-200 bg-indigo-50/30 p-5 text-slate-500">Explain the idea in your own words. Include how or why it works.</div>;
+      answerGuide = <div><span className="font-bold">Success criteria: </span>{q.rubric || q.expectedAnswer || 'Use accurate reasoning, relevant details, and a clear connection to the concept.'}</div>;
+    } else if (type === 'sequence-sense') {
+      var items = Array.isArray(q.items) ? q.items : [];
+      var presented = Array.isArray(q.presentedOrder) && q.presentedOrder.length ? q.presentedOrder.map(function (item) { return typeof item === 'number' ? items[item] : item; }) : items;
+      body = <ol className="space-y-3">{presented.map(function (item, index) { return <li key={index} className="p-4 rounded-xl bg-slate-50 border-2 border-slate-200 text-lg flex gap-3"><span className="font-black text-indigo-700">{index + 1}</span>{renderText(item)}</li>; })}</ol>;
+      answerGuide = <div><div><span className="font-bold">Correct order: </span>{items.join(' → ')}</div>{q.orderingPrinciple && <div className="mt-1 text-sm">Ordering principle: {q.orderingPrinciple}</div>}</div>;
+    } else if (type === 'relation-mismatch') {
+      var pairs = Array.isArray(q.pairs) ? q.pairs : [];
+      body = <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{pairs.map(function (pair, index) {
+        var mismatch = index === q.wrongPairIndex;
+        return <div key={index} className={'p-4 rounded-xl border-2 text-lg ' + (showAnswer && mismatch ? 'bg-rose-50 border-rose-400' : 'bg-slate-50 border-slate-200')}><span className="font-bold">{renderText(pair.left)}</span><span className="mx-2" aria-hidden="true">↔</span>{renderText(pair.right)}{showAnswer && mismatch && <span className="ml-2 text-rose-700 font-bold">Mismatch</span>}</div>;
+      })}</div>;
+      var wrongPair = pairs[q.wrongPairIndex] || {};
+      answerGuide = <div><span className="font-bold">Fix the mismatch: </span>{wrongPair.left ? wrongPair.left + ' → ' : ''}{q.correctPartnerForWrong || 'Teacher review'}</div>;    } else if (type === 'answer-evidence') {
+      body = <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"><div><h4 className="font-bold text-slate-700 mb-2">Part 1 - answer options</h4><div className="space-y-2">{(q.answerOptions || []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctAnswer ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div><div><h4 className="font-bold text-slate-700 mb-2">Part 2 - supporting evidence</h4><div className="space-y-2">{(q.evidenceOptions || []).map(function (option, index) { return <div key={index} className={'p-3 rounded-lg border-2 ' + (showAnswer && option === q.correctEvidence ? 'bg-green-50 border-green-500' : 'bg-slate-50 border-slate-200')}>{renderText(option)}</div>; })}</div></div></div>;
+      answerGuide = <div><div><span className="font-bold">Answer: </span>{q.correctAnswer || 'Teacher review'}</div><div className="mt-1"><span className="font-bold">Evidence: </span>{q.correctEvidence || 'Teacher review'}</div></div>;
+    } else if (type === 'numeric-response') {
+      body = <div className="p-8 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-end gap-3 justify-center"><span className="text-3xl tracking-widest text-slate-400">____________</span>{q.unit && <span className="text-2xl font-bold text-slate-700">{q.unit}</span>}</div>;
+      answerGuide = <div><span className="font-bold">Expected value: </span>{String(q.correctValue ?? 'Teacher review')}{q.unit ? ' ' + q.unit : ''}{Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : ''}</div>;
+    } else {
+      body = <div className="h-36 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50" aria-label="Response space" />;
+      answerGuide = <div>Teacher review</div>;
+    }
+    return <div data-presentation-question-type={type} className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-md"><div className="flex gap-4 mb-6"><div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">{p.index + 1}</div><div className="flex-grow"><div className="text-xs uppercase tracking-wider font-black text-teal-800 mb-1">{_quizPresentationTypeLabel(type)}</div><h3 className="text-2xl font-bold text-slate-800 leading-tight">{renderText(q.question || '')}</h3>{q.question_en && <p className="text-lg text-slate-600 italic mt-2">{renderText(q.question_en)}</p>}</div></div><div className="ml-0 md:ml-14">{body}<div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">{q.factCheck && <button type="button" onClick={p.onToggleExplanation} className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-400 text-slate-700">{p.showExplanation ? 'Hide explanation' : 'Show explanation'}</button>}<button type="button" onClick={p.onToggleAnswer} aria-expanded={showAnswer} className={'text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (showAnswer ? 'bg-slate-200 text-slate-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100')}>{showAnswer ? <Eye size={14} /> : <MousePointerClick size={14} />}{showAnswer ? 'Hide answer guide' : 'Reveal answer guide'}</button></div>{showAnswer && <div className="mt-4 p-4 rounded-xl bg-green-50 border-2 border-green-200 text-green-950" role="status">{answerGuide}</div>}{p.showExplanation && q.factCheck && <div className="mt-4 p-4 rounded-xl bg-yellow-50 border border-yellow-200 text-slate-700">{typeof p.renderFormattedText === 'function' ? p.renderFormattedText(q.factCheck) : q.factCheck}</div>}</div></div>;
+  }
   function QuizView(props) {
     var t = props.t;
     var isTeacherMode = props.isTeacherMode;
     var isParentMode = props.isParentMode;
     var isIndependentMode = props.isIndependentMode;
+    var allowDictation = isTeacherMode || !(props.studentProjectSettings && props.studentProjectSettings.allowDictation === false);
     var activeSessionCode = props.activeSessionCode;
     var sessionData = props.sessionData;
     var onSubmitLiveAnswer = activeSessionCode && typeof props.onSubmitLiveAnswer === 'function' ? props.onSubmitLiveAnswer : null;
-    var mcqAnswersState = React.useState({});
+    var assessmentData = props.generatedContent && props.generatedContent.data || {};
+    var scoringPolicy = Object.assign({ partialCredit: true, writtenResponseMode: 'ai-provisional' }, assessmentData.scoringPolicy || {});
+    var assessmentAudit = _quizAuditAssessment(assessmentData);
+    var assessmentH5PPreflight = _quizH5PPreflight(assessmentData);
+    var draftNamespace = !isTeacherMode && !isParentMode ? _quizDraftNamespace(assessmentData, activeSessionCode) : '';
+    var regeneratingState = React.useState({});
+    var regeneratingQuestions = regeneratingState[0];
+    var setRegeneratingQuestions = regeneratingState[1];
+    var repairingState = React.useState(false);
+    var repairingAssessment = repairingState[0];
+    var setRepairingAssessment = repairingState[1];
+    async function regenerateAssessmentQuestion(questionIdx, question) {
+      if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function' || !question) return;
+      setRegeneratingQuestions(function (previous) {
+        var next = Object.assign({}, previous);
+        next[questionIdx] = true;
+        return next;
+      });
+      try {
+        var type = question.type || 'mcq';
+        var sourceExcerpt = String(props.inputText || '').slice(0, 5000);
+        var prompt = 'Rewrite one assessment item while preserving its learning target and item type. Improve clarity, answer-key validity, and grade-level fit. Return ONLY valid JSON using this schema: ' + _quizSchemaForType(type) + '. The type must remain "' + type + '". Existing item: ' + JSON.stringify(question) + '. Source context: ' + sourceExcerpt;
+        var raw = await props.callGemini(prompt, true);
+        var parsed = _quizExtractJson(raw);
+        var replacement = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
+        if (!replacement || typeof replacement !== 'object') throw new Error('The AI did not return a valid question.');
+        replacement.type = type;
+        props.handleQuizQuestionAction(questionIdx, 'replace', replacement);
+        if (typeof props.addToast === 'function') props.addToast('Question ' + (questionIdx + 1) + ' regenerated. Review it before sharing.', 'success');
+      } catch (error) {
+        if (typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Question regeneration failed.', 'error');
+      } finally {
+        setRegeneratingQuestions(function (previous) {
+          var next = Object.assign({}, previous);
+          delete next[questionIdx];
+          return next;
+        });
+      }
+    }
+    async function repairAssessmentQuality() {
+      if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function') return;
+      setRepairingAssessment(true);
+      try {
+        var requestedMix = assessmentAudit.requestedMix || assessmentAudit.actualMix;
+        var requestedSchemas = Object.keys(requestedMix || {}).filter(function (type) { return Number(requestedMix[type]) > 0; }).map(function (type) {
+          return type + ' x' + requestedMix[type] + ': ' + _quizSchemaForType(type);
+        }).join('\n');
+        var issueText = assessmentAudit.issues.map(function (issue) {
+          return (issue.questionIdx === null ? 'Recipe' : 'Q' + (issue.questionIdx + 1)) + ': ' + issue.message;
+        }).join('\n');
+        var prompt = 'Repair this complete assessment. Preserve strong questions when possible, replace invalid ones, add missing item types, and return the exact requested recipe. Return ONLY JSON in the shape {"questions":[...]}. Every question needs a short lowercase conceptLabel. Requested recipe and schemas:\n' + requestedSchemas + '\nFlagged issues:\n' + issueText + '\nCurrent questions:\n' + JSON.stringify(assessmentAudit.questions) + '\nSource context:\n' + String(props.inputText || '').slice(0, 6000);
+        var raw = await props.callGemini(prompt, true);
+        var parsed = _quizExtractJson(raw);
+        var questions = parsed && Array.isArray(parsed.questions) ? parsed.questions : null;
+        if (!questions || questions.length === 0) throw new Error('The AI did not return a repaired assessment.');
+        props.handleQuizQuestionAction(0, 'replace-all', { questions: questions });
+        if (typeof props.addToast === 'function') props.addToast('Assessment repaired. Review the quality panel before sharing.', 'success');
+      } catch (error) {
+        if (typeof props.addToast === 'function') props.addToast(error && error.message ? error.message : 'Assessment repair failed.', 'error');
+      } finally {
+        setRepairingAssessment(false);
+      }
+    }
+    var mcqAnswersState = _quizUseDraftField(draftNamespace, 'root', 'mcqAnswers', {});
     var studentMcqAnswers = mcqAnswersState[0];
     var setStudentMcqAnswers = mcqAnswersState[1];
-    var mcqConfidenceState = React.useState({});
+    var mcqConfidenceState = _quizUseDraftField(draftNamespace, 'root', 'mcqConfidence', {});
     var studentMcqConfidence = mcqConfidenceState[0];
     var setStudentMcqConfidence = mcqConfidenceState[1];
     function selectMcqOption(qIdx, optIdx, optText, q) {
@@ -1625,7 +2407,7 @@ var _lazyIcon = function (name) {
         });
       } catch (e) {}
     }
-    var reflectionAnswersState = React.useState({});
+    var reflectionAnswersState = _quizUseDraftField(draftNamespace, 'root', 'reflectionAnswers', {});
     var reflectionAnswers = reflectionAnswersState[0];
     var setReflectionAnswers = reflectionAnswersState[1];
     function setReflectionDraft(rIdx, text) {
@@ -2107,7 +2889,9 @@ var _lazyIcon = function (name) {
           if (window.AlloSpeechPlayer) window.AlloSpeechPlayer.speak(explainerData.response);
           else props.callTTS(explainerData.response);
         }} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900" aria-label={t("a11y.read_aloud")}>🔊 Read aloud</button>}</div>}{explainerData.error && <div className="mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">{explainerData.error}</div>}</div> : null;
-    return <div className="space-y-6">{classExplainerBanner}{modeBanner}{explainerPanel}<div className="bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"><p className="text-sm text-teal-800 flex-grow"><strong>UDL Goal:</strong> Providing options for action and expression. Frequent formative assessments help track progress and adjust instruction.</p><div className="flex items-center gap-2 flex-wrap">{isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && <><button type="button" aria-label={t('common.connect')} onClick={handleStartLiveSession} className={'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass} title={t('quiz.launch_live_tooltip')}><Wifi size={14} /> {t('quiz.launch_live_btn')}</button><div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in motion-reduce:animate-none fade-in duration-300"><Users size={12} className="text-orange-700" /><span className="text-xs font-black text-orange-700">{Object.keys(sessionData?.roster || {}).length} {t('quiz.lobby_waiting') || "Ready"}</span></div><button type="button" aria-label={t('common.locked')} onClick={handleToggleInteractive} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`} title={t('session.toggle_interactive_title')}>{sessionData?.forceStatic ? <Lock size={12} /> : <Unlock size={12} />}{sessionData?.forceStatic ? t('session.static_only') : t('session.interactive')}</button></>}<button type="button" aria-label={t('common.confirm')} onClick={handleToggleIsPresentationMode} disabled={isReviewGame || isTeacherMode && sessionData?.quizState?.isActive} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`} title={t('quiz.presentation')}>{isPresentationMode ? <CheckCircle size={14} /> : <MonitorPlay size={14} />}{isPresentationMode ? t('common.close') : t('quiz.presentation')}</button><button type="button" onClick={handleToggleIsReviewGame} disabled={isPresentationMode} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isReviewGame ? 'bg-yellow-500 text-indigo-900 hover:bg-yellow-600 ring-2 ring-yellow-200' : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'}`} title={t('quiz.review_game')} aria-label={t('quiz.review_game')}>{isReviewGame ? <XCircle size={14} /> : <Gamepad2 size={14} />}{isReviewGame ? t('common.close') : t('quiz.review_game')}</button><button type="button" onClick={() => {
+    var qualityReviewPanel = isTeacherMode && !(activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive) ? <AssessmentQualityPanel audit={assessmentAudit} h5p={assessmentH5PPreflight} repairing={repairingAssessment} onRepairAll={repairAssessmentQuality} /> : null;
+    var draftStatusPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <AssessmentDraftStatus namespace={draftNamespace} /> : null;
+    return <div className="space-y-6">{classExplainerBanner}{modeBanner}{explainerPanel}{qualityReviewPanel}{draftStatusPanel}<div className="bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"><p className="text-sm text-teal-800 flex-grow"><strong>UDL Goal:</strong> Providing options for action and expression. Frequent formative assessments help track progress and adjust instruction.</p><div className="flex items-center gap-2 flex-wrap">{isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && <><button type="button" aria-label={t('common.connect')} onClick={handleStartLiveSession} className={'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200 ' + quizreducedMotionClass} title={t('quiz.launch_live_tooltip')}><Wifi size={14} /> {t('quiz.launch_live_btn')}</button><div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in motion-reduce:animate-none fade-in duration-300"><Users size={12} className="text-orange-700" /><span className="text-xs font-black text-orange-700">{Object.keys(sessionData?.roster || {}).length} {t('quiz.lobby_waiting') || "Ready"}</span></div><button type="button" aria-label={t('common.locked')} onClick={handleToggleInteractive} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`} title={t('session.toggle_interactive_title')}>{sessionData?.forceStatic ? <Lock size={12} /> : <Unlock size={12} />}{sessionData?.forceStatic ? t('session.static_only') : t('session.interactive')}</button></>}<button type="button" aria-label={t('common.confirm')} onClick={handleToggleIsPresentationMode} disabled={isReviewGame || isTeacherMode && sessionData?.quizState?.isActive} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`} title={t('quiz.presentation')}>{isPresentationMode ? <CheckCircle size={14} /> : <MonitorPlay size={14} />}{isPresentationMode ? t('common.close') : t('quiz.presentation')}</button><button type="button" onClick={handleToggleIsReviewGame} disabled={isPresentationMode} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isReviewGame ? 'bg-yellow-500 text-indigo-900 hover:bg-yellow-600 ring-2 ring-yellow-200' : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'}`} title={t('quiz.review_game')} aria-label={t('quiz.review_game')}>{isReviewGame ? <XCircle size={14} /> : <Gamepad2 size={14} />}{isReviewGame ? t('common.close') : t('quiz.review_game')}</button><button type="button" onClick={() => {
             if (escapeRoomState.isActive) {
               if (isTeacherMode && activeSessionCode) {
                 endCollaborativeEscapeRoom();
@@ -2181,8 +2965,11 @@ var _lazyIcon = function (name) {
         derangeShuffle,
         openEscapeRoomSettings
       }} t={t} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} playSound={playSound} globalPoints={globalPoints} inputText={inputText} /> : null : isPresentationMode ? <div className="space-y-8 animate-in motion-reduce:animate-none fade-in duration-500"><div className="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg"><h2 className="font-bold text-xl flex items-center gap-2"><MonitorPlay size={24} className="text-teal-700" /> {t('quiz.presentation_board')}</h2><button type="button" aria-label={t('common.reset_presentation')} onClick={resetPresentation} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none"><RefreshCw size={14} /> {t('quiz.reset_board')}</button></div>{generatedContent?.data.questions.map((q, i) => {
-          if (!q || (q.type && q.type !== 'mcq') || !Array.isArray(q.options)) return null;
+          if (!q) return null;
           const pState = presentationState[i] || {};
+          if ((q.type && q.type !== 'mcq') || !Array.isArray(q.options)) {
+            return <AssessmentPresentationItem key={i} q={q} index={i} showAnswer={!!pState.showAnswer} showExplanation={!!pState.showExplanation} onToggleAnswer={() => togglePresentationAnswer(i)} onToggleExplanation={() => togglePresentationExplanation(i)} formatInlineText={formatInlineText} renderFormattedText={renderFormattedText} />;
+          }
           const isAnswered = !!pState.selectedOption;
           const isCorrectlyAnswered = pState.isCorrect;
           const showAnswer = pState.showAnswer;
@@ -2208,7 +2995,7 @@ var _lazyIcon = function (name) {
                 }
                 return <button type="button" key={optIdx} onClick={() => handlePresentationOptionClick(i, opt)} disabled={showAnswer} className={`p-5 rounded-xl text-left font-bold text-lg transition-all motion-reduce:transition-none duration-200 flex items-center gap-4 group w-full ${btnClass}`}><div className="shrink-0">{icon}</div><div className="flex-grow">{formatInlineText(opt, false)}{q.options_en && q.options_en[optIdx] && <div className="text-sm font-normal opacity-80 italic mt-1">{formatInlineText(q.options_en[optIdx], false)}</div>}</div></button>;
               })}</div><div className="mt-6 ml-0 md:ml-14 flex items-center justify-between border-t border-slate-100 pt-4 flex-wrap gap-2"><div className="h-8 flex items-center relative">{isAnswered && !isCorrectlyAnswered && !showAnswer && <span className="text-red-500 font-bold flex items-center gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-left-2"><XCircle size={18} /> {t('quiz.presentation_try_again')}</span>}{isAnswered && isCorrectlyAnswered && <span className="text-green-600 font-bold flex items-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 overflow-visible"><Sparkles size={18} /> {t('quiz.presentation_correct')}<ConfettiExplosion /></span>}</div><div className="flex gap-2">{q.factCheck && <button type="button" aria-label={showExplanation ? t('quiz.hide_explanation') : t('quiz.show_explanation')} onClick={() => togglePresentationExplanation(i)} className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 ${showExplanation ? 'bg-yellow-100 text-yellow-700' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'}`}>{showExplanation ? <ChevronUp size={14} /> : <Info size={14} />}{showExplanation ? t('quiz.hide_explanation') : t('quiz.show_explanation')}</button>}<button type="button" aria-label={showAnswer ? t('quiz.hide_answer') : t('quiz.reveal_answer')} onClick={() => togglePresentationAnswer(i)} className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 ${showAnswer ? 'bg-slate-200 text-slate-600' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}>{showAnswer ? <Eye size={14} /> : <MousePointerClick size={14} />}{showAnswer ? t('quiz.hide_answer') : t('quiz.reveal_answer')}</button></div></div>{showExplanation && q.factCheck && <div className="mt-4 ml-0 md:ml-14 p-4 bg-yellow-50 border border-yellow-100 rounded-xl animate-in motion-reduce:animate-none slide-in-from-top-2"><div className="prose prose-sm text-slate-700 max-w-none leading-relaxed">{renderFormattedText(q.factCheck)}</div></div>}</div>;
-        })}<div className="bg-indigo-900 text-white p-8 rounded-2xl shadow-xl mt-8"><h3 className="text-xl font-bold mb-6 flex items-center gap-2"><MessageSquare size={24} className="text-indigo-300" /> {t('quiz.presentation_discussion')}</h3><div className="space-y-8">{Array.isArray(generatedContent?.data.reflections) ? generatedContent?.data.reflections.map((ref, i) => <div key={i} className="bg-indigo-800/50 p-6 rounded-xl border border-indigo-700"><p className="text-2xl font-medium leading-relaxed text-center">"{typeof ref === 'string' ? ref : ref.text}"</p>{typeof ref === 'object' && ref.text_en && <p className="text-lg text-indigo-300 italic text-center mt-4">"{ref.text_en}"</p>}</div>) : <p className="text-2xl font-medium leading-relaxed text-center">"{generatedContent?.data.reflection}"</p>}</div></div></div> : <div className="space-y-6">{generatedContent?.data.questions.map((q, i) => q && q.type && q.type !== 'mcq' ? null : <div key={i} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question">{q.imageUrl && <div className="relative mb-3"><img src={q.imageUrl} alt={q.question || 'Question image'} loading="lazy" className="w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50" />{renderImageRefineOverlay(i, 'question', null, false)}</div>}<div className="flex justify-between items-start mb-4 gap-4"><div className="flex-grow flex gap-3"><span className="bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-1.5">{i + 1}</span><div className="flex-grow space-y-2">{isEditingQuiz ? <><textarea aria-label={t('quiz.edit_question') || 'Edit question'} value={q.question} onChange={e => handleQuizChange(i, 'question', e.target.value)} className="w-full font-bold text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none" rows={getRows(q.question)} />{q.question_en !== undefined && <textarea aria-label={t('quiz.edit_question_english') || 'Edit question English translation'} value={q.question_en || ''} onChange={e => handleQuizChange(i, 'question', e.target.value, null, true)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none" rows={getRows(q.question_en || '')} placeholder={t('common.placeholder_english_trans')} />}</> : <><p className="font-bold text-slate-800 px-2 py-1">{q.question}</p>{q.question_en && <p className="text-sm text-slate-600 italic px-2">{q.question_en}</p>}</>}</div></div>{isTeacherMode && <button type="button" aria-label={isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check')} onClick={() => handleFactCheck(i)} disabled={isFactChecking[i]} className={`flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded border transition-colors motion-reduce:transition-none ${q.factCheck ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200' : 'text-teal-800 bg-teal-50 hover:bg-teal-100 border-teal-200'}`} title={t('quiz.verify_tooltip')}>{isFactChecking[i] ? <RefreshCw size={12} className={"animate-spin " + quizreducedMotionClass} /> : q.factCheck ? <RefreshCw size={12} /> : <ShieldCheck size={12} />}{isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check')}</button>}</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-9">{q.options.map((opt, optIdx) => <div key={optIdx} role={!isEditingQuiz ? 'button' : undefined} tabIndex={!isEditingQuiz ? 0 : undefined} aria-pressed={!isEditingQuiz ? studentMcqAnswers[i] === optIdx : undefined} onClick={!isEditingQuiz ? () => selectMcqOption(i, optIdx, opt, q) : undefined} onKeyDown={!isEditingQuiz ? e => {
+        })}<div className="bg-indigo-900 text-white p-8 rounded-2xl shadow-xl mt-8"><h3 className="text-xl font-bold mb-6 flex items-center gap-2"><MessageSquare size={24} className="text-indigo-300" /> {t('quiz.presentation_discussion')}</h3><div className="space-y-8">{Array.isArray(generatedContent?.data.reflections) ? generatedContent?.data.reflections.map((ref, i) => <div key={i} className="bg-indigo-800/50 p-6 rounded-xl border border-indigo-700"><p className="text-2xl font-medium leading-relaxed text-center">"{typeof ref === 'string' ? ref : ref.text}"</p>{typeof ref === 'object' && ref.text_en && <p className="text-lg text-indigo-300 italic text-center mt-4">"{ref.text_en}"</p>}</div>) : <p className="text-2xl font-medium leading-relaxed text-center">"{generatedContent?.data.reflection}"</p>}</div></div></div> : <div className="space-y-6">{generatedContent?.data.questions.map((q, i) => q && q.type && q.type !== 'mcq' ? null : <div key={i} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question">{q.imageUrl && <div className="relative mb-3"><img src={q.imageUrl} alt={q.question || 'Question image'} loading="lazy" className="w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50" />{renderImageRefineOverlay(i, 'question', null, false)}</div>}<div className="flex justify-between items-start mb-4 gap-4"><div className="flex-grow flex gap-3"><span className="bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-1.5">{i + 1}</span><div className="flex-grow space-y-2">{isEditingQuiz ? <><textarea aria-label={t('quiz.edit_question') || 'Edit question'} value={q.question} onChange={e => handleQuizChange(i, 'question', e.target.value)} className="w-full font-bold text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none" rows={getRows(q.question)} />{q.question_en !== undefined && <textarea aria-label={t('quiz.edit_question_english') || 'Edit question English translation'} value={q.question_en || ''} onChange={e => handleQuizChange(i, 'question', e.target.value, null, true)} className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-none transition-all motion-reduce:transition-none" rows={getRows(q.question_en || '')} placeholder={t('common.placeholder_english_trans')} />}</> : <><p className="font-bold text-slate-800 px-2 py-1">{q.question}</p>{q.question_en && <p className="text-sm text-slate-600 italic px-2">{q.question_en}</p>}</>}</div></div>{isTeacherMode && <button type="button" aria-label={isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check')} onClick={() => handleFactCheck(i)} disabled={isFactChecking[i]} className={`flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded border transition-colors motion-reduce:transition-none ${q.factCheck ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200' : 'text-teal-800 bg-teal-50 hover:bg-teal-100 border-teal-200'}`} title={t('quiz.verify_tooltip')}>{isFactChecking[i] ? <RefreshCw size={12} className={"animate-spin " + quizreducedMotionClass} /> : q.factCheck ? <RefreshCw size={12} /> : <ShieldCheck size={12} />}{isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check')}</button>}</div>{isEditingQuiz && <AssessmentItemActions q={q} questionIdx={i} totalQuestions={generatedContent.data.questions.length} onAction={props.handleQuizQuestionAction} onRegenerate={regenerateAssessmentQuestion} regenerating={!!regeneratingQuestions[i]} />}<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-9">{q.options.map((opt, optIdx) => <div key={optIdx} role={!isEditingQuiz ? 'button' : undefined} tabIndex={!isEditingQuiz ? 0 : undefined} aria-pressed={!isEditingQuiz ? studentMcqAnswers[i] === optIdx : undefined} onClick={!isEditingQuiz ? () => selectMcqOption(i, optIdx, opt, q) : undefined} onKeyDown={!isEditingQuiz ? e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 selectMcqOption(i, optIdx, opt, q);
@@ -2226,7 +3013,7 @@ var _lazyIcon = function (name) {
             setMcqConfidence(i, lvl, q);
           }} />{q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && <div className="mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in motion-reduce:animate-none slide-in-from-top-2 relative"><Stamp label={t('quiz.verified_stamp')} position="top-2 right-2" size="small" /><button type="button" aria-label={isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check')} onClick={() => handleFactCheck(i)} disabled={isFactChecking[i]} className="absolute bottom-2 right-2 p-1.5 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors motion-reduce:transition-none" title={t('quiz.regenerate_check')}><RefreshCw size={14} className={isFactChecking[i] ? "animate-spin " + quizreducedMotionClass : ""} /></button><Sparkles size={14} className="mt-0.5 shrink-0 text-yellow-600" /><div className="flex-grow"><div className="whitespace-pre-line leading-relaxed text-slate-700">{renderFormattedText(q.factCheck)}</div></div></div>}</div>)}{Array.isArray(generatedContent?.data?.questions) && generatedContent.data.questions.some(function (q) {
           return q && (q.type === 'multi-select' || q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch' || q.type === 'answer-evidence' || q.type === 'numeric-response');
-        }) && <FreeformItemsBlock questions={generatedContent.data.questions} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} QuizAIHelpers={window.AlloModules && window.AlloModules.QuizAIHelpers} modeStrategy={_modeStrat} onSubmitLiveAnswer={onSubmitLiveAnswer} />}{(Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0 || generatedContent?.data.reflection) && <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"><h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2"><PenTool size={16} /> {t('quiz.reflections')}</h4>{Array.isArray(generatedContent?.data.reflections) ? <div className="space-y-6">{generatedContent?.data.reflections.map((ref, i) => {
+        }) && <FreeformItemsBlock questions={generatedContent.data.questions} draftNamespace={draftNamespace} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} QuizAIHelpers={window.AlloModules && window.AlloModules.QuizAIHelpers} modeStrategy={_modeStrat} scoringPolicy={scoringPolicy} onSubmitLiveAnswer={onSubmitLiveAnswer} allowDictation={allowDictation} isEditingQuiz={isEditingQuiz} onQuestionAction={props.handleQuizQuestionAction} onRegenerateQuestion={regenerateAssessmentQuestion} regeneratingQuestions={regeneratingQuestions} />}{(Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0 || generatedContent?.data.reflection) && <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"><h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2"><PenTool size={16} /> {t('quiz.reflections')}</h4>{Array.isArray(generatedContent?.data.reflections) ? <div className="space-y-6">{generatedContent?.data.reflections.map((ref, i) => {
               const text = typeof ref === 'string' ? ref : ref.text || ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : '');
               const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
               var refEntry = reflectionAnswers[i] || {};
@@ -2236,7 +3023,7 @@ var _lazyIcon = function (name) {
                     reopenReflection(i);
                   }} className="mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900">{t("ui_common.edit_response")}</button></div> : <div className="mt-2"><textarea aria-label="Your reflection" value={refDraft} onChange={function (e) {
                     setReflectionDraft(i, e.target.value);
-                  }} placeholder={t("placeholders.reflection_here")} className="w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none" rows={4} /><div className="flex items-center gap-2 mt-2"><button type="button" onClick={function () {
+                  }} placeholder={t("placeholders.reflection_here")} className="w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none" rows={4} /><QuizVoiceInputButton value={refDraft} onChange={function (value) { setReflectionDraft(i, value); }} allowDictation={allowDictation} label="Dictate reflection" /><div className="flex items-center gap-2 mt-2"><button type="button" onClick={function () {
                       submitReflection(i);
                     }} disabled={!refDraft.trim()} className="text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">{t("ui_common.submit_reflection")}</button>{!refDraft.trim() && <span className="text-[11px] italic text-slate-600">Type a response to enable submit</span>}</div></div>)}</div>;
             })}</div> : <><p className="text-indigo-800 mb-4 italic text-sm">{generatedContent?.data.reflection}</p>{!isEditingQuiz && (isPresentationMode ? <div className="h-24 border-b border-indigo-200 border-dashed" /> : function () {
@@ -2247,7 +3034,7 @@ var _lazyIcon = function (name) {
                   reopenReflection(0);
                 }} className="mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900">{t("ui_common.edit_response")}</button></div> : <div className="mt-2"><textarea aria-label="Your reflection" value={refDraft} onChange={function (e) {
                   setReflectionDraft(0, e.target.value);
-                }} placeholder={t("placeholders.reflection_here")} className="w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none" rows={4} /><div className="flex items-center gap-2 mt-2"><button type="button" onClick={function () {
+                }} placeholder={t("placeholders.reflection_here")} className="w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1  resize-y transition-all motion-reduce:transition-none" rows={4} /><QuizVoiceInputButton value={refDraft} onChange={function (value) { setReflectionDraft(0, value); }} allowDictation={allowDictation} label="Dictate reflection" /><div className="flex items-center gap-2 mt-2"><button type="button" onClick={function () {
                     submitReflection(0);
                   }} disabled={!refDraft.trim()} className="text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">{t("ui_common.submit_reflection")}</button>{!refDraft.trim() && <span className="text-[11px] italic text-slate-600">Type a response to enable submit</span>}</div></div>;
             }())}</>}</div>}</div>}</div>;

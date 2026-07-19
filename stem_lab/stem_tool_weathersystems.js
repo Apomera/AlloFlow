@@ -82,6 +82,8 @@
     { id: 'north', name: 'North Valley', x: 0.58, y: 0.38, elevation: 210 }
   ];
 
+  var TERRAIN_EVIDENCE = { id: 'terrainProfile', label: 'Wind-aligned terrain profile' };
+
   var EVIDENCE = [
     { id: 'pressure', label: 'Pressure tendency' },
     { id: 'tempDew', label: 'Temperature-dew point spread' },
@@ -626,6 +628,39 @@ var GEOGRAPHY_PROFILES = {
     return [round(((longitude2 * 180 / Math.PI + 540) % 360) - 180, 6), round(latitude2 * 180 / Math.PI, 6)];
   }
 
+  function geographicPointComparison(siteLongitude, siteLatitude, siteElevation, pointLongitude, pointLatitude, pointElevation) {
+    var longitude1 = Number(siteLongitude);
+    var latitude1 = Number(siteLatitude);
+    var longitude2 = Number(pointLongitude);
+    var latitude2 = Number(pointLatitude);
+    var elevation = Number(pointElevation);
+    if (![longitude1, latitude1, longitude2, latitude2, elevation].every(isFinite)) return null;
+    var radians = Math.PI / 180;
+    var latitude1Rad = latitude1 * radians;
+    var latitude2Rad = latitude2 * radians;
+    var deltaLatitude = (latitude2 - latitude1) * radians;
+    var deltaLongitude = (longitude2 - longitude1) * radians;
+    var a = Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2) + Math.cos(latitude1Rad) * Math.cos(latitude2Rad) * Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2);
+    var distanceKm = 6371.0088 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)));
+    var bearingRadians = Math.atan2(Math.sin(deltaLongitude) * Math.cos(latitude2Rad), Math.cos(latitude1Rad) * Math.sin(latitude2Rad) - Math.sin(latitude1Rad) * Math.cos(latitude2Rad) * Math.cos(deltaLongitude));
+    var bearing = ((bearingRadians * 180 / Math.PI) + 360) % 360;
+    var numericSiteElevation = Number(siteElevation);
+    var hasSiteElevation = isFinite(numericSiteElevation);
+    var elevationDelta = hasSiteElevation ? Math.round(elevation - numericSiteElevation) : null;
+    var relation = elevationDelta == null ? 'Elevation sampled' : elevationDelta >= 20 ? 'Higher than site' : elevationDelta <= -20 ? 'Lower than site' : 'Similar elevation to site';
+    return {
+      longitude: round(longitude2, 6),
+      latitude: round(latitude2, 6),
+      distanceKm: round(distanceKm, 2),
+      bearing: round(bearing, 1),
+      direction: cardinal(bearing),
+      elevation: Math.round(elevation),
+      siteElevation: hasSiteElevation ? Math.round(numericSiteElevation) : null,
+      elevationDelta: elevationDelta,
+      relation: relation
+    };
+  }
+
   function geographicOverlayData(liveWeather, radiusKm) {
     var live = liveWeather || {};
     var longitude = Number(live.longitude);
@@ -666,6 +701,91 @@ var GEOGRAPHY_PROFILES = {
       windDistanceKm: round(windDistance, 1),
       downwindBearing: downwindBearing
     };
+  }
+
+  function geographicWindTransect(liveWeather, totalDistanceKm, sampleCount) {
+    var live = liveWeather || {};
+    var longitude = Number(live.longitude);
+    var latitude = Number(live.latitude);
+    var totalDistance = clamp(totalDistanceKm != null ? Number(totalDistanceKm) : 30, 10, 100);
+    var count = Math.round(clamp(sampleCount != null ? Number(sampleCount) : 25, 9, 41));
+    if (count % 2 === 0) count += 1;
+    var upwindBearing = ((Number(live.windDir) || 0) % 360 + 360) % 360;
+    var downwindBearing = (upwindBearing + 180) % 360;
+    var coordinates = [];
+    for (var i = 0; i < count; i += 1) {
+      var offset = -totalDistance / 2 + totalDistance * i / (count - 1);
+      coordinates.push(offset < 0
+        ? geographicDestination(longitude, latitude, upwindBearing, Math.abs(offset))
+        : geographicDestination(longitude, latitude, downwindBearing, offset));
+    }
+    return {
+      type: 'Feature',
+      properties: { totalDistanceKm: totalDistance, sampleCount: count, upwindBearing: upwindBearing, downwindBearing: downwindBearing },
+      geometry: { type: 'LineString', coordinates: coordinates }
+    };
+  }
+
+  function analyzeGeographicTerrainProfile(profile) {
+    var points = (Array.isArray(profile) ? profile : []).filter(function (point) { return point && isFinite(Number(point.distanceKm)) && isFinite(Number(point.elevation)); }).map(function (point) { return { distanceKm: Number(point.distanceKm), elevation: Number(point.elevation) }; }).sort(function (a, b) { return a.distanceKm - b.distanceKm; });
+    if (points.length < 2) return null;
+    var elevations = points.map(function (point) { return point.elevation; });
+    var minElevation = Math.min.apply(null, elevations);
+    var maxElevation = Math.max.apply(null, elevations);
+    var distanceMax = points[points.length - 1].distanceKm;
+    var sitePoint = points.reduce(function (nearest, point) { return Math.abs(point.distanceKm - distanceMax / 2) < Math.abs(nearest.distanceKm - distanceMax / 2) ? point : nearest; }, points[0]);
+    var upwindPoint = points[0];
+    var downwindPoint = points[points.length - 1];
+    var riseToSite = Math.round(sitePoint.elevation - upwindPoint.elevation);
+    var changeAfterSite = Math.round(downwindPoint.elevation - sitePoint.elevation);
+    var signalLabel;
+    var interpretation;
+    if (riseToSite >= 150) {
+      signalLabel = 'Strong windward lifting signal';
+      interpretation = 'Terrain rises ' + riseToSite + ' m toward the site, so crossing airflow may be forced upward substantially before continuing downwind.';
+    } else if (riseToSite >= 50) {
+      signalLabel = 'Moderate windward lifting signal';
+      interpretation = 'Terrain rises ' + riseToSite + ' m toward the site, which may encourage crossing airflow to rise and cool.';
+    } else if (riseToSite >= 15) {
+      signalLabel = 'Gentle windward ascent';
+      interpretation = 'Terrain rises gradually toward the site. This provides a smaller terrain-lifting signal to compare with moisture and stability evidence.';
+    } else if (riseToSite <= -50) {
+      signalLabel = 'Descending terrain toward site';
+      interpretation = 'Terrain descends ' + Math.abs(riseToSite) + ' m toward the site, so strong windward lifting is not indicated along this transect.';
+    } else {
+      signalLabel = 'Limited windward relief';
+      interpretation = 'Elevation changes little toward the site, so terrain alone provides limited evidence for forced lifting along this transect.';
+    }
+    return {
+      pointCount: points.length,
+      distanceKm: round(distanceMax, 1),
+      minElevation: Math.round(minElevation),
+      maxElevation: Math.round(maxElevation),
+      relief: Math.round(maxElevation - minElevation),
+      siteElevation: Math.round(sitePoint.elevation),
+      riseToSite: riseToSite,
+      changeAfterSite: changeAfterSite,
+      signalLabel: signalLabel,
+      interpretation: interpretation
+    };
+  }
+
+  function geographicTerrainEvidenceStatus(evidence, liveWeather) {
+    if (!evidence) return { current: false, code: 'missing', label: 'No saved terrain evidence', detail: 'Save a terrain profile before using it in a forecast.' };
+    var live = liveWeather || null;
+    if (!live) return { current: true, code: 'saved', label: 'Saved evidence provenance', detail: 'No active live observation is loaded for comparison.' };
+    var evidenceLatitude = Number(evidence.latitude);
+    var evidenceLongitude = Number(evidence.longitude);
+    var liveLatitude = Number(live.latitude);
+    var liveLongitude = Number(live.longitude);
+    var coordinatesAvailable = isFinite(evidenceLatitude) && isFinite(evidenceLongitude) && isFinite(liveLatitude) && isFinite(liveLongitude);
+    var sameLocation = coordinatesAvailable
+      ? Math.abs(evidenceLatitude - liveLatitude) <= 0.0002 && Math.abs(evidenceLongitude - liveLongitude) <= 0.0002
+      : cleanLocationPart(evidence.location).toLowerCase() === cleanLocationPart(live.label).toLowerCase();
+    if (!sameLocation) return { current: false, code: 'location', label: 'Stale location evidence', detail: 'This terrain profile belongs to ' + (evidence.location || 'a different location') + ', not the active live site.' };
+    var sameObservation = !evidence.observedAt || !live.observedAt || String(evidence.observedAt) === String(live.observedAt);
+    if (!sameObservation) return { current: false, code: 'observation', label: 'Older observation evidence', detail: 'The terrain profile was paired with an earlier weather observation and should be refreshed before forecasting.' };
+    return { current: true, code: 'current', label: 'Current location and observation', detail: 'Terrain, wind direction, location, and observation provenance match the active live site.' };
   }
 
   function geographicObservationSummary(liveWeather) {
@@ -866,7 +986,11 @@ var GEOGRAPHY_PROFILES = {
     geographicMetadata: geographicMetadata,
     geographicViewState: geographicViewState,
     geographicDestination: geographicDestination,
+    geographicPointComparison: geographicPointComparison,
     geographicOverlayData: geographicOverlayData,
+    geographicWindTransect: geographicWindTransect,
+    analyzeGeographicTerrainProfile: analyzeGeographicTerrainProfile,
+    geographicTerrainEvidenceStatus: geographicTerrainEvidenceStatus,
     geographicObservationSummary: geographicObservationSummary,
     geographicMapSources: Object.assign({}, GEOGRAPHIC_MAP_SOURCES),
     cleanLocationPart: cleanLocationPart,
@@ -1272,7 +1396,15 @@ var GEOGRAPHY_PROFILES = {
         }).then(function (payload) {
           var live = normalizeLiveWeatherResponse(payload, label, latitude, longitude);
           var geography = geographicMetadata(latitude, longitude, label, place);
-          update({ liveWeather: live, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Live observation loaded for ' + live.label + '.', immersiveDataSource: 'live' });
+          var terrainStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live);
+          var hadTerrainEvidence = !!d.geographicTerrainEvidence || (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1;
+          var livePatch = { liveWeather: live, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Live observation loaded for ' + live.label + '.', immersiveDataSource: 'live', terrainEvidenceInvalidatedMessage: '', geographicTerrainProbe: null };
+          if (hadTerrainEvidence && !terrainStatus.current) {
+            livePatch.evidence = (d.evidence || []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id; });
+            livePatch.geographicTerrainEvidence = null;
+            livePatch.terrainEvidenceInvalidatedMessage = 'Previous terrain evidence was removed because the live location or observation changed. Sample and save the new profile before forecasting.';
+          }
+          update(livePatch);
           if (addToast) addToast('Live weather loaded for ' + live.label + '.', 'success');
           if (announce) announce('Live weather loaded for ' + live.label + '. Observed condition: ' + live.condition + '.');
           return live;
@@ -1466,15 +1598,60 @@ var GEOGRAPHY_PROFILES = {
         var runtime = geographicRuntimeRef.current;
         var layerIds = kind === 'studyArea'
           ? ['weather-study-area-fill', 'weather-study-area-outline']
-          : ['weather-wind-flow', 'weather-wind-arrow', 'weather-wind-endpoint'];
+          : kind === 'transect'
+            ? ['weather-terrain-transect-line']
+            : ['weather-wind-flow', 'weather-wind-arrow', 'weather-wind-endpoint'];
         if (runtime && runtime.map) layerIds.forEach(function (layerId) {
           if (runtime.map.getLayer(layerId)) runtime.map.setLayoutProperty(layerId, 'visibility', nextVisible ? 'visible' : 'none');
         });
         var patch = {};
         if (kind === 'studyArea') patch.geographicStudyAreaVisible = nextVisible;
+        else if (kind === 'transect') patch.geographicTransectVisible = nextVisible;
         else patch.geographicWindVisible = nextVisible;
         update(patch);
-        if (announce) announce((kind === 'studyArea' ? 'Study-area ring' : 'Live wind vector') + (nextVisible ? ' shown.' : ' hidden.'));
+        var label = kind === 'studyArea' ? 'Study-area ring' : kind === 'transect' ? 'Wind-aligned terrain transect' : 'Live wind vector';
+        if (announce) announce(label + (nextVisible ? ' shown.' : ' hidden.'));
+      }
+
+      function useGeographicTerrainEvidence() {
+        var analysis = analyzeGeographicTerrainProfile(d.geographicTerrainProfile);
+        if (!analysis || !d.liveWeather) {
+          if (addToast) addToast('Wait for the terrain profile to finish sampling.', 'info');
+          if (announce) announce('Terrain evidence is still being prepared.');
+          return;
+        }
+        var evidence = (d.evidence || []).slice();
+        var selected = evidence.indexOf(TERRAIN_EVIDENCE.id) !== -1;
+        if (selected && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather).current) {
+          update({ tab: 'forecast' });
+          if (announce) announce('Forecast Mission opened with terrain evidence selected.');
+          return;
+        }
+        if (!selected) evidence.push(TERRAIN_EVIDENCE.id);
+        var geographic = geographicViewState(d);
+        update({
+          evidence: evidence,
+          forecastResult: null,
+          terrainEvidenceInvalidatedMessage: '',
+          geographicTerrainEvidence: {
+            id: TERRAIN_EVIDENCE.id,
+            label: TERRAIN_EVIDENCE.label,
+            location: geographic.label,
+            latitude: d.liveWeather.latitude,
+            longitude: d.liveWeather.longitude,
+            observedAt: d.liveWeather.observedAt || '',
+            upwindDirection: cardinal(d.liveWeather.windDir),
+            downwindDirection: cardinal((Number(d.liveWeather.windDir) + 180) % 360),
+            relief: analysis.relief,
+            riseToSite: analysis.riseToSite,
+            changeAfterSite: analysis.changeAfterSite,
+            signalLabel: analysis.signalLabel,
+            summary: analysis.interpretation,
+            source: 'Rendered open terrain elevation'
+          }
+        });
+        if (addToast) addToast('Terrain profile added to forecast evidence.', 'success');
+        if (announce) announce('Wind-aligned terrain profile added to forecast evidence.');
       }
 
       function setGeographicBuildings(visible) {
@@ -1483,6 +1660,16 @@ var GEOGRAPHY_PROFILES = {
         if (runtime && runtime.map && runtime.map.getLayer('building-3d')) runtime.map.setLayoutProperty('building-3d', 'visibility', nextVisible ? 'visible' : 'none');
         update({ geographicBuildings: nextVisible });
         if (announce) announce('Real 3D buildings ' + (nextVisible ? 'shown where available.' : 'hidden.'));
+      }
+
+      function clearGeographicTerrainProbe() {
+        var runtime = geographicRuntimeRef.current;
+        if (runtime && runtime.map) {
+          var source = runtime.map.getSource('weather-terrain-probe');
+          if (source && source.setData) source.setData({ type: 'FeatureCollection', features: [] });
+        }
+        update({ geographicTerrainProbe: null });
+        if (announce) announce('Terrain comparison point cleared.');
       }
 
       function applyImmersiveFocus(focus) {
@@ -1621,6 +1808,12 @@ function openImmersiveTourStep(stepId) {
       }
 
       function issueForecast() {
+        var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather);
+        if ((d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && !terrainEvidenceStatus.current) {
+          if (addToast) addToast('Refresh or remove stale terrain evidence before verifying the forecast.', 'warning');
+          if (announce) announce('Forecast verification paused because the selected terrain evidence does not match the active live observation.');
+          return;
+        }
         var reasoningTarget = band === 'K-2' ? 10 : 20;
         var reasoningText = (d.reasoning || '').trim();
         if (!d.predictionPrecip || !d.predictionTiming || !d.predictionHazard || !d.readinessAction || !d.forecastConfidence || reasoningText.length < reasoningTarget) {
@@ -2029,8 +2222,9 @@ var geographyGroup = new THREE.Group();
         var studyRadius = clamp(d.geographicStudyRadius != null ? Number(d.geographicStudyRadius) : 10, 2, 50);
         var showStudyArea = d.geographicStudyAreaVisible !== false;
         var showWind = d.geographicWindVisible !== false;
+        var showTransect = d.geographicTransectVisible !== false;
         var showBuildings = d.geographicBuildings !== false;
-        update({ geographicMapLoading: true, geographicMapReady: false, geographicMapError: '', geographicMapStatus: 'Loading open geographic layers...' });
+        update({ geographicMapLoading: true, geographicMapReady: false, geographicMapError: '', geographicMapStatus: 'Loading open geographic layers...', geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Sampling natural terrain elevation after map tiles load...', geographicTerrainProbe: null });
 
         ensureWeatherMapLibre().then(function (maplibregl) {
           if (cancelled || !geographicMapRef.current) return;
@@ -2082,6 +2276,7 @@ var geographyGroup = new THREE.Group();
               map.setTerrain({ source: 'weather-terrain', exaggeration: terrainExaggeration });
               if (map.getLayer('building-3d')) map.setLayoutProperty('building-3d', 'visibility', showBuildings ? 'visible' : 'none');
               var overlays = geographicOverlayData(d.liveWeather, studyRadius);
+              var terrainTransect = geographicWindTransect(d.liveWeather, 30, 25);
               var locationData = {
                 type: 'FeatureCollection',
                 features: [{
@@ -2138,6 +2333,14 @@ var geographyGroup = new THREE.Group();
                 layout: { visibility: showWind ? 'visible' : 'none' },
                 paint: { 'circle-radius': 6, 'circle-color': '#0ea5e9', 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 }
               });
+              map.addSource('weather-terrain-transect', { type: 'geojson', data: terrainTransect });
+              map.addLayer({
+                id: 'weather-terrain-transect-line',
+                type: 'line',
+                source: 'weather-terrain-transect',
+                layout: { visibility: showTransect ? 'visible' : 'none', 'line-cap': 'round' },
+                paint: { 'line-color': '#c4b5fd', 'line-opacity': 0.9, 'line-width': 2.5, 'line-dasharray': [2, 2] }
+              }, firstLabel ? firstLabel.id : undefined);
               map.addSource('weather-selected-location', { type: 'geojson', data: locationData });
               map.addLayer({
                 id: 'weather-selected-site',
@@ -2150,6 +2353,46 @@ var geographyGroup = new THREE.Group();
                   'circle-stroke-width': 3,
                   'circle-blur': 0.08
                 }
+              });
+              map.addSource('weather-terrain-probe', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+              map.addLayer({
+                id: 'weather-terrain-probe-connector',
+                type: 'line',
+                source: 'weather-terrain-probe',
+                filter: ['==', ['geometry-type'], 'LineString'],
+                layout: { 'line-cap': 'round' },
+                paint: { 'line-color': '#fb7185', 'line-opacity': 0.88, 'line-width': 2, 'line-dasharray': [1.5, 1.5] }
+              });
+              map.addLayer({
+                id: 'weather-terrain-probe-point',
+                type: 'circle',
+                source: 'weather-terrain-probe',
+                filter: ['==', ['geometry-type'], 'Point'],
+                paint: {
+                  'circle-radius': 6,
+                  'circle-color': '#fb7185',
+                  'circle-stroke-color': '#ffffff',
+                  'circle-stroke-width': 2
+                }
+              });
+              var terrainProfileSampled = false;
+              map.on('idle', function () {
+                if (cancelled || terrainProfileSampled || !map.queryTerrainElevation) return;
+                var terrainSettings = map.getTerrain ? map.getTerrain() : null;
+                var activeExaggeration = terrainSettings && isFinite(Number(terrainSettings.exaggeration)) && Number(terrainSettings.exaggeration) > 0 ? Number(terrainSettings.exaggeration) : 1;
+                var coordinates = terrainTransect.geometry.coordinates;
+                var totalDistance = terrainTransect.properties.totalDistanceKm;
+                var profile = [];
+                coordinates.forEach(function (coordinate, index) {
+                  var renderedElevation = map.queryTerrainElevation(coordinate);
+                  if (renderedElevation != null && isFinite(Number(renderedElevation))) profile.push({
+                    distanceKm: round(totalDistance * index / (coordinates.length - 1), 1),
+                    elevation: Math.round(Number(renderedElevation) / activeExaggeration)
+                  });
+                });
+                if (profile.length < Math.ceil(coordinates.length * 0.6)) return;
+                terrainProfileSampled = true;
+                update({ geographicTerrainProfile: profile, geographicTerrainProfileStatus: 'Natural elevation sampled from the rendered terrain along a 30 km wind-aligned transect.' });
               });
               if (maplibregl.Popup) {
                 map.on('mouseenter', 'weather-selected-site', function () { map.getCanvas().style.cursor = 'pointer'; });
@@ -2165,8 +2408,36 @@ var geographyGroup = new THREE.Group();
                   if (runtime) runtime.popup = popup;
                 });
               }
+              map.on('click', function (event) {
+                if (cancelled || !map.queryTerrainElevation || !event || !event.lngLat) return;
+                var siteFeatures = map.queryRenderedFeatures(event.point, { layers: ['weather-selected-site'] });
+                if (siteFeatures && siteFeatures.length) return;
+                var coordinate = [Number(event.lngLat.lng), Number(event.lngLat.lat)];
+                var terrainSettings = map.getTerrain ? map.getTerrain() : null;
+                var activeExaggeration = terrainSettings && isFinite(Number(terrainSettings.exaggeration)) && Number(terrainSettings.exaggeration) > 0 ? Number(terrainSettings.exaggeration) : 1;
+                var renderedElevation = map.queryTerrainElevation(coordinate);
+                if (renderedElevation == null || !isFinite(Number(renderedElevation))) {
+                  if (announce) announce('Terrain elevation is not available at that map point yet.');
+                  return;
+                }
+                var renderedSiteElevation = map.queryTerrainElevation([geographic.longitude, geographic.latitude]);
+                var naturalElevation = Number(renderedElevation) / activeExaggeration;
+                var naturalSiteElevation = renderedSiteElevation != null && isFinite(Number(renderedSiteElevation)) ? Number(renderedSiteElevation) / activeExaggeration : geographic.elevation;
+                var comparison = geographicPointComparison(geographic.longitude, geographic.latitude, naturalSiteElevation, coordinate[0], coordinate[1], naturalElevation);
+                if (!comparison) return;
+                var probeSource = map.getSource('weather-terrain-probe');
+                if (probeSource && probeSource.setData) probeSource.setData({
+                  type: 'FeatureCollection',
+                  features: [
+                    { type: 'Feature', properties: { kind: 'connector' }, geometry: { type: 'LineString', coordinates: [[geographic.longitude, geographic.latitude], coordinate] } },
+                    { type: 'Feature', properties: { kind: 'sample', elevation: comparison.elevation }, geometry: { type: 'Point', coordinates: coordinate } }
+                  ]
+                });
+                update({ geographicTerrainProbe: comparison });
+                if (announce) announce('Terrain point sampled ' + comparison.distanceKm + ' kilometers ' + comparison.direction + ' of the observation site at ' + comparison.elevation + ' meters elevation.');
+              });
               mapReady = true;
-              update({ geographicMapLoading: false, geographicMapReady: true, geographicMapError: '', geographicMapStatus: 'Open map, administrative labels, 3D terrain, a true-scale ' + studyRadius + ' km study area, and the live downwind vector loaded for ' + geographic.label + '. Select the site marker to inspect the live observation.' });
+              update({ geographicMapLoading: false, geographicMapReady: true, geographicMapError: '', geographicMapStatus: 'Open map, administrative labels, 3D terrain, a true-scale ' + studyRadius + ' km study area, the live downwind vector, a wind-aligned terrain transect, and point elevation inspection loaded for ' + geographic.label + '. Select the site marker for the live observation or another map point to compare terrain.' });
               if (announce) announce('Geographic 3D terrain loaded for ' + geographic.label + '.');
             } catch (error) {
               var layerMessage = error && error.message ? error.message : 'Terrain layers could not be initialized.';
@@ -3350,10 +3621,13 @@ var geographyGroup = new THREE.Group();
 
       function forecastMission() {
         var truth = forecastResult && forecastResult.truth;
-        var selectedEvidenceCount = (d.evidence || []).length;
+        var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather);
+        var usableEvidenceIds = (d.evidence || []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id || terrainEvidenceStatus.current; });
+        var selectedEvidenceCount = usableEvidenceIds.length;
         var reasoningTarget = band === 'K-2' ? 10 : 20;
         var reasoningLength = (d.reasoning || '').trim().length;
         var ensemble = ensembleForecast(state);
+        var forecastEvidenceOptions = EVIDENCE.concat(d.geographicTerrainEvidence ? [TERRAIN_EVIDENCE] : []);
         var readinessItems = [
           { id: 'evidence', icon: '\uD83D\uDD0E', label: 'Select 3 evidence sources', complete: selectedEvidenceCount >= 3, progress: Math.min(1, selectedEvidenceCount / 3), status: selectedEvidenceCount + '/3' },
           { id: 'precip', icon: '\uD83C\uDF27\uFE0F', label: 'Choose precipitation', complete: !!d.predictionPrecip, progress: d.predictionPrecip ? 1 : 0, status: d.predictionPrecip ? 'Chosen' : 'Needed' },
@@ -3413,10 +3687,42 @@ var geographyGroup = new THREE.Group();
             )
           );
         }
+        function geographicTerrainEvidencePanel() {
+          var terrainEvidence = d.geographicTerrainEvidence;
+          if (!terrainEvidence) return null;
+          var provenanceStatus = geographicTerrainEvidenceStatus(terrainEvidence, d.liveWeather);
+          return h('section', {
+            className: 'rounded-xl border p-4 ' + (dark ? 'border-violet-400/30 bg-violet-950/25' : 'border-violet-200 bg-violet-50'),
+            'data-weather-terrain-evidence-trail': true,
+            'aria-labelledby': 'weather-terrain-evidence-title'
+          },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+              h('div', null,
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + violetAccentClass }, '3D-to-forecast evidence trail'),
+                h('h3', { id: 'weather-terrain-evidence-title', className: 'mt-1 text-base font-black' }, terrainEvidence.label),
+                h('p', { className: 'mt-1 text-xs ' + mutedClass }, terrainEvidence.location + (terrainEvidence.observedAt ? ' | Observed ' + terrainEvidence.observedAt : ''))
+              ),
+              h('div', { className: 'text-right' },
+                h('span', { className: 'inline-block rounded-full px-3 py-1.5 text-xs font-black ' + (provenanceStatus.current ? (dark ? 'bg-emerald-300/15 text-emerald-200' : 'bg-emerald-100 text-emerald-900') : (dark ? 'bg-amber-300/15 text-amber-200' : 'bg-amber-100 text-amber-900')) }, provenanceStatus.label),
+                h('p', { className: 'mt-1 text-[11px] font-bold ' + violetAccentClass }, terrainEvidence.signalLabel)
+              )
+            ),
+            h('div', { className: 'mt-3 grid grid-cols-3 gap-2' },
+              [['Terrain relief', terrainEvidence.relief + ' m'], ['Rise to site', (terrainEvidence.riseToSite > 0 ? '+' : '') + terrainEvidence.riseToSite + ' m'], ['After site', (terrainEvidence.changeAfterSite > 0 ? '+' : '') + terrainEvidence.changeAfterSite + ' m']].map(function (metric) {
+                return h('div', { key: metric[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-black/20' : 'bg-white') }, h('p', { className: 'text-[11px] ' + mutedClass }, metric[0]), h('p', { className: 'mt-1 text-sm font-black' }, metric[1]));
+              })
+            ),
+            !provenanceStatus.current && h('p', { className: 'mt-3 rounded-lg border border-amber-300/30 bg-amber-300/10 p-3 text-xs font-bold ' + (dark ? 'text-amber-100' : 'text-amber-900'), role: 'alert', 'data-weather-terrain-evidence-warning': true }, provenanceStatus.detail + ' It will not count toward forecast readiness or verification.'),
+            provenanceStatus.current && h('p', { className: 'mt-3 text-[11px] font-bold ' + (dark ? 'text-emerald-200' : 'text-emerald-800'), 'data-weather-terrain-evidence-current': true }, provenanceStatus.detail),
+            h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, terrainEvidence.summary),
+            h('p', { className: 'mt-2 text-[11px] ' + mutedClass }, 'Transect: ' + terrainEvidence.upwindDirection + ' upwind to ' + terrainEvidence.downwindDirection + ' downwind. Use with moisture, stability, and pressure evidence; terrain alone is not a forecast.'),
+            h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic' }); if (announce) announce('Geographic 3D terrain evidence reopened.'); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
+          );
+        }
         function cerComposerPanel() {
           var precipLabels = { none: 'no precipitation', rain: 'rain', snow: 'snow', mixed: 'a wintry mix', storms: 'thunderstorms' };
           var timingLabels = { '0-3': 'within 0 to 3 hours', '4-6': 'within 4 to 6 hours', '7-12': 'within 7 to 12 hours', after12: 'after 12 hours or not during this period' };
-          var chosenEvidence = EVIDENCE.filter(function (item) { return (d.evidence || []).indexOf(item.id) !== -1; });
+          var chosenEvidence = forecastEvidenceOptions.filter(function (item) { return usableEvidenceIds.indexOf(item.id) !== -1; });
           var claimComplete = !!d.predictionPrecip && !!d.predictionTiming;
           var evidenceComplete = chosenEvidence.length >= 2;
           var reasoningComplete = reasoningLength >= reasoningTarget;
@@ -4005,6 +4311,7 @@ var geographyGroup = new THREE.Group();
               )
             ),
             carriedEvidencePanel(),
+            geographicTerrainEvidencePanel(),
             ensemblePanel(),
             readinessCard(),
             forecastJournalPanel(),
@@ -4016,7 +4323,7 @@ var geographyGroup = new THREE.Group();
               h('h3', { className: 'text-base font-black' }, '1. Select evidence'),
               h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Choose the observations you used. Strong forecasts connect more than one data source.'),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
-                EVIDENCE.map(function (item) {
+                forecastEvidenceOptions.map(function (item) {
                   var selected = (d.evidence || []).indexOf(item.id) !== -1;
                   return h('button', {
                     key: item.id, type: 'button', onClick: function () { toggleEvidence(item.id); }, 'aria-pressed': selected,
@@ -4300,8 +4607,26 @@ var geographyGroup = new THREE.Group();
         var geographicStudyRadius = clamp(d.geographicStudyRadius != null ? Number(d.geographicStudyRadius) : 10, 2, 50);
         var geographicStudyAreaVisible = d.geographicStudyAreaVisible !== false;
         var geographicWindVisible = d.geographicWindVisible !== false;
+        var geographicTransectVisible = d.geographicTransectVisible !== false;
         var geographicBuildings = d.geographicBuildings !== false;
         var geographicOverlays = live ? geographicOverlayData(live, geographicStudyRadius) : null;
+        var geographicTerrainProbe = d.geographicTerrainProbe && isFinite(Number(d.geographicTerrainProbe.latitude)) && isFinite(Number(d.geographicTerrainProbe.longitude)) && isFinite(Number(d.geographicTerrainProbe.elevation)) ? d.geographicTerrainProbe : null;
+        var geographicTerrainProfile = Array.isArray(d.geographicTerrainProfile) ? d.geographicTerrainProfile.filter(function (point) { return point && isFinite(Number(point.distanceKm)) && isFinite(Number(point.elevation)); }).map(function (point) { return { distanceKm: Number(point.distanceKm), elevation: Number(point.elevation) }; }) : [];
+        var terrainProfileAnalysis = analyzeGeographicTerrainProfile(geographicTerrainProfile);
+        var terrainProfileChart = null;
+        if (geographicTerrainProfile.length > 1) {
+          var terrainChartWidth = 320, terrainChartHeight = 132, terrainChartLeft = 34, terrainChartRight = 10, terrainChartTop = 14, terrainChartBottom = 26;
+          var terrainMin = Math.min.apply(null, geographicTerrainProfile.map(function (point) { return point.elevation; }));
+          var terrainMax = Math.max.apply(null, geographicTerrainProfile.map(function (point) { return point.elevation; }));
+          var terrainSpan = Math.max(1, terrainMax - terrainMin);
+          var terrainDistanceMax = Math.max.apply(null, geographicTerrainProfile.map(function (point) { return point.distanceKm; }));
+          var terrainX = function (distance) { return terrainChartLeft + (terrainChartWidth - terrainChartLeft - terrainChartRight) * distance / Math.max(1, terrainDistanceMax); };
+          var terrainY = function (elevation) { return terrainChartTop + (terrainChartHeight - terrainChartTop - terrainChartBottom) * (1 - (elevation - terrainMin) / terrainSpan); };
+          var terrainLinePath = geographicTerrainProfile.map(function (point, index) { return (index ? 'L' : 'M') + terrainX(point.distanceKm).toFixed(1) + ',' + terrainY(point.elevation).toFixed(1); }).join(' ');
+          var terrainAreaPath = terrainLinePath + ' L' + terrainX(terrainDistanceMax).toFixed(1) + ',' + (terrainChartHeight - terrainChartBottom) + ' L' + terrainChartLeft + ',' + (terrainChartHeight - terrainChartBottom) + ' Z';
+          var terrainSitePoint = geographicTerrainProfile.reduce(function (nearest, point) { return Math.abs(point.distanceKm - terrainDistanceMax / 2) < Math.abs(nearest.distanceKm - terrainDistanceMax / 2) ? point : nearest; }, geographicTerrainProfile[0]);
+          terrainProfileChart = { width: terrainChartWidth, height: terrainChartHeight, left: terrainChartLeft, right: terrainChartRight, top: terrainChartTop, bottom: terrainChartBottom, min: terrainMin, max: terrainMax, distanceMax: terrainDistanceMax, linePath: terrainLinePath, areaPath: terrainAreaPath, siteX: terrainX(terrainSitePoint.distanceKm), siteY: terrainY(terrainSitePoint.elevation) };
+        }
         var rawGeographicViewport = d.geographicViewport || {};
         var geographicViewport = {
           zoom: isFinite(Number(rawGeographicViewport.zoom)) ? Number(rawGeographicViewport.zoom) : 10.6,
@@ -4347,7 +4672,9 @@ var geographyGroup = new THREE.Group();
                   h('div', { className: 'mt-1.5 space-y-1 text-[10px] font-bold text-slate-100' },
                     h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-amber-400', 'aria-hidden': true }), h('span', null, 'Observation site')),
                     h('div', { className: 'flex items-center gap-2 ' + (geographicStudyAreaVisible ? '' : 'opacity-45') }, h('span', { className: 'h-2.5 w-4 rounded-sm border-2 border-amber-300 bg-amber-300/10', 'aria-hidden': true }), h('span', null, 'Study area ' + (geographicStudyAreaVisible ? 'on' : 'off'))),
-                    h('div', { className: 'flex items-center gap-2 ' + (geographicWindVisible ? '' : 'opacity-45') }, h('span', { className: 'text-sm leading-none text-sky-300', style: { transform: 'rotate(' + (geographicOverlays ? geographicOverlays.downwindBearing : 0) + 'deg)' }, 'aria-hidden': true }, '\u2191'), h('span', null, 'Downwind ' + (geographicWindVisible ? 'on' : 'off')))
+                    h('div', { className: 'flex items-center gap-2 ' + (geographicWindVisible ? '' : 'opacity-45') }, h('span', { className: 'text-sm leading-none text-sky-300', style: { transform: 'rotate(' + (geographicOverlays ? geographicOverlays.downwindBearing : 0) + 'deg)' }, 'aria-hidden': true }, '\u2191'), h('span', null, 'Downwind ' + (geographicWindVisible ? 'on' : 'off'))),
+                    h('div', { className: 'flex items-center gap-2 ' + (geographicTransectVisible ? '' : 'opacity-45') }, h('span', { className: 'w-4 border-t-2 border-dashed border-violet-300', 'aria-hidden': true }), h('span', null, 'Transect ' + (geographicTransectVisible ? 'on' : 'off'))),
+                    geographicTerrainProbe && h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-400', 'aria-hidden': true }), h('span', null, 'Terrain sample'))
                   ),
                   h('p', { className: 'mt-2 border-t border-white/10 pt-1.5 text-[10px] font-bold text-slate-300', 'data-weather-geographic-telemetry': true }, 'Zoom ' + geographicViewport.zoom.toFixed(1) + ' | Tilt ' + Math.round(geographicViewport.pitch) + '\u00B0 | Bearing ' + Math.round(geographicViewport.bearing) + '\u00B0')
                 ),
@@ -4397,7 +4724,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   h('p', { className: 'mt-1 text-sm font-black text-white' }, geographic.label),
                   h('p', { className: 'mt-1 text-[11px] text-slate-300' }, geographic.latitude.toFixed(4) + ', ' + geographic.longitude.toFixed(4) + (geographic.elevation != null ? ' | ' + geographic.elevation + ' m elevation' : '')),
                   geographicOverlays && h('p', { className: 'mt-2 text-[11px] font-bold text-sky-200' }, 'Observed wind flows downwind toward ' + cardinal(geographicOverlays.downwindBearing) + ' | ' + geographicOverlays.windDistanceKm + ' km teaching vector'),
-                  geographicOverlays && h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Vector length is scaled from observed speed; it is not a forecast footprint.')
+                  geographicOverlays && h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Vector length is scaled from observed speed; it is not a forecast footprint.'),
+                  geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample: ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site')
                 )
               ),
               h('aside', { className: 'space-y-3' },
@@ -4465,9 +4793,10 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                       [5, 10, 25, 50].map(function (radius) { return h('option', { key: radius, value: String(radius) }, radius + ' km radius'); })
                     )
                   ),
-                  geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Geographic overlay visibility', 'data-weather-geographic-layer-controls': true },
+                  geographicMode && h('div', { className: 'mt-3 grid grid-cols-3 gap-2', role: 'group', 'aria-label': 'Geographic overlay visibility', 'data-weather-geographic-layer-controls': true },
                     h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('studyArea', !geographicStudyAreaVisible); }, 'aria-pressed': geographicStudyAreaVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 ' + (geographicStudyAreaVisible ? 'border-amber-300/60 bg-amber-300/15 text-amber-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Study area'),
-                    h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('wind', !geographicWindVisible); }, 'aria-pressed': geographicWindVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200 ' + (geographicWindVisible ? 'border-sky-300/60 bg-sky-300/15 text-sky-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Wind vector')
+                    h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('wind', !geographicWindVisible); }, 'aria-pressed': geographicWindVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200 ' + (geographicWindVisible ? 'border-sky-300/60 bg-sky-300/15 text-sky-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Wind vector'),
+                    h('button', { type: 'button', onClick: function () { setGeographicOverlayVisibility('transect', !geographicTransectVisible); }, 'aria-pressed': geographicTransectVisible, className: 'min-h-11 rounded-lg border px-2 py-2 text-[11px] font-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 ' + (geographicTransectVisible ? 'border-violet-300/60 bg-violet-300/15 text-violet-100' : 'border-white/15 bg-white/5 text-slate-200') }, 'Terrain profile')
                   ),
                   geographicMode && h('button', {
                     type: 'button', onClick: function () { setGeographicBuildings(!geographicBuildings); },
@@ -4502,10 +4831,57 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                 geographicMode && h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-geographic-context': true },
                   h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Geographic evidence'),
                   h('h4', { className: 'mt-1 text-sm font-black' }, geographic.context || geographic.label),
-                  h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300' }, 'Inspect elevation, water, roads, settlements, and published administrative labels. Select the observation-site marker to inspect live conditions in place. Ask how terrain or land-water contrasts could redirect wind, lift air, or concentrate precipitation.'),
+                  h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-300' }, 'Inspect elevation, water, roads, settlements, and published administrative labels. Select the observation-site marker to inspect live conditions, or select another map point to measure its natural elevation and compare it with the site. Ask how terrain or land-water contrasts could redirect wind, lift air, or concentrate precipitation.'),
                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, 'The highlighted true-scale ring marks a ' + geographicStudyRadius + ' km study radius around the selected coordinates; it is not an administrative boundary.'),
                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, 'The cyan line points downwind from the observed wind direction. Its teaching length is scaled from wind speed and is not a forecast path or impact area.'),
                   h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, 'Camera telemetry updates after each move. Use the map-corner fullscreen control when the browser supports it.'),
+                  h('div', { className: 'mt-4 border-t border-white/10 pt-3', 'data-weather-terrain-inspector': true, role: 'region', 'aria-labelledby': 'weather-terrain-inspector-title' },
+                    h('div', { className: 'flex items-start justify-between gap-3' },
+                      h('div', null,
+                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-rose-300' }, 'Interactive terrain inspector'),
+                        h('h5', { id: 'weather-terrain-inspector-title', className: 'mt-1 text-xs font-black text-white' }, geographicTerrainProbe ? 'Selected ground comparison' : 'Select a ground point')
+                      ),
+                      geographicTerrainProbe && h('span', { className: 'rounded-full bg-rose-300/15 px-2 py-1 text-[10px] font-black text-rose-100' }, geographicTerrainProbe.relation)
+                    ),
+                    !geographicTerrainProbe && h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, 'Click or tap any map point away from the observation marker. The inspector will sample natural terrain elevation, distance, and direction from the site.'),
+                    geographicTerrainProbe && h('div', { className: 'mt-3 grid grid-cols-3 gap-2' },
+                      [
+                        ['Natural elevation', Number(geographicTerrainProbe.elevation).toFixed(0) + ' m'],
+                        ['Difference from site', (Number(geographicTerrainProbe.elevationDelta) > 0 ? '+' : '') + Number(geographicTerrainProbe.elevationDelta).toFixed(0) + ' m'],
+                        ['Site offset', Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction]
+                      ].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[10px] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
+                    ),
+                    geographicTerrainProbe && h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400', 'data-weather-terrain-probe-coordinates': true }, Number(geographicTerrainProbe.latitude).toFixed(5) + ', ' + Number(geographicTerrainProbe.longitude).toFixed(5) + ' | Bearing ' + Number(geographicTerrainProbe.bearing).toFixed(1) + '\u00B0 from the observation site'),
+                    geographicTerrainProbe && h('button', { type: 'button', onClick: clearGeographicTerrainProbe, className: 'mt-3 min-h-11 w-full rounded-lg border border-rose-300/40 bg-rose-300/10 px-3 py-2 text-xs font-black text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200' }, 'Clear terrain comparison')
+                  ),
+                  geographicTransectVisible && h('div', { className: 'mt-4 border-t border-white/10 pt-3', 'data-weather-terrain-profile': true },
+                    h('div', { className: 'flex items-start justify-between gap-3' },
+                      h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-300' }, 'Wind-aligned terrain profile'), h('p', { className: 'mt-1 text-[11px] text-slate-300' }, '30 km cross-section from upwind to downwind')),
+                      terrainProfileChart && h('span', { className: 'rounded-full bg-violet-300/15 px-2 py-1 text-[10px] font-black text-violet-100' }, Math.round(terrainProfileChart.min) + '\u2013' + Math.round(terrainProfileChart.max) + ' m')
+                    ),
+                    terrainProfileChart ? h('svg', { viewBox: '0 0 ' + terrainProfileChart.width + ' ' + terrainProfileChart.height, className: 'mt-2 h-auto w-full overflow-visible', role: 'img', 'aria-labelledby': 'weather-terrain-profile-title weather-terrain-profile-desc' },
+                      h('title', { id: 'weather-terrain-profile-title' }, 'Wind-aligned natural elevation profile'),
+                      h('desc', { id: 'weather-terrain-profile-desc' }, 'Terrain elevation from ' + cardinal(live.windDir) + ' upwind through the selected site toward ' + cardinal(geographicOverlays.downwindBearing) + ' downwind. Elevation ranges from ' + Math.round(terrainProfileChart.min) + ' to ' + Math.round(terrainProfileChart.max) + ' meters.'),
+                      h('line', { x1: terrainProfileChart.left, y1: terrainProfileChart.height - terrainProfileChart.bottom, x2: terrainProfileChart.width - terrainProfileChart.right, y2: terrainProfileChart.height - terrainProfileChart.bottom, stroke: '#64748b', strokeWidth: 1 }),
+                      h('path', { d: terrainProfileChart.areaPath, fill: '#8b5cf6', fillOpacity: 0.16 }),
+                      h('path', { d: terrainProfileChart.linePath, fill: 'none', stroke: '#c4b5fd', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                      h('line', { x1: terrainProfileChart.siteX, y1: terrainProfileChart.top, x2: terrainProfileChart.siteX, y2: terrainProfileChart.height - terrainProfileChart.bottom, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                      h('circle', { cx: terrainProfileChart.siteX, cy: terrainProfileChart.siteY, r: 3.5, fill: '#fbbf24', stroke: '#ffffff', strokeWidth: 1.5 }),
+                      h('text', { x: terrainProfileChart.left, y: 11, fill: '#cbd5e1', fontSize: 9 }, Math.round(terrainProfileChart.max) + ' m'),
+                      h('text', { x: terrainProfileChart.left, y: terrainProfileChart.height - terrainProfileChart.bottom - 3, fill: '#cbd5e1', fontSize: 9 }, Math.round(terrainProfileChart.min) + ' m'),
+                      h('text', { x: terrainProfileChart.left, y: terrainProfileChart.height - 8, fill: '#cbd5e1', fontSize: 9 }, 'Upwind ' + cardinal(live.windDir)),
+                      h('text', { x: terrainProfileChart.siteX, y: terrainProfileChart.height - 8, fill: '#fcd34d', fontSize: 9, textAnchor: 'middle' }, 'Site'),
+                      h('text', { x: terrainProfileChart.width - terrainProfileChart.right, y: terrainProfileChart.height - 8, fill: '#cbd5e1', fontSize: 9, textAnchor: 'end' }, 'Downwind ' + cardinal(geographicOverlays.downwindBearing))
+                    ) : h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', role: 'status' }, d.geographicTerrainProfileStatus || 'Sampling natural terrain elevation after map tiles load...'),
+                    terrainProfileChart && h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, d.geographicTerrainProfileStatus || 'Natural elevation sampled from rendered terrain.'),
+                    terrainProfileAnalysis && h('div', { className: 'mt-3 grid grid-cols-3 gap-2', 'data-weather-terrain-analysis': true },
+                      [['Terrain relief', terrainProfileAnalysis.relief + ' m'], ['Rise to site', (terrainProfileAnalysis.riseToSite > 0 ? '+' : '') + terrainProfileAnalysis.riseToSite + ' m'], ['After site', (terrainProfileAnalysis.changeAfterSite > 0 ? '+' : '') + terrainProfileAnalysis.changeAfterSite + ' m']].map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[10px] text-slate-400' }, metric[0]), h('p', { className: 'mt-1 text-xs font-black text-white' }, metric[1])); })
+                    ),
+                    terrainProfileAnalysis && h('p', { className: 'mt-3 text-[11px] font-black text-violet-200' }, terrainProfileAnalysis.signalLabel),
+                    terrainProfileAnalysis && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, terrainProfileAnalysis.interpretation),
+                    terrainProfileAnalysis && d.geographicTerrainEvidence && h('p', { className: 'mt-3 text-[10px] leading-relaxed text-emerald-200', 'data-weather-terrain-evidence-identity': true }, geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).detail),
+                    terrainProfileAnalysis && h('button', { type: 'button', onClick: useGeographicTerrainEvidence, 'aria-pressed': (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1, className: 'mt-3 min-h-11 w-full rounded-lg border border-violet-300/50 bg-violet-300/15 px-3 py-2 text-xs font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live).current ? 'Open forecast with terrain evidence' : (d.geographicTerrainEvidence ? 'Refresh terrain forecast evidence' : 'Use as forecast evidence'))
+                  ),
                   h('p', { className: 'mt-2 text-[11px] text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-geographic-status': true }, d.geographicMapStatus || 'Geographic layers are preparing.'),
                   h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', 'data-weather-map-attribution': true }, 'Map: ', h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenFreeMap'), ' with ', h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenStreetMap data'), '. 3D terrain: ', h('a', { href: 'https://tiles.mapterhorn.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'Mapterhorn'), '. Renderer: ', h('a', { href: 'https://maplibre.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'MapLibre'), '.')
                 ),
@@ -4552,6 +4928,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     )
                   ),
                   d.liveWeatherStatus && h('p', { className: 'mt-2 text-[11px] font-bold text-emerald-200', role: 'status', 'aria-live': 'polite' }, d.liveWeatherStatus),
+                  d.terrainEvidenceInvalidatedMessage && h('p', { className: 'mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 p-2 text-[11px] font-bold text-amber-100', role: 'status', 'aria-live': 'polite', 'data-weather-terrain-evidence-invalidated': true }, d.terrainEvidenceInvalidatedMessage),
                   d.liveWeatherError && h('p', { className: 'mt-2 rounded-lg bg-rose-950/40 p-2 text-[11px] text-rose-200', role: 'alert' }, d.liveWeatherError),
                   live && h('p', { className: 'mt-2 text-[11px] text-slate-300' }, 'Source: ', h('a', { href: live.sourceUrl, target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, live.source), '. Coordinates are rounded and stored only with this local lab state.'),
                   h('p', { className: 'mt-2 text-[11px] text-slate-400' }, 'Educational visualization only; not a safety or operational forecast.')
@@ -4567,7 +4944,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
             )
           ),
           h('section', { className: panelClass + ' grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Immersive weather layer guide' },
-            (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/buildings', 'Elevation plus OpenStreetMap building footprints where available']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black text-sky-500' }, item[0]), h('p', { className: 'mt-1 text-[11px] ' + mutedClass }, item[1])); })
+            (geographicMode ? [['Open vector map', 'Published roads, water, places, and boundaries'], [geographicStudyRadius + ' km study area', 'True-scale radius centered on the selected site'], ['Downwind vector', cardinal(geographicOverlays ? geographicOverlays.downwindBearing : 0) + ' from the live observation'], ['3D terrain/profile', 'Elevation, buildings, and a wind-aligned natural terrain cross-section']] : [['Terrain map', geography.label], ['Blue volume', 'Cooler air mass'], ['Orange volume', 'Warmer air mass'], ['Arrows and particles', 'Wind and precipitation']]).map(function (item) { return h('div', { key: item[0], className: 'rounded-xl p-3 ' + (dark ? 'bg-slate-950/60' : 'bg-sky-50') }, h('p', { className: 'text-xs font-black text-sky-500' }, item[0]), h('p', { className: 'mt-1 text-[11px] ' + mutedClass }, item[1])); })
           )
         );
       }

@@ -8758,6 +8758,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_lifeskills.js',
         'stem_lab/stem_tool_spacecolony.js',
         'stem_lab/stem_tool_spacestation.js',
+        'stem_lab/stem_tool_coasterlab.js',
         'stem_lab/stem_tool_worldbuilder.js',
         'stem_lab/stem_tool_flightsim.js',
         'stem_lab/stem_tool_atctower.js',
@@ -10724,6 +10725,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setReadingTheme = (v) => { try { safeSetItem('allo_reading_theme', v); } catch {} _setReadingTheme(v); };
   const [isAnalyzingPos, setIsAnalyzingPos] = useState(false);
   const [isDictationMode, setIsDictationMode] = useState(false);
+  const [dictationStatus, setDictationStatus] = useState({ state: 'idle', engine: null, engineLabel: '', privacy: '', message: '' });
   const recognitionRef = useRef(null);
   const fluencyRecognitionRef = useRef(null);
   const fluencyStartTimeRef = useRef(0);
@@ -12535,9 +12537,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [addToast]);
   useEffect(() => {
       const handleFocusIn = (e) => {
-          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-              lastFocusedInputRef.current = e.target;
-          }
+          const target = e.target;
+          const tag = target && target.tagName;
+          const type = tag === 'INPUT' ? String(target.type || 'text').toLowerCase() : '';
+          const textInput = tag === 'INPUT' && ['text', 'search', 'email', 'tel', 'url', 'password'].includes(type);
+          const writable = target && !target.disabled && !target.readOnly && (tag === 'TEXTAREA' || textInput || target.isContentEditable);
+          if (writable) lastFocusedInputRef.current = target;
       };
       window.addEventListener('focusin', handleFocusIn);
       return () => window.removeEventListener('focusin', handleFocusIn);
@@ -17852,7 +17857,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isHistoryMaximized, setIsHistoryMaximized] = useState(false);
   const [showQuizAnswers, setShowQuizAnswers] = useState(false);
   const [quizMcqCount, setQuizMcqCount] = useState(3);
-  const [quizReflectionCount, setQuizReflectionCount] = useState(3);
+  const [quizReflectionCount, setQuizReflectionCount] = useState(1);
   const [quizCustomInstructions, setQuizCustomInstructions] = useState('');
   const [quizItemTypeMix, setQuizItemTypeMix] = useState(null);
   const [passAnalysisToQuiz, setPassAnalysisToQuiz] = useState(false);
@@ -18186,187 +18191,152 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       isDictationActiveRef.current = isDictationMode;
   }, [isDictationMode]);
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    // No early return when SR is missing (2026-07-06): Electron ships NO
-    // working SpeechRecognition (needs Google's speech service), which made
-    // dictation silently DEAD on desktop. A dummy keeps the handler wiring
-    // harmless; the local-whisper facade below carries desktop dictation.
-    let recognition;
-    try {
-        recognition = SpeechRecognition ? new SpeechRecognition() : null;
-    } catch (e) {
-        warnLog("SpeechRecognition constructor failed", e);
-        recognition = null;
-    }
-    if (!recognition) recognition = { start() { throw new Error('SpeechRecognition unavailable'); }, stop() {}, abort() {} };
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = getSpeechLangCode(currentUiLanguage);
-    // Shared delivery: SR results and local-whisper transcripts land through
-    // the SAME insertion logic (focused input / UDL chat / honest toast).
-    const _deliverDictationTranscript = (transcript) => {
+    let controller = null;
+    const resultListeners = new Set();
+    const isWritableTarget = (target) => {
+        if (!target || target.isConnected === false || target.disabled || target.readOnly) return false;
+        const tag = target.tagName;
+        const type = tag === 'INPUT' ? String(target.type || 'text').toLowerCase() : '';
+        return tag === 'TEXTAREA' || (tag === 'INPUT' && ['text', 'search', 'email', 'tel', 'url', 'password'].includes(type)) || target.isContentEditable;
+    };
+    const deliverTranscript = (rawTranscript) => {
+        const transcript = String(rawTranscript || '').trim();
+        if (!transcript) return;
         if (isConversationModeRef.current) {
-            setUdlInput(prev => {
-                const spacer = prev.length > 0 && !prev.endsWith(' ') ? ' ' : '';
-                return prev + spacer + transcript;
-            });
+            setUdlInput(prev => prev + (prev && !prev.endsWith(' ') ? ' ' : '') + transcript);
             return;
         }
-        let activeElement = document.activeElement;
-        if (!activeElement || (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA')) {
-            if (lastFocusedInputRef.current) {
-                activeElement = lastFocusedInputRef.current;
-                try { activeElement.focus(); } catch(e) { warnLog('Caught error:', e?.message || e); }
-            }
+        let target = isWritableTarget(document.activeElement) ? document.activeElement : null;
+        if (!target && isWritableTarget(lastFocusedInputRef.current)) {
+            target = lastFocusedInputRef.current;
+            try { target.focus(); } catch (e) {}
         }
-        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-            const start = activeElement.selectionStart || 0;
-            const end = activeElement.selectionEnd || 0;
-            const currentValue = activeElement.value || '';
-            const textToInsert = (currentValue.length > 0 && start > 0 && currentValue[start-1] !== ' ' ? ' ' : '') + transcript;
-            const newValue = currentValue.substring(0, start) + textToInsert + currentValue.substring(end);
-            try {
-                const proto = activeElement.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
-                if (nativeInputValueSetter) {
-                    nativeInputValueSetter.call(activeElement, newValue);
-                } else {
-                    activeElement.value = newValue;
-                }
-                const ev = new Event('input', { bubbles: true });
-                activeElement.dispatchEvent(ev);
-            } catch (err) {
-                warnLog("Failed to set input value programmatically", err);
-                activeElement.value = newValue;
-            }
-        } else {
-            if (addToastRef.current) {
-                addToastRef.current(t('toasts.click_textbox'), "info");
-            }
+        if (!target) {
+            if (addToastRef.current) addToastRef.current(t('toasts.click_textbox'), 'info');
+            return;
         }
-    };
-    recognition.onresult = (event) => { // slim: guards here, delivery shared above
-        if (isBotSpeakingRef.current || isPlayingRef.current || isSystemAudioActiveRef.current) return;
-        if (Date.now() - lastAudioEndTimeRef.current < 1000) return;
-        const resultsLength = event.results?.length;
-        if (!resultsLength) return;
-        const lastResult = event.results[resultsLength - 1];
-        if (!lastResult || !lastResult[0]) return;
-        _deliverDictationTranscript(lastResult[0].transcript);
-    };
-    recognition.onerror = (event) => {
-        if (event.error === 'no-speech') return;
-        warnLog("Dictation Error:", event.error);
-        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-            isDictationActiveRef.current = false;
-            setIsDictationMode(false);
-            if (addToastRef.current) {
-                addToastRef.current(t('toasts.mic_access_denied'), "error");
+        const spacer = target.textContent && !/\s$/.test(target.textContent) ? ' ' : '';
+        if (target.isContentEditable) {
+            const selection = window.getSelection && window.getSelection();
+            const value = spacer + transcript;
+            if (selection && selection.rangeCount && target.contains(selection.anchorNode)) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                const node = document.createTextNode(value);
+                range.insertNode(node);
+                range.setStartAfter(node);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                target.appendChild(document.createTextNode(value));
             }
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
         }
-    };
-    recognition.onend = () => {
-        if (isDictationActiveRef.current) {
-            const now = Date.now();
-            const timeSinceStart = now - lastDictationStartRef.current;
-            if (timeSinceStart < 1000) {
-                warnLog("Rapid restart detected. Applying backoff strategy...");
-                setTimeout(() => {
-                    if (isDictationActiveRef.current) {
-                        try {
-                            debugLog("Attempting recovery restart...");
-                            lastDictationStartRef.current = Date.now();
-                            recognition.start();
-                        } catch (e) {
-                            warnLog("Recovery failed, user must restart manually.");
-                            setIsDictationMode(false);
-                        }
-                    }
-                }, 1500);
-                return;
-            }
-            setTimeout(() => {
-                if (isDictationActiveRef.current) {
-                    try {
-                        lastDictationStartRef.current = Date.now();
-                        recognition.start();
-                    } catch (e) {
-                    }
-                }
-            }, 200);
-        }
-    };
-    // ── Local-first dictation (2026-07-06): when the managed whisper server
-    // is ON, record on-device and transcribe via the same-origin proxy when
-    // dictation toggles OFF (push-to-talk semantics — no fake interim text).
-    // Browser SR stays the fallback where it exists; on desktop Electron it
-    // never did, so this is the first working dictation there. The 12
-    // remaining module surfaces migrate with this exact pattern — see
-    // docs/NEXT_STEPS_HANDOFF_2026-07-06.md ("Dictation unification").
-    const _localDict = { rec: null, stream: null };
-    const _localDictStop = (discard) => {
-        try { if (_localDict.rec && _localDict.rec.state !== 'inactive') { if (discard) _localDict.rec.ondataavailable = null; _localDict.rec.stop(); } } catch (_) {}
-        try { if (discard && _localDict.stream) _localDict.stream.getTracks().forEach(tr => tr.stop()); } catch (_) {}
-        _localDict.rec = null; _localDict.stream = null;
-    };
-    const _localDictStart = async () => {
-        let st = null;
-        try { const r = await fetch('/api/asr/status'); if (r.ok) st = await r.json(); } catch (_) {}
-        if (!(st && st.running)) return false;
+        const currentValue = target.value || '';
+        const startAt = typeof target.selectionStart === 'number' ? target.selectionStart : currentValue.length;
+        const endAt = typeof target.selectionEnd === 'number' ? target.selectionEnd : startAt;
+        const textToInsert = (startAt > 0 && currentValue[startAt - 1] !== ' ' ? ' ' : '') + transcript;
+        const newValue = currentValue.substring(0, startAt) + textToInsert + currentValue.substring(endAt);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const rec = new MediaRecorder(stream);
-            const chunks = [];
-            rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-            rec.onstop = async () => {
-                try {
-                    stream.getTracks().forEach(tr => tr.stop());
-                    if (!chunks.length) return;
-                    const form = new FormData();
-                    form.append('file', new Blob(chunks, { type: rec.mimeType || 'audio/webm' }), 'dictation.webm');
-                    form.append('response_format', 'json');
-                    form.append('temperature', '0');
-                    const res = await fetch(st.proxyUrl || '/api/asr/transcribe', { method: 'POST', body: form });
-                    if (!res.ok) { warnLog('[Dictation] local transcription HTTP ' + res.status); return; }
-                    const data = await res.json();
-                    // whisper emits bracket tokens ([BLANK_AUDIO], [MUSIC]) — never dictate those.
-                    const text = String((data && (data.text || data.transcription)) || '').replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim();
-                    if (text) _deliverDictationTranscript(text);
-                    else if (addToastRef.current) addToastRef.current(t('toasts.dictation_no_speech') || 'No speech detected in that recording.', 'info');
-                } catch (e) { warnLog('[Dictation] local transcription failed:', e?.message); }
-            };
-            rec.start();
-            _localDict.rec = rec; _localDict.stream = stream;
-            if (addToastRef.current) addToastRef.current(t('toasts.dictation_local_on') || '🎙️ Listening on this device — your words appear when you turn dictation off.', 'info');
-            return true;
-        } catch (e) {
-            warnLog('[Dictation] local start failed:', e?.message);
-            return false;
+            const proto = target.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+            const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+            if (setter) setter.call(target, newValue); else target.value = newValue;
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            const caret = startAt + textToInsert.length;
+            if (typeof target.setSelectionRange === 'function') target.setSelectionRange(caret, caret);
+        } catch (error) {
+            warnLog('Failed to insert dictation text', error);
         }
     };
-    // Facade keeps the start/stop contract the toggle effect already uses.
-    recognitionRef.current = {
+    const createFallback = () => {
+        let rec = null;
+        let intentionallyStopped = false;
+        const api = {
+            start: () => {
+                if (rec) return true;
+                const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!Recognition) throw new Error('SpeechRecognition unavailable');
+                intentionallyStopped = false;
+                rec = new Recognition();
+                rec.continuous = true;
+                rec.interimResults = false;
+                rec.lang = getSpeechLangCode(currentUiLanguage);
+                rec.onstart = () => setDictationStatus({ state: 'listening', engine: window.__alloLocalSRShim ? 'local-whisper' : 'web-speech', engineLabel: window.__alloLocalSRShim ? 'On-device Whisper' : 'Browser speech service', privacy: window.__alloLocalSRShim ? 'Audio stays on this device.' : 'Your browser may send audio to its speech provider.', message: 'Listening...' });
+                rec.onresult = (event) => {
+                    if (isBotSpeakingRef.current || isPlayingRef.current || isSystemAudioActiveRef.current || Date.now() - lastAudioEndTimeRef.current < 1000) return;
+                    const last = event.results && event.results[event.results.length - 1];
+                    if (last && last[0]) deliverTranscript(last[0].transcript);
+                    resultListeners.forEach(listener => { try { listener(event); } catch (e) {} });
+                };
+                rec.onerror = (event) => {
+                    if (event.error === 'no-speech' || intentionallyStopped) return;
+                    setDictationStatus({ state: 'error', engine: 'web-speech', engineLabel: 'Browser speech service', privacy: '', message: 'Dictation is unavailable.' });
+                    isDictationActiveRef.current = false;
+                    setIsDictationMode(false);
+                };
+                rec.onend = () => {
+                    rec = null;
+                    if (isDictationActiveRef.current && !intentionallyStopped) setTimeout(() => { try { api.start(); } catch (e) {} }, 250);
+                };
+                rec.start();
+                return true;
+            },
+            stop: () => { intentionallyStopped = true; try { if (rec) rec.stop(); } catch (e) {} rec = null; setDictationStatus(prev => ({ ...prev, state: 'idle', message: '' })); },
+            abort: () => { intentionallyStopped = true; try { if (rec) rec.abort(); } catch (e) {} rec = null; setDictationStatus(prev => ({ ...prev, state: 'idle', message: '' })); },
+            addEventListener: (type, listener) => { if (type === 'result') resultListeners.add(listener); },
+            removeEventListener: (type, listener) => { if (type === 'result') resultListeners.delete(listener); }
+        };
+        return api;
+    };
+    const facade = {
         start: () => {
-            _localDictStart().then((ok) => {
-                if (!ok) {
-                    try { lastDictationStartRef.current = Date.now(); recognition.start(); }
-                    catch (e) {
-                        warnLog('[Dictation] no speech recognition available:', e?.message);
-                        isDictationActiveRef.current = false;
-                        setIsDictationMode(false);
-                        if (addToastRef.current) addToastRef.current(t('toasts.dictation_unavailable') || 'Speech-to-text is not available — turn it on from the desktop Setup Health card.', 'info');
-                    }
+            if (!controller) {
+                const voice = window.AlloFlowVoice;
+                if (voice && typeof voice.createDictationController === 'function') {
+                    controller = voice.createDictationController({
+                        lang: getSpeechLangCode(currentUiLanguage),
+                        continuous: true,
+                        restartOnEnd: true,
+                        onTranscript: (transcript) => {
+                            if (!isBotSpeakingRef.current && !isPlayingRef.current && !isSystemAudioActiveRef.current && Date.now() - lastAudioEndTimeRef.current >= 1000) deliverTranscript(transcript);
+                        },
+                        onStateChange: (status) => {
+                            setDictationStatus(status);
+                            if (status.state === 'error') {
+                                isDictationActiveRef.current = false;
+                                setIsDictationMode(false);
+                                if (addToastRef.current) addToastRef.current(status.message || t('toasts.dictation_unavailable'), 'error');
+                            } else if (status.state === 'idle' && (status.reason === 'completed' || status.reason === 'replaced') && isDictationActiveRef.current) {
+                                isDictationActiveRef.current = false;
+                                setIsDictationMode(false);
+                            }
+                        }
+                    });
+                    resultListeners.forEach(listener => controller.addEventListener('result', listener));
+                } else {
+                    controller = createFallback();
                 }
-            });
+            }
+            lastDictationStartRef.current = Date.now();
+            return controller.start();
         },
-        stop: () => { if (_localDict.rec) { _localDictStop(false); } else { try { recognition.stop(); } catch (_) {} } },
-        abort: () => { if (_localDict.rec) { _localDictStop(true); } else { try { recognition.abort(); } catch (_) {} } }
+        stop: () => { if (controller) controller.stop(); },
+        abort: () => { if (controller) controller.abort('paused'); },
+        addEventListener: (type, listener) => { if (type === 'result') { resultListeners.add(listener); if (controller && controller.addEventListener) controller.addEventListener(type, listener); } },
+        removeEventListener: (type, listener) => { if (type === 'result') { resultListeners.delete(listener); if (controller && controller.removeEventListener) controller.removeEventListener(type, listener); } }
     };
+    recognitionRef.current = facade;
+    const resumeTimer = isDictationActiveRef.current ? setTimeout(() => {
+        try { facade.start(); } catch (e) {}
+    }, 100) : null;
     return () => {
-        if (recognitionRef.current) recognitionRef.current.abort();
+        if (resumeTimer) clearTimeout(resumeTimer);
+        try { facade.abort(); } catch (e) {}
+        if (recognitionRef.current === facade) recognitionRef.current = null;
     };
-  }, [currentUiLanguage]);
-  useEffect(() => {
+  }, [currentUiLanguage]);  useEffect(() => {
       if (!recognitionRef.current) return;
       if (isDictationMode) {
           const _dictationTimer = setTimeout(() => {
@@ -30475,6 +30445,54 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
   };
+  // Unified author action path for every assessment format. This keeps edits,
+  // reordering, duplication, deletion, and AI repairs in history together.
+  const handleQuizQuestionAction = (qIndex, action, payload = null) => {
+    if (!generatedContent || generatedContent.type !== 'quiz' || !generatedContent.data) return;
+    const newData = { ...generatedContent.data };
+    const newQuestions = Array.isArray(newData.questions) ? [...newData.questions] : [];
+    const index = Math.max(0, Math.min(newQuestions.length - 1, Number(qIndex) || 0));
+    if (action === 'patch' && newQuestions[index]) {
+        newQuestions[index] = { ...newQuestions[index], ...(payload || {}), factCheck: null };
+    } else if (action === 'replace' && payload && typeof payload === 'object' && newQuestions[index]) {
+        newQuestions[index] = { ...payload, type: payload.type || newQuestions[index].type || 'mcq', factCheck: null };
+    } else if (action === 'delete' && newQuestions[index]) {
+        newQuestions.splice(index, 1);
+    } else if (action === 'duplicate' && newQuestions[index]) {
+        const clone = JSON.parse(JSON.stringify(newQuestions[index]));
+        clone.id = 'assessment-item-' + Date.now();
+        clone.question = (clone.question || 'Question') + ' (copy)';
+        clone.factCheck = null;
+        newQuestions.splice(index + 1, 0, clone);
+    } else if (action === 'move' && newQuestions[index]) {
+        const delta = Number(payload) < 0 ? -1 : 1;
+        const target = index + delta;
+        if (target < 0 || target >= newQuestions.length) return;
+        const moved = newQuestions[index];
+        newQuestions[index] = newQuestions[target];
+        newQuestions[target] = moved;
+    } else if (action === 'replace-all' && payload && Array.isArray(payload.questions)) {
+        newQuestions.splice(0, newQuestions.length, ...payload.questions.filter(Boolean));
+    } else if (action === 'append' && payload && Array.isArray(payload.questions)) {
+        newQuestions.push(...payload.questions.filter(Boolean));
+    } else {
+        return;
+    }
+    newData.questions = newQuestions;
+    const actualMix = {};
+    newQuestions.forEach((question) => {
+        const key = question && question.type ? question.type : 'mcq';
+        actualMix[key] = (actualMix[key] || 0) + 1;
+    });
+    newData.actualItemTypeMix = actualMix;
+    if (newData.requestedItemTypeMix && typeof newData.requestedItemTypeMix === 'object') {
+        const keys = new Set([...Object.keys(newData.requestedItemTypeMix), ...Object.keys(actualMix)]);
+        newData.itemCountMismatch = Array.from(keys).some(key => (newData.requestedItemTypeMix[key] || 0) !== (actualMix[key] || 0));
+    }
+    const updatedContent = { ...generatedContent, data: newData };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
+  };
   // Plan T v3+ Chunk 11: batched option-text update for bulk-improve. Multiple
   // sequential handleQuizChange() calls in the same tick would each read the
   // stale closure-captured generatedContent and stomp each other. This helper
@@ -39366,7 +39384,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     addToast, handleConceptSpacePersist
                 })}
                 {activeView === 'quiz' && window.AlloModules && window.AlloModules.QuizView && React.createElement(window.AlloModules.QuizView, {
-                    t, isTeacherMode, isParentMode, isIndependentMode,
+                    t, isTeacherMode, isParentMode, isIndependentMode, studentProjectSettings,
                     // Merged session view: peer-to-peer quiz answers layered over
                     // the Firestore fallback (see quizMergedSessionData).
                     activeSessionCode, sessionData: quizMergedSessionData,
@@ -39389,7 +39407,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     handleReviewTileClick, handleAwardPoints, closeReviewModal,
                     handlePresentationOptionClick, togglePresentationAnswer,
                     togglePresentationExplanation, resetPresentation,
-                    handleQuizChange, handleQuizImageRefine, handleQuizBulkOptionChange, handleReflectionChange, handleFactCheck,
+                    handleQuizChange, handleQuizQuestionAction, handleQuizImageRefine, handleQuizBulkOptionChange, handleReflectionChange, handleFactCheck,
                     endCollaborativeEscapeRoom, resetEscapeRoom,
                     launchCollaborativeEscapeRoom, openEscapeRoomSettings,
                     generateEscapeRoom, handlePuzzleSolved, handleSelectObject,
@@ -40381,7 +40399,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         {isHelpMode ? <X size={16}/> : '?'}
       </button>
       )}
-      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} studentAiFeaturesHidden={studentAiFeaturesHidden} t={t} />
+      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} dictationStatus={dictationStatus} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} studentAiFeaturesHidden={studentAiFeaturesHidden} t={t} />
       </>
       )}
       {activeView === 'dashboard' && isTeacherMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">

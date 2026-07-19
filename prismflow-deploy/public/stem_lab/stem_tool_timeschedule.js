@@ -178,21 +178,25 @@
     var fullSpan = timeline[timeline.length - 1].end - timeline[0].start;
     return [
       {
+        id: 'event-duration',
         prompt: 'How long does "' + e[1][0] + '" last?', type: 'duration',
         answer: secondDuration,
         explanation: scheduleTimeLabel(timeline[1].end, false) + ' minus ' + scheduleTimeLabel(timeline[1].start, false) + ' = ' + durationText(secondDuration) + '.'
       },
       {
+        id: 'between-events-gap',
         prompt: 'How much free time is between "' + e[1][0] + '" and "' + e[2][0] + '"?',
         type: 'duration', answer: nextGap,
         explanation: 'Count from ' + scheduleTimeLabel(timeline[1].end, false) + ' to ' + scheduleTimeLabel(timeline[2].start, false) + ': ' + durationText(nextGap) + '.'
       },
       {
+        id: 'event-start-24h',
         prompt: 'Write the start of "' + e[3][0] + '" in 24-hour time.',
         type: 'time', answerFormat: '24', answer: e[3][1],
         explanation: time12(e[3][1]) + ' is ' + time24(e[3][1]) + '.'
       },
       {
+        id: 'full-schedule-span',
         prompt: 'How much time passes from the first start to the last end?',
         type: 'duration', answer: fullSpan,
         explanation: scheduleTimeLabel(timeline[timeline.length - 1].end, false) + ' minus ' + scheduleTimeLabel(timeline[0].start, false) + ' = ' + durationText(fullSpan) + '.'
@@ -237,12 +241,24 @@
       explanation: '21 − 12 = 9, so 21:07 is 9:07 PM.' }
   ];
 
+  var LEGACY_SCHEDULE_QUESTION_IDS = Object.freeze([
+    'event-duration',
+    'between-events-gap',
+    'event-start-24h',
+    'full-schedule-span'
+  ]);
   var SCHEDULE_QUESTION_IDS = [];
+  var LEGACY_SCHEDULE_QUESTION_KEYS = {};
   Object.keys(SCHEDULES).forEach(function(scheduleKey) {
-    scheduleQuestions(SCHEDULES[scheduleKey]).forEach(function(_, index) {
-      SCHEDULE_QUESTION_IDS.push(scheduleKey + ':' + index);
+    scheduleQuestions(SCHEDULES[scheduleKey]).forEach(function(question) {
+      var stableKey = scheduleKey + ':' + question.id;
+      SCHEDULE_QUESTION_IDS.push(stableKey);
+    });
+    LEGACY_SCHEDULE_QUESTION_IDS.forEach(function(questionId, index) {
+      LEGACY_SCHEDULE_QUESTION_KEYS[scheduleKey + ':' + index] = scheduleKey + ':' + questionId;
     });
   });
+  Object.freeze(LEGACY_SCHEDULE_QUESTION_KEYS);
   var LEGACY_INDEX_TO_CHALLENGE_ID = CHALLENGES.map(function(challenge) { return challenge.id; });
   var TIME_CHALLENGE_IDS = CHALLENGES.map(function(challenge) { return challenge.id; });
   var CHALLENGE_DIFFICULTIES = [
@@ -267,6 +283,16 @@
     });
     return normalized;
   }
+  function normalizeScheduleSolvedMap(map) {
+    var normalized = {};
+    map = map || {};
+    Object.keys(map).forEach(function(key) {
+      if (!map[key]) return;
+      var stableKey = SCHEDULE_QUESTION_IDS.indexOf(key) >= 0 ? key : LEGACY_SCHEDULE_QUESTION_KEYS[key];
+      if (stableKey) normalized[stableKey] = true;
+    });
+    return normalized;
+  }
   function challengesForDifficulty(difficulty) {
     var known = CHALLENGE_DIFFICULTIES.some(function(item) { return item.id === difficulty; });
     if (!known || difficulty === 'all') return CHALLENGES.slice();
@@ -283,7 +309,7 @@
     }).map(function(challenge) { return challenge.id; });
   }
   function scheduleSolvedCount(data) {
-    return countKnownKeys(data && data.scheduleSolvedKeys, SCHEDULE_QUESTION_IDS);
+    return countKnownKeys(normalizeScheduleSolvedMap(data && data.scheduleSolvedKeys), SCHEDULE_QUESTION_IDS);
   }
   function timeChallengeSolvedCount(data) {
     return countKnownKeys(normalizeChallengeMap(data && data.solvedChallenges), TIME_CHALLENGE_IDS);
@@ -308,6 +334,8 @@
     makeJumps: makeJumps,
     indexFor: indexFor,
     scheduleQuestions: scheduleQuestions,
+    normalizeScheduleSolvedMap: normalizeScheduleSolvedMap,
+    legacyScheduleQuestionIds: LEGACY_SCHEDULE_QUESTION_IDS,
     normalizeChallengeMap: normalizeChallengeMap,
     challengesForDifficulty: challengesForDifficulty,
     challengeMissedIds: challengeMissedIds,
@@ -375,24 +403,32 @@
         return item.id === d.challengeDifficulty;
       }) ? d.challengeDifficulty : 'all';
       var difficultyChallenges = challengesForDifficulty(challengeDifficulty);
+      var solvedChallengeMap = normalizeChallengeMap(d.solvedChallenges);
       var retryChallengeIds = challengeMissedIds(d, challengeDifficulty);
       var retryResultId = d.challengePracticeMode === 'retry' && d.challengeFeedback &&
         d.challengeFeedback.ok ? d.challengeFeedback.challengeId : null;
-      var retryMode = d.challengePracticeMode === 'retry' && (retryChallengeIds.length > 0 || !!retryResultId);
+      var retryResultChallenge = retryResultId ? challengeById(retryResultId) : null;
+      var retryResultEligible = !!(retryResultChallenge && solvedChallengeMap[retryResultChallenge.id] &&
+        difficultyChallenges.some(function(item) { return item.id === retryResultChallenge.id; }));
+      var retryMode = d.challengePracticeMode === 'retry' &&
+        (retryChallengeIds.length > 0 || retryResultEligible);
       var challengeList = retryMode ? retryChallengeIds.map(challengeById).filter(Boolean) : difficultyChallenges;
-      if (retryResultId && retryChallengeIds.indexOf(retryResultId) < 0) {
-        var retryResultChallenge = challengeById(retryResultId);
-        if (retryResultChallenge && difficultyChallenges.indexOf(retryResultChallenge) >= 0) {
-          challengeList.unshift(retryResultChallenge);
-        }
+      if (retryResultEligible && retryChallengeIds.indexOf(retryResultId) < 0) {
+        challengeList.unshift(retryResultChallenge);
+      }
+      if (!challengeList.length) {
+        retryMode = false;
+        challengeList = difficultyChallenges.length ? difficultyChallenges : CHALLENGES.slice();
       }
       var legacyChallenge = CHALLENGES[indexFor(d.challengeIndex, CHALLENGES.length)];
       var requestedChallengeId = d.challengeId || (legacyChallenge && legacyChallenge.id);
       var challengePosition = challengeList.findIndex(function(item) { return item.id === requestedChallengeId; });
-      if (challengePosition < 0) challengePosition = 0;
+      var challengeSubstituted = challengePosition < 0;
+      if (challengeSubstituted) challengePosition = 0;
       var challenge = challengeList[challengePosition];
       var challengeId = challenge.id;
       var chIndex = CHALLENGES.indexOf(challenge);
+      var challengeAnswer = challengeSubstituted ? '' : (d.challengeAnswer || '');
       var score = Object.assign({ correct: 0, total: 0 }, d.score || {}, { correct: timeChallengeSolvedCount(d) });
 
       function setTab(id) {
@@ -580,8 +616,8 @@
                     return h('button', { key: x[0], type: 'button',
                       onClick: function () { markElapsed({ elapsedDirection: x[0] }); },
                       'aria-pressed': active, className: 'rounded-lg px-2 py-2 text-xs font-bold border ' +
-                        (active ? (x[0] > 0 ? 'bg-emerald-600 border-emerald-600 text-white' :
-                          'bg-amber-600 border-amber-600 text-white') : 'bg-white border-slate-300 text-slate-600') },
+                        (active ? (x[0] > 0 ? 'bg-emerald-700 border-emerald-700 text-white' :
+                          'bg-amber-800 border-amber-800 text-white') : 'bg-white border-slate-300 text-slate-600') },
                       x[1]);
                   }))),
               h('div', { className: 'grid grid-cols-2 gap-3' },
@@ -649,8 +685,16 @@
         var span = timeline[timeline.length - 1].end - timeline[0].start;
         var busy = timeline.reduce(function (sum, item) { return sum + item.duration; }, 0);
         var feedback = d.scheduleFeedback;
-        var solvedKey = scheduleKey + ':' + sqIndex;
-        var alreadySolved = !!(d.scheduleSolvedKeys || {})[solvedKey];
+        var stableFeedback = !!(feedback && typeof feedback.schedule === 'string' &&
+          typeof feedback.questionId === 'string' && feedback.schedule && feedback.questionId);
+        var legacyFeedback = !!(feedback && !feedback.questionId && feedback.index != null);
+        if (feedback && !stableFeedback && !legacyFeedback) feedback = null;
+        if (feedback && stableFeedback &&
+            (feedback.schedule !== scheduleKey || feedback.questionId !== sq.id)) feedback = null;
+        if (feedback && legacyFeedback &&
+            ((feedback.schedule && feedback.schedule !== scheduleKey) || feedback.index !== sqIndex)) feedback = null;
+        var solvedKey = scheduleKey + ':' + sq.id;
+        var alreadySolved = !!normalizeScheduleSolvedMap(d.scheduleSolvedKeys)[solvedKey];
         function check() {
           var result = checkAnswer(d.scheduleAnswer || '', sq.type, sq.answer, sq.answerFormat);
           if (!result.valid) {
@@ -658,15 +702,16 @@
               sq.answerFormat === '12' ? 'Use 12-hour form with AM or PM.' :
               sq.type === 'time' ? 'Enter a time such as 13:25 or 1:25 PM.' :
               'Enter minutes or a duration such as 1 h 15 m.';
-            upd({ scheduleFeedback: { ok: false, message: formatMessage } });
+            upd({ scheduleFeedback: { ok: false, questionId: sq.id,
+              schedule: scheduleKey, message: formatMessage } });
           } else if (result.ok) {
             var firstSolve = !alreadySolved;
             alreadySolved = true;
             upd(function (current) {
-              var solved = Object.assign({}, current.scheduleSolvedKeys || {});
+              var solved = normalizeScheduleSolvedMap(current.scheduleSolvedKeys);
               solved[solvedKey] = true;
               return {
-                scheduleFeedback: { ok: true, index: sqIndex, schedule: scheduleKey,
+                scheduleFeedback: { ok: true, questionId: sq.id, schedule: scheduleKey,
                   message: 'Correct! ' + sq.explanation },
                 scheduleSolvedKeys: solved,
                 scheduleSolved: countKnownKeys(solved, SCHEDULE_QUESTION_IDS)
@@ -674,7 +719,7 @@
             });
             if (firstSolve) award('timeSchedule', 5, 'schedule reasoning');
           } else {
-            upd({ scheduleFeedback: { ok: false, message:
+            upd({ scheduleFeedback: { ok: false, questionId: sq.id, schedule: scheduleKey, message:
               'Not yet. Draw jumps between the two times and try again.' } });
           }
         }
@@ -728,27 +773,29 @@
               h('div', null,
                 h('p', { className: 'text-[10px] uppercase tracking-widest font-black text-amber-700' },
                   'Schedule reasoning ' + (sqIndex + 1) + '/' + sqs.length),
-                h('h4', { className: 'text-base font-black text-slate-900 mt-1' }, sq.prompt)),
-              h('label', { className: 'block text-xs font-bold text-slate-700' },
+                h('h4', { id: 'ts-schedule-prompt', className: 'text-base font-black text-slate-900 mt-1' }, sq.prompt)),
+              h('label', { htmlFor: 'ts-schedule-answer', className: 'block text-xs font-bold text-slate-700' },
                 sq.type === 'time' ? (sq.answerFormat === '24' ? 'Your time (24-hour)' :
                   sq.answerFormat === '12' ? 'Your time (12-hour)' : 'Your time') : 'Your elapsed time',
-                h('input', { type: 'text', value: d.scheduleAnswer || '',
+                h('input', { id: 'ts-schedule-answer', type: 'text', value: d.scheduleAnswer || '',
                   onChange: function (e) { upd({ scheduleAnswer: e.target.value, scheduleFeedback: null }); },
                   onKeyDown: function (e) { if (e.key === 'Enter') check(); },
+                  'aria-invalid': !!(feedback && !feedback.ok),
+                  'aria-describedby': 'ts-schedule-prompt' + (feedback ? ' ts-schedule-feedback' : ''),
                   placeholder: sq.answerFormat === '24' ? 'Example: 13:25' :
                     sq.answerFormat === '12' ? 'Example: 1:25 PM' :
                     sq.type === 'time' ? 'Example: 13:25 or 1:25 PM' : 'Example: 75 min',
                   className: 'mt-1 w-full rounded-lg border border-amber-300 px-3 py-2.5 font-bold' })),
               h('div', { className: 'flex gap-2' },
                 h('button', { type: 'button', onClick: check,
-                  className: 'flex-1 rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-700' },
+                  className: 'flex-1 rounded-lg bg-amber-800 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-900' },
                   'Check answer'),
                 h('button', { type: 'button', onClick: function () {
                   upd({ scheduleQuestionIndex: (sqIndex + 1) % sqs.length,
                     scheduleAnswer: '', scheduleFeedback: null });
                 }, className: 'rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-black text-amber-800' },
                   'Next')),
-              feedback && h('div', { role: 'status', className: 'rounded-xl border p-3 text-sm font-bold ' +
+              feedback && h('div', { id: 'ts-schedule-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 text-sm font-bold ' +
                 (feedback.ok ? 'border-emerald-300 bg-emerald-50 text-emerald-800' :
                   'border-rose-300 bg-rose-50 text-rose-800') },
                 (feedback.ok ? '✓ ' : 'Try again: ') + feedback.message),
@@ -759,16 +806,24 @@
       }
       function challengeView() {
         var feedback = d.challengeFeedback;
-        if (feedback && feedback.challengeId && feedback.challengeId !== challengeId) feedback = null;
-        if (feedback && !feedback.challengeId && feedback.index != null && feedback.index !== chIndex) feedback = null;
-        var solvedChallenges = normalizeChallengeMap(d.solvedChallenges);
+        var stableFeedback = !!(feedback && typeof feedback.challengeId === 'string' && feedback.challengeId);
+        var legacyFeedback = !!(feedback && !feedback.challengeId && feedback.index != null);
+        if (feedback && !stableFeedback && !legacyFeedback) feedback = null;
+        if (feedback && stableFeedback && feedback.challengeId !== challengeId) feedback = null;
+        if (feedback && legacyFeedback && feedback.index !== chIndex) feedback = null;
+        var solvedChallenges = solvedChallengeMap;
         var alreadySolvedChallenge = !!solvedChallenges[challengeId];
-        var locked = alreadySolvedChallenge || !!(feedback && feedback.ok &&
-          (feedback.challengeId === challengeId || feedback.index === chIndex));
+        if (feedback && feedback.ok && !alreadySolvedChallenge) feedback = null;
+        var locked = alreadySolvedChallenge;
+        if (alreadySolvedChallenge && !(feedback && feedback.ok)) {
+          feedback = { ok: true, challengeId: challengeId,
+            message: 'Solved previously. ' + challenge.explanation };
+        }
         var missedChallengeIds = challengeMissedIds(d, challengeDifficulty);
         var selectedDifficulty = CHALLENGE_DIFFICULTIES.filter(function(item) {
           return item.id === challengeDifficulty;
         })[0];
+        var submissionPending = false;
         function recordMiss(message, countAttempt) {
           upd(function (current) {
             var solved = normalizeChallengeMap(current.solvedChallenges);
@@ -795,8 +850,9 @@
           });
         }
         function check() {
-          if (locked) return;
-          var result = checkAnswer(d.challengeAnswer || '', challenge.type, challenge.answer, challenge.answerFormat);
+          if (locked || submissionPending) return;
+          submissionPending = true;
+          var result = checkAnswer(challengeAnswer, challenge.type, challenge.answer, challenge.answerFormat);
           if (!result.valid) {
             var formatMessage = challenge.answerFormat === '24' ? 'Use 24-hour form such as 18:40.' :
               challenge.answerFormat === '12' ? 'Use 12-hour form with AM or PM.' :
@@ -835,7 +891,7 @@
         }
         function moveChallenge(direction) {
           var retryIds = challengeMissedIds(d, challengeDifficulty);
-          if (d.challengePracticeMode === 'retry' && feedback && feedback.ok) {
+          if (retryMode && feedback && feedback.ok) {
             if (retryIds.length) {
               var retryTarget = direction < 0 ? retryIds[retryIds.length - 1] : retryIds[0];
               upd({ challengeId: retryTarget, challengeAnswer: '', challengeFeedback: null });
@@ -849,12 +905,13 @@
             announce('Retry set complete. Returning to all challenges.');
             return;
           }
-          var pool = d.challengePracticeMode === 'retry' && retryIds.length ?
+          var pool = retryMode && retryIds.length ?
             retryIds.map(challengeById).filter(Boolean) : difficultyChallenges;
           var at = pool.findIndex(function(item) { return item.id === challengeId; });
           if (at < 0) at = 0;
           var target = pool[(at + direction + pool.length) % pool.length];
-          upd({ challengeId: target.id, challengeAnswer: '', challengeFeedback: null });
+          upd({ challengePracticeMode: retryMode ? 'retry' : 'all',
+            challengeId: target.id, challengeAnswer: '', challengeFeedback: null });
           announce((direction < 0 ? 'Previous' : 'Next') + ' challenge opened.');
         }
         function chooseDifficulty(nextDifficulty) {
@@ -895,14 +952,14 @@
                 }))),
             h('div', { role: 'group', 'aria-label': 'Challenge practice mode', className: 'flex flex-wrap gap-2' },
               h('button', { type: 'button', onClick: showAllChallenges,
-                'aria-pressed': d.challengePracticeMode !== 'retry',
+                'aria-pressed': !retryMode,
                 className: 'rounded-lg border border-indigo-300 px-3 py-2 text-xs font-black ' +
-                  (d.challengePracticeMode !== 'retry' ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-800') },
+                  (!retryMode ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-800') },
                 'All challenges'),
               h('button', { type: 'button', onClick: beginRetry, disabled: !missedChallengeIds.length,
-                'aria-pressed': d.challengePracticeMode === 'retry',
+                'aria-pressed': retryMode,
                 className: 'rounded-lg border border-rose-300 px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-50 ' +
-                  (d.challengePracticeMode === 'retry' ? 'bg-rose-700 text-white' : 'bg-white text-rose-800') },
+                  (retryMode ? 'bg-rose-700 text-white' : 'bg-white text-rose-800') },
                 'Retry missed (' + missedChallengeIds.length + ')'))),
           h('div', { className: 'flex flex-wrap gap-2 text-xs font-bold justify-end' },
             h('span', { className: 'rounded-lg bg-emerald-100 text-emerald-800 px-3 py-2' },
@@ -935,13 +992,19 @@
                 h('p', { className: 'text-[10px] font-black uppercase tracking-[.18em] text-indigo-600' },
                   'Challenge ' + (challengePosition + 1) + ' of ' + challengeList.length + ' \u00B7 ' +
                     selectedDifficulty.label + ' / ' + challenge.difficulty + ' \u00B7 ' + challenge.title),
-                h('h4', { className: 'text-xl sm:text-2xl font-black mt-2 leading-snug' }, challenge.prompt)),
-              h('label', { className: 'block text-xs font-black text-slate-700' },
+                h('h4', { id: 'ts-challenge-prompt', className: 'text-xl sm:text-2xl font-black mt-2 leading-snug' }, challenge.prompt)),
+              h('label', { htmlFor: 'ts-challenge-answer', className: 'block text-xs font-black text-slate-700' },
                 challenge.type === 'time' ? (challenge.answerFormat === '24' ? 'Your time (24-hour)' :
                   challenge.answerFormat === '12' ? 'Your time (12-hour)' : 'Your time') : 'Your elapsed time',
-                h('input', { type: 'text', value: d.challengeAnswer || '', disabled: !!locked,
-                  onChange: function (event) { upd({ challengeAnswer: event.target.value, challengeFeedback: null }); },
+                h('input', { id: 'ts-challenge-answer', type: 'text', value: locked ?
+                  (challenge.type === 'duration' ? durationText(challenge.answer) :
+                    challenge.answerFormat === '24' ? time24(challenge.answer) : time12(challenge.answer)) :
+                  challengeAnswer, disabled: !!locked,
+                  onChange: function (event) { upd({ challengeId: challengeId,
+                    challengeAnswer: event.target.value, challengeFeedback: null }); },
                   onKeyDown: function (event) { if (event.key === 'Enter') check(); },
+                  'aria-invalid': !!(feedback && !feedback.ok),
+                  'aria-describedby': 'ts-challenge-prompt' + (feedback ? ' ts-challenge-feedback' : ''),
                   placeholder: challenge.answerFormat === '24' ? 'Example: 18:40' :
                     challenge.answerFormat === '12' ? 'Example: 9:07 PM' :
                     challenge.type === 'time' ? 'Example: 2:15 PM or 14:15' :
@@ -962,7 +1025,7 @@
                 h('button', { type: 'button', onClick: function() { moveChallenge(1); },
                   className: 'rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-800' },
                   'Next challenge')),
-              feedback && h('div', { role: 'status', 'aria-live': 'polite',
+              feedback && h('div', { id: 'ts-challenge-feedback', role: 'status', 'aria-live': 'polite',
                 className: 'rounded-xl border p-4 text-sm ' +
                   (feedback.ok ? 'border-emerald-300 bg-emerald-50 text-emerald-900' :
                     'border-rose-300 bg-rose-50 text-rose-900') },

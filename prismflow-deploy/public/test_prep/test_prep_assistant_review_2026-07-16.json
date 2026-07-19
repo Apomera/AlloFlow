@@ -6,8 +6,8 @@
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-07-19T05:51:09.151Z",
-    "hash": "43bc066321509c53c5f0dfdd948eab5cd611bf284939268a2a104cf3d4736e1f"
+    "generatedAt": "2026-07-19T17:54:32.442Z",
+    "hash": "eb446422843bc7fda448653bda535b76cea7e4d04ff13d29b60fb11e46303995"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -18,12 +18,12 @@
     "packs": 22,
     "totalLearningActivities": 11000,
     "originalSourceQuestions": 4400,
-    "assistantAuthoredIndependentItems": 700,
-    "independentPracticeItems": 5100,
-    "guidedReviewActivities": 5900,
+    "assistantAuthoredIndependentItems": 800,
+    "independentPracticeItems": 5200,
+    "guidedReviewActivities": 5800,
     "existingItemsQualitativelySampled": 169,
     "newCredentialSpecificReplacementsReviewed": 68,
-    "newIndependentParaProItemsReviewed": 700,
+    "newIndependentParaProItemsReviewed": 800,
     "allActivitiesStructurallyChecked": true,
     "allGuidedAnswerDerivationsChecked": true,
     "allIndependentItemsWarningScanned": true,
@@ -35,13 +35,13 @@
     "originalSourceQuestions": 4400,
     "distinctSourceContentKernels": 2262,
     "parallelSourceVariants": 2138,
-    "assistantAuthoredIndependentItems": 700,
-    "independentPracticeItems": 5100,
-    "distinctIndependentContentKernels": 2962,
+    "assistantAuthoredIndependentItems": 800,
+    "independentPracticeItems": 5200,
+    "distinctIndependentContentKernels": 3062,
     "parallelIndependentVariants": 2138,
-    "guidedReviewActivities": 5900,
+    "guidedReviewActivities": 5800,
     "independentQuestionTarget": 11000,
-    "newIndependentItemsNeeded": 8038
+    "newIndependentItemsNeeded": 7938
   },
   "verdict": {
     "structuralStatus": "pass",
@@ -71,7 +71,7 @@
     "Expanded the shared reference catalog to cover every source used by pack items and learning libraries, including readable title, organization, summary, and credibility metadata.",
     "Added a reproducible EPPP-guided QA gate across all 22 non-EPPP packs, with warning diagnostics kept distinct from hard release findings.",
     "Separated guided-review attempt mode from diagnostic analytics and excluded guided activities from smart review, targeted sets, custom quizzes, and saved-question review.",
-    "Added and assistant-reviewed 700 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
+    "Added and assistant-reviewed 800 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
   ],
   "limitations": [
     "Assistant review is not licensed-professional endorsement, independent legal/clinical review, field testing, psychometric calibration, or validation of score interpretations.",
@@ -79,7 +79,7 @@
     "Content-kernel counts detect normalized within-pack reuse. They do not by themselves establish item quality or detect every semantically similar question across different wording."
   ],
   "nextWork": [
-    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 8,038.",
+    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 7,938.",
     "Give each new question a new stimulus or decision, plausible distractors, item-specific feedback, and a source that directly supports the tested principle.",
     "Review and release additions pack by pack in 100-item stages; keep guided-review activities as a separate learning mode.",
     "After authoring, run independent subject-matter and psychometric review if the product will make stronger validity or readiness claims."
@@ -127,7 +127,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 296,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "de6ca49fcc81caa5fdcdc4c51ee508007da54730378bdbda0adbbb2dc22e87cd",
+      "packSha256": "4b239503a672c29b4f06ff638b408a7d7900b32ca91d80f9bd2c7c02cc5d217f",
       "itemsSha256": "e1520db75fbb9ccc0679a5405da310b016a1979e8ad23dfccb739ec1b518890c"
     },
     {
@@ -146,7 +146,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 295,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "5db85fbba602bf3330f391612a06d68fdc5576ff25a85e88b588c6e65f0a5722",
+      "packSha256": "b2acb451abff1f13a9f3ed3bbfe69b62b6a601522e4fb71d02921d0ebec4ea34",
       "itemsSha256": "70ab06160b426a21f68851e10ab2dbc862e13f9ae6cca93c474e5c2c2199e175"
     },
     {
@@ -165,7 +165,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "1005bf44c2a3702f7a3135ecbd5b4e28323422d3aaced442a88145d3e6ed21f0",
+      "packSha256": "7870f6bdac6137cbd3536c07fa9e5e78516b53cf14c480efbb5d35834edb6bcc",
       "itemsSha256": "2600847a72765ef968488f964ab9d9ce02ec7646ae90e294c264069e7da42ab7"
     },
     {
@@ -203,7 +203,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 0,
       "verdict": "reviewed-target-met",
-      "packSha256": "d4c74e405f7e5c4392cf0b6c230bf021331c5861515c92aee3f890957791e7f9",
+      "packSha256": "04e45afae1f32de51efea3ef5f654fc3368f37682328b46ef40d6a1a29e354da",
       "itemsSha256": "9575e400eb50d3275547d948751751e2611dd8036c5905b6f6fcfc7097814b70"
     },
     {
@@ -326,18 +326,18 @@
       "title": "School Counselor 5422 diagnostics",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 0,
-      "independentPracticeItems": 200,
+      "assistantAuthoredIndependentItems": 100,
+      "independentPracticeItems": 300,
       "distinctSourceContentKernels": 100,
       "parallelSourceVariants": 100,
-      "distinctIndependentContentKernels": 100,
+      "distinctIndependentContentKernels": 200,
       "parallelIndependentVariants": 100,
-      "guidedReviewActivities": 300,
+      "guidedReviewActivities": 200,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 400,
+      "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "59e500f4adf78256a3ca57af4cfa948e7f537084b9e4d4459dd50344ea17789f",
-      "itemsSha256": "c2bbf1ab668b6766e580be4da7c95136edcfc6cf2d3f9c7a4c3b016479f209a7"
+      "packSha256": "ed20d11dd9488b7b028415f4e7f96ba7eb425cd6772cfb875a41b342d8c6d49e",
+      "itemsSha256": "48b94a51c64b5a303ea812438cc0f9b8d650e3974d83bfc175355e1975b1b8f3"
     },
     {
       "stem": "school_librarian_5312",
@@ -355,7 +355,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 374,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "18009649a434c94f8ed3304031cfcb3cd2a0904d7eeb971e8372beef70545cae",
+      "packSha256": "48649550584e1868b3c4d5be7c2b28a80004d5bbf0d56e64e57b1ddec887ae05",
       "itemsSha256": "30ee32ea9f1dc97c1c4f08602ca93c005304f13a86c9c059f127944f1a0f4029"
     },
     {
