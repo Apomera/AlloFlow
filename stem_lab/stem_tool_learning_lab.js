@@ -9024,165 +9024,196 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { checks: [] };
     var setData = props.setData;
     var vs = R.useState('check');                 var view = vs[0]; var setView = vs[1];
-    var fs = R.useState({ intensity: 5, label: '', what: '', need: '' });
-    var form = fs[0];                              var setForm = fs[1];
+    var fsState = R.useState({ intensity: 5, label: '', what: '', need: '' });
+    var form = fsState[0];                         var setForm = fsState[1];
     var bs = R.useState(0);                        var boxStep = bs[0]; var setBoxStep = bs[1];
     var bp = R.useState(false);                    var boxPlaying = bp[0]; var setBoxPlaying = bp[1];
     var gs = R.useState({ five: '', four: '', three: '', two: '', one: '' });
     var ground = gs[0];                            var setGround = gs[1];
     var es = R.useState('');                       var emotionError = es[0]; var setEmotionError = es[1];
+    var pendingFocusRef = R.useRef(null);
 
+    var EMPTY_GROUND = { five: '', four: '', three: '', two: '', one: '' };
     var EMOTION_LABELS = [
-      { id: 'sad',         icon: '😢', color: '#3b82f6' },
-      { id: 'angry',       icon: '😠', color: '#ef4444' },
-      { id: 'anxious',     icon: '😰', color: '#fbbf24' },
-      { id: 'overwhelmed', icon: '😵', color: '#a855f7' },
-      { id: 'frustrated',  icon: '😤', color: '#f97316' },
-      { id: 'lonely',      icon: '🥺', color: '#06b6d4' },
-      { id: 'numb',        icon: '😶', color: 'var(--allo-stem-text-soft, #94a3b8)' },
-      { id: 'hopeful',     icon: '🙂', color: '#10b981' },
-      { id: 'proud',       icon: '😌', color: '#a855f7' },
-      { id: 'happy',       icon: '😄', color: '#fbbf24' }
+      { id: 'sad', name: 'Sad', icon: '😢', color: '#93c5fd' },
+      { id: 'angry', name: 'Angry', icon: '😠', color: '#fca5a5' },
+      { id: 'anxious', name: 'Anxious', icon: '😰', color: '#fde68a' },
+      { id: 'overwhelmed', name: 'Overwhelmed', icon: '😵', color: '#d8b4fe' },
+      { id: 'frustrated', name: 'Frustrated', icon: '😤', color: '#fdba74' },
+      { id: 'lonely', name: 'Lonely', icon: '🥺', color: '#67e8f9' },
+      { id: 'numb', name: 'Numb', icon: '😶', color: '#cbd5e1' },
+      { id: 'hopeful', name: 'Hopeful', icon: '🙂', color: '#6ee7b7' },
+      { id: 'proud', name: 'Proud', icon: '😌', color: '#d8b4fe' },
+      { id: 'happy', name: 'Happy', icon: '😄', color: '#fde68a' }
     ];
+    var BOX_STEPS = ['Breathe in for 4 seconds', 'Hold for 4 seconds', 'Breathe out for 4 seconds', 'Hold for 4 seconds'];
+    var checks = data.checks || [];
+    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(249,168,212,0.55)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
+    var labelStyle = { display: 'block', fontSize: 11, fontWeight: 800, color: '#f9a8d4', marginBottom: 4 };
+    var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
 
-    function save() {
+    function focusId(id) { pendingFocusRef.current = id; }
+    function openTool(tool) {
+      setView(tool);
+      setBoxPlaying(false);
+      setBoxStep(0);
+      focusId(tool === 'breathing' ? 'learning-lab-breathing-heading' : 'learning-lab-grounding-heading');
+    }
+    function backToCheck(source) {
+      setBoxPlaying(false);
+      setBoxStep(0);
+      if (source === 'ground') setGround(Object.assign({}, EMPTY_GROUND));
+      setView('check');
+      focusId(source === 'breathing' ? 'learning-lab-open-breathing' : 'learning-lab-open-grounding');
+    }
+    function save(event) {
+      if (event) event.preventDefault();
       if (!form.label) {
         setEmotionError('Choose the emotion that feels strongest right now.');
-        setTimeout(function() { var first = document.getElementById('learning-lab-emotion-sad'); if (first) first.focus(); }, 0);
+        focusId('learning-lab-emotion-sad');
         return;
       }
       var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, form);
-      setData(Object.assign({}, data, { checks: [entry].concat(data.checks || []) }));
+      setData(Object.assign({}, data, { checks: [entry].concat(checks) }));
       setForm({ intensity: 5, label: '', what: '', need: '' });
       setEmotionError('');
-      llAnnounce('Emotion check-in saved.');
+      llAnnounce('Emotion check-in saved: ' + form.label + ', intensity ' + form.intensity + ' out of 10.');
+      focusId('learning-lab-emotion-history-heading');
+    }
+    async function removeCheck(id) {
+      var check = checks.filter(function(item) { return item.id === id; })[0];
+      if (!check) return;
+      if (!(await askLearningLabConfirmation('This permanently removes the selected emotion check-in.', { title: 'Delete this emotion check-in?', confirmText: 'Delete check-in' }))) return;
+      setData(Object.assign({}, data, { checks: checks.filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Emotion check-in deleted.');
+      focusId(checks.length > 1 ? 'learning-lab-emotion-history-heading' : 'learning-lab-emotion-save');
     }
 
     R.useEffect(function() {
       if (!boxPlaying) return;
-      var t = setTimeout(function() { setBoxStep((boxStep + 1) % 4); }, 4000);
-      return function() { clearTimeout(t); };
+      var timer = setTimeout(function() { setBoxStep((boxStep + 1) % 4); }, 4000);
+      return function() { clearTimeout(timer); };
     }, [boxPlaying, boxStep]);
 
-    var BOX_STEPS = ['Breathe in (4 seconds)', 'Hold (4 seconds)', 'Breathe out (4 seconds)', 'Hold (4 seconds)'];
-    var checks = data.checks || [];
-    var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(244,114,182,0.45)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 11, fontWeight: 800, color: '#f9a8d4', marginBottom: 4 };
-    var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
+    R.useLayoutEffect(function() {
+      if (!pendingFocusRef.current) return;
+      var id = pendingFocusRef.current;
+      pendingFocusRef.current = null;
+      var target = document.getElementById(id);
+      if (target) target.focus();
+    });
 
     if (view === 'breathing') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🌬', 'Box breathing', '4-4-4-4 pattern. Settles the nervous system in ~2 minutes.', '#06b6d4'),
+        tkSectionHeader('🌬', 'Box breathing', 'Optional paced breathing with pause control and text prompts.', '#67e8f9', 'learning-lab-breathing-heading'),
+        hh('p', { id: 'learning-lab-breathing-guidance', style: { fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'You may pause or stop at any time. Breathe in a comfortable way; do not hold your breath if that feels difficult. Stop if you feel dizzy, short of breath, distressed, or uncomfortable. No particular result is expected.'),
         hh('div', { style: { textAlign: 'center', padding: 30 } },
-          hh('div', { 'aria-hidden': 'true', style: { fontSize: 60, marginBottom: 14, opacity: boxPlaying ? 1 : 0.4 } }, '🌬'),
-          hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 20, fontWeight: 900, color: '#06b6d4', marginBottom: 20 } }, boxPlaying ? BOX_STEPS[boxStep] : 'Press play to begin'),
-          hh('div', { 'aria-hidden': 'true', style: { width: 120, height: 120, margin: '0 auto 24px', border: '4px solid #06b6d4', borderRadius: 12, position: 'relative', transition: 'transform 1500ms ease', transform: boxPlaying && boxStep === 0 ? 'scale(1.4)' : boxPlaying && boxStep === 2 ? 'scale(0.7)' : 'scale(1)' } }),
-          hh('button', { type: 'button', 'aria-pressed': boxPlaying ? 'true' : 'false', onClick: function() { setBoxPlaying(!boxPlaying); setBoxStep(0); }, 'data-ll-focusable': true,
-            style: { minWidth: 44, minHeight: 44, padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#ef4444' : '#06b6d4', color: '#fff', border: 'none', fontSize: 14, fontWeight: 900, cursor: 'pointer', marginRight: 8 }
-          }, boxPlaying ? '⏸ Pause breathing' : '▶ Start breathing')
+          hh('div', { 'aria-hidden': 'true', style: { width: 120, height: 120, margin: '0 auto 20px', border: '4px solid #67e8f9', borderRadius: 12 } }),
+          hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 20, fontWeight: 900, color: '#cffafe', marginBottom: 20 } }, boxPlaying ? BOX_STEPS[boxStep] : 'Breathing guide paused'),
+          hh('button', { type: 'button', 'aria-pressed': boxPlaying ? 'true' : 'false', onClick: function() { setBoxPlaying(!boxPlaying); if (!boxPlaying) setBoxStep(0); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: '14px 36px', borderRadius: 10, background: boxPlaying ? '#b91c1c' : '#0e7490', color: '#fff', border: '2px solid #cffafe', fontSize: 14, fontWeight: 900, cursor: 'pointer' } }, boxPlaying ? 'Pause breathing guide' : 'Start breathing guide')
         ),
-        hh('div', { style: { textAlign: 'center' } },
-          tkBtn('← Back', function() { setView('check'); setBoxPlaying(false); }, 'ghost', { minHeight: 44 })
-        )
+        hh('div', { style: { textAlign: 'center' } }, hh('button', { type: 'button', onClick: function() { backToCheck('breathing'); }, style: { minHeight: 44, padding: '8px 14px' } }, '← Back to emotion check'))
       );
     }
 
     if (view === 'ground') {
       var FIELDS = [
-        { id: 'five',  label: '5 things you can SEE',    icon: '👀', color: '#3b82f6' },
-        { id: 'four',  label: '4 things you can FEEL',   icon: '✋', color: '#10b981' },
-        { id: 'three', label: '3 things you can HEAR',   icon: '👂', color: '#fbbf24' },
-        { id: 'two',   label: '2 things you can SMELL',  icon: '👃', color: '#a855f7' },
-        { id: 'one',   label: '1 thing you can TASTE',   icon: '👅', color: '#ef4444' }
+        { id: 'five', label: 'Up to 5 things you can see', icon: '👀', color: '#93c5fd' },
+        { id: 'four', label: 'Up to 4 things you can physically feel', icon: '✋', color: '#6ee7b7' },
+        { id: 'three', label: 'Up to 3 things you can hear', icon: '👂', color: '#fde68a' },
+        { id: 'two', label: 'Up to 2 things you can smell or imagine smelling', icon: '👃', color: '#d8b4fe' },
+        { id: 'one', label: 'Up to 1 thing you can taste or imagine tasting', icon: '👅', color: '#fca5a5' }
       ];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🌱', '5-4-3-2-1 grounding', 'Sensory awareness shifts attention out of overwhelm. ~3 minutes.', '#10b981'),
+        tkSectionHeader('🌱', '5-4-3-2-1 grounding', 'An optional sensory-attention exercise with no required answers.', '#6ee7b7', 'learning-lab-grounding-heading'),
+        hh('p', { id: 'learning-lab-grounding-guidance', style: { fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Skip any sense or prompt that is unavailable, inaccessible, uncomfortable, or unsafe. You may name fewer items, imagine a neutral example, stop at any time, or choose another support. Entries are temporary, are not added to check-in history, and are cleared when you leave this exercise.'),
         hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-          FIELDS.map(function(f) {
-            var fieldId = 'learning-lab-grounding-' + f.id;
-            return hh('div', { key: 'g-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + f.color } },
-              hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: f.color, marginBottom: 6 } }, f.icon + ' ' + f.label),
-              hh('textarea', { id: fieldId, value: ground[f.id], rows: 2, onChange: function(event) { setGround(Object.assign({}, ground, (function() { var o = {}; o[f.id] = event.target.value; return o; })())); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { borderColor: f.color, resize: 'vertical' }) })
+          FIELDS.map(function(field) {
+            var fieldId = 'learning-lab-grounding-' + field.id;
+            return hh('div', { key: 'ground-' + field.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + field.color } },
+              hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: field.color, marginBottom: 6 } }, hh('span', { 'aria-hidden': 'true' }, field.icon + ' '), field.label + ' (optional)'),
+              hh('textarea', { id: fieldId, value: ground[field.id], rows: 2, maxLength: 1000, 'aria-describedby': 'learning-lab-grounding-guidance', onChange: function(event) { var patch = {}; patch[field.id] = event.target.value; setGround(Object.assign({}, ground, patch)); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { borderColor: field.color, resize: 'vertical' }) })
             );
           })
         ),
-        hh('div', { style: { textAlign: 'center', padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.6 } },
-          'Notice how you feel now compared to when you started. Even partial completion helps.'
-        ),
-        hh('div', { style: { textAlign: 'center' } },
-          tkBtn('← Back', function() { setView('check'); }, 'ghost', { minHeight: 44 })
-        )
+        hh('p', { style: { textAlign: 'center', padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(110,231,183,0.35)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.6 } }, 'If you choose to try this, notice whether anything changed. No change or partial completion is also a valid response.'),
+        hh('div', { style: { textAlign: 'center' } }, hh('button', { type: 'button', onClick: function() { backToCheck('ground'); }, style: { minHeight: 44, padding: '8px 14px' } }, '← Back to emotion check'))
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💖', 'Emotion Check + Tools', 'Quick check + 3 tools for when feelings are intense.', '#ec4899'),
-
-      hh('aside', { 'aria-label': 'Crisis support', style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#ef4444' } }, '🚨 If you\'re in crisis: '),
-        hh('a', { href: 'tel:988', style: { color: '#fecaca', textDecoration: 'underline', fontWeight: 800 } }, 'Call 988'),
-        ' or ',
-        hh('a', { href: 'sms:988', style: { color: '#fecaca', textDecoration: 'underline', fontWeight: 800 } }, 'text 988'),
-        ' (Suicide & Crisis Lifeline, US). Maine Mobile Crisis: ',
-        hh('a', { href: 'tel:18885681112', style: { color: '#fecaca', textDecoration: 'underline', fontWeight: 800 } }, '1-888-568-1112'),
-        '. You can reach a real person 24/7. This app is a self-help tool, not crisis care.'
+      tkSectionHeader('💖', 'Emotion Check + Optional Tools', 'A private self-reflection and two optional practices; not an assessment or treatment.', '#f9a8d4', 'learning-lab-emotion-main-heading'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-emotion-safety-heading', style: { padding: 12, borderRadius: 8, background: 'rgba(127,29,29,0.45)', border: '2px solid #fca5a5', fontSize: 11, color: '#fff', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-emotion-safety-heading', style: { margin: '0 0 6px', fontSize: 13, color: '#fff' } }, 'If you are in crisis or immediate danger'),
+        hh('p', { style: { margin: '0 0 8px' } }, 'This tool does not monitor your entries, assess risk, contact anyone, or provide crisis care. If there is immediate danger or an immediate risk of harm, call 911 or your local emergency service.'),
+        hh('ul', { style: { margin: 0, paddingLeft: 20 } },
+          hh('li', null, hh('a', { href: 'tel:988', 'aria-label': 'Call the 988 Suicide and Crisis Lifeline', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'Call 988'), ' in the United States or its territories'),
+          hh('li', null, hh('a', { href: 'sms:988', 'aria-label': 'Text the 988 Suicide and Crisis Lifeline', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'Text 988')),
+          hh('li', null, hh('a', { href: 'https://988lifeline.org/chat/', target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Chat with the 988 Suicide and Crisis Lifeline, opens in a new tab', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'Chat with 988'), ' (opens in a new tab)'),
+          hh('li', null, 'In Maine, ', hh('a', { href: 'tel:18885681112', 'aria-label': 'Call the Maine Crisis Line at 1-888-568-1112', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'call 1-888-568-1112'), ' or use Maine Relay 711')
+        )
       ),
+      hh('p', { id: 'learning-lab-emotion-privacy', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Saved check-ins stay with your Learning Lab data and may contain sensitive information. Avoid private details on a shared device, and delete check-ins you no longer need.'),
 
-      tkCard('#ec4899',
-        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-emotion-check-heading' },
-          hh('h3', { id: 'learning-lab-emotion-check-heading', style: { fontSize: 12, fontWeight: 800, color: '#f472b6', margin: '0 0 10px' } }, '💖 Quick emotion check'),
-          hh('div', { id: 'learning-lab-emotion-question', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'What\'s the strongest feeling right now?'),
-          hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-emotion-question', 'aria-describedby': emotionError ? 'learning-lab-emotion-error' : undefined, style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 } },
-            EMOTION_LABELS.map(function(emotion) {
-              var on = form.label === emotion.id;
-              return hh('button', { key: 'el-' + emotion.id, id: 'learning-lab-emotion-' + emotion.id, type: 'button', 'aria-label': emotion.id, 'aria-pressed': on ? 'true' : 'false',
-                onClick: function() { setForm(Object.assign({}, form, { label: emotion.id })); if (emotionError) setEmotionError(''); }, 'data-ll-focusable': true,
-                style: { minWidth: 48, minHeight: 48, padding: 10, borderRadius: 8, background: on ? emotion.color + '30' : 'rgba(15,23,42,0.5)', border: '2px solid ' + (on ? emotion.color : 'rgba(100,116,139,0.30)'), fontSize: 22, cursor: 'pointer' }
-              }, emotion.icon);
-            })
+      tkCard('#f9a8d4',
+        hh('form', { noValidate: true, onSubmit: save, 'aria-labelledby': 'learning-lab-emotion-check-heading' },
+          hh('h3', { id: 'learning-lab-emotion-check-heading', style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', margin: '0 0 10px' } }, 'Quick emotion check'),
+          hh('fieldset', { 'aria-describedby': 'learning-lab-emotion-privacy' + (emotionError ? ' learning-lab-emotion-error' : ''), style: { border: 0, padding: 0, margin: '0 0 8px' } },
+            hh('legend', { id: 'learning-lab-emotion-question', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Which emotion feels strongest right now? (required)'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6 } },
+              EMOTION_LABELS.map(function(emotion) {
+                var selected = form.label === emotion.id;
+                return hh('label', { key: 'emotion-' + emotion.id, htmlFor: 'learning-lab-emotion-' + emotion.id, style: { minHeight: 48, display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 8, background: selected ? 'rgba(30,41,59,0.95)' : 'rgba(15,23,42,0.5)', border: '2px solid ' + (selected ? emotion.color : '#64748b'), color: '#fff', cursor: 'pointer' } },
+                  hh('input', { id: 'learning-lab-emotion-' + emotion.id, type: 'radio', name: 'learning-lab-emotion', value: emotion.id, checked: selected, required: emotion.id === 'sad', onChange: function() { setForm(Object.assign({}, form, { label: emotion.id })); if (emotionError) setEmotionError(''); }, style: { width: 24, height: 24, accentColor: emotion.color, flexShrink: 0 } }),
+                  hh('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, emotion.icon), hh('span', null, emotion.name)
+                );
+              })
+            )
           ),
-          hh('div', { id: 'learning-lab-emotion-error', role: 'alert', style: { minHeight: emotionError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: emotionError ? 8 : 4 } }, emotionError),
-          hh('label', { htmlFor: 'learning-lab-emotion-intensity', style: labelStyle }, 'How intense? ', hh('strong', { style: { color: '#f472b6', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.intensity + '/10')),
-          hh('input', { id: 'learning-lab-emotion-intensity', type: 'range', min: 1, max: 10, step: 1, value: form.intensity, 'aria-valuetext': form.intensity + ' out of 10',
-            onChange: function(event) { setForm(Object.assign({}, form, { intensity: parseInt(event.target.value, 10) })); }, 'data-ll-focusable': true,
-            style: { width: '100%', minHeight: 44, accentColor: '#ec4899', marginBottom: 10 }
-          }),
-          hh('label', { htmlFor: 'learning-lab-emotion-context', style: labelStyle }, 'What\'s going on? (optional)'),
-          hh('input', { id: 'learning-lab-emotion-context', type: 'text', value: form.what, maxLength: 240, onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: 8 }) }),
-          hh('label', { htmlFor: 'learning-lab-emotion-need', style: labelStyle }, 'What do you need right now? (optional)'),
-          hh('input', { id: 'learning-lab-emotion-need', type: 'text', value: form.need, maxLength: 240, onChange: function(event) { setForm(Object.assign({}, form, { need: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: 10 }) }),
-          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #f9a8d4', background: '#be185d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save check-in')
+          emotionError ? hh('div', { id: 'learning-lab-emotion-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: 8 } }, emotionError) : null,
+          hh('label', { htmlFor: 'learning-lab-emotion-intensity', style: labelStyle }, 'Self-rated intensity: ', hh('strong', { style: { color: '#fbcfe8', fontSize: 14 } }, form.intensity + ' out of 10')),
+          hh('input', { id: 'learning-lab-emotion-intensity', type: 'range', min: 1, max: 10, step: 1, value: form.intensity, 'aria-valuetext': form.intensity + ' out of 10, where 1 is low and 10 is very high', onChange: function(event) { setForm(Object.assign({}, form, { intensity: parseInt(event.target.value, 10) })); }, style: { width: '100%', minHeight: 44, accentColor: '#ec4899' } }),
+          hh('div', { 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, hh('span', null, '1 — Low'), hh('span', null, '10 — Very high')),
+          hh('label', { htmlFor: 'learning-lab-emotion-context', style: labelStyle }, 'What is happening? (optional)'),
+          hh('input', { id: 'learning-lab-emotion-context', type: 'text', value: form.what, maxLength: 240, 'aria-describedby': 'learning-lab-emotion-privacy', onChange: function(event) { setForm(Object.assign({}, form, { what: event.target.value })); }, style: Object.assign({}, inputStyle, { marginBottom: 8 }) }),
+          hh('label', { htmlFor: 'learning-lab-emotion-need', style: labelStyle }, 'What might help right now? (optional)'),
+          hh('input', { id: 'learning-lab-emotion-need', type: 'text', value: form.need, maxLength: 240, 'aria-describedby': 'learning-lab-emotion-privacy', onChange: function(event) { setForm(Object.assign({}, form, { need: event.target.value })); }, style: Object.assign({}, inputStyle, { marginBottom: 10 }) }),
+          hh('button', { id: 'learning-lab-emotion-save', type: 'submit', style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '2px solid #fbcfe8', background: '#9d174d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save check-in')
         )
       ),
 
-      hh('div', { role: 'group', 'aria-label': 'Emotion regulation tools', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+      hh('div', { role: 'group', 'aria-label': 'Optional grounding tools', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
         [
-          { id: 'breathing', icon: '🌬', label: 'Box breathing', color: '#06b6d4', desc: '4-4-4-4 pattern, ~2 min' },
-          { id: 'ground',    icon: '🌱', label: '5-4-3-2-1 grounding', color: '#10b981', desc: 'Sensory anchor, ~3 min' }
+          { id: 'breathing', icon: '🌬', label: 'Box breathing', color: '#67e8f9', desc: 'Paced text prompts with pause control' },
+          { id: 'grounding', view: 'ground', icon: '🌱', label: '5-4-3-2-1 grounding', color: '#6ee7b7', desc: 'Optional, adaptable sensory prompts' }
         ].map(function(tool) {
-          return hh('button', { key: 'tool-' + tool.id, type: 'button',
-            onClick: function() { setView(tool.id); }, 'data-ll-focusable': true,
-            style: { display: 'block', minHeight: 80, textAlign: 'left', padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, ' + tool.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + tool.color + '40', borderLeft: '4px solid ' + tool.color, cursor: 'pointer' }
-          },
-            hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, tool.icon),
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: tool.color } }, tool.label),
-            hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, tool.desc)
+          return hh('button', { key: 'tool-' + tool.id, id: 'learning-lab-open-' + tool.id, type: 'button', onClick: function() { openTool(tool.view || tool.id); }, style: { display: 'block', minHeight: 80, textAlign: 'left', padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '2px solid ' + tool.color, cursor: 'pointer' } },
+            hh('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginRight: 6 } }, tool.icon),
+            hh('strong', { style: { fontSize: 13, color: tool.color } }, tool.label),
+            hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, tool.desc)
           );
         })
       ),
 
-      checks.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-emotion-history-heading' },
-        hh('h3', { id: 'learning-lab-emotion-history-heading', style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 Recent emotion check-ins'),
+      checks.length ? hh('section', { 'aria-labelledby': 'learning-lab-emotion-history-heading' },
+        hh('h3', { id: 'learning-lab-emotion-history-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', margin: '0 0 8px' } }, 'Recent emotion check-ins'),
         hh('ul', { style: listStyle },
-          checks.slice(0, 8).map(function(c) {
-            var emotion = EMOTION_LABELS.filter(function(x) { return x.id === c.label; })[0] || EMOTION_LABELS[0];
-            return hh('li', { key: 'ck-' + c.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + emotion.color, display: 'flex', alignItems: 'flex-start', gap: 8 } },
-              hh('div', { 'aria-hidden': 'true', style: { fontSize: 20, lineHeight: 1, flexShrink: 0 } }, emotion.icon),
-              hh('div', { style: { flex: 1, minWidth: 0 } },
-                hh('div', { style: { fontSize: 11, color: emotion.color, fontWeight: 800, textTransform: 'capitalize' } }, c.label),
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(c.time).toLocaleString() + ' · intensity ' + c.intensity + '/10'),
-                c.what ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 2 } }, c.what) : null,
-                c.need ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontStyle: 'italic' } }, 'needed: ' + c.need) : null
+          checks.map(function(check) {
+            var checkDate = new Date(check.time || check.date || Date.now());
+            if (isNaN(checkDate.getTime())) checkDate = new Date();
+            var emotion = EMOTION_LABELS.filter(function(item) { return item.id === check.label; })[0] || { name: check.label || 'Emotion', icon: '•', color: '#cbd5e1' };
+            return hh('li', { key: 'check-' + check.id },
+              hh('article', { 'aria-label': emotion.name + ' check-in, intensity ' + check.intensity + ' out of 10', style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + emotion.color } },
+                hh('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
+                  hh('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, emotion.icon),
+                  hh('div', { style: { flex: 1, minWidth: 0 } },
+                    hh('strong', { style: { color: emotion.color } }, emotion.name),
+                    hh('div', null, hh('time', { dateTime: checkDate.toISOString() }, checkDate.toLocaleString()), ' · intensity ' + check.intensity + ' out of 10'),
+                    check.what ? hh('p', { style: { margin: '4px 0 0', overflowWrap: 'anywhere' } }, check.what) : null,
+                    check.need ? hh('p', { style: { margin: '4px 0 0', overflowWrap: 'anywhere' } }, hh('strong', null, 'Might help: '), check.need) : null
+                  ),
+                  hh('button', { type: 'button', 'aria-label': 'Delete ' + emotion.name + ' emotion check-in', onClick: function() { removeCheck(check.id); }, style: { minWidth: 44, minHeight: 44 } }, 'Delete')
+                )
               )
             );
           })
@@ -9190,6 +9221,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ) : null
     );
   }
+
 
   // V. PERSONAL EXECUTIVE FUNCTION DASHBOARD (Wave 5)
   // 8 EF dimensions tracked over time with weekly self-rating + library
@@ -19768,7 +19800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkNotes || {}).notes || []).length + ' notes', cta: 'Open notebooks' },
       { id: 'mytkAgenda',   icon: '📋', label: 'Today',                color: '#10b981', desc: 'Today\'s pulled-together agenda',
         stat: 'today', cta: 'View today' },
-      { id: 'mytkEmotion',  icon: '💖', label: 'Emotion + Grounding',  color: '#ec4899', desc: 'Quick check + box breathing + 5-4-3-2-1',
+      { id: 'mytkEmotion',  icon: '💖', label: 'Emotion + Grounding',  color: '#ec4899', desc: 'Private check-in + optional adaptable grounding tools',
         stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' },
       { id: 'mytkEF',       icon: '🧩', label: 'EF Dashboard',         color: '#a855f7', desc: '8 executive-function dimensions tracked weekly',
         stat: ((data.mytkEF || {}).ratings || []).length + ' ratings', cta: 'Rate this week' },
@@ -20104,7 +20136,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Equivalent visual and text views for exploring relationships between ideas.') },
               { id: 'mytkNotes',  icon: '📝', label: __alloT('stem.learning_lab.cornell_notes', 'Cornell Notes'),        desc: __alloT('stem.learning_lab.in_tool_cornell_style_note_taking_with', 'In-tool Cornell-style note-taking with cue column + summary + search.') },
               { id: 'mytkAgenda', icon: '📋', label: __alloT('stem.learning_lab.today', 'Today'),                desc: __alloT('stem.learning_lab.today_s_pulled_together_agenda_habits_', 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.') },
-              { id: 'mytkEmotion',icon: '💖', label: __alloT('stem.learning_lab.emotion_grounding', 'Emotion + Grounding'),  desc: __alloT('stem.learning_lab.quick_emotion_check_box_breathing_5_4_', 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.') },
+              { id: 'mytkEmotion',icon: '💖', label: __alloT('stem.learning_lab.emotion_grounding', 'Emotion + Grounding'),  desc: __alloT('stem.learning_lab.quick_emotion_check_box_breathing_5_4_', 'Private emotion check-in with optional paced breathing and adaptable grounding prompts.') },
               { id: 'mytkEF',     icon: '🧩', label: __alloT('stem.learning_lab.ef_dashboard', 'EF Dashboard'),         desc: __alloT('stem.learning_lab.8_executive_function_dimensions_tracke', '8 executive-function dimensions tracked weekly + strategy library (Barkley + Brown).') },
               { id: 'mytkIEP',    icon: '🎓', label: __alloT('stem.learning_lab.my_iep_tracker', 'My IEP Tracker'),       desc: __alloT('stem.learning_lab.your_own_copy_of_your_iep_goals_sub_go', 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.') },
               { id: 'mytkMastery',icon: '📚', label: __alloT('stem.learning_lab.subject_mastery', 'Subject Mastery'),      desc: __alloT('stem.learning_lab.track_mastery_per_topic_per_subject_ac', 'Track mastery per topic per subject across 5 levels (new → mastered).') },

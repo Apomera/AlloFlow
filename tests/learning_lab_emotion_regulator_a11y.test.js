@@ -1,79 +1,70 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-
 const root = process.cwd();
 const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
-
-describe('Learning Lab Emotion Regulator accessibility', () => {
+describe('Learning Lab Emotion + Grounding accessibility', () => {
   const source = read('stem_lab/stem_tool_learning_lab.js');
   const start = source.indexOf('  function PersonalEmotionRegulator(props) {');
   const end = source.indexOf('  function PersonalEFDashboard(props) {', start);
-  const emotionRegulator = source.slice(start, end);
-
-  it('reports missing emotion selection inline and moves focus to the group', () => {
-    expect(emotionRegulator).toContain("setEmotionError('Choose the emotion that feels strongest right now.')");
-    expect(emotionRegulator).toContain("id: 'learning-lab-emotion-error', role: 'alert'");
-    expect(emotionRegulator).toContain("document.getElementById('learning-lab-emotion-sad')");
-    expect(emotionRegulator).not.toContain("alert('Pick an emotion first.')");
+  const emotion = source.slice(start, end);
+  it('uses native single-choice emotion controls and inline validation', () => {
+    expect(emotion).toContain("hh('fieldset'");
+    expect(emotion).toContain("hh('legend'");
+    expect(emotion).toContain("type: 'radio', name: 'learning-lab-emotion'");
+    expect(emotion).toContain("id: 'learning-lab-emotion-error', role: 'alert'");
+    expect(emotion).toContain("focusId('learning-lab-emotion-sad')");
+    expect(emotion).not.toContain("'aria-pressed': on ? 'true' : 'false'");
   });
-
-  it('names emotion choices and exposes their selected state', () => {
-    expect(emotionRegulator).toContain("role: 'group', 'aria-labelledby': 'learning-lab-emotion-question'");
-    expect(emotionRegulator).toContain("'aria-label': emotion.id, 'aria-pressed': on ? 'true' : 'false'");
-    expect(emotionRegulator).toContain("minWidth: 48, minHeight: 48");
+  it('labels and bounds sensitive check-in fields with privacy guidance', () => {
+    expect(emotion).toContain("id: 'learning-lab-emotion-privacy'");
+    expect(emotion).toContain("maxLength: 240, 'aria-describedby': 'learning-lab-emotion-privacy'");
+    expect(emotion).toContain("'aria-valuetext': form.intensity + ' out of 10, where 1 is low and 10 is very high'");
+    expect(emotion).toContain('not an assessment or treatment');
   });
-
-  it('labels the intensity slider and exposes an understandable value', () => {
-    expect(emotionRegulator).toContain("htmlFor: 'learning-lab-emotion-intensity'");
-    expect(emotionRegulator).toContain("id: 'learning-lab-emotion-intensity', type: 'range'");
-    expect(emotionRegulator).toContain("'aria-valuetext': form.intensity + ' out of 10'");
-    expect(emotionRegulator).toContain("minHeight: 44, accentColor: '#ec4899'");
+  it('provides current, named, contextual crisis options and non-monitoring disclosure', () => {
+    expect(emotion).toContain("'aria-labelledby': 'learning-lab-emotion-safety-heading'");
+    expect(emotion).toContain('does not monitor your entries, assess risk, contact anyone, or provide crisis care');
+    expect(emotion).toContain("href: 'tel:988'");
+    expect(emotion).toContain("href: 'sms:988'");
+    expect(emotion).toContain("href: 'https://988lifeline.org/chat/'");
+    expect(emotion).toContain("rel: 'noopener noreferrer'");
+    expect(emotion).toContain("href: 'tel:18885681112'");
+    expect(emotion).toContain('Maine Relay 711');
   });
-
-  it('associates labels with the context and need fields', () => {
-    expect(emotionRegulator).toContain("htmlFor: 'learning-lab-emotion-context'");
-    expect(emotionRegulator).toContain("id: 'learning-lab-emotion-context', type: 'text'");
-    expect(emotionRegulator).toContain("htmlFor: 'learning-lab-emotion-need'");
-    expect(emotionRegulator).toContain("id: 'learning-lab-emotion-need', type: 'text'");
+  it('uses a pausable text breathing guide without interaction-triggered scaling motion or efficacy claims', () => {
+    expect(emotion).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(emotion).toContain("'aria-pressed': boxPlaying ? 'true' : 'false'");
+    expect(emotion).toContain('You may pause or stop at any time.');
+    expect(emotion).not.toContain("transition: 'transform");
+    expect(emotion).not.toContain("transform: boxPlaying");
+    expect(emotion).not.toContain('Settles the nervous system');
   });
-
-  it('announces breathing phases and exposes play or pause state', () => {
-    expect(emotionRegulator).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
-    expect(emotionRegulator).toContain("'aria-pressed': boxPlaying ? 'true' : 'false'");
-    expect(emotionRegulator).toContain("boxPlaying ? '⏸ Pause breathing' : '▶ Start breathing'");
-    expect(source).toContain('@media (prefers-reduced-motion: reduce)');
+  it('makes grounding optional, adaptable, bounded, temporary, and skippable', () => {
+    expect(emotion).toContain('Skip any sense or prompt that is unavailable, inaccessible, uncomfortable, or unsafe.');
+    expect(emotion).toContain('imagine smelling');
+    expect(emotion).toContain('imagine tasting');
+    expect(emotion).toContain("rows: 2, maxLength: 1000");
+    expect(emotion).toContain("'aria-describedby': 'learning-lab-grounding-guidance'");
+    expect(emotion).toContain('are cleared when you leave this exercise');
+    expect(emotion).not.toContain('Even partial completion helps');
   });
-
-  it('associates every grounding prompt with its textarea', () => {
-    expect(emotionRegulator).toContain("var fieldId = 'learning-lab-grounding-' + f.id");
-    expect(emotionRegulator).toContain("hh('label', { htmlFor: fieldId");
-    expect(emotionRegulator).toContain("hh('textarea', { id: fieldId");
-    expect(emotionRegulator).not.toContain("tkTextarea(ground[f.id]");
+  it('preserves sibling state and allows every saved check-in to be deleted', () => {
+    expect(emotion.match(/setData\(Object\.assign\(\{\}, data,/g)).toHaveLength(2);
+    expect(emotion).toContain("title: 'Delete this emotion check-in?', confirmText: 'Delete check-in'");
+    expect(emotion).toContain("checks.map(function(check)");
+    expect(emotion).not.toContain('checks.slice(0, 8)');
   });
-
-  it('provides operable crisis support links', () => {
-    expect(emotionRegulator).toContain("hh('aside', { 'aria-label': 'Crisis support'");
-    expect(emotionRegulator).toContain("href: 'tel:988'");
-    expect(emotionRegulator).toContain("href: 'sms:988'");
-    expect(emotionRegulator).toContain("href: 'tel:18885681112'");
+  it('uses semantic history, robust dates, focus restoration, and announcements', () => {
+    expect(emotion).toContain("hh('article', { 'aria-label': emotion.name + ' check-in");
+    expect(emotion).toContain("hh('time', { dateTime: checkDate.toISOString()");
+    expect(emotion).toContain("if (isNaN(checkDate.getTime())) checkDate = new Date()");
+    expect(emotion).toContain("focusId('learning-lab-emotion-history-heading')");
+    expect(emotion).toContain("llAnnounce('Emotion check-in deleted.')");
   });
-
-  it('uses semantic history and exposes emotion names as text', () => {
-    expect(emotionRegulator).toContain("'aria-labelledby': 'learning-lab-emotion-history-heading'");
-    expect(emotionRegulator).toContain("id: 'learning-lab-emotion-history-heading'");
-    expect(emotionRegulator).toContain("hh('ul', { style: listStyle }");
-    expect(emotionRegulator).toContain("textTransform: 'capitalize' } }, c.label");
-    expect(emotionRegulator).toContain("'aria-hidden': 'true'");
-  });
-
-  it('supports form submission and announces a saved check-in', () => {
-    expect(emotionRegulator).toContain("onSubmit: function(event) { event.preventDefault(); save(); }");
-    expect(emotionRegulator).toContain("hh('button', { type: 'submit'");
-    expect(emotionRegulator).toContain("llAnnounce('Emotion check-in saved.')");
-  });
-
-  it('keeps the deployed mirror identical', () => {
+  it('updates discovery copy and keeps the deployed mirror identical', () => {
+    expect(source).toContain("desc: 'Private check-in + optional adaptable grounding tools'");
+    expect(source).toContain('Private emotion check-in with optional paced breathing and adaptable grounding prompts.');
     expect(source).toBe(read('prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js'));
   });
 });
