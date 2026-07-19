@@ -18285,8 +18285,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { answers: [] };
     var setData = props.setData;
-    var as = R.useState(null);                         var pickedQ = as[0]; var setPickedQ = as[1];
-    var ts = R.useState('');                           var text = ts[0]; var setText = ts[1];
+    var qs = R.useState(null); var pickedQ = qs[0]; var setPickedQ = qs[1];
+    var ts = R.useState(''); var text = ts[0]; var setText = ts[1];
+    var ms = R.useState('gentle'); var mode = ms[0]; var setMode = ms[1];
+    var es = R.useState(''); var answerError = es[0]; var setAnswerError = es[1];
 
     var DECK = [
       'If today were the start of the rest of my life, what would I do today?',
@@ -18342,63 +18344,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       'What is one thing I know to be true now that I didn\'t a year ago?',
       'What part of my life do I want to over-invest in for the next month?'
     ];
+    var DEEP_PROMPTS = [
+      'What\'s a hard thing I\'ve survived that I rarely give myself credit for?',
+      'What\'s a fear that\'s been making my life smaller?',
+      'What is one boundary I need to set but haven\'t?',
+      'What am I tolerating in my life that I don\'t need to?',
+      'What is one truth that took me too long to learn?',
+      'What am I currently hiding from myself?',
+      'What does my anger have to teach me?',
+      'What does my grief have to teach me?',
+      'What is one thing my younger self would be amazed I survived?',
+      'What\'s a part of my body I\'ve been at war with that\'s actually been on my side?',
+      'What\'s a season of my life I miss?'
+    ];
+    var answers = Array.isArray(data.answers) ? data.answers : [];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #f472b6', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#fce7f3', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #f472b6', background: '#be185d', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+    var secondaryButtonStyle = Object.assign({}, buttonStyle, { background: 'rgba(131,24,67,0.35)', color: '#fce7f3' });
+    var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
-    function pickRandom() {
-      var seed = Date.now();
-      var q = DECK[seed % DECK.length];
-      setPickedQ(q);
-      setText('');
+    function safeDomId(value) { return String(value || 'answer').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function saveAnswers(nextAnswers) { setData(Object.assign({}, data, { answers: nextAnswers })); }
+    function poolForMode() { return mode === 'all' ? DECK : DECK.filter(function(question) { return DEEP_PROMPTS.indexOf(question) === -1; }); }
+    function chooseCard() {
+      var pool = poolForMode(); var recent = pickedQ || (answers[0] && answers[0].question); var choices = pool.filter(function(question) { return question !== recent; }); if (!choices.length) choices = pool;
+      var question = choices[Math.floor(Math.random() * choices.length)]; setPickedQ(question); setText(''); setAnswerError(''); llAnnounce('A reflection prompt was drawn.'); focusById('learning-lab-life-deck-question-heading');
     }
-    function answer() {
-      if (!pickedQ || !text.trim()) { alert('Pick a card + answer first.'); return; }
-      var a = { id: tkId(), date: todayISO(), question: pickedQ, answer: text.trim() };
-      setData({ answers: [a].concat(data.answers || []) });
-      setText('');
-      setPickedQ(null);
+    function confirmDiscard(message, action) {
+      if (!text.trim()) { action(); return; }
+      askLearningLabConfirmation(message, { title: 'Discard unsaved response?', confirmText: 'Discard response' }).then(function(accepted) { if (accepted) action(); });
     }
-    function remove(id) { setData({ answers: (data.answers || []).filter(function(a) { return a.id !== id; }) }); }
-
-    var answers = data.answers || [];
+    function drawDifferent() { confirmDiscard('Discard this unsaved response and draw a different prompt? This cannot be undone.', chooseCard); }
+    function cancelCard() { confirmDiscard('Discard this unsaved response and close the prompt? This cannot be undone.', function() { setPickedQ(null); setText(''); setAnswerError(''); llAnnounce('Reflection prompt closed without saving.'); focusById('learning-lab-life-deck-draw'); }); }
+    function answer(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var response = text.trim();
+      if (!pickedQ || !response) { setAnswerError('Enter a response before saving, or close this prompt without saving.'); llAnnounce('Response not saved. Enter a response or close the prompt.'); focusById('learning-lab-life-deck-response'); return; }
+      var saved = { id: tkId(), date: todayISO(), question: pickedQ, answer: response };
+      saveAnswers([saved].concat(answers)); setText(''); setPickedQ(null); setAnswerError(''); llAnnounce('Reflection response saved in this browser.'); focusById('learning-lab-life-deck-history-heading');
+    }
+    function updateAnswer(id, value) { saveAnswers(answers.map(function(answer) { return answer.id === id ? Object.assign({}, answer, { answer: value }) : answer; })); }
+    function removeAnswer(answer) {
+      askLearningLabConfirmation('Remove the saved response to “' + String(answer.question || 'this prompt') + '”? This cannot be undone.', { title: 'Remove saved response?', confirmText: 'Remove response' }).then(function(accepted) {
+        if (!accepted) return; saveAnswers(answers.filter(function(saved) { return saved.id !== answer.id; })); llAnnounce('Saved reflection response removed.'); focusById('learning-lab-life-deck-history-heading');
+      });
+    }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🃏', 'Life Deck', '52 reflection cards. Draw one. Answer briefly. Build a journal over time.', '#ec4899'),
-
-      pickedQ ? hh('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(236,72,153,0.20), rgba(15,23,42,0.7))', border: '2px solid #ec4899', marginBottom: 14, textAlign: 'center', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
-        hh('div', { style: { fontSize: 10, color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, '🃏 Your card'),
-        hh('div', { style: { fontSize: 16, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + pickedQ + '"')
-      ) : hh('div', { style: { padding: 30, borderRadius: 14, background: 'rgba(236,72,153,0.10)', border: '2px dashed rgba(236,72,153,0.40)', textAlign: 'center', marginBottom: 14 } },
-        hh('div', { style: { fontSize: 48, marginBottom: 12 } }, '🃏'),
-        tkBtn('Draw a card', pickRandom, 'primary', { padding: '12px 28px', fontSize: 14 })
+      tkSectionHeader('', 'Life Deck', 'Choose an optional reflection prompt and save a response only if you want to.', '#f472b6'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-life-deck-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #f472b6', background: 'rgba(131,24,67,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-life-deck-context-heading', style: { margin: '0 0 5px', color: '#fce7f3', fontSize: 14 } }, 'Skip, stop, or choose another prompt at any time'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'There is no required answer, pace, insight, or emotional response. Prompts are not an assessment, diagnosis, therapy, or crisis support. Choose only what feels useful and safe.'),
+        hh('p', { style: { margin: 0 } }, 'Responses save in this browser and may be personal. Avoid sensitive details on a shared device. If a prompt raises an immediate safety concern, stop and contact appropriate local emergency, crisis, or trusted support.')
       ),
-
-      pickedQ ? hh('div', null,
-        tkTextarea(text, setText, 'Take your time. No right answer.', 6, { marginBottom: 10, fontFamily: 'Georgia, serif' }),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 } },
-          tkBtn('🃏 Draw different card', pickRandom, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn('Cancel', function() { setPickedQ(null); setText(''); }, 'ghost'),
-            tkBtn('💾 Save answer', answer, 'primary')
+      !pickedQ ? hh('section', { 'aria-labelledby': 'learning-lab-life-deck-draw-heading', style: { marginBottom: 14, padding: 14, borderRadius: 12, border: '1px solid #f472b6', background: 'rgba(131,24,67,0.18)' } },
+        hh('h2', { id: 'learning-lab-life-deck-draw-heading', style: { margin: '0 0 5px', color: '#fce7f3', fontSize: 15 } }, 'Draw an optional prompt'),
+        hh('fieldset', { style: { margin: '0 0 10px', padding: 10, borderRadius: 8, border: '1px solid #f472b6' } },
+          hh('legend', { style: { padding: '0 5px', color: '#fce7f3', fontSize: 12, fontWeight: 800 } }, 'Prompt range'),
+          hh('label', { htmlFor: 'learning-lab-life-deck-mode-gentle', style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, color: '#f8fafc', fontSize: 11, cursor: 'pointer' } }, hh('input', { id: 'learning-lab-life-deck-mode-gentle', type: 'radio', name: 'learning-lab-life-deck-mode', value: 'gentle', checked: mode === 'gentle', onChange: function() { setMode('gentle'); }, style: { width: 20, height: 20, margin: 0, accentColor: '#f472b6' } }), hh('span', null, hh('strong', null, 'Gentle prompts — selected by default'), hh('span', { style: { display: 'block', marginTop: 3, color: '#e2e8f0' } }, 'Excludes prompts explicitly focused on grief, fear, body conflict, difficult experiences, or hidden concerns.'))),
+          hh('label', { htmlFor: 'learning-lab-life-deck-mode-all', style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, color: '#f8fafc', fontSize: 11, cursor: 'pointer' } }, hh('input', { id: 'learning-lab-life-deck-mode-all', type: 'radio', name: 'learning-lab-life-deck-mode', value: 'all', checked: mode === 'all', onChange: function() { setMode('all'); }, style: { width: 20, height: 20, margin: 0, accentColor: '#f472b6' } }), hh('span', null, hh('strong', null, 'All prompts'), hh('span', { style: { display: 'block', marginTop: 3, color: '#e2e8f0' } }, 'May include grief, fear, anger, body image, boundaries, survival, or other difficult experiences.')))
+        ),
+        hh('button', { id: 'learning-lab-life-deck-draw', type: 'button', onClick: chooseCard, style: buttonStyle }, 'Draw a prompt')
+      ) :
+      hh('section', { 'aria-labelledby': 'learning-lab-life-deck-question-heading', style: { marginBottom: 14 } },
+        hh('div', { style: { padding: 20, borderRadius: 12, border: '2px solid #f472b6', background: 'rgba(131,24,67,0.22)' } },
+          hh('h2', { id: 'learning-lab-life-deck-question-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#fce7f3', fontSize: 14 } }, 'Current reflection prompt'),
+          hh('blockquote', { style: { margin: 0, color: '#f8fafc', fontSize: 16, lineHeight: 1.65, fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, pickedQ)
+        ),
+        hh('form', { onSubmit: answer, 'aria-labelledby': 'learning-lab-life-deck-response-heading', style: { marginTop: 10 } },
+          hh('h3', { id: 'learning-lab-life-deck-response-heading', style: { margin: '0 0 5px', color: '#fce7f3', fontSize: 14 } }, 'Write an optional response'),
+          hh('p', { id: 'learning-lab-life-deck-response-help', style: helpStyle }, 'Write any length up to 8,000 characters. You may also draw another prompt or close this one without saving.'),
+          hh('label', { htmlFor: 'learning-lab-life-deck-response', style: labelStyle }, 'Response (required to save)'),
+          hh('textarea', { id: 'learning-lab-life-deck-response', value: text, rows: 6, required: true, maxLength: 8000, onChange: function(event) { setText(event.target.value); if (answerError) setAnswerError(''); }, 'aria-invalid': answerError ? 'true' : undefined, 'aria-describedby': 'learning-lab-life-deck-response-help' + (answerError ? ' learning-lab-life-deck-response-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 130, resize: 'vertical', fontFamily: 'Georgia, serif' }) }),
+          answerError ? hh('p', { id: 'learning-lab-life-deck-response-error', role: 'alert', style: { margin: '5px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, answerError) : null,
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginTop: 10 } },
+            hh('button', { type: 'button', onClick: drawDifferent, style: secondaryButtonStyle }, 'Draw a different prompt'),
+            hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, hh('button', { type: 'button', onClick: cancelCard, style: secondaryButtonStyle }, 'Close without saving'), hh('button', { type: 'submit', style: buttonStyle }, 'Save response'))
           )
         )
-      ) : null,
-
-      answers.length > 0 ? hh('div', { style: { marginTop: 14 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 ' + answers.length + ' cards answered'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          answers.slice(0, 20).map(function(a) {
-            return hh('div', { key: 'ld-' + a.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #ec4899' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
-                hh('button', { onClick: function() { remove(a.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 12, color: '#f472b6', fontStyle: 'italic', marginBottom: 6, fontFamily: 'Georgia, serif' } }, '"' + a.question + '"'),
-              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif' } }, a.answer)
-            );
-          })
-        )
-      ) : null
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-life-deck-history-heading' },
+        hh('h2', { id: 'learning-lab-life-deck-history-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#fce7f3', fontSize: 15 } }, 'Saved reflection responses'),
+        hh('p', { id: 'learning-lab-life-deck-history-help', style: helpStyle }, 'Saved responses are editable and save automatically in this browser.'),
+        answers.length === 0 ? hh('p', { style: { margin: 0, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.55)', color: '#e2e8f0', fontSize: 11 } }, 'No reflection responses saved.') :
+        hh('ul', { 'aria-label': 'Saved Life Deck responses', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, answers.map(function(answer, index) { var domId = safeDomId(answer.id); var headingId = 'learning-lab-life-deck-answer-heading-' + domId; var fieldId = 'learning-lab-life-deck-answer-' + domId; return hh('li', { key: answer.id },
+          hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, borderLeft: '4px solid #f472b6', background: 'rgba(15,23,42,0.64)' } },
+            hh('h3', { id: headingId, style: { margin: '0 0 5px', color: '#f9a8d4', fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(answer.question || 'Untitled reflection prompt')),
+            answer.date ? hh('p', { style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 10 } }, 'Saved ', hh('time', { dateTime: answer.date }, relDate(answer.date))) : null,
+            hh('label', { htmlFor: fieldId, style: labelStyle }, 'Saved response ' + (index + 1)),
+            hh('textarea', { id: fieldId, value: String(answer.answer || ''), rows: 4, maxLength: 8000, 'aria-describedby': 'learning-lab-life-deck-history-help', onChange: function(event) { updateAnswer(answer.id, event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 100, resize: 'vertical', fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+            hh('button', { type: 'button', onClick: function() { removeAnswer(answer); }, 'aria-label': 'Remove saved response to: ' + String(answer.question || 'untitled prompt'), style: Object.assign({}, dangerButtonStyle, { marginTop: 8 }) }, 'Remove response')
+          )
+        ); }))
+      )
     );
   }
+
 
   // ── MMMM. PERSONAL COMMUNICATION STYLE (Wave 22) ──
   // Self-discovery: how do I prefer to give + receive information?
