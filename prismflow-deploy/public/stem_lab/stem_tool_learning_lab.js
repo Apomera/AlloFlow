@@ -17697,191 +17697,161 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { curricula: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
-    var fs = R.useState({ title: '', why: '', timespan: '8 weeks', selfRating: 5 });
-    var newC = fs[0]; var setNewC = fs[1];
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var emptyCurriculum = { title: '', why: '', timespan: '8 weeks', selfRating: 5 };
+    var fs = R.useState(emptyCurriculum); var newC = fs[0]; var setNewC = fs[1];
+    var titleState = R.useState(''); var titleError = titleState[0]; var setTitleError = titleState[1];
+    var emptyStep = { type: 'read', label: '' };
+    var stepState = R.useState(emptyStep); var stepForm = stepState[0]; var setStepForm = stepState[1];
+    var stepErrorState = R.useState(''); var stepError = stepErrorState[0]; var setStepError = stepErrorState[1];
 
     var STEP_TYPES = [
-      { id: 'read',     label: '📖 Read',      color: '#3b82f6' },
-      { id: 'watch',    label: '👁 Watch',     color: '#a855f7' },
-      { id: 'practice', label: '🎯 Practice',  color: '#10b981' },
-      { id: 'project',  label: '🛠 Project',   color: '#fbbf24' },
-      { id: 'discuss',  label: '💬 Discuss',   color: '#ec4899' },
-      { id: 'reflect',  label: '📔 Reflect',   color: '#06b6d4' },
-      { id: 'apply',    label: '🚀 Apply IRL', color: '#ef4444' },
-      { id: 'teach',    label: '🗣 Teach someone', color: '#f97316' }
+      { id: 'read', label: 'Read', icon: '📖', color: '#93c5fd' },
+      { id: 'watch', label: 'Watch or listen', icon: '👁', color: '#d8b4fe' },
+      { id: 'practice', label: 'Practice', icon: '🎯', color: '#6ee7b7' },
+      { id: 'project', label: 'Project', icon: '🛠', color: '#fde68a' },
+      { id: 'discuss', label: 'Discuss', icon: '💬', color: '#f9a8d4' },
+      { id: 'reflect', label: 'Reflect', icon: '📔', color: '#67e8f9' },
+      { id: 'apply', label: 'Apply in context', icon: '🚀', color: '#fca5a5' },
+      { id: 'teach', label: 'Explain to someone', icon: '🗣', color: '#fdba74' }
     ];
 
+    function safeDomId(value) { return String(value || 'curriculum').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function typeFor(id) { return STEP_TYPES.filter(function(type) { return type.id === id; })[0] || STEP_TYPES[0]; }
+    function getCurr() { return (data.curricula || []).filter(function(curriculum) { return curriculum.id === activeId; })[0]; }
     function createCurriculum() {
-      if (!newC.title.trim()) return;
-      var c = Object.assign({ id: tkId(), createdAt: todayISO(), steps: [], notes: '' }, newC);
-      setData({ curricula: [c].concat(data.curricula || []) });
-      setActiveId(c.id);
-      setNewC({ title: '', why: '', timespan: '8 weeks', selfRating: 5 });
-      setView('edit');
+      var title = newC.title.trim();
+      if (!title) { setTitleError('Enter a curriculum title before saving.'); llAnnounce('Curriculum not saved. Enter a title first.'); focusById('learning-lab-curriculum-title'); return; }
+      var curriculum = { id: tkId(), createdAt: todayISO(), steps: [], notes: '', title: title, why: newC.why.trim(), timespan: newC.timespan.trim(), selfRating: newC.selfRating };
+      setData(Object.assign({}, data, { curricula: [curriculum].concat(data.curricula || []) })); setNewC(emptyCurriculum); setTitleError(''); llAnnounce('Curriculum saved: ' + title);
+      setTimeout(function() { setActiveId(curriculum.id); setView('edit'); focusById('learning-lab-curriculum-detail-heading'); }, 0);
     }
-    function getCurr() { return (data.curricula || []).filter(function(c) { return c.id === activeId; })[0]; }
-    function updateCurr(patch) {
-      setData({ curricula: (data.curricula || []).map(function(c) { return c.id === activeId ? Object.assign({}, c, patch) : c; }) });
+    function openCurriculum(curriculum) { setActiveId(curriculum.id); setView('edit'); llAnnounce('Opened curriculum: ' + String(curriculum.title || 'untitled curriculum')); focusById('learning-lab-curriculum-detail-heading'); }
+    function closeCurriculum() { var previous = activeId; setView('list'); setActiveId(null); llAnnounce('Returned to all curricula.'); focusById('learning-lab-curriculum-open-' + safeDomId(previous)); }
+    function updateCurr(patch) { setData(Object.assign({}, data, { curricula: (data.curricula || []).map(function(curriculum) { return curriculum.id === activeId ? Object.assign({}, curriculum, patch) : curriculum; }) })); }
+    function removeCurriculum(curriculum) {
+      askLearningLabConfirmation('Remove “' + String(curriculum.title || 'this curriculum') + '” and all of its steps? This cannot be undone.', { title: 'Remove this curriculum?', confirmText: 'Remove curriculum' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { curricula: (data.curricula || []).filter(function(item) { return item.id !== curriculum.id; }) })); setView('list'); setActiveId(null); llAnnounce('Curriculum and its steps removed.'); focusById('learning-lab-curriculum-list-heading');
+      });
     }
-    function removeCurr(id) {
-      if (!confirm('Delete this curriculum?')) return;
-      setData({ curricula: (data.curricula || []).filter(function(c) { return c.id !== id; }) });
+    function addStep() {
+      var label = stepForm.label.trim(); var curriculum = getCurr();
+      if (!label) { setStepError('Enter a step title before saving.'); llAnnounce('Learning step not saved. Enter a title first.'); focusById('learning-lab-curriculum-step-title'); return; }
+      if (!curriculum) return;
+      var step = { id: tkId(), addedAt: todayISO(), type: typeFor(stepForm.type).id, label: label, done: false, resource: '', notes: '' };
+      updateCurr({ steps: (curriculum.steps || []).concat([step]) }); setStepForm(emptyStep); setStepError(''); llAnnounce('Learning step saved: ' + label); focusById('learning-lab-curriculum-step-title');
     }
-    function addStep(type) {
-      var label = prompt(STEP_TYPES.filter(function(t) { return t.id === type; })[0].label + ' — what?');
-      if (!label) return;
-      var c = getCurr();
-      var step = { id: tkId(), type: type, label: label, done: false, resource: '', notes: '' };
-      updateCurr({ steps: (c.steps || []).concat([step]) });
+    function updateStep(step, patch) { var curriculum = getCurr(); if (!curriculum) return; updateCurr({ steps: (curriculum.steps || []).map(function(item) { return item.id === step.id ? Object.assign({}, item, patch) : item; }) }); }
+    function toggleStep(step) { var nextDone = !step.done; updateStep(step, { done: nextDone, completedAt: nextDone ? todayISO() : null }); llAnnounce('Step ' + (nextDone ? 'marked complete: ' : 'marked not complete: ') + String(step.label || 'untitled step')); focusById('learning-lab-curriculum-step-toggle-' + safeDomId(step.id)); }
+    function removeStep(step) {
+      var curriculum = getCurr(); if (!curriculum) return;
+      askLearningLabConfirmation('Remove the step “' + String(step.label || 'this step') + '”? This cannot be undone.', { title: 'Remove this learning step?', confirmText: 'Remove step' }).then(function(accepted) {
+        if (!accepted) return;
+        updateCurr({ steps: (curriculum.steps || []).filter(function(item) { return item.id !== step.id; }) }); llAnnounce('Learning step removed.'); focusById('learning-lab-curriculum-steps-heading');
+      });
     }
-    function updateStep(stepId, patch) {
-      var c = getCurr();
-      updateCurr({ steps: c.steps.map(function(s) { return s.id === stepId ? Object.assign({}, s, patch) : s; }) });
-    }
-    function removeStep(stepId) {
-      var c = getCurr();
-      updateCurr({ steps: c.steps.filter(function(s) { return s.id !== stepId; }) });
-    }
-    function moveStep(stepId, dir) {
-      var c = getCurr();
-      var steps = c.steps.slice();
-      var i = steps.findIndex(function(s) { return s.id === stepId; });
-      var j = i + dir;
-      if (j < 0 || j >= steps.length) return;
-      var tmp = steps[i]; steps[i] = steps[j]; steps[j] = tmp;
-      updateCurr({ steps: steps });
+    function moveStep(step, direction) {
+      var curriculum = getCurr(); if (!curriculum) return; var steps = (curriculum.steps || []).slice(); var index = steps.findIndex(function(item) { return item.id === step.id; }); var target = index + direction;
+      if (index < 0 || target < 0 || target >= steps.length) return;
+      var swap = steps[index]; steps[index] = steps[target]; steps[target] = swap; updateCurr({ steps: steps }); llAnnounce('Moved ' + String(step.label || 'step') + (direction < 0 ? ' earlier.' : ' later.')); focusById('learning-lab-curriculum-step-move-' + safeDomId(step.id) + (direction < 0 ? '-up' : '-down'));
     }
 
-    if (view === 'edit') {
-      var c = getCurr();
-      if (!c) { setView('list'); return null; }
-      var steps = c.steps || [];
-      var done = steps.filter(function(s) { return s.done; }).length;
-      var pct = steps.length > 0 ? (done / steps.length) * 100 : 0;
+    var curricula = data.curricula || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#f3e8ff', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12, lineHeight: 1.5 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#7e22ce', color: '#fff', fontWeight: 800, cursor: 'pointer' };
+
+    if (view === 'edit' && activeId) {
+      var current = getCurr();
+      if (!current) return hh('div', { style: { padding: 14 } }, tkSectionHeader('🎓', 'Curriculum Builder', 'The selected curriculum is no longer available.', '#a855f7'), hh('p', { role: 'alert', style: { color: '#fecaca' } }, 'This curriculum could not be found.'), hh('button', { type: 'button', onClick: closeCurriculum, style: buttonStyle }, 'Return to all curricula'));
+      var steps = Array.isArray(current.steps) ? current.steps : []; var done = steps.filter(function(step) { return !!step.done; }).length; var progressMax = Math.max(steps.length, 1); var progressText = steps.length ? done + ' of ' + steps.length + ' steps marked complete.' : 'No learning steps saved yet.';
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🎓', c.title, c.why || 'Self-designed curriculum · ' + steps.length + ' steps · ' + done + ' done', '#a855f7'),
-
-        // Progress
-        hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.20), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', marginBottom: 14 } },
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, c.timespan || 'no timespan'),
-            hh('strong', { style: { fontSize: 16, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(pct) + '%')
+        tkSectionHeader('🎓', String(current.title || 'Untitled curriculum'), current.why || 'Optional self-organized learning path', '#a855f7'),
+        hh('aside', { 'aria-labelledby': 'learning-lab-curriculum-detail-context', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } }, hh('h2', { id: 'learning-lab-curriculum-detail-context', style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 13 } }, 'A flexible plan, not a contract'), hh('p', { style: { margin: 0 } }, 'You can change, reorder, skip, or remove steps. Completion is a personal note, not a grade or measure of ability. Changes save in this browser.')),
+        hh('section', { 'aria-labelledby': 'learning-lab-curriculum-detail-heading' },
+          hh('h2', { id: 'learning-lab-curriculum-detail-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#f3e8ff', fontSize: 15 } }, String(current.title || 'Untitled curriculum') + ' editor'),
+          hh('section', { 'aria-labelledby': 'learning-lab-curriculum-progress-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.62)', border: '1px solid #c084fc', marginBottom: 12 } },
+            hh('h3', { id: 'learning-lab-curriculum-progress-heading', style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 13 } }, 'Progress summary'),
+            hh('p', { style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 11 } }, progressText),
+            hh('progress', { value: done, max: progressMax, 'aria-label': 'Curriculum completion: ' + progressText, style: { width: '100%', minHeight: 18, accentColor: '#a855f7' } }, progressText),
+            hh('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 10 } }, 'Planned timespan: ' + (current.timespan || 'Not specified'))
           ),
-          hh('div', { style: { height: 10, background: 'rgba(15,23,42,0.6)', borderRadius: 5, overflow: 'hidden' } },
-            hh('div', { style: { width: pct + '%', height: '100%', background: pct === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #a855f7)', transition: 'width 300ms ease' } })
-          )
-        ),
-
-        // Add steps
-        tkCard('#a855f7',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Add a learning step'),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 4 } },
-              STEP_TYPES.map(function(t) {
-                return hh('button', { key: 'st-' + t.id,
-                  onClick: function() { addStep(t.id); },
-                  style: { padding: '8px 10px', borderRadius: 6, background: t.color + '15', color: t.color, border: '1px solid ' + t.color + '40', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                }, t.label);
-              })
-            )
-          )
-        ),
-
-        // Steps
-        steps.length === 0 ? tkEmptyState('🎓', 'No steps yet. Build your curriculum by adding learning activities above.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-            steps.map(function(s, i) {
-              var t = STEP_TYPES.filter(function(x) { return x.id === s.type; })[0] || STEP_TYPES[0];
-              return hh('div', { key: 'cs-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + t.color, opacity: s.done ? 0.6 : 1 } },
-                hh('div', { style: { display: 'flex', gap: 8, marginBottom: 6 } },
-                  hh('button', { onClick: function() { updateStep(s.id, { done: !s.done }); },
-                    style: { width: 22, height: 22, borderRadius: 5, background: s.done ? t.color : 'transparent', border: '1.5px solid ' + t.color, color: '#0f172a', fontSize: 12, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
-                  }, s.done ? '✓' : ''),
-                  hh('div', { style: { flex: 1 } },
-                    hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 } },
-                      hh('span', { style: { fontSize: 10, padding: '2px 6px', borderRadius: 4, background: t.color + '20', color: t.color, fontWeight: 800 } }, t.label),
-                      hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', textDecoration: s.done ? 'line-through' : 'none' } }, s.label)
-                    ),
-                    tkInput(s.resource, function(v) { updateStep(s.id, { resource: v }); }, 'Resource link / book / location (optional)', { marginBottom: 4, fontSize: 10 }),
-                    tkInput(s.notes, function(v) { updateStep(s.id, { notes: v }); }, 'Notes (optional)', { fontSize: 10 })
-                  ),
-                  hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-                    hh('button', { onClick: function() { moveStep(s.id, -1); }, disabled: i === 0,
-                      style: { background: 'transparent', border: 'none', color: t.color, fontSize: 11, cursor: 'pointer', padding: 2 }
-                    }, '▲'),
-                    hh('button', { onClick: function() { moveStep(s.id, 1); }, disabled: i === steps.length - 1,
-                      style: { background: 'transparent', border: 'none', color: t.color, fontSize: 11, cursor: 'pointer', padding: 2 }
-                    }, '▼'),
-                    hh('button', { onClick: function() { removeStep(s.id); },
-                      style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer', padding: 2 }
-                    }, '✕')
-                  )
-                )
-              );
-            })
+          tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); addStep(); }, 'aria-labelledby': 'learning-lab-curriculum-step-form-heading' },
+            hh('h3', { id: 'learning-lab-curriculum-step-form-heading', style: { margin: '0 0 7px', color: '#f3e8ff', fontSize: 13 } }, 'Add a learning step'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(150px, 1fr) minmax(0, 2fr)', gap: 10 } },
+              hh('div', null, hh('label', { htmlFor: 'learning-lab-curriculum-step-type', style: labelStyle }, 'Activity type'), hh('select', { id: 'learning-lab-curriculum-step-type', value: stepForm.type, onChange: function(event) { setStepForm(Object.assign({}, stepForm, { type: event.target.value })); }, style: fieldStyle }, STEP_TYPES.map(function(type) { return hh('option', { key: type.id, value: type.id }, type.label); }))),
+              hh('div', null, hh('label', { htmlFor: 'learning-lab-curriculum-step-title', style: labelStyle }, 'Step title (required)'), hh('input', { id: 'learning-lab-curriculum-step-title', type: 'text', value: stepForm.label, required: true, maxLength: 2000, onChange: function(event) { setStepForm(Object.assign({}, stepForm, { label: event.target.value })); if (stepError) setStepError(''); }, 'aria-invalid': stepError ? 'true' : undefined, 'aria-describedby': stepError ? 'learning-lab-curriculum-step-error' : undefined, style: fieldStyle }), stepError ? hh('p', { id: 'learning-lab-curriculum-step-error', role: 'alert', style: { margin: '5px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, stepError) : null)
+            ),
+            hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Save learning step')
+          )),
+          hh('section', { 'aria-labelledby': 'learning-lab-curriculum-steps-heading' },
+            hh('h3', { id: 'learning-lab-curriculum-steps-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#f3e8ff', fontSize: 13 } }, 'Ordered learning steps'),
+            hh('p', { id: 'learning-lab-curriculum-autosave', style: helpStyle }, 'Step titles, resources, notes, order, and completion state save automatically in this browser.'),
+            steps.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No learning steps saved yet. Add one if it supports your plan.') :
+            hh('ol', { 'aria-label': 'Learning steps in order', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, paddingLeft: 24 } }, steps.map(function(step, index) { var type = typeFor(step.type); var domId = safeDomId(step.id); var headingId = 'learning-lab-curriculum-step-' + domId; return hh('li', { key: step.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 11, borderRadius: 9, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid ' + type.color } },
+              hh('p', { style: { margin: '0 0 3px', color: step.done ? '#a7f3d0' : type.color, fontSize: 10, fontWeight: 800 } }, step.done ? 'Marked complete' : 'Not marked complete'),
+              hh('h4', { id: headingId, style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, 'Step ' + (index + 1) + ': ' + String(step.label || 'Untitled step')),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 9 } },
+                hh('div', null, hh('label', { htmlFor: 'learning-lab-curriculum-step-type-' + domId, style: labelStyle }, 'Activity type for step ' + (index + 1)), hh('select', { id: 'learning-lab-curriculum-step-type-' + domId, value: type.id, onChange: function(event) { updateStep(step, { type: typeFor(event.target.value).id }); }, 'aria-describedby': 'learning-lab-curriculum-autosave', style: fieldStyle }, STEP_TYPES.map(function(option) { return hh('option', { key: option.id, value: option.id }, option.label); }))),
+                hh('div', null, hh('label', { htmlFor: 'learning-lab-curriculum-step-label-' + domId, style: labelStyle }, 'Step title'), hh('input', { id: 'learning-lab-curriculum-step-label-' + domId, type: 'text', value: step.label || '', maxLength: 2000, onChange: function(event) { updateStep(step, { label: event.target.value }); }, 'aria-describedby': 'learning-lab-curriculum-autosave', style: fieldStyle }))
+              ),
+              hh('label', { htmlFor: 'learning-lab-curriculum-step-resource-' + domId, style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Resource, book, link, or location (optional)'),
+              hh('input', { id: 'learning-lab-curriculum-step-resource-' + domId, type: 'text', value: step.resource || '', maxLength: 4000, onChange: function(event) { updateStep(step, { resource: event.target.value }); }, 'aria-describedby': 'learning-lab-curriculum-autosave', style: fieldStyle }),
+              hh('label', { htmlFor: 'learning-lab-curriculum-step-notes-' + domId, style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Step notes (optional)'),
+              hh('textarea', { id: 'learning-lab-curriculum-step-notes-' + domId, value: step.notes || '', rows: 3, maxLength: 6000, onChange: function(event) { updateStep(step, { notes: event.target.value }); }, 'aria-describedby': 'learning-lab-curriculum-autosave', style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+              hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 9 } },
+                hh('button', { id: 'learning-lab-curriculum-step-toggle-' + domId, type: 'button', 'aria-pressed': step.done ? 'true' : 'false', onClick: function() { toggleStep(step); }, 'aria-label': (step.done ? 'Mark not complete: ' : 'Mark complete: ') + String(step.label || 'untitled step'), style: buttonStyle }, step.done ? 'Mark not complete' : 'Mark complete'),
+                hh('button', { id: 'learning-lab-curriculum-step-move-' + domId + '-up', type: 'button', disabled: index === 0, onClick: function() { moveStep(step, -1); }, 'aria-label': 'Move earlier: ' + String(step.label || 'untitled step'), style: buttonStyle }, 'Move earlier'),
+                hh('button', { id: 'learning-lab-curriculum-step-move-' + domId + '-down', type: 'button', disabled: index === steps.length - 1, onClick: function() { moveStep(step, 1); }, 'aria-label': 'Move later: ' + String(step.label || 'untitled step'), style: buttonStyle }, 'Move later'),
+                hh('button', { type: 'button', onClick: function() { removeStep(step); }, 'aria-label': 'Remove learning step: ' + String(step.label || 'untitled step'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove step')
+              ),
+              hh('p', { style: { margin: '7px 0 0', color: '#cbd5e1', fontSize: 10 } }, step.addedAt ? hh('span', null, 'Added ', hh('time', { dateTime: step.addedAt }, relDate(step.addedAt))) : 'Creation date unavailable', step.done && step.completedAt ? hh('span', null, '. Marked complete ', hh('time', { dateTime: step.completedAt }, relDate(step.completedAt))) : null)
+            )); }))
           ),
-
-        // Notes
-        hh('div', { style: { marginTop: 14 } },
-          hh('label', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', display: 'block', marginBottom: 4 } }, '📔 My notes + reflections on this curriculum'),
-          tkTextarea(c.notes, function(v) { updateCurr({ notes: v }); }, 'What\'s working? What surprised you? What did you change mid-stream?', 4)
-        ),
-
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14 } },
-          tkBtn('← All curricula', function() { setView('list'); setActiveId(null); }, 'ghost'),
-          tkBtn('🗑 Delete', function() { removeCurr(c.id); setView('list'); }, 'bad')
+          hh('label', { htmlFor: 'learning-lab-curriculum-notes', style: Object.assign({}, labelStyle, { marginTop: 14 }) }, 'Curriculum notes and reflections (optional)'),
+          hh('p', { id: 'learning-lab-curriculum-notes-help', style: helpStyle }, 'Record what is working, what changed, or anything you want to remember.'),
+          hh('textarea', { id: 'learning-lab-curriculum-notes', value: current.notes || '', rows: 5, maxLength: 8000, onChange: function(event) { updateCurr({ notes: event.target.value }); }, 'aria-describedby': 'learning-lab-curriculum-notes-help', style: Object.assign({}, fieldStyle, { minHeight: 130, resize: 'vertical' }) }),
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginTop: 14 } },
+            hh('button', { type: 'button', onClick: closeCurriculum, style: buttonStyle }, 'Return to all curricula'),
+            hh('button', { type: 'button', onClick: function() { removeCurriculum(current); }, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #f87171', background: '#991b1b', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Remove curriculum')
+          )
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎓', 'My Curriculum Builder', 'Design YOUR own learning curriculum across any topic. The capstone toolkit tool.', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🎓 Self-directed learning: '),
-        'You\'re not limited to what school assigns. The most successful adults are self-directed learners who can design their own learning paths. This tool helps you practice that skill. Pick something you actually want to learn outside of any class — a language, an instrument, a skill, a topic you\'re curious about.'
+      tkSectionHeader('🎓', 'Curriculum Builder', 'Organize an optional learning path for any topic, at your own pace.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-curriculum-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-curriculum-context-heading', style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 13 } }, 'A planning aid, not a measure of success'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'A curriculum can support assigned learning, personal curiosity, work, daily living, or any other purpose. It can contain any number of steps and can change or stop at any time.'),
+        hh('p', { style: { margin: 0 } }, 'This tool does not provide accreditation, grading, expert review, or a guarantee of learning outcomes. Curricula save in this browser; avoid sensitive details on a shared device.')
       ),
-
-      tkCard('#a855f7',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ Design a new curriculum'),
-          tkInput(newC.title, function(v) { setNewC(Object.assign({}, newC, { title: v })); }, 'What do you want to learn? (e.g., "Photography basics", "Read Spanish", "Quantum computing 101")', { marginBottom: 8 }),
-          tkInput(newC.why, function(v) { setNewC(Object.assign({}, newC, { why: v })); }, 'Why does this matter to you? (1 line)', { marginBottom: 8 }),
-          hh('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
-            tkInput(newC.timespan, function(v) { setNewC(Object.assign({}, newC, { timespan: v })); }, 'Timespan (e.g., "8 weeks")', { flex: 1 }),
-            tkBtn('🎓 Create', createCurriculum, 'primary')
-          )
-        )
-      ),
-
-      (data.curricula || []).length === 0 ? tkEmptyState('🎓', 'No curricula yet. Design one. Pick a topic that\'s YOURS, not assigned.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
-          (data.curricula || []).map(function(c) {
-            var steps = c.steps || [];
-            var done = steps.filter(function(s) { return s.done; }).length;
-            var pct = steps.length > 0 ? (done / steps.length) * 100 : 0;
-            return hh('button', { key: 'cc-' + c.id,
-              onClick: function() { setActiveId(c.id); setView('edit'); },
-              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7', cursor: 'pointer' }
-            },
-              hh('strong', { style: { fontSize: 14, color: '#c084fc' } }, '🎓 ' + c.title),
-              c.why ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, c.why) : null,
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 8 } },
-                hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.timespan + ' · ' + steps.length + ' steps'),
-                hh('strong', { style: { fontSize: 12, color: '#c084fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(pct) + '%')
-              ),
-              hh('div', { style: { height: 6, background: 'rgba(15,23,42,0.6)', borderRadius: 3, overflow: 'hidden', marginTop: 6 } },
-                hh('div', { style: { width: pct + '%', height: '100%', background: pct === 100 ? '#10b981' : '#a855f7' } })
-              )
-            );
-          })
-        ),
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#a855f7' } }, '🌟 Why this is the most important tool in this toolkit: '),
-        'School teaches you content. School rarely teaches you HOW to teach yourself. The students who do well long-term aren\'t the smartest ones — they\'re the ones who learned to learn on their own. Designing your own curriculum + sticking to it is THAT skill. Start small. One curriculum, 8 steps, 8 weeks. You\'ll be a different person at the end.'
+      tkCard('#a855f7', hh('form', { onSubmit: function(event) { event.preventDefault(); createCurriculum(); }, 'aria-labelledby': 'learning-lab-curriculum-form-heading' },
+        hh('h2', { id: 'learning-lab-curriculum-form-heading', style: { margin: '0 0 7px', color: '#f3e8ff', fontSize: 15 } }, 'Create a curriculum'),
+        hh('label', { htmlFor: 'learning-lab-curriculum-title', style: labelStyle }, 'Curriculum title (required)'),
+        hh('input', { id: 'learning-lab-curriculum-title', type: 'text', value: newC.title, required: true, maxLength: 1000, onChange: function(event) { setNewC(Object.assign({}, newC, { title: event.target.value })); if (titleError) setTitleError(''); }, 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleError ? 'learning-lab-curriculum-title-error' : undefined, style: fieldStyle }),
+        titleError ? hh('p', { id: 'learning-lab-curriculum-title-error', role: 'alert', style: { margin: '5px 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, titleError) : null,
+        hh('label', { htmlFor: 'learning-lab-curriculum-why', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Purpose or interest (optional)'),
+        hh('textarea', { id: 'learning-lab-curriculum-why', value: newC.why, rows: 3, maxLength: 4000, onChange: function(event) { setNewC(Object.assign({}, newC, { why: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 88, resize: 'vertical' }) }),
+        hh('label', { htmlFor: 'learning-lab-curriculum-timespan', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Planned timespan (optional)'),
+        hh('input', { id: 'learning-lab-curriculum-timespan', type: 'text', value: newC.timespan, maxLength: 1000, onChange: function(event) { setNewC(Object.assign({}, newC, { timespan: event.target.value })); }, style: fieldStyle }),
+        hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Create curriculum')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-curriculum-list-heading' },
+        hh('h2', { id: 'learning-lab-curriculum-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#f3e8ff', fontSize: 15 } }, 'Saved curricula'),
+        curricula.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No curricula saved yet. Create one if it would be useful.') :
+        hh('ul', { 'aria-label': 'Saved curricula', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } }, curricula.map(function(curriculum) { var domId = safeDomId(curriculum.id); var headingId = 'learning-lab-curriculum-' + domId; var steps = Array.isArray(curriculum.steps) ? curriculum.steps : []; var done = steps.filter(function(step) { return !!step.done; }).length; var progressText = steps.length ? done + ' of ' + steps.length + ' steps marked complete.' : 'No learning steps saved.'; return hh('li', { key: curriculum.id }, hh('article', { 'aria-labelledby': headingId, style: { height: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid #c084fc' } },
+          hh('h3', { id: headingId, style: { margin: 0, color: '#f3e8ff', fontSize: 14, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, '🎓 '), String(curriculum.title || 'Untitled curriculum')),
+          curriculum.why ? hh('p', { style: { margin: '5px 0', color: '#e2e8f0', fontSize: 11, lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, curriculum.why) : null,
+          hh('p', { style: { margin: '5px 0', color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, progressText),
+          hh('progress', { value: done, max: Math.max(steps.length, 1), 'aria-label': 'Completion for ' + String(curriculum.title || 'untitled curriculum') + ': ' + progressText, style: { width: '100%', minHeight: 18, accentColor: '#a855f7' } }, progressText),
+          hh('p', { style: { margin: '5px 0 8px', color: '#cbd5e1', fontSize: 10 } }, 'Timespan: ' + (curriculum.timespan || 'Not specified'), curriculum.createdAt ? hh('span', null, '. Added ', hh('time', { dateTime: curriculum.createdAt }, relDate(curriculum.createdAt))) : null),
+          hh('button', { id: 'learning-lab-curriculum-open-' + domId, type: 'button', onClick: function() { openCurriculum(curriculum); }, 'aria-label': 'Open curriculum: ' + String(curriculum.title || 'untitled curriculum'), style: buttonStyle }, 'Open curriculum')
+        )); }))
       )
     );
   }
