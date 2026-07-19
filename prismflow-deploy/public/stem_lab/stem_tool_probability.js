@@ -68,6 +68,69 @@ window.StemLab = window.StemLab || {
   })();
 
 
+  function probabilityMarbleOutcomes(outcomes) {
+    var prepared = (Array.isArray(outcomes) ? outcomes : []).map(function(o, i) {
+      var rawCount = Number(o && o.count);
+      var count = Number.isFinite(rawCount) && rawCount > 0 ? Math.floor(rawCount) : 1;
+      return Object.assign({}, o || {}, { label: String((o && o.label) || ('Color ' + (i + 1))), count: count });
+    });
+    var total = prepared.reduce(function(sum, o) { return sum + o.count; }, 0);
+    return prepared.map(function(o) { return Object.assign({}, o, { prob: total > 0 ? o.count / total : 0 }); });
+  }
+
+  function probabilityBuildMarblePool(outcomes) {
+    var pool = [];
+    probabilityMarbleOutcomes(outcomes).forEach(function(o) {
+      for (var i = 0; i < o.count; i++) pool.push(o.label);
+    });
+    return pool;
+  }
+
+  function probabilityMarbleOdds(outcomes, remaining) {
+    var refillNext = Array.isArray(remaining) && remaining.length === 0;
+    var pool = Array.isArray(remaining) && remaining.length ? remaining.slice() : probabilityBuildMarblePool(outcomes);
+    var counts = {};
+    pool.forEach(function(label) { counts[label] = (counts[label] || 0) + 1; });
+    var total = pool.length;
+    return {
+      total: total,
+      refillNext: refillNext,
+      outcomes: probabilityMarbleOutcomes(outcomes).map(function(o) {
+        var count = counts[o.label] || 0;
+        return { label: o.label, count: count, probability: total > 0 ? count / total : 0 };
+      })
+    };
+  }
+
+  function probabilityDrawMarble(outcomes, remaining, randomValue) {
+    var pool = Array.isArray(remaining) ? remaining.slice() : [];
+    var refilled = !Array.isArray(remaining) || pool.length === 0;
+    if (refilled) pool = probabilityBuildMarblePool(outcomes);
+    if (!pool.length) return { label: null, remaining: [], refilled: refilled };
+    var random = Number(randomValue);
+    if (!Number.isFinite(random)) random = 0;
+    random = Math.max(0, Math.min(0.999999999, random));
+    var index = Math.floor(random * pool.length);
+    var label = pool[index];
+    pool.splice(index, 1);
+    return { label: label, remaining: pool, refilled: refilled };
+  }
+
+  function probabilityResetPatch() {
+    return {
+      results: [], trials: 0, convergenceHistory: [], lastResult: null,
+      _mbRemaining: null, _piPoints: [], _autoRunning: false, _bestStreak: 0
+    };
+  }
+
+  window.__ProbabilityCore = Object.assign({}, window.__ProbabilityCore || {}, {
+    marbleOutcomes: probabilityMarbleOutcomes,
+    buildMarblePool: probabilityBuildMarblePool,
+    marbleOdds: probabilityMarbleOdds,
+    drawMarble: probabilityDrawMarble,
+    resetPatch: probabilityResetPatch
+  });
+
   // Module-level: persists across React renders without causing re-render
   var _autoRun = { interval: null };
   var _galtonAnim = { interval: null };
@@ -207,6 +270,7 @@ var d = (labToolData.probability) || {};
             const results = [...(d.results || [])];
 
             var newPiPoints = [];
+            var mbRemaining = d._mbRemaining;
 
             for (let i = 0; i < n; i++) {
 
@@ -257,59 +321,14 @@ var d = (labToolData.probability) || {};
               }
 
               else if (d.mode === 'marbleBag') {
-
-                var mbWithoutRepl = d.mbWithoutReplacement || false;
-
-                if (mbWithoutRepl) {
-
-                  // Without replacement: use remaining pool
-
-                  var mbRemaining = d._mbRemaining || null;
-
-                  if (!mbRemaining || mbRemaining.length === 0) {
-
-                    // Rebuild pool from marble counts
-
-                    mbRemaining = [];
-
-                    customOutcomes.forEach(function (o) { for (var _mi = 0; _mi < (o.count || 1); _mi++) mbRemaining.push(o.label); });
-
-                  }
-
-                  if (mbRemaining.length > 0) {
-
-                    var mbIdx = Math.floor(Math.random() * mbRemaining.length);
-
-                    results.push(mbRemaining[mbIdx]);
-
-                    mbRemaining = mbRemaining.slice(0, mbIdx).concat(mbRemaining.slice(mbIdx + 1));
-
-                    upd('_mbRemaining', mbRemaining);
-
-                  } else {
-
-                    results.push(customOutcomes[0].label);
-
-                  }
-
+                if (d.mbWithoutReplacement) {
+                  var marbleDraw = probabilityDrawMarble(customOutcomes, mbRemaining, Math.random());
+                  if (marbleDraw.label != null) results.push(marbleDraw.label);
+                  mbRemaining = marbleDraw.remaining;
                 } else {
-
-                  // With replacement â€” same as custom
-
-                  var mbr = Math.random(), mbcum = 0;
-
-                  for (var mbi = 0; mbi < customOutcomes.length; mbi++) {
-
-                    mbcum += customOutcomes[mbi].prob;
-
-                    if (mbr < mbcum) { results.push(customOutcomes[mbi].label); break; }
-
-                  }
-
-                  if (results.length === (d.results || []).length + i) results.push(customOutcomes[customOutcomes.length - 1].label);
-
+                  var replacementDraw = probabilityDrawMarble(customOutcomes, null, Math.random());
+                  if (replacementDraw.label != null) results.push(replacementDraw.label);
                 }
-
               } else if (d.mode === 'pi') {
 
                 var _piX = Math.random(), _piY = Math.random();
@@ -323,6 +342,8 @@ var d = (labToolData.probability) || {};
               }
 
             }
+
+            if (d.mode === 'marbleBag' && d.mbWithoutReplacement) upd('_mbRemaining', mbRemaining);
 
             // Pi: flush accumulated scatter points after all n trials
             if (d.mode === 'pi' && newPiPoints.length > 0) {
@@ -338,6 +359,18 @@ var d = (labToolData.probability) || {};
             upd('results', results);
 
             upd('trials', results.length);
+            var trialsAdded = results.length - (d.results || []).length;
+            if (trialsAdded > 0) {
+              setLabToolData(function(prev) {
+                var current = prev.probability || {};
+                var used = Object.assign({}, current.experimentsUsed || {});
+                used[d.mode || 'coin'] = true;
+                return Object.assign({}, prev, { probability: Object.assign({}, current, {
+                  totalTrials: (current.totalTrials || 0) + trialsAdded,
+                  experimentsUsed: used
+                }) });
+              });
+            }
 
             var hist = d.convergenceHistory || [];
 
@@ -427,8 +460,10 @@ var d = (labToolData.probability) || {};
               var _asp2 = SPORTS.find(function(s) { return s.id === (_pd.sportType || 'freethrow'); }) || SPORTS[0];
 
               var _cos3 = _pd.customOutcomes || [{ label: 'Red', prob: 0.5, color: '#ef4444' }, { label: t('stem.probability.blue_2', 'Blue'), prob: 0.5, color: '#3b82f6' }];
+              if (_pd.mode === 'marbleBag') _cos3 = probabilityMarbleOutcomes(_cos3);
 
               var _newPiPts3 = null;
+              var _newMbRemaining3 = _pd._mbRemaining;
 
               if (_pd.mode === 'coin') {
 
@@ -455,6 +490,10 @@ var d = (labToolData.probability) || {};
 
                 if (_res.length === (_pd.results || []).length) _res.push(_asp2.outcomes[_asp2.outcomes.length - 1]);
 
+              } else if (_pd.mode === 'marbleBag') {
+                var _mbDraw3 = probabilityDrawMarble(_cos3, _pd.mbWithoutReplacement ? _newMbRemaining3 : null, Math.random());
+                if (_mbDraw3.label != null) _res.push(_mbDraw3.label);
+                if (_pd.mbWithoutReplacement) _newMbRemaining3 = _mbDraw3.remaining;
               } else if (_pd.mode === 'pi') {
 
                 var _pX3 = Math.random(), _pY3 = Math.random();
@@ -495,9 +534,15 @@ var d = (labToolData.probability) || {};
 
               }
 
-              var _newPd3 = Object.assign({}, _pd, { results: _res, trials: _res.length, lastResult: _nlast3, animTick: _ntick3, convergenceHistory: _cHist3 });
+              var _used3 = Object.assign({}, _pd.experimentsUsed || {});
+              _used3[_pd.mode || 'coin'] = true;
+              var _newPd3 = Object.assign({}, _pd, {
+                results: _res, trials: _res.length, lastResult: _nlast3, animTick: _ntick3,
+                convergenceHistory: _cHist3, totalTrials: (_pd.totalTrials || 0) + 1, experimentsUsed: _used3
+              });
 
               if (_newPiPts3) _newPd3._piPoints = _newPiPts3;
+              if (_pd.mode === 'marbleBag' && _pd.mbWithoutReplacement) _newPd3._mbRemaining = _newMbRemaining3;
 
               return Object.assign({}, prev, { probability: _newPd3 });
 
@@ -867,6 +912,16 @@ var d = (labToolData.probability) || {};
           var outerBg = (isDark || isContrast) ? undefined :
             'radial-gradient(ellipse 80% 45% at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
 
+          var resetTrials = function() {
+            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            setLabToolData(function(prev) {
+              var current = prev.probability || {};
+              return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch()) });
+            });
+            var live = document.getElementById('allo-live-probability');
+            if (live) live.textContent = 'Probability trials reset. Automatic simulation stopped.';
+          };
+
           var selectMode = function(m) {
             if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
             if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; }
@@ -1145,13 +1200,23 @@ var d = (labToolData.probability) || {};
 
               ),
 
-              d.mbWithoutReplacement && React.createElement("div", { className: "mb-3 px-3 py-2 rounded-lg text-[11px] font-bold", style: { background: 'rgba(139,92,246,0.1)', color: isDark || isContrast ? '#c4b5fd' : '#6d28d9', border: '1px dashed rgba(139,92,246,0.3)' } },
-
-                t('stem.probability.without_replacement_each_marble_drawn_', "\uD83D\uDCA1 Without replacement: Each marble drawn is removed from the bag. Probabilities change after each draw! Bag refills when empty."),
-
-                (d._mbRemaining && d._mbRemaining.length >= 0) ? ' \u2014 ' + d._mbRemaining.length + ' marbles remaining' : ''
-
-              ),
+              d.mbWithoutReplacement && (function() {
+                var nextOdds = probabilityMarbleOdds(customOutcomes, d._mbRemaining);
+                var oddsText = nextOdds.outcomes.map(function(o) {
+                  return o.label + ' ' + o.count + '/' + nextOdds.total + ' (' + (o.probability * 100).toFixed(1) + '%)';
+                }).join(', ');
+                return React.createElement("div", {
+                  className: "mb-3 px-3 py-2 rounded-lg text-[11px] font-bold",
+                  role: 'status', 'aria-live': 'polite',
+                  style: { background: 'rgba(139,92,246,0.1)', color: isDark || isContrast ? '#c4b5fd' : '#6d28d9', border: '1px dashed rgba(139,92,246,0.3)' }
+                },
+                  React.createElement('div', null, t('stem.probability.without_replacement_each_marble_drawn_', "\uD83D\uDCA1 Without replacement: Each marble drawn is removed from the bag. Probabilities change after each draw! Bag refills when empty.")),
+                  React.createElement('div', { className: 'mt-1' },
+                    (nextOdds.refillNext ? 'Bag empty; refilling before the next draw. ' : nextOdds.total + ' marbles remaining. '),
+                    'Next draw odds: ' + oddsText
+                  )
+                );
+              })(),
 
               // Marble color rows
 
@@ -2457,7 +2522,7 @@ var d = (labToolData.probability) || {};
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
 
-              React.createElement("button", { "aria-label": t('stem.probability.reset_all_trials', "Reset all trials"), onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, t('stem.probability.reset_2', "\uD83D\uDD04 Reset"))
+              React.createElement("button", { "aria-label": t('stem.probability.reset_all_trials', "Reset all trials"), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, t('stem.probability.reset_2', "\uD83D\uDD04 Reset"))
 
             ),
 
