@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
 const root = path.resolve(import.meta.dirname, '..');
+const require = createRequire(import.meta.url);
+const { collectReferences } = require(path.join(root, 'dev-tools', 'build_test_prep_reference_catalog.cjs'));
 const catalog = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'reference_catalog.json'), 'utf8'));
 const source = fs.readFileSync(path.join(root, 'test_prep_hub_source.jsx'), 'utf8');
 const standardBuilder = fs.readFileSync(path.join(root, '_build_test_prep_hub_module.js'), 'utf8');
@@ -33,5 +36,49 @@ describe('test prep reference catalog', () => {
     expect(standardBuilder).toContain("const TEST_PREP_REFERENCE_CATALOG = ");
     expect(releaseBuilder).toContain("const referenceCatalogPath = path.join(root, 'test_prep', 'reference_catalog.json');");
     expect(releaseBuilder).toContain("const TEST_PREP_REFERENCE_CATALOG = ");
+  });
+
+  it('preserves item-bank metadata while retaining asset-authored fallback behavior', () => {
+    const protectedUrl = 'https://example.test/item-bank-source';
+    const assetUrl = 'https://example.test/asset-only-source';
+    const canonicalDetail = {
+      title: 'Canonical item-bank title',
+      organization: 'Canonical item-bank organization',
+      summary: 'Canonical item-bank summary',
+      credibility: 'Canonical item-bank credibility',
+      metadataSource: 'pack-authored',
+    };
+    const syntheticCatalog = {
+      [protectedUrl]: canonicalDetail,
+      [assetUrl]: { title: 'Earlier fallback title' },
+    };
+    const references = new Set();
+
+    collectReferences({
+      sourceDetails: [
+        {
+          url: protectedUrl,
+          title: 'Duplicate asset title',
+          organization: 'Duplicate asset organization',
+          summary: 'Duplicate asset summary',
+          credibility: 'Duplicate asset credibility',
+        },
+        {
+          url: assetUrl,
+          title: 'Asset-authored title',
+          organization: 'Asset-authored organization',
+          summary: 'Asset-authored summary',
+          credibility: 'Asset-authored credibility',
+        },
+      ],
+    }, references, syntheticCatalog, new Set([protectedUrl]));
+
+    expect(syntheticCatalog[protectedUrl]).toEqual(canonicalDetail);
+    expect(syntheticCatalog[assetUrl]).toMatchObject({
+      title: 'Asset-authored title',
+      organization: 'Asset-authored organization',
+      metadataSource: 'pack-authored',
+    });
+    expect(references).toEqual(new Set([protectedUrl, assetUrl]));
   });
 });

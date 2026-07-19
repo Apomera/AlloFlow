@@ -80,6 +80,16 @@
     { id: 'w4', op: 'divide', story: 'A teacher shares 157 markers equally among 12 groups. How many markers does each group receive, and how many remain?', a: 157, b: 12, answer: 13, remainder: 1, unit: 'markers per group' }
   ];
 
+  var TAB_IDS = ['learn', 'practice', 'errors', 'apply'];
+  var PRACTICE_IDS = PRACTICE.map(function (item) { return item.id; });
+  var ERROR_IDS = ERROR_CASES.map(function (item) { return item.id; });
+  var WORD_IDS = WORD_PROBLEMS.map(function (item) { return item.id; });
+
+  function countSolved(map, allowedIds) {
+    var ids = allowedIds || Object.keys(map || {});
+    return ids.filter(function (id) { return !!(map || {})[id]; }).length;
+  }
+
   function clampInt(value, min, max, fallback) {
     var n = Math.round(Number(value));
     return isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
@@ -145,16 +155,61 @@
     ];
   }
 
-  function estimateFor(op, a, b) {
-    function friendly(n) {
-      var magnitude = n >= 1000 ? 100 : n >= 100 ? 10 : 10;
-      return Math.round(n / magnitude) * magnitude;
+  function roundFriendly(value, place) {
+    return Math.round(value / place) * place;
+  }
+
+  function estimatePlan(op, a, b) {
+    a = Number(a); b = Number(b);
+    if (!isFinite(a)) a = 0;
+    if (!isFinite(b)) b = 0;
+    var symbol = OPERATIONS[op] ? OPERATIONS[op].symbol : '?';
+    if (op === 'add' || op === 'subtract') {
+      var largest = Math.max(Math.abs(a), Math.abs(b));
+      var place = largest < 100 ? 10 : largest < 1000 ? 100 : largest < 10000 ? 100 : 1000;
+      var friendlyA = roundFriendly(a, place);
+      var friendlyB = roundFriendly(b, place);
+      var estimate = op === 'add' ? friendlyA + friendlyB : friendlyA - friendlyB;
+      return { estimate: estimate, left: friendlyA, right: friendlyB, expression: friendlyA + ' ' + symbol + ' ' + friendlyB };
     }
-    var fa = friendly(a), fb = friendly(b);
-    if (op === 'add') return fa + fb;
-    if (op === 'subtract') return fa - fb;
-    if (op === 'multiply') return fa * fb;
-    return fb ? Math.round(fa / fb) : 0;
+    if (op === 'multiply') {
+      if (a === 0 || b === 0) return { estimate: 0, left: a, right: b, expression: a + ' ' + symbol + ' ' + b };
+      function oneDigitFriendly(value) {
+        var absolute = Math.abs(value);
+        var place = absolute < 10 ? 5 : Math.pow(10, Math.max(1, String(Math.floor(absolute)).length - 1));
+        var rounded = roundFriendly(absolute, place);
+        if (!rounded) rounded = place;
+        return value < 0 ? -rounded : rounded;
+      }
+      var roundedA = oneDigitFriendly(a), roundedB = oneDigitFriendly(b);
+      var relativeA = Math.abs(roundedA - a) / Math.max(1, Math.abs(a));
+      var relativeB = Math.abs(roundedB - b) / Math.max(1, Math.abs(b));
+      var planA = relativeA <= relativeB ? roundedA : a;
+      var planB = relativeA <= relativeB ? b : roundedB;
+      return { estimate: planA * planB, left: planA, right: planB, expression: planA + ' ' + symbol + ' ' + planB };
+    }
+    if (b === 0) return { estimate: null, left: a, right: b, expression: 'Division by zero is undefined' };
+    var quotient = a / b >= 0 ? Math.floor(a / b) : Math.ceil(a / b);
+    var compatibleDividend = quotient * b;
+    return { estimate: quotient, left: compatibleDividend, right: b, expression: compatibleDividend + ' ' + symbol + ' ' + b };
+  }
+
+  function estimateFor(op, a, b) {
+    return estimatePlan(op, a, b).estimate;
+  }
+
+  function assessEstimate(op, a, b, estimate, benchmark) {
+    var target = benchmark == null ? estimateFor(op, a, b) : Number(benchmark);
+    if (estimate === '' || estimate === null || typeof estimate === 'undefined') {
+      return { status: 'missing', reasonable: false, benchmark: target, tolerance: 0 };
+    }
+    var value = Number(estimate);
+    if (!isFinite(value) || !isFinite(target)) {
+      return { status: 'invalid', reasonable: false, benchmark: target, tolerance: 0 };
+    }
+    var tolerance = Math.max(1, Math.abs(target) * 0.25);
+    var reasonable = Math.abs(value - target) <= tolerance;
+    return { status: reasonable ? 'reasonable' : 'far', reasonable: reasonable, benchmark: target, tolerance: tolerance };
   }
 
   window.ArithmeticStrategyPure = {
@@ -162,6 +217,8 @@
     splitPlaceValue: splitPlaceValue,
     strategySteps: strategySteps,
     estimateFor: estimateFor,
+    estimatePlan: estimatePlan,
+    assessEstimate: assessEstimate,
     practice: PRACTICE.slice(),
     errors: ERROR_CASES.slice(),
     wordProblems: WORD_PROBLEMS.slice()
@@ -174,9 +231,9 @@
     color: 'blue',
     category: 'math',
     questHooks: [
-      { id: 'practice_5', label: 'Solve 5 arithmetic challenges', icon: '\ud83c\udfaf', check: function (d) { return (d.correct || 0) >= 5; }, progress: function (d) { return (d.correct || 0) + '/5 correct'; } },
-      { id: 'all_operations', label: 'Use all four operations', icon: '\ud83c\udf08', check: function (d) { return Object.keys(d.operationsUsed || {}).length >= 4; }, progress: function (d) { return Object.keys(d.operationsUsed || {}).length + '/4 operations'; } },
-      { id: 'error_detective', label: 'Explain 3 common mistakes', icon: '\ud83d\udd0e', check: function (d) { return (d.errorSolved || 0) >= 3; }, progress: function (d) { return (d.errorSolved || 0) + '/3 mistakes'; } }
+      { id: 'practice_5', label: 'Solve 5 arithmetic challenges', icon: '\ud83c\udfaf', check: function (d) { return countSolved(d.practiceSolved, PRACTICE_IDS) >= 5; }, progress: function (d) { return countSolved(d.practiceSolved, PRACTICE_IDS) + '/5 correct'; } },
+      { id: 'all_operations', label: 'Use all four operations', icon: '\ud83c\udf08', check: function (d) { return Object.keys(d.operationsUsed || {}).filter(function (op) { return OPERATIONS[op] && d.operationsUsed[op]; }).length >= 4; }, progress: function (d) { return Object.keys(d.operationsUsed || {}).filter(function (op) { return OPERATIONS[op] && d.operationsUsed[op]; }).length + '/4 operations'; } },
+      { id: 'error_detective', label: 'Explain 3 common mistakes', icon: '\ud83d\udd0e', check: function (d) { return countSolved(d.errorSolvedCases, ERROR_IDS) >= 3; }, progress: function (d) { return countSolved(d.errorSolvedCases, ERROR_IDS) + '/3 mistakes'; } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -193,13 +250,15 @@
       var text = isDark ? '#f8fafc' : '#0f172a';
       var muted = isDark ? '#cbd5e1' : '#475569';
       var border = isDark ? '#475569' : '#cbd5e1';
-      var tab = d.tab || 'learn';
+      var tab = TAB_IDS.indexOf(d.tab) >= 0 ? d.tab : 'learn';
       var operation = OPERATIONS[d.operation] ? d.operation : 'add';
       var opMeta = OPERATIONS[operation];
       var level = clampInt(d.level, 1, 3, 1);
       var a = clampInt(d.a, 0, 99999, 58);
-      var b = clampInt(d.b, operation === 'divide' ? 1 : 0, 9999, operation === 'divide' ? 6 : 27);
+      var bMax = operation === 'subtract' ? Math.min(9999, a) : 9999;
+      var b = clampInt(d.b, operation === 'divide' ? 1 : 0, bMax, operation === 'divide' ? 6 : Math.min(27, bMax));
       var customResult = calculate(operation, a, b);
+      var customEstimate = estimatePlan(operation, a, b);
       var customSteps = strategySteps(operation, a, b);
       var showModel = d.showModel !== false;
       var showSteps = !!d.showSteps;
@@ -210,11 +269,16 @@
       var errorCase = ERROR_CASES[errorIndex];
       var wordCandidates = WORD_PROBLEMS.filter(function (p) { return p.op === operation; });
       var wordProblem = wordCandidates[clampInt(d.wordIndex, 0, Math.max(0, wordCandidates.length - 1), 0) % wordCandidates.length];
+      var practiceEstimateInput = d.estimateInput == null ? '' : String(d.estimateInput);
+      var practiceAnswerInput = d.answerInput == null ? '' : String(d.answerInput);
+      var practiceRemainderInput = d.remainderInput == null ? '' : String(d.remainderInput);
 
       function update(patch) {
         if (typeof ctx.setToolData !== 'function') return;
         ctx.setToolData(function (prev) {
-          var next = Object.assign({}, (prev && prev._arithmeticStudio) || {}, patch);
+          var current = (prev && prev._arithmeticStudio) || {};
+          var changes = typeof patch === 'function' ? patch(current) : patch;
+          var next = Object.assign({}, current, changes || {});
           return Object.assign({}, prev || {}, { _arithmeticStudio: next });
         });
       }
@@ -224,41 +288,92 @@
       }
 
       function markOperation(op) {
-        var used = Object.assign({}, d.operationsUsed || {}); used[op] = true;
-        update({ operation: op, operationsUsed: used, practiceIndex: 0, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, wordAnswer: '', wordRemainder: '', wordFeedback: null });
+        update(function (current) {
+          var used = Object.assign({}, current.operationsUsed || {}); used[op] = true;
+          var nextB = op === 'subtract' ? Math.min(clampInt(current.b, 0, 9999, 27), clampInt(current.a, 0, 99999, 58)) : current.b;
+          return { operation: op, b: nextB, operationsUsed: used, practiceIndex: 0, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, wordAnswer: '', wordRemainder: '', wordFeedback: null };
+        });
         announce(OPERATIONS[op].label + ' selected.');
       }
 
+      var practiceCheckPending = false;
       function checkPractice() {
-        var answer = Number(d.answerInput);
-        var remainder = Number(d.remainderInput || 0);
-        var correct = answer === problem.answer && remainder === (problem.remainder || 0);
-        var attempts = (d.attempts || 0) + 1;
-        var correctCount = (d.correct || 0) + (correct ? 1 : 0);
-        update({ attempts: attempts, correct: correctCount, feedback: correct ? 'correct' : 'try', practiceSolved: correct ? Object.assign({}, d.practiceSolved || {}, (function () { var x = {}; x[problem.id] = true; return x; })()) : d.practiceSolved });
-        if (correct && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 4, 'Arithmetic strategy challenge');
-        announce(correct ? 'Correct. ' + problem.a + ' ' + OPERATIONS[problem.op].symbol + ' ' + problem.b + ' equals ' + problem.answer + '.' : 'Not yet. Compare your answer with your estimate and try a strategy.');
+        if (practiceCheckPending || (d.practiceSolved && d.practiceSolved[problem.id])) return;
+        practiceCheckPending = true;
+        var answer = Number(practiceAnswerInput);
+        var remainder = Number(practiceRemainderInput || 0);
+        var exactCorrect = answer === problem.answer && remainder === (problem.remainder || 0);
+        var estimateCheck = assessEstimate(problem.op, problem.a, problem.b, practiceEstimateInput, estimateFor(problem.op, problem.a, problem.b));
+        var complete = exactCorrect && estimateCheck.reasonable;
+        var feedback = complete ? 'correct' : exactCorrect ? 'estimate' : 'try';
+        var firstSolve = complete && !(d.practiceSolved && d.practiceSolved[problem.id]);
+        update(function (current) {
+          var solved = Object.assign({}, current.practiceSolved || {});
+          if (complete) solved[problem.id] = true;
+          return {
+            attempts: (current.attempts || 0) + 1,
+            correct: countSolved(solved, PRACTICE_IDS),
+            feedback: feedback,
+            practiceSolved: solved
+          };
+        });
+        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 4, 'Arithmetic strategy challenge');
+        announce(complete ? 'Correct. The exact answer and estimate are consistent.' : exactCorrect ? 'Your exact answer is correct. Revise the estimate so it is close enough to check reasonableness.' : 'Not yet. Compare your answer with your estimate and try a strategy.');
       }
 
       function nextPractice() {
         update({ practiceIndex: (practiceIndex + 1) % candidates.length, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false });
       }
 
+      var errorCheckPending = false;
       function checkError(choice) {
+        if (errorCheckPending) return;
         var correct = choice === errorCase.answer;
-        update({ errorChoice: choice, errorFeedback: correct ? 'correct' : 'try', errorSolved: (d.errorSolved || 0) + (correct && d.errorFeedback !== 'correct' ? 1 : 0) });
+        var firstSolve = correct && !(d.errorSolvedCases && d.errorSolvedCases[errorCase.id]);
+        if (correct) errorCheckPending = true;
+        update(function (current) {
+          var solved = Object.assign({}, current.errorSolvedCases || {});
+          if (correct) solved[errorCase.id] = true;
+          return { errorChoice: choice, errorFeedback: correct ? 'correct' : 'try', errorSolvedCases: solved, errorSolved: countSolved(solved, ERROR_IDS) };
+        });
+        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 2, 'Arithmetic error detective');
         announce(correct ? 'Correct diagnosis. ' + errorCase.explain : 'That is not the key error. Read the work one place at a time.');
       }
 
+      var wordCheckPending = false;
       function checkWord() {
+        if (wordCheckPending || (d.wordSolvedCases && d.wordSolvedCases[wordProblem.id])) return;
         var correct = Number(d.wordAnswer) === wordProblem.answer && Number(d.wordRemainder || 0) === (wordProblem.remainder || 0);
-        update({ wordFeedback: correct ? 'correct' : 'try', wordSolved: (d.wordSolved || 0) + (correct && d.wordFeedback !== 'correct' ? 1 : 0) });
+        var firstSolve = correct && !(d.wordSolvedCases && d.wordSolvedCases[wordProblem.id]);
+        if (correct) wordCheckPending = true;
+        update(function (current) {
+          var solved = Object.assign({}, current.wordSolvedCases || {});
+          if (correct) solved[wordProblem.id] = true;
+          return { wordFeedback: correct ? 'correct' : 'try', wordSolvedCases: solved, wordSolved: countSolved(solved, WORD_IDS) };
+        });
+        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 3, 'Arithmetic word problem');
         announce(correct ? 'Correct. Include the unit in your explanation.' : 'Not yet. Decide what is known, what is unknown, and which operation connects them.');
       }
 
       function readCurrent() {
         if (typeof ctx.callTTS !== 'function') return;
         ctx.callTTS(opMeta.label + '. ' + a + ' ' + opMeta.symbol + ' ' + b + '. ' + customSteps.join(' '));
+      }
+
+      function moveTab(event, index) {
+        var nextIndex = null;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % TAB_IDS.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + TAB_IDS.length) % TAB_IDS.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = TAB_IDS.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        var nextId = TAB_IDS[nextIndex];
+        update({ tab: nextId });
+        if (typeof document !== 'undefined') {
+          var nextTab = document.getElementById('arithmetic-studio-tab-' + nextId);
+          if (nextTab) nextTab.focus();
+        }
       }
 
       function renderOperationPicker() {
@@ -302,7 +417,7 @@
         if (!showModel) return null;
         if (op === 'add' || op === 'subtract') {
           var leftParts = splitPlaceValue(left), rightParts = splitPlaceValue(right);
-          return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': 'Place-value decomposition model', style: { background: card, border: '1px solid ' + border } },
+          return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': 'Place-value decomposition: ' + left + ' equals ' + leftParts.join(' plus ') + '; ' + right + ' equals ' + rightParts.join(' plus ') + '.', style: { background: card, border: '1px solid ' + border } },
             h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, 'Place-value model'),
             h('p', { className: 'font-mono text-sm' }, left + ' = ' + leftParts.join(' + ')),
             h('p', { className: 'font-mono text-sm' }, right + ' = ' + rightParts.join(' + ')),
@@ -312,7 +427,13 @@
           );
         }
         if (op === 'multiply') {
-          var rows = Math.max(1, Math.min(left, 12)), cols = Math.max(1, Math.min(right, 12));
+          if (left === 0 || right === 0) {
+            return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
+              h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, 'Zero-product model'),
+              h('div', { role: 'img', 'aria-label': left + ' times ' + right + ' has no dots because one factor is zero; the product is zero.', className: 'rounded-lg p-4 text-center text-sm font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, 'One factor is 0, so there are no equal groups to draw. Product: 0.')
+            );
+          }
+          var rows = Math.min(left, 12), cols = Math.min(right, 12);
           return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
             h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, left <= 12 && right <= 12 ? 'Array model' : 'Area-model decomposition'),
             left <= 12 && right <= 12 ? h('div', { role: 'img', 'aria-label': rows + ' rows of ' + cols + ' dots, ' + (rows * cols) + ' total', style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
@@ -329,7 +450,7 @@
         return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': left + ' objects divided into groups of ' + right + ' gives ' + division.answer + ' groups with ' + division.remainder + ' left over', style: { background: card, border: '1px solid ' + border } },
           h('h3', { className: 'text-sm font-black mb-2', style: { color: opMeta.color } }, 'Equal-groups model'),
           h('div', { className: 'h-6 rounded-full overflow-hidden flex', style: { background: '#e2e8f0' } },
-            h('div', { style: { width: ((left - division.remainder) / left * 100) + '%', background: opMeta.color } }),
+            h('div', { style: { width: (left > 0 ? ((left - division.remainder) / left * 100) : 0) + '%', background: opMeta.color } }),
             division.remainder > 0 && h('div', { style: { flex: 1, background: '#f59e0b' } })
           ),
           h('p', { className: 'mt-2 text-xs font-semibold' }, division.answer + ' complete groups of ' + right + (division.remainder ? ', with ' + division.remainder + ' left over.' : ', with none left over.'))
@@ -345,9 +466,17 @@
       function renderLearn() {
         return h(React.Fragment, null,
           h('div', { className: 'grid sm:grid-cols-2 gap-3' },
-            h('label', { className: 'text-xs font-bold' }, 'First number', h('input', { type: 'number', min: 0, max: 99999, value: a, onChange: function (e) { update({ a: clampInt(e.target.value, 0, 99999, a), showSteps: false }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Divisor' : 'Second number', h('input', { type: 'number', min: operation === 'divide' ? 1 : 0, max: 9999, value: b, onChange: function (e) { update({ b: clampInt(e.target.value, operation === 'divide' ? 1 : 0, 9999, b), showSteps: false }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
+            h('label', { className: 'text-xs font-bold' }, 'First number', h('input', { type: 'number', min: 0, max: 99999, value: a, onChange: function (e) {
+              var nextA = clampInt(e.target.value, 0, 99999, a);
+              update(function (current) {
+                var changes = { a: nextA, showSteps: false };
+                if (operation === 'subtract') changes.b = Math.min(clampInt(current.b, 0, 9999, b), nextA);
+                return changes;
+              });
+            }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Divisor' : 'Second number', h('input', { type: 'number', min: operation === 'divide' ? 1 : 0, max: bMax, value: b, onChange: function (e) { update({ b: clampInt(e.target.value, operation === 'divide' ? 1 : 0, bMax, b), showSteps: false }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
           ),
+          operation === 'subtract' && h('p', { className: 'text-xs font-semibold', style: { color: muted } }, 'This whole-number workspace keeps the second number at or below the first. Use an integer number line when a negative result is the learning goal.'),
           renderEquation(a, b, operation),
           h('div', { className: 'flex flex-wrap gap-2' },
             h('button', { onClick: function () { update({ showModel: !showModel }); }, 'aria-pressed': showModel, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showModel ? opMeta.color : card, color: showModel ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showModel ? 'Hide model' : 'Show model'),
@@ -357,7 +486,7 @@
           renderModel(operation, a, b),
           showSteps && h('ol', { className: 'space-y-2', 'aria-label': 'Strategy steps' }, customSteps.map(function (step, i) { return h('li', { key: i, className: 'rounded-xl p-3 text-sm flex gap-3', style: { background: card, border: '1px solid ' + border } }, h('span', { className: 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-black text-white', style: { background: opMeta.color } }, i + 1), h('span', null, step)); })),
           renderPlaceTable(a, b, operation),
-          h('p', { className: 'rounded-xl p-3 text-xs', style: { background: opMeta.soft, color: '#0f172a' } }, 'Reasonableness check: a friendly-number estimate is about ', h('strong', null, estimateFor(operation, a, b)), '. The exact result is ', h('strong', null, customResult.answer + (customResult.remainder ? ' remainder ' + customResult.remainder : '')), '.')
+          h('p', { className: 'rounded-xl p-3 text-xs', style: { background: opMeta.soft, color: '#0f172a' } }, 'Reasonableness check: use friendly operands ', h('strong', null, customEstimate.expression + ' is about ' + customEstimate.estimate), '. The exact result is ', h('strong', null, customResult.answer + (customResult.remainder ? ' remainder ' + customResult.remainder : '')), '.')
         );
       }
 
@@ -366,21 +495,21 @@
         return h(React.Fragment, null,
           h('div', { className: 'flex items-center justify-between gap-2' },
             h('div', null, h('h2', { className: 'text-base font-black' }, 'Estimate, solve, and check'), h('p', { className: 'text-xs', style: { color: muted } }, 'Estimation is a safety check, not a replacement for exact reasoning.')),
-            h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, (d.correct || 0) + '/' + (d.attempts || 0) + ' correct')
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, countSolved(d.practiceSolved, PRACTICE_IDS) + '/' + (d.attempts || 0) + ' correct')
           ),
           renderEquation(problem.a, problem.b, problem.op),
           h('div', { className: 'grid sm:grid-cols-3 gap-2' },
-            h('label', { className: 'text-xs font-bold' }, 'Estimate', h('input', { type: 'number', value: d.estimateInput || '', onChange: function (e) { update({ estimateInput: e.target.value }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Quotient' : 'Exact answer', h('input', { type: 'number', value: d.answerInput || '', onChange: function (e) { update({ answerInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            operation === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, max: problem.b - 1, value: d.remainderInput || '', onChange: function (e) { update({ remainderInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
+            h('label', { className: 'text-xs font-bold' }, 'Estimate', h('input', { type: 'number', required: true, 'aria-required': 'true', value: practiceEstimateInput, onChange: function (e) { update({ estimateInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Quotient' : 'Exact answer', h('input', { type: 'number', value: practiceAnswerInput, onChange: function (e) { update({ answerInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            operation === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, max: problem.b - 1, value: practiceRemainderInput, onChange: function (e) { update({ remainderInput: e.target.value, feedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
           ),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { onClick: checkPractice, disabled: d.answerInput === '' || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? 'Solved' : 'Check answer'),
+            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? 'Solved' : 'Check answer'),
             h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: opMeta.color, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? 'Hide hint' : 'Strategy hint'),
             h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, 'Next problem')
           ),
           d.showPracticeHint && h('div', { className: 'rounded-xl p-3 text-sm', style: { background: opMeta.soft, color: '#0f172a' } }, strategySteps(problem.op, problem.a, problem.b)[0]),
-          feedbackBox(d.feedback, 'Correct. Your exact answer is reasonable beside the estimate.', 'Not yet. Recheck each place and compare with your estimate.', d.feedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
+          feedbackBox(d.feedback, 'Correct. Your exact answer and estimate support each other.', d.feedback === 'estimate' ? 'Your exact answer is right. Revise the estimate so it is within a reasonable range of about ' + estimateFor(problem.op, problem.a, problem.b) + '.' : 'Not yet. Recheck each place and compare with your estimate.', d.feedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
         );
       }
 
@@ -401,13 +530,14 @@
       }
 
       function renderApply() {
+        var wordSolved = !!(d.wordSolvedCases && d.wordSolvedCases[wordProblem.id]);
         return h(React.Fragment, null,
           h('div', null, h('h2', { className: 'text-base font-black' }, 'Apply it in context'), h('p', { className: 'text-xs', style: { color: muted } }, 'Name the unknown, choose an operation, estimate, solve, and label the answer.')),
           h('div', { className: 'rounded-xl p-4', style: { background: card, border: '1px solid ' + border } }, h('p', { className: 'text-sm font-semibold leading-relaxed' }, wordProblem.story)),
           h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Quotient' : 'Answer', h('input', { type: 'number', value: d.wordAnswer || '', onChange: function (e) { update({ wordAnswer: e.target.value, wordFeedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
           operation === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, value: d.wordRemainder || '', onChange: function (e) { update({ wordRemainder: e.target.value, wordFeedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { onClick: checkWord, disabled: d.wordAnswer === '', className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, 'Check response'),
+            h('button', { type: 'button', onClick: checkWord, disabled: d.wordAnswer === '' || wordSolved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, wordSolved ? 'Solved' : 'Check response'),
             h('button', { onClick: function () { update({ showWordPlan: !d.showWordPlan }); }, 'aria-expanded': !!d.showWordPlan, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: opMeta.color, border: '1px solid ' + opMeta.color } }, 'Planning scaffold')
           ),
           d.showWordPlan && h('ol', { className: 'rounded-xl p-3 text-sm space-y-1', style: { background: opMeta.soft, color: '#0f172a' } },
@@ -439,11 +569,11 @@
           h('span', { className: 'text-xs font-bold', style: { color: muted } }, 'NUMBER RANGE:'),
           [1, 2, 3].map(function (n) { return h('button', { key: n, onClick: function () { update({ level: n, practiceIndex: 0, feedback: null }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? 'Foundations' : n === 2 ? 'Multi-digit' : 'Challenge'); })
         ),
-        h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': 'Arithmetic Studio sections', style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item) {
+        h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': 'Arithmetic Studio sections', style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item, index) {
           var active = tab === item.id;
-          return h('button', { key: item.id, role: 'tab', 'aria-selected': active, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { background: active ? opMeta.color : 'transparent', color: active ? '#fff' : text } }, item.label);
+          return h('button', { key: item.id, id: 'arithmetic-studio-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-controls': 'arithmetic-studio-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveTab(event, index); }, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { background: active ? opMeta.color : 'transparent', color: active ? '#fff' : text } }, item.label);
         })),
-        h('div', { role: 'tabpanel', className: 'space-y-3' }, tab === 'learn' ? renderLearn() : tab === 'practice' ? renderPractice() : tab === 'errors' ? renderErrors() : renderApply()),
+        h('div', { id: 'arithmetic-studio-panel', role: 'tabpanel', 'aria-labelledby': 'arithmetic-studio-tab-' + tab, tabIndex: 0, className: 'space-y-3' }, tab === 'learn' ? renderLearn() : tab === 'practice' ? renderPractice() : tab === 'errors' ? renderErrors() : renderApply()),
         h('footer', { className: 'rounded-xl p-3 text-xs', style: { background: card, color: muted, border: '1px solid ' + border } },
           h('strong', { style: { color: text } }, 'Strategy reminder: '), 'A correct answer matters, but a model, explanation, estimate, and inverse-operation check make the reasoning durable.')
       );

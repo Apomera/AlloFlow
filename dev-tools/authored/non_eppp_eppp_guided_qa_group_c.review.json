@@ -1,0 +1,1469 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-07-18",
+  "reviewer": "OpenAI Codex independent EPPP-guided review",
+  "title": "EPPP-guided independent QA review: non-EPPP group C final corrected snapshot",
+  "verdict": "pass-with-major-editorial-priorities-and-declared-independent-content-gaps - the corrected current snapshot has zero open hard factual, answer-key, source, credential-scope, response-form, learning-link, blueprint, provenance, encoding, or source/deploy-parity defects. The 3,180-question distinct-content gap, mechanically adapted cross-pack source architecture, generic feedback, clue signals, repeated library prose, and zero diagrams remain material nonblocking development warnings.",
+  "packs": [
+    {
+      "stem": "special_education_5355",
+      "packId": "praxis-special-education-5355",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "fa7bf39ac89765c717cb366f9fcbda05d97dc981a53dfdc20a8d8a6bbe79e701",
+      "artifactSha256": {
+        "_pack.json": "fa7bf39ac89765c717cb366f9fcbda05d97dc981a53dfdc20a8d8a6bbe79e701",
+        "_items.json": "195d0e545ecd2be443a647646d038b61a1b4d8bdd080cf99b033c819da476042",
+        "_native_qa.json": "736f44213a86e9250a6072fda230078af64f26dfdff7baa0719d6bd80500af54",
+        "_native_qa.md": "5cfb696eb6d0ffd85d45927abb55232d68a8a2be79b24f04e3df57b5eed145db",
+        "_learning_library.json": "13b7d70de9a9ecc3c080c558a4c0fdb6054b709a9f083eb207b763d0e573bcd4",
+        "_learning_library_qa.json": "09524f1418c9d72330f31bc54f6373639d8b02d19ed31f92f58431d30ae026b8",
+        "_learning_library_qa.md": "0ff7ce616ce6f58e26628590d9b0575545b8fe584c2743489556560a992a1e11"
+      },
+      "manualPriorityItemIds": [
+        "sp5355-b1-014",
+        "sp5355-b1-017",
+        "sp5355-b1-022",
+        "sp5355-b1-025",
+        "sp5355-b1-035",
+        "sp5355-b1-036",
+        "sp5355-b1-068",
+        "sp5355-b1-082",
+        "sp5355-b1-085",
+        "sp5355-b1-098"
+      ],
+      "warningItemCount": 176,
+      "warningCounts": {
+        "shortPrompt": 2,
+        "severeAnswerLengthClue": 160,
+        "keyStemLexicalLeakage": 78,
+        "asymmetricExtremeDistractors": 24,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "special_education_behavior_emotional_5372",
+      "packId": "praxis-special-education-behavior-emotional-5372",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 103,
+      "parallelSourceVariants": 97,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 397,
+      "packSha256": "fded7ca4ba5aa91b0b0c0895da8ba924705731ef6547ae98da9591c550f1afa6",
+      "artifactSha256": {
+        "_pack.json": "fded7ca4ba5aa91b0b0c0895da8ba924705731ef6547ae98da9591c550f1afa6",
+        "_items.json": "d858c5177c26707bb41c5e6a7c9c532de81f57574b2d337c37278199017b8a18",
+        "_native_qa.json": "bf3a83abd3e4c111fb0e8f36528c1b471fc15875f2a8844a232a46b10915e9f6",
+        "_native_qa.md": "c280a82ff4842f34ebf3c4823c37975fc01abf772c71f67506a7a449cfbf744a",
+        "_learning_library.json": "62589bc705397b0c267404d25186c6642cedc1c2ce0ef0c4350704112437e1fa",
+        "_learning_library_qa.json": "f548fec778100e4f83a4b530fd8d50ddcd0ffd67b04889d90de53029ab0a8936",
+        "_learning_library_qa.md": "ce5edf73af46dfcfbf058014eb557324571b6709a5904aa64ed77a981d05241d"
+      },
+      "manualPriorityItemIds": [
+        "ebd5372-b1-045",
+        "ebd5372-b1-055",
+        "ebd5372-b1-063",
+        "ebd5372-b1-066",
+        "ebd5372-b1-068",
+        "ebd5372-b2-045",
+        "ebd5372-b2-049",
+        "ebd5372-b2-053",
+        "ebd5372-b2-061",
+        "ebd5372-b2-062"
+      ],
+      "warningItemCount": 178,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 149,
+        "keyStemLexicalLeakage": 103,
+        "asymmetricExtremeDistractors": 26,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "special_education_early_childhood_5692",
+      "packId": "praxis-special-education-early-childhood-5692",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "0a71a3fcdedb3ad0882d9c38ea355e281d896df3b5d300c5eee529a1c28e4544",
+      "artifactSha256": {
+        "_pack.json": "0a71a3fcdedb3ad0882d9c38ea355e281d896df3b5d300c5eee529a1c28e4544",
+        "_items.json": "366f8b3da018e6737b404aac9419851afd1a2f59d983b56f07c4c25d56f2c73f",
+        "_native_qa.json": "0d1fe63dcff3b5b91f44b03fca8969c6f6aa288ec19ba51e85eb3efbffc1ec81",
+        "_native_qa.md": "914bb0b861e80374f5a8a4fae80e66dea7c2f1aa18babbf08c8e1ae6adfc7b29",
+        "_learning_library.json": "47a8438250f40e7c90aa77820d815199b155d0b70fc4042f27ba274ddf4ddcec",
+        "_learning_library_qa.json": "b58182ec31de3c5efa620a5c3420e1ab7c4b38cce9b8133f03f72a7b4df669e1",
+        "_learning_library_qa.md": "c16840c6cc39440005e47c97168a8765ceb699f6c5cffa2c91d248d9065278a9"
+      },
+      "manualPriorityItemIds": [
+        "se5692-b1-005",
+        "se5692-b1-020",
+        "se5692-b1-025",
+        "se5692-b1-035",
+        "se5692-b1-036",
+        "se5692-b1-037",
+        "se5692-b1-056",
+        "se5692-b1-062",
+        "se5692-b1-085",
+        "se5692-b1-099",
+        "se5692-b2-035",
+        "se5692-b2-036",
+        "se5692-b2-054",
+        "se5692-b2-085",
+        "se5692-b2-099",
+        "se5692-b1-022",
+        "se5692-b2-022",
+        "se5692-b2-025",
+        "se5692-b2-037",
+        "se5692-b1-039",
+        "se5692-b2-039",
+        "se5692-b1-086",
+        "se5692-b2-086"
+      ],
+      "warningItemCount": 167,
+      "warningCounts": {
+        "shortPrompt": 2,
+        "severeAnswerLengthClue": 146,
+        "keyStemLexicalLeakage": 82,
+        "asymmetricExtremeDistractors": 20,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "special_education_intellectual_disabilities_5322",
+      "packId": "praxis-special-education-intellectual-disabilities-5322",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 103,
+      "parallelSourceVariants": 97,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 397,
+      "packSha256": "ef3c133cd5c9aabd8c40f0d9742b7a101d9f1099a986c64f6647089237c9b399",
+      "artifactSha256": {
+        "_pack.json": "ef3c133cd5c9aabd8c40f0d9742b7a101d9f1099a986c64f6647089237c9b399",
+        "_items.json": "44e8af7837e9c9751c517c7d998a0f73a9b91baa9d59d63505c4a2b44fbb830b",
+        "_native_qa.json": "87925974f5221cbe54ee309c902536d696876bdbd0df412a214f6372a791e45a",
+        "_native_qa.md": "fb2853955beaed68a20a2f6faef4f522fd7839d89e0bf4141b5de7694b5c5a22",
+        "_learning_library.json": "19e99ef7c75d041a85c0f03ae9efdacc94d5c249b2d79312b67a8256bab8ac22",
+        "_learning_library_qa.json": "49a79072894d627caf9ef7e6bde2e2b91872f9c4922976386aedc194d0567b85",
+        "_learning_library_qa.md": "b6f71408a75ed73d021f8ece18fbb4ccc5ecddc5b15f2b05e302451b5d52fc33"
+      },
+      "manualPriorityItemIds": [
+        "id5322-b1-045",
+        "id5322-b1-055",
+        "id5322-b1-063",
+        "id5322-b1-066",
+        "id5322-b2-045",
+        "id5322-b2-052",
+        "id5322-b2-059",
+        "id5322-b2-060",
+        "id5322-b2-063",
+        "id5322-b2-070"
+      ],
+      "warningItemCount": 177,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 157,
+        "keyStemLexicalLeakage": 104,
+        "asymmetricExtremeDistractors": 24,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "special_education_learning_disabilities_5383",
+      "packId": "praxis-special-education-learning-disabilities-5383",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 111,
+      "parallelSourceVariants": 89,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 389,
+      "packSha256": "796bd8243058d990fce01f639aeb2662b6079c9ff5c029f926a68614dd2a9b46",
+      "artifactSha256": {
+        "_pack.json": "796bd8243058d990fce01f639aeb2662b6079c9ff5c029f926a68614dd2a9b46",
+        "_items.json": "0d16b3c809c129de76edeb32e7d9a2449f896518f4f02d8343ea8eb6e78f34f8",
+        "_native_qa.json": "f11c17bd065c874dc75a3f66b92130b1d68516de2b231fcba4e251fa8637fe1c",
+        "_native_qa.md": "e5e95452aed07732341c750d2db055d705862fa03ccc59545767f3882a657759",
+        "_learning_library.json": "b1ba050e163142331718523cfb077e36644d1b90e7ed4e7fa2d3add34649524d",
+        "_learning_library_qa.json": "4c31d2c63dbfa9717c268f966194c92de29378257c0f11155e7e9343c9d6fb08",
+        "_learning_library_qa.md": "3481e59f3a9f9698518255a39b549a11906b8bde9e08a7f6f0e14d300505c7cb"
+      },
+      "manualPriorityItemIds": [
+        "ld5383-b1-017",
+        "ld5383-b1-045",
+        "ld5383-b1-053",
+        "ld5383-b1-063",
+        "ld5383-b1-071",
+        "ld5383-b1-085",
+        "ld5383-b1-093",
+        "ld5383-b1-099",
+        "ld5383-b2-045",
+        "ld5383-b2-099"
+      ],
+      "warningItemCount": 157,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 138,
+        "keyStemLexicalLeakage": 85,
+        "asymmetricExtremeDistractors": 26,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "special_education_severe_profound_5547",
+      "packId": "praxis-special-education-severe-profound-5547",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 103,
+      "parallelSourceVariants": 97,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 397,
+      "packSha256": "a397163cf702bdb47a04ccb67fad9ec6f5264f864864917fed871e8c2c5d7a32",
+      "artifactSha256": {
+        "_pack.json": "a397163cf702bdb47a04ccb67fad9ec6f5264f864864917fed871e8c2c5d7a32",
+        "_items.json": "0069265a03ce123614a4be90406c12ea23950ffc041b696ce9270c7481343eca",
+        "_native_qa.json": "1c28319977b92f847fb7487cd329cae4185f8bcff15b88bbf4ec195e4ca3715e",
+        "_native_qa.md": "5fec636172ca8f5620fb9637702d7d5b99cf88cb920fdf26af83faa335e5e768",
+        "_learning_library.json": "401d9f375b1be1d9037f9c5ad4310fc0717292a1c6ff647477ee7b49e03e9df9",
+        "_learning_library_qa.json": "0ae569e510bb1fd1a3d3f90ddcdaebd22fc0f9243f01ecd76e073bc73316ea09",
+        "_learning_library_qa.md": "74799b7920d6a096fd045a7ef3e9c533eb9eb4c286d052437a905c2ec6ec59e6"
+      },
+      "manualPriorityItemIds": [
+        "sp5547-b1-016",
+        "sp5547-b1-022",
+        "sp5547-b1-025",
+        "sp5547-b1-035",
+        "sp5547-b1-056",
+        "sp5547-b1-073",
+        "sp5547-b1-085",
+        "sp5547-b1-098",
+        "sp5547-b2-035",
+        "sp5547-b2-098"
+      ],
+      "warningItemCount": 183,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 160,
+        "keyStemLexicalLeakage": 101,
+        "asymmetricExtremeDistractors": 24,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "speech_language_pathology_5331",
+      "packId": "praxis-speech-language-pathology-5331",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "bf5c187654cdb207f62b6da127dcd7c130f412ec36f52497a82b2c24ecb90a48",
+      "artifactSha256": {
+        "_pack.json": "bf5c187654cdb207f62b6da127dcd7c130f412ec36f52497a82b2c24ecb90a48",
+        "_items.json": "51ac18bd027afac2b9858fbcef001c0f5c572be8b060632dc4fc5936f4bfecf6",
+        "_native_qa.json": "7f8ff4129f8037e197bea8158c0066e6bf548431557f1c37f880079f09fd7779",
+        "_native_qa.md": "8cb2372356fb78aa6befc67d44f4fa26d3e956e886fff2076eb353d7bf07a344",
+        "_learning_library.json": "2df62c42b27fc4c9e59f56ce28f3ca14a9bffa97faaabbcc6ee65db55708f009",
+        "_learning_library_qa.json": "248a71b3dbd997df8e0c941ae0d191acb9bb49875657aeac8deb1dd022af0939",
+        "_learning_library_qa.md": "73e361aa2744f9ab938a1e5a46739ed16c5b49be942903077406ca3d12e526ae"
+      },
+      "manualPriorityItemIds": [
+        "slp5331-b1-009",
+        "slp5331-b1-026",
+        "slp5331-b1-028",
+        "slp5331-b1-034",
+        "slp5331-b1-047",
+        "slp5331-b1-049",
+        "slp5331-b1-060",
+        "slp5331-b1-061",
+        "slp5331-b1-062",
+        "slp5331-b1-063",
+        "slp5331-b1-064",
+        "slp5331-b1-066",
+        "slp5331-b1-093",
+        "slp5331-b1-094",
+        "slp5331-b1-095",
+        "slp5331-b1-099",
+        "slp5331-b2-009",
+        "slp5331-b2-026",
+        "slp5331-b2-034",
+        "slp5331-b2-061",
+        "slp5331-b2-062",
+        "slp5331-b2-064",
+        "slp5331-b2-094"
+      ],
+      "warningItemCount": 185,
+      "warningCounts": {
+        "shortPrompt": 1,
+        "severeAnswerLengthClue": 174,
+        "keyStemLexicalLeakage": 73,
+        "asymmetricExtremeDistractors": 40,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    },
+    {
+      "stem": "teaching_reading_5205",
+      "packId": "praxis-teaching-reading-5205",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "daf563f98aa447a239ecf8ca8a853060620123656f558487b89a4e2dc9d659ae",
+      "artifactSha256": {
+        "_pack.json": "daf563f98aa447a239ecf8ca8a853060620123656f558487b89a4e2dc9d659ae",
+        "_items.json": "1a97e412dc0b4caae5631b57070cfaf30bf082c71028fc52e21c40dac1de14c6",
+        "_native_qa.json": "786c2de27975ccb4cf50d23d0d1c81e88eaaad5c77d2e28889bcb40cfc53a8e9",
+        "_native_qa.md": "42565f17430839ee4a3da1c2d44aba4aaad87d3c825aa32e0c9fb0bed3aedc68",
+        "_learning_library.json": "3139e4a88866ca2274dc57c741649ff508e582e9004be2eebb915ab281fad913",
+        "_learning_library_qa.json": "631b4944fb8afd9499cbdaec949d18164789b14a7165a45a13bf3847404ed59e",
+        "_learning_library_qa.md": "6415715605b84ed1d814c21683f09b1027c82558c5fa43332eb51c74e71c6c8f"
+      },
+      "manualPriorityItemIds": [
+        "tr5205-b1-005",
+        "tr5205-b1-034",
+        "tr5205-b1-070",
+        "tr5205-b1-071",
+        "tr5205-b1-075",
+        "tr5205-b1-077",
+        "tr5205-b1-078",
+        "tr5205-b1-080",
+        "tr5205-b1-082",
+        "tr5205-b1-093",
+        "tr5205-b2-070",
+        "tr5205-b2-082",
+        "tr5205-b2-016",
+        "tr5205-b2-020",
+        "tr5205-b2-021",
+        "tr5205-b2-055",
+        "tr5205-b2-061"
+      ],
+      "warningItemCount": 185,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 172,
+        "keyStemLexicalLeakage": 104,
+        "asymmetricExtremeDistractors": 18,
+        "incorrectOptionFeedbackDetail": 0
+      }
+    }
+  ],
+  "sourceItemsReviewed": 1600,
+  "independentItemsReviewed": 1600,
+  "learningActivitiesStructurallyReviewed": 4000,
+  "manuallyAdjudicatedItems": 113,
+  "artifactBindings": [
+    {
+      "stem": "special_education_5355",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "4476ab084d22baa502240b4d32df9ac17593a94e3c20ce9fe126196e3c66aaf8",
+      "learningLibrarySha256": "813120260ffce7853f2631ab31a7f8e01ad5d4d8bdcd58bdc220a4dffd1c007f"
+    },
+    {
+      "stem": "special_education_behavior_emotional_5372",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "ce141b69d479623372f33b397c4bfa757a32725d3e0d9de86a947ffdb983e7fe",
+      "learningLibrarySha256": "23c7cbfca02b17cbe3df0dbbf5c1c0dee80fa46e28b34ae482ec88ee0e166702"
+    },
+    {
+      "stem": "special_education_early_childhood_5692",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "af9940f8653b6d675d4c3dac5e0320ca6015dcf31ffe4ab1b3aeea8a57fd4b0c",
+      "learningLibrarySha256": "09bbfb07ff9bafd1ccd68dc5b7c55cf033487f0e29da0d979c3e48ccdb9e555d"
+    },
+    {
+      "stem": "special_education_intellectual_disabilities_5322",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "0b95c450bc39afbc1f8424cab78ac7da743088d76dfb7d1902d58d9d56a93afe",
+      "learningLibrarySha256": "08a0ae9b9a923b4e9ee52ffcdff9a4517477306225e892266be2aae1e11e5fb7"
+    },
+    {
+      "stem": "special_education_learning_disabilities_5383",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "6ee7569f03f7034513f92df8450db44bddfb927398e888a524d14adebda2a61e",
+      "learningLibrarySha256": "ba24cb0e55bb1717f5dc05ef9838424180cb33798583bde96a5fb03c382a3b32"
+    },
+    {
+      "stem": "special_education_severe_profound_5547",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "ae5712cea4fad822c3ffd51127cf5914a716ae383c92e73dce867bb9a078777a",
+      "learningLibrarySha256": "789cc43da64fa384393b1905dbd20d4417cd409eee77232d6c21da1bf361bd1c"
+    },
+    {
+      "stem": "speech_language_pathology_5331",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
+      "learningLibrarySha256": "05f721c7d3bf36eb7e2de4490aa1fbb8cfc8260a2bf5de665502b11e91fd0f90"
+    },
+    {
+      "stem": "teaching_reading_5205",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "51c325b09b7d291b8035e3bf6c87977aadb49d1b8460e61185f021f4bf18674a",
+      "learningLibrarySha256": "b637fc2a6421ae55d2a140dca21b46b5385e75bb2ecbfd2dd0af90d1a3204d4c"
+    }
+  ],
+  "reviewStandard": {
+    "guideArtifacts": [
+      "test_prep/eppp_native_qa.json",
+      "test_prep/eppp_distractor_quality_diagnostics.json",
+      "test_prep/eppp_option_feedback_diagnostics.json",
+      "test_prep/eppp_native_quality_audit_wave_01.json",
+      "test_prep/eppp_native_quality_audit_wave_02.json",
+      "test_prep/eppp_native_quality_audit_wave_03.json",
+      "test_prep/eppp_learning_library.json",
+      "test_prep/eppp_learning_library_qa.json"
+    ],
+    "method": "Automated hard-gate inspection covered all 4,000 activities, all 1,600 source items, every library structure and learner-visible source, exact-blueprint runtime-equivalent simulation selection, cryptographic QA binding, and 57 source/deploy pairs. Manual review adjudicated 113 risk-priority source items and the focused EC, SLP, and Teaching Reading semantic cases.",
+    "releaseRule": "A verdict may begin with pass only when no current factual, key, one-best-answer, source, scope, response-form, learning-link, blueprint, provenance, encoding, or source/deploy-parity defect remains. Generic feedback, clue heuristics, cross-pack source adaptation, zero diagrams, and honestly declared distinct-content gaps remain visible nonblocking warnings."
+  },
+  "automatedResults": {
+    "snapshot": {
+      "algorithm": "sha256",
+      "sha256": "98fba6db377d0d3f0e09fda6e7ed7be9e126ac16a5fec5c1d6bdf097ee518f86",
+      "meaning": "Hash of the eight final source-pack hashes in exact Group C stem order."
+    },
+    "hardGate": {
+      "status": "pass",
+      "openHardFindings": 0,
+      "activitiesChecked": 4000,
+      "sourceItemsChecked": 1600,
+      "answerBalance": {
+        "everyPack": [
+          125,
+          125,
+          125,
+          125
+        ],
+        "everyOneHundredItemBank": [
+          25,
+          25,
+          25,
+          25
+        ]
+      },
+      "invalidKeys": 0,
+      "duplicateChoicesWithinItem": 0,
+      "missingOrShortRationales": 0,
+      "missingOptionFeedbackArrays": 0,
+      "invalidLearningLinks": 0,
+      "invalidReviewTierProvenance": 0,
+      "invalidOrUncatalogedReferences": 0,
+      "encodingDefects": 0
+    },
+    "semanticCorrectionClosure": {
+      "status": "pass",
+      "perPack": {
+        "special_education_behavior_emotional_5372": {
+          "foreignLearningDisabilitiesCredentialOccurrences": 0,
+          "status": "pass"
+        },
+        "special_education_early_childhood_5692": {
+          "staleTargetedPostpassOverridesRetired": 9,
+          "sourceFindings": 0,
+          "packFindings": 0,
+          "libraryFindings": 0,
+          "status": "pass"
+        },
+        "special_education_intellectual_disabilities_5322": {
+          "foreignLearningDisabilitiesCredentialOccurrences": 0,
+          "status": "pass"
+        },
+        "special_education_learning_disabilities_5383": {
+          "sourcePrompts": 63,
+          "libraryChecks": 24,
+          "flashcardFronts": 29,
+          "correctKeyChanges": 0,
+          "duplicatedMechanicalLeadIns": 0,
+          "status": "pass"
+        },
+        "special_education_severe_profound_5547": {
+          "sourcePrompts": 194,
+          "libraryChecks": 60,
+          "flashcardFronts": 72,
+          "correctKeyChanges": 0,
+          "duplicatedMechanicalLeadIns": 0,
+          "status": "pass"
+        },
+        "speech_language_pathology_5331": {
+          "targetFormsReviewed": 14,
+          "responseFormFindings": 0,
+          "status": "pass"
+        },
+        "teaching_reading_5205": {
+          "expectedCredential": "Praxis Teaching Reading: Elementary (5205)",
+          "expectedRole": "K-6 classroom teacher responsible for literacy assessment and instruction within established school processes",
+          "allSourceItemsReviewed": 200,
+          "fullLearningLibraryReviewed": true,
+          "targetSourceItemsReviewed": 26,
+          "additionalCorrectedSourceItemsReviewed": 7,
+          "libraryChecksReviewed": 10,
+          "sourceDerivedFlashcardsReviewed": 11,
+          "targetForeignRoleOccurrences": 0,
+          "classroomResponsibilityMisses": 0,
+          "suiteWideForeignScopeOccurrences": 0,
+          "malformedResponseFormOccurrences": 0,
+          "encodingCorruptionOccurrences": 0,
+          "negativeGates": "pass",
+          "findings": 0
+        }
+      }
+    },
+    "independentContentAccounting": {
+      "status": "honestly-declared-target-gap",
+      "sourceItems": 1600,
+      "distinctIndependentContentKernels": 820,
+      "guidedReviewActivities": 2400,
+      "independentQuestionTarget": 4000,
+      "newIndependentItemsNeeded": 3180,
+      "perPackGap": {
+        "special_education_5355": 400,
+        "special_education_behavior_emotional_5372": 397,
+        "special_education_early_childhood_5692": 400,
+        "special_education_intellectual_disabilities_5322": 397,
+        "special_education_learning_disabilities_5383": 389,
+        "special_education_severe_profound_5547": 397,
+        "speech_language_pathology_5331": 400,
+        "teaching_reading_5205": 400
+      }
+    },
+    "warningDiagnostics": {
+      "status": "open-major-editorial-priority",
+      "sourceItemsScreened": 1600,
+      "itemsWithOneOrMoreWarnings": 1408,
+      "counts": {
+        "shortPrompt": 5,
+        "severeAnswerLengthClue": 1256,
+        "keyStemLexicalLeakage": 730,
+        "asymmetricExtremeDistractors": 202,
+        "incorrectOptionFeedbackDetail": 0
+      },
+      "perPackWarningItems": {
+        "special_education_5355": 176,
+        "special_education_behavior_emotional_5372": 178,
+        "special_education_early_childhood_5692": 167,
+        "special_education_intellectual_disabilities_5322": 177,
+        "special_education_learning_disabilities_5383": 157,
+        "special_education_severe_profound_5547": 183,
+        "speech_language_pathology_5331": 185,
+        "teaching_reading_5205": 185
+      }
+    },
+    "optionFeedbackAudit": {
+      "status": "open-major-editorial-priority",
+      "incorrectOptionExplanations": 4800,
+      "startsWithGenericNotTheBestAnswerWrapper": 4800,
+      "containsCompleteOverallRationale": 4800,
+      "underSixteenWords": 0,
+      "underOneHundredCharacters": 0,
+      "interpretation": "All required feedback fields are present and manually reviewed keys remain defensible, but repeated generic wrappers and full-rationale copies fall below EPPP-style selected-distractor remediation."
+    },
+    "learningLibraryAudit": {
+      "status": "pass-hard-structure-with-depth-warnings",
+      "totals": {
+        "chapters": 96,
+        "sections": 384,
+        "knowledgeChecks": 480,
+        "diagrams": 0,
+        "flashcards": 600,
+        "memoryAids": 160,
+        "constructedResponseWorkshops": 9,
+        "caseStudyDecisionLabs": 6
+      },
+      "knowledgeChecksWithSevereAnswerLengthClue": 362,
+      "longSentenceRepetitionByPack": {
+        "special_education_5355": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 0
+        },
+        "special_education_behavior_emotional_5372": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 2
+        },
+        "special_education_early_childhood_5692": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 2
+        },
+        "special_education_intellectual_disabilities_5322": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 2
+        },
+        "special_education_learning_disabilities_5383": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 2
+        },
+        "special_education_severe_profound_5547": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 2
+        },
+        "speech_language_pathology_5331": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 0
+        },
+        "teaching_reading_5205": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 4
+        }
+      },
+      "epppComparator": {
+        "chapters": 49,
+        "sections": 278,
+        "knowledgeChecks": 109,
+        "diagrams": 25,
+        "diagramPlacements": 58,
+        "flashcards": 415,
+        "memoryAids": 255
+      }
+    },
+    "referenceCatalogAudit": {
+      "status": "pass",
+      "uniqueLearnerVisibleReferences": 56,
+      "catalogedWithTitleOrganizationSummaryAndCredibility": 56,
+      "referenceCatalogSha256": "5dd4de552aa819c21287a8332d6246f3cc7d3345bd101e78284a88bbb3aa8712"
+    },
+    "itemLevelEditorialEvidenceAudit": {
+      "status": "open-eppp-parity-warning",
+      "sourceItemsReviewed": 1600,
+      "sourceDetailsPresent": 0,
+      "editorialChecksPresent": 0,
+      "interpretation": "Pack-level source catalogs and QA are present, but the source items do not yet carry EPPP-like item-level source-detail and editorial-check evidence."
+    },
+    "officialBlueprintVerification": [
+      {
+        "stem": "special_education_5355",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "development-differences": 32,
+          "planning-instruction-environment": 38,
+          "assessment": 27,
+          "professional-practice-collaboration": 23
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "special_education_behavior_emotional_5372",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "development-characteristics-ebd": 22,
+          "planning-managing-learning-environments": 31,
+          "instruction": 31,
+          "assessment": 20,
+          "foundations-professional-responsibilities": 16
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "special_education_early_childhood_5692",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "child-development-early-learning": 25,
+          "curriculum-planning-instruction": 30,
+          "assessment": 24,
+          "partnering-collaborating": 22,
+          "legal-ethical-professionalism": 19
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "special_education_intellectual_disabilities_5322",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "development-characteristics-intellectual-disabilities": 22,
+          "planning-managing-learning-environment": 31,
+          "instruction": 31,
+          "assessment": 19,
+          "foundations-professional-responsibilities": 17
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "special_education_learning_disabilities_5383",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "development-characteristics-learning-disabilities": 20,
+          "planning-managing-learning-environment": 32,
+          "instruction": 33,
+          "identification-eligibility-placement": 14,
+          "foundations-professional-responsibilities": 21
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "special_education_severe_profound_5547",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "development-individualized-needs": 35,
+          "planning-instruction-environment": 38,
+          "assessment": 23,
+          "ethical-legal-professional-collaboration": 24
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "speech_language_pathology_5331",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
+        "officialSelectedResponseCount": 132,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 150,
+        "packSimulation": "132 selected-response items / 150 minutes",
+        "exactDomainCounts": {
+          "foundations-professional-practice": 44,
+          "screening-assessment-diagnosis": 44,
+          "treatment-planning-evaluation": 44
+        },
+        "alignment": "pass - runtime-equivalent selection assembles the exact official domain counts and pacing"
+      },
+      {
+        "stem": "teaching_reading_5205",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
+        "officialSelectedResponseCount": 90,
+        "officialConstructedResponseCount": 3,
+        "officialTotalTimeMinutes": 150,
+        "packSimulation": "90 selected-response items / 120 minutes",
+        "exactDomainCounts": {
+          "phonological-emergent": 14,
+          "phonics-decoding": 18,
+          "vocabulary-fluency": 21,
+          "comprehension": 21,
+          "written-expression": 16
+        },
+        "alignment": "pass - exact selected-response quotas and 120-minute practice pacing are assembled; the three constructed responses and full 150-minute official session are separately disclosed"
+      }
+    ],
+    "provenanceAudit": {
+      "status": "open-major-editorial-and-distinctness-warning",
+      "runtimeDependencies": {
+        "special_education_5355": [],
+        "special_education_behavior_emotional_5372": [
+          "special_education_5355"
+        ],
+        "special_education_early_childhood_5692": [
+          "special_education_5355"
+        ],
+        "special_education_intellectual_disabilities_5322": [
+          "special_education_5355"
+        ],
+        "special_education_learning_disabilities_5383": [
+          "special_education_5355",
+          "teaching_reading_5205",
+          "praxis_core_5752"
+        ],
+        "special_education_severe_profound_5547": [
+          "special_education_5355"
+        ],
+        "speech_language_pathology_5331": [],
+        "teaching_reading_5205": []
+      },
+      "crossPackSharedResponseKernels": 120,
+      "examples": [
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-001"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-001"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-001"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-001"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b1-001"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b2-001"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-001"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-001"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-001"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-001"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-001"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-001"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-002"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-002"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-002"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-002"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-002"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-002"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-002"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-002"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-002"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-002"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-003"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-003"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b1-003"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b2-003"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-004"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-004"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-004"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-004"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b1-004"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b2-004"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-004"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-004"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-004"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-004"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-004"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-004"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-005"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-005"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-005"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-005"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-005"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-005"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-005"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-005"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-005"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-005"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-006"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-006"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-006"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-006"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b1-006"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b2-006"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-006"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-006"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-006"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-006"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-006"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-006"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-009"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-009"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-009"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-009"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b1-009"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b2-009"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-009"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-009"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-009"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-009"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-009"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-009"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-010"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-010"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b1-010"
+          },
+          {
+            "stem": "special_education_early_childhood_5692",
+            "id": "se5692-b2-010"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-010"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-010"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-011"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-011"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-011"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-011"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-011"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-011"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-011"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-011"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-011"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-011"
+          }
+        ],
+        [
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b1-012"
+          },
+          {
+            "stem": "special_education_5355",
+            "id": "sp5355-b2-012"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b1-012"
+          },
+          {
+            "stem": "special_education_behavior_emotional_5372",
+            "id": "ebd5372-b2-012"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b1-012"
+          },
+          {
+            "stem": "special_education_intellectual_disabilities_5322",
+            "id": "id5322-b2-012"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b1-012"
+          },
+          {
+            "stem": "special_education_learning_disabilities_5383",
+            "id": "ld5383-b2-012"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b1-012"
+          },
+          {
+            "stem": "special_education_severe_profound_5547",
+            "id": "sp5547-b2-012"
+          }
+        ]
+      ],
+      "interpretation": "Runtime dependencies are disclosed. Generic credential lead-ins and snapshotted source adapters are not counted as new independent kernels. EC5692 derives from the 5355 architecture, and Teaching Reading retains disclosed historical 5302 snapshot provenance even though its runtime dependency is now local."
+    },
+    "sourceDeployParity": {
+      "status": "pass",
+      "packArtifactPairsCompared": 56,
+      "referenceCatalogPairsCompared": 1,
+      "totalByteIdenticalPairs": 57,
+      "artifactSuffixes": [
+        "_pack.json",
+        "_items.json",
+        "_native_qa.json",
+        "_native_qa.md",
+        "_learning_library.json",
+        "_learning_library_qa.json",
+        "_learning_library_qa.md"
+      ]
+    }
+  },
+  "manualPriorityFindings": {
+    "independentItemsManuallyAdjudicated": 113,
+    "wrongKeysFound": 0,
+    "factualOrScopeDefectsFoundInFinalSnapshot": 0,
+    "defensibleKeys": 113,
+    "findings": [
+      {
+        "id": "G-C-CLOSED-001",
+        "severity": "hard-blueprint",
+        "blocking": true,
+        "status": "resolved",
+        "title": "5355 and 5331 simulation selection previously did not preserve official domain allocations",
+        "resolution": "Every Group C pack now carries exact domain quotas and the runtime-equivalent selector assembles those quotas from independent items."
+      },
+      {
+        "id": "G-C-CLOSED-002",
+        "severity": "hard-credential-scope",
+        "blocking": true,
+        "status": "resolved",
+        "title": "EBD5372 and ID5322 retained imported learning-disabilities credential kernels",
+        "resolution": "The named foreign 5383 kernels were recast and final source scans contain zero foreign 5383 credential residues."
+      },
+      {
+        "id": "G-C-CLOSED-003",
+        "severity": "hard-factual-scope-and-encoding",
+        "blocking": true,
+        "status": "resolved",
+        "title": "EC5692 mechanical substitutions conflated Part C and Part B and produced malformed prose",
+        "resolution": "Targeted Part C/Part B, IFSP/IEP, Child Find, FAPE, transition, placement, task-analysis, grammar, pack, and learning-library gates all pass."
+      },
+      {
+        "id": "G-C-CLOSED-004",
+        "severity": "hard-response-form",
+        "blocking": true,
+        "status": "resolved",
+        "title": "SLP5331 contained seven malformed or nonresponsive source kernels across two forms",
+        "resolution": "All fourteen released target forms pass the response-form gate and source/deploy artifacts match."
+      },
+      {
+        "id": "G-C-CLOSED-005",
+        "severity": "hard-credential-scope-and-encoding",
+        "blocking": true,
+        "status": "resolved",
+        "title": "Teaching Reading 5205 retained specialist/coach/adolescent scope and replacement punctuation",
+        "resolution": "All 200 source items and the full library pass the elementary-classroom role, grade-band, malformed-response, and encoding gates; runtime content is local rather than requiring 5302."
+      },
+      {
+        "id": "G-C-CLOSED-006",
+        "severity": "hard-prose-integrity",
+        "blocking": true,
+        "status": "resolved",
+        "title": "LD5383 and Severe/Profound5547 retained duplicated mechanical adapter lead-ins",
+        "resolution": "The final source banks contain zero duplicated lead-ins under the release gate; cross-pack architectural provenance remains openly declared as a nonblocking distinctness warning."
+      },
+      {
+        "id": "G-C-OPEN-001",
+        "severity": "major-editorial",
+        "blocking": false,
+        "status": "open",
+        "title": "Wrong-option feedback remains substantially generic",
+        "evidence": {
+          "incorrectOptionExplanations": 4800,
+          "startsWithGenericNotTheBestAnswerWrapper": 4800,
+          "containsCompleteOverallRationale": 4800,
+          "underSixteenWords": 0,
+          "underOneHundredCharacters": 0
+        },
+        "impact": "Feedback is present and directionally accurate, but often does not diagnose the selected distractor as specifically as EPPP feedback."
+      },
+      {
+        "id": "G-C-OPEN-002",
+        "severity": "major-editorial",
+        "blocking": false,
+        "status": "open",
+        "title": "Answer-length, lexical-overlap, and distractor-extremity signals remain",
+        "evidence": {
+          "shortPrompt": 5,
+          "severeAnswerLengthClue": 1256,
+          "keyStemLexicalLeakage": 730,
+          "asymmetricExtremeDistractors": 202,
+          "incorrectOptionFeedbackDetail": 0
+        },
+        "impact": "Some items remain easier to solve by wording cues than by credential knowledge."
+      },
+      {
+        "id": "G-C-OPEN-003",
+        "severity": "major-product-development",
+        "blocking": false,
+        "status": "open-and-transparently-declared",
+        "title": "Five 100-activity banks do not yet equal 500 distinct questions per pack",
+        "evidence": {
+          "distinctIndependentContentKernels": 820,
+          "independentQuestionTarget": 4000,
+          "newIndependentItemsNeeded": 3180
+        },
+        "impact": "Guided transformations are useful practice but remain correctly excluded from the independent-question count."
+      },
+      {
+        "id": "G-C-OPEN-004",
+        "severity": "major-provenance-and-editorial",
+        "blocking": false,
+        "status": "open",
+        "title": "Cross-pack source architecture remains mechanically adapted",
+        "evidence": {
+          "runtimeDependencies": {
+            "special_education_5355": [],
+            "special_education_behavior_emotional_5372": [
+              "special_education_5355"
+            ],
+            "special_education_early_childhood_5692": [
+              "special_education_5355"
+            ],
+            "special_education_intellectual_disabilities_5322": [
+              "special_education_5355"
+            ],
+            "special_education_learning_disabilities_5383": [
+              "special_education_5355",
+              "teaching_reading_5205",
+              "praxis_core_5752"
+            ],
+            "special_education_severe_profound_5547": [
+              "special_education_5355"
+            ],
+            "speech_language_pathology_5331": [],
+            "teaching_reading_5205": []
+          },
+          "crossPackSharedResponseKernels": 120
+        },
+        "impact": "Credential-specific lead-ins do not create an independent content kernel; EC5692-to-5355 and historical Reading5205-to-5302 adaptation remain major reauthoring priorities."
+      },
+      {
+        "id": "G-C-OPEN-005",
+        "severity": "moderate-feature-depth",
+        "blocking": false,
+        "status": "open",
+        "title": "Libraries remain less visual and more repetitive than EPPP",
+        "evidence": {
+          "diagrams": 0,
+          "repetition": {
+            "special_education_5355": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 0
+            },
+            "special_education_behavior_emotional_5372": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 2
+            },
+            "special_education_early_childhood_5692": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 2
+            },
+            "special_education_intellectual_disabilities_5322": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 2
+            },
+            "special_education_learning_disabilities_5383": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 2
+            },
+            "special_education_severe_profound_5547": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 2
+            },
+            "speech_language_pathology_5331": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 0
+            },
+            "teaching_reading_5205": {
+              "sections": 48,
+              "longSentencesRepeatedInEverySection": 4
+            }
+          },
+          "knowledgeChecksWithSevereAnswerLengthClue": 362
+        },
+        "impact": "Hard structure passes, but remediation depth and test-likeness remain below the EPPP comparison model."
+      },
+      {
+        "id": "G-C-OPEN-006",
+        "severity": "moderate-qa-depth",
+        "blocking": false,
+        "status": "open",
+        "title": "Item-level editorial evidence remains thinner than EPPP",
+        "evidence": {
+          "sourceItemsReviewed": 1600,
+          "sourceDetailsPresent": 0,
+          "editorialChecksPresent": 0
+        },
+        "impact": "Pack-level source and QA coverage passes, but provenance and editorial adjudication are not exposed per source item with EPPP-like detail."
+      }
+    ]
+  },
+  "correctionsRecommended": [
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "productTargetBlocking": true,
+      "action": "Author 3,180 genuinely new credential-specific kernels, preserve official blueprint balance, and never relabel guided transformations as independent questions."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Replace adapted cross-pack response kernels and historical snapshots with independently authored credential-specific cases, beginning with EC5692 and Teaching Reading 5205."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Rewrite generic wrong-option explanations as concise selected-distractor diagnoses and edit the highest clue-warning items for parallel length, grammar, specificity, and plausibility."
+    },
+    {
+      "priority": "P2",
+      "releaseBlocking": false,
+      "action": "Deepen repeated learning sections and add selective accessible diagrams only where a visual materially teaches the credential content."
+    },
+    {
+      "priority": "P3",
+      "releaseBlocking": false,
+      "action": "Obtain credential-specific subject-matter, accessibility, legal/ethical, field-test, and psychometric review before making validity, readiness, score, or pass claims."
+    }
+  ],
+  "limitations": [
+    "Automation inspected all 4,000 activities and library structures, but semantic key/factual adjudication was risk-based and manually covered 113 of 1,600 source items rather than every key.",
+    "The 2,400 guided activities were structurally checked for derivation, linkage, provenance, feedback, references, and boundaries; they were not treated as independent exam questions.",
+    "Clue diagnostics are screening heuristics and do not by themselves prove that a key is wrong.",
+    "Official ETS Study Companions were used for counts, formats, and timing; specifications can change and this is not ETS approval.",
+    "Reference-catalog checks establish learner-facing metadata coverage, not sentence-level validation of every external source.",
+    "No psychometric calibration, field testing, differential-item-functioning analysis, credential-owner approval, or licensed-professional endorsement was performed.",
+    "EPPP is a feature and review-process comparator, not an official validation standard; its learning-library QA itself remains review-in-progress.",
+    "Artifact hashes and parity describe the freeze-time snapshot; any later generator or content change requires a fresh QA freeze."
+  ]
+}

@@ -34,7 +34,7 @@ describe('device storage bridge — file contracts', () => {
   });
 
   it('module targets the CDN origin, never prismflow', () => {
-    expect(moduleSrc).toContain("'https://alloflow-cdn.pages.dev/storage_bridge.html'");
+    expect(moduleSrc).toContain('https://alloflow-cdn.pages.dev/storage_bridge.html');
     expect(moduleSrc).not.toMatch(/prismflow/i);
     expect(bridgeSrc).not.toMatch(/prismflow/i);
   });
@@ -44,6 +44,28 @@ describe('device storage bridge — file contracts', () => {
     expect(bridgeSrc).toContain("case 'namespaces':");
     expect(moduleSrc).toContain("namespaces: function () { return guarded('namespaces', {}); }");
     expect(moduleSrc).toContain('View app data');
+  });
+
+  it('keeps recovery mutations atomic in both IndexedDB implementations', () => {
+    expect(bridgeSrc).toContain('mutateRecovery:1');
+    expect(bridgeSrc).toContain("case 'mutateRecovery': return kvMutateRecovery(ns, key, msg.mutation)");
+    expect(moduleSrc).toContain("mutateRecovery: function (ns, key, mutation, opts)");
+    expect(moduleSrc).toContain("guarded('mutateRecovery', { ns: ns, key: key, mutation: mutation }, opts)");
+
+    const bridgeStart = bridgeSrc.indexOf('function kvMutateRecovery(');
+    const bridgeEnd = bridgeSrc.indexOf('function kvDelete(', bridgeStart);
+    const bridgeMutation = bridgeSrc.slice(bridgeStart, bridgeEnd);
+    expect(bridgeMutation).toContain("db.transaction(STORE, 'readwrite')");
+    expect(bridgeMutation).toContain('store.get(recKey(ns, key))');
+    expect(bridgeMutation).toContain('applyRecoveryMutation(request.result ? request.result.value : null, mutation)');
+    expect(bridgeMutation).toContain('value: result.store');
+
+    const directStart = moduleSrc.indexOf("} else if (op === 'mutateRecovery') {");
+    const directEnd = moduleSrc.indexOf("} else if (op === 'delete')", directStart);
+    const directMutation = moduleSrc.slice(directStart, directEnd);
+    expect(directMutation).toContain('store.get(k)');
+    expect(directMutation).toContain('applyRecoveryMutation(recoveryGet.result ? recoveryGet.result.value : null, params.mutation)');
+    expect(directMutation).toContain('value: result.store');
   });
 
   it('wires persona interview resume through the bridge', () => {
@@ -73,6 +95,31 @@ describe('device storage bridge — file contracts', () => {
       expect(src).toContain("clearNamespace('app_kv')");
       expect(src).toContain('allo_device_storage_module.js?v=');
     }
+  });
+
+  it('deduplicates connection handshakes and preserves failed queued writes', () => {
+    const connectStart = moduleSrc.indexOf('BridgeTransport.prototype.connect');
+    const connectEnd = moduleSrc.indexOf('BridgeTransport.prototype.request', connectStart);
+    const connect = moduleSrc.slice(connectStart, connectEnd);
+    expect(connect).toContain('if (self.connectPromise) return self.connectPromise');
+    expect(connect).toContain('self.connectTimer = timer');
+    expect(connect).toContain('self.connectReject = reject');
+
+    const flushStart = moduleSrc.indexOf('function flushQueue()');
+    const flushEnd = moduleSrc.indexOf('function guarded(', flushStart);
+    const flush = moduleSrc.slice(flushStart, flushEnd);
+    expect(flush).toContain('if (state.flushPromise) return state.flushPromise');
+    expect(flush).toContain('state.writeQueue = queued.slice(applied).concat(state.writeQueue)');
+    expect(flush).not.toContain('backend.request(item.op, item.params).catch(function () {})');
+    const guardedStart = moduleSrc.indexOf('function guarded(');
+    const guardedEnd = moduleSrc.indexOf('var api =', guardedStart);
+    const guarded = moduleSrc.slice(guardedStart, guardedEnd);
+    expect(guarded).toContain('if (state.flushPromise) return state.flushPromise.then');
+
+    const teardownStart = moduleSrc.indexOf('BridgeTransport.prototype.teardown');
+    const teardownEnd = moduleSrc.indexOf('// ── Direct backend', teardownStart);
+    const teardown = moduleSrc.slice(teardownStart, teardownEnd);
+    expect(teardown).toContain("connectReject(storageError('allo/storage-disconnected'");
   });
 
   it('restores localStorage prefs in Canvas and gates first paint on hydration', () => {
@@ -150,6 +197,14 @@ describe('device storage adapter — behavior', () => {
     expect(v.isValidResponse(null)).toBe(false);
   });
 
+  it('forwards recovery mutations in ds1 envelopes', () => {
+    const mutation = { version: 1, action: 'remove', snapshotId: 'workspace-a' };
+    const msg = api._internal.buildEnvelope('nonce123', 'r2', 'mutateRecovery', {
+      ns: 'workspace_recovery', key: 'store_v1', mutation
+    });
+    expect(msg).toEqual({ allo: 'ds1', nonce: 'nonce123', id: 'r2', op: 'mutateRecovery', ns: 'workspace_recovery', key: 'store_v1', mutation });
+  });
+
   it('memory backend round-trips get/set/list/clear', async () => {
     await api.useMemory();
     expect(api.status().backend).toBe('memory');
@@ -163,9 +218,116 @@ describe('device storage adapter — behavior', () => {
     expect(await api.list('unit_ns')).toEqual([]);
   });
 
+  it('atomically merges recovery snapshots, caps history, and rejects stale writes', async () => {
+    await api.useMemory();
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    await api.set(ns, key, { version: 1, legacyMigrationComplete: false, removedSnapshotIds: {}, snapshots: [] });
+    const snapshot = (id, savedAt, marker) => ({ version: 1, id, savedAt, marker, workspace: { history: [{ id: marker }] } });
+
+    for (const [id, day] of [['workspace-a', '01'], ['workspace-b', '02'], ['workspace-c', '03'], ['workspace-d', '04']]) {
+      const result = await api.mutateRecovery(ns, key, {
+        version: 1,
+        action: 'upsert',
+        snapshot: snapshot(id, `2026-07-${day}T12:00:00.000Z`, id)
+      }, { queue: false });
+      expect(result).toMatchObject({ applied: true, reason: 'upserted' });
+    }
+    const capped = await api.get(ns, key);
+    expect(capped.snapshots.map(item => item.id)).toEqual(['workspace-d', 'workspace-c', 'workspace-b']);
+
+    const stale = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'upsert',
+      snapshot: snapshot('workspace-d', '2026-07-03T00:00:00.000Z', 'stale')
+    }, { queue: false });
+    expect(stale).toMatchObject({ applied: false, reason: 'stale-snapshot' });
+    expect(stale.store.snapshots.find(item => item.id === 'workspace-d').marker).toBe('workspace-d');
+
+    const equalTimestamp = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'upsert',
+      snapshot: snapshot('workspace-d', '2026-07-04T12:00:00.000Z', 'same-time-other-tab')
+    }, { queue: false });
+    expect(equalTimestamp).toMatchObject({ applied: false, reason: 'stale-snapshot' });
+    expect(equalTimestamp.store.snapshots.find(item => item.id === 'workspace-d').marker).toBe('workspace-d');
+  });
+
+  it('persists removal tombstones so another tab cannot resurrect a snapshot', async () => {
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    const removed = await api.mutateRecovery(ns, key, {
+      version: 1, action: 'remove', snapshotId: 'workspace-d', removedAt: '2026-07-05T00:00:00.000Z'
+    }, { queue: false });
+    expect(removed).toMatchObject({ applied: true, reason: 'removed' });
+    expect(removed.store.removedSnapshotIds['workspace-d']).toBe('2026-07-05T00:00:00.000Z');
+    expect(removed.store.snapshots.some(item => item.id === 'workspace-d')).toBe(false);
+
+    const resurrection = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'upsert',
+      snapshot: { version: 1, id: 'workspace-d', savedAt: '2026-07-06T00:00:00.000Z', workspace: { history: [{}] } }
+    }, { queue: false });
+    expect(resurrection).toMatchObject({ applied: false, reason: 'removed-snapshot' });
+    expect(resurrection.store.removedSnapshotIds).toHaveProperty('workspace-d');
+  });
+
+  it('marks legacy migration exactly once and can insert its snapshot atomically', async () => {
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    await api.set(ns, key, { version: 1, snapshots: [] });
+    const first = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'markLegacyMigrated',
+      snapshot: { version: 1, id: 'workspace-legacy-a', savedAt: '2026-07-01T00:00:00.000Z', workspace: { history: [{}] } }
+    }, { queue: false });
+    expect(first).toMatchObject({ applied: true, reason: 'legacy-migrated' });
+    expect(first.store.legacyMigrationComplete).toBe(true);
+    expect(first.store.snapshots.map(item => item.id)).toEqual(['workspace-legacy-a']);
+
+    const second = await api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'markLegacyMigrated',
+      snapshot: { version: 1, id: 'workspace-legacy-b', savedAt: '2026-07-02T00:00:00.000Z', workspace: { history: [{}] } }
+    }, { queue: false });
+    expect(second).toMatchObject({ applied: false, reason: 'already-migrated' });
+    expect(second.store.snapshots.map(item => item.id)).toEqual(['workspace-legacy-a']);
+  });
+
+  it('rejects future recovery versions without changing the authoritative store', async () => {
+    const ns = 'workspace_recovery';
+    const key = 'store_v1';
+    const before = await api.get(ns, key);
+    await expect(api.mutateRecovery(ns, key, {
+      version: 2, action: 'remove', snapshotId: 'workspace-legacy-a'
+    }, { queue: false })).rejects.toMatchObject({ code: 'allo/recovery-version-unsupported' });
+    expect(await api.get(ns, key)).toEqual(before);
+
+    await expect(api.mutateRecovery(ns, key, {
+      version: 1,
+      action: 'upsert',
+      snapshot: { version: 2, id: 'workspace-future', savedAt: '2026-07-03T00:00:00.000Z' }
+    }, { queue: false })).rejects.toMatchObject({ code: 'allo/recovery-version-unsupported' });
+    expect(await api.get(ns, key)).toEqual(before);
+
+    const futureStore = { version: 2, snapshots: [{ version: 2, id: 'future-current' }] };
+    await api.set(ns, key, futureStore);
+    await expect(api.mutateRecovery(ns, key, {
+      version: 1, action: 'markLegacyMigrated'
+    }, { queue: false })).rejects.toMatchObject({ code: 'allo/recovery-version-unsupported' });
+    expect(await api.get(ns, key)).toEqual(futureStore);
+
+    await api.set(ns, key, before);
+    await expect(api.mutateRecovery(ns, key, {
+      version: 1, schemaVersion: 2, action: 'markLegacyMigrated'
+    }, { queue: false })).rejects.toMatchObject({ code: 'allo/recovery-version-unsupported' });
+  });
+
   it('rejects invalid namespaces and keys at the API boundary', async () => {
     await expect(api.get('bad ns!', 'k')).rejects.toMatchObject({ code: 'allo/bad-namespace' });
     await expect(api.set('okns', '', 1)).rejects.toMatchObject({ code: 'allo/bad-key' });
+    await expect(api.mutateRecovery('other', 'store_v1', { version: 1, action: 'markLegacyMigrated' }, { queue: false }))
+      .rejects.toMatchObject({ code: 'allo/recovery-target-invalid' });
   });
 
   it('queues writes while a bridge backend is disconnected', async () => {
@@ -175,6 +337,9 @@ describe('device storage adapter — behavior', () => {
     expect(res).toEqual({ queued: true });
     expect(api.status().queuedWrites).toBe(1);
     await expect(api.get('queued_ns', 'k1')).rejects.toMatchObject({ code: 'allo/storage-disconnected' });
+    await expect(api.mutateRecovery('workspace_recovery', 'store_v1',
+      { version: 1, action: 'markLegacyMigrated' }, { queue: false }))
+      .rejects.toMatchObject({ code: 'allo/storage-disconnected' });
     // memory fallback flushes the queue
     await api.useMemory();
     expect(api.status().queuedWrites).toBe(0);

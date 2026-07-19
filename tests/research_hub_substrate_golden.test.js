@@ -1,8 +1,8 @@
 // Research Hub substrate golden master.
 //
 // Pins:
-//   1. The canonical shape of emptyJournal() at substrate v:4.
-//   2. The v:1/v:2/v:3 → v:4 migration ladder in loadJournal() — the riskiest
+//   1. The canonical shape of emptyJournal() at substrate v:5.
+//   2. The v:1/v:2/v:3 → v:5 migration ladder in loadJournal() — the riskiest
 //      part of the substrate, because a bug there silently corrupts saved
 //      sessions. The pre-Tier-3 `parsed.v !== 1` strict-equal bug dropped any
 //      v:2 save; the test below would have caught it.
@@ -19,9 +19,9 @@ import { setupHub, internals } from './helpers/research_hub_harness.js';
 
 beforeAll(() => setupHub());
 
-describe('Research Hub substrate — emptyJournal v:4', () => {
-  it('returns v:4', () => {
-    expect(internals().emptyJournal().v).toBe(4);
+describe('Research Hub substrate — emptyJournal v:5', () => {
+  it('returns v:5', () => {
+    expect(internals().emptyJournal().v).toBe(5);
   });
 
   it('canonical top-level field set is pinned (snapshot)', () => {
@@ -37,6 +37,8 @@ describe('Research Hub substrate — emptyJournal v:4', () => {
     expect(j.questionTitle).toBe('');
     expect(j.devLevel).toBe('6_8');
     expect(j.activeLane).toBe(null);
+    expect(j.activeMethodPack).toBe(null);
+    expect(Array.isArray(j.methodPackHistory)).toBe(true);
     expect(j.activeStage).toBe(null);
     expect(Array.isArray(j.evidenceCards)).toBe(true);
     expect(Array.isArray(j.sources)).toBe(true);
@@ -88,34 +90,34 @@ describe('Research Hub substrate — loadJournal migration', () => {
     globalThis.window.localStorage.clear();
   });
 
-  it('with no localStorage returns fresh emptyJournal v:4', () => {
+  it('with no localStorage returns fresh emptyJournal v:5', () => {
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.aiCallCount).toBe(0);
   });
 
-  it('with malformed JSON returns fresh emptyJournal v:4 (no throw)', () => {
+  it('with malformed JSON returns fresh emptyJournal v:5 (no throw)', () => {
     globalThis.window.localStorage.setItem(KEY, 'not-json');
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
   });
 
-  it('with unsupported version (v:5) returns fresh emptyJournal v:4', () => {
-    globalThis.window.localStorage.setItem(KEY, JSON.stringify({ v: 5, devLevel: 'ap' }));
+  it('with unsupported version (v:6) returns fresh emptyJournal v:5', () => {
+    globalThis.window.localStorage.setItem(KEY, JSON.stringify({ v: 6, devLevel: 'ap' }));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     // Verify it's truly fresh, not a partial migration
     expect(j.devLevel).toBe('6_8');
   });
 
-  it('with non-object value returns fresh emptyJournal v:4', () => {
+  it('with non-object value returns fresh emptyJournal v:5', () => {
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(42));
-    expect(internals().loadJournal().v).toBe(4);
+    expect(internals().loadJournal().v).toBe(5);
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(null));
-    expect(internals().loadJournal().v).toBe(4);
+    expect(internals().loadJournal().v).toBe(5);
   });
 
-  it('migrates v:1 → v:4: constraintMatrix rows gain unit:""', () => {
+  it('migrates v:1 → v:5: constraintMatrix rows gain unit:""', () => {
     const v1 = {
       v: 1,
       devLevel: '6_8',
@@ -127,7 +129,7 @@ describe('Research Hub substrate — loadJournal migration', () => {
     };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v1));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.constraintMatrix).toHaveLength(2);
     expect(j.constraintMatrix[0].unit).toBe('');
     expect(j.constraintMatrix[1].unit).toBe('');
@@ -136,14 +138,14 @@ describe('Research Hub substrate — loadJournal migration', () => {
     expect(j.constraintMatrix[1].target).toBe(2);
   });
 
-  it('migrates v:1 → v:4: tradeOffLedger rows gain sacrificedCriterion/whoseInterestThisServes/acceptedPriorityRank', () => {
+  it('migrates v:1 → v:5: tradeOffLedger rows gain sacrificedCriterion/whoseInterestThisServes/acceptedPriorityRank', () => {
     const v1 = {
       v: 1,
       tradeOffLedger: [{ v: 1, criterion: 'cost', accepted: 'foo', justification: 'bar' }],
     };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v1));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     const row = j.tradeOffLedger[0];
     expect(row.sacrificedCriterion).toBe(null);
     expect(row.whoseInterestThisServes).toBe('');
@@ -151,7 +153,7 @@ describe('Research Hub substrate — loadJournal migration', () => {
     expect(row.criterion).toBe('cost'); // preserved
   });
 
-  it('migrates v:2 → v:4: same row-level migrations apply', () => {
+  it('migrates v:2 → v:5: same row-level migrations apply', () => {
     const v2 = {
       v: 2,
       constraintMatrix: [{ id: 'c1', criterion: 'temp', target: 55 }],
@@ -159,12 +161,12 @@ describe('Research Hub substrate — loadJournal migration', () => {
     };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v2));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.constraintMatrix[0].unit).toBe('');
     expect(j.tradeOffLedger[0].sacrificedCriterion).toBe(null);
   });
 
-  it('migrates v:3 → v:4: positionalitySnapshots seeded from singleton positionality when text present and snapshots empty', () => {
+  it('migrates v:3 → v:5: positionalitySnapshots seeded from singleton positionality when text present and snapshots empty', () => {
     const v3 = {
       v: 3,
       devLevel: '9_12',
@@ -178,7 +180,7 @@ describe('Research Hub substrate — loadJournal migration', () => {
     };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v3));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.positionalitySnapshots).toHaveLength(1);
     const snap = j.positionalitySnapshots[0];
     expect(snap.v).toBe(1);
@@ -187,7 +189,7 @@ describe('Research Hub substrate — loadJournal migration', () => {
     expect(snap.audioBase64).toBe(null);
   });
 
-  it('migrates v:3 → v:4: does NOT seed positionalitySnapshots when already populated', () => {
+  it('migrates v:3 → v:5: does NOT seed positionalitySnapshots when already populated', () => {
     const existingSnap = {
       v: 1, ts: 100, materialRelationshipText: 'pre-existing',
       visibilityField: '', obscuringField: '',
@@ -202,16 +204,16 @@ describe('Research Hub substrate — loadJournal migration', () => {
     };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v3));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.positionalitySnapshots).toHaveLength(1);
     expect(j.positionalitySnapshots[0].materialRelationshipText).toBe('pre-existing');
   });
 
-  it('migrates v:3 → v:4: does NOT seed positionalitySnapshots when positionality is empty', () => {
+  it('migrates v:3 → v:5: does NOT seed positionalitySnapshots when positionality is empty', () => {
     const v3 = { v: 3, positionality: { text: '', audioBase64: null, durationS: 0 }, positionalitySnapshots: [] };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v3));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.positionalitySnapshots).toHaveLength(0);
   });
 
@@ -219,26 +221,43 @@ describe('Research Hub substrate — loadJournal migration', () => {
     const v2 = { v: 2, devLevel: 'ap', questionTitle: 'why X?' };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(v2));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.devLevel).toBe('ap');
     expect(j.questionTitle).toBe('why X?');
   });
 
+  it('migrates v:4 → v:5 without losing the active lane or inquiry artifacts', () => {
+    const v4 = {
+      v: 4,
+      activeLane: 'humanities',
+      questionTitle: 'Whose account shapes this archive?',
+      sources: [{ id: 's1', citation: 'Community archive catalog' }],
+    };
+    globalThis.window.localStorage.setItem(KEY, JSON.stringify(v4));
+    const j = internals().loadJournal();
+    expect(j.v).toBe(5);
+    expect(j.activeLane).toBe('humanities');
+    expect(j.questionTitle).toContain('archive');
+    expect(j.sources).toHaveLength(1);
+    expect(j.activeMethodPack).toBe(null);
+    expect(j.methodPackHistory).toEqual([]);
+  });
+
   it('aiCallCount is ALWAYS reset on load (per-session anti-spam invariant)', () => {
-    const stored = { v: 4, aiCallCount: 7, sessionStartedAt: 12345 };
+    const stored = { v: 5, aiCallCount: 7, sessionStartedAt: 12345 };
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(stored));
     expect(internals().loadJournal().aiCallCount).toBe(0);
   });
 
-  it('v:4 saves round-trip cleanly (no migration applied)', () => {
-    // Save a v:4 journal, reload — should not re-bump version or rewrite shapes.
+  it('v:5 saves round-trip cleanly (no migration applied)', () => {
+    // Save a v:5 journal, reload — should not re-bump version or rewrite shapes.
     const fresh = internals().emptyJournal();
-    fresh.questionTitle = 'will my v:4 save survive?';
+    fresh.questionTitle = 'will my v:5 save survive?';
     fresh.framings = [{ id: 'fr1', label: 'test' }];
     globalThis.window.localStorage.setItem(KEY, JSON.stringify(fresh));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
-    expect(j.questionTitle).toBe('will my v:4 save survive?');
+    expect(j.v).toBe(5);
+    expect(j.questionTitle).toBe('will my v:5 save survive?');
     expect(j.framings).toHaveLength(1);
     expect(j.framings[0].label).toBe('test');
   });
@@ -247,7 +266,7 @@ describe('Research Hub substrate — loadJournal migration', () => {
     // regression: migration must guard arrays before iterating
     globalThis.window.localStorage.setItem(KEY, JSON.stringify({ v: 1, devLevel: '3_5' }));
     const j = internals().loadJournal();
-    expect(j.v).toBe(4);
+    expect(j.v).toBe(5);
     expect(j.devLevel).toBe('3_5');
   });
 });

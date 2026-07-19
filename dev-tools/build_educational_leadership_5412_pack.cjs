@@ -94,7 +94,7 @@ const pack = {
   nativeQaUrl: './test_prep/educational_leadership_5412_native_qa.json',
   learningLibraryUrl: './test_prep/educational_leadership_5412_learning_library.json',
   learningLibraryQaUrl: './test_prep/educational_leadership_5412_learning_library_qa.json',
-  simulationItemCount: 120, simulationTimeMinutes: 165,
+  simulationItemCount: 120, simulationDomainCounts: {"strategic-leadership":20,"instructional-leadership":27,"climate-cultural-leadership":22,"ethical-leadership":19,"organizational-leadership":16,"community-engagement-leadership":16}, simulationTimeMinutes: 165,
   simulationLabel: '120-question timed simulation',
   simulationNote: 'The official 5412 test currently contains 120 selected-response questions in 165 minutes. This simulation uses original independent practice items and is not an official test form.',
   officialSelectedResponseCount: 120, officialConstructedResponseCount: 0,

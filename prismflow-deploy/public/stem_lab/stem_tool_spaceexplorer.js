@@ -337,6 +337,199 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     });
     return newRes;
   }
+  function buildMissionDossier(dest, resources, crew, tech) {
+    if (!dest) return null;
+    var res = resources || getInitialResources(dest, tech || [], crew || []);
+    var drain = DESTINATION_DRAINS[dest.id] || { o2: -2, power: -2, fuel: -1 };
+    var risk = dest.difficulty * 12;
+    Object.keys(drain).forEach(function(k) {
+      if ((drain[k] || 0) < -3) risk += 5;
+      if (res[k] != null && RESOURCES[k] && RESOURCES[k].max !== 999 && res[k] < 70) risk += 4;
+    });
+    var primaryHazard = (dest.hazards || [])[0] || 'unknown environment';
+    var primaryScience = (dest.scienceFocus || [])[0] || 'planetary science';
+    var stagePlan = [
+      { phase: 'Arrival', name: 'Arrival', focus: 'Confirm orbit, comms, and immediate ' + primaryHazard + ' controls.', action: 'Confirm orbit, comms, and immediate ' + primaryHazard + ' controls.' },
+      { phase: 'Survey', name: 'Survey', focus: 'Collect evidence for ' + primaryScience + ' while protecting O2 and hull margins.', action: 'Collect evidence for ' + primaryScience + ' while protecting O2 and hull margins.' },
+      { phase: 'Departure', name: 'Departure', focus: 'Prioritize samples, return trajectory, and what evidence is strong enough to bring home.', action: 'Prioritize samples, return trajectory, and what evidence is strong enough to bring home.' }
+    ];
+    var evidenceGoals = (dest.scienceFocus || []).slice(0, 3).map(function(focus, idx) {
+      var hz = (dest.hazards || [])[idx % Math.max(1, (dest.hazards || []).length)] || primaryHazard;
+      return { id: focus.replace(/\W+/g, '_').toLowerCase(), label: focus, concept: focus, question: 'What does ' + focus + ' reveal about ' + dest.name + '?', prompt: 'What does ' + focus + ' reveal about ' + dest.name + '?', watch: 'Watch for ' + hz + ' changing the evidence.' };
+    });
+    while (evidenceGoals.length < 3) evidenceGoals.push({ id: 'systems_' + evidenceGoals.length, label: 'systems thinking', concept: 'systems thinking', question: 'Which resource trend limits the mission?', prompt: 'Which resource trend limits the mission?', watch: 'Compare drain forecast to actual choices.' });
+    return {
+      destinationId: dest.id,
+      destinationName: dest.name,
+      riskBand: risk >= 65 ? 'extreme' : risk >= 45 ? 'high' : risk >= 28 ? 'moderate' : 'training',
+      guidingQuestion: 'Can the crew survive ' + dest.name + ' while turning ' + primaryHazard + ' into evidence about ' + primaryScience + '?',
+      stagePlan: stagePlan,
+      evidenceGoals: evidenceGoals,
+      predictedDrain: Object.assign({}, drain),
+      scienceFocus: (dest.scienceFocus || []).slice(),
+      hazards: (dest.hazards || []).slice()
+    };
+  }
+
+  function buildLocalMissionEvent(dest, resources, turn, maxTurns, decisionLog, protocol, dossier) {
+    dest = dest || DESTINATIONS[0];
+    var hazards = dest.hazards || ['unknown hazard'];
+    var focus = dest.scienceFocus || ['planetary science'];
+    var protocolLens = buildProtocolEventLens(protocol, dossier, turn, decisionLog);
+    var hazard = protocolLens && protocolLens.hazard ? protocolLens.hazard : hazards[turn % hazards.length];
+    var science = protocolLens && protocolLens.priority && protocolLens.category === 'science' ? protocolLens.priority : focus[(turn + (decisionLog || []).length) % focus.length];
+    var late = turn >= maxTurns - 2;
+    var category = late ? 'navigation' : (protocolLens ? protocolLens.category : (turn % 3 === 0 ? 'science' : turn % 3 === 1 ? 'systems' : 'environment'));
+    var title = late ? 'Departure Window Narrows' : (category === 'science' ? 'Signal in the ' + science + ' Data' : category === 'systems' ? 'Subsystem Strain: ' + hazard : category === 'crew' ? 'Crew Tension Around ' + (protocolLens ? protocolLens.priority : 'Mission Priorities') : 'Terrain Alert: ' + hazard);
+    return {
+      emoji: late ? '\uD83D\uDEF0\uFE0F' : category === 'science' ? '\uD83D\uDD2C' : category === 'systems' ? '\u2699\uFE0F' : '\u26A0\uFE0F',
+      title: title,
+      category: category,
+      description: 'The crew encounters ' + hazard + ' while investigating ' + science + ' at ' + dest.name + '. ' + (protocolLens ? protocolLens.playerFacing + ' ' : '') + 'The safest answer balances evidence quality against mission margins.',
+      protocolLens: protocolLens,
+      stemConcepts: [science, hazard],
+      relevantSpecialties: category === 'systems' ? ['systems', 'physics'] : category === 'science' ? ['geology', 'chemistry', 'astrobiology'] : ['navigation', 'leadership'],
+      choices: [
+        { label: 'Run a controlled measurement before acting', icon: '\uD83D\uDD2C', effects: { power: -4, science: 16, morale: 2 }, quality: 'optimal', outcome: 'The crew slows down, isolates variables, and gets evidence they can trust.', scienceReward: 'Controlled tests separate signal from noise before a mission commits scarce resources.' },
+        { label: 'Follow the quickest operational fix', icon: '\uD83D\uDD27', effects: { power: -2, science: 7, morale: 1 }, quality: 'adequate', outcome: 'The immediate risk drops, but the science record is thinner.', scienceReward: 'Operational fixes protect survival, but weak evidence is harder to interpret later.' },
+        { label: 'Push ahead without recalibrating', icon: '\u26A0\uFE0F', effects: { hull: -8, science: 3, morale: -3 }, quality: 'poor', outcome: 'The crew keeps moving but loses confidence in the data and takes avoidable wear.', scienceReward: 'Skipping calibration can make data look decisive when it is actually biased.' }
+      ],
+      hiddenOption: { label: 'Let the specialist redesign the sampling path', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', effects: { power: -2, science: 20, morale: 3 }, quality: 'optimal', requiresSpecialty: category === 'systems' ? 'systems' : 'geology', outcome: 'A specialist spots a cleaner way to gather evidence with less strain.', scienceReward: 'Expertise changes what tradeoffs are visible, especially under uncertainty.', consultLine: 'I can reroute this into a cleaner test with fewer confounding variables.' }
+    };
+  }
+
+  function assessMissionIntent(intent, evidence, dossier) {
+    var clean = (intent || '').trim();
+    var goals = dossier && dossier.evidenceGoals ? dossier.evidenceGoals : [];
+    var ev = evidence || [];
+    var matchedGoals = goals.filter(function(goal) {
+      return ev.some(function(item) {
+        var hay = ((item.concept || '') + ' ' + (item.note || '') + ' ' + (item.title || '') + ' ' + clean).toLowerCase();
+        return hay.indexOf((goal.label || '').toLowerCase()) >= 0 || hay.indexOf((goal.concept || '').toLowerCase()) >= 0;
+      });
+    });
+    var strongEvidence = ev.filter(function(item) { return item.quality === 'optimal'; }).length;
+    var status = !clean ? 'needs hypothesis' : matchedGoals.length >= Math.max(2, Math.min(3, goals.length)) && strongEvidence >= 2 ? 'strongly supported' : matchedGoals.length > 0 ? 'partly supported' : ev.length > 0 ? 'needs revision' : 'awaiting evidence';
+    var missing = goals.filter(function(goal) { return matchedGoals.indexOf(goal) < 0; });
+    return {
+      hasIntent: clean.length >= 20,
+      intent: clean,
+      supportCount: matchedGoals.length,
+      goalCount: goals.length,
+      strongEvidence: strongEvidence,
+      status: status,
+      matchedGoals: matchedGoals.map(function(g) { return g.label; }),
+      missingGoals: missing.map(function(g) { return g.label; }),
+      summary: !clean ? 'Write a short mission hypothesis before launch.' : matchedGoals.length ? 'Evidence is connecting to ' + matchedGoals.map(function(g) { return g.label; }).join(', ') + '.' : (ev.length ? 'Your evidence does not yet clearly support the hypothesis.' : 'Collect observations to test this hypothesis.'),
+      revisionPrompt: missing.length ? 'Next run, look for stronger evidence about ' + missing[0].label + '.' : 'Next run, test whether this pattern still holds under a harder destination.'
+    };
+  }
+
+  function buildMissionProtocol(intent, dossier, dest) {
+    var clean = (intent || '').trim();
+    if (clean.length < 20) return null;
+    var lower = clean.toLowerCase();
+    var destinationName = (dest && dest.name) || (dossier && dossier.destinationName) || 'the destination';
+    var protocol;
+    if (/oxygen|o2|life support|breath/.test(lower)) {
+      protocol = { id: 'life_support_thesis', label: 'Life-support thesis', icon: '\uD83E\uDEE7', trigger: 'adequate_or_better', effects: { o2: 2, science: -1 }, color: 'sky', rationale: 'Your claim centers survival margins, so careful choices route extra attention to oxygen recovery at a small science cost.' };
+    } else if (/hull|shield|radiation|storm|impact|damage|safe/.test(lower)) {
+      protocol = { id: 'shielded_survey', label: 'Shielded survey', icon: '\uD83D\uDEE1\uFE0F', trigger: 'adequate_or_better', effects: { hull: 2, fuel: -1 }, color: 'green', rationale: 'Your claim centers environmental danger, so good decisions reinforce hull protection while spending a little fuel.' };
+    } else if (/science|evidence|data|sample|signal|geolog|ocean|astrobio|chem/.test(lower)) {
+      protocol = { id: 'evidence_first', label: 'Evidence-first protocol', icon: '\uD83D\uDD2C', trigger: 'adequate_or_better', effects: { science: 3, power: -1 }, color: 'purple', rationale: 'Your claim centers evidence quality, so good decisions collect extra science while spending instrument power.' };
+    } else if (/crew|morale|psycholog|trust|team|lead/.test(lower)) {
+      protocol = { id: 'crew_cohesion', label: 'Crew-cohesion compact', icon: '\uD83D\uDCAC', trigger: 'adequate_or_better', effects: { morale: 2, power: -1 }, color: 'amber', rationale: 'Your claim centers people, so good decisions improve morale while spending coordination bandwidth.' };
+    } else {
+      protocol = { id: 'balanced_survey', label: 'Balanced survey protocol', icon: '\u2696\uFE0F', trigger: 'optimal_only', effects: { science: 2, fuel: 1 }, color: 'slate', rationale: 'Your claim is broad, so only excellent decisions create a small balanced mission gain.' };
+    }
+    protocol.active = true;
+    protocol.source = clean.slice(0, 220);
+    protocol.ruleText = protocol.label + ': on ' + (protocol.trigger === 'optimal_only' ? 'optimal decisions' : 'adequate or optimal decisions') + ', apply ' + Object.keys(protocol.effects).map(function(k) { return k + ' ' + (protocol.effects[k] > 0 ? '+' : '') + protocol.effects[k]; }).join(', ') + '.';
+    protocol.destinationName = destinationName;
+    return protocol;
+  }
+
+  function applyMissionProtocol(protocol, resources, choice, event) {
+    var res = Object.assign({}, resources || {});
+    if (!protocol || !protocol.effects) return { resources: res, applied: false, effects: {}, note: '' };
+    var quality = choice && choice.quality;
+    var applies = protocol.trigger === 'optimal_only' ? quality === 'optimal' : (quality === 'optimal' || quality === 'adequate');
+    if (!applies) return { resources: res, applied: false, effects: {}, note: protocol.label + ' did not trigger because this decision was ' + (quality || 'unknown') + '.' };
+    var actual = {};
+    Object.keys(protocol.effects).forEach(function(k) {
+      if (!RESOURCES[k] || res[k] === undefined) return;
+      var before = res[k] || 0;
+      var delta = Math.max(-2, Math.min(3, protocol.effects[k] || 0));
+      res[k] = Math.max(0, Math.min(RESOURCES[k].max, before + delta));
+      actual[k] = res[k] - before;
+    });
+    return { resources: res, applied: true, effects: actual, note: protocol.label + ' modified the outcome for ' + ((event && event.title) || 'this event') + '.' };
+  }
+
+  function buildProtocolEventLens(protocol, dossier, turn, decisionLog) {
+    if (!protocol) return null;
+    var goals = (dossier && dossier.evidenceGoals) || [];
+    var hazards = (dossier && dossier.hazards) || [];
+    var idx = Math.max(0, (turn || 0) + ((decisionLog || []).length || 0));
+    var goal = goals.length ? goals[idx % goals.length] : null;
+    var hazard = hazards.length ? hazards[idx % hazards.length] : 'mission uncertainty';
+    var category = 'science';
+    var priority = goal ? goal.label : 'mission evidence';
+    if (protocol.id === 'life_support_thesis') { category = 'systems'; priority = 'oxygen and closed-loop life support'; }
+    else if (protocol.id === 'shielded_survey') { category = 'environment'; priority = hazard + ' risk mapping'; }
+    else if (protocol.id === 'crew_cohesion') { category = 'crew'; priority = 'crew trust and communication'; }
+    else if (protocol.id === 'balanced_survey') { category = (idx % 2 === 0 ? 'navigation' : 'science'); priority = goal ? goal.label : 'balanced survival and science'; }
+    return {
+      protocolId: protocol.id,
+      protocolLabel: protocol.label,
+      category: category,
+      priority: priority,
+      hazard: hazard,
+      promptLine: 'Protocol lens: ' + protocol.label + ' should bias this turn toward ' + category + ' and test ' + priority + '.',
+      playerFacing: protocol.label + ' is shaping this turn toward ' + priority + '.'
+    };
+  }
+
+  function buildMissionForecast(dest, resources, turn, maxTurns, dossier, protocol, decisionLog, allocation) {
+    var res = resources || {};
+    var lens = buildProtocolEventLens(protocol, dossier, turn, decisionLog);
+    var stage = turn < maxTurns * 0.3 ? 'Arrival pressure' : turn < maxTurns * 0.7 ? 'Survey pressure' : 'Departure pressure';
+    var critical = Object.keys(RESOURCES).filter(function(k) { return RESOURCES[k].max !== 999 && res[k] != null && res[k] <= 25; });
+    var category = lens ? lens.category : (critical.indexOf('o2') >= 0 || critical.indexOf('power') >= 0 ? 'systems' : critical.indexOf('hull') >= 0 ? 'environment' : turn >= maxTurns - 2 ? 'navigation' : 'science');
+    var recommended = 'science';
+    var reason = 'Gather stronger evidence while margins are stable.';
+    if (critical.indexOf('o2') >= 0 || category === 'systems') { recommended = 'life'; reason = 'Life support or system strain is likely to matter soon.'; }
+    else if (critical.indexOf('hull') >= 0 || category === 'environment') { recommended = 'shields'; reason = 'Environmental risk suggests protecting hull before chasing data.'; }
+    else if (category === 'crew' || critical.indexOf('morale') >= 0) { recommended = 'comms'; reason = 'Crew or communication uncertainty may unlock safer options.'; }
+    else if (category === 'navigation') { recommended = 'comms'; reason = 'Navigation and departure windows reward better coordination.'; }
+    var confidence = critical.length > 0 ? 'high' : lens ? 'medium' : 'low';
+    var alloc = allocation || DEFAULT_ALLOCATION;
+    var aligned = (alloc[recommended] || 0) > 0;
+    return {
+      stage: stage,
+      category: category,
+      pressure: critical.length ? critical.map(function(k) { return RESOURCES[k].label; }).join(', ') + ' low' : (lens ? lens.priority : 'open exploration'),
+      recommendedSystem: recommended,
+      recommendedLabel: recommended === 'life' ? 'Life Support' : recommended === 'shields' ? 'Shields' : recommended === 'comms' ? 'Comms' : 'Science',
+      reason: reason,
+      confidence: confidence,
+      aligned: aligned,
+      lens: lens,
+      summary: stage + ': expect ' + category + ' pressure; consider ' + (recommended === 'life' ? 'Life Support' : recommended === 'shields' ? 'Shields' : recommended === 'comms' ? 'Comms' : 'Science') + '.'
+    };
+  }
+
+  window.StemLab.spaceExplorerPure = {
+    buildMissionDossier: buildMissionDossier,
+    buildLocalMissionEvent: buildLocalMissionEvent,
+    assessMissionIntent: assessMissionIntent,
+    buildMissionProtocol: buildMissionProtocol,
+    applyMissionProtocol: applyMissionProtocol,
+    buildProtocolEventLens: buildProtocolEventLens,
+    buildMissionForecast: buildMissionForecast,
+    normalizeAllocation: normalizeAllocation,
+    applyTurnDrain: applyTurnDrain
+  };
 
   // ═══════════════════════════════════════════════════════════════
   // SPECTRAL MATCH — compound absorption bands (real wavelengths in μm)
@@ -645,6 +838,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var revealedHiddenOption = d.revealedHiddenOption || false;
       var minigamePending = d.minigamePending || null;
       var minigameResult = d.minigameResult || null;
+      var missionDossier = d.missionDossier || (destination ? buildMissionDossier(destination, resources, crew, unlockedTech) : null);
+      var missionEvidence = d.missionEvidence || [];
+      var missionIntent = d.missionIntent || '';
+      var missionReflection = d.missionReflection || '';
+      var missionIntentAssessment = missionDossier ? assessMissionIntent(missionIntent, missionEvidence, missionDossier) : null;
+      var missionProtocol = missionDossier ? buildMissionProtocol(missionIntent, missionDossier, destination) : null;
       var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
       var isCompactViewport = viewportWidth < 640;
 
@@ -664,6 +863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         sfxSELaunch();
         var missionCrew = selectCrew(dest);
         var res = getInitialResources(dest, unlockedTech, missionCrew);
+        var dossier = buildMissionDossier(dest, res, missionCrew, unlockedTech);
         updAll({
           missionPhase: 'briefing',
           destination: dest.id,
@@ -671,6 +871,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           resources: res,
           turn: 0,
           missionLog: [{ text: '\uD83D\uDE80 Mission to ' + dest.name + ' initiated! Crew: ' + missionCrew.map(function(c) { return c.name; }).join(', '), time: new Date().toLocaleTimeString() }],
+          missionDossier: dossier,
+          missionEvidence: [],
+          missionIntent: '',
+          missionReflection: '',
+          protocolLog: [],
           activeEvent: null,
           eventOutcome: null,
           decisionLog: [],
@@ -685,7 +890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Generate AI event for current turn ──
       function generateEvent() {
-        if (!destination || !callGemini || isGenerating) return;
+        if (!destination || isGenerating) return;
         upd('isGenerating', true);
 
         // Apply per-turn resource drain BEFORE generating the event
@@ -705,6 +910,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         }).filter(Boolean).join(', ') + '.';
         if (warnings.length > 0) srResMsg += ' Warning: ' + warnings.join('. ') + '.';
         announceToSR(srResMsg);
+
+        if (!callGemini) {
+          var localEvent = buildLocalMissionEvent(destination, drainedRes, turn, maxTurns, decisionLog, missionProtocol, missionDossier);
+          updAll({ activeEvent: localEvent, missionPhase: 'event', isGenerating: false, minigamePending: null, minigameResult: null });
+          log(localEvent.emoji + ' ' + localEvent.title + ' (local mission deck)');
+          announceToSR('Local mission event: ' + localEvent.title + '. ' + localEvent.description);
+          return;
+        }
 
         // Build rich context for the AI
         var resStr = Object.keys(drainedRes).map(function(k) {
@@ -727,6 +940,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         //    get 3 engine-failure events in a row. Falls back gracefully when
         //    category wasn't logged.
         var modifier = MISSION_MODIFIERS[Math.floor(Math.random() * MISSION_MODIFIERS.length)];
+        var protocolLens = buildProtocolEventLens(missionProtocol, missionDossier, turn, decisionLog);
+        var protocolPromptLine = protocolLens ? protocolLens.promptLine + ' Mission hypothesis: "' + (missionIntent || '').slice(0, 220) + '". Bounded protocol rule: ' + missionProtocol.ruleText + '\n' : '';
         var recentCategories = decisionLog.slice(-2).map(function(dl) { return dl.category; }).filter(Boolean);
         var avoidCatsLine = recentCategories.length > 0
           ? 'AVOID these categories this turn (too recent): ' + recentCategories.join(', ') + '.\n'
@@ -747,6 +962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           'Build the event around this hook and the destination\u2019s real science.\n\n' +
           '\u2550\u2550\u2550 RULES \u2550\u2550\u2550\n' +
           eventHints + '\n' +
+          protocolPromptLine +
           avoidCatsLine +
           '- Teach REAL SCIENCE through the scenario\n' +
           '- Reference crew members BY NAME when their specialty is relevant\n' +
@@ -879,6 +1095,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         }
         // Log decision
         var newDecLog = decisionLog.slice();
+        var newEvidence = missionEvidence.slice();
+        newEvidence.push({ turn: turn + 1, title: event.title, category: event.category || 'mission', quality: choice.quality, concept: (event.stemConcepts || [])[0] || 'mission science', note: choice.scienceReward || choice.outcome || 'Evidence recorded from crew decision.' });
+        if (newEvidence.length > 12) newEvidence = newEvidence.slice(-12);
         var optimalLabel = '';
         for (var i = 0; i < event.choices.length; i++) { if (event.choices[i].quality === 'optimal') { optimalLabel = event.choices[i].label; break; } }
         newDecLog.push({
@@ -890,7 +1109,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         updAll({
           resources: newRes,
           decisionLog: newDecLog,
-          eventOutcome: { outcome: choice.scienceReward, quality: choice.quality, label: choice.label, title: event.title, shieldsBlocked: shieldsBlocked, sciBonus: sciBonus },
+          missionEvidence: newEvidence,
+          protocolLog: newProtocolLog,
+          eventOutcome: { outcome: choice.scienceReward, quality: choice.quality, label: choice.label, title: event.title, shieldsBlocked: shieldsBlocked, sciBonus: sciBonus, protocolResult: protocolResult, missionProtocol: missionProtocol },
           activeEvent: null,
           consultUsed: false,
           revealedHiddenOption: false,
@@ -1185,6 +1406,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   return h('span', { key: hz, className: 'px-2 py-0.5 rounded-full text-[11px] bg-red-500/10 text-red-300 border border-red-500/20' }, '\u26A0\uFE0F ' + hz);
                 })
               ),
+              missionDossier && h('div', { 'data-spaceexplorer-dossier': 'true', className: 'rounded-lg border border-indigo-700/60 bg-indigo-950/35 p-3' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-indigo-300' }, '\uD83D\uDCC2 Mission Dossier'),
+                  h('span', { className: 'rounded-full border border-indigo-600 px-2 py-0.5 text-[10px] font-bold text-indigo-200' }, 'Risk: ' + missionDossier.riskBand)
+                ),
+                h('p', { className: 'text-[11px] leading-relaxed text-slate-200 mb-2' }, missionDossier.guidingQuestion),
+                h('div', { className: 'grid gap-1 md:grid-cols-3' },
+                  missionDossier.stagePlan.map(function(stage) {
+                    return h('div', { key: stage.name, className: 'rounded-md bg-white/5 p-2 border border-white/10' },
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, stage.name),
+                      h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, stage.action)
+                    );
+                  })
+                ),
+                h('div', { className: 'mt-2 grid gap-1 md:grid-cols-3' },
+                  missionDossier.evidenceGoals.map(function(goal) {
+                    return h('div', { key: goal.id, className: 'rounded-md bg-cyan-500/5 p-2 border border-cyan-500/15' },
+                      h('div', { className: 'text-[10px] font-bold text-cyan-200' }, goal.label),
+                      h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, goal.prompt)
+                    );
+                  })
+                )
+              ),
+              missionDossier && h('div', { 'data-spaceexplorer-intent': 'true', className: 'rounded-lg border border-purple-600/40 bg-purple-950/25 p-3' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-purple-200' }, '\uD83E\uDDED Commander\'s Hypothesis'),
+                  h('span', { className: 'text-[10px] font-bold ' + ((missionIntent || '').trim().length >= 20 ? 'text-green-300' : 'text-amber-300') }, ((missionIntent || '').trim().length >= 20 ? 'ready to test' : '20+ chars suggested'))
+                ),
+                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed mb-2' }, 'Before launch, predict what will matter most. Your debrief will compare this claim against the evidence you collect.'),
+                h('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                  missionDossier.evidenceGoals.slice(0, 3).map(function(goal) {
+                    return h('button', {
+                      key: goal.id, type: 'button',
+                      onClick: function() { upd('missionIntent', ('I predict ' + goal.label + ' evidence will decide whether the crew can survive ' + destination.name + '.').slice(0, 220)); },
+                      className: 'px-2 py-1 rounded-md bg-white/5 border border-white/10 hover:border-purple-400/50 text-[10px] font-bold text-purple-100 focus:ring-2 focus:ring-purple-400 focus:outline-none'
+                    }, 'Use ' + goal.label);
+                  })
+                ),
+                h('textarea', {
+                  value: missionIntent,
+                  onChange: function(e) { upd('missionIntent', (e.target.value || '').slice(0, 220)); },
+                  rows: 3, maxLength: 220,
+                  placeholder: 'Example: I predict oxygen and hull margins will matter more than science points until we understand the radiation belts.',
+                  'aria-label': 'Mission hypothesis',
+                  className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
+                }),
+                h('div', { className: 'mt-1 text-[10px] text-slate-400 text-right' }, (missionIntent || '').length + '/220'),
+                missionProtocol && h('div', { 'data-spaceexplorer-protocol': 'true', className: 'mt-2 rounded-lg bg-slate-950/45 border border-purple-500/25 p-2' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+                    h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-purple-200' }, missionProtocol.icon + ' Generated Protocol'),
+                    h('span', { className: 'text-[10px] font-bold text-slate-300' }, missionProtocol.label)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionProtocol.ruleText),
+                  h('p', { className: 'text-[11px] text-purple-100 leading-snug mt-1' }, missionProtocol.rationale),
+                  buildProtocolEventLens(missionProtocol, missionDossier, turn, decisionLog) && h('p', { 'data-spaceexplorer-deck-lens': 'true', className: 'text-[11px] text-cyan-100 leading-snug mt-1' }, buildProtocolEventLens(missionProtocol, missionDossier, turn, decisionLog).playerFacing)
+                )
+              ),
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, t('stem.spaceexplorer.your_crew', '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW')),
@@ -1235,6 +1513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           { key: 'comms',   emoji: '\uD83D\uDCE1', label: t('stem.spaceexplorer.comms', 'Comms'),        color: '#f59e0b', hint: t('stem.spaceexplorer.3_pips_waives_wrong_specialty_consult_', '3+ pips waives wrong-specialty consult penalty.') }
         ];
         var projectedDrain = applyTurnDrain(resources, destination, unlockedTech, powerAllocation);
+        var missionForecast = buildMissionForecast(destination, resources, turn, maxTurns, missionDossier, missionProtocol, decisionLog, powerAllocation);
         return h('div', { className: 'space-y-3 animate-in fade-in duration-200', role: 'main', 'aria-label': t('stem.spaceexplorer.power_allocation_2', 'Power allocation') },
           h('div', { className: 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-4 border border-indigo-700/50' },
             h('div', { className: 'flex items-center justify-between mb-2' },
@@ -1282,6 +1561,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             )
+          ),
+          missionForecast && h('div', { 'data-spaceexplorer-forecast': 'true', className: 'rounded-xl border border-cyan-700/40 bg-cyan-950/20 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-200' }, '\uD83D\uDCE1 Mission Forecast'),
+              h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-bold ' + (missionForecast.aligned ? 'border-green-500/40 text-green-200 bg-green-500/10' : 'border-amber-500/40 text-amber-200 bg-amber-500/10') }, missionForecast.aligned ? 'allocation aligned' : 'consider ' + missionForecast.recommendedLabel)
+            ),
+            h('div', { className: 'grid gap-1 md:grid-cols-3' },
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                h('div', { className: 'text-[10px] font-bold text-cyan-200' }, 'Likely pressure'),
+                h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionForecast.stage + ' · ' + missionForecast.category + ' · ' + missionForecast.confidence + ' confidence')
+              ),
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                h('div', { className: 'text-[10px] font-bold text-purple-200' }, 'Why'),
+                h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionForecast.pressure)
+              ),
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                h('div', { className: 'text-[10px] font-bold text-green-200' }, 'Planning move'),
+                h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionForecast.reason)
+              )
+            ),
+            missionForecast.lens && h('p', { className: 'mt-2 text-[11px] text-cyan-100 leading-snug' }, missionForecast.lens.playerFacing)
           ),
           // Projected drain preview
           h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10', role: 'status' },
@@ -1373,6 +1673,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             )
           ),
 
+          missionDossier && h('div', { 'data-spaceexplorer-evidence': 'true', className: 'rounded-xl border border-cyan-700/50 bg-cyan-950/20 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-200' }, '\uD83E\uDDEA Expedition Evidence'),
+              h('span', { className: 'text-[10px] font-bold text-slate-300' }, missionEvidence.length + ' observations logged')
+            ),
+            missionIntentAssessment && h('div', { className: 'mb-2 rounded-lg bg-slate-950/45 border border-cyan-500/20 p-2' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-200' }, 'Hypothesis status: ' + missionIntentAssessment.status),
+                h('span', { className: 'text-[10px] text-slate-300' }, missionIntentAssessment.supportCount + '/' + missionIntentAssessment.goalCount + ' evidence goals')
+              ),
+              h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, missionIntentAssessment.intent || 'No hypothesis written yet.'),
+              h('p', { className: 'text-[11px] text-cyan-100 leading-snug mt-1' }, missionIntentAssessment.summary)
+            ),
+            h('p', { className: 'text-[11px] text-slate-300 leading-relaxed mb-2' }, 'Use each crisis as a miniature investigation: collect evidence, connect it to a concept, then decide what the crew should do next.'),
+            h('div', { className: 'grid gap-1 md:grid-cols-3' },
+              missionDossier.evidenceGoals.map(function(goal) {
+                var matched = missionEvidence.some(function(ev) {
+                  var hay = ((ev.concept || '') + ' ' + (ev.note || '') + ' ' + (ev.title || '')).toLowerCase();
+                  return hay.indexOf(goal.label.toLowerCase()) >= 0 || hay.indexOf((goal.concept || '').toLowerCase()) >= 0;
+                });
+                return h('div', { key: goal.id, className: 'rounded-lg p-2 border ' + (matched ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10') },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('span', { className: 'text-[10px] font-bold ' + (matched ? 'text-green-200' : 'text-cyan-200') }, goal.label),
+                    h('span', { className: 'text-[10px]' }, matched ? '\u2713' : '\u25CB')
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-snug mt-1' }, matched ? 'Evidence connected in mission log.' : goal.prompt)
+                );
+              })
+            ),
+            missionEvidence.length > 0 && h('div', { className: 'mt-2 rounded-lg bg-slate-950/50 border border-slate-700 p-2' },
+              h('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' }, 'Latest observation'),
+              h('p', { className: 'text-[11px] text-slate-200 leading-snug' }, missionEvidence[missionEvidence.length - 1].title + ': ' + missionEvidence[missionEvidence.length - 1].note)
+            )
+          ),
           // Ship status canvas — shows destination planet + crew. Always
           // visible so the layout doesn't jump when an event is generating.
           h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden border border-slate-700' },
@@ -1687,9 +2021,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('p', { className: 'text-[11px] text-sky-100 leading-relaxed' }, '\uD83D\uDD2C ' + eventOutcome.outcome)
             ),
             // Power Allocation payoff readout — makes pip spend visible
-            ((eventOutcome.shieldsBlocked || 0) > 0 || (eventOutcome.sciBonus || 0) > 0) && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mb-3' },
+            ((eventOutcome.shieldsBlocked || 0) > 0 || (eventOutcome.sciBonus || 0) > 0 || (eventOutcome.protocolResult && eventOutcome.protocolResult.applied)) && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mb-3' },
               (eventOutcome.shieldsBlocked || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-green-500/15 text-green-300 border border-green-500/30' }, '\uD83D\uDEE1\uFE0F Shields absorbed ' + eventOutcome.shieldsBlocked + ' hull'),
-              (eventOutcome.sciBonus || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30' }, '\uD83D\uDD2C Science pips +' + eventOutcome.sciBonus)
+              (eventOutcome.sciBonus || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30' }, '\uD83D\uDD2C Science pips +' + eventOutcome.sciBonus),
+              eventOutcome.protocolResult && eventOutcome.protocolResult.applied && h('span', { 'data-spaceexplorer-protocol-payoff': 'true', className: 'px-2 py-0.5 rounded bg-purple-500/15 text-purple-200 border border-purple-500/30' }, (eventOutcome.missionProtocol ? eventOutcome.missionProtocol.icon + ' ' + eventOutcome.missionProtocol.label : 'Protocol') + ' applied')
             ),
             turn >= maxTurns ? h('p', { className: 'text-xs text-green-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.mission_complete_preparing_debrief', '\uD83C\uDF89 Mission complete! Preparing debrief...')) :
             (resources.o2 <= 0 || resources.hull <= 0) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.critical_failure_mission_ending', '\u26A0\uFE0F Critical failure! Mission ending...')) :
@@ -1733,6 +2068,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 return h('span', { key: b.id, role: 'listitem', title: b.name + ' \u2014 ' + b.desc, className: 'text-lg' }, b.icon);
               })
             )
+          ),
+          missionDossier && h('div', { 'data-spaceexplorer-dossier-review': 'true', className: 'bg-indigo-500/5 rounded-xl p-3 border border-indigo-500/20' },
+            h('h3', { className: 'text-[11px] text-indigo-200 font-bold mb-2' }, '\uD83D\uDCC2 MISSION DOSSIER REVIEW'),
+            h('p', { className: 'text-[11px] text-slate-300 leading-relaxed mb-2' }, missionDossier.guidingQuestion),
+            h('div', { className: 'grid gap-1 md:grid-cols-3' },
+              missionDossier.evidenceGoals.map(function(goal) {
+                var hits = missionEvidence.filter(function(ev) {
+                  var hay = ((ev.concept || '') + ' ' + (ev.note || '') + ' ' + (ev.title || '')).toLowerCase();
+                  return hay.indexOf(goal.label.toLowerCase()) >= 0 || hay.indexOf((goal.concept || '').toLowerCase()) >= 0;
+                });
+                return h('div', { key: goal.id, className: 'rounded-lg bg-white/5 border border-white/10 p-2' },
+                  h('div', { className: 'text-[10px] font-bold text-cyan-200' }, goal.label),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, hits.length ? hits.length + ' connected observation' + (hits.length === 1 ? '' : 's') : 'No direct observation yet — good next mission target.')
+                );
+              })
+            ),
+            missionEvidence.length > 0 && h('div', { className: 'mt-2 space-y-1' },
+              missionEvidence.slice(-3).map(function(ev, i) {
+                return h('div', { key: i, className: 'rounded-md bg-slate-950/40 border border-slate-700 p-2 text-[11px] text-slate-300' },
+                  h('span', { className: 'font-bold text-white' }, 'Turn ' + ev.turn + ' · ' + ev.quality + ': '), ev.note
+                );
+              })
+            )
+          ),
+          missionIntentAssessment && h('div', { 'data-spaceexplorer-intent-review': 'true', className: 'bg-purple-500/5 rounded-xl p-3 border border-purple-500/20' },
+            h('h3', { className: 'text-[11px] text-purple-200 font-bold mb-2' }, '\uD83E\uDDED COMMANDER\'S HYPOTHESIS REVIEW'),
+            h('div', { className: 'rounded-lg bg-slate-950/40 border border-slate-700 p-2 mb-2' },
+              h('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' }, 'Original claim'),
+              h('p', { className: 'text-[11px] text-slate-200 leading-relaxed' }, missionIntentAssessment.intent || 'No mission hypothesis was written.')
+            ),
+            h('div', { className: 'grid gap-1 md:grid-cols-3 mb-2' },
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' }, h('div', { className: 'text-[10px] font-bold text-purple-200' }, 'Status'), h('p', { className: 'text-[11px] text-slate-300' }, missionIntentAssessment.status)),
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' }, h('div', { className: 'text-[10px] font-bold text-cyan-200' }, 'Connected goals'), h('p', { className: 'text-[11px] text-slate-300' }, missionIntentAssessment.supportCount + '/' + missionIntentAssessment.goalCount)),
+              h('div', { className: 'rounded-lg bg-white/5 border border-white/10 p-2' }, h('div', { className: 'text-[10px] font-bold text-green-200' }, 'Strong evidence'), h('p', { className: 'text-[11px] text-slate-300' }, missionIntentAssessment.strongEvidence + ' optimal decisions'))
+            ),
+            missionProtocol && h('div', { className: 'rounded-lg bg-slate-950/40 border border-purple-500/20 p-2 mb-2' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+                h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-purple-200' }, missionProtocol.icon + ' Protocol tested'),
+                h('span', { className: 'text-[10px] text-slate-300' }, ((d.protocolLog || []).length) + ' trigger' + ((d.protocolLog || []).length === 1 ? '' : 's'))
+              ),
+              h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionProtocol.ruleText)
+            ),
+            h('p', { className: 'text-[11px] text-purple-100 leading-relaxed mb-2' }, missionIntentAssessment.revisionPrompt),
+            h('textarea', {
+              value: missionReflection,
+              onChange: function(e) { upd('missionReflection', (e.target.value || '').slice(0, 260)); },
+              rows: 3, maxLength: 260,
+              placeholder: 'Revise your claim: What would you test differently next mission?',
+              'aria-label': 'Mission reflection and revised hypothesis',
+              className: 'w-full rounded-lg bg-slate-950/70 border border-purple-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-purple-400 focus:outline-none'
+            }),
+            h('div', { className: 'mt-1 text-[10px] text-slate-400 text-right' }, (missionReflection || '').length + '/260')
           ),
           // Decision analysis
           decisionLog.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
@@ -1814,7 +2201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Action buttons
           h('div', { className: 'flex gap-2' },
             h('button', {
-              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null }); },
+              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null, missionIntent: '', missionReflection: '', missionEvidence: [], protocolLog: [] }); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 200); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }, t('stem.spaceexplorer.new_mission', '\uD83C\uDF0C New Mission')),

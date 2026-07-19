@@ -113,7 +113,7 @@ const pack = {
   nativeQaUrl: './test_prep/school_counselor_5422_native_qa.json',
   learningLibraryUrl: './test_prep/school_counselor_5422_learning_library.json',
   learningLibraryQaUrl: './test_prep/school_counselor_5422_learning_library_qa.json',
-  simulationItemCount: 120,
+  simulationItemCount: 120, simulationDomainCounts: {"define":30,"deliver":48,"manage":24,"assess":18},
   simulationTimeMinutes: 120,
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS or ASCA. The official Praxis School Counselor (5422) test currently has 120 selected-response questions in 120 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, mental-health treatment, legal advice, or substitutes for current federal, state, local, district, crisis, mandated-reporting, and ethical requirements.',
   domains: [

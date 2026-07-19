@@ -82,6 +82,24 @@ const wave09Ids = new Set([
   'eppp-b007-social-1',
   'eppp-b007-social-2',
 ]);
+const wave10Ids = new Set([
+  'eppp-b014-assessment-2',
+  'eppp-v3-assessment-041',
+  'eppp-v3-research-002',
+  'eppp-v2-research-003',
+  'eppp-b013-biological-2',
+  'eppp-v2-biological-008',
+  'eppp-v3-cognitive-affective-061',
+  'eppp-v3-cognitive-affective-059',
+  'eppp-b014-lifespan-2',
+  'eppp-v3-lifespan-013',
+  'eppp-v3-intervention-067',
+  'eppp-v2-intervention-025',
+  'eppp-b016-professional-2',
+  'eppp-b015-professional-2',
+  'eppp-b011-social-1',
+  'eppp-b026-social-2',
+]);
 const genericTemplatePattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim|does not represent the best available answer)\b/i;
 
 function normalize(value) {
@@ -149,12 +167,14 @@ const wave06Findings = optionFindings.filter((finding) => wave06Ids.has(finding.
 const wave07Findings = optionFindings.filter((finding) => wave07Ids.has(finding.id));
 const wave08Findings = optionFindings.filter((finding) => wave08Ids.has(finding.id));
 const wave09Findings = optionFindings.filter((finding) => wave09Ids.has(finding.id));
+const wave10Findings = optionFindings.filter((finding) => wave10Ids.has(finding.id));
 const waveDefinitions = [
   ['eppp-native-quality-wave-05', wave05Ids, wave05Findings],
   ['eppp-native-quality-wave-06', wave06Ids, wave06Findings],
   ['eppp-option-feedback-wave-07', wave07Ids, wave07Findings],
   ['eppp-option-feedback-wave-08', wave08Ids, wave08Findings],
   ['eppp-option-feedback-wave-09', wave09Ids, wave09Findings],
+  ['eppp-option-feedback-wave-10', wave10Ids, wave10Findings],
 ];
 const waves = Object.fromEntries(waveDefinitions.map(([reviewWave, ids, findings]) => [reviewWave, {
   reviewWave,
@@ -169,6 +189,7 @@ const wave06 = waves['eppp-native-quality-wave-06'];
 const wave07 = waves['eppp-option-feedback-wave-07'];
 const wave08 = waves['eppp-option-feedback-wave-08'];
 const wave09 = waves['eppp-option-feedback-wave-09'];
+const wave10 = waves['eppp-option-feedback-wave-10'];
 const report = {
   schemaVersion: 1,
   generatedAt: '2026-07-18',
@@ -199,6 +220,8 @@ const report = {
     activeWaveOptionsWithWarnings: wave08.optionsWithWarnings,
     wave09IncorrectOptions: wave09.incorrectOptions,
     wave09OptionsWithWarnings: wave09.optionsWithWarnings,
+    wave10IncorrectOptions: wave10.incorrectOptions,
+    wave10OptionsWithWarnings: wave10.optionsWithWarnings,
     priorityDocketItems: Math.min(100, itemFindings.length),
   },
   waves,
@@ -207,7 +230,8 @@ const report = {
   previousWave: wave06,
   latestWave: wave07,
   activeWave: wave08,
-  latestReviewWave: wave09.reviewWave,
+  mostRecentWave: wave10,
+  latestReviewWave: wave10.reviewWave,
   priorityDocket: itemFindings.slice(0, 100),
   optionFindings,
 };
@@ -259,4 +283,4 @@ for (const outputRoot of outputRoots) {
   writeFileWithRetry(path.join(outputRoot, reportBasename + '.json'), JSON.stringify(report, null, 2) + '\n');
   writeFileWithRetry(path.join(outputRoot, reportBasename + '.md'), markdown);
 }
-console.log('EPPP option-feedback diagnostics: ' + report.summary.totalIncorrectOptions + ' incorrect options scanned; ' + report.summary.incorrectOptionsWithWarnings + ' with warnings; wave 09 ' + report.waves[report.latestReviewWave].status + '.');
+console.log('EPPP option-feedback diagnostics: ' + report.summary.totalIncorrectOptions + ' incorrect options scanned; ' + report.summary.incorrectOptionsWithWarnings + ' with warnings; wave 10 ' + report.waves[report.latestReviewWave].status + '.');

@@ -52,8 +52,12 @@ function readPack(stem) {
   return packCache.get(stem);
 }
 
+const independentAdditionsManifest = JSON.parse(
+  fs.readFileSync(path.join(root, 'dev-tools', 'authored', 'test_prep_independent_additions_manifest.json'), 'utf8'),
+);
+
 function layoutFor(stem) {
-  const assistantAuthored = stem === 'parapro' ? 200 : 0;
+  const assistantAuthored = (independentAdditionsManifest.packs[stem]?.length || 0) * 100;
   const source = 200;
   const independent = source + assistantAuthored;
   const guided = 500 - independent;
@@ -75,14 +79,62 @@ function layoutFor(stem) {
   };
 }
 
-function canonical(value) {
-  return String(value || '')
+function replaceBinaryMathOperator(value, escapedOperator, token) {
+  const leftOperand = '(?:\\d+(?:\\.\\d+)?|[A-Za-z]|\\))';
+  const rightOperand = '(?:\\d+(?:\\.\\d+)?|[A-Za-z]|\\()';
+  const pattern = new RegExp(
+    '(^|[^A-Za-z0-9_])(' + leftOperand + ')\\s*' + escapedOperator
+      + '\\s*(' + rightOperand + ')(?=$|[^A-Za-z0-9_])',
+    'g',
+  );
+  let normalized = value;
+  while (true) {
+    const next = normalized.replace(
+      pattern,
+      (_, prefix, left, right) => prefix + left + ' ' + token + ' ' + right,
+    );
+    if (next === normalized) return normalized;
+    normalized = next;
+  }
+}
+
+function normalizeMathOperators(value) {
+  let normalized = value
+    .replace(/\u2264/g, ' mathoplte ')
+    .replace(/\u2265/g, ' mathopgte ')
+    .replace(/\u2260/g, ' mathopneq ')
+    .replace(/\u00d7/g, ' mathopmul ')
+    .replace(/\u00f7/g, ' mathopdiv ')
+    .replace(/\u2212/g, ' mathopminus ')
+    .replace(/<=/g, ' mathoplte ')
+    .replace(/>=/g, ' mathopgte ')
+    .replace(/!=/g, ' mathopneq ')
+    .replace(/=/g, ' mathopeq ')
+    .replace(/</g, ' mathoplt ')
+    .replace(/>/g, ' mathopgt ')
+    .replace(/\+/g, ' mathopplus ')
+    .replace(/\^/g, ' mathoppow ');
+  normalized = normalized.replace(
+    /(^|[^A-Za-z0-9_])-(?=\s*(?:\d|[A-Za-z]\b))/g,
+    (_, prefix) => prefix + ' mathopminus ',
+  );
+  normalized = replaceBinaryMathOperator(normalized, '\\*', 'mathopmul');
+  normalized = replaceBinaryMathOperator(normalized, '\\/', 'mathopdiv');
+  return replaceBinaryMathOperator(normalized, '-', 'mathopminus');
+}
+
+function canonical(value, options = {}) {
+  const raw = String(value || '').normalize('NFKC');
+  const standaloneUrl = /^https?:\/\/\S+$/i.test(raw.trim());
+  const normalized = options.mathOperators !== false && !standaloneUrl
+    ? normalizeMathOperators(raw)
+    : raw;
+  return normalized
     .toLowerCase()
-    .replace(/[ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â"'ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢`]/g, '')
+    .replace(/["'\u0060]/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
-
 function contentKernel(item) {
   return JSON.stringify({
     answer: canonical(item.choices?.[item.answerIndex]),
@@ -91,7 +143,7 @@ function contentKernel(item) {
       .map(canonical)
       .sort(),
     rationale: canonical(item.rationale),
-    references: (item.references || []).map(canonical).sort(),
+    references: (item.references || []).map((value) => canonical(value, { mathOperators: false })).sort(),
   });
 }
 
@@ -129,7 +181,7 @@ function sha256(value) {
 }
 
 describe('source-question, independent-practice, and guided-review non-EPPP audit', () => {
-  it('ships the explicit 22-pack manifest with separate ParaPro independent Banks 3 and 4', () => {
+  it('ships the explicit 22-pack manifest with all reviewed independent banks before guided review', () => {
     expect(expectedFiles).toHaveLength(22);
 
     for (const stem of expectedFiles) {
@@ -178,18 +230,13 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
         './test_prep/test_prep_assistant_review_2026-07-16.json',
       );
 
-      if (stem === 'parapro') {
+      if (layout.assistantAuthored) {
         expect(pack.expansionVersion).toBe(
           'source-kernel-audit-plus-independent-batches-and-guided-review-v2',
         );
         expect(pack.sections[2]).toMatchObject({
           id: 'independent-diagnostic-batch-3',
           label: 'Assistant-reviewed independent diagnostic bank 3',
-          kind: 'independent-diagnostic',
-        });
-        expect(pack.sections[3]).toMatchObject({
-          id: 'independent-diagnostic-batch-4',
-          label: 'Assistant-reviewed independent diagnostic bank 4',
           kind: 'independent-diagnostic',
         });
         expect(pack).toMatchObject({
@@ -210,9 +257,26 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
           independentBatchReview:
             'blueprint-key-distractor-feedback-originality-citation-balance-and-structural-review-v1',
         });
-        expect(pack.bankDisclosure).toMatch(
-          /200 original source questions, 200 assistant-authored independent practice questions, and 100 source-derived guided-review activities/i,
+        expect(pack.assistantReview.independentBatchEvidence).toHaveLength(
+          layout.assistantAuthoredBanks,
         );
+        expect(pack.bankDisclosure).toMatch(
+          new RegExp(
+            '200 original source questions, '
+              + layout.assistantAuthored
+              + ' assistant-authored independent practice questions, and '
+              + layout.guided
+              + ' source-derived guided-review activities',
+            'i',
+          ),
+        );
+        if (stem === 'parapro') {
+          expect(pack.sections.slice(2).map((section) => section.id)).toEqual([
+            'independent-diagnostic-batch-3',
+            'independent-diagnostic-batch-4',
+            'independent-diagnostic-batch-5',
+          ]);
+        }
       } else {
         expect(pack.expansionVersion).toBe('source-kernel-audit-plus-guided-review-v1');
         expect(independentKernelCount).toBe(sourceKernelCount);
@@ -233,6 +297,7 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     expect(batches.map((batch) => batch.id)).toEqual([
       'independent-diagnostic-batch-3',
       'independent-diagnostic-batch-4',
+      'independent-diagnostic-batch-5',
     ]);
 
     for (const batch of batches) {
@@ -255,7 +320,7 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
       expect(reviewedItems).toBe(100);
     }
   });
-  it('keeps all IDs and prompts unique and validates the 200 new ParaPro items as independent', () => {
+  it('keeps all IDs and prompts unique and validates the 300 new ParaPro items as independent', () => {
     for (const stem of expectedFiles) {
       const pack = readPack(stem);
       expect(new Set(pack.items.map((item) => item.id)).size).toBe(500);
@@ -269,29 +334,29 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
 
     const paraPro = readPack('parapro');
     const sourceItems = paraPro.items.slice(0, 200);
-    const authoredItems = paraPro.items.slice(200, 400);
+    const authoredItems = paraPro.items.slice(200, 500);
     const sourceKernels = new Set(sourceItems.map(contentKernel));
     const authoredKernels = authoredItems.map(contentKernel);
     const sourcePrompts = new Set(sourceItems.map((item) => canonical(item.prompt)));
 
-    expect(authoredItems).toHaveLength(200);
-    expect(new Set(authoredItems.map((item) => item.id)).size).toBe(200);
-    expect(new Set(authoredItems.map((item) => canonical(item.prompt))).size).toBe(200);
-    expect(new Set(authoredKernels).size).toBe(200);
+    expect(authoredItems).toHaveLength(300);
+    expect(new Set(authoredItems.map((item) => item.id)).size).toBe(300);
+    expect(new Set(authoredItems.map((item) => canonical(item.prompt))).size).toBe(300);
+    expect(new Set(authoredKernels).size).toBe(300);
     expect(authoredKernels.every((kernel) => !sourceKernels.has(kernel))).toBe(true);
     expect(authoredItems.every((item) => !sourcePrompts.has(canonical(item.prompt)))).toBe(true);
     expect(countBy(authoredItems, 'domainId')).toEqual({
-      reading: 68,
-      mathematics: 66,
-      writing: 66,
+      reading: 102,
+      mathematics: 99,
+      writing: 99,
     });
     expect(countBy(authoredItems, 'contentFocus')).toEqual({
-      'basic-skills-knowledge': 134,
-      'application-classroom': 66,
+      'basic-skills-knowledge': 201,
+      'application-classroom': 99,
     });
-    expect(answerCounts(authoredItems)).toEqual([50, 50, 50, 50]);
+    expect(answerCounts(authoredItems)).toEqual([75, 75, 75, 75]);
 
-    for (let bankOffset = 0; bankOffset < 2; bankOffset++) {
+    for (let bankOffset = 0; bankOffset < 3; bankOffset++) {
       const bankItems = authoredItems.slice(bankOffset * 100, bankOffset * 100 + 100);
       expect(bankItems).toHaveLength(100);
       expect(countBy(bankItems, 'domainId')).toEqual({
@@ -306,11 +371,14 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
       expect(answerCounts(bankItems)).toEqual([25, 25, 25, 25]);
     }
 
+    const reviewedAtByBatchId = new Map(
+      paraPro.assistantReview.independentBatchEvidence.map((batch) => [batch.id, batch.reviewedAt]),
+    );
     for (const [index, item] of authoredItems.entries()) {
       const independentBatchNumber = 3 + Math.floor(index / 100);
-      const assistantReviewedAt = independentBatchNumber === 3
-        ? '2026-07-16'
-        : '2026-07-17';
+      const independentBatchId = `independent-diagnostic-batch-${independentBatchNumber}`;
+      const assistantReviewedAt = reviewedAtByBatchId.get(independentBatchId);
+      expect(assistantReviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(item).toMatchObject({
         authorship: 'assistant-authored-independent',
         editorialReviewer: 'OpenAI Codex',
@@ -319,7 +387,7 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
         reviewStatus: 'assistant-reviewed-independent-practice-item',
         qaStatus: 'qa-passed-independent-practice-item',
         assistantReviewedAt,
-        independentBatchId: `independent-diagnostic-batch-${independentBatchNumber}`,
+        independentBatchId,
         independentBatchNumber,
         reviewMethod:
           'independent-item-key-distractor-feedback-originality-blueprint-and-structural-review-v1',
@@ -614,7 +682,7 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     });
   }, 60_000);
 
-  it('catalogs every ParaPro Banks 3-4 source with readable metadata and an exact deploy mirror', () => {
+  it('catalogs every ParaPro Banks 3-5 source with readable metadata and an exact deploy mirror', () => {
     const sourceCatalogBytes = fs.readFileSync(
       path.join(sourceDir, 'reference_catalog.json'),
       'utf8',
@@ -626,11 +694,11 @@ describe('source-question, independent-practice, and guided-review non-EPPP audi
     const catalog = JSON.parse(sourceCatalogBytes);
     const paraPro = readPack('parapro');
     const authoredReferences = new Set(
-      paraPro.items.slice(200, 400).flatMap((item) => item.references || []),
+      paraPro.items.slice(200, 500).flatMap((item) => item.references || []),
     );
 
     for (const url of paraProReferenceUrls) {
-      expect(authoredReferences.has(url), `${url} should be used by ParaPro Banks 3-4`).toBe(true);
+      expect(authoredReferences.has(url), `${url} should be used by ParaPro Banks 3-5`).toBe(true);
     }
     expect(authoredReferences.size).toBeGreaterThanOrEqual(paraProReferenceUrls.length);
 

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-16T19:35:56.135Z",
+  "generatedAt": "2026-07-19T02:50:14.982Z",
   "source": {
-    "stemToolFileCount": 122,
-    "registeredToolCount": 125,
+    "stemToolFileCount": 126,
+    "registeredToolCount": 129,
     "monitoredMarkerCount": 74
   },
   "summary": {
@@ -13,9 +13,9 @@
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 6,
     "monitoredNoticeCount": 11,
-    "syncDriftCount": 9,
-    "sourcePublicDriftCount": 2,
-    "monitoredSyncDriftCount": 4
+    "syncDriftCount": 27,
+    "sourcePublicDriftCount": 1,
+    "monitoredSyncDriftCount": 15
   },
   "loadErrors": [],
   "markerResults": [
@@ -86,14 +86,14 @@
       "marker": "data-epidemic-triage",
       "label": "Epidemic triage panel",
       "ok": true,
-      "htmlBytes": 89143,
+      "htmlBytes": 89564,
       "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 4,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 89143
+        "htmlBytes": 89564
       }
     },
     {
@@ -249,14 +249,14 @@
       "marker": "data-alphafold-mission",
       "label": "AlphaFold structural biology mission",
       "ok": true,
-      "htmlBytes": 4256,
+      "htmlBytes": 8915,
       "issues": [],
       "metrics": {
-        "buttons": 1,
+        "buttons": 5,
         "fields": 0,
         "canvases": 0,
-        "headings": 6,
-        "htmlBytes": 4256
+        "headings": 7,
+        "htmlBytes": 8915
       }
     },
     {
@@ -329,14 +329,14 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 25727,
+      "htmlBytes": 25685,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 25727
+        "htmlBytes": 25685
       }
     },
     {
@@ -441,7 +441,7 @@
       "marker": "data-dinolab-command",
       "label": "Dino Lab mission deck",
       "ok": true,
-      "htmlBytes": 424728,
+      "htmlBytes": 427167,
       "issues": [
         {
           "toolId": "dinoLab",
@@ -451,16 +451,16 @@
           "count": 747,
           "examples": [
             {
-              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)"
+              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)"
             },
             {
-              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)"
+              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)"
             },
             {
-              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)"
+              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)"
             },
             {
-              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(4)"
+              "selector": "div.dinolab-explore-layout > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(4)"
             }
           ]
         }
@@ -470,7 +470,7 @@
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 424728
+        "htmlBytes": 427167
       }
     },
     {
@@ -572,14 +572,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25575,
+      "htmlBytes": 25530,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25575
+        "htmlBytes": 25530
       }
     },
     {
@@ -588,14 +588,14 @@
       "marker": "data-flightsim-briefing",
       "label": "SkySchool cockpit briefing",
       "ok": true,
-      "htmlBytes": 41556,
+      "htmlBytes": 42110,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 2,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 41556
+        "htmlBytes": 42110
       }
     },
     {
@@ -669,14 +669,14 @@
       "marker": "data-anatomy-mission",
       "label": "Anatomy mission panel",
       "ok": true,
-      "htmlBytes": 34318,
+      "htmlBytes": 42731,
       "issues": [],
       "metrics": {
-        "buttons": 66,
+        "buttons": 79,
         "fields": 1,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 34318
+        "htmlBytes": 42731
       }
     },
     {
@@ -685,7 +685,7 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 143920,
+      "htmlBytes": 143953,
       "issues": [
         {
           "toolId": "birdLab",
@@ -710,7 +710,7 @@
         "fields": 1,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 143920
+        "htmlBytes": 143953
       }
     },
     {
@@ -789,14 +789,14 @@
       "marker": "data-astronomy-command",
       "label": "Astronomy observation command",
       "ok": true,
-      "htmlBytes": 14042,
+      "htmlBytes": 14043,
       "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 14042
+        "htmlBytes": 14043
       }
     },
     {
@@ -837,14 +837,14 @@
       "marker": "data-aquarium-focus-panel",
       "label": "Aquarium mission panel",
       "ok": true,
-      "htmlBytes": 28684,
+      "htmlBytes": 29084,
       "issues": [],
       "metrics": {
-        "buttons": 22,
+        "buttons": 23,
         "fields": 0,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 28684
+        "htmlBytes": 29084
       }
     },
     {
@@ -853,14 +853,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13365,
+      "htmlBytes": 13314,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13365
+        "htmlBytes": 13314
       }
     },
     {
@@ -929,14 +929,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47677,
+      "htmlBytes": 47685,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47677
+        "htmlBytes": 47685
       }
     },
     {
@@ -981,7 +981,7 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 70512,
+      "htmlBytes": 70496,
       "issues": [
         {
           "toolId": "skatelab",
@@ -997,7 +997,7 @@
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 70512
+        "htmlBytes": 70496
       }
     },
     {
@@ -1006,14 +1006,14 @@
       "marker": "data-probability-command",
       "label": "Probability Lab command deck",
       "ok": true,
-      "htmlBytes": 20277,
+      "htmlBytes": 20613,
       "issues": [],
       "metrics": {
         "buttons": 37,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 20277
+        "htmlBytes": 20613
       }
     },
     {
@@ -1084,14 +1084,14 @@
       "marker": "data-calculus-command",
       "label": "Calculus concept studio",
       "ok": true,
-      "htmlBytes": 24191,
+      "htmlBytes": 24544,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 9,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 24191
+        "htmlBytes": 24544
       }
     },
     {
@@ -1116,14 +1116,14 @@
       "marker": "data-unitconvert-command",
       "label": "Unit Converter measurement workbench",
       "ok": true,
-      "htmlBytes": 13032,
+      "htmlBytes": 15005,
       "issues": [],
       "metrics": {
-        "buttons": 21,
+        "buttons": 22,
         "fields": 3,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 13032
+        "htmlBytes": 15005
       }
     },
     {
@@ -1244,7 +1244,7 @@
       "marker": "data-volume-command",
       "label": "Volume design brief",
       "ok": true,
-      "htmlBytes": 36006,
+      "htmlBytes": 36558,
       "issues": [
         {
           "toolId": "volume",
@@ -1264,7 +1264,7 @@
         "fields": 11,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 36006
+        "htmlBytes": 36558
       }
     },
     {
@@ -1337,14 +1337,14 @@
       "marker": "data-moneymath-focus",
       "label": "Money Math studio",
       "ok": true,
-      "htmlBytes": 22548,
+      "htmlBytes": 22579,
       "issues": [],
       "metrics": {
         "buttons": 33,
         "fields": 2,
         "canvases": 0,
         "headings": 7,
-        "htmlBytes": 22548
+        "htmlBytes": 22579
       }
     },
     {
@@ -1431,6 +1431,40 @@
   "sync": {
     "drift": [
       {
+        "file": "stem_tool_alphafold.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "CF268E977EBB",
+          "public": "CF268E977EBB",
+          "build": "3313A59F081F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_anatomy.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "09A59D21A198",
+          "public": "09A59D21A198",
+          "build": "8D3F88A578CF"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
         "file": "stem_tool_aquarium.js",
         "monitored": true,
         "exists": {
@@ -1439,13 +1473,64 @@
           "build": true
         },
         "hashes": {
-          "source": "7515A8366A6C",
-          "public": "1AEF8A007DC5",
-          "build": "2A1D68686F0F"
+          "source": "A822CAD82E5A",
+          "public": "0FD2C95EC223",
+          "build": "BBBE4AB6DB73"
         },
         "sourcePublicMatch": false,
         "sourceBuildMatch": false,
         "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_areaperimeter.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": false
+        },
+        "hashes": {
+          "source": "F46B0501C640",
+          "public": "F46B0501C640",
+          "build": null
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_arithmetic.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": false
+        },
+        "hashes": {
+          "source": "211DDCD59712",
+          "public": "211DDCD59712",
+          "build": null
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_birdlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "7A9BB2F3057A",
+          "public": "7A9BB2F3057A",
+          "build": "201D77C757F0"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_brainatlas.js",
@@ -1456,16 +1541,33 @@
           "build": true
         },
         "hashes": {
-          "source": "65E8BA8FDE65",
-          "public": "65E8BA8FDE65",
-          "build": "7E74A0E8B596"
+          "source": "3BB23AC6D908",
+          "public": "3BB23AC6D908",
+          "build": "CBFF406FE94E"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_cyberdefense.js",
+        "file": "stem_tool_calculus.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "41DC0A41CA3F",
+          "public": "41DC0A41CA3F",
+          "build": "2D7AC5141C2F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_dataplot.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1473,9 +1575,26 @@
           "build": true
         },
         "hashes": {
-          "source": "2CB9967FD950",
-          "public": "2CB9967FD950",
-          "build": "4538E453F147"
+          "source": "8F2095282908",
+          "public": "8F2095282908",
+          "build": "AD4901007C32"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_datastudio.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "9FB06981E375",
+          "public": "9FB06981E375",
+          "build": "7670F1CF6621"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1490,16 +1609,16 @@
           "build": true
         },
         "hashes": {
-          "source": "5B5FB939D507",
-          "public": "5B5FB939D507",
-          "build": "AB476DC3484C"
+          "source": "CFA9EBB42F77",
+          "public": "CFA9EBB42F77",
+          "build": "3CBEAADB0149"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_fisherlab.js",
+        "file": "stem_tool_flightsim.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1507,9 +1626,43 @@
           "build": true
         },
         "hashes": {
-          "source": "049AECCF594D",
-          "public": "049AECCF594D",
-          "build": "AB4EA064106D"
+          "source": "79510703784C",
+          "public": "79510703784C",
+          "build": "E0A3843BA3D1"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_fractions.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A465707209F2",
+          "public": "A465707209F2",
+          "build": "B57A873898BE"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_freeforms.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "413955C1628F",
+          "public": "413955C1628F",
+          "build": "D03A2815D5A2"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1524,16 +1677,16 @@
           "build": true
         },
         "hashes": {
-          "source": "0479DAFD428F",
-          "public": "0479DAFD428F",
-          "build": "14C5DDB064AB"
+          "source": "B3F213D48AA3",
+          "public": "B3F213D48AA3",
+          "build": "951CD35907BE"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_particlelab3d.js",
+        "file": "stem_tool_learning_lab.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1541,16 +1694,67 @@
           "build": true
         },
         "hashes": {
-          "source": "42CED05136DF",
-          "public": "42CED05136DF",
-          "build": "84079C80EE8A"
+          "source": "096274F5D4FC",
+          "public": "096274F5D4FC",
+          "build": "FCA3B7F703D0"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_typingpractice.js",
+        "file": "stem_tool_nutritionlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "8DCB110C9F78",
+          "public": "8DCB110C9F78",
+          "build": "01142EEC0EC3"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_probability.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "4EBCF5D8CAE0",
+          "public": "4EBCF5D8CAE0",
+          "build": "505A652BAC68"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_ratios.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": false
+        },
+        "hashes": {
+          "source": "B1B4893B494D",
+          "public": "B1B4893B494D",
+          "build": null
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_roadready.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1558,9 +1762,111 @@
           "build": true
         },
         "hashes": {
-          "source": "5BBCB3C751E1",
-          "public": "5BBCB3C751E1",
-          "build": "48AEB59A03C8"
+          "source": "6044342F2808",
+          "public": "6044342F2808",
+          "build": "B8A0BEC33BD3"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_solarsystem.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C54B0C2F34EB",
+          "public": "C54B0C2F34EB",
+          "build": "C80986F62B17"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_spacestation.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "01DCD7116A5F",
+          "public": "01DCD7116A5F",
+          "build": "ED21796D63F1"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_statslab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "8EC9CAB4BCC4",
+          "public": "8EC9CAB4BCC4",
+          "build": "BC3FA262626F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_timeschedule.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": false
+        },
+        "hashes": {
+          "source": "044D26A863F9",
+          "public": "044D26A863F9",
+          "build": null
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_unitconvert.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "FF8384C543D9",
+          "public": "FF8384C543D9",
+          "build": "759EB09D7517"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_volume.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BEC6373B4154",
+          "public": "BEC6373B4154",
+          "build": "F909E70FF5AC"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1575,13 +1881,13 @@
           "build": true
         },
         "hashes": {
-          "source": "278841FA10BA",
-          "public": "22D738952CCB",
-          "build": "4BDCC0C5B79A"
+          "source": "44358B53CA16",
+          "public": "44358B53CA16",
+          "build": "32B06E8C8AB7"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ],
     "sourcePublicDrift": [
@@ -1594,26 +1900,9 @@
           "build": true
         },
         "hashes": {
-          "source": "7515A8366A6C",
-          "public": "1AEF8A007DC5",
-          "build": "2A1D68686F0F"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_weathersystems.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "278841FA10BA",
-          "public": "22D738952CCB",
-          "build": "4BDCC0C5B79A"
+          "source": "A822CAD82E5A",
+          "public": "0FD2C95EC223",
+          "build": "BBBE4AB6DB73"
         },
         "sourcePublicMatch": false,
         "sourceBuildMatch": false,
@@ -1621,6 +1910,40 @@
       }
     ],
     "monitoredDrift": [
+      {
+        "file": "stem_tool_alphafold.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "CF268E977EBB",
+          "public": "CF268E977EBB",
+          "build": "3313A59F081F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_anatomy.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "09A59D21A198",
+          "public": "09A59D21A198",
+          "build": "8D3F88A578CF"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
       {
         "file": "stem_tool_aquarium.js",
         "monitored": true,
@@ -1630,13 +1953,30 @@
           "build": true
         },
         "hashes": {
-          "source": "7515A8366A6C",
-          "public": "1AEF8A007DC5",
-          "build": "2A1D68686F0F"
+          "source": "A822CAD82E5A",
+          "public": "0FD2C95EC223",
+          "build": "BBBE4AB6DB73"
         },
         "sourcePublicMatch": false,
         "sourceBuildMatch": false,
         "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_birdlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "7A9BB2F3057A",
+          "public": "7A9BB2F3057A",
+          "build": "201D77C757F0"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_brainatlas.js",
@@ -1647,9 +1987,26 @@
           "build": true
         },
         "hashes": {
-          "source": "65E8BA8FDE65",
-          "public": "65E8BA8FDE65",
-          "build": "7E74A0E8B596"
+          "source": "3BB23AC6D908",
+          "public": "3BB23AC6D908",
+          "build": "CBFF406FE94E"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_calculus.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "41DC0A41CA3F",
+          "public": "41DC0A41CA3F",
+          "build": "2D7AC5141C2F"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1664,16 +2021,16 @@
           "build": true
         },
         "hashes": {
-          "source": "5B5FB939D507",
-          "public": "5B5FB939D507",
-          "build": "AB476DC3484C"
+          "source": "CFA9EBB42F77",
+          "public": "CFA9EBB42F77",
+          "build": "3CBEAADB0149"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_fisherlab.js",
+        "file": "stem_tool_flightsim.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1681,9 +2038,128 @@
           "build": true
         },
         "hashes": {
-          "source": "049AECCF594D",
-          "public": "049AECCF594D",
-          "build": "AB4EA064106D"
+          "source": "79510703784C",
+          "public": "79510703784C",
+          "build": "E0A3843BA3D1"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_fractions.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A465707209F2",
+          "public": "A465707209F2",
+          "build": "B57A873898BE"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_nutritionlab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "8DCB110C9F78",
+          "public": "8DCB110C9F78",
+          "build": "01142EEC0EC3"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_probability.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "4EBCF5D8CAE0",
+          "public": "4EBCF5D8CAE0",
+          "build": "505A652BAC68"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_solarsystem.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "C54B0C2F34EB",
+          "public": "C54B0C2F34EB",
+          "build": "C80986F62B17"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_statslab.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "8EC9CAB4BCC4",
+          "public": "8EC9CAB4BCC4",
+          "build": "BC3FA262626F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_unitconvert.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "FF8384C543D9",
+          "public": "FF8384C543D9",
+          "build": "759EB09D7517"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_volume.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BEC6373B4154",
+          "public": "BEC6373B4154",
+          "build": "F909E70FF5AC"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,

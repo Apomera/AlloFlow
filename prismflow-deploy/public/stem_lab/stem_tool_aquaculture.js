@@ -7603,6 +7603,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var stateInit = loadState();
     var tabHook = useState('home');
     var tab = tabHook[0], setTab = tabHook[1];
+    var navSearchHook = useState('');
+    var navSearch = navSearchHook[0], setNavSearch = navSearchHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
@@ -7905,28 +7907,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     ];
 
     function tabBar() {
-      function renderTab(t, accent) {
-        var selected = tab === t.id;
-        return h('button', { key: t.id, role: 'tab', 'aria-selected': selected,
-          className: 'aq-btn',
-          onClick: function() { setTab(t.id); aqAnnounce(t.label + ' tab open'); },
-          style: { padding: '6px 10px', background: selected ? accent : 'rgba(15,23,42,0.7)',
-            color: selected ? '#04141f' : '#cbd5e1', border: '1px solid ' + (selected ? accent : 'rgba(100,116,139,0.4)'),
-            borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: 'pointer' } }, t.label);
+      var primaryTopics = [
+        { id: 'home', label: 'Home' },
+        { id: 'sim', label: '3D mission' },
+        { id: 'chart', label: 'Chart room' },
+        { id: 'species', label: 'Species' },
+        { id: 'water', label: 'Water quality' }
+      ];
+      var activeGroup = TAB_GROUPS[0];
+      var activeTopic = activeGroup.tabs[0];
+      TAB_GROUPS.some(function(group) {
+        return group.tabs.some(function(topic) {
+          if (topic.id !== tab) return false;
+          activeGroup = group;
+          activeTopic = topic;
+          return true;
+        });
+      });
+      var totalTopics = TAB_GROUPS.reduce(function(total, group) { return total + group.tabs.length; }, 0);
+      var query = navSearch.trim().toLowerCase();
+      var searchMatches = [];
+      if (query) {
+        TAB_GROUPS.forEach(function(group) {
+          group.tabs.forEach(function(topic) {
+            if ((topic.label + ' ' + group.label).toLowerCase().indexOf(query) !== -1) {
+              searchMatches.push({ topic: topic, group: group });
+            }
+          });
+        });
       }
-      return h('div', { role: 'tablist', 'aria-label': 'AquacultureLab sections',
-        style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
-        TAB_GROUPS.map(function(g) {
-          return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs',
-            style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-            h('span', {
-              'aria-hidden': 'true',
-              style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: g.color, minWidth: 110, paddingRight: 6, borderRight: '1px solid ' + g.color + '44',
-                textAlign: 'right', flexShrink: 0 }
-            }, g.label),
-            g.tabs.map(function(t) { return renderTab(t, g.color); }));
-        }));
+      var shownMatches = searchMatches.slice(0, 30);
+
+      function topicButton(topic, group, showGroup) {
+        var selected = tab === topic.id;
+        return h('button', { key: group.id + '-' + topic.id, type: 'button', className: 'aq-btn',
+          'aria-current': selected ? 'page' : undefined,
+          onClick: function() {
+            setTab(topic.id);
+            setNavSearch('');
+            aqAnnounce(topic.label + ' open');
+          },
+          style: { minHeight: 44, padding: '9px 11px', textAlign: 'left', borderRadius: 8, cursor: 'pointer',
+            background: selected ? group.color : '#0b2b28', color: selected ? '#031c1a' : '#f1f5f9',
+            border: '1px solid ' + (selected ? group.color : '#5c8580'), fontSize: 13, fontWeight: 750 } },
+          topic.label,
+          showGroup ? h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, fontWeight: 700,
+            color: selected ? '#173f3a' : '#bfdbfe' } }, group.label) : null);
+      }
+
+      return h('nav', { className: 'aq-topic-nav', 'aria-label': 'AquacultureLab sections', style: {
+        marginBottom: 16, padding: 12, borderRadius: 14, background: '#071f1d',
+        border: '1px solid #4f7c76', boxShadow: '0 10px 26px rgba(0,0,0,0.18)'
+      } },
+        h('div', { style: { marginBottom: 10 } },
+          h('div', { style: { fontSize: 11, fontWeight: 900, color: '#99f6e4', textTransform: 'uppercase', letterSpacing: '0.09em' } }, 'Aquaculture Lab'),
+          h('div', { style: { marginTop: 3, fontSize: 14, fontWeight: 800, color: '#f8fafc' } },
+            'Viewing: ', h('span', { style: { color: activeGroup.color } }, activeTopic.label),
+            h('span', { style: { color: '#aebdca', fontWeight: 650 } }, ' · ' + activeGroup.label))),
+        h('div', { className: 'aq-primary-nav', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          primaryTopics.map(function(topic) {
+            var selected = tab === topic.id;
+            return h('button', { key: topic.id, type: 'button', className: 'aq-btn',
+              'aria-current': selected ? 'page' : undefined,
+              onClick: function() { setTab(topic.id); setNavSearch(''); aqAnnounce(topic.label + ' open'); },
+              style: { minHeight: 40, padding: '8px 13px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 800,
+                background: selected ? '#5eead4' : '#0d302d', color: selected ? '#032522' : '#f1f5f9',
+                border: '1px solid ' + (selected ? '#99f6e4' : '#5c8580') } }, topic.label);
+          })),
+        h('details', { style: { borderTop: '1px solid #527a75', paddingTop: 9 } },
+          h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 11px', borderRadius: 8,
+            cursor: 'pointer', color: '#f8fafc', background: '#123a36', border: '1px solid #66928d',
+            fontSize: 13, fontWeight: 850, listStylePosition: 'inside' } },
+            'Browse all topics · ' + totalTopics + ' topics in ' + TAB_GROUPS.length + ' areas'),
+          h('div', { style: { marginTop: 10 } },
+            h('div', { className: 'aq-topic-search-row' },
+              h('div', null,
+                h('label', { htmlFor: 'aq-topic-search', style: { display: 'block', marginBottom: 5, color: '#dbeafe', fontSize: 12, fontWeight: 800 } }, 'Find a topic'),
+                h('input', { id: 'aq-topic-search', type: 'search', value: navSearch, autoComplete: 'off',
+                  'aria-describedby': 'aq-topic-search-help', 'aria-keyshortcuts': 'Escape',
+                  onChange: function(event) { setNavSearch(event.target.value); },
+                  onKeyDown: function(event) {
+                    if (event.key === 'Escape' && navSearch) {
+                      event.preventDefault();
+                      setNavSearch('');
+                      aqAnnounce('Topic search cleared');
+                    }
+                  },
+                  placeholder: 'Search permits, hatchery, climate, careers…',
+                  style: { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 11px',
+                    borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14 } }),
+                h('div', { id: 'aq-topic-search-help', style: { marginTop: 5, color: '#cbd5e1', fontSize: 11.5 } },
+                  'Searches topic names and all 12 topic areas. Press Escape to clear.')),
+              navSearch ? h('button', { type: 'button', className: 'aq-btn aq-topic-search-clear',
+                'aria-label': 'Clear topic search', onClick: function() { setNavSearch(''); aqAnnounce('Topic search cleared'); },
+                style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer',
+                  background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 800 } }, 'Clear') : null),
+            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '9px 0', color: '#dbeafe', fontSize: 12, fontWeight: 750 } },
+              query ? searchMatches.length + (searchMatches.length === 1 ? ' topic found' : ' topics found') : 'Choose a topic area or search across the full library.'),
+            query ? (
+              searchMatches.length ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+                shownMatches.map(function(item) { return topicButton(item.topic, item.group, true); }),
+                searchMatches.length > shownMatches.length ? h('div', { style: { gridColumn: '1 / -1', padding: 9, color: '#cbd5e1', fontSize: 11.5 } },
+                  'Showing the first ' + shownMatches.length + ' results. Add another word to narrow the list.') : null
+              ) : h('div', { role: 'status', style: { padding: 12, borderRadius: 8, background: '#0b2b28',
+                border: '1px solid #527a75', color: '#f1f5f9', fontSize: 13 } },
+                'No topics match “' + navSearch.trim() + '”. Try a broader word.')
+            ) : h('div', { style: { display: 'grid', gap: 8 } },
+              TAB_GROUPS.map(function(group) {
+                var currentArea = activeGroup.id === group.id;
+                return h('details', { key: group.id, style: {
+                  borderRadius: 9, border: '1px solid ' + (currentArea ? group.color : '#416c67'),
+                  background: '#061a18', overflow: 'hidden'
+                } },
+                  h('summary', { style: { minHeight: 42, boxSizing: 'border-box', padding: '10px 12px',
+                    cursor: 'pointer', color: group.color, fontSize: 13, fontWeight: 850 } },
+                    group.label + ' · ' + group.tabs.length + (currentArea ? ' · Current area' : '')),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: 8, padding: '0 10px 10px' } },
+                    group.tabs.map(function(topic) { return topicButton(topic, group, false); })));
+              })))));
     }
 
     function regionBar() {
@@ -20279,7 +20378,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           'Design note: no numeric score, no reveal button, no chip-selection. DO state is shown as a discrete 3-band marker (healthy / stressed / critical), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'));
     }
 
-    return h('div', { style: { padding: 16, background: '#021816', minHeight: 400 } },
+    return h('div', { className: 'aq-lab-shell', style: {
+      padding: 16, background: '#021816', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
+      '--allo-stem-text': '#f8fafc', '--allo-stem-text-soft': '#cbd5e1'
+    } },
+      h('style', null,
+        '.aq-lab-shell{line-height:1.5;overflow-wrap:anywhere;}' +
+        '.aq-lab-shell button:focus-visible,.aq-lab-shell input:focus-visible,.aq-lab-shell select:focus-visible,.aq-lab-shell textarea:focus-visible,.aq-lab-shell summary:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;}' +
+        '.aq-lab-shell input::placeholder,.aq-lab-shell textarea::placeholder{color:#aebdca;opacity:1;}' +
+        '.aq-lab-shell a{color:#7dd3fc;}' +
+        '.aq-lab-shell summary,.aq-lab-shell button{touch-action:manipulation;}' +
+        '.aq-topic-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}' +
+        '@media(max-width:620px){.aq-lab-shell{padding:10px!important}.aq-topic-nav{padding:10px!important}.aq-primary-nav button{flex:1 1 125px}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}}'),
       tabBar(),
       tab === 'home' ? homeTab() :
       tab === 'sim' ? simTab() :

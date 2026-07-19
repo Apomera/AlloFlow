@@ -31,4 +31,36 @@ describe('Info modal feature-guide navigation', () => {
     expect(readFileSync('prismflow-deploy/public/view_info_modal_module.js', 'utf8'))
       .toBe(readFileSync('view_info_modal_module.js', 'utf8'));
   });
+
+  it('offers an accessible searchable catalog and complete-Atlas handoff', () => {
+    expect(source).toContain('role="search" aria-label="Search the Feature Guide"');
+    expect(source).toContain('id="feature-guide-search"');
+    expect(source).toContain('value={featureQuery}');
+    expect(source).toContain("if (event.key === 'Escape' && featureQuery)");
+    expect(source).toContain('event.stopPropagation()');
+    expect(source).toContain('role="status" aria-live="polite"');
+    expect(source).toContain('Open complete Atlas');
+    expect(source).toContain('featureCatalogItems.length} curated workflow guides');
+  });
+
+  it('can launch a selected feature through the shared command palette', () => {
+    expect(source).toContain("openCommandPaletteFromInfo(selectedFeature.title, 'feature-guide')");
+    expect(source).toContain('Find this in AlloFlow');
+    expect(source).toContain("window.CustomEvent('alloflow:open-command-palette'");
+    expect(source).toContain('detail: { query: safeQuery, source }');
+  });
+
+  it('derives Feature Guide data at component scope, not inside a focus effect', () => {
+    const componentStart = source.indexOf('function InfoModal({');
+    const focusEffectStart = source.indexOf('React.useEffect(() => {', componentStart);
+    const focusEffectEnd = source.indexOf('}, [selectedFeature]);', focusEffectStart);
+    const catalogDerivation = source.indexOf("  const featuresList = t('about.features_list'", componentStart);
+    const rootRender = source.indexOf('  return (\n    <div role="presentation"', componentStart);
+
+    expect(focusEffectStart).toBeGreaterThan(componentStart);
+    expect(focusEffectEnd).toBeGreaterThan(focusEffectStart);
+    expect(catalogDerivation).toBeGreaterThan(focusEffectEnd);
+    expect(catalogDerivation).toBeLessThan(rootRender);
+    expect(source.slice(focusEffectStart, focusEffectEnd)).not.toContain('rawFeatureItems');
+  });
 });

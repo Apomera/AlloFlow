@@ -13007,7 +13007,7 @@ const d = labToolData.solarSystem || {};
                                   var sd = orb._sampleData;
                                   gasSamples.push({ name: sd.name, gas: sd.gas, icon: sd.icon, fact: sd.fact, depth: playerPos.y.toFixed(1), zone: zone.name });
                                   if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.gas + ') \u2014 ' + sd.fact, 'success');
-                                  awardXP(sd.xp, 'Gas sample: ' + sd.name);
+                                  if (typeof awardStemXP === 'function') awardStemXP('solarSystem', sd.xp);
                                   playBeep();
                                   recordSampleEvidence(sd.name, sd.gas, sd.fact, zone.name);
 

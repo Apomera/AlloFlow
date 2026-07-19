@@ -60,6 +60,7 @@
     "verify:stem-render": "node dev-tools/check_stem_render.cjs",
     "verify:sel-render": "node dev-tools/check_sel_render.cjs",
     "verify:module-render": "node dev-tools/check_module_render.cjs",
+    "verify:dna-canvas": "node dev-tools/check_dna_canvas_regression.cjs",
     "verify:aria-handler": "node dev-tools/check_aria_handler.cjs",
     "verify:lang-json": "node dev-tools/check_lang_json.cjs",
     "verify:docsuite-theme": "node dev-tools/gen_docsuite_theme.cjs --check",

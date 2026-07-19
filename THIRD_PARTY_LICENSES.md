@@ -18,9 +18,11 @@ reproduced at the end of this file; for the longer licenses (Apache-2.0, MPL-2.0
 SIL OFL-1.1, GPL/LGPL, Creative Commons) the SPDX identifier and the official text
 URL are given.
 
-> Note: AI features also use **Google's Gemini API** and (optionally) **Imagen** —
-> hosted services, not bundled software — governed by Google's API terms, not an
-> open-source license. See the About → Privacy tab for data-handling details.
+> Note: hosted AI features use the provider configured in AlloFlow — for example,
+> Gemini (and optionally Imagen), OpenAI, Claude, or an OpenAI-compatible endpoint.
+> These are services, not bundled software, and are governed by the selected
+> provider's terms rather than an open-source license. See About → Privacy for
+> configuration-dependent data-handling details.
 
 ## Optional media sources and Video Studio policy
 

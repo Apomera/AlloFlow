@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:46.774Z",
+  "generatedAt": "2026-07-19T05:50:12.143Z",
   "libraryId": "praxis-special-education-severe-profound-5547-learning-library",
   "packId": "praxis-special-education-severe-profound-5547",
   "standard": {
-    "label": "AlloFlow 5547 source, blueprint, feedback, learning, safety, and linkage QA v1",
+    "label": "AlloFlow 5547 source, blueprint, feedback, learning, safety, source-parity, key-integrity, encoding, and editorial QA v2",
     "limitation": "Not ETS or CEC approval; independent severe-disabilities educator, AAC, assistive-technology, health, family, accessibility, legal, cultural-linguistic, and psychometric validation remain pending."
   },
   "summary": {
@@ -21,5 +21,14 @@
     "editorialReviewedSourcePendingMemoryAids": 0,
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "ae5712cea4fad822c3ffd51127cf5914a716ae383c92e73dce867bb9a078777a",
+    "learningLibrarySha256": "789cc43da64fa384393b1905dbd20d4417cd409eee77232d6c21da1bf361bd1c",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

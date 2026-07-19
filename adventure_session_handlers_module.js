@@ -52,6 +52,7 @@ const handleDiceRollComplete = (deps) => {
       playAdventureEventSound('transition');
       setAdventureState(prev => {
           const currentStats = prev.stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
+          const strategyHintUsed = prev.hintUsedTurn === prev.turnCount;
           let newSuccesses = currentStats.successes;
           let newFailures = currentStats.failures;
           let newPartials = currentStats.partials || 0;
@@ -155,12 +156,8 @@ const handleDiceRollComplete = (deps) => {
           if (xpDelta > 0) {
               xpDelta = Math.round(xpDelta * xpMult);
           }
-          // Hint cost (2026-07-16, Aaron): a nudge was requested for THIS scene —
-          // the turn's XP GAIN is halved (losses are never amplified; floor stays 0).
-          // hintUsedTurn is stamped by handleAdventureHint before the student responds.
-          if (xpDelta > 0 && prev.hintUsedTurn === prev.turnCount) {
-              xpDelta = Math.round(xpDelta / 2);
-          }
+          // Keep Strategy Hint use as support metadata without reducing earned XP.
+          // The student still chooses and writes the response after receiving the scaffold.
           const safeXpDelta = xpDelta;
           let newXp = prev.xp + safeXpDelta;
           let newLevel = prev.level;
@@ -358,7 +355,7 @@ const handleDiceRollComplete = (deps) => {
               // exchange in the ledger input (fixed 2026-07-16).
               const victoryHistory = [
                   ...prev.history,
-                  { type: 'feedback', text: data.feedback || data.evaluation || '' }
+                  { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }
               ];
               generateNarrativeLedger(victoryHistory, deps);
               addToast(t('adventure.status_messages.log_updated'), "info");
@@ -371,7 +368,7 @@ const handleDiceRollComplete = (deps) => {
               return {
                   ...prev,
                   isGameOver: true,
-                  history: [...prev.history, { type: 'feedback', text: data.feedback || data.evaluation || '' }],
+                  history: [...prev.history, { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
                   currentScene: data.scene, pendingChoice: null,
                   climax: { ...updatedClimax, isActive: false, masteryScore: 100 },
                   canStartSequel: true,
@@ -383,7 +380,7 @@ const handleDiceRollComplete = (deps) => {
               // in prev.history from choice time.
               const failureHistory = [
                   ...prev.history,
-                  { type: 'feedback', text: data.feedback || data.evaluation || '' }
+                  { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }
               ];
               generateNarrativeLedger(failureHistory, deps);
               addToast(t('adventure.status_messages.log_updated'), "info");
@@ -393,7 +390,7 @@ const handleDiceRollComplete = (deps) => {
               }, 0);
               return {
                   ...prev,
-                  history: [...prev.history, { type: 'feedback', text: data.feedback }],
+                  history: [...prev.history, { type: 'feedback', text: data.feedback, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
                   currentScene: data.scene, pendingChoice: null,
                   energy: Math.max(0, prev.energy - 20),
                   climax: {
@@ -490,7 +487,7 @@ const handleDiceRollComplete = (deps) => {
                   addToast(t('adventure.energy_depleted') || '⚡ Out of energy — the adventure ends here. Rest up and try again!', 'error');
               }
               if (nextTurn % 5 === 0) {
-                  const updatedHistory = [...prev.history, { type: 'feedback', text: feedbackText }];
+                  const updatedHistory = [...prev.history, { type: 'feedback', text: feedbackText, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }];
                   generateNarrativeLedger(updatedHistory, deps);
               }
               if (nextTurn % 10 === 0 && nextTurn > 0) {
@@ -499,7 +496,7 @@ const handleDiceRollComplete = (deps) => {
           }, 0);
           return {
               ...prev,
-              history: [...prev.history, { type: 'feedback', text: feedbackText }],
+              history: [...prev.history, { type: 'feedback', text: feedbackText, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
               currentScene: { ...data.scene, charactersInScene: data.charactersInScene || [] }, pendingChoice: null,
               isLoading: false,
               turnCount: nextTurn,

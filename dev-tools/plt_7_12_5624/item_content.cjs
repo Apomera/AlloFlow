@@ -1,4 +1,5 @@
 'use strict';
+
 const source = require('../plt_k6_5622/item_content.cjs');
 
 const references = [
@@ -19,9 +20,10 @@ const gradeMap = {
 };
 
 const rewrite = (value) => String(value || '')
+  .replace(/\bgrades?\s+K\s*[-\u2010-\u2015]\s*6\b/gi, 'grades 7\u201312')
+  .replace(/\bK\s*[-\u2010-\u2015]\s*6\b/gi, 'grades 7\u201312')
   .replace(/kindergarten|first[- ]grade|second[- ]grade|third[- ]grade|fourth[- ]grade|fifth[- ]grade|sixth[- ]grade/gi,
     (match) => gradeMap[match.toLowerCase()] || match)
-  .replace(/K[–-]6/gi, 'grades 7–12')
   .replace(/elementary/gi, 'secondary')
   .replace(/young children/gi, 'adolescents')
   .replace(/children/gi, 'learners')
@@ -37,7 +39,7 @@ module.exports = source.map((bank, index) => ({
   label: rewrite(bank.label),
   references: references.slice(),
   questions: bank.questions.map((question, questionIndex) => ({
-    promptA: 'In a grades 7–12 setting, ' + rewrite(question.promptA).replace(/^./, (letter) => letter.toLowerCase()),
+    promptA: 'In a grades 7\u201312 setting, ' + rewrite(question.promptA).replace(/^./, (letter) => letter.toLowerCase()),
     promptB: 'In a parallel secondary setting, ' + rewrite(question.promptB).replace(/^./, (letter) => letter.toLowerCase()),
     correct: rewrite(question.correct),
     distractors: question.distractors.map(rewrite),

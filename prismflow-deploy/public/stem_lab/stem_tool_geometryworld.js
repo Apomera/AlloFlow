@@ -449,18 +449,26 @@
     var totalQuestions = Number(ctx.totalQuestions || 0);
     var blocksPlaced = Number(ctx.blocksPlaced || 0);
     var structureCount = Number(ctx.structureCount || 0);
+    var representationConnections = Math.max(0, Number(ctx.representationConnections || 0));
+    var reflectionsCompleted = Math.max(0, Number(ctx.reflectionsCompleted || 0));
     var explainedPredictions = measurements.filter(function(record) {
       var data = record && record.data ? record.data : (record || {});
       return typeof data.prediction === 'number' && !!String(data.predictionReason || data.reason || data.predictionStrategy || data.strategy || '').trim();
     }).length;
     var result = { done: false, evidence: 'No matching evidence yet' };
 
-    if (/answer|talk|ask|speak/i.test(objective) && totalQuestions > 0) {
+    if (/(equivalent|representation|two ways|multiple ways|different ways)/i.test(objective) && /(explain|connect|compare|represent|show)/i.test(objective)) {
+      result = { done: representationConnections > 0, evidence: representationConnections + ' saved representation connection' + (representationConnections === 1 ? '' : 's') };
+    } else if (/answer|talk|ask|speak/i.test(objective) && totalQuestions > 0) {
       result = { done: answered >= totalQuestions, evidence: answered + '/' + totalQuestions + ' questions completed' };
     } else if (/compare/i.test(objective)) {
       result = { done: measurements.length >= 2, evidence: Math.min(measurements.length, 2) + '/2 complete measurements' };
-    } else if (/revise|reflect/i.test(objective)) {
-      result = { done: !!ctx.revisionCompleted || !!String(ctx.reflectionText || '').trim(), evidence: ctx.revisionCompleted ? 'Prediction revised from evidence' : 'Revision or reflection needed' };
+    } else if (/revise/i.test(objective) && /reflect/i.test(objective)) {
+      result = { done: !!ctx.revisionCompleted && reflectionsCompleted > 0, evidence: 'Revision: ' + (ctx.revisionCompleted ? 'saved' : 'not yet') + '; reflection: ' + reflectionsCompleted + ' saved' };
+    } else if (/revise/i.test(objective)) {
+      result = { done: !!ctx.revisionCompleted, evidence: ctx.revisionCompleted ? 'Prediction revised from evidence' : 'Saved prediction revision needed' };
+    } else if (/reflect/i.test(objective)) {
+      result = { done: reflectionsCompleted > 0, evidence: reflectionsCompleted + ' saved reflection' + (reflectionsCompleted === 1 ? '' : 's') };
     } else if (/predict|estimate|strategy|explain|reason/i.test(objective)) {
       result = { done: explainedPredictions > 0, evidence: explainedPredictions + ' explained prediction' + (explainedPredictions === 1 ? '' : 's') };
     } else if (/build|place|construct|create|make|stack/i.test(objective)) {
@@ -640,6 +648,36 @@
     };
   }
 
+  function hasUnsavedRepresentationConnection(text, saved) {
+    return !!String(text || '').trim() && !saved;
+  }
+
+  function buildRepresentationSentenceStarter(view, measurement, scaffoldLevel) {
+    if (!view || !measurement || measurement.isComplete === false || scaffoldLevel === 'independent') return '';
+    var actual = typeof measurement.occupiedVolume === 'number' ? measurement.occupiedVolume : measuredVolume(measurement);
+    if (!Number.isFinite(actual)) return '';
+    if (scaffoldLevel === 'supported') {
+      return 'Both views show ' + formatVolume(actual) + ' cubic units because one shows ___ while the other shows ___.';
+    }
+    var key = view.key;
+    if (key === 'layers' && [measurement.L, measurement.W, measurement.H].every(function(value) { return typeof value === 'number'; })) {
+      return 'One layer has ' + formatVolume(measurement.L * measurement.W) + ' cubic units. ' + formatVolume(measurement.H) + ' equal layers make ' + formatVolume(actual) + ', so both views show the same volume because ___.';
+    }
+    if (key === 'rotated_layers') {
+      return 'The layer direction changed, but both expressions equal ' + formatVolume(actual) + ' cubic units because ___.';
+    }
+    if (key === 'bounding_subtraction') {
+      return 'The box has ' + formatVolume(measurement.boundingVolume) + ' cubic units. Subtracting ' + formatVolume(measurement.missingVolume || 0) + ' empty units leaves ' + formatVolume(actual) + ', so ___.';
+    }
+    if (key === 'decomposition') {
+      return 'I can split the structure into non-overlapping parts. Their volumes add to ' + formatVolume(actual) + ' cubic units because ___.';
+    }
+    if (key === 'fraction_composition' || key === 'whole_equivalent') {
+      return 'The fractional pieces combine to occupy ' + formatVolume(actual) + ' cubic units; this matches the other view because ___.';
+    }
+    return 'Counting the occupied units gives ' + formatVolume(actual) + ' cubic units, which matches the other view because ___.';
+  }
+
   function determinePredictionScaffold(history) {
     var complete = completeMeasurementRecords(history || []);
     var explained = complete.filter(function(record) {
@@ -759,6 +797,8 @@
     var retrievalChecks = events.filter(function(event) { return event && event.type === 'retrieval_check'; });
     var representationViews = events.filter(function(event) { return event && event.type === 'representation_view'; });
     var strategyCounts = {};
+    var targetedRepresentationViews = representationViews.filter(function(event) { return event.data && event.data.source === 'misconception_recommendation'; });
+    var targetedSupportCounts = {};
     var representationConnections = events.filter(function(event) { return event && event.type === 'representation_connection' && event.data && String(event.data.text || '').trim(); });
     var representationCounts = {};
     var misconceptionCounts = {};
@@ -774,6 +814,10 @@
         misconceptionCounts[misconception] = (misconceptionCounts[misconception] || 0) + 1;
       }
     });
+    targetedRepresentationViews.forEach(function(event) {
+      var misconception = String(event.data && event.data.misconception || '').trim() || 'unknown';
+      targetedSupportCounts[misconception] = (targetedSupportCounts[misconception] || 0) + 1;
+    });
     var revisionImprovements = revisions.map(function(event) {
       return Number(event.data && event.data.improvement);
     }).filter(function(value) { return Number.isFinite(value); });
@@ -783,6 +827,9 @@
     });
     var representations = Object.keys(representationCounts).sort().map(function(representation) {
       return { representation: representation, count: representationCounts[representation] };
+    });
+    var targetedRepresentationSupports = Object.keys(targetedSupportCounts).sort().map(function(code) {
+      return { code: code, label: misconceptionGuidance(code).label, count: targetedSupportCounts[code] };
     });
     var strategies = Object.keys(strategyCounts).sort().map(function(strategy) {
       return { strategy: strategy, count: strategyCounts[strategy] };
@@ -824,6 +871,8 @@
       representationViews: representationViews.length,
       representations: representations,
       misconceptions: misconceptions,
+      targetedRepresentationViews: targetedRepresentationViews.length,
+      targetedRepresentationSupports: targetedRepresentationSupports,
       mostCommonMisconception: misconceptions.length ? misconceptions[0] : null
     };
   }
@@ -2044,8 +2093,9 @@
       var volumeRepresentationReason = d.volumeRepresentationReason || '';
       var volumeRepresentationInvariantChecked = !!d.volumeRepresentationInvariantChecked;
       var volumeRepresentationEvidenceChecked = !!d.volumeRepresentationEvidenceChecked;
-      var representationConnectionReadiness = buildRepresentationConnectionReadiness(volumeRepresentationReason, volumeRepresentationInvariantChecked, volumeRepresentationEvidenceChecked);
       var volumeRepresentationConnectionSaved = d.volumeRepresentationConnectionSaved || false;
+      var representationConnectionReadiness = buildRepresentationConnectionReadiness(volumeRepresentationReason, volumeRepresentationInvariantChecked, volumeRepresentationEvidenceChecked);
+      var hasUnsavedRepresentationDraft = hasUnsavedRepresentationConnection(volumeRepresentationReason, volumeRepresentationConnectionSaved);
       var predictionResult = d.predictionResult || null;
       var volumeRepresentationKey = d.volumeRepresentationKey || '';
       var volumeRepresentations = buildVolumeRepresentations(measureResult);
@@ -2088,6 +2138,7 @@
       var npcTranslations = d.npcTranslations || {};
       var consecutiveWrong = d.consecutiveWrong || 0;
       var showGrowthNudge = d.showGrowthNudge || false;
+      var representationSentenceStarter = buildRepresentationSentenceStarter(activeVolumeRepresentation, measureResult, predictionScaffold.level);
       var growthNudgeMsg = d.growthNudgeMsg || '';
       var growthNudgeDismissed = d.growthNudgeDismissed || 0;
       // ── Tutorial state ──
@@ -4797,17 +4848,21 @@
             h += '<div class="metric"><div class="val">' + le.retrievalCheckpointsCorrect + '/' + le.retrievalCheckpoints + '</div><div class="lbl">Checkpoints mastered</div></div>';
             h += '<div class="metric"><div class="val">' + le.retrievalFirstTryCorrect + '</div><div class="lbl">First-try retrieval</div></div>';
             h += '<div class="metric"><div class="val">' + le.representationViews + '</div><div class="lbl">Representation switches</div></div>';
+            h += '<div class="metric"><div class="val">' + le.targetedRepresentationViews + '</div><div class="lbl">Targeted views opened</div></div>';
             h += '<div class="metric"><div class="val">' + le.representationConnections + '</div><div class="lbl">Connections explained</div></div></div>';
             if (le.strategies.length) {
               h += '<p><strong>Strategies used:</strong> ' + le.strategies.map(function(item) { return escapeReportHtml(item.strategy) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
             }
             if (le.representations.length) {
               h += '<p><strong>Equivalent views explored:</strong> ' + le.representations.map(function(item) { return escapeReportHtml(item.representation.replace(/_/g, ' ')) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            }
+            if (le.targetedRepresentationSupports.length) {
+              h += '<p><strong>Targeted representation support used:</strong> ' + le.targetedRepresentationSupports.map(function(item) { return escapeReportHtml(item.label) + ' (' + item.count + ')'; }).join(' &bull; ') + '</p>';
+            }
             if (le.representationConnectionExamples.length) {
               h += '<p><strong>Student connections between equivalent views:</strong></p><ul>';
               le.representationConnectionExamples.forEach(function(item) { h += '<li><strong>' + escapeReportHtml(item.from.replace(/_/g, ' ')) + ' \u2192 ' + escapeReportHtml(item.to.replace(/_/g, ' ')) + ':</strong> ' + escapeReportHtml(item.text) + '</li>'; });
               h += '</ul>';
-            }
             }
             if (le.misconceptions.length) {
               h += '<table><tr><th>Observed pattern</th><th>Count</th><th>Suggested instructional response</th></tr>';
@@ -5472,13 +5527,21 @@
               el('div', { style: { display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '3px' } },
                 el('label', { htmlFor: 'gw-volume-representation', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 800, whiteSpace: 'nowrap' } }, 'Equivalent view'),
                 el('select', {
-                  id: 'gw-volume-representation', value: activeVolumeRepresentation.key,
+                  id: 'gw-volume-representation', value: activeVolumeRepresentation.key, className: 'gw-focusable',
                   'aria-label': 'Choose an equivalent volume representation',
                   onChange: function(ev) {
                     var key = ev.target.value;
+                    if (hasUnsavedRepresentationDraft) {
+                      ev.target.value = activeVolumeRepresentation.key;
+                      if (addToast) addToast('Save or discard your explanation draft before switching views.', 'info');
+                      announceToSR('View not changed. Save or discard your explanation draft first.');
+                      return;
+                    }
                     upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key, volumeRepresentationKey: key, volumeRepresentationVisitedKeys: representationExploration.visitedKeys.concat([key]).filter(function(item, index, list) { return list.indexOf(item) === index; }), volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false });
+                    var selectedView = volumeRepresentations.find(function(view) { return view.key === key; });
                     var eng = window[engineKey];
                     if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
+                    if (selectedView) announceToSR('Showing equivalent view: ' + selectedView.label + '. ' + selectedView.expression + '. ' + selectedView.question);
                   },
                   style: { flex: 1, minWidth: '110px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
                 }, volumeRepresentations.map(function(view) { return el('option', { key: view.key, value: view.key }, view.label); }))
@@ -5497,9 +5560,9 @@
                 el('div', { style: { height: '3px', marginTop: '2px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(148,163,184,0.25)' } }, el('div', { style: { width: representationExploration.percent + '%', height: '100%', borderRadius: '999px', background: representationExploration.complete ? '#22c55e' : '#a78bfa', transition: 'width 0.2s ease' } }))
               ),
               el('div', { style: { color: '#cbd5e1', fontSize: '8px', marginBottom: '3px' } }, representationExploration.prompt),
-              el('div', { style: { color: '#bfdbfe', fontSize: '9px', marginTop: '2px' } }, 'Connect: ' + activeVolumeRepresentation.question),
-              volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key && el('div', { 'data-geometry-representation-connection': 'true', style: { marginTop: '5px', display: 'grid', gap: '4px' } },
+              el('div', { id: 'gw-representation-connect-prompt', style: { color: '#bfdbfe', fontSize: '9px', marginTop: '2px' } }, 'Connect: ' + activeVolumeRepresentation.question),
               recommendedVolumeRepresentation && el('div', {
+                role: 'note',
                 'data-geometry-representation-recommendation': recommendedVolumeRepresentation.diagnosisCode,
                 style: { marginBottom: '4px', padding: '4px 5px', borderRadius: '4px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: '8px', lineHeight: 1.35 }
               },
@@ -5507,8 +5570,16 @@
                 el('div', null, recommendedVolumeRepresentation.reason),
                 recommendedVolumeRepresentation.key !== activeVolumeRepresentation.key && el('button', {
                   type: 'button',
+                  className: 'gw-focusable',
+                  'aria-label': 'Open recommended volume view: ' + recommendedVolumeRepresentation.label,
                   onClick: function() {
+                    if (hasUnsavedRepresentationDraft) {
+                      if (addToast) addToast('Save or discard your explanation draft before opening another view.', 'info');
+                      announceToSR('Recommended view not opened. Save or discard your explanation draft first.');
+                      return;
+                    }
                     var key = recommendedVolumeRepresentation.key;
+                    var recommendedView = volumeRepresentations.find(function(view) { return view.key === key; });
                     upd({
                       volumeRepresentationFromKey: activeVolumeRepresentation.key,
                       volumeRepresentationKey: key,
@@ -5518,34 +5589,41 @@
                       volumeRepresentationEvidenceChecked: false,
                       volumeRepresentationConnectionSaved: false
                     });
+                    if (recommendedView) announceToSR('Showing recommended view: ' + recommendedView.label + '. ' + recommendedView.expression + '. ' + recommendedView.question);
                     var eng = window[engineKey];
                     if (eng && eng.logEvent) eng.logEvent('representation_view', { representation: key, source: 'misconception_recommendation', misconception: recommendedVolumeRepresentation.diagnosisCode, shape: measureResult.isSolidPrism ? 'solid_prism' : measureResult.hasFractions ? 'fractional' : 'composite', volume: measureResult.occupiedVolume });
                   },
                   style: { marginTop: '3px', background: '#b45309', border: 'none', borderRadius: '4px', padding: '3px 6px', color: '#fff', fontSize: '8px', fontWeight: 800, cursor: 'pointer' }
                 }, 'Open recommended view')
               ),
+              volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key && el('div', { 'data-geometry-representation-connection': 'true', style: { marginTop: '5px', display: 'grid', gap: '4px' } },
                 el('label', { htmlFor: 'gw-representation-reason', style: { color: '#ddd6fe', fontSize: '9px', fontWeight: 700 } }, 'Explain: Both views show the same volume because...'),
                 el('textarea', {
-                  id: 'gw-representation-reason',
+                  id: 'gw-representation-reason', className: 'gw-focusable',
                   value: volumeRepresentationReason,
                   rows: 2,
                   'aria-label': 'Explain why the two volume representations are equivalent',
-                  placeholder: 'Both views show ' + formatVolume(measureResult.occupiedVolume) + ' cubic units because...',
+                  'aria-describedby': representationSentenceStarter ? 'gw-representation-connect-prompt gw-representation-sentence-starter' : 'gw-representation-connect-prompt',
+                  placeholder: representationSentenceStarter || ('Both views show ' + formatVolume(measureResult.occupiedVolume) + ' cubic units because...'),
                   onChange: function(ev) { upd({ volumeRepresentationReason: ev.target.value, volumeRepresentationConnectionSaved: false }); },
                   style: { resize: 'vertical', minHeight: '34px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '4px', color: '#fff', fontSize: '9px', lineHeight: 1.35 }
                 }),
+                representationSentenceStarter && el('div', { id: 'gw-representation-sentence-starter', 'data-geometry-representation-sentence-starter': predictionScaffold.level, style: { padding: '3px 4px', borderRadius: '4px', background: 'rgba(59,130,246,0.1)', color: '#bfdbfe', fontSize: '8px', lineHeight: 1.35 } },
+                  el('strong', null, 'Sentence starter: '), '\u201c' + representationSentenceStarter + '\u201d'
+                ),
                 el('div', { role: 'group', 'aria-label': 'Explanation self-check', style: { display: 'grid', gap: '2px', color: '#ddd6fe', fontSize: '8px' } },
                   el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
-                    el('input', { type: 'checkbox', checked: volumeRepresentationInvariantChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationInvariantChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
+                    el('input', { type: 'checkbox', className: 'gw-focusable', checked: volumeRepresentationInvariantChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationInvariantChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
                     el('span', null, 'I named what stays the same.')
                   ),
                   el('label', { style: { display: 'flex', gap: '4px', alignItems: 'flex-start', cursor: 'pointer' } },
-                    el('input', { type: 'checkbox', checked: volumeRepresentationEvidenceChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationEvidenceChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
+                    el('input', { type: 'checkbox', className: 'gw-focusable', checked: volumeRepresentationEvidenceChecked, disabled: volumeRepresentationConnectionSaved, onChange: function(ev) { upd({ volumeRepresentationEvidenceChecked: ev.target.checked, volumeRepresentationConnectionSaved: false }); } }),
                     el('span', null, 'I used evidence from the structure or equation.')
                   )
                 ),
                 el('button', {
-                  type: 'button',
+                  type: 'button', className: 'gw-focusable',
+                  'aria-describedby': 'gw-representation-connect-prompt',
                   disabled: volumeRepresentationConnectionSaved,
                   onClick: function() {
                     var response = volumeRepresentationReason.trim();
@@ -5556,7 +5634,18 @@
                   },
                   style: { justifySelf: 'start', background: volumeRepresentationConnectionSaved ? '#166534' : representationConnectionReadiness.ready ? '#7c3aed' : '#475569', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: volumeRepresentationConnectionSaved ? 'default' : 'pointer' }
                 }, volumeRepresentationConnectionSaved ? '\u2713 Connection saved' : 'Save connection'),
-                volumeRepresentationConnectionSaved && el('div', { role: 'status', style: { color: '#86efac', fontSize: '9px', fontWeight: 700 } }, 'Your explanation is part of the learning evidence.')
+                volumeRepresentationConnectionSaved && el('div', { role: 'status', 'aria-live': 'polite', style: { color: '#86efac', fontSize: '9px', fontWeight: 700 } }, 'Your explanation is part of the learning evidence.'),
+                hasUnsavedRepresentationDraft && el('button', {
+                  type: 'button',
+                  className: 'gw-focusable',
+                  'aria-label': 'Discard unsaved representation explanation',
+                  onClick: function() {
+                    upd({ volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false });
+                    if (addToast) addToast('Explanation draft discarded.', 'info');
+                    announceToSR('Explanation draft discarded. You can now choose another view.');
+                  },
+                  style: { justifySelf: 'start', background: 'transparent', border: '1px solid #94a3b8', borderRadius: '4px', padding: '3px 7px', color: '#cbd5e1', fontSize: '9px', fontWeight: 700, cursor: 'pointer' }
+                }, 'Discard draft'),
               )
             ),
             el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
@@ -6053,8 +6142,9 @@
               measurements: measureHistory,
               structureCount: (currentLesson.structures || []).length,
               revisionCompleted: !!predictionRevisionResult,
-              reflectionText: reflectionText,
-              buildTarget: 5
+              reflectionsCompleted: ((engine && engine.sessionLog) || []).filter(function(event) { return event && event.type === 'reflection' && event.data && String(event.data.text || '').trim(); }).length,
+              buildTarget: 5,
+              representationConnections: ((engine && engine.sessionLog) || []).filter(function(event) { return event && event.type === 'representation_connection' && event.data && String(event.data.text || '').trim(); }).length,
             };
             function addEvidenceObjective(text) {
               var evidence = objectiveEvidenceFor(text, objectiveContext);

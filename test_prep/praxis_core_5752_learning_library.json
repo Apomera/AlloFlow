@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:40.550Z",
+  "generatedAt": "2026-07-19T05:08:49.962Z",
   "libraryId": "praxis-core-5752-learning-library",
   "packId": "praxis-core-5752",
   "title": "Praxis Core Academic Skills for Educators: Combined (5752) learning library",
@@ -2132,7 +2132,7 @@
             "x = 10"
           ],
           "answerIndex": 0,
-          "rationale": "Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",

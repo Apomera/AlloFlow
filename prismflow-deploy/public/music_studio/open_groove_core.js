@@ -1615,6 +1615,48 @@
     return root.indexOf('b') >= 0 || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].indexOf(root) >= 0 || minorish;
   }
 
+  function ogKeySignatureFifths(tonic, mode) {
+    var root = ogPitchClassFromName(tonic);
+    var modeKey = ogSafeString(mode, 'minor');
+    var parentOffsets = {
+      major: 0,
+      pentatonicMajor: 0,
+      minor: 3,
+      pentatonicMinor: 3,
+      dorian: -2,
+      phrygian: -4,
+      lydian: -5,
+      mixolydian: -7,
+      locrian: -11
+    };
+    var sharpMajorFifths = [0, 7, 2, -3, 4, -1, 6, 1, -4, 3, -2, 5];
+    var flatMajorFifths = [0, -5, 2, -3, 4, -1, -6, 1, -4, 3, -2, -7];
+    if (root == null) root = 0;
+    var parentRoot = ((root + (Object.prototype.hasOwnProperty.call(parentOffsets, modeKey) ? parentOffsets[modeKey] : 3)) % 12 + 12) % 12;
+    var table = ogPreferFlatNames(tonic, modeKey) ? flatMajorFifths : sharpMajorFifths;
+    return Math.max(-7, Math.min(7, ogInt(table[parentRoot], 0)));
+  }
+
+  function ogMusicXmlKeyMode(mode) {
+    var modeKey = ogSafeString(mode, 'minor');
+    if (modeKey === 'pentatonicMajor') return 'major';
+    if (modeKey === 'pentatonicMinor') return 'minor';
+    return ['major', 'minor', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'locrian'].indexOf(modeKey) >= 0 ? modeKey : 'minor';
+  }
+
+  function ogBuildMusicXmlKeySignature(project) {
+    var key = project && project.key || {};
+    var tonic = ogNormalizeRootName(key.tonic || 'C');
+    var mode = key.mode || 'minor';
+    var rootPc = ogPitchClassFromName(tonic);
+    return {
+      fifths: ogKeySignatureFifths(tonic, mode),
+      mode: ogMusicXmlKeyMode(mode),
+      tonic: ogPitchClassNameForKey(rootPc == null ? 0 : rootPc, tonic, mode),
+      keyName: ogPitchClassNameForKey(rootPc == null ? 0 : rootPc, tonic, mode) + ' ' + ogModeDisplayName(mode)
+    };
+  }
+
   function ogPitchClassNameForKey(pitchClass, tonic, mode) {
     var names = ogPreferFlatNames(tonic, mode) ? OG_FLAT_NOTE_NAMES : OG_NOTE_NAMES;
     return names[((Math.round(pitchClass) % 12) + 12) % 12];
@@ -1737,9 +1779,29 @@
     };
   }
 
+  function ogApplyDurationDots(baseTicks, dotCount) {
+    var total = Math.max(1, ogFinite(baseTicks, 1));
+    var add = total;
+    for (var i = 0; i < Math.min(3, Math.max(0, ogInt(dotCount, 0))); i += 1) {
+      add /= 2;
+      total += add;
+    }
+    return Math.max(1, Math.round(total));
+  }
+
   function ogNotationDurationTicks(project, token) {
     var beat = ogTicksPerBeat(project);
-    var key = String(token == null ? 'q' : token).trim().toLowerCase();
+    var key = String(token == null ? 'q' : token).trim().toLowerCase().replace(/_/g, '-');
+    var dotCount = 0;
+    key = key.replace(/^(dotted|dot)-?/, function () {
+      dotCount += 1;
+      return '';
+    });
+    var trailingDots = /(\.+)$/.exec(key);
+    if (trailingDots) {
+      dotCount += trailingDots[1].length;
+      key = key.slice(0, -trailingDots[1].length);
+    }
     var named = {
       w: 4,
       whole: 4,
@@ -1750,13 +1812,18 @@
       e: 0.5,
       eighth: 0.5,
       s: 0.25,
-      sixteenth: 0.25
+      sixteenth: 0.25,
+      '16th': 0.25,
+      dq: 1.5,
+      dh: 3,
+      de: 0.75,
+      ds: 0.375
     };
-    if (Object.prototype.hasOwnProperty.call(named, key)) return Math.max(1, Math.round(beat * named[key]));
+    if (Object.prototype.hasOwnProperty.call(named, key)) return ogApplyDurationDots(beat * named[key], dotCount);
     var frac = /^1\/(\d+)$/.exec(key);
-    if (frac) return Math.max(1, Math.round(beat * 4 / Math.max(1, Number(frac[1]))));
+    if (frac) return ogApplyDurationDots(beat * 4 / Math.max(1, Number(frac[1])), dotCount);
     var numeric = /^(\d+(?:\.\d+)?)b?$/.exec(key);
-    if (numeric) return Math.max(1, Math.round(beat * Number(numeric[1])));
+    if (numeric) return ogApplyDurationDots(beat * Number(numeric[1]), dotCount);
     return beat;
   }
 
@@ -1786,7 +1853,7 @@
           : (Math.floor(cursor / measureTicks) + 1) * measureTicks;
         return;
       }
-      var match = /^(.+?)(?:([:=\/])([A-Za-z0-9.\/]+))?$/.exec(token);
+      var match = /^(.+?)(?:([:=\/])([A-Za-z0-9.\/_-]+))?$/.exec(token);
       var pitchPart = match && match[1] || token;
       var durationToken = match && match[3] || defaultDuration;
       if (match && match[2] === '/' && durationToken.indexOf('/') < 0) durationToken = '1/' + durationToken;
@@ -2220,6 +2287,32 @@
     if (ratio >= 0.75) return 'quarter';
     if (ratio >= 0.375) return 'eighth';
     return 'sixteenth';
+  }
+
+  function ogMusicXmlDurationNotationFromTicks(project, ticks) {
+    var beat = ogTicksPerBeat(project);
+    var ratio = Math.max(0.001, ogFinite(ticks, beat) / beat);
+    var candidates = [
+      { beats: 4, type: 'whole', dots: 0 },
+      { beats: 3, type: 'half', dots: 1 },
+      { beats: 2, type: 'half', dots: 0 },
+      { beats: 1.5, type: 'quarter', dots: 1 },
+      { beats: 1, type: 'quarter', dots: 0 },
+      { beats: 0.75, type: 'eighth', dots: 1 },
+      { beats: 0.5, type: 'eighth', dots: 0 },
+      { beats: 0.375, type: '16th', dots: 1 },
+      { beats: 0.25, type: '16th', dots: 0 }
+    ];
+    var best = candidates[0];
+    var bestDelta = Math.abs(ratio - best.beats);
+    candidates.forEach(function (candidate) {
+      var delta = Math.abs(ratio - candidate.beats);
+      if (delta < bestDelta) {
+        best = candidate;
+        bestDelta = delta;
+      }
+    });
+    return bestDelta <= 0.03 ? { type: best.type, dots: best.dots } : null;
   }
 
   function ogNormalizeStaffClef(clefLike) {
@@ -3739,6 +3832,37 @@
     });
   }
 
+  function ogPushMusicXmlDurationMetadata(lines, project, durationTicks) {
+    var durationNotation = ogMusicXmlDurationNotationFromTicks(project, durationTicks);
+    if (!durationNotation) return;
+    lines.push('        <type>' + durationNotation.type + '</type>');
+    for (var dot = 0; dot < durationNotation.dots; dot += 1) lines.push('        <dot/>');
+  }
+
+  function ogPushMusicXmlRest(lines, project, durationTicks) {
+    durationTicks = Math.max(1, Math.round(durationTicks));
+    lines.push('      <note>');
+    lines.push('        <rest/>');
+    lines.push('        <duration>' + durationTicks + '</duration>');
+    ogPushMusicXmlDurationMetadata(lines, project, durationTicks);
+    lines.push('      </note>');
+  }
+
+  function ogPushMusicXmlMove(lines, tagName, durationTicks) {
+    durationTicks = Math.max(1, Math.round(durationTicks));
+    lines.push('      <' + tagName + '><duration>' + durationTicks + '</duration></' + tagName + '>');
+  }
+
+  function ogPushMusicXmlPitchNote(lines, project, note, durationTicks, asChord) {
+    var p = ogParsePitchSpelling(note.pitch);
+    durationTicks = Math.max(1, Math.round(durationTicks));
+    lines.push('      <note>');
+    if (asChord) lines.push('        <chord/>');
+    lines.push('        <pitch><step>' + p.step + '</step>' + (p.alter ? '<alter>' + p.alter + '</alter>' : '') + '<octave>' + p.octave + '</octave></pitch>');
+    lines.push('        <duration>' + durationTicks + '</duration>');
+    ogPushMusicXmlDurationMetadata(lines, project, durationTicks);
+    lines.push('      </note>');
+  }
   function ogBuildMusicXmlSketch(project, patternId, trackId, options) {
     options = options || {};
     var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
@@ -3749,6 +3873,7 @@
     var clef = ogInferStaffClef(project, trackId, options);
     var clefSign = clef === 'bass' ? 'F' : 'G';
     var clefLine = clef === 'bass' ? 4 : 2;
+    var keySignature = ogBuildMusicXmlKeySignature(project);
     var lines = [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<score-partwise version="3.1">',
@@ -3764,22 +3889,65 @@
       if (idx === 0) {
         lines.push('      <attributes>');
         lines.push('        <divisions>' + ogTicksPerBeat(project) + '</divisions>');
-        lines.push('        <key><fifths>0</fifths></key>');
+        lines.push('        <key><fifths>' + keySignature.fifths + '</fifths><mode>' + keySignature.mode + '</mode></key>');
         lines.push('        <time><beats>' + ogInt(ts[0], 4) + '</beats><beat-type>' + ogInt(ts[1], 4) + '</beat-type></time>');
         lines.push('        <clef><sign>' + clefSign + '</sign><line>' + clefLine + '</line></clef>');
         lines.push('      </attributes>');
       }
-      var notes = measure.notes.filter(function (note) { return !trackId || note.trackId === trackId; });
+      var beatTicks = ogTicksPerBeat(project);
+      var measureTicks = ogTicksPerMeasure(project);
+      var measureStart = (Math.max(1, ogInt(measure.bar, idx + 1)) - 1) * measureTicks;
+      var notes = measure.notes.filter(function (note) { return !trackId || note.trackId === trackId; }).map(function (note) {
+        var localStart = note.notationStartTick != null
+          ? ogInt(note.notationStartTick, measureStart) - measureStart
+          : Math.round((Math.max(1, ogFinite(note.startBeat, 1)) - 1) * beatTicks);
+        localStart = Math.max(0, Math.min(measureTicks, localStart));
+        var durationTicks = Math.max(1, Math.round(Math.max(0.001, ogFinite(note.durationBeats, 1)) * beatTicks));
+        durationTicks = Math.max(1, Math.min(durationTicks, Math.max(1, measureTicks - localStart)));
+        return {
+          note: note,
+          localStart: localStart,
+          durationTicks: durationTicks,
+          midi: ogNoteNameToMidi(note.pitch)
+        };
+      }).filter(function (entry) {
+        return entry.localStart < measureTicks && entry.midi != null;
+      }).sort(function (a, b) {
+        return a.localStart - b.localStart || a.midi - b.midi || String(a.note.pitch).localeCompare(String(b.note.pitch));
+      });
       if (!notes.length) {
-        lines.push('      <note><rest/><duration>' + ogTicksPerMeasure(project) + '</duration></note>');
+        ogPushMusicXmlRest(lines, project, measureTicks);
       } else {
-        notes.forEach(function (note) {
-          var p = ogParsePitchSpelling(note.pitch);
-          lines.push('      <note>');
-          lines.push('        <pitch><step>' + p.step + '</step>' + (p.alter ? '<alter>' + p.alter + '</alter>' : '') + '<octave>' + p.octave + '</octave></pitch>');
-          lines.push('        <duration>' + Math.max(1, Math.round(note.durationBeats * ogTicksPerBeat(project))) + '</duration>');
-          lines.push('      </note>');
-        });
+        var cursor = 0;
+        for (var noteIndex = 0; noteIndex < notes.length;) {
+          var localStartForGroup = notes[noteIndex].localStart;
+          var group = [];
+          while (noteIndex < notes.length && notes[noteIndex].localStart === localStartForGroup) {
+            group.push(notes[noteIndex]);
+            noteIndex += 1;
+          }
+          group.sort(function (a, b) { return b.durationTicks - a.durationTicks || a.midi - b.midi; });
+          var resumeTick = null;
+          if (localStartForGroup > cursor) {
+            ogPushMusicXmlRest(lines, project, localStartForGroup - cursor);
+            cursor = localStartForGroup;
+          } else if (localStartForGroup < cursor) {
+            resumeTick = cursor;
+            ogPushMusicXmlMove(lines, 'backup', cursor - localStartForGroup);
+            cursor = localStartForGroup;
+          }
+          var groupEnd = localStartForGroup;
+          group.forEach(function (entry, groupIndex) {
+            ogPushMusicXmlPitchNote(lines, project, entry.note, entry.durationTicks, groupIndex > 0);
+            groupEnd = Math.max(groupEnd, localStartForGroup + entry.durationTicks);
+          });
+          cursor = groupEnd;
+          if (resumeTick != null && resumeTick > cursor) {
+            ogPushMusicXmlMove(lines, 'forward', resumeTick - cursor);
+            cursor = resumeTick;
+          }
+        }
+        if (cursor < measureTicks) ogPushMusicXmlRest(lines, project, measureTicks - cursor);
       }
       lines.push('    </measure>');
     });
@@ -5593,6 +5761,8 @@
     ogScaleDegreeForPitch: ogScaleDegreeForPitch,
     ogDescribeChordInKey: ogDescribeChordInKey,
     ogBuildCompositionNomenclature: ogBuildCompositionNomenclature,
+    ogKeySignatureFifths: ogKeySignatureFifths,
+    ogBuildMusicXmlKeySignature: ogBuildMusicXmlKeySignature,
     ogNotationDurationTicks: ogNotationDurationTicks,
     ogParseNotationInput: ogParseNotationInput,
     ogWriteNotationInput: ogWriteNotationInput,

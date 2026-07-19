@@ -4,7 +4,7 @@
   "batchId": "independent-diagnostic-batch-4",
   "domainId": "mathematics",
   "reviewer": "OpenAI Codex independent cross-review",
-  "reviewedAt": "2026-07-17",
+  "reviewedAt": "2026-07-18",
   "itemCount": 33,
   "correctionCount": 4,
   "correctionsMade": [
@@ -51,6 +51,57 @@
     }
   ],
   "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 33,
+      "reviewedItemIds": [
+        "parapro-b4-mathematics-001",
+        "parapro-b4-mathematics-002",
+        "parapro-b4-mathematics-003",
+        "parapro-b4-mathematics-004",
+        "parapro-b4-mathematics-005",
+        "parapro-b4-mathematics-006",
+        "parapro-b4-mathematics-007",
+        "parapro-b4-mathematics-008",
+        "parapro-b4-mathematics-009",
+        "parapro-b4-mathematics-010",
+        "parapro-b4-mathematics-011",
+        "parapro-b4-mathematics-012",
+        "parapro-b4-mathematics-013",
+        "parapro-b4-mathematics-014",
+        "parapro-b4-mathematics-015",
+        "parapro-b4-mathematics-016",
+        "parapro-b4-mathematics-017",
+        "parapro-b4-mathematics-018",
+        "parapro-b4-mathematics-019",
+        "parapro-b4-mathematics-020",
+        "parapro-b4-mathematics-021",
+        "parapro-b4-mathematics-022",
+        "parapro-b4-mathematics-023",
+        "parapro-b4-mathematics-024",
+        "parapro-b4-mathematics-025",
+        "parapro-b4-mathematics-026",
+        "parapro-b4-mathematics-027",
+        "parapro-b4-mathematics-028",
+        "parapro-b4-mathematics-029",
+        "parapro-b4-mathematics-030",
+        "parapro-b4-mathematics-031",
+        "parapro-b4-mathematics-032",
+        "parapro-b4-mathematics-033"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections: all 33 mathematics items are key-correct, blueprint-aligned, independently usable, source-supported, accessible, and structurally ready for integrated QA.",
+  "priorChecks": {
     "blueprintFit": {
       "status": "pass",
       "officialFramework": "ETS ParaPro Assessment (1755) Study Companion",
@@ -259,5 +310,17 @@
       "finding": "Prompts use concise school or classroom contexts, provide all required numerical information in text, and avoid cultural knowledge unrelated to mathematics. Application items ask for models, feedback, representations, or error analysis within a paraeducator's instructional-support role; none requires diagnosis, grading policy, or unsupervised instructional decisions."
     }
   },
-  "verdict": "pass-after-corrections: all 33 mathematics items are key-correct, blueprint-aligned, independently usable, source-supported, accessible, and structurally ready for integrated QA."
+  "reviewedFile": "dev-tools/authored/parapro_batch4_mathematics_33.json",
+  "blockers": [],
+  "sourceSha256": "78c167b2ac07c2557ddf064a877b69d48f9ef0177ba2d9dcf6b70735ed1bbc3b",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "78c167b2ac07c2557ddf064a877b69d48f9ef0177ba2d9dcf6b70735ed1bbc3b"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 4,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
 }

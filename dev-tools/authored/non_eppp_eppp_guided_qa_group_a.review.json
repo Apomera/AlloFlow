@@ -1,0 +1,1234 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-07-18",
+  "reviewer": "OpenAI Codex independent EPPP-guided review",
+  "title": "EPPP-guided independent QA review: non-EPPP group A final corrected snapshot",
+  "verdict": "pass-with-major-editorial-priorities-and-declared-independent-content-gaps - the corrected current snapshot has zero open wrong-key, factual, source, scope, learning-link, blueprint-boundary, provenance, encoding, or source/deploy-parity defects. Generic but accurate option feedback, clue heuristics, zero diagrams, and the honestly declared 2,800-question independent-content gap remain major editorial and development warnings rather than hard factual failures.",
+  "packs": [
+    {
+      "stem": "audiology_5343",
+      "packId": "praxis-audiology-5343",
+      "title": "Audiology 5343 diagnostics",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 120,
+        "minutes": 120
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 14,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 0
+      },
+      "warningItemCount": 187,
+      "warningCounts": {
+        "shortPrompt": 5,
+        "severeAnswerLengthClue": 176,
+        "keyStemLexicalLeakage": 77,
+        "asymmetricExtremeDistractors": 18,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 2
+      },
+      "packSha256": "40044e83c9b2cdee32eb46eb4f6ab03c81ab7013c57c18c8e78b1bee08aed4a9",
+      "artifactSha256": {
+        "_pack.json": "40044e83c9b2cdee32eb46eb4f6ab03c81ab7013c57c18c8e78b1bee08aed4a9",
+        "_items.json": "4dc77d3d6236a92f6295fc773b706eec3fb01b6d8afa3624f332c462c0a33502",
+        "_native_qa.json": "ac6763be2252924d3a500e1a901c61b8781c81a372565fbed693fbc951910104",
+        "_native_qa.md": "50c017923ebb64e690b59f146b7ff7896184f8a1d673c560e73a54f1cff1bc80",
+        "_learning_library.json": "75f1d6510801e5d8d005148d6e4da55e3817f6c98bff2c4da1a3129c6475653d",
+        "_learning_library_qa.json": "b8518f3224ff314f038b683c14afaf739d2ce5037bcb350bf10949d03ef55c23",
+        "_learning_library_qa.md": "6a83c315906061c4b0506d75d6c7a2d9756464fd7329c94ec659b7752556e272"
+      },
+      "manualPriorityItemIds": [
+        "aud5343-b1-058",
+        "aud5343-b1-060",
+        "aud5343-b2-088",
+        "aud5343-b1-022",
+        "aud5343-b1-028",
+        "aud5343-b1-062",
+        "aud5343-b2-022",
+        "aud5343-b2-028",
+        "aud5343-b2-045",
+        "aud5343-b2-062",
+        "aud5343-b1-004",
+        "aud5343-b1-017"
+      ]
+    },
+    {
+      "stem": "early_childhood_5025",
+      "packId": "praxis-early-childhood-5025",
+      "title": "Early Childhood Education (5025)",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 120,
+        "minutes": 120
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 7,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 0
+      },
+      "warningItemCount": 146,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 134,
+        "keyStemLexicalLeakage": 74,
+        "asymmetricExtremeDistractors": 30,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 90
+      },
+      "packSha256": "3103f491e90c07ddba885eefa1abad35a2e2de11059991078adf371540174c71",
+      "artifactSha256": {
+        "_pack.json": "3103f491e90c07ddba885eefa1abad35a2e2de11059991078adf371540174c71",
+        "_items.json": "c13883703659875236b8b5530c0de3d9fe50f11b2e59ee97fa052f378c4385fd",
+        "_native_qa.json": "9a3d7c4e67ce41fb933d68bca1c4d0ec7fc5f995768ff743ed080087ba244cd1",
+        "_native_qa.md": "07f2eb7895b366a845db9097114de4ae59e8ebbec19a490b9ebaaa5b13739843",
+        "_learning_library.json": "d08de8087cda03903eee2b750a9f942dd388f3bf5fb6b8c76e72f9466cef565d",
+        "_learning_library_qa.json": "8ec29dd548cf6905b2eb29c7d9552db4d83cc50ed2f1cee0ea642072d30ffd1e",
+        "_learning_library_qa.md": "1d7a99a6d6153f91689a373bfae25efe65f72a4bba05383c06abe1070dfcb671"
+      },
+      "manualPriorityItemIds": [
+        "ec5025-b1-031",
+        "ec5025-b1-032",
+        "ec5025-b1-033",
+        "ec5025-b1-034",
+        "ec5025-b1-035",
+        "ec5025-b1-036",
+        "ec5025-b1-037",
+        "ec5025-b1-038",
+        "ec5025-b1-039",
+        "ec5025-b1-040",
+        "ec5025-b1-041",
+        "ec5025-b1-042",
+        "ec5025-b1-043",
+        "ec5025-b1-044",
+        "ec5025-b1-045",
+        "ec5025-b1-046",
+        "ec5025-b1-047",
+        "ec5025-b1-048",
+        "ec5025-b1-049",
+        "ec5025-b1-050",
+        "ec5025-b1-051",
+        "ec5025-b1-052",
+        "ec5025-b1-053",
+        "ec5025-b1-054",
+        "ec5025-b1-055",
+        "ec5025-b2-031",
+        "ec5025-b2-032",
+        "ec5025-b2-033",
+        "ec5025-b2-034",
+        "ec5025-b2-035",
+        "ec5025-b2-036",
+        "ec5025-b2-037",
+        "ec5025-b2-038",
+        "ec5025-b2-039",
+        "ec5025-b2-040",
+        "ec5025-b2-041",
+        "ec5025-b2-042",
+        "ec5025-b2-043",
+        "ec5025-b2-044",
+        "ec5025-b2-045",
+        "ec5025-b2-046",
+        "ec5025-b2-047",
+        "ec5025-b2-048",
+        "ec5025-b2-049",
+        "ec5025-b2-050",
+        "ec5025-b2-051",
+        "ec5025-b2-052",
+        "ec5025-b2-053",
+        "ec5025-b2-054",
+        "ec5025-b2-055",
+        "ec5025-b1-026",
+        "ec5025-b2-026",
+        "ec5025-b1-063",
+        "ec5025-b2-063",
+        "ec5025-b1-077",
+        "ec5025-b2-077"
+      ]
+    },
+    {
+      "stem": "educational_leadership_5412",
+      "packId": "praxis-educational-leadership-5412",
+      "title": "Educational Leadership (5412)",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 120,
+        "minutes": 165
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 10,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 0
+      },
+      "warningItemCount": 200,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 200,
+        "keyStemLexicalLeakage": 58,
+        "asymmetricExtremeDistractors": 12,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 0
+      },
+      "packSha256": "b3e3b9f20572efb4a5ce25d97cae9098db95e9649311c9cba3a7f5de248a0a2b",
+      "artifactSha256": {
+        "_pack.json": "b3e3b9f20572efb4a5ce25d97cae9098db95e9649311c9cba3a7f5de248a0a2b",
+        "_items.json": "765006cdc1cd072fa35ad024ab7ed29037dbbb3f11a6d9d59b67931aabe08a7f",
+        "_native_qa.json": "201ff603bbd39583f1128c3f3e4b6b4c1c08f539415ed3f6a73e64933c064be9",
+        "_native_qa.md": "177aca2f6df9b57edeefca150abe2703405bb40f173b814e2b17d9fae4d0113a",
+        "_learning_library.json": "564a73c144738504c19d26e636c9bf64766c543e5ecf7278da3cc8adf4c71d6b",
+        "_learning_library_qa.json": "a539ee5878fa1c2e253a9636217ad4d6e8676bb2b16b2a387d7fc1d8cb62578b",
+        "_learning_library_qa.md": "4ec7ff68bf3e1b5d7becbdc0a61ff0ff10d23231fb0d619c2621194d4563f8fd"
+      },
+      "manualPriorityItemIds": [
+        "lead5412-b1-070",
+        "lead5412-b2-070",
+        "lead5412-b1-093",
+        "lead5412-b2-093",
+        "lead5412-b1-040",
+        "lead5412-b2-040"
+      ]
+    },
+    {
+      "stem": "esol_5362",
+      "packId": "praxis-esol-5362",
+      "title": "Praxis ESOL (5362)",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 120,
+        "minutes": 120
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 6,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 8
+      },
+      "warningItemCount": 198,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 196,
+        "keyStemLexicalLeakage": 92,
+        "asymmetricExtremeDistractors": 8,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 0
+      },
+      "packSha256": "a07617e7a0f8284c8a0b2acb17deb2ceac2efba99b3415e3673f1aee9c1fc944",
+      "artifactSha256": {
+        "_pack.json": "a07617e7a0f8284c8a0b2acb17deb2ceac2efba99b3415e3673f1aee9c1fc944",
+        "_items.json": "950bd0df473e96bb9fc51d2b284f0c8b2739086a304fc69333cdfc7953b71ab6",
+        "_native_qa.json": "d9ae2da19d57e3ebb04d9771a80ad3827caa73f67e214dc77f7d7c390e26d3c7",
+        "_native_qa.md": "0bbc918dca8c34495dbfe8f1aebdfe35136a3e75c06c33c256093b23a55dc2a6",
+        "_learning_library.json": "fc46acbd8d177ce51ae25f45f210d60000822ec3833f12825d52d99712be975f",
+        "_learning_library_qa.json": "f714cffc35d8f6b7276988c87df44be0b1369bfd65d41a230bbd77ced4679392",
+        "_learning_library_qa.md": "de917411b99e6d82c920b5aadbe288e4229a5ae3a53000e35763e23d43d6f734"
+      },
+      "manualPriorityItemIds": [
+        "esol5362-b1-072",
+        "esol5362-b2-072",
+        "esol5362-b1-058",
+        "esol5362-b2-058",
+        "esol5362-b1-053",
+        "esol5362-b2-053"
+      ]
+    },
+    {
+      "stem": "plt_5_9_5623",
+      "packId": "praxis-plt-grades-5-9-5623",
+      "title": "PLT: Grades 5–9 (5623)",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 70,
+        "minutes": 70
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 4,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 8
+      },
+      "warningItemCount": 198,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 198,
+        "keyStemLexicalLeakage": 96,
+        "asymmetricExtremeDistractors": 6,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 0
+      },
+      "packSha256": "0c7762fa172c7f061dbf79f6f71354cecc3beede81b7d6e8a33c317a50b81663",
+      "artifactSha256": {
+        "_pack.json": "0c7762fa172c7f061dbf79f6f71354cecc3beede81b7d6e8a33c317a50b81663",
+        "_items.json": "c3f6ab4ec6b5646398eef0fe094d73e82b6ff6b98d0e5562a090051d2d75bf80",
+        "_native_qa.json": "371ccf13c54e8f4c33da04da70c5bac2ad7dce49ac2f9cf6d2ca594d50454b84",
+        "_native_qa.md": "cd1cadae100d4c71b52a1c1ab7db8bd27b7962688ed44f6d13447155d6c68c00",
+        "_learning_library.json": "094dd1d8f1c3abb84f7c4d4e885dec638de2d372b5ce2484bae8bbeb5a1ab72f",
+        "_learning_library_qa.json": "81f853322e98705a5df0e672ef6dd230b479f03b29de1f5b045097e5ecb874e1",
+        "_learning_library_qa.md": "5dd9c91ca946f14905e055d627d2a3081c70820562f81b23f9bae8568bff8fed"
+      },
+      "manualPriorityItemIds": [
+        "plt5623-b1-085",
+        "plt5623-b2-085",
+        "plt5623-b1-082",
+        "plt5623-b2-082",
+        "plt5623-b1-079",
+        "plt5623-b1-095"
+      ]
+    },
+    {
+      "stem": "plt_7_12_5624",
+      "packId": "praxis-plt-grades-7-12-5624",
+      "title": "PLT: Grades 7–12 (5624)",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 70,
+        "minutes": 70
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 4,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 8
+      },
+      "warningItemCount": 198,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 198,
+        "keyStemLexicalLeakage": 96,
+        "asymmetricExtremeDistractors": 6,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 0
+      },
+      "packSha256": "3ce11c8f36ffc1471f1e8fc0457d4670201cc7e214e5417a132b0941b46091db",
+      "artifactSha256": {
+        "_pack.json": "3ce11c8f36ffc1471f1e8fc0457d4670201cc7e214e5417a132b0941b46091db",
+        "_items.json": "13aa2b87dd486a351f5d303c022878a3203909415d5f0160f068308126f14610",
+        "_native_qa.json": "6ebd2fcd812b6bef8fe6f7fa56f76d10ae950ace2b2f27792a8ab0d1ba7d4fa9",
+        "_native_qa.md": "02961505855c147096088c61caa400bce9a3d3163f8fab45165da3d4282b77f6",
+        "_learning_library.json": "e9fbaed7c6f31fdcfcae56466e1f304ffe683ed1655c1ccb8d91101d64e22fd9",
+        "_learning_library_qa.json": "5f9c4c84b92f1c9d4cfbb31d3450db7711e69c13ea22c656f6b19f73c84a4fd0",
+        "_learning_library_qa.md": "4f7c4c94b3ed5ac95914fa11b8bca7ffcad1ba5588aa6a02de2afb574d9a84b3"
+      },
+      "manualPriorityItemIds": [
+        "plt5624-b1-085",
+        "plt5624-b2-085",
+        "plt5624-b1-082",
+        "plt5624-b2-082",
+        "plt5624-b1-079",
+        "plt5624-b1-095"
+      ]
+    },
+    {
+      "stem": "plt_early_childhood_5621",
+      "packId": "praxis-plt-early-childhood-5621",
+      "title": "PLT: Early Childhood (5621)",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "simulation": {
+        "items": 70,
+        "minutes": 70
+      },
+      "answerPositions": [
+        125,
+        125,
+        125,
+        125
+      ],
+      "sourceReferences": 4,
+      "nativeQaStatus": "pass",
+      "learningLibraryQaStatus": "pass",
+      "learningLibrary": {
+        "chapters": 12,
+        "sections": 48,
+        "knowledgeChecks": 60,
+        "diagrams": 0,
+        "flashcards": 75,
+        "memoryAids": 20,
+        "constructedResponseWorkshops": 8
+      },
+      "warningItemCount": 198,
+      "warningCounts": {
+        "shortPrompt": 0,
+        "severeAnswerLengthClue": 198,
+        "keyStemLexicalLeakage": 99,
+        "asymmetricExtremeDistractors": 6,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 0
+      },
+      "packSha256": "c77b23ebcd8c481fdb7955a8b1e58a5bdc8ab6f3c0f58b802d7e801555b26a33",
+      "artifactSha256": {
+        "_pack.json": "c77b23ebcd8c481fdb7955a8b1e58a5bdc8ab6f3c0f58b802d7e801555b26a33",
+        "_items.json": "c4008595f341b324d6ef10156b27acbf6247658d1f1f5ac0957632a342165d82",
+        "_native_qa.json": "b0b4b9f57ea3df5bc22ecf1be9c4992f7a039e3d8205ed0c41437b12d91244ae",
+        "_native_qa.md": "87fa46c5aca636acb192625298597bf4f78d4523f429c7e199b292595f9d8e8e",
+        "_learning_library.json": "917fc396501205eccce10babcef711a587c512e386c2ae382e1ff9f9e3ecdb09",
+        "_learning_library_qa.json": "e083bdafe4f31d97cccd7f7e4e3d905aa1a98ce0749b07170bbdb0e3687df55b",
+        "_learning_library_qa.md": "2d71c6ec40e3da1ea6bd4e78da4f87e8f006eff555c416671fedae5fc3c774e0"
+      },
+      "manualPriorityItemIds": [
+        "plt5621-b1-086",
+        "plt5621-b1-072",
+        "plt5621-b2-002",
+        "plt5621-b2-014",
+        "plt5621-b2-077",
+        "plt5621-b1-061",
+        "plt5621-b1-002",
+        "plt5621-b1-062",
+        "plt5621-b1-082",
+        "plt5621-b1-003",
+        "plt5621-b1-083",
+        "plt5621-b1-004"
+      ]
+    }
+  ],
+  "sourceItemsReviewed": 1400,
+  "learningActivitiesStructurallyReviewed": 3500,
+  "manuallyAdjudicatedItems": 104,
+  "reviewStandard": {
+    "guideArtifacts": [
+      "test_prep/eppp_native_qa.json",
+      "test_prep/eppp_distractor_quality_diagnostics.json",
+      "test_prep/eppp_option_feedback_diagnostics.json",
+      "test_prep/eppp_native_quality_audit_wave_01.json",
+      "test_prep/eppp_native_quality_audit_wave_02.json",
+      "test_prep/eppp_native_quality_audit_wave_03.json",
+      "test_prep/eppp_learning_library.json",
+      "test_prep/eppp_learning_library_qa.json"
+    ],
+    "method": "Automated hard-gate inspection covered all 3,500 activities, all 1,400 source items, every learning-library structure and learner-visible source, current native/library QA, exact hashes, and 50 source/deploy pairs. Manual review adjudicated 104 risk-priority items, including both variants of all 25 formerly suspect EC5025 mathematics mappings and the named EC phoneme, equation, social-studies, and Earth-materials cases. The three PLT libraries were additionally checked with mutation-tested foreign-code and grade-band integrity gates.",
+    "releaseRule": "A verdict may begin with pass only when no current wrong key, fact, source, scope, learning link, blueprint boundary, provenance declaration, encoding, or source/deploy parity defect remains. Accurate-but-generic feedback, clue diagnostics, zero diagrams, and honestly declared distinct-content gaps remain visible nonblocking warnings."
+  },
+  "scope": {
+    "sourceRoot": "test_prep",
+    "deployMirrorRoot": "prismflow-deploy/public/test_prep",
+    "artifactSuffixesReviewedPerPack": [
+      "_pack.json",
+      "_items.json",
+      "_native_qa.json",
+      "_native_qa.md",
+      "_learning_library.json",
+      "_learning_library_qa.json",
+      "_learning_library_qa.md"
+    ],
+    "exactPackStems": [
+      "audiology_5343",
+      "early_childhood_5025",
+      "educational_leadership_5412",
+      "esol_5362",
+      "plt_5_9_5623",
+      "plt_7_12_5624",
+      "plt_early_childhood_5621"
+    ],
+    "totals": {
+      "packs": 7,
+      "sourceItemsAutomated": 1400,
+      "sourceItemsManuallyAdjudicated": 104,
+      "guidedItemsStructurallyReviewed": 2100,
+      "totalPackActivities": 3500,
+      "distinctIndependentContentKernels": 700,
+      "newIndependentItemsNeeded": 2800,
+      "chapters": 84,
+      "sections": 336,
+      "knowledgeChecks": 420,
+      "diagrams": 0,
+      "flashcards": 525,
+      "memoryAids": 140,
+      "workshops": 32
+    }
+  },
+  "automatedResults": {
+    "snapshot": {
+      "algorithm": "sha256",
+      "sha256": "cd3ccdcf724c8e361f652155ed2e34e47b0d59c1d04fab11f18da3dc9fbafc14",
+      "meaning": "Hash of the seven current source-pack hashes in exact pack-stem order; each pack row also records all seven artifact hashes."
+    },
+    "regressionTests": {
+      "status": "pass",
+      "testFiles": 11,
+      "tests": 46,
+      "defectSpecificRegressions": {
+        "status": "pass",
+        "testFiles": 4,
+        "tests": 15
+      },
+      "command": "npm test -- tests/audiology_5343_pack.test.js tests/audiology_5343_learning_library.test.js tests/early_childhood_5025.test.js tests/early_childhood_5025_semantic_qa.test.js tests/educational_leadership_5412_pack.test.js tests/educational_leadership_5412_learning_library.test.js tests/esol_5362_pack.test.js tests/esol_5362_learning_library.test.js tests/plt_5_9_5623.test.js tests/plt_7_12_5624.test.js tests/plt_early_childhood_5621.test.js",
+      "coverage": "Pack registration, five-bank shape, balance, diagnostic behavior, simulation boundaries, library inventory/linkage, EC item-level semantic mapping, removal of the former EC generic rationale family, PLT foreign-code and out-of-band mutation gates, generated QA, and deployment mirrors."
+    },
+    "hardGate": {
+      "status": "pass",
+      "openHardFindings": 0,
+      "activitiesChecked": 3500,
+      "sourceItemsChecked": 1400,
+      "checks": {
+        "readyFiveBankInventoryAndAnswerBalance": "pass",
+        "oneBestAnswerAndFourDistinctChoices": "pass",
+        "rationaleAndFourOptionFeedbackPresence": "pass",
+        "authoritativeHttpsSourcesAndCatalogCoverage": "pass",
+        "learningSkillChapterDomainLinks": "pass",
+        "reviewTierAndGuidedProvenance": "pass",
+        "textEncodingAndAnswerLetterLeakage": "pass",
+        "simulationAndProfessionalScopeBoundaries": "pass",
+        "nativeAndLearningQaStatus": "pass",
+        "sourceItemsArtifactConsistency": "pass",
+        "sourceDeployParity": "pass",
+        "independentContentAccounting": "pass"
+      },
+      "answerBalance": {
+        "everyPack": [
+          125,
+          125,
+          125,
+          125
+        ],
+        "everyOneHundredItemBank": [
+          25,
+          25,
+          25,
+          25
+        ]
+      },
+      "uniqueIdsPerPack": 500,
+      "uniqueNormalizedPromptsPerPack": 500,
+      "invalidKeys": 0,
+      "duplicateChoicesWithinItem": 0,
+      "missingOrShortHardThresholdRationales": 0,
+      "missingOptionFeedbackArrays": 0,
+      "invalidLearningLinks": 0,
+      "invalidReviewTierProvenance": 0,
+      "invalidOrUncatalogedReferences": 0,
+      "encodingDefects": 0
+    },
+    "correctedDefectClosure": {
+      "status": "pass",
+      "earlyChildhood5025": {
+        "sourceItemsChecked": 200,
+        "formerGenericDisciplinaryRationales": 0,
+        "fullOverallRationaleCopiesInWrongOptionFeedback": 0,
+        "itemLevelSemanticSkillChapterMismatches": 0,
+        "namedStemKeyLinkChecks": [
+          "ec5025-b1-026",
+          "ec5025-b2-026",
+          "ec5025-b1-052",
+          "ec5025-b2-052",
+          "ec5025-b1-077",
+          "ec5025-b2-077"
+        ],
+        "namedStemKeyLinkDefects": 0
+      },
+      "pltLibraries": {
+        "plt_5_9_5623": {
+          "expectedCode": "5623",
+          "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
+          "referenceSets": 223,
+          "officialSourceReferenceSets": 223,
+          "foreignCodeOccurrences": 0,
+          "k6ContaminationOccurrences": 0,
+          "foreignBandOccurrences": 0,
+          "outOfBandOccurrences": 0,
+          "negativeGates": "pass"
+        },
+        "plt_7_12_5624": {
+          "expectedCode": "5624",
+          "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw381f0276/pdfs/5624.pdf",
+          "referenceSets": 223,
+          "officialSourceReferenceSets": 223,
+          "foreignCodeOccurrences": 0,
+          "k6ContaminationOccurrences": 0,
+          "foreignBandOccurrences": 0,
+          "outOfBandOccurrences": 0,
+          "negativeGates": "pass"
+        },
+        "plt_early_childhood_5621": {
+          "expectedCode": "5621",
+          "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+          "referenceSets": 223,
+          "officialSourceReferenceSets": 223,
+          "foreignCodeOccurrences": 0,
+          "k6ContaminationOccurrences": 0,
+          "foreignBandOccurrences": 0,
+          "outOfBandOccurrences": 0,
+          "negativeGates": "pass"
+        }
+      },
+      "interpretation": "The former EC generic-rationale, semantic-link, and phoneme stem/key defects are zero. Each PLT library has 223/223 official companion reference sets and zero foreign-code, K-6, foreign-band, or out-of-band occurrences; negative mutation regressions pass."
+    },
+    "independentContentAccounting": {
+      "status": "honestly-declared-target-gap",
+      "sourceItems": 1400,
+      "distinctIndependentContentKernels": 700,
+      "parallelSourceVariants": 700,
+      "guidedReviewActivities": 2100,
+      "independentQuestionTarget": 3500,
+      "newIndependentItemsNeeded": 2800,
+      "perPackGap": {
+        "audiology_5343": 400,
+        "early_childhood_5025": 400,
+        "educational_leadership_5412": 400,
+        "esol_5362": 400,
+        "plt_5_9_5623": 400,
+        "plt_7_12_5624": 400,
+        "plt_early_childhood_5621": 400
+      },
+      "interpretation": "Every pack provides five 100-activity banks, but each currently rests on 100 distinct source kernels. The parallel and guided transformations remain transparently labeled and are not counted as 500 independent questions."
+    },
+    "warningDiagnostics": {
+      "status": "open-major-editorial-priority",
+      "sourceItemsScreened": 1400,
+      "itemsWithOneOrMoreWarnings": 1325,
+      "counts": {
+        "shortPrompt": 5,
+        "severeAnswerLengthClue": 1300,
+        "keyStemLexicalLeakage": 592,
+        "asymmetricExtremeDistractors": 86,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 92
+      },
+      "perPackWarningItems": {
+        "audiology_5343": 187,
+        "early_childhood_5025": 146,
+        "educational_leadership_5412": 200,
+        "esol_5362": 198,
+        "plt_5_9_5623": 198,
+        "plt_7_12_5624": 198,
+        "plt_early_childhood_5621": 198
+      },
+      "severeAnswerLengthClueByPack": {
+        "audiology_5343": 176,
+        "early_childhood_5025": 134,
+        "educational_leadership_5412": 200,
+        "esol_5362": 196,
+        "plt_5_9_5623": 198,
+        "plt_7_12_5624": 198,
+        "plt_early_childhood_5621": 198
+      },
+      "interpretation": "These are screening heuristics, not automatic wrong-key findings. Manual priority review found defensible keys, but frequent length, lexical-overlap, and distractor-extremity signals materially reduce exam-likeness and warrant editing."
+    },
+    "optionFeedbackAudit": {
+      "status": "open-major-editorial-priority",
+      "incorrectOptionExplanations": 4200,
+      "startsWithNotTheBestAnswerWrapper": 3600,
+      "startsWithEcClaimConflictWrapper": 600,
+      "containsCompleteOverallRationale": 3600,
+      "underSixteenWords": 0,
+      "underOneHundredCharacters": 0,
+      "interpretation": "Every required feedback field is present and the manually reviewed feedback remains directionally accurate. Six packs use a generic Not the best answer wrapper and copy the overall rationale; EC5025 now names the selected claim and an item-specific conflict but still follows a repeated template. These are remediation-depth warnings, not evidence of a wrong key or fact."
+    },
+    "learningLibraryAudit": {
+      "status": "pass-hard-structure-with-depth-warnings",
+      "totals": {
+        "chapters": 84,
+        "sections": 336,
+        "knowledgeChecks": 420,
+        "diagrams": 0,
+        "flashcards": 525,
+        "memoryAids": 140,
+        "constructedResponseWorkshops": 32
+      },
+      "knowledgeChecksWithSevereAnswerLengthClue": 390,
+      "longSentenceRepetitionByPack": {
+        "audiology_5343": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 0
+        },
+        "early_childhood_5025": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 4
+        },
+        "educational_leadership_5412": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 2
+        },
+        "esol_5362": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 4
+        },
+        "plt_5_9_5623": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 0
+        },
+        "plt_7_12_5624": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 0
+        },
+        "plt_early_childhood_5621": {
+          "sections": 48,
+          "longSentencesRepeatedInEverySection": 0
+        }
+      },
+      "epppComparator": {
+        "chapters": 49,
+        "sections": 278,
+        "knowledgeChecks": 109,
+        "diagrams": 25,
+        "diagramPlacements": 58,
+        "flashcards": 415,
+        "memoryAids": 255
+      },
+      "interpretation": "All libraries meet their released structural and linkage requirements. Zero diagrams and repeated instructional prose remain EPPP feature-depth warnings; visual supports should be added only where they materially teach a concept and include accessible alternatives."
+    },
+    "referenceCatalogAudit": {
+      "status": "pass",
+      "uniqueLearnerVisibleReferences": 50,
+      "catalogedWithTitleOrganizationSummaryAndCredibility": 50,
+      "referenceCatalogSha256": "8dc53035b2adbe8c782ce060c239c886c5142ee19249b02e91a5518f16840c17",
+      "interpretation": "Every learner-visible URL resolves to a catalog entry with a source name, organization, brief summary, and credibility context rather than a bare DOI or URL."
+    },
+    "officialBlueprintVerification": [
+      {
+        "stem": "audiology_5343",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "alignment": "pass - selected-response count and pacing align; this is explicitly independent practice and not a score or pass predictor"
+      },
+      {
+        "stem": "early_childhood_5025",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "alignment": "pass - selected-response count and pacing align; this is explicitly independent practice and not a score or pass predictor"
+      },
+      {
+        "stem": "educational_leadership_5412",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 165,
+        "packSimulation": "120 selected-response items / 165 minutes",
+        "alignment": "pass - selected-response count and pacing align; this is explicitly independent practice and not a score or pass predictor"
+      },
+      {
+        "stem": "esol_5362",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialConstructedResponseCount": 0,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 selected-response items / 120 minutes",
+        "alignment": "pass - selected-response count and pacing align; this is explicitly independent practice and not a score or pass predictor"
+      },
+      {
+        "stem": "plt_5_9_5623",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
+        "officialSelectedResponseCount": 70,
+        "officialConstructedResponseCount": 4,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "70 selected-response items / 70 minutes",
+        "alignment": "pass - the separate 50-minute written-response segment, four constructed responses, unscored workshops, and full 120-minute official session are disclosed"
+      },
+      {
+        "stem": "plt_7_12_5624",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw381f0276/pdfs/5624.pdf",
+        "officialSelectedResponseCount": 70,
+        "officialConstructedResponseCount": 4,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "70 selected-response items / 70 minutes",
+        "alignment": "pass - the separate 50-minute written-response segment, four constructed responses, unscored workshops, and full 120-minute official session are disclosed"
+      },
+      {
+        "stem": "plt_early_childhood_5621",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "officialSelectedResponseCount": 70,
+        "officialConstructedResponseCount": 4,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "70 selected-response items / 70 minutes",
+        "alignment": "pass - the separate 50-minute written-response segment, four constructed responses, unscored workshops, and full 120-minute official session are disclosed"
+      }
+    ],
+    "existingQaAssessment": {
+      "nativeQaReportsPassing": 7,
+      "learningLibraryQaReportsPassing": 7,
+      "disposition": "accepted as supporting evidence only after independent closure checks",
+      "reason": "The final PLT QA now includes foreign-code, grade-band, 223/223 source, and negative-mutation gates; EC has item-level semantic and generic-rationale regressions. Generic feedback, clue signals, diagram depth, and distinct-content gaps deliberately remain warning/development categories."
+    },
+    "sourceDeployParity": {
+      "status": "pass",
+      "packArtifactPairsCompared": 49,
+      "referenceCatalogPairsCompared": 1,
+      "totalByteIdenticalPairs": 50,
+      "artifactSuffixes": [
+        "_pack.json",
+        "_items.json",
+        "_native_qa.json",
+        "_native_qa.md",
+        "_learning_library.json",
+        "_learning_library_qa.json",
+        "_learning_library_qa.md"
+      ],
+      "comparison": "Exact byte equality for all seven artifact kinds for each exact Group A stem plus reference_catalog.json."
+    }
+  },
+  "manualPriorityReview": {
+    "independentItemsManuallyAdjudicated": 104,
+    "wrongKeysFound": 0,
+    "factualOrScopeDefectsFound": 0,
+    "learningLinkDefectsFound": 0,
+    "defensibleKeys": 104,
+    "coverage": "Risk-priority, domain-stratified samples across every pack; all 50 EC5025 b1/b2 mathematics items 031-055; both phoneme, producers/consumers, and Earth-materials variants; and grade-band-sensitive, legal, assessment, mentoring, accessibility, and applied-practice cases.",
+    "result": "No current wrong key, factual statement, credential-scope error, or semantic learning-link error was found in the 104-item docket. Manual review confirmed that key-length asymmetry and templated distractor feedback remain material editorial weaknesses."
+  },
+  "findings": [
+    {
+      "id": "G-A-CLOSED-001",
+      "severity": "critical-hard-scope",
+      "blocking": true,
+      "status": "resolved",
+      "title": "PLT 5622/K-6 and out-of-band library contamination",
+      "affectedPacks": [
+        "plt_5_9_5623",
+        "plt_7_12_5624",
+        "plt_early_childhood_5621"
+      ],
+      "evidence": {
+        "plt_5_9_5623": {
+          "expectedCode": "5623",
+          "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
+          "referenceSets": 223,
+          "officialSourceReferenceSets": 223,
+          "foreignCodeOccurrences": 0,
+          "k6ContaminationOccurrences": 0,
+          "foreignBandOccurrences": 0,
+          "outOfBandOccurrences": 0,
+          "negativeGates": "pass"
+        },
+        "plt_7_12_5624": {
+          "expectedCode": "5624",
+          "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw381f0276/pdfs/5624.pdf",
+          "referenceSets": 223,
+          "officialSourceReferenceSets": 223,
+          "foreignCodeOccurrences": 0,
+          "k6ContaminationOccurrences": 0,
+          "foreignBandOccurrences": 0,
+          "outOfBandOccurrences": 0,
+          "negativeGates": "pass"
+        },
+        "plt_early_childhood_5621": {
+          "expectedCode": "5621",
+          "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+          "referenceSets": 223,
+          "officialSourceReferenceSets": 223,
+          "foreignCodeOccurrences": 0,
+          "k6ContaminationOccurrences": 0,
+          "foreignBandOccurrences": 0,
+          "outOfBandOccurrences": 0,
+          "negativeGates": "pass"
+        }
+      },
+      "resolution": "Pack-specific 5623, 5624, and 5621 generators and QA now require the correct official source in all 223 reference sets and reject foreign codes, K-6 markers, foreign bands, and out-of-band examples. All focused and mutation regressions pass."
+    },
+    {
+      "id": "G-A-CLOSED-002",
+      "severity": "major-hard-feedback-and-linkage",
+      "blocking": true,
+      "status": "resolved",
+      "title": "EC5025 generic rationales, semantic chapter drift, and phoneme stem/key mismatch",
+      "affectedPacks": [
+        "early_childhood_5025"
+      ],
+      "evidence": {
+        "formerGenericRationales": 0,
+        "fullRationaleFeedbackCopies": 0,
+        "semanticLinkMismatches": 0,
+        "namedDefects": 0
+      },
+      "resolution": "All 200 source items pass the item-level concept map; the former 90-item generic rationale family is absent; the phoneme stem asks for the response its key gives; equation and Earth-materials items now carry concept-specific rationales and correct links."
+    },
+    {
+      "id": "G-A-OPEN-001",
+      "severity": "major-editorial",
+      "blocking": false,
+      "status": "open",
+      "title": "Accurate but generic wrong-option feedback remains",
+      "affectedPacks": [
+        "audiology_5343",
+        "early_childhood_5025",
+        "educational_leadership_5412",
+        "esol_5362",
+        "plt_5_9_5623",
+        "plt_7_12_5624",
+        "plt_early_childhood_5621"
+      ],
+      "evidence": {
+        "incorrectOptionExplanations": 4200,
+        "startsWithNotTheBestAnswerWrapper": 3600,
+        "startsWithEcClaimConflictWrapper": 600,
+        "containsCompleteOverallRationale": 3600,
+        "underSixteenWords": 0,
+        "underOneHundredCharacters": 0
+      },
+      "impact": "Feedback exists after every response, but repeated wrappers often do not diagnose the precise misconception as deeply as the EPPP model."
+    },
+    {
+      "id": "G-A-OPEN-002",
+      "severity": "major-product-development",
+      "blocking": false,
+      "status": "open-and-transparently-declared",
+      "title": "The seven packs still need 2,800 genuinely independent question kernels",
+      "affectedPacks": [
+        "audiology_5343",
+        "early_childhood_5025",
+        "educational_leadership_5412",
+        "esol_5362",
+        "plt_5_9_5623",
+        "plt_7_12_5624",
+        "plt_early_childhood_5621"
+      ],
+      "evidence": {
+        "distinctIndependentContentKernels": 700,
+        "independentQuestionTarget": 3500,
+        "newIndependentItemsNeeded": 2800
+      },
+      "impact": "The five-bank top-level experience works, but each pack currently contains 100 distinct source kernels plus parallel and guided practice rather than 500 independent questions."
+    },
+    {
+      "id": "G-A-OPEN-003",
+      "severity": "major-editorial",
+      "blocking": false,
+      "status": "open",
+      "title": "Answer-length, lexical-overlap, and distractor-extremity clues remain",
+      "affectedPacks": [
+        "audiology_5343",
+        "early_childhood_5025",
+        "educational_leadership_5412",
+        "esol_5362",
+        "plt_5_9_5623",
+        "plt_7_12_5624",
+        "plt_early_childhood_5621"
+      ],
+      "evidence": {
+        "shortPrompt": 5,
+        "severeAnswerLengthClue": 1300,
+        "keyStemLexicalLeakage": 592,
+        "asymmetricExtremeDistractors": 86,
+        "advancedDirectRecall": 0,
+        "incorrectOptionFeedbackDetail": 0,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 92
+      },
+      "impact": "Test-wise learners may infer some answers from specificity or wording rather than the intended content knowledge."
+    },
+    {
+      "id": "G-A-OPEN-004",
+      "severity": "moderate-editorial-and-feature-depth",
+      "blocking": false,
+      "status": "open",
+      "title": "Learning libraries remain shallower and less visual than EPPP",
+      "affectedPacks": [
+        "audiology_5343",
+        "early_childhood_5025",
+        "educational_leadership_5412",
+        "esol_5362",
+        "plt_5_9_5623",
+        "plt_7_12_5624",
+        "plt_early_childhood_5621"
+      ],
+      "evidence": {
+        "diagrams": 0,
+        "sectionRepetition": {
+          "audiology_5343": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 0
+          },
+          "early_childhood_5025": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 4
+          },
+          "educational_leadership_5412": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 2
+          },
+          "esol_5362": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 4
+          },
+          "plt_5_9_5623": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 0
+          },
+          "plt_7_12_5624": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 0
+          },
+          "plt_early_childhood_5621": {
+            "sections": 48,
+            "longSentencesRepeatedInEverySection": 0
+          }
+        },
+        "knowledgeChecksWithSevereAnswerLengthClue": 390
+      },
+      "impact": "The libraries pass structural QA, but zero diagrams, recurrent prose, and knowledge-check clue patterns limit remediation depth."
+    },
+    {
+      "id": "G-A-OPEN-005",
+      "severity": "minor-schema-consistency",
+      "blocking": false,
+      "status": "open",
+      "title": "Two correct simulations do not expose every newer explicit official-metadata field",
+      "affectedPacks": [
+        "audiology_5343",
+        "educational_leadership_5412"
+      ],
+      "evidence": "Audiology has correct 120/120 simulation values but omits the newer explicit official-count/time and label/note fields; Educational Leadership has correct 120/165 values and a note but omits officialTotalTimeMinutes.",
+      "impact": "No count, timing, rendering, source, or scope error was found, but normalizing the schema would reduce maintenance and feature-consistency risk."
+    },
+    {
+      "id": "G-A-OPEN-006",
+      "severity": "moderate-qa-depth",
+      "blocking": false,
+      "status": "open",
+      "title": "Generated QA should continue expanding beyond structural gates",
+      "affectedPacks": [
+        "audiology_5343",
+        "early_childhood_5025",
+        "educational_leadership_5412",
+        "esol_5362",
+        "plt_5_9_5623",
+        "plt_7_12_5624",
+        "plt_early_childhood_5621"
+      ],
+      "evidence": "PLT and EC now have durable semantic/scope guards. The remaining feedback-template, clue, diagram-depth, and independent-content signals are surfaced as warnings rather than being silently hidden behind pass.",
+      "impact": "Future authoring waves need bounded warning dockets and human editorial review so a structural pass is not mistaken for psychometric or subject-matter validation."
+    }
+  ],
+  "correctionsRecommended": [
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "productTargetBlocking": true,
+      "action": "Author 400 genuinely new independent question kernels per pack (2,800 total), preserve official blueprint balance, and continue to label parallel and guided transformations honestly."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Rewrite generic wrong-option explanations as concise selected-distractor diagnoses, beginning with the highest-warning docket. Preserve the corrected EC concept-specific rationales and choice references."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Human-edit severe answer-length, lexical-overlap, and extreme-distractor flags for parallel grammar, specificity, plausibility, and length; rerun diagnostics after each bounded wave."
+    },
+    {
+      "priority": "P2",
+      "releaseBlocking": false,
+      "action": "Deepen repetitive learning sections and add selective accessible diagrams only where a visual materially teaches audiology, data/assessment, language, science, or learning-process content."
+    },
+    {
+      "priority": "P2",
+      "releaseBlocking": false,
+      "action": "Normalize Audiology and Educational Leadership to the newer explicit official simulation metadata schema without changing their already correct counts or pacing."
+    },
+    {
+      "priority": "P3",
+      "releaseBlocking": false,
+      "action": "Obtain credential-specific subject-matter, accessibility, legal/ethical, field-test, and psychometric review before making score-validity, readiness, or pass claims."
+    }
+  ],
+  "limitations": [
+    "Automation inspected all 3,500 activities and all learning-library structures, but semantic key and factual adjudication was risk-based and manually covered 104 of the 1,400 source items rather than every key.",
+    "The 2,100 guided activities were structurally checked for derivation, linkage, provenance, feedback, references, and boundaries; they were not treated as independent exam questions because the product labels them guided practice.",
+    "Key-length, lexical-overlap, prompt-length, and distractor-extremity counts are screening heuristics. They prioritize editing and do not by themselves prove that a key is wrong.",
+    "Official ETS Study Companions were used for blueprint boundaries. Specifications can change and should be rechecked immediately before release; this review is not ETS approval.",
+    "Reference-catalog checks establish learner-facing name, organization, summary, and credibility coverage; this review did not live-check every URL or independently fact-check every sentence in every linked source.",
+    "No psychometric calibration, field testing, differential-item-functioning analysis, independent credential-owner approval, or licensed-professional endorsement was performed.",
+    "The EPPP materials are a feature and review-process guide, not an official validation standard; the EPPP learning-library QA itself remains review-in-progress.",
+    "Artifact hashes and source/deploy parity describe the workspace at freeze time. Any later generator or content change requires a fresh QA freeze."
+  ],
+  "artifactBindings": [
+    {
+      "stem": "audiology_5343",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "b84e05fcec77dcc4ab8ac0d6cdc758c02f0e930c997cbc15d329bb05d60fc89d",
+      "learningLibrarySha256": "ed8db6abdf3f871e2abbf94604aee72f35f14a5fe4b6e0c96cda4b053d15ab72"
+    },
+    {
+      "stem": "early_childhood_5025",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
+      "learningLibrarySha256": "cf98163a2c7c50d772c36414de9edf679ac04593edaab998f66ba24850017f38"
+    },
+    {
+      "stem": "educational_leadership_5412",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "6f247aa0dd616926115d9e2db1d92895cb4cec963df621c04858ca3f5aee7d23",
+      "learningLibrarySha256": "558abf87df7f1df57c416833757d45165c83893f256387ee813ec77e19282c0a"
+    },
+    {
+      "stem": "esol_5362",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "cb9ec0f82816eca7b266d593b7ff20d89b6d0f461a050e83f552ecc8f2ce113c",
+      "learningLibrarySha256": "92e7bf02dc2130a6e97e492f4ecc6e7d62045da0c70a5cdeb0995e9efd83a355"
+    },
+    {
+      "stem": "plt_5_9_5623",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "3e0010b976873dab441b2d2d8acaad956268428011af639fe1d14529a3b257d8",
+      "learningLibrarySha256": "57c52918cb36dd79d15c40cdcbd60c3c868a5cf4aefdec72da18491d084c9c8a"
+    },
+    {
+      "stem": "plt_7_12_5624",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
+      "learningLibrarySha256": "de650307d654bb23f09d08469ac1a2e42fde02f1b50e5cf43efa430bf4ad0e01"
+    },
+    {
+      "stem": "plt_early_childhood_5621",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
+      "learningLibrarySha256": "4cb2c6d6681b59808723f13a2d30fa7f2f0b2d6f55991f121af896f100fb0961"
+    }
+  ]
+}

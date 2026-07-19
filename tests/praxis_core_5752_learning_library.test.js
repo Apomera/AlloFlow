@@ -56,6 +56,12 @@ describe('Praxis Core Combined 5752 native learning library', () => {
     }
   });
 
+  it('explains the algebra knowledge check without importing the parallel-form equation', () => {
+    const check = library.chapters.flatMap((chapter) => chapter.knowledgeChecks).find((entry) => entry.id === 'core5752-ch-11-check-01');
+    expect(check.rationale).toContain('3x = 18');
+    expect(check.rationale).not.toContain('5x = 30');
+  });
+
   it('links all 200 questions to exactly one compatible skill and chapter', () => {
     const skillById = Object.fromEntries(library.skills.map((skill) => [skill.id, skill]));
     const chapterById = Object.fromEntries(library.chapters.map((chapter) => [chapter.id, chapter]));

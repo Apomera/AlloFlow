@@ -3,19 +3,20 @@
 const fs = require('fs');
 const path = require('path');
 const banks = require('./teaching_reading_5205/item_content.cjs');
+const { cleanSourceText } = require('./teaching_reading_5205/source_text_cleanup.cjs');
 const root = path.resolve(__dirname, '..');
 const diagnosticCounts = { 'phonological-emergent': 16, 'phonics-decoding': 20, 'vocabulary-fluency': 23, comprehension: 23, 'written-expression': 18 };
 const officialCounts = { 'phonological-emergent': 14, 'phonics-decoding': 18, 'vocabulary-fluency': 21, comprehension: 21, 'written-expression': 16 };
 const ensure = (value, minimum, suffix) => String(value || '').trim().length >= minimum ? String(value).trim() : (String(value || '').trim() + ' ' + suffix).trim();
 function makeItem(bank, spec, batch, position) {
   const answerIndex = (position - 1) % 4;
-  const rationale = ensure(spec.rationale, 120, 'The response links the measured literacy skill to explicit instruction, accessible grade-level practice, and progress evidence.');
+  const rationale = ensure(cleanSourceText(spec.rationale), 120, 'The response links the measured literacy skill to explicit instruction, accessible grade-level practice, and progress evidence.');
   const choices = []; const choiceRationales = []; let distractor = 0;
   for (let index = 0; index < 4; index += 1) {
-    if (index === answerIndex) { choices.push(spec.correct); choiceRationales.push('Correct. ' + rationale); }
-    else { const value = spec.distractors[distractor++]; choices.push(value); choiceRationales.push('Not the best answer. "' + value + '" does not match the controlling literacy evidence, construct, instructional sequence, or monitoring need. ' + rationale); }
+    if (index === answerIndex) { choices.push(cleanSourceText(spec.correct)); choiceRationales.push('Correct. ' + rationale); }
+    else { const value = cleanSourceText(spec.distractors[distractor++]); choices.push(value); choiceRationales.push('Not the best answer. "' + value + '" does not match the controlling literacy evidence, construct, instructional sequence, or monitoring need. ' + rationale); }
   }
-  return { id: 'tr5205-b' + batch + '-' + String(position).padStart(3, '0'), type: 'single-choice', domainId: bank.domainId, difficulty: spec.difficulty, prompt: batch === 1 ? spec.promptA : spec.promptB, choices, answerIndex, rationale, references: bank.references.slice(), reviewStatus: 'source-reviewed', qaStatus: 'qa-passed', qaReviewedAt: '2026-07-14', choiceRationales, skillIds: [bank.id], chapterIds: [bank.chapterId] };
+  return { id: 'tr5205-b' + batch + '-' + String(position).padStart(3, '0'), type: 'single-choice', domainId: bank.domainId, difficulty: spec.difficulty, prompt: cleanSourceText(batch === 1 ? spec.promptA : spec.promptB), choices, answerIndex, rationale, references: bank.references.slice(), reviewStatus: 'source-reviewed', qaStatus: 'qa-passed', qaReviewedAt: '2026-07-14', choiceRationales, skillIds: [bank.id], chapterIds: [bank.chapterId] };
 }
 const items = [];
 for (let batch = 1; batch <= 2; batch += 1) { let position = 0; for (const bank of banks) for (const spec of bank.questions) items.push(makeItem(bank, spec, batch, ++position)); if (position !== 100) throw new Error('Each diagnostic bank must contain 100 items.'); }
@@ -32,7 +33,7 @@ if (new Set(items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').t
 const pack = {
   schemaVersion: 1, id: 'praxis-teaching-reading-5205', title: 'Praxis Teaching Reading: Elementary (5205) - 200-Item Diagnostic Bank', shortTitle: 'Teaching Reading: Elementary (5205)', description: 'Two 100-item diagnostics, a 90-item selected-response simulation, three constructed-response task families, native learning resources, and detailed feedback for beginning K–6 reading teachers.', credentialOwner: 'Educational Testing Service (ETS)', version: '1.0.0', status: 'ready', accent: 'rose',
   contentReview: '200 source-reviewed items; independent elementary literacy educator, dyslexia specialist, multilingual-family, accessibility, and psychometric review pending', nativeQaUrl: './test_prep/teaching_reading_5205_native_qa.json', learningLibraryUrl: './test_prep/teaching_reading_5205_learning_library.json', learningLibraryQaUrl: './test_prep/teaching_reading_5205_learning_library_qa.json',
-  simulationItemCount: 90, simulationTimeMinutes: 120, officialSelectedResponseCount: 90, officialConstructedResponseCount: 3, officialTotalTimeMinutes: 150,
+  simulationItemCount: 90, simulationDomainCounts: {"phonological-emergent":14,"phonics-decoding":18,"vocabulary-fluency":21,"comprehension":21,"written-expression":16}, simulationTimeMinutes: 120, officialSelectedResponseCount: 90, officialConstructedResponseCount: 3, officialTotalTimeMinutes: 150,
   simulationLabel: '90-question Teaching Reading selected-response simulation', simulationNote: 'The official test provides 150 minutes for 90 selected-response and 3 constructed-response questions. This 120-minute selected-response simulation uses the exact 14/18/21/21/16 category counts and reserves three separate 10-minute workshop tasks for emergent literacy, independent literacy, and diverse learners. AlloFlow does not score written responses.',
   disclaimer: 'Independent preparation material, not affiliated with or endorsed by ETS, ILA, IDA, or IES. These original questions, workshop self-checks, and results are not official forms, constructed-response scores, scaled scores, pass predictions, licenses, dyslexia diagnoses, disability or accommodation decisions, intervention placements, or substitutes for current state, program, testing, accessibility, privacy, and educational requirements.',
   domains: [

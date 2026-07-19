@@ -36,7 +36,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-002",
@@ -75,7 +76,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-003",
@@ -114,7 +116,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-004",
@@ -153,7 +156,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-005",
@@ -192,7 +196,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-006",
@@ -231,7 +236,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-007",
@@ -270,7 +276,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-008",
@@ -309,7 +316,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-009",
@@ -348,7 +356,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-010",
@@ -387,7 +396,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-011",
@@ -426,7 +436,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-012",
@@ -465,7 +476,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-013",
@@ -504,7 +516,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-014",
@@ -543,7 +556,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-015",
@@ -582,7 +596,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-016",
@@ -621,7 +636,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-017",
@@ -660,7 +676,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-018",
@@ -699,7 +716,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-019",
@@ -738,7 +756,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-020",
@@ -777,7 +796,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-mathematics-021",
@@ -816,7 +836,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-022",
@@ -855,7 +876,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-mathematics-023",
@@ -894,7 +916,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-024",
@@ -933,7 +956,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-025",
@@ -972,7 +996,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-026",
@@ -1011,7 +1036,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-027",
@@ -1050,7 +1076,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-028",
@@ -1089,7 +1116,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-029",
@@ -1128,7 +1156,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-030",
@@ -1167,7 +1196,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-031",
@@ -1206,7 +1236,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-032",
@@ -1245,7 +1276,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-mathematics-033",
@@ -1284,6 +1316,7 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-07-16T22:57:00-04:00",
+  "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 33,
   "correctionsMade": [
@@ -72,9 +72,75 @@
       "itemId": "parapro-b3-writing-033",
       "issue": "The progress-monitoring option did not identify teacher direction or teacher-provided measures, leaving paraeducator scope ambiguous.",
       "change": "Specified the teacher's request, prompts, and rubric while retaining data collection and graphing as the paraeducator's assigned role."
+    },
+    {
+      "itemId": "parapro-b3-writing-017",
+      "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
+      "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
+    },
+    {
+      "itemId": "parapro-b3-writing-019",
+      "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
+      "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
+    },
+    {
+      "itemId": "parapro-b3-writing-033",
+      "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
+      "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
     }
   ],
   "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 33,
+      "reviewedItemIds": [
+        "parapro-b3-writing-001",
+        "parapro-b3-writing-002",
+        "parapro-b3-writing-003",
+        "parapro-b3-writing-004",
+        "parapro-b3-writing-005",
+        "parapro-b3-writing-006",
+        "parapro-b3-writing-007",
+        "parapro-b3-writing-008",
+        "parapro-b3-writing-009",
+        "parapro-b3-writing-010",
+        "parapro-b3-writing-011",
+        "parapro-b3-writing-012",
+        "parapro-b3-writing-013",
+        "parapro-b3-writing-014",
+        "parapro-b3-writing-015",
+        "parapro-b3-writing-016",
+        "parapro-b3-writing-017",
+        "parapro-b3-writing-018",
+        "parapro-b3-writing-019",
+        "parapro-b3-writing-020",
+        "parapro-b3-writing-021",
+        "parapro-b3-writing-022",
+        "parapro-b3-writing-023",
+        "parapro-b3-writing-024",
+        "parapro-b3-writing-025",
+        "parapro-b3-writing-026",
+        "parapro-b3-writing-027",
+        "parapro-b3-writing-028",
+        "parapro-b3-writing-029",
+        "parapro-b3-writing-030",
+        "parapro-b3-writing-031",
+        "parapro-b3-writing-032",
+        "parapro-b3-writing-033"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections",
+  "priorChecks": {
     "currentBlueprintAlignment": {
       "status": "pass-after-corrections",
       "officialReference": "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -171,5 +237,17 @@
       "itemsWithIndependentDraftProvenance": 33
     }
   },
-  "verdict": "pass-after-corrections"
+  "reviewedFile": "dev-tools/authored/parapro_batch3_writing_33.json",
+  "blockers": [],
+  "sourceSha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 3,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
 }

@@ -210,7 +210,7 @@ window.StemLab = window.StemLab || {
     'Glu':{full:'Glutamic acid',abbr:'E',type:'negative',color:'#a855f7'},
     'His':{full:'Histidine',abbr:'H',type:'positive',color:'#ef4444'},
     'Gln':{full:'Glutamine',abbr:'Q',type:'polar',color:'#3b82f6'},
-    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color: 'var(--allo-stem-text-soft, #94a3b8)'}
+    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#94a3b8'}
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
@@ -224,23 +224,23 @@ window.StemLab = window.StemLab || {
   var BASE_TEXT_COLORS = { 'A':'#0f172a', 'T':'#0f172a', 'G':'#052e16', 'C':'#451a03', 'U':'#ffffff' };
 
   var PRESETS = [
-    { name: 'Insulin Fragment', seq: 'ATGTTCGTCAACCAACACCTGTGCGGCTCACAC', desc: 'Regulates blood sugar. Mutations cause diabetes.' },
+    { name: 'Insulin Teaching Fragment', seq: 'ATGTTCGTCAACCAACACCTGTGCGGCTCACAC', desc: 'Short teaching sequence inspired by insulin biology; it is not the complete human INS coding sequence.' },
     { name: 'Short Peptide', seq: 'ATGCGTACCTGAAACTGA', desc: 'A minimal protein for learning.' },
-    { name: 'Hemoglobin Start', seq: 'ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCC', desc: 'Carries oxygen in red blood cells.' },
+    { name: 'Beta-Globin Start', seq: 'ATGGTGCATCTGACTCCTGAGGAGAAGTCTGCC', desc: 'N-terminal coding fragment of HBB, one subunit of adult hemoglobin.' },
     { name: 'GFP Fragment', seq: 'ATGAGTAAAGGAGAAGAACTTTTCACTGA', desc: 'Green fluorescent protein from jellyfish.' },
     { name: 'p53 Fragment', seq: 'ATGGAGGAGCCGCAGTCAGATCCTAGCG', desc: 'Tumor suppressor. Mutated in ~50% of cancers.' },
-    { name: 'Sickle Cell', seq: 'ATGGTGCATCTGACTCCTGTGGAGAAGTCTGCC', desc: 'Single base change (GAG\u2192GTG) at pos 6 causes sickle cell disease.' },
+    { name: 'HbS Beta-Globin Start', seq: 'ATGGTGCATCTGACTCCTGTGGAGAAGTCTGCC', desc: 'GAG\u2192GTG produces beta-globin Glu6Val; it appears as codon 7 here because the initiator methionine is included.' },
     { name: 'BRCA1 Start', seq: 'ATGGATTTATCTGCTCTTCGCGTTGAAGAA', desc: 'Breast cancer susceptibility gene.' },
-    { name: 'Collagen', seq: 'ATGGGACCACGAGGACCAGGCCCACCAGGC', desc: 'Structural protein; Gly-Pro-X repeat pattern.' }
+    { name: 'Collagen Teaching Fragment', seq: 'ATGGGACCACGAGGACCAGGCCCACCAGGC', desc: 'Collagens commonly contain Gly-X-Y repeats; this is a short teaching sequence, not a complete collagen gene.' }
   ];
 
   var GENETIC_DISORDERS = [
     { name: 'Sickle Cell Disease', gene: 'HBB', mutation: 'Glu\u2192Val (pos 6)', type: 'Missense', effect: 'Hemoglobin S causes red blood cells to form sickle shapes, blocking blood flow.' },
     { name: 'Cystic Fibrosis', gene: 'CFTR', mutation: '\u0394F508 deletion', type: 'Deletion', effect: 'Misfolded chloride channel causes thick mucus in lungs and digestive system.' },
-    { name: 'Huntington\'s Disease', gene: 'HTT', mutation: 'CAG repeat expansion', type: 'Trinucleotide Repeat', effect: 'Toxic polyglutamine aggregates destroy neurons. >36 repeats = disease.' },
-    { name: 'Color Blindness', gene: 'OPN1LW/MW', mutation: 'Various missense', type: 'X-linked', effect: 'Altered opsin proteins change wavelength sensitivity of cone cells.' },
-    { name: 'PKU', gene: 'PAH', mutation: 'Various (>500 known)', type: 'Missense/Nonsense', effect: 'Cannot metabolize phenylalanine. Managed by dietary restriction.' },
-    { name: 'BRCA1/2 Cancers', gene: 'BRCA1, BRCA2', mutation: 'Frameshift/Nonsense', type: 'Loss of function', effect: 'DNA repair deficiency increases breast/ovarian cancer risk.' }
+    { name: 'Huntington\'s Disease', gene: 'HTT', mutation: 'CAG repeat expansion', type: 'Trinucleotide Repeat', effect: 'Expanded polyglutamine damages neurons. People with 36-39 repeats may or may not develop symptoms; 40 or more is usually fully penetrant.' },
+    { name: 'Red-Green Color Vision Deficiency', gene: 'OPN1LW, OPN1MW', mutation: 'Gene rearrangements and sequence variants', type: 'X-linked', effect: 'Changes affecting cone opsins alter sensitivity to long or medium wavelengths.' },
+    { name: 'PKU', gene: 'PAH', mutation: 'Many pathogenic variants', type: 'Often missense', effect: 'Reduced phenylalanine hydroxylase activity raises phenylalanine levels; treatment is individualized and often includes dietary management.' },
+    { name: 'Hereditary BRCA1/2 Cancer Risk', gene: 'BRCA1, BRCA2', mutation: 'Multiple pathogenic variant types', type: 'Loss of function', effect: 'Impaired DNA repair increases risk for several cancers; a pathogenic variant raises risk but does not guarantee cancer.' }
   ];
 
   // ── Badges ──
@@ -300,17 +300,17 @@ window.StemLab = window.StemLab || {
     { q: 'What sugar is found in DNA?', a: 'Deoxyribose', h: 'The "D" in DNA', tier: 0 },
     { q: 'What shape is DNA?', a: 'Double helix', h: 'A twisted ladder', tier: 0 },
     { q: 'Which base pairs with Cytosine?', a: 'Guanine', h: 'A-T, G-C', tier: 0 },
-    { q: 'Where is DNA found in eukaryotic cells?', a: 'Nucleus', h: 'The control center of the cell', tier: 0 },
+    { q: 'Where is most DNA found in a typical eukaryotic cell?', a: 'Nucleus', h: 'Mitochondria and plant chloroplasts also contain small genomes', tier: 0 },
     { q: 'What are DNA building blocks called?', a: 'Nucleotides', h: 'Sugar + phosphate + base', tier: 0 },
     { q: 'What does DNA stand for?', a: 'Deoxyribonucleic acid', h: 'Deoxyribo-nucleic acid', tier: 0 },
     { q: 'What enzyme unwinds DNA during replication?', a: 'Helicase', h: 'It "unzips" the helix', tier: 1 },
     { q: 'In mRNA, what base replaces Thymine?', a: 'Uracil', h: 'U replaces T in RNA', tier: 1 },
-    { q: 'What is the universal START codon?', a: 'AUG', h: 'Also codes for Methionine', tier: 1 },
+    { q: 'What is the usual start codon in standard mRNA translation?', a: 'AUG', h: 'AUG usually recruits initiator methionine; exceptions exist', tier: 1 },
     { q: 'What amino acid does AUG code for?', a: 'Methionine', h: 'Also the start signal', tier: 1 },
     { q: 'What RNA carries amino acids to the ribosome?', a: 'tRNA', h: 'Transfer RNA', tier: 1 },
     { q: 'How many nucleotides code for one amino acid?', a: '3', h: 'Called a codon', tier: 1 },
     { q: 'What is a permanent change in DNA called?', a: 'Mutation', h: 'Substitution, insertion, or deletion', tier: 1 },
-    { q: 'What type of bond holds DNA strands together?', a: 'Hydrogen', h: 'Weak individually, strong together', tier: 1 },
+    { q: 'What type of bond pairs complementary DNA bases?', a: 'Hydrogen', h: 'Hydrogen bonds pair A-T and G-C; base stacking also stabilizes the helix', tier: 1 },
     { q: 'Name the enzyme that joins Okazaki fragments.', a: 'Ligase', h: 'DNA Ligase seals nicks', tier: 2 },
     { q: 'What does PAM stand for in CRISPR?', a: 'Protospacer Adjacent Motif', h: 'The Cas9 recognition sequence', tier: 2 },
     { q: 'A mutation that does NOT change the amino acid?', a: 'Silent,Synonymous', h: 'Also called synonymous', tier: 2 },
@@ -326,39 +326,39 @@ window.StemLab = window.StemLab || {
     { q: 'What enzyme reads DNA and builds mRNA?', a: 'RNA Polymerase', h: 'RNA Pol' },
     { q: 'Name one of the three STOP codons.', a: 'UAA,UAG,UGA', h: 'U-A-A, U-A-G, or U-G-A' },
     { q: 'What holds the two strands of DNA together?', a: 'Hydrogen bonds', h: 'Between base pairs' },
-    { q: 'What organelle is the site of translation?', a: 'Ribosome', h: 'Made of rRNA and protein' },
+    { q: 'What cellular structure carries out translation?', a: 'Ribosome', h: 'A ribosome is made of rRNA and protein' },
     { q: 'What mutation replaces one base with another?', a: 'Substitution', h: 'Also called a point mutation' },
     { q: 'DNA replication is called semi-conservative because?', a: 'Each new DNA has one old strand', h: 'Half old, half new' },
     { q: 'What does the "A" in ATP stand for?', a: 'Adenosine', h: 'Same base as in DNA!' },
     { q: 'What structure does tRNA have?', a: 'Cloverleaf', h: 'Three loops and a stem' },
-    { q: 'How many amino acids does the genetic code encode?', a: '20', h: '64 codons code for this many' },
+    { q: 'The standard genetic code directly assigns sense codons to how many canonical amino acids?', a: '20', h: '61 sense codons specify 20 canonical amino acids; specialized recoding can add others' },
     { q: 'What is an anticodon?', a: 'tRNA sequence that pairs with mRNA codon', h: 'Found on transfer RNA' }
   ];
 
   // ── Learn Topics (4 topics × 4 grade bands) ──
   var LEARN_TOPICS = [
     { title: 'DNA Structure', icon: '\uD83E\uDDEC', tryIt: 'build', content: {
-      'K-2': 'DNA is like a recipe book inside every cell! It tells your body how to grow. DNA looks like a twisted ladder called a double helix. The steps of the ladder are made of four letters: A, T, G, and C. A always pairs with T, and G always pairs with C!',
-      '3-5': 'DNA (deoxyribonucleic acid) is a molecule found in the nucleus of every cell. It\u2019s shaped like a twisted ladder - the double helix. The sides are made of sugar and phosphate, and the rungs are base pairs: Adenine-Thymine and Guanine-Cytosine. Your DNA has about 3 billion base pairs!',
+      'K-2': 'DNA is like a recipe book found in most of your cells. It helps cells grow and work. DNA looks like a twisted ladder called a double helix. Its four base letters are A, T, G, and C; A pairs with T, and G pairs with C.',
+      '3-5': 'Most DNA in a typical eukaryotic cell is in the nucleus; mitochondria and plant chloroplasts also have small genomes. DNA forms a double helix with sugar-phosphate backbones and A-T or G-C base pairs. One human haploid nuclear genome has about 3.2 billion base pairs.',
       '6-8': 'DNA is a polymer of nucleotides, each containing deoxyribose sugar, a phosphate group, and a nitrogenous base (A, T, G, or C). The antiparallel strands run 5\u2032\u21923\u2032 and 3\u2032\u21925\u2032, connected by hydrogen bonds (2 for A-T, 3 for G-C). Chromosomes are DNA wrapped around histone proteins forming chromatin.',
-      '9-12': 'DNA is a right-handed B-form double helix with major and minor grooves. Each nucleotide: 2\u2032-deoxyribose, phosphodiester backbone, nitrogenous base. Chargaff\u2019s rules: %A=%T, %G=%C. Antiparallel strands, pitch of 3.4nm (10bp/turn). Supercoiling by topoisomerases regulates access. Telomeric TTAGGG repeats protect chromosome ends.'
+      '9-12': 'DNA is commonly a right-handed B-form double helix with major and minor grooves. Each nucleotide contains 2\u2032-deoxyribose, phosphate, and a base. Double-stranded DNA follows Chargaff\u2019s relationships: %A=%T and %G=%C. B-DNA averages about 3.4 nm and 10.5 base pairs per turn; topology and chromatin regulate access.'
     }},
     { title: 'Central Dogma', icon: '\uD83D\uDD04', tryIt: 'transcribe', content: {
       'K-2': 'DNA is like a recipe, and proteins are the food! First, the cell copies the recipe (transcription) to make a message called mRNA. Then tiny machines called ribosomes read the message and build proteins (translation). Proteins do almost everything in your body!',
       '3-5': 'The Central Dogma: DNA \u2192 RNA \u2192 Protein. In transcription, RNA polymerase reads DNA and makes mRNA. The mRNA goes to a ribosome for translation - it reads mRNA in groups of 3 letters (codons) and builds a chain of amino acids that folds into a protein!',
       '6-8': 'DNA is transcribed into mRNA by RNA polymerase (reading template 3\u2032\u21925\u2032, building mRNA 5\u2032\u21923\u2032). mRNA is processed (5\u2032 cap, poly-A tail, splicing of introns) then exported to ribosomes. tRNAs with anticodons deliver amino acids; the ribosome catalyzes peptide bonds during translation.',
-      '9-12': 'Transcription: RNA Pol II binds TATA box via TBP/TFIID, assembles PIC, synthesizes pre-mRNA 5\u2032\u21923\u2032. Co-transcriptional processing: 7-methylguanosine cap, spliceosome-mediated intron removal, CstF/CPSF-directed polyadenylation. Translation: 43S PIC scans for Kozak-context AUG; 80S ribosome cycles A/P/E sites; EF-Tu delivers aminoacyl-tRNAs; release factors recognize stop codons.'
+      '9-12': 'In many eukaryotic protein-coding genes, RNA polymerase II and general transcription factors assemble at a promoter, then synthesize pre-mRNA 5\u2032\u21923\u2032. Capping, splicing, and cleavage/polyadenylation process the transcript. During cytosolic translation, a 43S complex scans for an AUG context, the 80S ribosome cycles through A/P/E sites, eEF1A delivers aminoacyl-tRNAs, and release factors recognize stop codons.'
     }},
     { title: 'Mutations & Evolution', icon: '\uD83E\uDDA0', tryIt: 'mutate', content: {
       'K-2': 'Sometimes the cell makes a mistake when copying DNA - like a typo! These mistakes are called mutations. Most mutations don\u2019t do anything, but some can change how an organism looks or works. Over a very long time, helpful mutations help living things survive better!',
-      '3-5': 'Mutations are changes in DNA sequence. A substitution swaps one base. An insertion adds a base. A deletion removes one. Insertions and deletions can shift the reading frame (frameshift), often breaking the protein. Natural selection acts on mutations over generations, driving evolution.',
-      '6-8': 'Point mutations: transitions (purine\u2194purine) and transversions (purine\u2194pyrimidine). Effects: silent (synonymous), missense (different amino acid), nonsense (premature stop). Frameshift mutations from indels alter all downstream codons. Mutagens: UV light, chemicals, replication errors. Beneficial mutations spread via natural selection.',
-      '9-12': 'Mutation rates: ~10\u207B\u2079/bp/replication after proofreading and mismatch repair. Transitions more common (tautomeric shifts). Trinucleotide repeat expansions (Huntington\u2019s: CAG>36). Neutral theory (Kimura): most molecular evolution is neutral drift. Positive selection detected by dN/dS>1. Ames test screens mutagens via Salmonella auxotrophs.'
+      '3-5': 'Mutations are changes in DNA sequence. A substitution swaps a base, an insertion adds sequence, and a deletion removes sequence. In a coding region, insertions or deletions not divisible by three shift the reading frame. Mutation supplies variation; selection, drift, and other processes shape populations over generations.',
+      '6-8': 'Single-base substitutions can be transitions or transversions and may be synonymous, missense, or nonsense. Coding-region insertions and deletions cause a frameshift when their length is not divisible by three. Mutations may be neutral, harmful, or beneficial depending on context; selection and drift influence their frequencies.',
+      '9-12': 'Mutation rates vary by organism, cell type, genomic region, and measurement method. Substitutions include transitions and transversions; repeat expansions can show anticipation. In Huntington disease, 36-39 CAG repeats have reduced penetrance and 40 or more are usually fully penetrant. A dN/dS value above 1 can support, but does not alone prove, positive selection.'
     }},
     { title: 'Genetic Engineering', icon: '\u2702\uFE0F', tryIt: 'crispr', content: {
-      'K-2': 'Scientists have learned to edit DNA like editing a story! They use special tools called CRISPR - like tiny scissors - to cut DNA at exactly the right spot. This helps cure diseases, make healthier crops, and even bring back extinct animals someday!',
-      '3-5': 'Genetic engineering means changing an organism\u2019s DNA on purpose. CRISPR-Cas9 uses a guide RNA to find the right spot, then Cas9 cuts the DNA. The cell repairs the cut, and scientists can add, remove, or change genes. It\u2019s already being used to treat sickle cell disease!',
-      '6-8': 'CRISPR-Cas9: A synthetic guide RNA (sgRNA) directs the Cas9 nuclease to a 20nt target adjacent to a PAM (NGG). The double-strand break is repaired by NHEJ (error-prone, knockouts) or HDR (precise, with donor template). Applications: CASGEVY\u2122 for sickle cell, CAR-T therapy, disease-resistant crops, gene drives.',
+      'K-2': 'Scientists can use tools such as CRISPR to change DNA in cells. A guide helps a protein find a chosen region, where the DNA may be cut and repaired. Some carefully tested treatments and crop studies use this approach, but editing can have limits and risks.',
+      '3-5': 'Genetic engineering means intentionally changing DNA. CRISPR-Cas9 uses a guide RNA and a nearby PAM to target a region, then cellular repair creates the final edit. An approved sickle cell therapy edits a patient\u2019s blood stem cells outside the body, but CRISPR outcomes and risks must be tested carefully.',
+      '6-8': 'SpCas9 uses an sgRNA spacer, typically 20 nucleotides, next to an NGG PAM. Cas9 usually cuts about three bases upstream of the PAM. End joining often produces small indels, while template-directed repair can copy a supplied donor sequence; neither pathway guarantees the intended outcome.',
       '9-12': 'Beyond Cas9: Cas12a (Cpf1) recognizes T-rich PAMs, staggered cuts. Base editors (CBE/ABE) enable C\u2192T or A\u2192G without DSBs. Prime editing: pegRNA + Cas9 nickase-RT fusion for all 12 substitution types plus small indels. Epigenome editors (dCas9-DNMT3A/TET1/p300) modulate expression without sequence changes. Delivery: AAV, LNPs, RNP electroporation.'
     }}
   ];
@@ -405,6 +405,92 @@ window.StemLab = window.StemLab || {
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
+      var dnaCleanupRef = React.useRef(null);
+      if (!dnaCleanupRef.current) dnaCleanupRef.current = {};
+      var dnaCleanup = dnaCleanupRef.current;
+      var dnaCompletionRef = React.useRef({});
+      var prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      React.useEffect(function() {
+        return function() {
+          Object.keys(dnaCleanup).forEach(function(key) {
+            if (typeof dnaCleanup[key] === 'function') dnaCleanup[key]();
+            dnaCleanup[key] = null;
+          });
+        };
+      }, []);
+
+      function sizeDnaCanvas(cv, ctx2d) {
+        var rect = typeof cv.getBoundingClientRect === 'function' ? cv.getBoundingClientRect() : { width: 0, height: 0 };
+        var cssWidth = Math.max(1, Math.round(cv.offsetWidth || rect.width || 1));
+        var cssHeight = Math.max(1, Math.round(cv.offsetHeight || rect.height || 1));
+        var dpr = Math.max(1, Math.min(3, (typeof window !== 'undefined' && window.devicePixelRatio) || 1));
+        var pixelWidth = Math.round(cssWidth * dpr);
+        var pixelHeight = Math.round(cssHeight * dpr);
+        var resized = cv.width !== pixelWidth || cv.height !== pixelHeight;
+        if (resized) {
+          cv.width = pixelWidth;
+          cv.height = pixelHeight;
+        }
+        if (typeof ctx2d.setTransform === 'function') ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+        else if (resized && typeof ctx2d.scale === 'function') ctx2d.scale(dpr, dpr);
+        return { width: cssWidth, height: cssHeight };
+      }
+
+      function createDnaCanvasLoop(cv, drawFrame) {
+        var frameId = null;
+        var stopped = false;
+        var inViewport = true;
+        function isHidden() { return typeof document !== 'undefined' && document.hidden; }
+        function next(shouldContinue) {
+          if (stopped || !shouldContinue || prefersReducedMotion || isHidden() || !inViewport || frameId != null) return;
+          frameId = requestAnimationFrame(function() {
+            frameId = null;
+            drawFrame();
+          });
+        }
+        function onVisibilityChange() {
+          if (stopped) return;
+          if (isHidden()) {
+            if (frameId != null) cancelAnimationFrame(frameId);
+            frameId = null;
+          } else if (cv.isConnected) {
+            drawFrame();
+          }
+        }
+        function onIntersection(entries) {
+          if (stopped || !entries || !entries.length) return;
+          var nextInViewport = !!entries[0].isIntersecting;
+          if (nextInViewport === inViewport) return;
+          inViewport = nextInViewport;
+          if (!inViewport) {
+            if (frameId != null) cancelAnimationFrame(frameId);
+            frameId = null;
+          } else if (!isHidden() && cv.isConnected) {
+            drawFrame();
+          }
+        }
+        var resizeObserver = typeof window !== 'undefined' && typeof window.ResizeObserver === 'function'
+          ? new window.ResizeObserver(function() { if (!stopped && !isHidden() && cv.isConnected) drawFrame(); })
+          : null;
+        var intersectionObserver = typeof window !== 'undefined' && typeof window.IntersectionObserver === 'function'
+          ? new window.IntersectionObserver(onIntersection, { threshold: 0 })
+          : null;
+        if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibilityChange);
+        if (resizeObserver) resizeObserver.observe(cv);
+        if (intersectionObserver) intersectionObserver.observe(cv);
+        return {
+          next: next,
+          stop: function() {
+            stopped = true;
+            if (frameId != null) cancelAnimationFrame(frameId);
+            frameId = null;
+            if (resizeObserver) resizeObserver.disconnect();
+            if (intersectionObserver) intersectionObserver.disconnect();
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibilityChange);
+          }
+        };
+      }
 
       var d = (labToolData && labToolData.dnaLab) || {};
       var upd = function(key, val) { setLabToolData(function(prev) { var nd = Object.assign({}, prev.dnaLab || {}); nd[key] = val; return Object.assign({}, prev, { dnaLab: nd }); }); };
@@ -451,18 +537,19 @@ window.StemLab = window.StemLab || {
           if (!aa) continue;
           if (!started && aa === 'Met') started = true;
           if (!started) continue;
-          if (aa === 'Stop') { result.push({ codon: codon, aa: 'Stop', pos: i }); break; }
+          if (aa === 'Stop') { result.stop = { codon: codon, pos: i }; break; }
           result.push({ codon: codon, aa: aa, pos: i });
         }
         return result;
       }
       var fullProtein = translateMRNA(fullMRNA);
+      var translationStop = fullProtein.stop || null;
 
       function randomDNA(len) {
         var bases = 'ATGC';
         var seq = 'ATG';
         for (var i = 3; i < (len || 21) - 3; i++) seq += bases[Math.floor(Math.random() * 4)];
-        var stops = ['TAC', 'ATT', 'ACT'];
+        var stops = ['TAA', 'TAG', 'TGA'];
         seq += stops[Math.floor(Math.random() * 3)];
         return seq;
       }
@@ -487,7 +574,7 @@ window.StemLab = window.StemLab || {
       // CANVAS: DNA Helix (callback ref)
       // ═══════════════════════════════════════════
       var _dnaCanvasRef = function(cv) {
-        if (window._dnaCleanup.dnaAnim) { window._dnaCleanup.dnaAnim(); window._dnaCleanup.dnaAnim = null; }
+        if (dnaCleanup.dnaAnim) { dnaCleanup.dnaAnim(); dnaCleanup.dnaAnim = null; }
         if (!cv) return;
         if (tab !== 'build' && tab !== 'transcribe') return;
         var ctx2d = cv.getContext('2d');
@@ -496,11 +583,10 @@ window.StemLab = window.StemLab || {
         // the same value) reallocates + CLEARS the canvas and resets the ctx transform.
         // Only resize when the size actually changed, and persist the animation tick on
         // the node — otherwise the helix wobble snaps back to 0 on every render (stutter).
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var w = cv.offsetWidth, hh = cv.offsetHeight;
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, hh = canvasSize.height;
         var _tick = cv._dnaTick || 0;
-        var _animId = null;
+        var loop = null;
         var currentAnimStep = animStep;
         var hoveredIndex = -1;
 
@@ -529,8 +615,8 @@ window.StemLab = window.StemLab || {
 
         cv.onmousemove = function(e) {
           var rect = cv.getBoundingClientRect();
-          var scaleX = cv.width / rect.width / 2;
-          var scaleY = cv.height / rect.height / 2;
+          var scaleX = w / Math.max(1, rect.width);
+          var scaleY = hh / Math.max(1, rect.height);
           var mX = (e.clientX - rect.left) * scaleX;
           var mY = (e.clientY - rect.top) * scaleY;
 
@@ -579,7 +665,9 @@ window.StemLab = window.StemLab || {
         };
 
         function draw() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; hh = canvasSize.height;
           ctx2d.clearRect(0, 0, w, hh);
           var baseW = Math.min(32, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -696,26 +784,32 @@ window.StemLab = window.StemLab || {
 
           _tick++;
           cv._dnaTick = _tick; // persist across ref re-fires so the wobble stays continuous
-          _animId = requestAnimationFrame(draw);
+          loop.next(tab === 'build' || animPlaying);
         }
+        loop = createDnaCanvasLoop(cv, draw);
         draw();
-        window._dnaCleanup.dnaAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.dnaAnim = loop.stop;
       };
 
       // ═══ Transcription timer ═══
-      if (tab === 'transcribe' && animPlaying) {
+      React.useEffect(function() {
+        if (tab !== 'transcribe' || !animPlaying) return;
         if (animStep >= dnaSeq.length) {
           updMulti({ animPlaying: false, mRNA: fullMRNA });
+          var completionKey = fullMRNA;
+          if (dnaCompletionRef.current.transcribe !== completionKey) {
+            dnaCompletionRef.current.transcribe = completionKey;
           announceToSR('Transcription complete. mRNA: ' + fullMRNA);
           awardStemXP('dnaLab', 10, 'Completed transcription');
           checkBadge('messenger');
-        } else {
-          if (window._dnaCleanup.transcribeTimer) clearTimeout(window._dnaCleanup.transcribeTimer);
-          window._dnaCleanup.transcribeTimer = setTimeout(function() {
-            updMulti({ animStep: animStep + 1, mRNA: fullMRNA.substring(0, animStep + 1) });
-          }, 600 / speed);
+          }
+          return;
         }
-      }
+        var timer = setTimeout(function() {
+          updMulti({ animStep: animStep + 1, mRNA: fullMRNA.substring(0, animStep + 1) });
+        }, 600 / speed);
+        return function() { clearTimeout(timer); };
+      }, [tab, animPlaying, animStep, dnaSeq.length, fullMRNA, speed]);
 
       // ═══════════════════════════════════════════
       // CANVAS: Replication Fork (callback ref)
@@ -724,20 +818,21 @@ window.StemLab = window.StemLab || {
       var replPlaying = !!d.replPlaying;
 
       var _replCanvasRef = function(cv) {
-        if (window._dnaCleanup.replAnim) { window._dnaCleanup.replAnim(); window._dnaCleanup.replAnim = null; }
+        if (dnaCleanup.replAnim) { dnaCleanup.replAnim(); dnaCleanup.replAnim = null; }
         if (!cv) return;
         if (tab !== 'replicate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, h2 = H / 2;
-        var _tick = 0; var _animId = null;
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, h2 = canvasSize.height;
+        var _tick = cv._dnaReplTick || 0;
+        var loop = null;
         var currentReplStep = replStep;
 
         function drawRepl() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; h2 = canvasSize.height;
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(28, (w - 100) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -803,30 +898,29 @@ window.StemLab = window.StemLab || {
           ctx2d.fillText("3' \u2192 5' (Lagging)", 10, midY + 60);
 
           _tick++;
-          _animId = requestAnimationFrame(drawRepl);
+          cv._dnaReplTick = _tick; // preserve helix phase when each replication step reattaches the callback ref
+          loop.next(replPlaying && currentReplStep < dnaSeq.length);
         }
+        loop = createDnaCanvasLoop(cv, drawRepl);
         drawRepl();
-        window._dnaCleanup.replAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.replAnim = loop.stop;
       };
 
       // ═══════════════════════════════════════════
       // CANVAS: Translation (callback ref)
       // ═══════════════════════════════════════════
       var _translationCanvasRef = function(cv) {
-        if (window._dnaCleanup.transAnim) { window._dnaCleanup.transAnim(); window._dnaCleanup.transAnim = null; }
+        if (dnaCleanup.transAnim) { dnaCleanup.transAnim(); dnaCleanup.transAnim = null; }
         if (!cv) return;
         if (tab !== 'translate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, hh = H / 2;
-        var _tick = 0;
-        var _animId = null;
-
-        var lastStep = -1;
-        var stepStartTime = Date.now();
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, hh = canvasSize.height;
+        var _tick = cv._dnaTransTick || 0;
+        var loop = null;
+        var lastStep = cv._dnaTransStep != null ? cv._dnaTransStep : -1;
+        var stepStartTime = lastStep === transStep && cv._dnaTransStepStart ? cv._dnaTransStepStart : Date.now();
 
         function drawTRNA(ctx, x, y, anticodon, aaChar, hasAA, alpha) {
           ctx.save();
@@ -873,7 +967,9 @@ window.StemLab = window.StemLab || {
         }
 
         function drawTrans() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; hh = canvasSize.height;
           ctx2d.clearRect(0, 0, w, hh);
 
           // Track step duration & progress
@@ -881,8 +977,10 @@ window.StemLab = window.StemLab || {
           if (transStep !== lastStep) {
             lastStep = transStep;
             stepStartTime = Date.now();
+            cv._dnaTransStep = lastStep;
+            cv._dnaTransStepStart = stepStartTime;
           }
-          var pct = transPlaying ? Math.min(1, (Date.now() - stepStartTime) / duration) : 0;
+          var pct = transPlaying ? (prefersReducedMotion ? 1 : Math.min(1, (Date.now() - stepStartTime) / duration)) : 0;
 
           var midY = hh / 2 + 10;
           var yChannel = midY + 15;
@@ -1082,36 +1180,46 @@ window.StemLab = window.StemLab || {
           }
 
           _tick++;
-          _animId = requestAnimationFrame(drawTrans);
+          cv._dnaTransTick = _tick;
+          cv._dnaTransStep = lastStep;
+          cv._dnaTransStepStart = stepStartTime;
+          loop.next(transPlaying);
         }
-
+        loop = createDnaCanvasLoop(cv, drawTrans);
         drawTrans();
-        window._dnaCleanup.transAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.transAnim = loop.stop;
       };
 
       // ═══ Replication timer ═══
+      React.useEffect(function() {
       if (tab === 'replicate' && replPlaying) {
         if (replStep >= dnaSeq.length) {
           updMulti({ replPlaying: false });
+          var completionKey = dnaSeq + ':' + dnaSeq.length;
+          if (dnaCompletionRef.current.replicate !== completionKey) {
+            dnaCompletionRef.current.replicate = completionKey;
           announceToSR('DNA replication complete! Two identical copies created.');
           awardStemXP('dnaLab', 15, 'Completed DNA replication');
           addToast('\uD83E\uDDEC Replication complete! Two daughter strands formed.', 'success');
           if (typeof stemCelebrate === 'function') stemCelebrate();
           checkBadge('copyMachine');
           if (speed >= 4) checkBadge('speedDemon');
+          }
         } else {
-          if (window._dnaCleanup.replTimer) clearTimeout(window._dnaCleanup.replTimer);
-          window._dnaCleanup.replTimer = setTimeout(function() {
+          var timer = setTimeout(function() {
             upd('replStep', replStep + 1);
           }, 500 / speed);
+          return function() { clearTimeout(timer); };
         }
       }
+      }, [tab, replPlaying, replStep, dnaSeq, speed]);
 
       // ═══ Translation state + timer ═══
       var transStep = d.transStep || 0;
       var transPlaying = !!d.transPlaying;
       var builtProtein = d.builtProtein || [];
 
+      React.useEffect(function() {
       if (tab === 'translate' && transPlaying) {
         var tPos = transStep * 3;
         if (tPos + 3 > fullMRNA.length) {
@@ -1121,18 +1229,23 @@ window.StemLab = window.StemLab || {
           var tAA = CODON_TABLE[tCodon];
           if (!tAA || tAA === 'Stop') {
             updMulti({ transPlaying: false, protein: builtProtein });
+            var completionKey = fullMRNA + ':' + builtProtein.length;
+            if (dnaCompletionRef.current.translate !== completionKey) {
+              dnaCompletionRef.current.translate = completionKey;
             announceToSR('Translation complete. Protein has ' + builtProtein.length + ' amino acids.');
             awardStemXP('dnaLab', 15, 'Completed translation');
             checkBadge('ribosomePro');
+            }
           } else {
-            if (window._dnaCleanup.transTimer) clearTimeout(window._dnaCleanup.transTimer);
-            window._dnaCleanup.transTimer = setTimeout(function() {
+            var timer = setTimeout(function() {
               updMulti({ transStep: transStep + 1, builtProtein: builtProtein.concat([{ codon: tCodon, aa: tAA, pos: tPos }]) });
               announceToSR('Codon ' + tCodon + ' = ' + (AA_PROPS[tAA] ? AA_PROPS[tAA].full : tAA));
             }, 800 / speed);
+            return function() { clearTimeout(timer); };
           }
         }
       }
+      }, [tab, transPlaying, transStep, fullMRNA, builtProtein, speed]);
 
       // ═══ CHALLENGE HELPERS ═══
       var challengeTier = d.challengeTier || 0;
@@ -1193,23 +1306,29 @@ window.StemLab = window.StemLab || {
       // ═══ CRISPR HELPERS ═══
       var crisprPhase = d.crisprPhase || 'design';
       var crisprScanPos = d.crisprScanPos || 0;
-      var crisprGuideLen = 6;
+      var crisprGuideLen = 6; // Schematic window; real SpCas9 spacers are typically 20 nt.
       var crisprRepairType = d.crisprRepairType || '';
       var crisprEditLog = d.crisprEditLog || [];
 
       function findPAMSites(seq) {
         var sites = [];
         for (var i = 0; i <= seq.length - 3; i++) {
-          if (seq[i + 1] === 'G' && seq[i + 2] === 'G') {
-            var cutPos = i;
-            if (cutPos >= crisprGuideLen) sites.push({ pamStart: i, cutSite: cutPos });
+          if (seq[i + 1] === 'G' && seq[i + 2] === 'G' && i >= crisprGuideLen) {
+            sites.push({
+              pamStart: i,
+              guideStart: i - crisprGuideLen,
+              guideEnd: i,
+              cutSite: i - 3
+            });
           }
         }
         return sites;
       }
       var pamSites = findPAMSites(dnaSeq);
-      var activePAM = d.crisprTargetPAM != null ? d.crisprTargetPAM : (pamSites.length > 0 ? 0 : -1);
-      var selectedPAMSite = activePAM >= 0 && activePAM < pamSites.length ? pamSites[activePAM] : null;
+      var requestedPAM = d.crisprTargetPAM != null ? d.crisprTargetPAM : 0;
+      var activePAM = requestedPAM >= 0 && requestedPAM < pamSites.length ? requestedPAM : (pamSites.length > 0 ? 0 : -1);
+      var selectedPAMSite = activePAM >= 0 ? pamSites[activePAM] : null;
+      var crisprDonorBase = d.crisprDonorBase || (selectedPAMSite ? BASE_COMPLEMENT[dnaSeq[selectedPAMSite.cutSite]] : 'A');
 
       function startCRISPRScan() {
         updMulti({ crisprPhase: 'scanning', crisprScanPos: 0 });
@@ -1227,10 +1346,10 @@ window.StemLab = window.StemLab || {
           resultSeq = seq.join('');
           desc = 'NHEJ: deleted ' + deleted.join('') + ' at pos ' + cutPos + ' (error-prone, may cause frameshift)';
         } else {
-          var newBase = 'ATGC'[Math.floor(Math.random() * 4)];
+          var newBase = crisprDonorBase;
           seq[cutPos] = newBase;
           resultSeq = seq.join('');
-          desc = 'HDR: replaced base at pos ' + cutPos + ' with ' + newBase + ' (template-directed, precise)';
+          desc = 'HDR model: donor template replaced base at pos ' + (cutPos + 1) + ' with ' + newBase;
         }
         updMulti({
           dnaSequence: resultSeq, mRNA: '', protein: [], animStep: 0,
@@ -1244,6 +1363,7 @@ window.StemLab = window.StemLab || {
       }
 
       // CRISPR scanning timer
+      React.useEffect(function() {
       if (tab === 'crispr' && crisprPhase === 'scanning') {
         if (!selectedPAMSite) {
           updMulti({ crisprPhase: 'design' });
@@ -1251,38 +1371,43 @@ window.StemLab = window.StemLab || {
           var targetPos = selectedPAMSite.cutSite;
           if (crisprScanPos >= targetPos) {
             updMulti({ crisprPhase: 'cut' });
+            var completionKey = dnaSeq + ':' + targetPos;
+            if (dnaCompletionRef.current.crisprTarget !== completionKey) {
+              dnaCompletionRef.current.crisprTarget = completionKey;
             announceToSR('Cas9 found target! PAM site located. Ready to cut.');
             addToast('\uD83C\uDFAF Cas9 found the target PAM site!', 'success');
             stemBeep && stemBeep();
+            }
           } else {
-            if (window._dnaCleanup.crisprTimer) clearTimeout(window._dnaCleanup.crisprTimer);
-            window._dnaCleanup.crisprTimer = setTimeout(function() {
+            var timer = setTimeout(function() {
               upd('crisprScanPos', crisprScanPos + 1);
             }, 200 / speed);
+            return function() { clearTimeout(timer); };
           }
         }
       }
+      }, [tab, crisprPhase, crisprScanPos, selectedPAMSite, speed]);
 
       // ═══════════════════════════════════════════
       // CANVAS: CRISPR (callback ref)
       // ═══════════════════════════════════════════
       var _crisprCanvasRef = function(cv) {
-        if (window._dnaCleanup.crisprAnim) { window._dnaCleanup.crisprAnim(); window._dnaCleanup.crisprAnim = null; }
+        if (dnaCleanup.crisprAnim) { dnaCleanup.crisprAnim(); dnaCleanup.crisprAnim = null; }
         if (!cv) return;
         if (tab !== 'crispr') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, h2 = H / 2;
-        var _tick = 0; var _animId = null;
-
-        var lastPhase = '';
-        var phaseStartTime = Date.now();
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, h2 = canvasSize.height;
+        var _tick = cv._dnaCrisprTick || 0;
+        var loop = null;
+        var lastPhase = cv._dnaCrisprPhase || '';
+        var phaseStartTime = lastPhase === crisprPhase && cv._dnaCrisprPhaseStart ? cv._dnaCrisprPhaseStart : Date.now();
 
         function drawCRISPR() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; h2 = canvasSize.height;
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(24, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -1291,8 +1416,10 @@ window.StemLab = window.StemLab || {
           if (crisprPhase !== lastPhase) {
             lastPhase = crisprPhase;
             phaseStartTime = Date.now();
+            cv._dnaCrisprPhase = lastPhase;
+            cv._dnaCrisprPhaseStart = phaseStartTime;
           }
-          var elapsed = Date.now() - phaseStartTime;
+          var elapsed = prefersReducedMotion ? 1200 : Date.now() - phaseStartTime;
 
           var cutSite = selectedPAMSite ? selectedPAMSite.cutSite : 0;
           
@@ -1355,7 +1482,7 @@ window.StemLab = window.StemLab || {
             var comp = complementStrand[i];
 
             var isPAM = selectedPAMSite && (i >= selectedPAMSite.pamStart && i < selectedPAMSite.pamStart + 3);
-            var isGuide = selectedPAMSite && (i >= selectedPAMSite.cutSite - crisprGuideLen && i < selectedPAMSite.cutSite);
+            var isGuide = selectedPAMSite && (i >= selectedPAMSite.guideStart && i < selectedPAMSite.guideEnd);
             var isCutSite = selectedPAMSite && i === selectedPAMSite.cutSite;
 
             // Highlight PAM and Guide regions
@@ -1443,7 +1570,7 @@ window.StemLab = window.StemLab || {
             ctx2d.shadowBlur = 6;
             ctx2d.beginPath();
             var first = true;
-            for (var i = selectedPAMSite.cutSite - crisprGuideLen; i < selectedPAMSite.cutSite; i++) {
+            for (var i = selectedPAMSite.guideStart; i < selectedPAMSite.guideEnd; i++) {
               var x = startX + i * baseW + baseW / 2 + (i < cutSite ? -displacement : displacement);
               var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
               var gy = midY - 4 + yOff;
@@ -1454,7 +1581,7 @@ window.StemLab = window.StemLab || {
             ctx2d.shadowBlur = 0;
 
             // Draw gRNA bases
-            for (var i = selectedPAMSite.cutSite - crisprGuideLen; i < selectedPAMSite.cutSite; i++) {
+            for (var i = selectedPAMSite.guideStart; i < selectedPAMSite.guideEnd; i++) {
               var x = startX + i * baseW + baseW / 2 + (i < cutSite ? -displacement : displacement);
               var yOff = Math.sin((i * 0.4) + _tick * 0.015) * 10;
               var gy = midY - 4 + yOff;
@@ -1553,10 +1680,14 @@ window.StemLab = window.StemLab || {
           ctx2d.fillStyle = '#8b5cf6'; ctx2d.fillText('\u25CF Cas9 protein', w - 90, h2 - 25);
 
           _tick++;
-          _animId = requestAnimationFrame(drawCRISPR);
+          cv._dnaCrisprTick = _tick;
+          cv._dnaCrisprPhase = lastPhase;
+          cv._dnaCrisprPhaseStart = phaseStartTime;
+          loop.next(crisprPhase === 'scanning' || ((crisprPhase === 'cut' || crisprPhase === 'done') && elapsed < 1200));
         }
+        loop = createDnaCanvasLoop(cv, drawCRISPR);
         drawCRISPR();
-        window._dnaCleanup.crisprAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.crisprAnim = loop.stop;
       };
 
       // ═══ FORENSICS HELPERS ═══
@@ -1574,22 +1705,24 @@ window.StemLab = window.StemLab || {
       }
 
       var _forensicCanvasRef = function(cv) {
-        if (window._dnaCleanup.forensicAnim) { window._dnaCleanup.forensicAnim(); window._dnaCleanup.forensicAnim = null; }
+        if (dnaCleanup.forensicAnim) { dnaCleanup.forensicAnim(); dnaCleanup.forensicAnim = null; }
         if (!cv) return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, h2 = H / 2;
-        var _tick = 0; var _animId = null;
-        var start = Date.now();
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, h2 = canvasSize.height;
+        var runKey = forensicCase + ':' + (forensicGelRun ? 'run' : 'idle');
+        var _tick = cv._dnaForensicTick || 0;
+        var start = cv._dnaForensicRunKey === runKey && cv._dnaForensicStart ? cv._dnaForensicStart : Date.now();
+        var loop = null;
 
         function drawForensics() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; h2 = canvasSize.height;
           ctx2d.clearRect(0, 0, w, h2);
           
-          var progress = Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration
+          var progress = prefersReducedMotion ? 1 : Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration
 
           // Gel background (high-contrast dark indigo)
           ctx2d.fillStyle = '#0c1322';
@@ -1693,11 +1826,15 @@ window.StemLab = window.StemLab || {
           }
 
           _tick++;
-          _animId = requestAnimationFrame(drawForensics);
+          cv._dnaForensicTick = _tick;
+          cv._dnaForensicRunKey = runKey;
+          cv._dnaForensicStart = start;
+          loop.next(progress < 1);
         }
 
+        loop = createDnaCanvasLoop(cv, drawForensics);
         drawForensics();
-        window._dnaCleanup.forensicAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.forensicAnim = loop.stop;
       };
 
       function checkForensicAnswer() {
@@ -2063,12 +2200,12 @@ window.StemLab = window.StemLab || {
           var TAB_META = {
             build:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDEC', title: t('stem.dna.build_a_dna_strand', 'Build a DNA strand'),          hint: t('stem.dna.pick_a_sequence_the_complementary_stra', 'Pick a sequence - the complementary strand fills in via base pairing (A-T, G-C). Real DNA is built like this constantly.') },
             replicate:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDD00', title: t('stem.dna.dna_replication', 'DNA replication'),              hint: t('stem.dna.helicase_unwinds_the_helix_dna_polymer', 'Helicase unwinds the helix; DNA polymerase reads each template strand and lays down its complement. Semiconservative - each daughter has one old + one new strand.') },
-            transcribe: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCDD', title: t('stem.dna.transcription_dna_mrna', 'Transcription - DNA \u2192 mRNA'), hint: t('stem.dna.rna_polymerase_reads_the_template_stra', 'RNA polymerase reads the template strand. Same complementary rules but T \u2192 U. Output: a single-stranded mRNA copy ready to leave the nucleus.') },
+            transcribe: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCDD', title: t('stem.dna.transcription_dna_mrna', 'Transcription - DNA \u2192 mRNA'), hint: t('stem.dna.rna_polymerase_reads_the_template_stra', 'This lab displays the coding strand, so its mRNA readout matches that strand with U replacing T. In cells, RNA polymerase reads the antiparallel template strand to synthesize RNA 5\u2032\u21923\u2032.') },
             translate:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: t('stem.dna.translation_mrna_protein', 'Translation - mRNA \u2192 protein'), hint: t('stem.dna.ribosome_reads_codons_3_bases_at_a_tim', 'Ribosome reads codons (3 bases at a time). Each codon \u2192 one amino acid. The genetic code is read in non-overlapping triplets, no commas.') },
-            mutate:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDDA0', title: t('stem.dna.mutations', 'Mutations'),                     hint: t('stem.dna.point_mutations_silent_no_protein_chan', 'Point mutations: silent (no protein change), missense (one AA different), nonsense (premature stop). Frameshifts (insertion/deletion) are usually catastrophic.') },
-            crispr:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\u2702\uFE0F',  title: t('stem.dna.crispr_cas9_editing', 'CRISPR-Cas9 editing'),          hint: t('stem.dna.guide_rna_points_cas9_to_a_20_base_tar', 'Guide RNA points Cas9 to a 20-base target. Cas9 cuts both strands. Cell repair pathways either knock out the gene or insert a template you provide.') },
+            mutate:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDDA0', title: t('stem.dna.mutations', 'Mutations'),                     hint: t('stem.dna.point_mutations_silent_no_protein_chan', 'Substitutions may be synonymous, missense, or nonsense. A coding-region insertion or deletion shifts the frame only when its length is not divisible by three; effects depend on position and biological context.') },
+            crispr:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\u2702\uFE0F',  title: t('stem.dna.crispr_cas9_editing', 'CRISPR-Cas9 editing'),          hint: t('stem.dna.guide_rna_points_cas9_to_a_20_base_tar', 'Real SpCas9 usually uses a 20-nt spacer beside an NGG PAM and cuts about three bases upstream. This compact schematic shows a six-base guide window and simplified repair outcomes.') },
             protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: t('stem.dna.protein_structure', 'Protein structure'),            hint: t('stem.dna.primary_sequence_secondary_helix_sheet', 'Primary (sequence) \u2192 secondary (\u03B1-helix, \u03B2-sheet) \u2192 tertiary (3D fold) \u2192 quaternary (multi-subunit). One amino acid swap can break the fold.') },
-            forensics:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0D', title: t('stem.dna.dna_forensics', 'DNA forensics'),                hint: t('stem.dna.str_profiling_13_20_short_tandem_repea', 'STR profiling: 13-20 short-tandem-repeat loci. Probability of a random match across all loci is roughly one in a billion. Used in CODIS, paternity, and crime labs.') },
+            forensics:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0D', title: t('stem.dna.dna_forensics', 'DNA forensics'),                hint: t('stem.dna.str_profiling_13_20_short_tandem_repea', 'Forensic STR profiles compare many loci. Analysts evaluate data quality and calculate statistical weight using relevant population data; a matching profile alone does not identify how or when DNA was deposited.') },
             challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: t('stem.dna.daily_challenge', 'Daily challenge'),              hint: t('stem.dna.a_new_dna_puzzle_every_session_transla', 'A new DNA puzzle every session. Translate, identify the mutation, find the ORF, or solve a forensic case. Streak counter tracks daily wins.') },
             battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: t('stem.dna.codon_battle', 'Codon battle'),                 hint: t('stem.dna.speed_translation_duel_decode_codons_f', 'Speed-translation duel. Decode codons fast against a timer. Tests whether the genetic code is in your head, not just your reference card.') },
             learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: t('stem.dna.reference_glossary', 'Reference + glossary'),         hint: t('stem.dna.codon_table_base_pairing_rules_key_ter', 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) - the cheat sheet you keep coming back to.') }
@@ -2105,7 +2242,7 @@ window.StemLab = window.StemLab || {
               { label: "GC", value: gcPercent + "%", tone: "#22c55e" },
               { label: "Protein", value: fullProtein.length + " aa", tone: "#06b6d4" }
             ],
-            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240 }, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
+            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240 }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
             t('stem.dna.dna_helix_visualization', 'DNA helix visualization')
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
@@ -2162,7 +2299,7 @@ window.StemLab = window.StemLab || {
               { label: "Progress", value: Math.round(replStep / dnaSeq.length * 100) + "%", tone: "#22c55e" },
               { label: "Speed", value: speed + "x", tone: "#0ea5e9" }
             ],
-            h("canvas", { ref: _replCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, role: "img", 'aria-label': 'Replication: ' + replStep + '/' + dnaSeq.length }),
+            h("canvas", { ref: _replCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, tabIndex: 0, role: "img", 'aria-label': 'Replication: ' + replStep + '/' + dnaSeq.length }),
             t('stem.dna.dna_replication_fork_visualization', 'DNA replication fork visualization')
           ),
           h("div", { className: "flex items-center gap-3 flex-wrap" },
@@ -2187,8 +2324,8 @@ window.StemLab = window.StemLab || {
             h("p", { className: "text-xs text-slate-600 mt-2 leading-relaxed" },
               gradeText(
                 '\uD83E\uDDEC DNA replication is like photocopying a recipe. The cell unzips the DNA ladder and builds two exact copies so both new cells get the instructions!',
-                '\uD83E\uDDEC During replication, the enzyme helicase unwinds the double helix. Then DNA polymerase reads each strand and adds matching bases (A-T, G-C) to create two identical copies.',
-                '\uD83E\uDDEC Semi-conservative replication: Helicase unwinds at the origin of replication. DNA Polymerase III adds nucleotides 5\u2032\u21923\u2032. The leading strand is continuous, while the lagging strand is synthesized in Okazaki fragments joined by ligase.',
+                '\uD83E\uDDEC During replication, helicase helps separate the strands and DNA polymerases synthesize complementary strands. Proofreading and repair make copying highly accurate, but replication is not literally error-free.',
+                '\uD83E\uDDEC Semiconservative replication gives each daughter duplex one parental strand and one new strand. Polymerases synthesize 5\u2032\u21923\u2032; leading synthesis is mostly continuous and lagging synthesis uses Okazaki fragments. DNA polymerase III is the main replicase in bacteria, while eukaryotes use different polymerases.',
                 '\uD83E\uDDEC Replication initiates at origins (OriC in prokaryotes). Helicase unwinds; SSB proteins stabilize. Primase lays RNA primers. Pol III extends 5\u2032\u21923\u2032 (leading = continuous, lagging = Okazaki fragments). Pol I replaces primers; ligase seals nicks. Proofreading by 3\u2032\u21925\u2032 exonuclease achieves ~10\u207B\u2079 error rate.'
               )
             ),
@@ -2214,7 +2351,7 @@ window.StemLab = window.StemLab || {
               { label: "mRNA", value: (mRNA ? mRNA.length : 0) + "/" + fullMRNA.length + " nt", tone: "#06b6d4" },
               { label: "Speed", value: speed + "x", tone: "#f59e0b" }
             ],
-            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, role: "img", 'aria-label': 'Transcription: ' + animStep + '/' + dnaSeq.length }),
+            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, tabIndex: 0, role: "img", 'aria-label': 'Transcription: ' + animStep + '/' + dnaSeq.length }),
             t('stem.dna.transcription_dna_mrna', 'Transcription - DNA to mRNA')
           ),
           h("div", { className: "flex items-center gap-3" },
@@ -2260,7 +2397,7 @@ window.StemLab = window.StemLab || {
                 { label: "Built", value: builtProtein.length + " aa", tone: "#06b6d4" },
                 { label: "State", value: transPlaying ? "running" : "ready", tone: transPlaying ? "#f59e0b" : "#64748b" }
               ],
-              h("canvas", { ref: _translationCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, role: "img", 'aria-label': t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator') }),
+              h("canvas", { ref: _translationCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, tabIndex: 0, role: "img", 'aria-label': t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator') }),
               t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator')
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
@@ -2284,8 +2421,8 @@ window.StemLab = window.StemLab || {
               gradeText(
                 'Mutations are like typos in the DNA recipe. Even one small change can make a different protein!',
                 'A mutation changes the DNA sequence. This can change the mRNA, which can change the protein. Some mutations are harmless, others cause disease.',
-                'Point mutations (substitution, insertion, deletion) alter the reading frame. Frameshift mutations from insertions/deletions often produce non-functional proteins.',
-                'Mutations drive evolution via natural selection. Substitutions may be synonymous (silent), missense, or nonsense. Insertions/deletions cause frameshifts altering all downstream codons.'
+                'Substitutions change one base and may be synonymous, missense, or nonsense. This simulator inserts or deletes one base, so those edits shift the reading frame; larger indels divisible by three would not.',
+                'Mutation supplies heritable variation, while selection, drift, migration, and mating patterns change variant frequencies. Coding-region indels cause frameshifts only when their length is not divisible by three.'
               )
             ),
             h("div", { className: "flex gap-2 flex-wrap" },
@@ -2299,7 +2436,7 @@ window.StemLab = window.StemLab || {
               h("div", { className: "font-mono text-xs break-all" },
                 dnaSeq.split('').map(function(base, idx) { return h("span", { key: idx, className: "inline-block w-5 h-5 text-center leading-5 rounded font-bold text-[11px] m-px", style: { background: BASE_COLORS[base], color: BASE_TEXT_COLORS[base] || '#ffffff', outline: latestMutation && idx === latestMutation.pos ? '2px solid #0f172a' : 'none', outlineOffset: latestMutation && idx === latestMutation.pos ? '2px' : 0 } }, base); })
               ),
-              h("p", { className: "text-[11px] text-slate-600 mt-2" }, "Protein: " + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-') + (fullProtein.some(function(p) { return p.aa === 'Stop'; }) ? ' [STOP]' : ''))
+              h("p", { className: "text-[11px] text-slate-600 mt-2" }, "Protein: " + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-') + (translationStop ? ' [STOP ' + translationStop.codon + ']' : ''))
             ),
             latestMutation && h("div", { className: "grid gap-3 rounded-lg border border-rose-200 bg-white p-3 sm:grid-cols-[auto_1fr]", role: "status" },
               h("div", { className: "flex items-center gap-2 font-mono text-xs font-black" },
@@ -2380,7 +2517,7 @@ window.StemLab = window.StemLab || {
               { label: "PAM", value: pamSites.length, tone: "#8b5cf6" },
               { label: "Scan", value: crisprScanPos + "/" + (selectedPAMSite ? selectedPAMSite.cutSite : 0), tone: "#0ea5e9" }
             ],
-            h("canvas", { ref: _crisprCanvasRef, className: "block w-full", style: { width: '100%', height: 280 }, role: "img", 'aria-label': 'CRISPR: ' + crisprPhase }),
+            h("canvas", { ref: _crisprCanvasRef, className: "block w-full", style: { width: '100%', height: 280 }, tabIndex: 0, role: "img", 'aria-label': 'CRISPR: ' + crisprPhase }),
             t('stem.dna.crispr_cas9_gene_editing_simulation', 'CRISPR-Cas9 gene editing simulation')
           ),
 
@@ -2397,31 +2534,31 @@ window.StemLab = window.StemLab || {
             ),
             h("p", { className: "text-xs text-slate-600 leading-relaxed" },
               gradeText(
-                '\u2702\uFE0F CRISPR is like molecular scissors! Scientists use a tiny protein called Cas9 to find and cut a specific spot in the DNA, then fix it to cure diseases.',
-                '\u2702\uFE0F CRISPR-Cas9 uses a guide RNA to lead the Cas9 protein to an exact location on the DNA. Once it finds the matching sequence next to a PAM site (NGG), it cuts both strands. The cell then repairs the break.',
-                '\u2702\uFE0F CRISPR-Cas9: A guide RNA (gRNA) complementary to the target sequence directs Cas9 to the DNA. Cas9 recognizes the PAM motif (5\u2032-NGG-3\u2032), unwinds DNA, creates a double-strand break (DSB). Repair via NHEJ (error-prone) or HDR (precise, requires template).',
-                '\u2702\uFE0F The CRISPR-Cas9 system: crRNA+tracrRNA (or synthetic sgRNA) guides Cas9 endonuclease to a 20nt target adjacent to 5\u2032-NGG-3\u2032 PAM. RuvC and HNH domains each cleave one strand, creating a blunt DSB. NHEJ introduces indels (knockouts); HDR with donor template enables precise edits. Off-target effects minimized by high-fidelity Cas9 variants.'
+                '\u2702\uFE0F CRISPR can guide a protein such as Cas9 to a chosen DNA region. Cutting and repair can change the sequence, but outcomes are not guaranteed and medical uses require careful testing.',
+                '\u2702\uFE0F SpCas9 uses guide-RNA pairing plus an NGG PAM to recognize a target region. It usually cuts both strands about three bases before the PAM, and cellular repair determines the edit.',
+                '\u2702\uFE0F SpCas9 typically pairs a 20-nt guide spacer with target DNA next to 5\u2032-NGG-3\u2032 and cuts about three bases upstream. End joining often yields indels; homology-directed repair can copy a donor template, but efficiencies and outcomes vary.',
+                '\u2702\uFE0F In SpCas9, crRNA plus tracrRNA (or an sgRNA) targets a protospacer next to an NGG PAM. HNH and RuvC nuclease domains cleave opposite strands near three bases upstream. Repair distributions, on-target byproducts, and off-target activity must be measured rather than assumed away.'
               )
             ),
 
             // Design phase
             crisprPhase === 'design' && h("div", { className: "space-y-2" },
               h("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t('stem.dna.step_1_select_pam_target_site', 'Step 1: Select PAM Target Site')),
-              pamSites.length === 0 ? h("p", { className: "text-xs text-amber-800 bg-amber-50 p-2 rounded-lg" }, t('stem.dna.no_pam_sites_ngg_found_try_a_different', '\u26A0\uFE0F No PAM sites (NGG) found. Try a different DNA sequence from the Build tab.')) :
+              pamSites.length === 0 ? h("p", { className: "text-xs text-amber-800 bg-amber-50 p-2 rounded-lg" }, t('stem.dna.no_pam_sites_ngg_found_try_a_different', '\u26A0\uFE0F No forward-strand NGG sites with enough upstream sequence were found. Try a longer preset from Build.')) :
               h("div", { className: "space-y-1" },
-                h("p", { className: "text-[11px] text-slate-600" }, pamSites.length + ' PAM site(s) detected:'),
+                h("p", { className: "text-[11px] text-slate-600" }, pamSites.length + ' forward-strand PAM site(s) detected. The six-base guide window is schematic; real SpCas9 spacers are typically 20 nt:'),
                 h("div", { className: "flex gap-1 flex-wrap" },
                   pamSites.map(function(site, idx) {
-                    return h("button", { key: idx, onClick: function() { upd('crisprTargetPAM', idx); },
+                    return h("button", { type: "button", key: idx, 'aria-pressed': activePAM === idx, onClick: function() { upd('crisprTargetPAM', idx); },
                       className: "px-2 py-1 text-[11px] font-bold rounded-lg transition-all " + (activePAM === idx ? 'bg-violet-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-violet-50 active:scale-[0.97]')
                     }, 'Pos ' + (site.pamStart + 1) + ' (' + dnaSeq.substring(site.pamStart, site.pamStart + 3) + ')');
                   })
                 ),
                 selectedPAMSite && h("div", { className: "mt-2 p-2 bg-white rounded-lg border text-[11px]" },
-                  h("p", { className: "text-slate-600" }, '\uD83C\uDFAF Target: pos ' + (selectedPAMSite.cutSite - crisprGuideLen + 1) + '-' + selectedPAMSite.cutSite + ' | PAM: ' + dnaSeq.substring(selectedPAMSite.pamStart, selectedPAMSite.pamStart + 3) + ' at pos ' + (selectedPAMSite.pamStart + 1)),
-                  h("p", { className: "text-blue-600 font-mono mt-0.5" }, 'gRNA: ' + dnaSeq.substring(selectedPAMSite.cutSite - crisprGuideLen, selectedPAMSite.cutSite).split('').map(function(b) { return DNA_TO_RNA[b] || b; }).join(''))
+                  h("p", { className: "text-slate-600" }, '\uD83C\uDFAF Schematic guide window: pos ' + (selectedPAMSite.guideStart + 1) + '-' + selectedPAMSite.guideEnd + ' | cut near pos ' + (selectedPAMSite.cutSite + 1) + ' | PAM: ' + dnaSeq.substring(selectedPAMSite.pamStart, selectedPAMSite.pamStart + 3) + ' at pos ' + (selectedPAMSite.pamStart + 1)),
+                  h("p", { className: "text-blue-600 font-mono mt-0.5" }, 'gRNA: ' + dnaSeq.substring(selectedPAMSite.guideStart, selectedPAMSite.guideEnd).split('').map(function(b) { return DNA_TO_RNA[b] || b; }).join(''))
                 ),
-                h("button", { onClick: startCRISPRScan, disabled: !selectedPAMSite, className: "mt-2 px-4 py-2 text-sm font-bold rounded-xl transition-all " + (selectedPAMSite ? 'transition-colors bg-violet-600 text-white hover:bg-violet-700 shadow-md active:scale-[0.97]' : 'bg-slate-500 text-white cursor-not-allowed') }, t('stem.dna.deploy_cas9', '\uD83D\uDE80 Deploy Cas9'))
+                h("button", { type: "button", onClick: startCRISPRScan, disabled: !selectedPAMSite, className: "mt-2 px-4 py-2 text-sm font-bold rounded-xl transition-all " + (selectedPAMSite ? 'transition-colors bg-violet-600 text-white hover:bg-violet-700 shadow-md active:scale-[0.97]' : 'bg-slate-500 text-white cursor-not-allowed') }, t('stem.dna.deploy_cas9', '\uD83D\uDE80 Deploy Cas9'))
               )
             ),
 
@@ -2431,33 +2568,45 @@ window.StemLab = window.StemLab || {
               h("div", { className: "w-full bg-slate-100 rounded-full h-2" },
                 h("div", { className: "bg-gradient-to-r from-violet-500 to-blue-500 rounded-full h-2 transition-all", style: { width: (selectedPAMSite ? (crisprScanPos / selectedPAMSite.cutSite * 100) : 0) + '%' } })
               ),
-              h("div", { className: "flex items-center gap-2" },
+              h("div", { className: "flex items-center gap-2", role: "group", 'aria-label': "CRISPR scan speed" },
                 h("span", { className: "text-xs text-slate-600" }, 'Speed:'),
-                [1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-0.5 text-[11px] font-bold rounded " + (speed === s ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
+                [1, 2, 4].map(function(s) { return h("button", { type: "button", key: s, 'aria-pressed': speed === s, onClick: function() { upd('speed', s); }, className: "px-2 py-0.5 text-[11px] font-bold rounded " + (speed === s ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600') }, s + 'x'); })
               )
             ),
 
             // Cut phase
             crisprPhase === 'cut' && h("div", { className: "space-y-2" },
               h("p", { className: "text-xs font-bold text-red-600" }, t('stem.dna.double_strand_break_created_choose_rep', '\u2702\uFE0F Double-strand break created! Choose repair pathway:')),
+              h("div", { className: "flex flex-wrap items-center gap-1", role: "group", 'aria-label': "Choose the donor-template base for the HDR model" },
+                h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "HDR donor base:"),
+                ['A', 'T', 'G', 'C'].map(function(base) {
+                  return h("button", {
+                    type: "button",
+                    key: base,
+                    'aria-pressed': crisprDonorBase === base,
+                    onClick: function() { upd('crisprDonorBase', base); },
+                    className: "w-8 h-8 rounded-lg text-xs font-black border " + (crisprDonorBase === base ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-slate-700 border-slate-300")
+                  }, base);
+                })
+              ),
               h("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" },
-                h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-600 bg-amber-50 hover:bg-amber-100 transition-all text-left active:scale-[0.97]" },
+                h("button", { type: "button", onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-600 bg-amber-50 hover:bg-amber-100 transition-all text-left active:scale-[0.97]" },
                   h("p", { className: "text-xs font-bold text-amber-700" }, t('stem.dna.nhej', '\uD83D\uDD27 NHEJ')),
                   h("p", { className: "text-[11px] text-amber-600 mt-0.5" }, t('stem.dna.non_homologous_end_joining', 'Non-Homologous End Joining')),
-                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix - might make mistakes!', 'Error-prone, may add or delete bases.', 'Error-prone. Introduces indels. Used for gene knockouts.', 'Error-prone. Introduces indels. Used for gene knockouts.'))
+                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix - might make mistakes!', 'Often rejoins the break with small insertions or deletions; this model applies a deletion.', 'Often produces a distribution of indels and is commonly used in knockout experiments; this model shows one deletion outcome.', 'Often produces a distribution of indels and is commonly used in knockout experiments; this model shows one deletion outcome.'))
                 ),
-                h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all text-left active:scale-[0.97]" },
+                h("button", { type: "button", onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all text-left active:scale-[0.97]" },
                   h("p", { className: "text-xs font-bold text-emerald-700" }, t('stem.dna.hdr', '\uD83E\uDDEC HDR')),
                   h("p", { className: "text-[11px] text-emerald-600 mt-0.5" }, t('stem.dna.homology_directed_repair', 'Homology-Directed Repair')),
-                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix - uses a template!', 'Precise editing using a template.', 'Precise editing using donor template. Used for gene knock-ins.', 'Precise editing using donor template. Used for gene knock-ins and corrections.'))
+                  h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix - uses a template!', 'Template-directed editing can copy a supplied donor sequence; this model substitutes the selected base.', 'A donor template can support a desired knock-in, but repair efficiency and byproducts vary.', 'A donor template can support a desired change, but on-target byproducts and efficiency must be measured.'))
                 )
               )
             ),
 
             // Done phase
             crisprPhase === 'done' && h("div", { className: "space-y-2" },
-              h("p", { className: "text-xs font-bold text-emerald-600" }, '\u2705 Gene edit complete! Repair: ' + (crisprRepairType === 'nhej' ? 'NHEJ' : 'HDR')),
-              h("button", { onClick: function() { updMulti({ crisprPhase: 'design', crisprScanPos: 0, crisprRepairType: '' }); }, className: "transition-colors px-4 py-2 text-sm font-bold bg-violet-600 text-white rounded-xl hover:bg-violet-700 active:scale-[0.97]" }, t('stem.dna.new_edit', '\u21BA New Edit'))
+              h("p", { className: "text-xs font-bold text-emerald-600" }, '\u2705 Edit model complete. Repair: ' + (crisprRepairType === 'nhej' ? 'NHEJ' : 'HDR')),
+              h("button", { type: "button", onClick: function() { updMulti({ crisprPhase: 'design', crisprScanPos: 0, crisprRepairType: '' }); }, className: "transition-colors px-4 py-2 text-sm font-bold bg-violet-600 text-white rounded-xl hover:bg-violet-700 active:scale-[0.97]" }, t('stem.dna.new_edit', '\u21BA New Edit'))
             ),
 
             // Edit history
@@ -2791,17 +2940,21 @@ window.StemLab = window.StemLab || {
             ),
             h("p", { className: "text-xs text-slate-600" },
               gradeText(
-                'DNA fingerprinting is like finding someone\u2019s unique barcode! Scientists cut DNA into pieces and sort them by size to see who matches.',
-                'Restriction enzymes cut DNA at specific sequences. The fragments are separated by size using gel electrophoresis - smaller pieces move faster through the gel. If two samples have the same banding pattern, they match!',
-                'Restriction Fragment Length Polymorphism (RFLP): Restriction endonucleases cut DNA at palindromic sites. Gel electrophoresis separates fragments by size (smaller = faster migration). Matching banding patterns between samples indicates same DNA source.',
-                'RFLP & STR analysis: Restriction endonucleases recognize 4-8bp palindromic sequences. Gel electrophoresis separates fragments inversely proportional to log(MW). Modern forensics uses PCR-amplified Short Tandem Repeats (STRs) at 13+ CODIS loci for statistical match probabilities <10\u207B\u00B9\u2070.'
+                'A DNA profile compares selected markers, a little like comparing a pattern of barcode lines. This activity uses simplified fragment bands; real laboratories use controls, multiple markers, and statistics.',
+                'Restriction enzymes cut DNA at specific sequences, and gel electrophoresis separates fragments by size. The same bands are consistent with the same source in this simplified activity, but real conclusions require quality checks and statistical interpretation.',
+                'RFLP compares fragment lengths after restriction digestion, while modern forensic profiling usually amplifies STR loci. Similar band positions support an association in this model; they do not by themselves prove identity or explain how DNA was deposited.',
+                'RFLP and STR profiling are different methods. Modern forensic workflows amplify many STR loci and report statistical weight using population data, laboratory controls, and validated interpretation procedures. A random-match probability is not a universal constant and does not alone identify a person as the source.'
               )
+            ),
+
+            h("p", { className: "text-[11px] text-cyan-900 bg-cyan-100 border border-cyan-300 rounded-lg p-2" },
+              "Model limit: these are clean, single-source teaching patterns. Real evidence may be partial, degraded, contaminated, or mixed, and analysts quantify the strength of support rather than declaring identity from bands alone."
             ),
 
             // Case selector
             h("div", { className: "flex gap-1 flex-wrap" },
               FORENSIC_CASES.map(function(c, idx) {
-                return h("button", { key: idx, onClick: function() { updMulti({ forensicCase: idx, forensicGelRun: false, forensicGuess: null, forensicResult: null }); },
+                return h("button", { type: "button", key: idx, 'aria-pressed': forensicCase === idx, onClick: function() { updMulti({ forensicCase: idx, forensicGelRun: false, forensicGuess: null, forensicResult: null }); },
                   className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (forensicCase === idx ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400 active:scale-[0.97]')
                 }, (idx + 1) + '. ' + c.name);
               })
@@ -2814,18 +2967,18 @@ window.StemLab = window.StemLab || {
             ),
 
             // Run gel button
-            !forensicGelRun && h("button", { onClick: function() { upd('forensicGelRun', true); addToast('\u26A1 Running gel electrophoresis...', 'success'); }, className: "px-4 py-2 text-sm font-bold bg-cyan-700 text-white rounded-xl hover:bg-cyan-700 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.run_gel_electrophoresis', '\u26A1 Run Gel Electrophoresis')),
+            !forensicGelRun && h("button", { type: "button", onClick: function() { upd('forensicGelRun', true); addToast('\u26A1 Running gel electrophoresis...', 'success'); }, className: "px-4 py-2 text-sm font-bold bg-cyan-700 text-white rounded-xl hover:bg-cyan-700 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.run_gel_electrophoresis', '\u26A1 Run Gel Electrophoresis')),
 
             forensicGelRun && h("div", { className: "space-y-3" },
-              h("canvas", { ref: _forensicCanvasRef, style: { width: '100%', height: 240 }, role: "img", 'aria-label': t('stem.dna.gel_electrophoresis_results', 'Gel electrophoresis results') }),
+              h("canvas", { ref: _forensicCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, role: "img", 'aria-label': t('stem.dna.gel_electrophoresis_results', 'Gel electrophoresis results') }),
               h("div", { className: "overflow-x-auto rounded-lg border border-cyan-100 bg-white" },
                 h("table", { className: "w-full min-w-[420px] text-left text-[10px]" },
                   h("caption", { className: "sr-only" }, "DNA sample fragment sizes shown in the gel"),
                   h("thead", { className: "bg-cyan-50 text-cyan-900" },
                     h("tr", null,
-                      h("th", { className: "px-3 py-2 font-black" }, "Lane"),
-                      h("th", { className: "px-3 py-2 font-black" }, "Role"),
-                      h("th", { className: "px-3 py-2 font-black" }, "Fragment sizes")
+                      h("th", { scope: "col", className: "px-3 py-2 font-black" }, "Lane"),
+                      h("th", { scope: "col", className: "px-3 py-2 font-black" }, "Role"),
+                      h("th", { scope: "col", className: "px-3 py-2 font-black" }, "Fragment sizes")
                     )
                   ),
                   h("tbody", null,
@@ -2843,22 +2996,22 @@ window.StemLab = window.StemLab || {
               // Answer selection
               !forensicResult && h("div", { className: "space-y-2" },
                 h("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, 'Which sample matches the ' + currentCase.samples[0].label + '?'),
-                h("div", { className: "flex gap-2 flex-wrap" },
+                h("div", { className: "flex gap-2 flex-wrap", role: "group", 'aria-label': "Choose the comparison sample" },
                   currentCase.samples.map(function(s, idx) {
                     if (s.isRef) return null;
-                    return h("button", { key: idx, onClick: function() { upd('forensicGuess', idx); },
+                    return h("button", { type: "button", key: idx, 'aria-pressed': forensicGuess === idx, onClick: function() { upd('forensicGuess', idx); },
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (forensicGuess === idx ? 'bg-cyan-700 text-white shadow-md ring-2 ring-cyan-300' : 'transition-colors bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400 active:scale-[0.97]')
                     }, s.label);
                   })
                 ),
-                h("button", { onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800 shadow-md active:scale-[0.97]' : 'bg-slate-500 text-white cursor-not-allowed') }, t('stem.dna.submit_answer', '\u2713 Submit Answer'))
+                h("button", { type: "button", onClick: checkForensicAnswer, disabled: forensicGuess == null, className: "px-4 py-2 text-sm font-bold rounded-xl transition-all " + (forensicGuess != null ? 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800 shadow-md active:scale-[0.97]' : 'bg-slate-500 text-white cursor-not-allowed') }, t('stem.dna.submit_answer', '\u2713 Submit Answer'))
               ),
 
               // Result
               forensicResult && h("div", { className: "space-y-2" },
-                h("div", { className: "p-3 rounded-xl text-sm font-bold " + (forensicResult === 'correct' ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-200' : 'bg-red-50 text-red-700 border-2 border-red-200') },
-                  forensicResult === 'correct' ? '\u2705 Correct! The banding patterns match perfectly. Case solved!' : '\u274c Incorrect. Compare the band positions more carefully - matching samples have identical fragment sizes.',
-                  h("button", { onClick: function() {
+                h("div", { role: "status", className: "p-3 rounded-xl text-sm font-bold " + (forensicResult === 'correct' ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-200' : 'bg-red-50 text-red-700 border-2 border-red-200') },
+                  forensicResult === 'correct' ? '\u2705 Correct for this teaching dataset: the selected fragment pattern matches the reference. A real report would also quantify the statistical weight and consider other evidence.' : '\u274c Incorrect. Compare the band positions more carefully - matching samples have identical fragment sizes.',
+                  h("button", { type: "button", onClick: function() {
                     var nextCase = (forensicCase + 1) % FORENSIC_CASES.length;
                     updMulti({ forensicCase: nextCase, forensicGelRun: false, forensicGuess: null, forensicResult: null, forensicAI: null });
                   }, className: "mt-2 px-3 py-1.5 text-xs font-bold bg-white text-slate-600 rounded-lg border block" }, t('stem.dna.next_case', '\u21BB Next Case'))

@@ -3,16 +3,22 @@
   "id": "praxis-plt-grades-5-9-5623",
   "title": "Praxis PLT: Grades 5–9 (5623) - 200 Source Questions + 300 Guided Review",
   "shortTitle": "PLT: Grades 5–9 (5623)",
-  "description": "Contains 200 source diagnostic questions and 300 source-derived guided-review tasks; the assistant audit found 100 distinct source content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, eight case-response workshops, and native learning support for beginning middle-grades educators.",
+  "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two 100-item diagnostics, a 70-item selected-response simulation, eight case-response workshops, and native learning support for beginning middle-grades educators.",
   "credentialOwner": "Educational Testing Service (ETS)",
   "version": "1.0.0",
   "status": "ready",
   "accent": "cyan",
-  "contentReview": "Assistant audit completed: the 200 source questions contain 100 distinct content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. The 300 additional activities are assistant-reviewed guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
+  "contentReview": "Assistant audit completed: 200 independent-practice items contain 100 distinct content kernels and 100 parallel variants under the normalized test. 300 additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
   "nativeQaUrl": "./test_prep/plt_5_9_5623_native_qa.json",
   "learningLibraryUrl": "./test_prep/plt_5_9_5623_learning_library.json",
   "learningLibraryQaUrl": "./test_prep/plt_5_9_5623_learning_library_qa.json",
   "simulationItemCount": 70,
+  "simulationDomainCounts": {
+    "students-as-learners": 21,
+    "instructional-process": 21,
+    "assessment": 14,
+    "professional-development-leadership-community": 14
+  },
   "simulationTimeMinutes": 70,
   "simulationLabel": "70-question PLT Grades 5–9 selected-response simulation",
   "simulationNote": "The official 5623 test contains 70 selected-response and four constructed-response questions related to two case histories in one 120-minute session. This simulation reserves 50 minutes for separate case-analysis workshops; AlloFlow does not score written responses.",
@@ -52,14 +58,14 @@
     {
       "id": "diagnostic-batch-1",
       "label": "100-item source diagnostic bank 1",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "diagnostic-batch-2",
       "label": "100-item source diagnostic bank 2",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "guided-review-bank-1",
@@ -2102,7 +2108,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades K–6?",
+      "prompt": "In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades 5–9?",
       "choices": [
         "Use loss of all movement as routine punishment.",
         "Require identical motor performance from every learner.",
@@ -9974,7 +9980,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades K–6?” A candidate selects “Use loss of all movement as routine punishment”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades 5–9?” A candidate selects “Use loss of all movement as routine punishment”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments.",
         "\"Require identical motor performance from every learner.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
@@ -19574,7 +19580,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades K–6?” A team compares “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” with “Use loss of all movement as routine punishment”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades 5–9?” A team compares “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” with “Use loss of all movement as routine punishment”. Which evaluation most accurately distinguishes them?",
       "choices": [
         "“Use loss of all movement as routine punishment” is better supported: Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments. In contrast, “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” is not supported: \"Use loss of all movement as routine punishment.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
         "“Require identical motor performance from every learner” is better supported: Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments. In contrast, “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” is not supported: \"Require identical motor performance from every learner.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
@@ -21685,18 +21691,31 @@
   "diagnosticBatchCount": 5,
   "diagnosticBatchCountSemantics": "legacy-total-learning-activity-bank-alias",
   "sourceDiagnosticBatchCount": 2,
+  "assistantAuthoredIndependentBatchCount": 0,
+  "independentDiagnosticBatchCount": 2,
   "guidedReviewBatchCount": 3,
   "learningActivityBankCount": 5,
+  "sourceQuestionItems": 200,
+  "assistantAuthoredIndependentItems": 0,
+  "independentPracticeItems": 200,
+  "guidedReviewItems": 300,
   "distinctSourceContentKernels": 100,
   "parallelSourceVariants": 100,
+  "distinctIndependentContentKernels": 100,
+  "parallelIndependentVariants": 100,
   "newIndependentItemsNeeded": 400,
   "expansionVersion": "source-kernel-audit-plus-guided-review-v1",
+  "simulationDomainCountsBasis": "release-declared-selected-response-allocation",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "structurallyReviewedItems": 500,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReviewItems": 300,
     "independentQuestionTarget": 500,
     "newIndependentItemsNeeded": 400,
@@ -21715,8 +21734,8 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "limitation": "Normalized answer-set, rationale, and reference reuse is counted as one content kernel. Source-derived transformations are approved as guided practice, not as independent exam questions. Assistant review is not independent licensed-professional review or psychometric validation."
+    "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities, not 500 independent exam questions: 200 source questions (100 distinct content kernels; 100 parallel variants) plus 300 source-derived guided-review activities. 400 newly authored independent questions are needed to reach the 500-question target.",
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. It currently contains 100 distinct independent content kernels; 400 newly authored independent questions remain to reach 500.",
   "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

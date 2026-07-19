@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:35.663Z",
+  "generatedAt": "2026-07-19T05:09:24.040Z",
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",
   "standard": {
     "label": "AlloFlow Praxis Speech-Language Pathology 5331 learning-library source and editorial review v1",
-    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive lessons, one-best-answer knowledge checks, complete card and aid metadata, safety cautions, and item-compatible skills.",
+    "meaning": "A pass confirms release counts, stable identifiers, authoritative-source allowlisting, substantive lessons, responsive one-best-answer knowledge checks, complete card and aid metadata, safety cautions, and item-compatible skills.",
     "limitation": "This is not ETS or ASHA approval, independent licensed-SLP validation, psychometric validation, clinical evaluation, diagnosis, medical or swallowing-safety decision, treatment, supervision, legal advice, or a substitute for current individualized care and requirements."
   },
   "summary": {
@@ -143,5 +143,14 @@
       "references": 5,
       "status": "source-reviewed-editorial-pass"
     }
-  ]
+  ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
+    "learningLibrarySha256": "05f721c7d3bf36eb7e2de4490aa1fbb8cfc8260a2bf5de665502b11e91fd0f90",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  }
 }

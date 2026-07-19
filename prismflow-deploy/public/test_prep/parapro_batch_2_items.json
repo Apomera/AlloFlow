@@ -1998,13 +1998,13 @@
     "difficulty": "application",
     "prompt": "A student says -6 is greater than -2 because 6 is greater than 2. Which support best corrects the comparison?",
     "choices": [
-      "Remove both negative signs whenever negative numbers are compared.",
-      "Place both values on a number line and compare which point lies farther to the right.",
-      "Tell the student that the number with more symbols is always smaller.",
-      "Use only positive-number examples and avoid returning to the comparison."
+      "Compare their distances from zero and choose the value with the greater distance.",
+      "Place both values on a number line; the point farther right represents the greater number.",
+      "Rewrite both as positive values, compare 6 and 2, and then restore the negative signs.",
+      "Compare the digits first and use the negative signs after choosing the larger digit."
     ],
     "answerIndex": 1,
-    "rationale": "The student is comparing absolute values instead of signed values. A number line provides a spatial model in which greater numbers are farther right, making -2 greater than -6.",
+    "rationale": "The student is comparing absolute values instead of signed values. Locating both numbers on a number line makes their order visible: values increase from left to right, so -2 is greater than -6.",
     "references": [
       "https://www.ets.org/pdfs/parapro/1755.pdf",
       "https://openstax.org/details/books/prealgebra-2e/"
@@ -2016,10 +2016,10 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because removing signs changes the quantities and causes the misconception.",
-      "The number line shows that negative 2 lies to the right of negative 6 and is therefore greater. It is the only option that satisfies every part of the prompt.",
-      "This option does not fit because symbol count is not a mathematical comparison rule. The stated information or governing rule points to a different result.",
-      "This option does not fit because avoiding negative values does not repair the idea. The stated information or governing rule points to a different result."
+      "This option does not fit because distance from zero compares absolute value, which repeats the student’s original error instead of comparing signed values.",
+      "The spatial model establishes that negative 2 lies to the right of negative 6, so negative 2 is greater.",
+      "This option does not fit because temporarily removing and then restoring both signs preserves the same mistaken comparison between the magnitudes.",
+      "This option does not fit because choosing by digit size before considering each sign again treats magnitude as though it determines order."
     ]
   },
   {
@@ -2926,15 +2926,15 @@
     "type": "single-choice",
     "domainId": "writing",
     "difficulty": "application",
-    "prompt": "A student copies two sentences from a website into a report without quotation marks or attribution. Which response is appropriate?",
+    "prompt": "A student copies two sentences from a website into a report without quotation marks or attribution. Which response best teaches responsible source use?",
     "choices": [
-      "Leave the sentences unchanged because online text never needs attribution.",
-      "Change two words and present the passage as entirely original work.",
-      "Remove the website title but keep the copied wording without citation.",
-      "Teach the student to quote or paraphrase accurately and cite the source before using the material."
+      "Keep the sentences because publicly available webpages may be copied into school reports.",
+      "Have the student change several words while preserving the sentence structure, then omit source credit.",
+      "Place quotation marks around the sentences but leave out where the language came from.",
+      "Help the student quote the sentences or paraphrase them genuinely, and cite the webpage."
     ],
     "answerIndex": 3,
-    "rationale": "Copied language must be marked as a quotation or transformed into a genuine paraphrase, and the source must be cited. Instruction should correct the draft and build responsible research practice.",
+    "rationale": "Borrowed language must be presented as a quotation or recast as a genuine paraphrase, and the originating webpage must be cited. The response repairs the draft while teaching responsible research practice.",
     "references": [
       "https://www.ets.org/pdfs/parapro/1755.pdf",
       "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
@@ -2946,10 +2946,10 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because online sources still require appropriate attribution. The stated information or governing rule points to a different result.",
-      "This option does not fit because minor word substitutions do not create an honest paraphrase. The stated information or governing rule points to a different result.",
-      "This option does not fit because hiding source information increases rather than resolves the problem.",
-      "The response addresses both accurate source use and transparent attribution while preserving the opportunity to learn."
+      "This option does not fit because public availability does not remove the obligation to distinguish borrowed language and identify its source.",
+      "This option does not fit because minor substitutions that retain the original structure are not a genuine paraphrase, and missing credit still conceals the source.",
+      "This option does not fit because quotation marks identify borrowed wording but do not tell readers which source supplied the language.",
+      "This response teaches both accurate handling of borrowed language and transparent identification of its source."
     ]
   },
   {

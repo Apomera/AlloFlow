@@ -1,4 +1,4 @@
-// adventure_handlers_source.jsx - 5 adventure interaction handlers extracted
+// adventure_handlers_source.jsx - 7 adventure interaction handlers extracted
 // from AlloFlowANTI.txt 2026-04-25 (Phase F of CDN modularization).
 //
 // Each handler takes (args..., deps) where `deps` carries all closure-
@@ -8,6 +8,14 @@
 // A try/catch wrapper at each handler entry surfaces runtime errors to
 // console.error before re-throwing — Phase E learned that swallowed
 // errors masquerade as a generic "Sorry" toast and are murder to debug.
+
+const getAssistedKnowledgeContext = (state) => {
+  const learned = Array.isArray(state?.assistedKnowledge)
+    ? state.assistedKnowledge.map(entry => String(entry || '').trim()).filter(Boolean).slice(-8)
+    : [];
+  if (!learned.length) return '';
+  return `\n--- GUIDING HAND KNOWLEDGE (ASSISTED, NOT DEMONSTRATED MASTERY) ---\n${learned.map((entry, index) => `${index + 1}. ${entry}`).join('\n')}\nUse this knowledge when it is relevant in later scenes, but never treat it as evidence that the student independently demonstrated the concept.\n`;
+};
 
 const executeStartAdventure = async (contextOverride = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
@@ -67,6 +75,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
       activeGoldBuff: false,
       activeGoldBuffTurns: 0,
       narrativeLedger: '',
+      assistedKnowledge: [],
       lastKeyItemTurn: 0,
       debateMomentum: 50,
       debateTopic: null,
@@ -469,6 +478,7 @@ const handleResumeAdventure = async (deps) => {
               gold: (typeof parsed.gold === 'number' && !isNaN(parsed.gold)) ? parsed.gold : 0,
               isShopOpen: parsed.isShopOpen || false,
               narrativeLedger: parsed.narrativeLedger || '',
+              assistedKnowledge: Array.isArray(parsed.assistedKnowledge) ? parsed.assistedKnowledge.filter(Boolean).slice(-12) : [],
               activeXpMultiplier: parsed.activeXpMultiplier || 1,
               activeGoldBuff: false,
               activeGoldBuffTurns: parsed.activeGoldBuffTurns || 0,
@@ -642,6 +652,7 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
               const fullText = adventureState.history.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
               historyContext = `--- FULL ADVENTURE LOG ---\n${fullText}\n`;
           }
+          historyContext += getAssistedKnowledgeContext(adventureState);
           let prompt = '';
       if (adventureInputMode === 'debate') {
           prompt = `
@@ -1079,6 +1090,7 @@ const handleAdventureChoice = async (choice, deps) => {
           const fullText = adventureState.history.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
           historyContext = `--- FULL ADVENTURE LOG ---\n${fullText}\n`;
       }
+      historyContext += getAssistedKnowledgeContext(adventureState);
       const prompt = `
         Continue the "${adventureInputMode === 'system' ? 'System Simulation' : 'Adventure'}" simulation.
         ${modeContext}
@@ -1261,33 +1273,307 @@ const handleAdventureChoice = async (choice, deps) => {
     }
 };
 
-// ── Free-response nudge (2026-07-16, Aaron) ────────────────────────────────
-// A stuck student can ask for a hint, at a cost: the turn's XP gain is HALVED
-// (applied in handleDiceRollComplete via adventureState.hintUsedTurn — help is
-// available, but unaided mastery earns more). One hint per scene; the hint
-// nudges toward what to consider and offers a sentence-starter, never the answer.
+// Guiding Hand: a paid, diegetic assist that advances the story without
+// awarding mastery credit or changing any tracked reward/resource state.
+const handleGuidingHand = async (item, deps) => {
+  const {
+    adventureState, adventureInputMode, adventureLanguageMode, adventureFreeResponseEnabled,
+    adventureConsistentCharacters, adventureCustomInstructions, isAdventureStoryMode,
+    isSocialStoryMode, socialStoryFocus, sourceTopic, inputText, gradeLevel,
+    currentUiLanguage, selectedLanguages, lastTurnSnapshot, setAdventureState, callGemini,
+    resilientJsonParse, addToast, t, warnLog, generateAdventureImage,
+    playAdventureEventSound, alloBotRef, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS
+  } = deps;
+
+  if (!item || item.effectType !== 'story_assist') return false;
+  if (!adventureState.currentScene || adventureState.isGameOver) {
+    addToast(t('adventure.guiding_hand_unavailable') || 'Guiding Hand needs an active scene.', 'info');
+    return false;
+  }
+  if (adventureState.isLoading) return false;
+  if (adventureState.climax?.isActive) {
+    addToast(t('adventure.guiding_hand_climax') || 'Guiding Hand cannot resolve the final challenge.', 'warning');
+    return false;
+  }
+
+  const safeSnapshot = typeof structuredClone === 'function'
+    ? structuredClone(adventureState)
+    : JSON.parse(JSON.stringify(adventureState));
+  if (lastTurnSnapshot?.current !== undefined) lastTurnSnapshot.current = safeSnapshot;
+  setAdventureState(prev => ({ ...prev, isLoading: true }));
+  addToast(t('adventure.guiding_hand_started') || 'A guiding hand is stepping into the story...', 'info');
+
+  try {
+    let modeGuidance = 'Use an ally, a timely discovery, or a believable event that fits the current narrative.';
+    if (isSocialStoryMode) {
+      modeGuidance = `A supportive person models an effective response connected to "${socialStoryFocus || 'the current social situation'}" without shaming the learner.`;
+    } else if (adventureInputMode === 'debate') {
+      modeGuidance = 'A credible expert, moderator, or newly surfaced evidence resolves the immediate debate obstacle and teaches a transferable reasoning principle.';
+    } else if (adventureInputMode === 'system') {
+      modeGuidance = 'A safeguard, knowledgeable stakeholder, or timely system event resolves the immediate policy/systems obstacle and demonstrates the underlying systems principle.';
+    }
+
+    const castContext = adventureConsistentCharacters && Array.isArray(adventureState.characters) && adventureState.characters.length
+      ? `Established cast:\n${adventureState.characters.map(character => `- ${character.name}: ${character.role || 'character'}; ${character.appearance || ''}`).join('\n')}\nPrefer an established character when one naturally fits; otherwise use a plausible event or discovery.`
+      : 'Introduce a context-appropriate helper, event, safeguard, or discovery only if needed.';
+    const learnedContext = getAssistedKnowledgeContext(adventureState);
+    const sourceContext = String(inputText || sourceTopic || '').slice(0, 1800);
+    const recentHistory = (adventureState.history || []).slice(-6).map(entry => `${String(entry.type || 'event').toUpperCase()}: ${String(entry.text || '')}`).join('\n');
+    const optionsInstruction = adventureFreeResponseEnabled
+      ? 'Return scene.options as an empty array. End with a specific new unresolved problem that invites the learner to type the next response.'
+      : 'Return exactly 4 concise, distinct options for the NEW problem after the intervention. Do not ask the learner to redo the obstacle that was just resolved.';
+    let languageInstruction = 'Write all learner-facing text in English.';
+    if (adventureLanguageMode && adventureLanguageMode !== 'English') {
+      if (adventureLanguageMode === 'All + English') {
+        languageInstruction = `Use a multilingual mix of ${(selectedLanguages || []).join(', ') || 'the selected languages'} and provide English translations for all narrative text and choices.`;
+      } else if (adventureLanguageMode.endsWith(' + English')) {
+        const targetLanguage = adventureLanguageMode.replace(' + English', '');
+        languageInstruction = `Write in ${targetLanguage} and provide English translations for all narrative text and choices.`;
+      } else {
+        languageInstruction = `Write all learner-facing text in ${adventureLanguageMode} without English translations.`;
+      }
+    }
+
+    const prompt = `You are continuing an educational interactive simulation for ${gradeLevel || 'school-age'} learners.
+
+CURRENT MODE: ${adventureInputMode || 'adventure'}${isSocialStoryMode ? ' / social story' : ''}${isAdventureStoryMode ? ' / family-friendly story time' : ''}
+LANGUAGE: ${languageInstruction}
+SOURCE/TOPIC CONTEXT:
+${sourceContext || 'Use the established story context.'}
+
+CURRENT SCENE AND OBSTACLE:
+${String(adventureState.currentScene.text || '').slice(0, 2200)}
+
+RECENT STORY LOG:
+${recentHistory || 'No prior log.'}
+
+${adventureState.narrativeLedger ? `STORY SUMMARY:\n${String(adventureState.narrativeLedger).slice(-2500)}` : ''}
+${learnedContext}
+${castContext}
+
+GUIDING HAND RULES:
+1. The learner has intentionally used a paid Guiding Hand item because they may not know how to solve the current obstacle.
+2. ${modeGuidance}
+3. Resolve the CURRENT obstacle through that intervention. Never imply the learner supplied the missing answer or independently demonstrated mastery.
+4. Naturally demonstrate and explain ONE concrete, transferable piece of knowledge: a fact, rule, strategy, causal relationship, or reasoning principle grounded in the source/topic. It must be useful in a plausible later scene, not a generic platitude.
+5. The intervention and explanation must be part of the story, not an out-of-character lecture.
+6. Advance to a NEW, playable obstacle. Never end the adventure, resolve a climax, declare victory, or skip multiple scenes.
+7. This assisted turn awards NO XP, Gold, success credit, concept credit, energy change, health/stability change, inventory reward, resource change, or debate momentum.
+8. ${optionsInstruction}
+${adventureCustomInstructions ? `9. Continue honoring these educator instructions where they do not conflict with the rules above: ${adventureCustomInstructions}` : ''}
+
+${ADVENTURE_GUARDRAIL || ''}
+${NARRATIVE_GUARDRAILS || ''}
+
+Return ONLY valid JSON:
+{
+  "interventionSummary": "One short sentence describing who or what stepped in",
+  "knowledgeDrop": "One self-contained, concrete statement the learner can apply later",
+  "evaluation": "A short, encouraging explanation that this was an assisted turn with no rewards",
+  "voices": { "Character Name": "VoiceName" },
+  "charactersInScene": ["Character Name"],
+  "scene": {
+    "text": "The diegetic intervention, its explanation, and the new unresolved obstacle",
+    "options": ${adventureFreeResponseEnabled ? '[]' : '["Option 1", "Option 2", "Option 3", "Option 4"]'}
+  }
+}`;
+
+    const response = await callGemini(prompt, true);
+    const parsed = await (typeof resilientJsonParse === 'function'
+      ? resilientJsonParse(response)
+      : JSON.parse(response));
+    const knowledgeDrop = String(parsed?.knowledgeDrop || '').trim();
+    const sceneText = String(parsed?.scene?.text || '').trim();
+    if (knowledgeDrop.length < 12 || sceneText.length < 20) {
+      throw new Error('Guiding Hand response omitted the required scene or knowledge drop.');
+    }
+
+    let options = Array.isArray(parsed.scene.options)
+      ? parsed.scene.options.map(option => String(option || '').trim()).filter(Boolean).slice(0, 6)
+      : [];
+    if (adventureFreeResponseEnabled) {
+      options = [];
+    } else if (options.length < 2) {
+      options = [
+        'Apply the new knowledge to the next problem',
+        'Ask a clarifying question',
+        'Examine what changed',
+        'Try a different approach'
+      ];
+    }
+
+    const nextTurn = (Number(adventureState.turnCount) || 0) + 1;
+    const interventionSummary = String(parsed.interventionSummary || 'A timely intervention resolved the immediate obstacle.').trim();
+    const evaluation = String(parsed.evaluation || 'Guiding Hand assisted this turn, so no XP or Gold was awarded.').trim();
+    const knowledgeHistory = `${t('adventure.guiding_hand_knowledge_label') || 'Knowledge gained'}: ${knowledgeDrop}`;
+    const nextScene = {
+      ...parsed.scene,
+      text: sceneText,
+      options,
+      charactersInScene: Array.isArray(parsed.charactersInScene) ? parsed.charactersInScene : []
+    };
+
+    setAdventureState(prev => {
+      const priorKnowledge = Array.isArray(prev.assistedKnowledge) ? prev.assistedKnowledge : [];
+      const alreadyKnown = priorKnowledge.some(entry => String(entry).toLocaleLowerCase() === knowledgeDrop.toLocaleLowerCase());
+      const assistedKnowledge = (alreadyKnown ? priorKnowledge : [...priorKnowledge, knowledgeDrop]).slice(-12);
+      const ledgerLine = `Guiding Hand knowledge (assisted): ${knowledgeDrop}`;
+      return {
+        ...prev,
+        history: [
+          ...(prev.history || []),
+          { type: 'scene', text: String(prev.currentScene?.text || '') },
+          { type: 'assist', text: interventionSummary, source: 'guiding_hand' },
+          { type: 'feedback', text: `${evaluation}\n${knowledgeHistory}`, assisted: true }
+        ],
+        currentScene: nextScene,
+        pendingChoice: null,
+        turnCount: nextTurn,
+        inventory: (prev.inventory || []).filter(inventoryItem => inventoryItem.id !== item.id),
+        assistedKnowledge,
+        narrativeLedger: prev.narrativeLedger ? `${prev.narrativeLedger}\n${ledgerLine}` : ledgerLine,
+        voiceMap: { ...(prev.voiceMap || {}), ...(parsed.voices || {}) },
+        currentHint: null,
+        sceneImage: null,
+        isImageLoading: true,
+        isLoading: false,
+        isGameOver: false
+      };
+    });
+
+    setTimeout(() => generateAdventureImage(sceneText, nextTurn), 0);
+    playAdventureEventSound('transition');
+    addToast(t('adventure.guiding_hand_complete') || 'Guiding Hand moved the story forward. No XP or Gold was awarded.', 'success');
+    if (alloBotRef?.current?.triggerReaction) alloBotRef.current.triggerReaction('\u{1F91D}');
+    return true;
+  } catch (error) {
+    warnLog('Guiding Hand failed', error);
+    setAdventureState({ ...safeSnapshot, isLoading: false });
+    addToast(t('adventure.guiding_hand_failed') || 'The intervention could not be generated. Guiding Hand was not consumed.', 'error');
+    return false;
+  }
+};
+// Free-response Strategy Hint: a formative scaffold, not an answer.
+// The student still decides and writes the action, so rewards are not reduced.
+// A valid hint is available once per scene; failed generation unlocks a retry.
 const handleAdventureHint = async (deps) => {
-  const { adventureState, setAdventureState, callGemini, addToast, t, warnLog, resilientJsonParse, gradeLevel } = deps;
+  const {
+    adventureState,
+    adventureTextInput,
+    setAdventureState,
+    callGemini,
+    addToast,
+    t,
+    warnLog,
+    resilientJsonParse,
+    gradeLevel,
+    sourceTopic,
+    inputText,
+    standardsInput,
+    adventureInputMode,
+    adventureLanguageMode,
+    selectedLanguages,
+    adventureCustomInstructions,
+    isSocialStoryMode,
+    socialStoryFocus,
+  } = deps;
   const scene = adventureState.currentScene;
   if (!scene || adventureState.isLoading) return;
   if (adventureState.hintUsedTurn === adventureState.turnCount) return; // one per scene
-  // Mark used BEFORE the await so a double-click cannot stack hints.
-  setAdventureState(prev => ({ ...prev, hintUsedTurn: prev.turnCount, currentHint: { turn: prev.turnCount, text: '', loading: true } }));
-  addToast(t('adventure.hint_cost_toast') || "💡 Hint requested — this turn's XP gain will be halved.", 'info');
-  const fallbackHint = t('adventure.hint_fallback') || 'Re-read the last paragraph: what problem is still unsolved? Try describing what your character examines, asks, or tries next.';
+
+  const requestTurn = adventureState.turnCount;
+  if (adventureState.currentHint?.turn === requestTurn && adventureState.currentHint.loading) return;
+  const sceneText = String(scene.text || '').replace(/\s+/g, ' ').trim();
+  const sourceText = String(inputText || '').replace(/\s+/g, ' ').trim().slice(0, 2800);
+  const topicText = String(sourceTopic || '').trim();
+  const draftText = String(adventureTextInput || '').trim().slice(0, 600);
+  const mode = isSocialStoryMode ? 'social' : String(adventureInputMode || 'adventure').toLowerCase();
+  const modeGuidance = mode === 'debate'
+    ? 'NOTICE relevant evidence or an assumption; CONNECT it to the claim; TRY a claim-evidence-reasoning move without composing the argument.'
+    : mode === 'system'
+      ? 'NOTICE a relationship, constraint, feedback loop, or tradeoff; CONNECT it to system behavior; TRY an investigation or reasoning move without selecting the intervention.'
+      : mode === 'social'
+        ? 'NOTICE a social cue, perspective, feeling, or need; CONNECT it to a communication principle; TRY a respectful planning move without scripting the response.'
+        : 'NOTICE a relevant story or subject-matter detail; CONNECT it to the obstacle; TRY a reasoning move without choosing the action.';
+  const languageMode = String(adventureLanguageMode || 'English');
+  const languageGuidance = languageMode === 'English'
+    ? 'Write in English.'
+    : languageMode === 'All + English'
+      ? `Write in ${Array.isArray(selectedLanguages) && selectedLanguages.length ? selectedLanguages.join(', ') : 'the selected languages'}, with a concise English translation in each field.`
+      : languageMode.includes('+ English')
+        ? `Write bilingually in ${languageMode.replace('+ English', '').trim()} and English.`
+        : `Write in ${languageMode}.`;
+
+  // Lock only during generation. A failed or vague response does not consume
+  // the scene's clue; hintUsedTurn is stamped only after validation succeeds.
+  setAdventureState(prev => ({
+    ...prev,
+    currentHint: { turn: requestTurn, text: '', loading: true, supportType: 'strategy_hint' },
+  }));
+  addToast(t('adventure.hint_started') || 'Building a strategy hint...', 'info');
+
   try {
-    const prompt = `You are a kind dungeon master. A ${gradeLevel || 'middle school'} student is stuck on this adventure scene:
-"${String(scene.text || '').slice(0, 1500)}"
-Give ONE short nudge (1-2 sentences) pointing them toward what to consider — do NOT reveal the solution or act for them. Also give one short sentence-starter they could type to begin their response.
-Return ONLY JSON: {"hint": "...", "starter": "..."}`;
+    const prompt = `Create a high-value formative Strategy Hint for a ${gradeLevel || 'middle school'} student.
+The student is in free-response mode and must still decide and write the action.
+
+CURRENT SCENE:
+"${sceneText.slice(0, 1800)}"
+
+TOPIC / LEARNING FOCUS:
+"${topicText || 'Use the current scene and source context.'}"
+${standardsInput ? `Learning objective or standard: ${String(standardsInput).slice(0, 700)}` : ''}
+
+SOURCE CONTEXT:
+"${sourceText || 'No separate source was provided; use only accurate details established in the scene.'}"
+
+${draftText ? `STUDENT DRAFT SO FAR:\n"${draftText}"\nBuild on the draft without rewriting it.` : ''}
+
+MODE GUIDANCE:
+${modeGuidance}
+${isSocialStoryMode && socialStoryFocus ? `Social-story focus: ${String(socialStoryFocus).slice(0, 500)}` : ''}
+${adventureCustomInstructions ? `Teacher instructions: ${String(adventureCustomInstructions).slice(0, 700)}` : ''}
+${languageGuidance}
+
+Return a specific scaffold with ALL THREE parts:
+1. "notice": one exact, accurate source/scene detail that meaningfully narrows what matters. Never merely say "reread," "think carefully," or restate the problem.
+2. "connect": explain the concept, relationship, or strategy that makes that detail relevant to the obstacle.
+3. "try": one concrete reasoning move the student can attempt next without giving the action or answer.
+Optionally include "starter": one short, open-ended sentence frame the student may adapt.
+
+Do NOT resolve the obstacle, choose an option, write the student's response, state a final answer, or invent unsupported facts. Preserve student agency.
+Return ONLY JSON:
+{"notice":"...","connect":"...","try":"...","starter":"..."}`;
     const resp = await callGemini(prompt, true, false, 0.7);
-    const parsed = (typeof resilientJsonParse === 'function' ? resilientJsonParse(resp) : JSON.parse(resp)) || {};
-    const hintText = String(parsed.hint || '').trim() || fallbackHint;
+    const parsed = (typeof resilientJsonParse === 'function' ? await resilientJsonParse(resp) : JSON.parse(resp)) || {};
+    const notice = String(parsed.notice || parsed.clue || '').trim();
+    const connect = String(parsed.connect || parsed.question || '').trim();
+    const tryStep = String(parsed.try || parsed.strategy || '').trim();
     const starter = String(parsed.starter || '').trim();
-    setAdventureState(prev => ({ ...prev, currentHint: { turn: prev.turnCount, text: hintText, starter } }));
+    if (notice.length < 18 || connect.length < 18 || tryStep.length < 18) {
+      throw new Error('Strategy Hint response was too vague');
+    }
+    setAdventureState(prev => prev.turnCount !== requestTurn ? prev : ({
+      ...prev,
+      hintUsedTurn: requestTurn,
+      currentHint: {
+        turn: requestTurn,
+        text: notice,
+        notice,
+        connect,
+        tryStep,
+        starter,
+        loading: false,
+        supportType: 'strategy_hint',
+      },
+    }));
+    addToast(t('adventure.hint_ready') || 'Strategy hint ready.', 'success');
   } catch (error) {
     warnLog('Adventure hint failed', error);
-    setAdventureState(prev => ({ ...prev, currentHint: { turn: prev.turnCount, text: fallbackHint, starter: '' } }));
+    setAdventureState(prev => {
+      if (prev.turnCount !== requestTurn || prev.currentHint?.turn !== requestTurn) return prev;
+      return { ...prev, currentHint: null };
+    });
+    addToast(t('adventure.hint_failed') || "Couldn't build a useful strategy hint. Please try again.", 'error');
   }
 };
 
@@ -1298,5 +1584,6 @@ window.AlloModules.AdventureHandlers = {
   handleResumeAdventure,
   handleAdventureTextSubmit,
   handleAdventureChoice,
+  handleGuidingHand,
   handleAdventureHint,
 };

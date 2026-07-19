@@ -348,6 +348,12 @@ describe('Open Groove project core', () => {
     expect(fallbackPalette.pitches).toHaveLength(8);
   });
 
+  it('builds project-aware MusicXML key signatures', () => {
+    expect(OG.ogBuildMusicXmlKeySignature(OG.ogCreateProject({ tonic: 'C', mode: 'minor' }))).toMatchObject({ fifths: -3, mode: 'minor', keyName: 'C Minor' });
+    expect(OG.ogBuildMusicXmlKeySignature(OG.ogCreateProject({ tonic: 'E', mode: 'major' }))).toMatchObject({ fifths: 4, mode: 'major', keyName: 'E Major' });
+    expect(OG.ogBuildMusicXmlKeySignature(OG.ogCreateProject({ tonic: 'Gb', mode: 'major' }))).toMatchObject({ fifths: -6, mode: 'major', keyName: 'Gb Major' });
+    expect(OG.ogBuildMusicXmlKeySignature(OG.ogCreateProject({ tonic: 'D', mode: 'dorian' }))).toMatchObject({ fifths: 0, mode: 'dorian', keyName: 'D Dorian' });
+  });
   it('exports a clef-aware MusicXML sketch from notation events', () => {
     const project = OG.ogCreateProject();
     const pattern = project.patterns[0];
@@ -359,6 +365,7 @@ describe('Open Groove project core', () => {
     expect(xml).toContain('<clef><sign>G</sign><line>2</line></clef>');
     expect(xml).toContain('<step>E</step><alter>-1</alter><octave>4</octave>');
     expect(xml).toContain('<divisions>960</divisions>');
+    expect(xml).toContain('<key><fifths>-3</fifths><mode>minor</mode></key>');
 
     const bassProject = OG.ogCreateProject({ title: 'Bass XML' });
     const bassPattern = bassProject.patterns[0];
@@ -367,6 +374,7 @@ describe('Open Groove project core', () => {
     OG.ogSetStaffNote(bassProject, bassPattern.id, bassSynth.id, { startBar: 0, startBeat: 1, pitch: 'G2', duration: 'q' });
     const bassXml = OG.ogBuildMusicXmlSketch(bassProject, bassPattern.id, bassSynth.id, { clef: 'auto' });
     expect(bassXml).toContain('<work-title>Bass XML</work-title>');
+    expect(bassXml).toContain('<key><fifths>-3</fifths><mode>minor</mode></key>');
     expect(bassXml).toContain('<clef><sign>F</sign><line>4</line></clef>');
     expect(bassXml).toContain('<step>G</step><octave>2</octave>');
 
@@ -374,6 +382,27 @@ describe('Open Groove project core', () => {
     expect(forcedTrebleXml).toContain('<clef><sign>G</sign><line>2</line></clef>');
   });
 
+  it('exports MusicXML rests and chord markers for offset staff notes', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const written = OG.ogWriteNotationInput(project, pattern.id, synth.id, 'R:h [C4+E4]:q', { replace: true });
+    expect(written.noteCount).toBe(2);
+
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<rest/>\n        <duration>1920</duration>');
+    expect(xml).toContain('<chord/>\n        <pitch><step>E</step><octave>4</octave></pitch>');
+
+    const roundTripProject = OG.ogCreateProject({ ppq: 960 });
+    const roundTripPattern = roundTripProject.patterns[0];
+    const roundTripSynth = roundTripProject.tracks[1];
+    const result = OG.ogImportMusicXmlSketch(roundTripProject, roundTripPattern.id, roundTripSynth.id, xml);
+    const notes = roundTripPattern.events.filter((event) => event.type === 'note' && event.trackId === roundTripSynth.id);
+    expect(result.noteCount).toBe(2);
+    expect(notes.map((event) => event.pitch)).toEqual(['C4', 'E4']);
+    expect(notes.map((event) => event.startTick)).toEqual([1920, 1920]);
+    expect(notes.map((event) => event.durationTicks)).toEqual([960, 960]);
+  });
   it('imports MusicXML notes, rests, and chords into notation events', () => {
     const project = OG.ogCreateProject({ ppq: 960 });
     const pattern = project.patterns[0];
@@ -663,6 +692,24 @@ describe('Open Groove project core', () => {
     expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
+  it('accepts dotted notation durations and exports MusicXML dot markings', () => {
+    const project = OG.ogCreateProject({ ppq: 960 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const written = OG.ogWriteNotationInput(project, pattern.id, synth.id, 'C4:q. D4:e. R:s E4:dotted-quarter', {
+      replace: true
+    });
+    expect(written.noteCount).toBe(3);
+    expect(written.warnings).toEqual([]);
+
+    const notes = pattern.events.filter((event) => event.type === 'note' && event.trackId === synth.id);
+    expect(notes.map((event) => event.startTick)).toEqual([0, 1440, 2400]);
+    expect(notes.map((event) => event.durationTicks)).toEqual([1440, 720, 1440]);
+
+    const xml = OG.ogBuildMusicXmlSketch(project, pattern.id, synth.id);
+    expect(xml).toContain('<duration>1440</duration>\n        <type>quarter</type>\n        <dot/>');
+    expect(xml).toContain('<duration>720</duration>\n        <type>eighth</type>\n        <dot/>');
+  });
   it('builds an editable engraved staff model for notation-first composition', () => {
     const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
     const pattern = project.patterns[0];

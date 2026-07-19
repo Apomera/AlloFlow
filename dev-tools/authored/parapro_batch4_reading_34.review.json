@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-07-17T17:06:04.9920255Z",
+  "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 34,
   "correctionsMade": [
@@ -17,9 +17,71 @@
       "itemId": "parapro-b4-reading-031",
       "issue": "The original homophone item was framed as correcting a student's written spelling error, which fit the writing domain more closely than the current ParaPro reading-application scope; one distractor was also implausibly based on word length.",
       "change": "Reframed the task as using nautical context to distinguish the meanings of sail and sale during reading, clarified the meaning of sail, strengthened the frequency-based distractor, and updated the rationale and choice feedback without changing the keyed position."
+    },
+    {
+      "itemId": "parapro-b4-reading-010",
+      "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
+      "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
+    },
+    {
+      "itemId": "parapro-b4-reading-030",
+      "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
+      "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
     }
   ],
   "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 34,
+      "reviewedItemIds": [
+        "parapro-b4-reading-001",
+        "parapro-b4-reading-002",
+        "parapro-b4-reading-003",
+        "parapro-b4-reading-004",
+        "parapro-b4-reading-005",
+        "parapro-b4-reading-006",
+        "parapro-b4-reading-007",
+        "parapro-b4-reading-008",
+        "parapro-b4-reading-009",
+        "parapro-b4-reading-010",
+        "parapro-b4-reading-011",
+        "parapro-b4-reading-012",
+        "parapro-b4-reading-013",
+        "parapro-b4-reading-014",
+        "parapro-b4-reading-015",
+        "parapro-b4-reading-016",
+        "parapro-b4-reading-017",
+        "parapro-b4-reading-018",
+        "parapro-b4-reading-019",
+        "parapro-b4-reading-020",
+        "parapro-b4-reading-021",
+        "parapro-b4-reading-022",
+        "parapro-b4-reading-023",
+        "parapro-b4-reading-024",
+        "parapro-b4-reading-025",
+        "parapro-b4-reading-026",
+        "parapro-b4-reading-027",
+        "parapro-b4-reading-028",
+        "parapro-b4-reading-029",
+        "parapro-b4-reading-030",
+        "parapro-b4-reading-031",
+        "parapro-b4-reading-032",
+        "parapro-b4-reading-033",
+        "parapro-b4-reading-034"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections: all 34 items are approved for integration as assistant-authored independent ParaPro practice drafts; this review does not represent official ETS endorsement or psychometric validation.",
+  "priorChecks": {
     "lineByLineItemReview": {
       "status": "pass",
       "reviewedItems": 34,
@@ -185,5 +247,17 @@
       "schemaErrors": 0
     }
   },
-  "verdict": "pass-after-corrections: all 34 items are approved for integration as assistant-authored independent ParaPro practice drafts; this review does not represent official ETS endorsement or psychometric validation."
+  "reviewedFile": "dev-tools/authored/parapro_batch4_reading_34.json",
+  "blockers": [],
+  "sourceSha256": "e0aeaef484b8cc1de51b52f04d375147ed95d54d661ba0ce27b620d7fab0f60e",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "e0aeaef484b8cc1de51b52f04d375147ed95d54d661ba0ce27b620d7fab0f60e"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 4,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
 }

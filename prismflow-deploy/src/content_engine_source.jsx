@@ -431,10 +431,16 @@ var createContentEngine = function(deps) {
     if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain 2-3 paragraphs.";
     return "Structure: Write exactly 8 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain 3 paragraphs.";
   };
+  var getSourceLanguageInstruction = function(language) {
+    var lang = String(language || 'English').trim() || 'English';
+    return 'SOURCE LANGUAGE: Write the complete source material in ' + lang + ' only. ' +
+      'Do not add a translation or bilingual second block. For JSON output, keep schema keys as specified but write every human-readable value in ' + lang + '.';
+  };
+
   var _s = function() { return window.__contentEngineState || {}; };
   var _bindState;
   var inputText, gradeLevel, sourceTopic, generatedContent,
-      leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
+      currentUiLanguage, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
       conceptInput, interestInput, languageInput, activeView, showSourceGen,
       generationStep, isGeneratingSource, selectionMenu, phonicsData,
       sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
@@ -460,6 +466,7 @@ var createContentEngine = function(deps) {
     var s = _s();
     inputText = s.inputText; gradeLevel = s.gradeLevel;
     sourceTopic = s.sourceTopic; generatedContent = s.generatedContent;
+    currentUiLanguage = s.currentUiLanguage || 'English';
     leveledTextLanguage = s.leveledTextLanguage;
     selectedLanguages = s.selectedLanguages; studentInterests = s.studentInterests;
     selectedConcepts = s.selectedConcepts; conceptInput = s.conceptInput;
@@ -511,7 +518,10 @@ var createContentEngine = function(deps) {
     const effDokLevel = (overrides && overrides.dokLevel) ? overrides.dokLevel : dokLevel;
     const effVocabulary = (overrides && overrides.vocabulary) ? overrides.vocabulary : sourceVocabulary;
     const effCustomInstructions = (overrides && overrides.customInstructions) ? overrides.customInstructions : sourceCustomInstructions;
-    const effectiveLanguage = leveledTextLanguage;
+    // Source material is the canonical input for later adaptations. Generate it
+    // in the interface language; leveledTextLanguage belongs to the downstream
+    // adaptation/translation step and must not translate the source prematurely.
+    const effectiveLanguage = currentUiLanguage || 'English';
     if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) return;
     const dialectInstruction = effectiveLanguage !== 'English'
         ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions."
@@ -681,7 +691,7 @@ var createContentEngine = function(deps) {
            for (let i = 0; i < sections.length; i++) {
                const sectionTitle = sections[i];
                setGenerationStep(t('status_steps.writing_part', { current: i + 1, total: sections.length, title: sectionTitle }));
-               const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
+               const sourceLanguageInstruction = getSourceLanguageInstruction(effectiveLanguage);
                // Build an outline snapshot Gemini can orient against and a trimmed
                // prior-content recap (~250 words per prior section, tail-biased so
                // the model sees how each section ENDED — the most useful continuity
@@ -763,7 +773,7 @@ var createContentEngine = function(deps) {
                    ${readingLevelGuidance}
                    ${complexityGuard}
                    ${dialectInstruction}
-                   ${bilingualInstruction}
+                   ${sourceLanguageInstruction}
                    Return ONLY the article text. Do not wrap in markdown code blocks.
                ` : `
                    Write the section "${sectionTitle}" for an educational article about "${effTopic}".
@@ -806,7 +816,7 @@ You MUST:
                    6. Include a header "## ${sectionTitle}".
                    7. ${i === sections.length - 1 ? 'This IS the final section — end with a conclusion paragraph.' : 'Do NOT write a conclusion; more sections follow.'}
                    ${dialectInstruction}
-                   ${bilingualInstruction}
+                   ${sourceLanguageInstruction}
                    Return ONLY the section text. Do not wrap in markdown code blocks.
                `;
                let result;
@@ -1137,7 +1147,7 @@ IMPORTANT: Plan for DIALOGUE, not narration. 70%+ should be spoken lines.
           storyOutline = '';
         }
       }
-      const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
+      const sourceLanguageInstruction = getSourceLanguageInstruction(effectiveLanguage);
       const prompt = isDialogueMode ? `
 You are generating an EDUCATIONAL DIALOGUE between two characters who explore a topic through natural conversation.
 Topic: "${effTopic}"
@@ -1187,6 +1197,7 @@ ${effGrade === '2nd Grade' || effGrade === '3rd Grade' ? 'Simple vocabulary. Lea
 ${effGrade === '4th Grade' || effGrade === '5th Grade' ? 'Natural conversation flow. Can introduce vocabulary with immediate explanation in dialogue.' : ''}
 ${effGrade === '6th Grade' || effGrade === '7th Grade' || effGrade === '8th Grade' ? 'More sophisticated dialogue. Learner can push back, express skepticism, ask deeper questions.' : ''}
 ${complexityGuard}
+${sourceLanguageInstruction}
 Return ONLY the JSON object. Do not include any preamble, markdown code blocks, or explanation.
       ` : `
         You are writing PART 1 of 1 of an educational text — a single self-contained segment that will be used as source material. Treat this as a segment rewrite, NOT as authoring a complete document with a bibliography at the end. The citation list will be generated automatically from grounding metadata and appended by the system.
@@ -1241,7 +1252,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         - ${effTone === 'Persuasive' || effTone === 'Persuasive / Opinion' ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.' : effTone === 'Humorous' || effTone === 'Humorous / Engaging' ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.' : effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural' ? 'Write clear step-by-step instructions with numbered steps and helpful tips.' : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.'}
         - Do not include any intro/outro conversational text (like "Here is the text"). Just provide the content.
         ${dialectInstruction}
-        ${bilingualInstruction}
+        ${sourceLanguageInstruction}
       `;
       const shouldUseJsonMode = false;
       const creativeTemperature = isNarrativeMode ? 1.6 : null;

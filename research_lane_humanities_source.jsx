@@ -277,6 +277,55 @@
     { id: 'civic_action_statement',   label: 'Civic-action statement',       words: [200, 500]  },
     { id: 'exhibit_text',             label: 'Exhibit / display text',       words: [60, 150]   },
   ];
+
+  // These method guides share the same interpretive workflow and portfolio,
+  // but make discipline-appropriate rigor visible before students begin.
+  var HUMANITIES_METHOD_GUIDANCE = {
+    humanistic_interpretation: {
+      label: 'Humanistic Interpretation',
+      purpose: 'Interpret texts, images, events, or cultural artifacts without collapsing meaning into a single final answer.',
+      questionStems: [
+        'How does this artifact or account construct meaning for different audiences?',
+        'What becomes visible — and what is obscured — when this is read in its historical or cultural context?',
+      ],
+      rigorChecks: ['Close reading or artifact evidence', 'Historical and cultural context', 'Competing plausible interpretations', 'Claims calibrated to what the evidence can support'],
+      ethics: 'Represent sources in context, distinguish your interpretation from a creator’s intent, and state what your position cannot speak for.',
+    },
+    community_qualitative: {
+      label: 'Community & Qualitative Inquiry',
+      purpose: 'Investigate lived experience and community perspectives while treating accounts as situated evidence, not universal proof.',
+      questionStems: [
+        'How do differently situated people describe or experience this issue?',
+        'What patterns and meaningful exceptions appear across teacher-approved or public accounts?',
+      ],
+      rigorChecks: ['Transparent account selection', 'Context-preserving notes and quotations', 'Discrepant cases and absent voices', 'Reflexivity about your relationship to the community'],
+      ethics: 'Current workflow: use public or teacher-approved accounts. Do not collect or upload identifiable interviews, images, or recordings without informed consent and an approved safeguarding plan.',
+    },
+    civic_policy: {
+      label: 'Civic & Policy Inquiry',
+      purpose: 'Examine a public choice through evidence, institutions, stakeholder interests, power, consequences, and feasible alternatives.',
+      questionStems: [
+        'Who benefits, who bears costs, and who has decision-making power under the current policy?',
+        'Which alternative best addresses the evidence, trade-offs, and stated public values?',
+      ],
+      rigorChecks: ['Stakeholder and power analysis', 'Credible evidence linked to warrants', 'Counterarguments and policy alternatives', 'Trade-offs, feasibility, and accountability'],
+      ethics: 'Name who is affected but missing from the record, avoid presenting advocacy as neutral description, and make uncertainty and value judgments explicit.',
+    },
+    creative_cultural: {
+      label: 'Creative & Cultural Inquiry',
+      purpose: 'Study how form, medium, audience, context, and cultural position shape what an artifact does and what readings it permits.',
+      questionStems: [
+        'How do formal choices in this artifact shape attention, feeling, or interpretation?',
+        'How might different audiences read this work differently because of context, medium, or cultural position?',
+      ],
+      rigorChecks: ['Specific evidence from form and medium', 'Context and audience analysis', 'Multiple defensible readings', 'No unsupported claims about creator intent'],
+      ethics: 'Credit creators and communities, distinguish influence from ownership, and attend to appropriation, access, and whose traditions are being interpreted.',
+    },
+  };
+
+  function humanitiesMethodGuide(methodPackId) {
+    return HUMANITIES_METHOD_GUIDANCE[methodPackId] || HUMANITIES_METHOD_GUIDANCE.humanistic_interpretation;
+  }
   // CONTESTATION_RANGE_CHECK — (audience x genre) hard-gates. Not all
   // combinations are compatible; structural block, not soft prompt.
   var CONTESTATION_RANGE = {
@@ -2123,6 +2172,7 @@
     var _addingAns = useState(false); var addingAns = _addingAns[0]; var setAddingAns = _addingAns[1];
     var _aiResult = useState(null); var aiResult = _aiResult[0]; var setAiResult = _aiResult[1];
     var _busy = useState(false); var busy = _busy[0]; var setBusy = _busy[1];
+    var methodGuide = humanitiesMethodGuide(journal.activeMethodPack);
 
     useEffect(function () {
       setJournal(function (prev) {
@@ -2201,6 +2251,44 @@
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <section
+          data-humanities-method-guide={journal.activeMethodPack || 'humanistic_interpretation'}
+          aria-labelledby="humanities-method-guide-title"
+          style={{ padding: '14px', borderRadius: '14px', border: '1px solid #f9a8d4',
+            background: 'linear-gradient(135deg,#fff1f2,#ffffff 55%,#f5f3ff)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.6px', color: '#be185d' }}>
+                Current inquiry approach
+              </div>
+              <h3 id="humanities-method-guide-title" style={{ margin: '2px 0 0', fontSize: '15px', fontWeight: 900, color: '#881337' }}>
+                {methodGuide.label}
+              </h3>
+            </div>
+            <span style={{ borderRadius: '999px', padding: '4px 9px', background: '#fff', border: '1px solid #fbcfe8', color: '#9d174d', fontSize: '9px', fontWeight: 900 }}>
+              Shared humanities rigor cycle
+            </span>
+          </div>
+          <p style={{ margin: '7px 0 0', fontSize: '11px', lineHeight: 1.55, color: '#475569' }}>{methodGuide.purpose}</p>
+          <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: '10px' }}>
+            <div style={{ borderRadius: '11px', padding: '10px', background: 'rgba(255,255,255,0.84)', border: '1px solid #ffe4e6' }}>
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#9f1239' }}>Question starters</div>
+              <ul style={{ margin: '6px 0 0', paddingLeft: '18px', fontSize: '10px', lineHeight: 1.5, color: '#475569' }}>
+                {methodGuide.questionStems.map(function (stem) { return <li key={stem}>{stem}</li>; })}
+              </ul>
+            </div>
+            <div style={{ borderRadius: '11px', padding: '10px', background: 'rgba(255,255,255,0.84)', border: '1px solid #ede9fe' }}>
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#6d28d9' }}>Rigor commitments</div>
+              <ul style={{ margin: '6px 0 0', paddingLeft: '18px', fontSize: '10px', lineHeight: 1.5, color: '#475569' }}>
+                {methodGuide.rigorChecks.map(function (check) { return <li key={check}>{check}</li>; })}
+              </ul>
+            </div>
+          </div>
+          <div style={{ marginTop: '9px', padding: '8px 10px', borderRadius: '10px', background: '#fffbeb', border: '1px solid #fde68a', fontSize: '10px', lineHeight: 1.5, color: '#78350f' }}>
+            <strong>Ethics and limits:</strong> {methodGuide.ethics}
+          </div>
+        </section>
+
         <ExemplarGate t={t} stageKey="frame_question" journal={journal} setJournal={setJournal}
           primitives={primitives} pair={EXEMPLAR_PAIRS.frame_question} />
 

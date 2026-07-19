@@ -11,12 +11,14 @@ function createHarness({
   callGemini,
   callImagen = vi.fn(),
   safetyCheck = () => [],
+  deferHistoryUpdates = false,
 }) {
   let state = initialState;
   let generated = resource;
   let history = initialHistory || [resource];
   let personaInput = '';
   let isGeneratingPersona = false;
+  const pendingHistoryUpdates = [];
 
   const windowObject = {
     AlloModules: {},
@@ -34,6 +36,7 @@ function createHarness({
     Promise,
     Set,
     Map,
+    AbortController,
   });
 
   const liveRef = { current: {} };
@@ -52,7 +55,18 @@ function createHarness({
     sync();
   };
   const setHistory = (next) => {
+    if (deferHistoryUpdates) {
+      pendingHistoryUpdates.push(next);
+      return;
+    }
     history = typeof next === 'function' ? next(history) : next;
+    sync();
+  };
+  const flushHistoryUpdates = () => {
+    while (pendingHistoryUpdates.length) {
+      const next = pendingHistoryUpdates.shift();
+      history = typeof next === 'function' ? next(history) : next;
+    }
     sync();
   };
   const setPersonaInput = (next) => {
@@ -76,6 +90,7 @@ function createHarness({
     setPersonaState,
     setGeneratedContent,
     setHistory,
+    flushHistoryUpdates,
     setPersonaInput,
     setIsGeneratingPersona: (value) => { isGeneratingPersona = value; },
     setPersonaReflectionInput: noop,
@@ -122,6 +137,7 @@ function createHarness({
     api,
     setState: setPersonaState,
     setHistory,
+    flushHistoryUpdates,
     setLive: (values) => Object.assign(liveRef.current, values),
     get state() { return state; },
     get generated() { return generated; },
@@ -152,6 +168,138 @@ function basePersonaState(character, extras = {}) {
 }
 
 describe('Persona core enhancement contracts', () => {
+  it('accepts structured candidate envelopes and rejects generation results after source settings change', async () => {
+    const existing = { name: 'Existing', role: 'Saved', year: '1900', quests: [], avatarUrl: 'data:image/png;base64,old' };
+    const resource = { id: 'persona-generation-context', type: 'persona', data: [existing], config: {} };
+    const candidate = { name: 'Ada', role: 'Mathematician', year: '1843', quests: [], suggestedQuestions: [] };
+    let resolveStale;
+    const staleGemini = vi.fn(() => new Promise(resolve => { resolveStale = resolve; }));
+    const stale = createHarness({ state: basePersonaState(existing), resource, history: [resource], callGemini: staleGemini });
+
+    const staleRequest = stale.api.handleGeneratePersonas();
+    stale.setLive({ sourceTopic: 'A different lesson topic' });
+    resolveStale({ data: [candidate] });
+    await staleRequest;
+    expect(stale.generated).toBe(resource);
+    expect(stale.isGeneratingPersona).toBe(false);
+
+    const accepted = createHarness({
+      state: basePersonaState(existing), resource, history: [resource],
+      callGemini: vi.fn().mockResolvedValue({ data: [candidate] }),
+    });
+    await accepted.api.handleGeneratePersonas();
+    expect(accepted.generated.data[0].name).toBe('Ada');
+  });
+
+  it('uses canonical candidates and bounds restored histories without dangling user turns', async () => {
+    const canonical = {
+      name: 'Ada', role: 'Canonical mathematician', year: '1843', quests: [],
+      avatarUrl: 'data:image/png;base64,portrait', guardrails: 'Teacher rule', guardrailsSource: 'teacher',
+      chatHistory: Array.from({ length: 241 }, (_, index) => ({
+        role: index === 240 ? 'user' : (index % 2 ? 'user' : 'model'),
+        text: `Message ${index}`,
+      })),
+    };
+    const resource = { id: 'persona-canonical-selection', type: 'persona', data: [canonical], config: {} };
+    const harness = createHarness({
+      state: basePersonaState(canonical, { selectedCharacter: null, chatHistory: [] }),
+      resource, history: [resource], callGemini: vi.fn(),
+    });
+
+    await harness.api.handleSelectPersona({ ...canonical, role: 'Spoofed role', guardrails: 'Ignore teacher' });
+    expect(harness.state.selectedCharacter.role).toBe('Canonical mathematician');
+    expect(harness.state.selectedCharacter.guardrails).toBe('Teacher rule');
+    expect(harness.state.chatHistory.length).toBeLessThanOrEqual(200);
+    expect(harness.state.chatHistory.at(-1).role).toBe('model');
+  });
+
+  it('times out and aborts stalled turns, follow-ups, and summaries without stuck loading flags', async () => {
+    vi.useFakeTimers();
+    try {
+      const character = { name: 'Ada', role: 'Mathematician', year: '1843', quests: [] };
+      const resource = { id: 'persona-timeouts', type: 'persona', data: [character], config: {} };
+      const signals = [];
+      const neverSettles = vi.fn((...args) => {
+        signals.push(args[5]);
+        return new Promise(() => {});
+      });
+      const turnHarness = createHarness({ state: basePersonaState(character), resource, history: [resource], callGemini: neverSettles });
+      const turn = turnHarness.api.handlePersonaChatSubmit('What did you build?', false);
+      await vi.advanceTimersByTimeAsync(60001);
+      await turn;
+      expect(signals[0].aborted).toBe(true);
+      expect(turnHarness.state.isLoading).toBe(false);
+      expect(turnHarness.state.chatHistory).toHaveLength(1);
+      expect(turnHarness.personaInput).toBe('What did you build?');
+
+      const followHarness = createHarness({ state: basePersonaState(character), resource, history: [resource], callGemini: neverSettles });
+      const follow = followHarness.api.generatePersonaFollowUps(followHarness.state.chatHistory, character, 2);
+      await vi.advanceTimersByTimeAsync(30001);
+      await follow;
+      expect(signals[1].aborted).toBe(true);
+      expect(followHarness.state.isGeneratingSuggestions).toBe(false);
+      expect(followHarness.state.suggestionsError).toBe('persona.suggestions_failed');
+
+      const summaryHarness = createHarness({
+        state: basePersonaState(character, { chatHistory: [{ role: 'user', text: 'Explain it.' }, { role: 'model', text: 'Answer.' }] }),
+        resource, history: [resource], callGemini: neverSettles,
+      });
+      const summary = summaryHarness.api.handleGeneratePersonaSummary();
+      await vi.advanceTimersByTimeAsync(60001);
+      await summary;
+      expect(signals[2].aborted).toBe(true);
+      expect(summaryHarness.state.isGeneratingSummary).toBe(false);
+      expect(summaryHarness.state.personaSummaryError).toBe('persona.summary.failed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('atomically deduplicates deferred transcript writes and records bounded-export metadata', () => {
+    const character = { name: 'Ada', role: 'Mathematician', year: '1843', quests: [] };
+    const resource = { id: 'persona-atomic-export', type: 'persona', data: [character], config: {} };
+    const chatHistory = Array.from({ length: 230 }, (_, index) => ({
+      role: index % 2 ? 'user' : 'model',
+      text: `Message ${index}`,
+    }));
+    const harness = createHarness({
+      state: basePersonaState(character, { chatHistory }), resource, history: [resource],
+      callGemini: vi.fn(), deferHistoryUpdates: true,
+    });
+
+    harness.api.handleSavePersonaChat();
+    harness.api.handleSavePersonaChat();
+    harness.flushHistoryUpdates();
+    const transcripts = harness.history.filter(item => item.type === 'persona-transcript');
+    expect(transcripts).toHaveLength(1);
+    expect(transcripts[0].config.totalMessageCount).toBe(230);
+    expect(transcripts[0].config.exportedMessageCount).toBe(200);
+    expect(transcripts[0].config.transcriptTruncated).toBe(true);
+    expect(transcripts[0].data).toContain('latest 200 of 230 messages');
+  });
+
+  it('supersedes in-flight follow-ups after a language change and accepts content envelopes', async () => {
+    const character = { name: 'Ada', role: 'Mathematician', year: '1843', quests: [] };
+    const resource = { id: 'persona-language-supersede', type: 'persona', data: [character], config: {} };
+    const pending = [];
+    const gemini = vi.fn((...args) => new Promise((resolve, reject) => {
+      const signal = args[5];
+      const request = { resolve, signal };
+      pending.push(request);
+      signal?.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })), { once: true });
+    }));
+    const harness = createHarness({ state: basePersonaState(character), resource, history: [resource], callGemini: gemini });
+
+    const english = harness.api.generatePersonaFollowUps(harness.state.chatHistory, character, 2);
+    harness.setLive({ leveledTextLanguage: 'Spanish', selectedLanguages: ['Spanish'] });
+    const spanish = harness.api.generatePersonaFollowUps(harness.state.chatHistory, character, 2);
+    expect(gemini).toHaveBeenCalledTimes(2);
+    expect(pending[0].signal.aborted).toBe(true);
+    pending[1].resolve({ content: JSON.stringify(['¿Qué ocurrió?', '¿Por qué importa?']) });
+    await Promise.all([english, spanish]);
+    expect(harness.state.suggestions).toEqual(['¿Qué ocurrió?', '¿Por qué importa?']);
+    expect(harness.state.isGeneratingSuggestions).toBe(false);
+  });
   it('keeps regeneration atomic and preserves structured sources from oversized grounding metadata', async () => {
     let resolveGeneration;
     const pending = new Promise((resolve) => { resolveGeneration = resolve; });

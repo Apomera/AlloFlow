@@ -174,6 +174,56 @@ window.StemLab = window.StemLab || {
   // ── Word problem contexts (real-world volume scenarios) ──
   // Each context describes a rectangular-prism object with a relatable use case.
   // Variables {l} {w} {h} get substituted with the current factors.
+  // Stable, readable defaults for the ten freeform build layers.
+  var VOLUME_LAYER_COLORS = [
+    '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#ca8a04',
+    '#16a34a', '#0891b2', '#4f46e5', '#9333ea', '#be123c'
+  ];
+
+  function normalizeVolumeLayerColor(value, layer) {
+    var index = Math.max(0, Math.min(9, parseInt(layer, 10) || 0));
+    var fallback = VOLUME_LAYER_COLORS[index % VOLUME_LAYER_COLORS.length];
+    var candidate = String(value || '').trim();
+    return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate.toLowerCase() : fallback;
+  }
+
+  function volumeLayerColorToHsl(value, layer) {
+    var hex = normalizeVolumeLayerColor(value, layer);
+    var r = parseInt(hex.slice(1, 3), 16) / 255;
+    var g = parseInt(hex.slice(3, 5), 16) / 255;
+    var b = parseInt(hex.slice(5, 7), 16) / 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var delta = max - min;
+    var h = 0;
+    var l = (max + min) / 2;
+    var s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+
+    if (delta !== 0) {
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+
+    return {
+      hex: hex,
+      h: Math.round(h),
+      s: Math.round(s * 100),
+      l: Math.round(l * 100)
+    };
+  }
+
+  function volumeLayerTextColor(value, layer) {
+    var hex = normalizeVolumeLayerColor(value, layer);
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    var luminance = (r * 299 + g * 587 + b * 114) / 255000;
+    return luminance > 0.58 ? '#0f172a' : '#ffffff';
+  }
+
   var WORD_CONTEXTS = [
     { id: 'lunchbox',  label: 'Lunchbox',  icon: '🍱', story: 'A lunchbox is {l} units long, {w} units wide, and {h} units tall. How many unit cubes of food can fit inside?', unit: 'sandwich cubes', defaults: { l: 4, w: 3, h: 2 } },
     { id: 'aquarium',  label: 'Fish tank', icon: '🐠', story: 'An aquarium is {l} units long, {w} units wide, and {h} units tall. How many unit cubes of water does it hold?', unit: 'cubes of water', defaults: { l: 5, w: 3, h: 4 } },
@@ -339,7 +389,11 @@ window.StemLab = window.StemLab || {
     summarizeDisplacementTrials: summarizeDisplacementTrials,
     displacementObjects: DISPLACEMENT_OBJECTS,
     clayShapes: CLAY_SHAPES,
-    nextClayShapeId: nextClayShapeId
+    nextClayShapeId: nextClayShapeId,
+    layerColors: VOLUME_LAYER_COLORS,
+    normalizeVolumeLayerColor: normalizeVolumeLayerColor,
+    volumeLayerColorToHsl: volumeLayerColorToHsl,
+    volumeLayerTextColor: volumeLayerTextColor
   };
   // ── Badge definitions ──
   var BADGES = [
@@ -420,6 +474,12 @@ window.StemLab = window.StemLab || {
       var aiResponse = _v.aiResponse || '';
       var aiLoading = _v.aiLoading || false;
       var layerUsed = _v.layerUsed || false;
+      var parsedBuildLayer = parseInt(_v.activeBuildLayer, 10);
+      var activeBuildLayer = Number.isFinite(parsedBuildLayer)
+        ? Math.max(0, Math.min(9, parsedBuildLayer))
+        : 0;
+      var layerColors = Object.assign({}, _v.layerColors || {});
+      var getLayerColor = function(layer) { return normalizeVolumeLayerColor(layerColors[String(layer)], layer); };
 
       // v3 additions
       var muted = _v.muted || false;
@@ -510,6 +570,8 @@ window.StemLab = window.StemLab || {
           positions: positions.slice(),
           dims: Object.assign({}, dims),
           mode: mode,
+          layerColors: Object.assign({}, layerColors),
+          activeBuildLayer: activeBuildLayer,
           createdAt: Date.now()
         };
         upd({ saved: next });
@@ -523,6 +585,8 @@ window.StemLab = window.StemLab || {
           positions: entry.positions || [],
           dims: entry.dims || dims,
           mode: entry.mode || mode,
+          layerColors: entry.layerColors || layerColors,
+          activeBuildLayer: entry.activeBuildLayer != null ? entry.activeBuildLayer : activeBuildLayer,
           undoStack: undoStack.concat([positions.slice()]),
           challenge: null, feedback: null,
           builderChallenge: null, builderFeedback: null
@@ -735,6 +799,28 @@ window.StemLab = window.StemLab || {
       var isDisplacement = mode === 'displacement';
       var isSlider = mode === 'slider' || isWord;
       var isFreeform = mode === 'freeform';
+      var toggleFreeformCube = function(x, y, z) {
+        var key = x + '-' + y + '-' + z;
+        var removing = posSet.has(key);
+        var nextPositions = removing
+          ? positions.filter(function(pos) { return pos !== key; })
+          : positions.concat([key]);
+        var nextUndo = undoStack.concat([positions.slice()]);
+        if (nextUndo.length > 30) nextUndo = nextUndo.slice(nextUndo.length - 30);
+        var patch = { positions: nextPositions, undoStack: nextUndo };
+        if (!removing) patch.totalPlaced = totalPlaced + 1;
+        upd(patch);
+        playSound(removing ? 'remove' : 'place');
+        announceToSR(
+          (removing ? 'Removed' : 'Placed') +
+          ' cube at column ' + (x + 1) +
+          ', row ' + (y + 1) +
+          ', layer ' + (z + 1) + '.'
+        );
+        if (!removing) {
+          checkBadges({ bigBuilder: nextPositions.length >= 20, centurion: totalPlaced + 1 >= 100 });
+        }
+      };
       var volume = isDisplacement ? (dispSubmerged ? dispTrial.measuredVolume : 0)
         : (isSlider ? dims.l * dims.w * dims.h : posSet.size);
       var surfaceArea = isDisplacement ? 0 : (isSlider
@@ -745,10 +831,10 @@ window.StemLab = window.StemLab || {
         : 30;
 
       // ── 3D Cube rendering ──
-      var renderCube = function(x, y, z, hue, lt, unit, clickable, onClick, isGhost) {
+      var renderCube = function(x, y, z, hue, lt, unit, clickable, onClick, isGhost, satOverride, layerColor) {
         var isPaint = paintSurfaceArea && !isGhost;
         var actHue = isPaint ? 25 : hue;
-        var sat = isPaint ? 90 : 70;
+        var sat = isPaint ? 90 : (satOverride != null ? satOverride : 70);
         var op1 = isPaint ? 0.95 : 0.85;
         var op2 = isPaint ? 0.90 : 0.70;
         var op3 = isPaint ? 0.92 : 0.80;
@@ -765,6 +851,9 @@ window.StemLab = window.StemLab || {
 
         return h('div', { 
           key: isGhost ? ('ghost-'+x+'-'+y+'-'+z) : (x+'-'+y+'-'+z),
+          'data-volume-cube': isGhost ? undefined : 'true',
+          'data-volume-layer': isGhost ? undefined : String(z),
+          'data-volume-layer-color': !isGhost && layerColor ? layerColor : undefined,
           onClick: clickable ? function(e) { e.stopPropagation(); onClick && onClick(); } : undefined,
           style: {
             position: 'absolute', width: unit+'px', height: unit+'px',
@@ -803,12 +892,10 @@ window.StemLab = window.StemLab || {
       } else {
         positions.forEach(function(pos) {
           var p = pos.split('-').map(Number);
-          cubes.push(renderCube(p[0], p[1], p[2], 200 + p[2]*15, 50 + p[2]*5, cubeUnit, true, function() {
-            pushUndo();
-            playSound('remove');
-            var next = positions.filter(function(pp) { return pp !== pos; });
-            upd({ positions: next });
-          }));
+          var layerTone = volumeLayerColorToHsl(getLayerColor(p[2]), p[2]);
+          cubes.push(renderCube(p[0], p[1], p[2], layerTone.h, layerTone.l, cubeUnit, true, function() {
+            toggleFreeformCube(p[0], p[1], p[2]);
+          }, false, layerTone.s, layerTone.hex));
         });
         // Ground grid for placement
         for (var gx = 0; gx < 8; gx++) {
@@ -824,20 +911,17 @@ window.StemLab = window.StemLab || {
                   onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
                   onClick: function(e) {
                     e.stopPropagation();
-                    pushUndo();
-                    playSound('place');
-                    var newPos = positions.concat([fx+'-'+fy+'-0']);
-                    var newTotal = totalPlaced + 1;
-                    upd({ positions: newPos, totalPlaced: newTotal });
-                    checkBadges({ bigBuilder: newPos.length >= 20, centurion: newTotal >= 100 });
+                    toggleFreeformCube(fx, fy, 0);
                   },
                   style: {
                     position: 'absolute', width: cubeUnit+'px', height: cubeUnit+'px',
                     transform: 'translate3d('+fx*cubeUnit+'px,0px,'+fy*cubeUnit+'px) rotateX(90deg)',
-                    background: 'hsla(220,15%,60%,0.12)', border: '1px dashed hsla(220,20%,60%,0.25)',
-                    boxSizing: 'border-box', cursor: 'pointer'
+                    background: getLayerColor(0) + '33', border: '2px dashed ' + getLayerColor(0) + 'bb',
+                    boxSizing: 'border-box', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: volumeLayerTextColor(getLayerColor(0), 0), fontWeight: 900
                   }
-                }));
+                }, h('span', { 'aria-hidden': 'true' }, '+')));
               })(gx, gy);
             }
           }
@@ -856,12 +940,7 @@ window.StemLab = window.StemLab || {
                 onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
                 onClick: function(e) {
                   e.stopPropagation();
-                  pushUndo();
-                  playSound('place');
-                  var newPos = positions.concat([ax+'-'+ay+'-'+az]);
-                  var newTotal = totalPlaced + 1;
-                  upd({ positions: newPos, totalPlaced: newTotal });
-                  checkBadges({ bigBuilder: newPos.length >= 20, centurion: newTotal >= 100 });
+                  toggleFreeformCube(ax, ay, az);
                 },
                 style: {
                   position: 'absolute', width: cubeUnit+'px', height: cubeUnit+'px',
@@ -871,8 +950,10 @@ window.StemLab = window.StemLab || {
               }, h('div', { style: {
                 position: 'absolute', width: '100%', height: cubeUnit+'px',
                 transform: 'rotateX(90deg) translateZ('+cubeUnit/2+'px)',
-                background: 'hsla(220,15%,60%,0.10)', border: '1px dashed hsla(220,20%,60%,0.22)', boxSizing: 'border-box'
-              }})));
+                background: getLayerColor(az) + '33', border: '2px dashed ' + getLayerColor(az) + 'bb', boxSizing: 'border-box',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: volumeLayerTextColor(getLayerColor(az), az), fontWeight: 900
+              }}, h('span', { 'aria-hidden': 'true' }, '+'))));
             })(p[0], p[1], p[2]+1);
           }
         });
@@ -2192,7 +2273,7 @@ window.StemLab = window.StemLab || {
                 ? (dispSubmerged ? 'Subtract the sinker-only reading from the sinker-plus-object reading, then explain why the sinker cancels out.' : 'Predict the cork volume, then record the sinker-only reading before lowering both together.')
                 : (dispSubmerged ? 'Subtract the initial reading from the final reading, then explain what the change represents.' : (dispCondition === 'partial' ? 'Predict the specimen volume, then lower it only partway to observe the resulting error.' : 'Predict the specimen volume, then lower it fully into the water.'))))))
         : isFreeform && positions.length === 0
-        ? 'Place unit cubes, count one layer, then predict the total before finishing.'
+        ? 'Choose a build layer, then select squares in the placement grid to add unit cubes.'
         : isWord
           ? 'Identify length, width, and height in the context before multiplying.'
           : score.total === 0
@@ -2319,6 +2400,7 @@ window.StemLab = window.StemLab || {
               upd({
                 dims: {l:3,w:2,h:2}, mode: 'slider',
                 positions: [], rotation: {x:-25,y:-35}, scale: 1.0,
+                activeBuildLayer: 0, layerColors: {},
                 challenge: null, answer: '', feedback: null, showLayers: null,
                 builderChallenge: null, builderFeedback: null,
                 paintSurfaceArea: false,
@@ -2557,43 +2639,122 @@ window.StemLab = window.StemLab || {
           })
         ),
 
-        // Freeform instructions
-        isFreeform && h('div', { className: 'flex items-center gap-2 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
-          h('p', { className: 'text-xs text-indigo-600 flex-1' }, __alloT('stem.volume.click_grid_to_place_cubes_click_cube_t', '\uD83D\uDC49 Click grid to place cubes \u2022 Click cube to remove \u2022 Click above to stack')),
-          h('button', { 'aria-label': __alloT('stem.volume.undo_last_placement_u', 'Undo last placement (U)'),
-            onClick: doUndo,
-            disabled: !undoStack.length,
-            title: 'Undo (U) \u2014 ' + undoStack.length + ' step' + (undoStack.length === 1 ? '' : 's') + ' available',
-            className: 'px-3 py-1.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 disabled:opacity-40 border border-amber-300'
-          }, '\u21B6 Undo (' + undoStack.length + ')'),
-          h('button', { 'aria-label': __alloT('stem.volume.clear_all', 'Clear All'),
-            onClick: function() { pushUndo(); upd({ positions: [], builderChallenge: null, builderFeedback: null }); announceToSR('Cleared all cubes'); },
-            className: 'px-3 py-1.5 text-xs font-bold bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300'
-          }, __alloT('stem.volume.clear_all_2', '\u21BA Clear All'))
-        ),
+        // Freeform layer builder: a visible top-down placement surface that
+        // remains usable even when the 3D model is rotated or zoomed.
+        isFreeform && (function() {
+          var activeLayerColor = getLayerColor(activeBuildLayer);
+          var activeLayerCount = positions.filter(function(pos) {
+            return parseInt(pos.split('-')[2], 10) === activeBuildLayer;
+          }).length;
+          var placementCells = [];
+
+          for (var row = 0; row < 8; row++) {
+            for (var col = 0; col < 8; col++) {
+              (function(cellX, cellY) {
+                var cellKey = cellX + '-' + cellY + '-' + activeBuildLayer;
+                var occupied = posSet.has(cellKey);
+                placementCells.push(h('button', {
+                  key: 'builder-' + cellKey,
+                  type: 'button',
+                  'data-volume-cell': cellKey,
+                  'data-volume-cell-layer': String(activeBuildLayer),
+                  'aria-label': (occupied ? 'Remove' : 'Place') + ' cube at column ' + (cellX + 1) + ', row ' + (cellY + 1) + ', layer ' + (activeBuildLayer + 1),
+                  'aria-pressed': occupied,
+                  onClick: function() { toggleFreeformCube(cellX, cellY, activeBuildLayer); },
+                  className: 'aspect-square min-w-0 rounded-md border-2 text-sm font-black transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1',
+                  style: occupied
+                    ? { backgroundColor: activeLayerColor, borderColor: activeLayerColor, color: volumeLayerTextColor(activeLayerColor, activeBuildLayer) }
+                    : { backgroundColor: '#ffffff', borderColor: activeLayerColor + '88', color: activeLayerColor }
+                }, occupied ? '\u2713' : '+'));
+              })(col, row);
+            }
+          }
+
+          return h('section', {
+            'data-volume-layer-builder': 'true',
+            className: 'space-y-3 rounded-xl border-2 border-indigo-200 bg-indigo-50 p-3'
+          },
+            h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-black text-indigo-900' }, 'Place blocks by layer'),
+                h('p', { className: 'mt-1 text-xs text-indigo-700', 'aria-live': 'polite' },
+                  'Layer ' + (activeBuildLayer + 1) + ' has ' + activeLayerCount + ' block' + (activeLayerCount === 1 ? '' : 's') + '. Select a square to add or remove one.'
+                )
+              ),
+              h('div', { className: 'grid grid-cols-2 gap-2' },
+                h('label', { htmlFor: 'volume-freeform-layer', className: 'text-xs font-bold text-indigo-900' },
+                  'Build layer',
+                  h('select', {
+                    id: 'volume-freeform-layer',
+                    value: activeBuildLayer,
+                    onChange: function(e) {
+                      var nextLayer = Math.max(0, Math.min(9, parseInt(e.target.value, 10) || 0));
+                      upd({ activeBuildLayer: nextLayer });
+                      announceToSR('Build layer ' + (nextLayer + 1) + ' selected.');
+                    },
+                    className: 'mt-1 block h-10 w-full rounded-md border border-indigo-300 bg-white px-2 text-sm font-bold text-indigo-900'
+                  }, Array.from({ length: 10 }, function(_, index) {
+                    return h('option', { key: index, value: index }, 'Layer ' + (index + 1));
+                  }))
+                ),
+                h('label', { htmlFor: 'volume-layer-color', className: 'text-xs font-bold text-indigo-900' },
+                  'Layer color',
+                  h('input', {
+                    id: 'volume-layer-color',
+                    type: 'color',
+                    value: activeLayerColor,
+                    onChange: function(e) {
+                      var nextColors = Object.assign({}, layerColors);
+                      nextColors[String(activeBuildLayer)] = normalizeVolumeLayerColor(e.target.value, activeBuildLayer);
+                      upd({ layerColors: nextColors });
+                      announceToSR('Layer ' + (activeBuildLayer + 1) + ' color changed.');
+                    },
+                    className: 'mt-1 block h-10 w-full cursor-pointer rounded-md border border-indigo-300 bg-white p-1'
+                  })
+                )
+              )
+            ),
+            h('p', { className: 'text-xs font-semibold text-indigo-800' }, 'The grid is a top-down view. The 3D preview updates immediately; click a 3D cube to remove it or an outlined top face to stack.'),
+            h('div', { className: 'grid grid-cols-8 gap-1', role: 'group', 'aria-label': 'Block placement grid for layer ' + (activeBuildLayer + 1) }, placementCells),
+            h('div', { className: 'flex flex-wrap justify-end gap-2' },
+              h('button', { 'aria-label': __alloT('stem.volume.undo_last_placement_u', 'Undo last placement (U)'),
+                onClick: doUndo,
+                disabled: !undoStack.length,
+                title: 'Undo (U) - ' + undoStack.length + ' step' + (undoStack.length === 1 ? '' : 's') + ' available',
+                className: 'px-3 py-1.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 disabled:opacity-40 border border-amber-300'
+              }, '\u21B6 Undo (' + undoStack.length + ')'),
+              h('button', { 'aria-label': __alloT('stem.volume.clear_all', 'Clear All'),
+                onClick: function() { pushUndo(); upd({ positions: [], builderChallenge: null, builderFeedback: null }); announceToSR('Cleared all cubes'); },
+                className: 'px-3 py-1.5 text-xs font-bold bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300'
+              }, __alloT('stem.volume.clear_all_2', '\u21BA Clear All'))
+            )
+          );
+        })(),
 
         // 3D viewport — pointer events (mouse + touch + pen), pinch-to-zoom,
         // keyboard rotation. tabIndex=0 makes it focusable for keyboard users.
         !isDisplacement && h('div', {
-          className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
+          className: 'relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
           style: { minHeight: '350px', perspective: '900px', touchAction: 'none' },
           tabIndex: 0,
           role: 'application',
-          'aria-label': __alloT('stem.volume.interactive_3d_viewport_drag_swipe_or_', 'Interactive 3D viewport. Drag, swipe, or use arrow keys to rotate. Pinch or +/- to zoom. R to reset view.'),
+          'aria-label': isFreeform ? '3D construction preview. Add or remove blocks with the layer placement grid above. Drag or use arrow keys to rotate.' : __alloT('stem.volume.interactive_3d_viewport_drag_swipe_or_', 'Interactive 3D viewport. Drag, swipe, or use arrow keys to rotate. Pinch or +/- to zoom. R to reset view.'),
           onPointerDown: handlePointerDown,
           onPointerMove: handlePointerMove,
           onPointerUp: handlePointerUp,
           onPointerCancel: handlePointerUp,
           onKeyDown: handleViewportKeyDown,
           onWheel: function(e) { upd({ scale: Math.max(0.4, Math.min(2.5, scale + (e.deltaY > 0 ? -0.08 : 0.08))) }); }
-        }, h('div', {
+        },
+          isFreeform && h('div', { className: 'pointer-events-none absolute left-3 top-3 z-20 rounded-full border border-indigo-300/40 bg-slate-950/80 px-3 py-1 text-[11px] font-bold text-indigo-100' }, '3D preview - build with the layer grid above'),
+          h('div', {
           style: {
             transformStyle: 'preserve-3d',
             transform: 'rotateX('+rotation.x+'deg) rotateY('+rotation.y+'deg) scale3d('+scale+','+scale+','+scale+')',
             transition: 'transform 0.15s ease-out',
             position: 'relative', width: fw+'px', height: fh+'px'
           }
-        }, cubes)),
+          }, cubes)),
 
         // Layer slider (slider mode)
         isSlider && h('div', { className: 'flex items-center gap-2 bg-emerald-50 rounded-lg p-2 border border-emerald-100' },

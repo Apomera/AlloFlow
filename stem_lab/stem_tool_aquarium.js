@@ -13479,6 +13479,291 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           };
 
+          var PLANT_PROFILES = {
+            java_fern: {
+              scientific: 'Microsorum pteropus', family: 'Polypodiaceae', nativeRange: 'Tropical Southeast Asia',
+              habitat: 'Shaded stream margins, waterfalls, and seasonally flooded rock or wood.',
+              form: 'Slow-growing epiphytic fern with a creeping rhizome and leathery leaves.',
+              placement: 'Midground or background attached to rock or driftwood; never bury the rhizome.',
+              parameters: '68-82 F; pH 5.5-8.0; soft to hard water. Stability matters more than a narrow target.',
+              substrate: 'No substrate required. Roots anchor the plant but the rhizome must remain exposed.',
+              lightGuide: 'Low to medium light. Excess light mainly increases algae on its slow-growing leaves.',
+              co2Guide: 'CO2 injection is optional; it improves growth but does not turn this into a fast plant.',
+              nutrition: 'Primarily a water-column feeder. Supply modest complete fertilizer, especially potassium.',
+              propagation: 'Divide the rhizome or detach plantlets that form on mature leaves.',
+              maintenance: 'Remove damaged leaves at the rhizome and keep detritus from settling on leaf surfaces.',
+              compatibility: 'Excellent with shrimp, fry, and most fish; usually ignored by herbivores.',
+              cautions: 'A buried rhizome can rot. Black spots may be reproductive sori or plantlets, not disease.',
+              diagnosis: 'Pinholes suggest potassium shortage; transparent melt often follows transition stress; leaf algae usually signals excessive light or slow flow.',
+              ecology: 'Provides durable cover and biofilm surface while taking nutrients directly from the water.',
+              aquascape: 'Use on wood or stone to soften hardscape and create an established forest-stream appearance.',
+              carePlan: 'Attach the exposed rhizome to hardscape, use low-to-medium light, and fertilize the water column modestly.'
+            },
+            amazon_sword: {
+              scientific: 'Echinodorus grisebachii complex', family: 'Alismataceae', nativeRange: 'Tropical Central and South America',
+              habitat: 'Marshes and slow waterways where plants alternate between submerged and emergent growth.',
+              form: 'Large rooted rosette with broad leaves and an extensive root system.',
+              placement: 'Background or solitary focal specimen with substantial open space around the crown.',
+              parameters: '72-82 F; pH 6.2-7.8; soft to moderately hard water.',
+              substrate: 'Deep nutrient-bearing substrate or regular root tabs; keep the crown above the substrate.',
+              lightGuide: 'Medium light is sufficient; stronger light increases demand for carbon and nutrients.',
+              co2Guide: 'Optional in low-tech tanks but useful for compact, vigorous submerged growth.',
+              nutrition: 'Heavy root feeder with strong nitrogen, potassium, and iron demand.',
+              propagation: 'Adventitious plantlets form along flower stalks and can be separated after rooting.',
+              maintenance: 'Remove old outer leaves at the crown; do not cut healthy leaves in half.',
+              compatibility: 'Excellent cover for community fish, but large cichlids and digging fish may uproot it.',
+              cautions: 'Many store-grown specimens are emergent; old leaves may melt while submerged leaves replace them.',
+              diagnosis: 'Yellow new leaves suggest iron or micronutrient shortage; pale older leaves suggest nitrogen limitation; holes often indicate potassium shortage.',
+              ecology: 'A mature root system stores nutrients and provides a large surface for microbial activity.',
+              aquascape: 'Use as a bold background focal point; one mature plant can visually dominate a small aquarium.',
+              carePlan: 'Plant the roots deeply without burying the crown, provide root nutrition, and reserve enough background space for mature leaves.'
+            },
+            java_moss: {
+              scientific: 'Taxiphyllum barbieri', family: 'Hypnaceae', nativeRange: 'Southeast Asia',
+              habitat: 'Moist rocks, tree roots, and slow streams in shaded tropical habitats.',
+              form: 'Branching aquatic moss that attaches loosely to nearly any rough surface.',
+              placement: 'Foreground accents, moss walls, wood canopies, breeding cover, or shrimp habitat.',
+              parameters: '60-82 F; pH 5.0-8.0; broad hardness tolerance.',
+              substrate: 'No substrate required; tie or glue small portions to hardscape until attached.',
+              lightGuide: 'Low to medium light. High light produces compact growth but also traps algae readily.',
+              co2Guide: 'Not required; added CO2 increases density and branching.',
+              nutrition: 'Absorbs nutrients from the water column and benefits from gentle flow through the moss.',
+              propagation: 'Divide or trim healthy fragments and attach them to a new surface.',
+              maintenance: 'Trim and thin regularly so lower layers receive flow and do not accumulate detritus.',
+              compatibility: 'Outstanding refuge for shrimp, fry, eggs, and microorganisms used as live food.',
+              cautions: 'Loose fragments spread throughout the tank; dense mats can collect waste and develop dead zones.',
+              diagnosis: 'Brown interiors usually mean shading or trapped debris; string algae indicates excess light or nutrient imbalance.',
+              ecology: 'Creates a complex microhabitat rich in infusoria and biofilm.',
+              aquascape: 'Use thin layers to suggest aged trees or forest floor; thick lumps quickly lose definition.',
+              carePlan: 'Attach a thin layer to hardscape, provide gentle flow and modest light, then trim before detritus accumulates.'
+            },
+            hornwort: {
+              scientific: 'Ceratophyllum demersum', family: 'Ceratophyllaceae', nativeRange: 'Nearly cosmopolitan',
+              habitat: 'Ponds, lakes, and slow waterways, floating or loosely anchored below the surface.',
+              form: 'Rootless, fast-growing stem plant with whorled needlelike leaves.',
+              placement: 'Floating nutrient-export mass or weighted background bunch; do not bury a true root system.',
+              parameters: '59-86 F; pH 6.0-8.5; medium to hard water is often easiest.',
+              substrate: 'Not required. The stem can be weighted, but buried portions may decay.',
+              lightGuide: 'Medium light supports fast growth; very intense light sharply increases nutrient demand.',
+              co2Guide: 'Injection is unnecessary for most tanks because leaves use dissolved inorganic carbon efficiently.',
+              nutrition: 'Strong water-column feeder and rapid consumer of nitrate and phosphate.',
+              propagation: 'Any healthy stem cutting can continue growing.',
+              maintenance: 'Thin and shorten frequently; remove shed needles before they decay.',
+              compatibility: 'Excellent fry cover and nutrient export, though delicate needles may be messy with rough fish.',
+              cautions: 'Can shade slower plants and may shed needles after temperature or chemistry shock.',
+              diagnosis: 'Sparse tips suggest low light or nutrients; rapid needle shedding points to abrupt change, overheating, or poor handling.',
+              ecology: 'Fast biomass production competes with algae, though allelopathic suppression varies by conditions.',
+              aquascape: 'Best used as a soft background mass or temporary cycling plant rather than a precise formal hedge.',
+              carePlan: 'Float or weight the stems, supply medium light and water-column nutrients, and harvest growth before it shades the tank.'
+            },
+            anubias: {
+              scientific: 'Anubias barteri', family: 'Araceae', nativeRange: 'West and Central Africa',
+              habitat: 'Shaded rainforest streams where rhizomes cling to rock and wood in strong seasonal flow.',
+              form: 'Very slow epiphytic aroid with a thick rhizome and waxy leaves.',
+              placement: 'Foreground to midground on shaded hardscape; keep the rhizome fully exposed.',
+              parameters: '72-82 F; pH 5.5-8.0; broad hardness tolerance.',
+              substrate: 'No substrate needed; only fine roots may enter gravel while the rhizome stays above it.',
+              lightGuide: 'Low light is ideal. Long bright photoperiods commonly produce spot algae.',
+              co2Guide: 'Optional; growth remains slow even with injection.',
+              nutrition: 'Light water-column fertilization is sufficient because demand is low.',
+              propagation: 'Cut the rhizome into sections with several leaves and healthy roots.',
+              maintenance: 'Remove old leaves at the rhizome and wipe persistent algae gently.',
+              compatibility: 'Durable with most fish and useful in cichlid tanks where softer plants are damaged.',
+              cautions: 'Rhizome burial causes rot; slow leaves reveal algae problems early.',
+              diagnosis: 'Yellowing can reflect micronutrient shortage; pinholes suggest potassium; soft rhizome tissue indicates rot.',
+              ecology: 'Long-lived leaves provide stable grazing surfaces for biofilm feeders.',
+              aquascape: 'Use small clusters in hardscape shadows to create scale, depth, and an aged appearance.',
+              carePlan: 'Attach the rhizome above substrate in a shaded position and avoid excessive light or fertilizer.'
+            },
+            water_wisteria: {
+              scientific: 'Hygrophila difformis', family: 'Acanthaceae', nativeRange: 'Indian subcontinent and Southeast Asia',
+              habitat: 'Marshes and shallow slow water with strong seasonal changes.',
+              form: 'Fast stem plant whose leaf shape changes dramatically between emergent and submerged growth.',
+              placement: 'Midground when trimmed or background when allowed to reach the surface.',
+              parameters: '70-82 F; pH 6.0-8.0; soft to moderately hard water.',
+              substrate: 'Roots readily in most substrates but also feeds heavily from the water column.',
+              lightGuide: 'Medium light produces broad healthy growth; low light causes tall, sparse stems.',
+              co2Guide: 'Optional but improves density and recovery after trimming.',
+              nutrition: 'Fast growth requires regular nitrogen, potassium, and micronutrients.',
+              propagation: 'Replant healthy top cuttings; rooted side shoots can also be separated.',
+              maintenance: 'Top and replant before lower stems become shaded and bare.',
+              compatibility: 'Good cover for shy fish and fry; rapid growth can overwhelm small tanks.',
+              cautions: 'Emergent leaves may melt after planting while finely divided submerged leaves form.',
+              diagnosis: 'Pale new growth suggests iron shortage; lower-leaf loss suggests shade or depleted nutrients; stretched internodes suggest weak light.',
+              ecology: 'Rapid nutrient uptake makes it useful during cycling and after stocking changes.',
+              aquascape: 'Group multiple stems and trim them into a soft, bright-green background mound.',
+              carePlan: 'Plant grouped stems in medium light, fertilize regularly, and replant tops before the shaded bases deteriorate.'
+            },
+            duckweed: {
+              scientific: 'Lemna minor complex', family: 'Araceae', nativeRange: 'Cosmopolitan temperate and tropical waters',
+              habitat: 'Still or slow nutrient-rich surface water.',
+              form: 'Minute floating flowering plant that reproduces mainly by budding.',
+              placement: 'Water surface only, preferably contained in a floating ring.',
+              parameters: '50-86 F; pH 5.0-9.0; extremely broad tolerance.',
+              substrate: 'None; roots hang freely into the water.',
+              lightGuide: 'Medium to high surface light drives explosive growth.',
+              co2Guide: 'No injection needed because floating leaves access atmospheric CO2.',
+              nutrition: 'Very rapid consumer of dissolved nitrogen and phosphorus.',
+              propagation: 'Daughter fronds separate naturally, often doubling coverage within days.',
+              maintenance: 'Remove handfuls frequently and keep feeding openings and gas-exchange zones clear.',
+              compatibility: 'Useful for shade-loving fish and nitrate control; surface feeders may need open water.',
+              cautions: 'Blocks light, clogs equipment, sticks to tools, and is difficult to eradicate once established.',
+              diagnosis: 'Pale fronds indicate nutrient limitation; yellowing after a sudden move may reflect surface burn or temperature shock.',
+              ecology: 'High productivity supports microorganisms and is used in nutrient-removal systems.',
+              aquascape: 'Use controlled patches for dappled shade rather than allowing a complete surface mat.',
+              carePlan: 'Contain it at the surface, harvest often, and preserve open areas for light, feeding, and gas exchange.'
+            },
+            dwarf_hairgrass: {
+              scientific: 'Eleocharis parvula / acicularis trade complex', family: 'Cyperaceae', nativeRange: 'Widely distributed wetland margins',
+              habitat: 'Shallow marshes and seasonally flooded flats with bright light.',
+              form: 'Fine grasslike sedge spreading by underground runners.',
+              placement: 'Foreground carpet planted in small separated plugs.',
+              parameters: '68-82 F; pH 6.0-7.8; soft to moderately hard water.',
+              substrate: 'Fine nutrient-bearing substrate supports roots and runner formation.',
+              lightGuide: 'Medium-high to high light at the substrate; shading quickly thins the carpet.',
+              co2Guide: 'Strongly recommended for dense low growth, though sparse low-tech growth is possible.',
+              nutrition: 'Uses both roots and water column; adequate nitrogen, potassium, iron, and trace elements are important.',
+              propagation: 'Runners produce daughter plants that can be divided and replanted.',
+              maintenance: 'Trim with curved scissors and remove clippings so the lower carpet does not suffocate.',
+              compatibility: 'Works with small peaceful fish and shrimp; digging fish uproot new plugs.',
+              cautions: 'Planting large dense clumps encourages melt in the center.',
+              diagnosis: 'Tall thin blades indicate weak light or low CO2; yellow blades suggest nitrogen or iron shortage; lifting mats indicate poor rooting or trapped gas.',
+              ecology: 'Dense roots stabilize substrate and provide grazing surface for microorganisms.',
+              aquascape: 'Use small plugs across the foreground and allow runners to join them naturally.',
+              carePlan: 'Separate into small plugs in fine substrate, provide strong substrate-level light and stable CO2, then trim the mature carpet.'
+            },
+            red_root_floater: {
+              scientific: 'Phyllanthus fluitans', family: 'Phyllanthaceae', nativeRange: 'Tropical Central and South America',
+              habitat: 'Quiet floodplains, ponds, and slow backwaters.',
+              form: 'Floating rosettes with dangling roots and red anthocyanin coloration under stress or strong light.',
+              placement: 'Calm surface areas away from splashing outflows.',
+              parameters: '68-82 F; pH 5.5-7.5; soft to moderately hard water.',
+              substrate: 'None; all nutrients are taken from the water column.',
+              lightGuide: 'Medium-high light encourages compact growth and red color.',
+              co2Guide: 'No injection required because leaves use atmospheric CO2.',
+              nutrition: 'Needs available nitrogen and micronutrients; extremely low nitrate can intensify red color but slow growth.',
+              propagation: 'Runners create daughter rosettes that separate naturally.',
+              maintenance: 'Thin weekly and remove damaged or submerged leaves.',
+              compatibility: 'Long roots shelter fry and shrimp; leave openings for surface-breathing fish.',
+              cautions: 'Wet upper leaves rot easily, so strong surface agitation and condensation are problematic.',
+              diagnosis: 'Melting centers point to wet leaves or turbulent flow; pale growth suggests micronutrient shortage; green color alone is not poor health.',
+              ecology: 'Direct atmospheric carbon access allows rapid nutrient export from the water.',
+              aquascape: 'Use a controlled surface island for red contrast and hanging root texture.',
+              carePlan: 'Keep it in calm, brightly lit surface water, dose water-column nutrients, and thin it before coverage blocks the tank.'
+            },
+            rotala: {
+              scientific: 'Rotala rotundifolia', family: 'Lythraceae', nativeRange: 'South, Southeast, and East Asia',
+              habitat: 'Marshes, rice fields, and shallow seasonally flooded ground.',
+              form: 'Fast branching stem plant with round emergent leaves and narrow submerged leaves.',
+              placement: 'Midground or background hedge planted as separated stems.',
+              parameters: '68-82 F; pH 5.5-7.5; soft to moderately hard water.',
+              substrate: 'Roots in most substrates while also feeding substantially from the water column.',
+              lightGuide: 'Medium-high light supports compact growth; stronger light and balanced nutrition improve red color.',
+              co2Guide: 'Recommended for dense branching, short internodes, and reliable coloration.',
+              nutrition: 'Requires complete macro and micronutrients; coloration depends on light and balanced growth, not iron alone.',
+              propagation: 'Trim healthy tops and replant them; side shoots branch below the cut.',
+              maintenance: 'Stagger trimming heights and periodically replace old shaded bases.',
+              compatibility: 'Gentle community fish are ideal; large herbivores and diggers damage stems.',
+              cautions: 'Dense untrimmed tops shade lower growth, causing bare stems and trapped debris.',
+              diagnosis: 'Long internodes indicate low light or CO2; twisted tips may reflect calcium or trace imbalance; pale new growth suggests iron or micros.',
+              ecology: 'Fast growth converts dissolved nutrients into harvestable biomass.',
+              aquascape: 'Shape into a graduated hedge; use warm upper tips as a color focal point.',
+              carePlan: 'Plant separated stems, provide medium-high light and stable CO2, fertilize completely, and replant trimmed tops regularly.'
+            },
+            monte_carlo: {
+              scientific: "Micranthemum tweediei 'Monte Carlo'", family: 'Linderniaceae', nativeRange: 'South America, especially Argentina',
+              habitat: 'Wet stream margins and periodically flooded ground.',
+              form: 'Small creeping stem plant that roots at nodes and forms a low carpet.',
+              placement: 'Foreground carpet or cascading growth over porous rock.',
+              parameters: '68-78 F; pH 5.5-7.5; soft to moderately hard water.',
+              substrate: 'Fine nutrient-bearing substrate helps small roots anchor.',
+              lightGuide: 'Medium-high light at substrate level prevents vertical, sparse growth.',
+              co2Guide: 'Strongly recommended for a dense carpet and reliable establishment.',
+              nutrition: 'Needs balanced macros and micros; roots and leaves both contribute to uptake.',
+              propagation: 'Divide into small plugs or replant trimmed runners.',
+              maintenance: 'Trim the upper layer and thin from below before the carpet becomes thick and buoyant.',
+              compatibility: 'Best with small fish and shrimp; diggers and strong bottom flow can uproot new plugs.',
+              cautions: 'Large planting clumps often melt or float; mature carpets can detach if lower layers die.',
+              diagnosis: 'Vertical growth indicates insufficient light; yellowing suggests nutrient shortage; lifting mats signal trapped gas or dead lower growth.',
+              ecology: 'Dense carpets provide grazing area but can also trap fine organic debris.',
+              aquascape: 'Plant many tiny plugs with open gaps; patience produces a more natural carpet than starting with solid mats.',
+              carePlan: 'Plant tiny plugs in fine substrate, provide stable CO2 and medium-high light, and thin the carpet before lower layers decay.'
+            },
+            chaeto: {
+              scientific: 'Chaetomorpha linum complex', family: 'Cladophoraceae', nativeRange: 'Marine and brackish coasts worldwide',
+              habitat: 'Shallow nutrient-rich coastal water, lagoons, and refugium-like protected areas.',
+              form: 'Unbranched filamentous green macroalga forming a coarse tangled mass.',
+              placement: 'Refugium or protected display area with flow through the entire mass.',
+              parameters: '72-82 F; marine salinity about 30-36 ppt; pH 7.8-8.5.',
+              substrate: 'None required; keep the mass loose or gently tumbling.',
+              lightGuide: 'Medium-high refugium lighting; a reverse photoperiod can reduce nighttime pH swing.',
+              co2Guide: 'Usually relies on dissolved inorganic carbon and gas exchange rather than injection.',
+              nutrition: 'Consumes nitrate, phosphate, iron, and trace elements; growth stops when one becomes limiting.',
+              propagation: 'Divide the mass; harvest is both propagation and nutrient export.',
+              maintenance: 'Shake out detritus, prevent compaction, and harvest regularly to preserve illuminated surface.',
+              compatibility: 'Excellent refuge for copepods and other microfauna; usually isolated from herbivorous display fish.',
+              cautions: 'A dense dark center can decay and return stored nutrients to the water.',
+              diagnosis: 'Brittle pale strands suggest iron or nutrient limitation; dark slimy interiors indicate poor flow and detritus accumulation.',
+              ecology: 'Exports nutrients only when harvested biomass is physically removed from the system.',
+              aquascape: 'Functional refugium macroalga rather than a precise display plant.',
+              carePlan: 'Keep a loose, well-lit mass in steady flow, monitor nitrate and phosphate, and harvest healthy growth regularly.'
+            },
+            mangrove: {
+              scientific: 'Rhizophora mangle (common aquarium form)', family: 'Rhizophoraceae', nativeRange: 'Tropical Atlantic and eastern Pacific coasts',
+              habitat: 'Intertidal shorelines with roots in saline water and leaves permanently exposed to air.',
+              form: 'Woody tree seedling with aerial leaves and salt-tolerant prop-root development.',
+              placement: 'Open-top paludarium, refugium, or display with roots submerged and every leaf above water.',
+              parameters: '72-84 F; fresh to full marine depending acclimation; stable salinity and warm humid air.',
+              substrate: 'Can root in deep sand or mud, or remain suspended while roots grow into water.',
+              lightGuide: 'Strong terrestrial-style light above the leaves, not ordinary low-output aquarium light.',
+              co2Guide: 'Leaves use atmospheric CO2; submerged CO2 injection is irrelevant.',
+              nutrition: 'Slow nutrient uptake; benefits from available nitrogen, iron, magnesium, and complete trace elements.',
+              propagation: 'Grown from propagules; this is a long-term tree, not a plant divided during routine trimming.',
+              maintenance: 'Rinse salt spray from leaves with fresh water and prune only after strong root and leaf establishment.',
+              compatibility: 'Roots create refuge for fish and invertebrates; leaves require open air and substantial vertical space.',
+              cautions: 'Fully submerged leaves die. It is not a rapid nitrate solution and eventually outgrows small enclosures.',
+              diagnosis: 'Yellow leaves may reflect iron, magnesium, nitrogen, root stress, or salinity shock; inspect new growth and stability before dosing blindly.',
+              ecology: 'Wild mangrove roots stabilize coasts and create nursery habitat; aquarium seedlings model that root-water interface.',
+              aquascape: 'Use exposed roots and aerial leaves as a riparium focal point with long-term space planning.',
+              carePlan: 'Keep roots wet and leaves in air under strong light, maintain stable salinity, rinse leaf salt, and plan for tree-scale growth.'
+            },
+            caulerpa: {
+              scientific: 'Caulerpa species complex', family: 'Caulerpaceae', nativeRange: 'Tropical and subtropical seas worldwide',
+              habitat: 'Shallow reef flats, lagoons, sand, rock, and seagrass beds.',
+              form: 'Siphonous macroalga: a large multinucleate cell with runners, holdfasts, and upright fronds.',
+              placement: 'Refugium or deliberately bounded display area on rock or substrate.',
+              parameters: '72-82 F; marine salinity about 30-36 ppt; pH 7.8-8.5.',
+              substrate: 'Runners attach to rock or penetrate sand; fragments can establish elsewhere.',
+              lightGuide: 'Medium-high marine light with a stable photoperiod.',
+              co2Guide: 'Uses dissolved inorganic carbon; stable alkalinity and gas exchange are more relevant than injection.',
+              nutrition: 'Rapid consumer of nitrate and phosphate when actively growing.',
+              propagation: 'Runner fragments spread readily, which is useful for culture but difficult to contain.',
+              maintenance: 'Prune runners deliberately and remove every detached fragment.',
+              compatibility: 'Many herbivorous marine fish graze it; protect intended refugium growth from heavy grazing.',
+              cautions: 'Some species can release gametes and stored nutrients during a reproductive crash; invasive growth can penetrate rockwork.',
+              diagnosis: 'Sudden whitening or translucence is an emergency sign of tissue breakdown; stalled pale tips suggest nutrient limitation.',
+              ecology: 'Turns dissolved nutrients into removable biomass but can dominate space if not controlled.',
+              aquascape: 'Use cautiously as a marine meadow or refugium crop with a hard containment boundary.',
+              carePlan: 'Confine runners, provide stable marine light and nutrients, prune frequently, and remove whitening tissue immediately.'
+            }
+          };
+
+          function getPlantProfile(plant) {
+            var fallback = {
+              scientific: 'Trade identity not specified', family: 'Botanical family not specified', nativeRange: 'Range varies by trade form',
+              habitat: plant.desc, form: plant.desc, placement: 'Choose placement from mature size, light, and flow needs.',
+              parameters: 'Match the selected aquarium and avoid abrupt parameter change.', substrate: 'Confirm whether the species is rooted, floating, or epiphytic before planting.',
+              lightGuide: 'Use the catalog light tier as a starting point and watch new growth.', co2Guide: 'Balance carbon availability with light and nutrient demand.',
+              nutrition: 'Monitor new and old leaves separately to distinguish mobile from immobile nutrient deficiencies.', propagation: 'Propagation method varies by plant form.',
+              maintenance: 'Remove failing tissue and prevent one species from shading the rest.', compatibility: 'Check digging, grazing, and surface-access needs of tank animals.',
+              cautions: 'Avoid sudden changes and diagnose from patterns rather than a single damaged leaf.', diagnosis: 'Compare new growth, old growth, roots, and placement before changing care.',
+              ecology: plant.fact, aquascape: 'Use mature form and growth rate to choose foreground, midground, background, or floating placement.',
+              carePlan: 'Match placement, light, carbon, and nutrition to the plant form, then adjust from observed new growth.'
+            };
+            return Object.assign({}, fallback, PLANT_PROFILES[plant.id] || {});
+          }
+
+
           // Fallback: tanks without plant lists get generic hardies
 
           var getPlantsForTank = function (tankId) {
@@ -13663,13 +13948,13 @@ var d = (labToolData && labToolData._aquarium) || {};
           ];
 
           var TUTORIAL_STEPS = [
-            { id: 'welcome', title: __alloT('stem.aquarium.welcome_to_aquarium_lab', 'Welcome to Aquarium Lab!'), msg: 'Build and manage your own aquatic ecosystem. Select a tank type to begin.' },
-            { id: 'add_fish', title: __alloT('stem.aquarium.stock_your_tank', 'Stock Your Tank'), msg: 'Add fish from the species list. Watch the bioload meter!' },
-            { id: 'run_sim', title: __alloT('stem.aquarium.start_the_simulation', 'Start the Simulation'), msg: 'Press Play to begin the ecosystem simulation.' },
-            { id: 'feed', title: __alloT('stem.aquarium.feed_your_fish', 'Feed Your Fish'), msg: 'Fish get hungry. Feed flakes or live food, but avoid overfeeding!' },
-            { id: 'water_change', title: __alloT('stem.aquarium.water_maintenance', 'Water Maintenance'), msg: 'Do water changes when ammonia or nitrite rises.' },
-            { id: 'earn_coins', title: __alloT('stem.aquarium.earn_coins', 'Earn Coins!'), msg: 'Healthy tanks earn daily coins. Spend on species and upgrades!' },
-            { id: 'shop', title: __alloT('stem.aquarium.visit_the_shop', 'Visit the Shop'), msg: 'Tap the Shop tab to buy new fish and upgrade equipment.' }
+            { id: 'habitat', title: '1. Choose a Habitat', concept: 'Every aquarium is a controlled ecosystem with its own temperature, pH, salinity, and capacity.', objective: 'Choose any tank type to establish its baseline chemistry.', why: 'Species survive only when the habitat matches their biological needs.', observe: 'Notice how the target temperature, pH, salinity, and tank capacity change.', predict: 'Predict which chemistry setting will differ most among the available habitats.', explain: 'Make a claim about why the selected habitat is suitable for its organisms.' },
+            { id: 'stock', title: '2. Stock Responsibly', concept: 'Fish create bioload: waste and respiration that the ecosystem must process.', objective: 'Add at least one compatible fish without exceeding tank capacity.', why: 'More animals create more ammonia and consume more dissolved oxygen.', observe: 'Watch the bioload meter and the individual fish care card.', predict: 'Predict how adding another fish will affect ammonia and dissolved oxygen.', explain: 'Use bioload evidence to explain why this stocking level is or is not sustainable.' },
+            { id: 'cycle', title: '3. Follow the Nitrogen Cycle', concept: 'Waste becomes ammonia, bacteria convert it to nitrite, then nitrate accumulates.', objective: 'Run at least three aquarium-hour ticks.', why: 'Ammonia and nitrite damage gills; nitrate is safer but must still be removed.', observe: 'Compare the chemistry cards and the 48-hour trend after each tick.', predict: 'Predict which nitrogen compound will change first and what will follow it.', explain: 'Use the trend as evidence to explain the order of nitrogen-cycle transformations.' },
+            { id: 'feed', title: '4. Feed With Evidence', concept: 'Food reduces hunger, but leftovers decompose and add ammonia.', objective: 'Feed the display tank once when fish are hungry.', why: 'Overfeeding is one of the fastest ways to destabilize aquarium chemistry.', observe: 'Compare hunger and ammonia immediately before and after feeding.', predict: 'Predict how one feeding will change hunger and ammonia.', explain: 'Use the before-and-after values to explain the tradeoff created by feeding.' },
+            { id: 'water', title: '5. Restore Water Quality', concept: 'A water change dilutes dissolved pollutants instead of hiding them.', objective: 'Perform one recommended water change.', why: 'Regular partial changes control nitrate and provide a safety response to ammonia or nitrite.', observe: 'Use the preview, then compare the recorded before-and-after chemistry.', predict: 'Predict how the selected percentage will change each nitrogen compound.', explain: 'Use dilution evidence to explain whether the change was large enough.' },
+            { id: 'equipment', title: '6. Maintain Life Support', concept: 'Filters, heaters, lights, and aeration affect chemistry only while they are maintained.', objective: 'Upgrade, service, or repair one life-support system.', why: 'Degraded equipment loses output and critically neglected equipment can fail.', observe: 'Compare rated output, condition, actual output, and service cost.', predict: 'Predict which water parameter will respond first if this system loses output.', explain: 'Use equipment condition and chemistry evidence to justify the maintenance decision.' },
+            { id: 'stabilize', title: '7. Demonstrate Stability', concept: 'A healthy aquarium is a pattern maintained over time, not one perfect reading.', objective: 'Keep ammonia, nitrite, nitrate, and pH safe for five consecutive ticks.', why: 'Trends reveal whether the ecosystem can recover from feeding, growth, and equipment wear.', observe: 'Use the chemistry trend and event log to explain why the tank stayed stable.', predict: 'Predict the pattern a genuinely stable chemistry trend should show.', explain: 'Make a final claim about tank stability, cite multiple readings, and connect them to a cause.' }
           ];
 
           // ── Current state ──
@@ -13751,6 +14036,25 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var simSpeed = d.simSpeed || 1;
           var waterChangePercent = d.waterChangePercent || 25;
+          var lastWaterChangeTick = typeof d.lastWaterChangeTick === 'number' ? d.lastWaterChangeTick : 0;
+          var maintenanceLog = Array.isArray(d.maintenanceLog) ? d.maintenanceLog.slice(-12) : [];
+          var maintenanceHistoryExpanded = d.maintenanceHistoryExpanded === true;
+          var hoursSinceWaterChange = Math.max(0, simTick - lastWaterChangeTick);
+          var maintenanceOverdue = hoursSinceWaterChange >= 168;
+          var recommendedWaterChangePercent = 10;
+          var maintenanceRecommendation = 'Routine refresh; chemistry is stable.';
+          if (waterChem) {
+            if (waterChem.ammonia >= 1 || waterChem.nitrite >= 1 || waterChem.nitrate >= 80) {
+              recommendedWaterChangePercent = 50;
+              maintenanceRecommendation = 'Emergency dilution for dangerous nitrogen compounds.';
+            } else if (waterChem.ammonia >= 0.25 || waterChem.nitrite >= 0.25 || waterChem.nitrate >= 40) {
+              recommendedWaterChangePercent = 25;
+              maintenanceRecommendation = 'Correct elevated nitrogen compounds before they become critical.';
+            } else if (maintenanceOverdue || hoursSinceWaterChange >= 144) {
+              recommendedWaterChangePercent = 25;
+              maintenanceRecommendation = maintenanceOverdue ? 'Weekly maintenance is overdue.' : 'Weekly maintenance is due soon.';
+            }
+          }
 
           var simDay = d.simDay || 0;
 
@@ -13832,6 +14136,18 @@ var d = (labToolData && labToolData._aquarium) || {};
           var coins = d.coins || 0;
           var totalCoinsEarned = d.totalCoinsEarned || 0;
           var equipment = d.equipment || { filter: 0, heater: 0, light: 0, airPump: 0 };
+          var equipmentCondition = {};
+          Object.keys(EQUIPMENT_CATALOG).forEach(function (type) {
+            var savedCondition = d.equipmentCondition && d.equipmentCondition[type];
+            equipmentCondition[type] = typeof savedCondition === 'number' ? Math.max(0, Math.min(100, savedCondition)) : 100;
+          });
+          var equipmentFaults = {};
+          Object.keys(EQUIPMENT_CATALOG).forEach(function (type) {
+            var savedFault = d.equipmentFaults && d.equipmentFaults[type];
+            if (savedFault && typeof savedFault === 'object') equipmentFaults[type] = savedFault;
+          });
+          var equipmentFaultCount = Object.keys(equipmentFaults).length;
+          var equipmentNeedsServiceCount = Object.keys(equipmentCondition).filter(function (type) { return equipmentCondition[type] <= 25 && !equipmentFaults[type]; }).length;
           var unlockedAchievements = d.unlockedAchievements || {};
 
           function appendFishCare(fishId, message) {
@@ -13842,10 +14158,86 @@ var d = (labToolData && labToolData._aquarium) || {};
           }
           var perfectWaterTicks = d.perfectWaterTicks || 0;
           var anatomiesStudied = d.anatomiesStudied || {};
-          var tutorialStep = d.tutorialStep || 0;
-          var tutorialDismissed = d.tutorialDismissed || false;
+          var tutorialStep = typeof d.tutorialStep === 'number' ? Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, Math.floor(d.tutorialStep))) : 0;
+          var tutorialDismissed = d.tutorialDismissed === true;
+          var tutorialProgress = d.tutorialProgress && typeof d.tutorialProgress === 'object' ? d.tutorialProgress : {};
+          var tutorialOutlineOpen = d.tutorialOutlineOpen === true;
+          var tutorialNotebook = d.tutorialNotebook && typeof d.tutorialNotebook === 'object' ? d.tutorialNotebook : {};
+          var tutorialNotebookOpen = d.tutorialNotebookOpen === true;
           var shopOpen = d.shopOpen || false;
           var shopTab = d.shopTab || 'fish';
+
+          function getTutorialEvidence(stepId) {
+            if (tutorialProgress[stepId]) return { complete: true, label: tutorialProgress[stepId].evidence || 'Completed and recorded.' };
+            if (stepId === 'habitat') return { complete: !!selectedTank, label: selectedTank ? 'Habitat selected.' : 'Choose a tank type.' };
+            if (stepId === 'stock') return { complete: tankFish.length > 0, label: tankFish.length > 0 ? tankFish.length + ' fish stocked.' : 'Add at least one fish.' };
+            if (stepId === 'cycle') return { complete: simTick >= 3, label: simTick >= 3 ? simTick + ' aquarium hours observed.' : Math.max(0, 3 - simTick) + ' more aquarium-hour ticks needed.' };
+            if (stepId === 'feed') return { complete: !!feedingLog, label: feedingLog ? 'Feeding impact recorded.' : 'Feed the display tank once.' };
+            if (stepId === 'water') return { complete: maintenanceLog.length > 0, label: maintenanceLog.length > 0 ? maintenanceLog.length + ' water change record' + (maintenanceLog.length === 1 ? '' : 's') + ' available.' : 'Perform a recommended water change.' };
+            if (stepId === 'equipment') return { complete: d.tutorialEquipmentMaintained === true, label: d.tutorialEquipmentMaintained === true ? 'Life-support maintenance recorded.' : 'Upgrade, service, or repair one system.' };
+            if (stepId === 'stabilize') return { complete: perfectWaterTicks >= 5, label: perfectWaterTicks >= 5 ? perfectWaterTicks + ' consecutive safe ticks.' : Math.max(0, 5 - perfectWaterTicks) + ' more consecutive safe ticks needed.' };
+            return { complete: false, label: 'Complete the lesson objective.' };
+          }
+
+          var currentTutorialLesson = TUTORIAL_STEPS[tutorialStep];
+          var currentTutorialEvidence = getTutorialEvidence(currentTutorialLesson.id);
+          var savedTutorialNote = tutorialNotebook[currentTutorialLesson.id] || {};
+          var currentTutorialNote = {
+            prediction: typeof savedTutorialNote.prediction === 'string' ? savedTutorialNote.prediction : '',
+            observation: typeof savedTutorialNote.observation === 'string' ? savedTutorialNote.observation : '',
+            explanation: typeof savedTutorialNote.explanation === 'string' ? savedTutorialNote.explanation : ''
+          };
+          var tutorialNotebookSavedCount = TUTORIAL_STEPS.filter(function (lesson) {
+            var note = tutorialNotebook[lesson.id] || {};
+            return ['prediction', 'observation', 'explanation'].some(function (field) { return typeof note[field] === 'string' && !!note[field].trim(); });
+          }).length;
+          var tutorialCompletedCount = TUTORIAL_STEPS.filter(function (lesson) { return !!tutorialProgress[lesson.id]; }).length;
+          var tutorialProgressPercent = Math.round(tutorialCompletedCount / TUTORIAL_STEPS.length * 100);
+
+          function recordTutorialLesson(lesson, evidenceLabel) {
+            var nextProgress = Object.assign({}, tutorialProgress);
+            nextProgress[lesson.id] = {
+              tick: simTick,
+              day: simDay,
+              evidence: evidenceLabel,
+              notebook: {
+                prediction: !!currentTutorialNote.prediction.trim(),
+                observation: !!currentTutorialNote.observation.trim(),
+                explanation: !!currentTutorialNote.explanation.trim()
+              }
+            };
+            return nextProgress;
+          }
+
+          function updateTutorialNote(field, value) {
+            if (['prediction', 'observation', 'explanation'].indexOf(field) === -1) return;
+            var nextNotebook = Object.assign({}, tutorialNotebook);
+            var nextNote = Object.assign({ prediction: '', observation: '', explanation: '' }, nextNotebook[currentTutorialLesson.id] || {});
+            nextNote[field] = String(value || '').slice(0, 2000);
+            nextNotebook[currentTutorialLesson.id] = nextNote;
+            upd('tutorialNotebook', nextNotebook);
+          }
+
+          function captureTutorialObservation() {
+            if (!waterChem) {
+              if (addToast) addToast('Choose a habitat before capturing aquarium evidence.', 'info');
+              return;
+            }
+            var snapshotHour = (simHour < 10 ? '0' : '') + simHour + ':00';
+            var snapshot = [
+              'Day ' + simDay + ' ' + snapshotHour + ' (tick ' + simTick + ')',
+              'pH ' + waterChem.pH.toFixed(2),
+              'NH3 ' + waterChem.ammonia.toFixed(2) + ' ppm',
+              'NO2 ' + waterChem.nitrite.toFixed(2) + ' ppm',
+              'NO3 ' + waterChem.nitrate.toFixed(1) + ' ppm',
+              'O2 ' + waterChem.dissolvedO2.toFixed(1) + ' mg/L',
+              tankFish.length + ' fish',
+              equipmentFaultCount + ' equipment faults'
+            ].join(' | ');
+            var combinedObservation = (currentTutorialNote.observation.trim() ? currentTutorialNote.observation.trim() + '\n' : '') + snapshot;
+            updateTutorialNote('observation', combinedObservation);
+            if (addToast) addToast('\uD83D\uDCCB Aquarium evidence snapshot saved to this lesson.', 'success');
+          }
 
           // ── Plant ecosystem state ──
 
@@ -13856,6 +14248,112 @@ var d = (labToolData && labToolData._aquarium) || {};
           var plantBiomass = d.plantBiomass || {}; // { plantId: currentSize (0 to maxSize) }
 
           var plantCatalog = getPlantsForTank(selectedTank); // available plants for current tank type
+
+          var selectedPlantId = typeof d.selectedPlantId === 'string' ? d.selectedPlantId : null;
+          var selectedPlant = selectedPlantId ? plantCatalog.find(function (plant) { return plant.id === selectedPlantId; }) : null;
+          var selectedPlantProfile = selectedPlant ? getPlantProfile(selectedPlant) : null;
+          var plantLearningAnswers = d.plantLearningAnswers && typeof d.plantLearningAnswers === 'object' ? d.plantLearningAnswers : {};
+          var ecosystemExchangeView = ['live', 'day', 'night', 'net'].indexOf(d.ecosystemExchangeView) !== -1 ? d.ecosystemExchangeView : 'live';
+          var ecosystemFocusType = ['all', 'fish', 'plant', 'bacteria', 'algae', 'water'].indexOf(d.ecosystemFocusType) !== -1 ? d.ecosystemFocusType : 'all';
+          var ecosystemFocusId = typeof d.ecosystemFocusId === 'string' ? d.ecosystemFocusId : null;
+          var lastEcosystemExchange = d.lastEcosystemExchange && typeof d.lastEcosystemExchange === 'object' ? d.lastEcosystemExchange : null;
+
+          var selectedPlantLearningAnswer = selectedPlant ? plantLearningAnswers[selectedPlant.id] : null;
+          var currentLightLevel = Math.max(0, Math.min(EQUIPMENT_CATALOG.light.levels.length - 1, Number(equipment.light) || 0));
+          var currentLightDefinition = EQUIPMENT_CATALOG.light.levels[currentLightLevel];
+          var currentLightOutput = equipmentFaults.light ? 0 : (equipmentCondition.light !== undefined ? equipmentCondition.light : 100) / 100;
+          var selectedPlantHealth = selectedPlant ? (plantHealth[selectedPlant.id] !== undefined ? plantHealth[selectedPlant.id] : 80) : 0;
+          var selectedPlantBiomass = selectedPlant ? (plantBiomass[selectedPlant.id] !== undefined ? plantBiomass[selectedPlant.id] : 1) : 0;
+          var selectedPlantHealthFactor = selectedPlantHealth / 100;
+          var selectedPlantBiomassFactor = selectedPlant ? selectedPlantBiomass / selectedPlant.maxSize : 0;
+          var selectedPlantLightEfficiency = selectedPlant ? (0.5 + currentLightDefinition.plantBoost) * currentLightOutput : 0;
+          if (selectedPlant && selectedPlant.light === 'low') selectedPlantLightEfficiency = Math.max(0.7, selectedPlantLightEfficiency);
+          if (selectedPlant && selectedPlant.light === 'high' && algaeLevel > 50) selectedPlantLightEfficiency *= 0.6;
+          var selectedPlantPhotoRate = selectedPlantHealthFactor * selectedPlantBiomassFactor * selectedPlantLightEfficiency;
+          var selectedPlantPhotosynthesisActive = !!selectedPlant && lightsOn && simHour >= 6 && simHour < 20 && currentLightOutput > 0;
+          var selectedPlantLiveContribution = selectedPlant ? {
+            oxygenPerHour: selectedPlantPhotosynthesisActive ? selectedPlant.o2 * selectedPlantPhotoRate : 0,
+            co2UsePerHour: selectedPlantPhotosynthesisActive ? selectedPlant.co2Need * selectedPlantPhotoRate : 0,
+            nitrateUsePerHour: selectedPlantPhotosynthesisActive ? selectedPlant.nitrateAbsorb * selectedPlantPhotoRate : 0,
+            nightOxygenUse: selectedPlant.o2 * 0.15 * selectedPlantBiomassFactor,
+            projectedGrowth: selectedPlant.growth * selectedPlantHealthFactor * (0.5 + currentLightDefinition.plantBoost) * currentLightOutput
+          } : null;
+          var selectedPlantCareAlerts = [];
+          if (selectedPlant) {
+            if (selectedPlantHealth <= 40) selectedPlantCareAlerts.push({ severity: 'danger', text: 'Health is critical. Compare new and old leaves, then correct the underlying condition before adding fertilizer blindly.' });
+            else if (selectedPlantHealth <= 70) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Health is stressed. Use the diagnosis guide and current readings to isolate the limiting factor.' });
+            if (selectedPlant.light === 'high' && currentLightLevel === 0) selectedPlantCareAlerts.push({ severity: 'danger', text: 'This high-light plant is relying on room light; growth and recovery will be severely limited.' });
+            if (equipmentFaults.light) selectedPlantCareAlerts.push({ severity: 'danger', text: 'The aquarium light is offline, so current photosynthetic output is zero.' });
+            if (selectedPlant.co2Need >= 0.6 && waterChem && waterChem.co2 < 2) selectedPlantCareAlerts.push({ severity: 'warning', text: 'This carbon-demanding plant is below the simulator baseline for dependable dense growth.' });
+            if (waterChem && waterChem.nitrate < 2) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Nitrate is extremely low; fast growth may be nitrogen-limited even though the water looks clean.' });
+            if (algaeLevel > 50) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Heavy algae is shading leaves and reducing effective light in the simulation.' });
+            if (selectedPlantCareAlerts.length === 0) selectedPlantCareAlerts.push({ severity: 'success', text: 'No immediate simulator warning is detected. Confirm success from healthy new growth over several ticks.' });
+          }
+          var selectedPlantCheckOptions = [];
+          var selectedPlantCorrectAnswer = -1;
+          if (selectedPlantProfile) {
+            var plantDistractors = [
+              'Use maximum light and injected CO2 for every species, bury all stems or rhizomes deeply, and avoid pruning.',
+              'Use only room light, provide no nutrient source, and leave all growth untouched regardless of shading or decay.'
+            ];
+            selectedPlantCorrectAnswer = selectedPlant.id.length % 3;
+            selectedPlantCheckOptions = plantDistractors.slice();
+            selectedPlantCheckOptions.splice(selectedPlantCorrectAnswer, 0, selectedPlantProfile.carePlan);
+          }
+          var selectedPlantPlacementZone = 'midground';
+          var selectedPlantPlacementLabel = 'Midground';
+          var selectedPlantZoneLayout = { top: '52%', left: '52%' };
+          var selectedPlantResourceDiagram = [];
+          var selectedPlantLimitingResource = null;
+          if (selectedPlant && selectedPlantProfile) {
+            var plantPlacementText = (selectedPlantProfile.placement + ' ' + selectedPlantProfile.form + ' ' + selectedPlantProfile.aquascape).toLowerCase();
+            if (selectedPlant.id === 'chaeto' || /refugium|sump|macroalga/.test(plantPlacementText)) {
+              selectedPlantPlacementZone = 'refugium';
+              selectedPlantPlacementLabel = 'Refugium / utility zone';
+              selectedPlantZoneLayout = { top: '64%', left: '86%' };
+            } else if (/float|surface/.test(plantPlacementText)) {
+              selectedPlantPlacementZone = 'surface';
+              selectedPlantPlacementLabel = 'Surface';
+              selectedPlantZoneLayout = { top: '12%', left: '52%' };
+            } else if (/emergent|mangrove|shoreline|above the water/.test(plantPlacementText)) {
+              selectedPlantPlacementZone = 'emergent';
+              selectedPlantPlacementLabel = 'Emergent margin';
+              selectedPlantZoneLayout = { top: '8%', left: '82%' };
+            } else if (/foreground|carpet|low mat/.test(plantPlacementText)) {
+              selectedPlantPlacementZone = 'foreground';
+              selectedPlantPlacementLabel = 'Foreground / substrate';
+              selectedPlantZoneLayout = { top: '78%', left: '28%' };
+            } else if (/background|rear|tall stem/.test(plantPlacementText)) {
+              selectedPlantPlacementZone = 'background';
+              selectedPlantPlacementLabel = 'Background';
+              selectedPlantZoneLayout = { top: '42%', left: '18%' };
+            } else if (/rock|wood|hardscape|epiphyte|attach/.test(plantPlacementText)) {
+              selectedPlantPlacementZone = 'hardscape';
+              selectedPlantPlacementLabel = 'Hardscape';
+              selectedPlantZoneLayout = { top: '58%', left: '65%' };
+            }
+
+            var selectedPlantLightNeed = selectedPlant.light === 'high' ? 82 : selectedPlant.light === 'medium' ? 58 : 32;
+            var selectedPlantLightAvailable = Math.max(0, Math.min(100, Math.round(((0.3 + currentLightDefinition.plantBoost) / 1.1) * currentLightOutput * 100)));
+            var selectedPlantCarbonNeed = Math.max(20, Math.min(95, Math.round(20 + selectedPlant.co2Need * 85)));
+            var selectedPlantCarbonAvailable = Math.max(0, Math.min(100, Math.round((Number(waterChem.co2) || 0) / 4 * 100)));
+            var selectedPlantNitrogenNeed = Math.max(20, Math.min(95, Math.round(20 + selectedPlant.nitrateAbsorb * 70)));
+            var selectedPlantNitrogenAvailable = Math.max(0, Math.min(100, Math.round((Number(waterChem.nitrate) || 0) / 10 * 100)));
+            selectedPlantResourceDiagram = [
+              { id: 'light', label: 'Light capacity', icon: '\u2600\uFE0F', available: selectedPlantLightAvailable, need: selectedPlantLightNeed, detail: currentLightDefinition.name },
+              { id: 'carbon', label: 'Carbon access', icon: 'CO\u2082', available: selectedPlantCarbonAvailable, need: selectedPlantCarbonNeed, detail: waterChem.co2.toFixed(1) + ' mg/L CO\u2082' },
+              { id: 'nitrogen', label: 'Nitrogen access', icon: 'N', available: selectedPlantNitrogenAvailable, need: selectedPlantNitrogenNeed, detail: waterChem.nitrate.toFixed(1) + ' ppm nitrate' }
+            ].map(function (resource) {
+              resource.gap = resource.available - resource.need;
+              resource.status = resource.gap >= 0 ? 'ready' : resource.gap >= -15 ? 'close' : 'limiting';
+              return resource;
+            });
+            selectedPlantLimitingResource = selectedPlantResourceDiagram.slice().sort(function (a, b) {
+              return (a.available / Math.max(1, a.need)) - (b.available / Math.max(1, b.need));
+            })[0];
+          }
+
+
 
 
 
@@ -14784,23 +15282,92 @@ var d = (labToolData && labToolData._aquarium) || {};
             }
             var newEquip = Object.assign({}, equipment);
             newEquip[type] = nextLevel;
+            var newEquipmentCondition = Object.assign({}, equipmentCondition);
+            newEquipmentCondition[type] = 100;
             var newCoins = coins - upgrade.cost;
-            updMulti({ equipment: newEquip, coins: newCoins, eventLog: eventLog.concat([{ tick: simTick, msg: '\u2B06\uFE0F Upgraded ' + catalog.name + ' to ' + upgrade.name }]) });
+            var newEquipmentFaults = Object.assign({}, equipmentFaults);
+            delete newEquipmentFaults[type];
+            updMulti({ equipment: newEquip, equipmentCondition: newEquipmentCondition, equipmentFaults: newEquipmentFaults, tutorialEquipmentMaintained: true, coins: newCoins, eventLog: appendTankEvent('\u2B06\uFE0F Upgraded ' + catalog.name + ' to ' + upgrade.name) });
             if (addToast) addToast(catalog.icon + ' Upgraded to ' + upgrade.name + '!', 'success');
             if (stemBeep) stemBeep();
-            checkAchievements('upgrade');
+            if (newEquip.filter >= 2 && newEquip.heater >= 2 && newEquip.light >= 2 && newEquip.airPump >= 2 && !unlockedAchievements['all_equipment']) unlockAchievement('all_equipment');
+          };
+
+          var serviceEquipment = function (type) {
+            var catalog = EQUIPMENT_CATALOG[type];
+            if (!catalog) return;
+            if (equipmentFaults[type]) {
+              if (addToast) addToast(catalog.icon + ' ' + catalog.name + ' is offline and must be repaired.', 'warning');
+              return;
+            }
+            var currentCondition = equipmentCondition[type] !== undefined ? equipmentCondition[type] : 100;
+            if (currentCondition >= 95) {
+              if (addToast) addToast(catalog.icon + ' ' + catalog.name + ' does not need service yet.', 'info');
+              return;
+            }
+            var nextCondition = Object.assign({}, equipmentCondition);
+            nextCondition[type] = 100;
+            var serviceVerb = type === 'filter' ? 'Cleaned' : 'Serviced';
+            updMulti({
+              equipmentCondition: nextCondition,
+              tutorialEquipmentMaintained: true,
+              eventLog: appendTankEvent(serviceVerb + ' ' + catalog.name + '; output restored to 100%')
+            });
+            if (addToast) addToast(catalog.icon + ' ' + serviceVerb + ' ' + catalog.name + '. Full output restored.', 'success');
+          };
+          var repairEquipment = function (type) {
+            var catalog = EQUIPMENT_CATALOG[type];
+            if (!catalog || !equipmentFaults[type]) return;
+            var currentLevel = Math.max(0, Math.min(catalog.levels.length - 1, Number(equipment[type]) || 0));
+            var repairCost = 5 + currentLevel * 5;
+            if (coins < repairCost) {
+              if (addToast) addToast('\u274C Need ' + repairCost + ' coins to repair ' + catalog.name + ' (have ' + coins + ')', 'warning');
+              return;
+            }
+            var repairedFaults = Object.assign({}, equipmentFaults);
+            delete repairedFaults[type];
+            var repairedCondition = Object.assign({}, equipmentCondition);
+            repairedCondition[type] = 75;
+            updMulti({
+              equipmentFaults: repairedFaults,
+              equipmentCondition: repairedCondition,
+              tutorialEquipmentMaintained: true,
+              coins: coins - repairCost,
+              eventLog: appendTankEvent('Repaired ' + catalog.name + ' for ' + repairCost + ' coins; output restored at 75%')
+            });
+            if (addToast) addToast(catalog.icon + ' Repaired ' + catalog.name + '. Service it soon to restore full output.', 'success');
           };
 
           var advanceTutorial = function () {
-            if (tutorialStep < TUTORIAL_STEPS.length - 1) {
-              upd('tutorialStep', tutorialStep + 1);
-            } else {
-              upd('tutorialDismissed', true);
+            if (!currentTutorialEvidence.complete) {
+              if (addToast) addToast('Learning check: ' + currentTutorialLesson.objective, 'info');
+              return;
             }
+            var nextProgress = recordTutorialLesson(currentTutorialLesson, currentTutorialEvidence.label);
+            if (tutorialStep >= TUTORIAL_STEPS.length - 1) {
+              updMulti({ tutorialProgress: nextProgress, tutorialDismissed: true });
+              if (addToast) addToast('\uD83C\uDF93 Aquarium learning path complete! You demonstrated a stable ecosystem.', 'success');
+            } else {
+              updMulti({ tutorialProgress: nextProgress, tutorialStep: tutorialStep + 1 });
+              if (addToast) addToast('\u2705 Evidence recorded: ' + currentTutorialEvidence.label, 'success');
+            }
+          };
+
+          var previousTutorial = function () {
+            if (tutorialStep > 0) upd('tutorialStep', tutorialStep - 1);
+          };
+
+          var selectTutorialLesson = function (lessonIndex) {
+            var safeIndex = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, Number(lessonIndex) || 0));
+            updMulti({ tutorialStep: safeIndex, tutorialDismissed: false });
           };
 
           var dismissTutorial = function () {
             upd('tutorialDismissed', true);
+          };
+
+          var resumeTutorial = function () {
+            upd('tutorialDismissed', false);
           };
 
           var initTank = function (tankId) {
@@ -14812,6 +15379,8 @@ var d = (labToolData && labToolData._aquarium) || {};
             updMulti({
 
               selectedTank: tankId,
+              selectedPlantId: null,
+              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, lastEcosystemExchange: null,
 
               fishBirthTicks: {}, fishCareLog: {},
               fishInstanceIds: [], nextFishInstanceId: 1, fishIdentityVersion: 3,
@@ -14827,7 +15396,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               fishNames: {},
               breedingState: {}, breedingCooldowns: {}, totalFryBorn: 0,
               equipment: equipment.filter !== undefined ? equipment : { filter: 0, heater: 0, light: 0, airPump: 0 },
-              perfectWaterTicks: 0, algaeLevel: 0, fishSickness: {}, fishStress: {}, quarantinedFish: {},
+              perfectWaterTicks: 0, algaeLevel: 0, fishSickness: {}, fishStress: {}, quarantinedFish: {}, lastWaterChangeTick: 0, maintenanceLog: [], maintenanceHistoryExpanded: false,
               hungerLevels: {}, simDay: 0, simHour: 8, lightsOn: true
 
             });
@@ -14915,7 +15484,7 @@ var d = (labToolData && labToolData._aquarium) || {};
             var newBreeding = Object.assign({}, breedingState);
             var newCooldowns = Object.assign({}, breedingCooldowns);
             newHealth[removed] = Math.max(0, (newHealth[removed] || 1) - 1);
-            updMulti({ fishInstanceIds: newFishInstanceIds, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog, quarantinedFish: newQuarantined, expandedCareFish: expandedCareFish === removedInstanceId ? null : expandedCareFish });
+            updMulti({ fishInstanceIds: newFishInstanceIds, fishNames: newNames, fishBirthTicks: newBirthTicks, fishCareLog: newCareLog, quarantinedFish: newQuarantined, expandedCareFish: expandedCareFish === removedInstanceId ? null : expandedCareFish, ecosystemFocusType: ecosystemFocusType === 'fish' && ecosystemFocusId === removedInstanceId ? 'all' : ecosystemFocusType, ecosystemFocusId: ecosystemFocusType === 'fish' && ecosystemFocusId === removedInstanceId ? null : ecosystemFocusId });
             if (newHealth[removed] === 0) delete newHealth[removed];
             delete newHunger[removedInstanceId];
             delete newSickness[removedInstanceId];
@@ -14932,6 +15501,29 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
           // ── Plant management helpers ──
+
+          var selectPlant = function (plantId) {
+            var plant = plantCatalog.find(function (candidate) { return candidate.id === plantId; });
+            if (!plant) return;
+            updMulti({ selectedPlantId: plant.id, ecosystemFocusType: 'plant', ecosystemFocusId: plant.id });
+          };
+
+          var closePlantProfile = function () {
+            upd('selectedPlantId', null);
+          };
+
+          var answerPlantLearningCheck = function (answerIndex) {
+            if (!selectedPlant || answerIndex < 0 || answerIndex >= selectedPlantCheckOptions.length) return;
+            var nextAnswers = Object.assign({}, plantLearningAnswers);
+            var correct = answerIndex === selectedPlantCorrectAnswer;
+            nextAnswers[selectedPlant.id] = {
+              selected: answerIndex,
+              correct: correct,
+              tick: simTick
+            };
+            upd('plantLearningAnswers', nextAnswers);
+            if (addToast) addToast(correct ? '\u2705 Plant care reasoning confirmed.' : '\uD83C\uDF31 Revisit the care profile and compare each plan.', correct ? 'success' : 'info');
+          };
 
           var addPlant = function (plantId) {
 
@@ -14964,6 +15556,8 @@ var d = (labToolData && labToolData._aquarium) || {};
             updMulti({
 
               tankPlants: newPlants,
+              selectedPlantId: plant.id,
+              ecosystemFocusType: 'plant', ecosystemFocusId: plant.id,
 
               plantHealth: newPH,
 
@@ -15003,6 +15597,8 @@ var d = (labToolData && labToolData._aquarium) || {};
               plantBiomass: newPB,
 
               tankPlants: newPlants,
+              ecosystemFocusType: !plantStillPresent && ecosystemFocusType === 'plant' && ecosystemFocusId === removed ? 'all' : ecosystemFocusType,
+              ecosystemFocusId: !plantStillPresent && ecosystemFocusType === 'plant' && ecosystemFocusId === removed ? null : ecosystemFocusId,
 
               eventLog: eventLog.concat([{ tick: simTick, msg: '🔄 Removed ' + (plant ? plant.name : removed) }])
 
@@ -15081,7 +15677,14 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             });
 
-            updMulti({ waterChem: newChem, chemHistory: chemHistory.concat([{ tick: simTick, day: simDay, hour: simHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48), eventLog: eventLog.concat([{ tick: simTick, msg: percent + '% water change performed' }]) });
+            var serviceReason = percent === recommendedWaterChangePercent ? maintenanceRecommendation : 'Manual ' + percent + '% service.';
+            var serviceRecord = {
+              tick: simTick, day: simDay, hour: simHour, percent: percent, reason: serviceReason,
+              before: { ammonia: waterChem.ammonia, nitrite: waterChem.nitrite, nitrate: waterChem.nitrate, pH: waterChem.pH },
+              after: { ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, pH: newChem.pH }
+            };
+            var nextMaintenanceLog = maintenanceLog.concat([serviceRecord]).slice(-12);
+            updMulti({ waterChem: newChem, chemHistory: chemHistory.concat([{ tick: simTick, day: simDay, hour: simHour, ammonia: newChem.ammonia, nitrite: newChem.nitrite, nitrate: newChem.nitrate, dissolvedO2: newChem.dissolvedO2, pH: newChem.pH }]).slice(-48), lastWaterChangeTick: simTick, maintenanceLog: nextMaintenanceLog, eventLog: appendTankEvent(percent + '% water change performed ? ' + serviceReason) });
 
             if (addToast) addToast(percent + '% water change complete. Dissolved compounds reduced by ' + percent + '%.', 'success');
 
@@ -15508,6 +16111,33 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var _waterChem = aq.waterChem;
               var _chemHistory = aq.chemHistory || [];
+              var _equipment = Object.assign({ filter: 0, heater: 0, light: 0, airPump: 0 }, aq.equipment || {});
+              var _equipmentCondition = {};
+              var _equipmentOutput = {};
+              var _nextEquipmentCondition = {};
+              var _equipmentFaults = {};
+              var _equipmentWearRates = { filter: 0.18, heater: 0.10, light: 0.08, airPump: 0.12 };
+              var _equipmentFailureRates = { filter: 0.03, heater: 0.025, light: 0.015, airPump: 0.02 };
+              Object.keys(EQUIPMENT_CATALOG).forEach(function (type) {
+                var savedCondition = aq.equipmentCondition && aq.equipmentCondition[type];
+                var condition = typeof savedCondition === 'number' ? Math.max(0, Math.min(100, savedCondition)) : 100;
+                var savedFault = aq.equipmentFaults && aq.equipmentFaults[type];
+                if (savedFault && typeof savedFault === 'object') _equipmentFaults[type] = savedFault;
+                _equipmentCondition[type] = condition;
+                _equipmentOutput[type] = _equipmentFaults[type] ? 0 : condition / 100;
+                var isActiveDevice = (type === 'filter' || Number(_equipment[type]) > 0) && !_equipmentFaults[type];
+                _nextEquipmentCondition[type] = Math.max(0, Math.round((condition - (isActiveDevice ? _equipmentWearRates[type] : 0)) * 100) / 100);
+              });
+              function getTickEquipmentDefinition(type) {
+                var catalog = EQUIPMENT_CATALOG[type];
+                var level = Math.max(0, Math.min(catalog.levels.length - 1, Number(_equipment[type]) || 0));
+                return catalog.levels[level];
+              }
+              var _filterEquipment = getTickEquipmentDefinition('filter');
+              var _heaterEquipment = getTickEquipmentDefinition('heater');
+              var _lightEquipment = getTickEquipmentDefinition('light');
+              var _airPumpEquipment = getTickEquipmentDefinition('airPump');
+              var _equipmentTank = TANK_TYPES.find(function (candidate) { return candidate.id === _selectedTank; });
 
               // ── Plant state ──
 
@@ -15544,11 +16174,11 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var ammoniaGen = bioload * 0.02;
 
-              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * 0.05);
+              var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter));
 
               var nitriteBact = _waterChem.ammonia * 0.15;
 
-              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * 0.08);
+              var newNitrite = Math.max(0, _waterChem.nitrite + nitriteBact - _waterChem.nitrite * (0.08 + _filterEquipment.nitriteReduction * _equipmentOutput.filter));
 
               var nitrateBact = _waterChem.nitrite * 0.2;
 
@@ -15566,6 +16196,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var deltaCO2 = fishCO2Produce;
 
+              deltaO2 += _airPumpEquipment.o2Boost * _equipmentOutput.airPump;
+              deltaCO2 -= _airPumpEquipment.o2Boost * _equipmentOutput.airPump * 0.15;
               // ── Plant photosynthesis & respiration ──
 
               // Day cycle: if lights are on AND it's daytime (6-20), plants photosynthesize
@@ -15573,6 +16205,10 @@ var d = (labToolData && labToolData._aquarium) || {};
               var isDaylight = _lightsOn && (_simHour >= 6 && _simHour < 20);
 
               var plantNitrateAbsorb = 0;
+              var plantO2Produced = 0;
+              var plantCO2Consumed = 0;
+              var plantNightO2Consumed = 0;
+              var plantNightCO2Released = 0;
 
               var plantChanged = false;
 
@@ -15596,17 +16232,20 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Scaled by health, biomass, and light requirements
 
-                  var lightEff = 1.0;
+                  var lightEff = (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light;
 
-                  if (pDef.light === 'high' && _algaeLevel > 50) lightEff = 0.6; // algae blocks light
+                  if (pDef.light === 'high' && _algaeLevel > 50) lightEff *= 0.6; // algae blocks light
 
-                  if (pDef.light === 'low') lightEff = 1.0; // low-light plants always fine
+                  if (pDef.light === 'low') lightEff = Math.max(0.7, lightEff); // low-light plants tolerate basic lighting
 
                   var photoRate = healthFactor * biomassFactor * lightEff;
 
-                  deltaO2 += pDef.o2 * photoRate;
-
-                  deltaCO2 -= pDef.co2Need * photoRate;
+                  var plantO2Flow = pDef.o2 * photoRate;
+                  var plantCO2Flow = pDef.co2Need * photoRate;
+                  deltaO2 += plantO2Flow;
+                  deltaCO2 -= plantCO2Flow;
+                  plantO2Produced += plantO2Flow;
+                  plantCO2Consumed += plantCO2Flow;
 
                   plantNitrateAbsorb += pDef.nitrateAbsorb * photoRate;
 
@@ -15614,9 +16253,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Night respiration: plants consume a small amount of O2 and release CO2
 
-                  deltaO2 -= pDef.o2 * 0.15 * biomassFactor;
-
-                  deltaCO2 += pDef.co2Need * 0.1 * biomassFactor;
+                  var plantNightO2Flow = pDef.o2 * 0.15 * biomassFactor;
+                  var plantNightCO2Flow = pDef.co2Need * 0.1 * biomassFactor;
+                  deltaO2 -= plantNightO2Flow;
+                  deltaCO2 += plantNightCO2Flow;
+                  plantNightO2Consumed += plantNightO2Flow;
+                  plantNightCO2Released += plantNightCO2Flow;
 
                 }
 
@@ -15626,7 +16268,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Good conditions: adequate light, nutrients, CO2
 
-                if (isDaylight && newNitrate > 5 && _co2 > 2) {
+                if (isDaylight && lightEff > 0.4 && newNitrate > 5 && _co2 > 2) {
 
                   healthDelta += 1; // thriving
 
@@ -15634,7 +16276,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Bad: no light when needed
 
-                if (!isDaylight && pDef.light === 'high') healthDelta -= 0.5;
+                var scheduledPlantDaylight = _simHour >= 6 && _simHour < 20;
+                if (scheduledPlantDaylight && (!_lightsOn || _equipmentOutput.light <= 0)) healthDelta -= 1;
+                if (isDaylight && pDef.light === 'high' && Number(_equipment.light) < 2) healthDelta -= 0.5;
 
                 // Bad: very low nitrates (no nutrients)
 
@@ -15658,7 +16302,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 if (health > 40 && isDaylight && newNitrate > 3) {
 
-                  _plantBiomass[pId] = Math.min(pDef.maxSize, biomass + pDef.growth * healthFactor);
+                  _plantBiomass[pId] = Math.min(pDef.maxSize, biomass + pDef.growth * healthFactor * (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light);
 
                 } else if (health <= 20) {
 
@@ -15698,7 +16342,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               if (newCO2 > 25) pHdrift -= 0.03;
 
-              var tempDrift = (Math.random() - 0.5) * 0.3;
+              var ambientTemp = _selectedTank === 'coldwater' ? 68 : 72;
+              var desiredTemp = _equipment.heater > 0 && _equipmentTank ? _equipmentTank.temp : ambientTemp;
+              var effectiveHeaterStability = _heaterEquipment.tempStability * _equipmentOutput.heater;
+              var heaterCorrectionRate = _equipment.heater > 0 && _equipmentOutput.heater > 0 ? 0.05 + effectiveHeaterStability * 0.15 : 0.04;
+              var tempNoise = (Math.random() - 0.5) * 0.6 * (1 - effectiveHeaterStability * 0.85);
+              var tempDrift = (desiredTemp - _waterChem.temp) * heaterCorrectionRate + tempNoise;
 
               var newChem = {
 
@@ -15736,6 +16385,22 @@ var d = (labToolData && labToolData._aquarium) || {};
               // Declare them here (both are pure: a log clone + a tank lookup, no dependencies).
               var newLog = _eventLog.slice();
               var tank = TANK_TYPES.find(function (t) { return t.id === _selectedTank; });
+
+              // Neglected equipment can fail once condition enters the critical zone. Servicing above
+              // that zone prevents the outage; failed devices stay offline until explicitly repaired.
+              Object.keys(EQUIPMENT_CATALOG).forEach(function (type) {
+                if (_equipmentFaults[type]) return;
+                var isActiveDevice = type === 'filter' || Number(_equipment[type]) > 0;
+                var condition = _nextEquipmentCondition[type];
+                if (!isActiveDevice || condition > 15) return;
+                var definition = getTickEquipmentDefinition(type);
+                var baseFailureChance = typeof definition.failChance === 'number' ? definition.failChance : _equipmentFailureRates[type];
+                var conditionRisk = Math.max(0, Math.min(1, (16 - condition) / 16));
+                if (Math.random() >= baseFailureChance * conditionRisk) return;
+                var failedCatalog = EQUIPMENT_CATALOG[type];
+                _equipmentFaults[type] = { tick: newTick, reason: 'Low-condition failure' };
+                newLog.push({ tick: newTick, msg: '\u26D4 ' + failedCatalog.name + ' failed at ' + Math.round(condition) + '% condition. Output is offline until repaired.' });
+              });
 
               // ═══ DAILY COIN REWARD (when day advances) ═══
               if (newHour === 0) {
@@ -15820,7 +16485,15 @@ var d = (labToolData && labToolData._aquarium) || {};
               var sickChanged = false;
 
               var susceptibleIndexes = _tankFish.map(function (fId, index) { return index; }).filter(function (index) { return !_quarantinedFish[_fishInstanceIds[index]]; });
-              if (_waterChem.ammonia > 0.8 && Math.random() < 0.15 && susceptibleIndexes.length > 0) {
+              var environmentalDiseasePressure = 0;
+              if (newChem.ammonia >= 0.25) environmentalDiseasePressure += Math.min(0.16, newChem.ammonia * 0.08);
+              if (newChem.nitrite >= 0.1) environmentalDiseasePressure += Math.min(0.12, newChem.nitrite * 0.1);
+              if (newChem.dissolvedO2 < 5) environmentalDiseasePressure += Math.min(0.12, (5 - newChem.dissolvedO2) * 0.03);
+              var existingStressKeys = Object.keys(_fishStress || {});
+              var averageExistingStress = existingStressKeys.length ? existingStressKeys.reduce(function (sum, fishId) { return sum + (_fishStress[fishId] || 0); }, 0) / existingStressKeys.length : 0;
+              if (averageExistingStress > 60) environmentalDiseasePressure += 0.05;
+              environmentalDiseasePressure = Math.min(0.35, environmentalDiseasePressure);
+              if (environmentalDiseasePressure > 0 && Math.random() < environmentalDiseasePressure && susceptibleIndexes.length > 0) {
 
                 var victimIndex = susceptibleIndexes[Math.floor(Math.random() * susceptibleIndexes.length)];
                 var victim = _fishInstanceIds[victimIndex];
@@ -15892,11 +16565,50 @@ var d = (labToolData && labToolData._aquarium) || {};
               }
 
               var newStress = Object.assign({}, _fishStress);
+              var habitatPlantBiomass = _tankPlants.reduce(function (sum, plantId) { return sum + (_plantBiomass[plantId] || 0); }, 0);
 
               _tankFish.forEach(function (fId, idx) {
 
                 var fishKey = _fishInstanceIds[idx]; var hunger = newHunger[fishKey] !== undefined ? newHunger[fishKey] : 50;
                 if (_quarantinedFish[fishKey]) newStress[fishKey] = Math.max(0, (newStress[fishKey] || 0) - 4);
+                if (!_quarantinedFish[fishKey]) {
+                  var environmentSpecies = species.find(function (candidate) { return candidate.id === fId; });
+                  var environmentStressDelta = 0;
+                  var environmentStressReasons = [];
+                  if (newChem.dissolvedO2 < 5) {
+                    environmentStressDelta += newChem.dissolvedO2 < 2 ? 8 : 3;
+                    environmentStressReasons.push('low oxygen');
+                  }
+                  if (newChem.ammonia >= 0.25) {
+                    environmentStressDelta += newChem.ammonia >= 1 ? 8 : 3;
+                    environmentStressReasons.push('ammonia');
+                  }
+                  if (newChem.nitrite >= 0.1) {
+                    environmentStressDelta += newChem.nitrite >= 0.5 ? 7 : 3;
+                    environmentStressReasons.push('nitrite');
+                  }
+                  if (environmentSpecies && environmentSpecies.tempRange && (newChem.temp < environmentSpecies.tempRange[0] || newChem.temp > environmentSpecies.tempRange[1])) {
+                    environmentStressDelta += 3;
+                    environmentStressReasons.push('temperature');
+                  }
+                  if (environmentSpecies && environmentSpecies.pHRange && (newChem.pH < environmentSpecies.pHRange[0] || newChem.pH > environmentSpecies.pHRange[1])) {
+                    environmentStressDelta += 3;
+                    environmentStressReasons.push('pH');
+                  }
+                  if (habitatPlantBiomass > 6) environmentStressDelta -= 2;
+                  else if (habitatPlantBiomass > 3) environmentStressDelta -= 1;
+                  if (environmentStressReasons.length === 0) environmentStressDelta -= 1;
+                  var previousEnvironmentStress = newStress[fishKey] || 0;
+                  newStress[fishKey] = Math.max(0, Math.min(100, previousEnvironmentStress + environmentStressDelta));
+                  if (previousEnvironmentStress < 60 && newStress[fishKey] >= 60 && environmentStressReasons.length > 0) {
+                    newFishCareLog[fishKey] = (newFishCareLog[fishKey] || []).concat([{
+                      tick: newTick,
+                      day: newDay,
+                      hour: newHour,
+                      msg: 'Environmental stress: ' + environmentStressReasons.join(', ')
+                    }]).slice(-8);
+                  }
+                }
 
                 if (hunger >= 100 && Math.random() < 0.25) {
 
@@ -16069,7 +16781,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               if (_lightsOn) {
 
-                var algaeGrowth = (0.5 + (newChem.nitrate > 40 ? 1 : 0) + (newChem.nitrate > 60 ? 0.5 : 0)) * (1 - plantSuppression);
+                var effectiveAlgaeMultiplier = 0.2 + (_lightEquipment.algaeMult - 0.2) * _equipmentOutput.light;
+                var algaeGrowth = (0.5 + (newChem.nitrate > 40 ? 1 : 0) + (newChem.nitrate > 60 ? 0.5 : 0)) * (1 - plantSuppression) * effectiveAlgaeMultiplier;
 
                 newAlgae = Math.min(100, newAlgae + algaeGrowth);
 
@@ -16078,6 +16791,15 @@ var d = (labToolData && labToolData._aquarium) || {};
                 newAlgae = Math.max(0, newAlgae - 0.3);
 
               }
+
+              var herbivoreGrazingLoad = finalTankFish.reduce(function (sum, speciesId, fishIndex) {
+                if (_quarantinedFish[finalFishInstanceIds[fishIndex]]) return sum;
+                var grazingSpecies = species.find(function (candidate) { return candidate.id === speciesId; });
+                if (!grazingSpecies || !grazingSpecies.diet || !/herbivore|algae|biofilm|vegetation|detritivore/i.test(grazingSpecies.diet)) return sum;
+                return sum + (grazingSpecies.load || 1);
+              }, 0);
+              var algaeGrazed = Math.min(newAlgae, herbivoreGrazingLoad * 0.06);
+              newAlgae = Math.max(0, newAlgae - algaeGrazed);
 
               // Low O2 events
 
@@ -16088,6 +16810,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               }
 
               // Plant death event
+              var decompositionAmmonia = 0;
 
               _tankPlants.forEach(function (pId) {
 
@@ -16102,6 +16825,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   // Dead plant biomass releases ammonia
 
                   newChem.ammonia = Math.min(5, newChem.ammonia + 0.3);
+                  decompositionAmmonia += 0.3;
 
                   plantChanged = true;
 
@@ -16394,6 +17118,65 @@ var d = (labToolData && labToolData._aquarium) || {};
               var finalFishHealth = {};
               finalTankFish.forEach(function (speciesId) { finalFishHealth[speciesId] = (finalFishHealth[speciesId] || 0) + 1; });
 
+              var exchangeShelterBonus = _totalPlantBiomass > 6 ? 0.25 : _totalPlantBiomass > 3 ? 0.15 : 0;
+              var exchangeReasons = [];
+              if (bioload > 0) exchangeReasons.push('\uD83D\uDC1F Fish bioload added ' + ammoniaGen.toFixed(3) + ' ammonia, used ' + fishO2Consume.toFixed(3) + ' O\u2082, and released ' + fishCO2Produce.toFixed(3) + ' CO\u2082.');
+              if (isDaylight && plantO2Produced > 0) exchangeReasons.push('\uD83C\uDF3F Daylight plants produced ' + plantO2Produced.toFixed(3) + ' O\u2082, used ' + plantCO2Consumed.toFixed(3) + ' CO\u2082, and removed ' + plantNitrateAbsorb.toFixed(3) + ' nitrate.');
+              if (!isDaylight && plantNightO2Consumed > 0) exchangeReasons.push('\uD83C\uDF19 Plant respiration used ' + plantNightO2Consumed.toFixed(3) + ' O\u2082 and released ' + plantNightCO2Released.toFixed(3) + ' CO\u2082.');
+              if (nitrateBact > 0) exchangeReasons.push('\uD83E\uDDA0 Nitrifying bacteria converted nitrogen waste toward nitrate at ' + nitrateBact.toFixed(3) + ' this tick.');
+              if (plantSuppression > 0) exchangeReasons.push('\uD83C\uDF3F Plant biomass suppressed modeled algae growth by ' + Math.round(plantSuppression * 100) + '%.');
+              if (algaeGrazed > 0) exchangeReasons.push('\uD83D\uDC1F Grazing organisms consumed ' + algaeGrazed.toFixed(3) + ' modeled algae biomass.');
+              if (exchangeShelterBonus > 0) exchangeReasons.push('\uD83E\uDEB9 Dense plants added ' + Math.round(exchangeShelterBonus * 100) + ' percentage points to modeled fry survival.');
+              if (decompositionAmmonia > 0) exchangeReasons.push('\uD83E\uDD40 Decomposing plant matter released ' + decompositionAmmonia.toFixed(2) + ' ammonia.');
+              if (newChem.dissolvedO2 < 4) exchangeReasons.push('\u26A0\uFE0F Low dissolved oxygen is reducing fish vitality and increasing environmental stress.');
+              if (newChem.ammonia >= 0.25 || newChem.nitrite >= 0.1) exchangeReasons.push('\u26A0\uFE0F Nitrogen toxins are reducing fish vitality and increasing disease pressure.');
+              if (exchangeReasons.length === 0) exchangeReasons.push('\u2705 Exchange rates are balanced; no strong stressor dominated this tick.');
+
+              var ecosystemExchangeSnapshot = {
+                tick: newTick,
+                day: newDay,
+                hour: newHour,
+                sourceHour: _simHour,
+                phase: isDaylight ? 'day' : 'night',
+                fish: {
+                  bioload: Math.round(bioload * 100) / 100,
+                  ammoniaProduced: Math.round(ammoniaGen * 1000) / 1000,
+                  oxygenConsumed: Math.round(fishO2Consume * 1000) / 1000,
+                  co2Released: Math.round(fishCO2Produce * 1000) / 1000
+                },
+                plants: {
+                  biomass: Math.round(_totalPlantBiomass * 100) / 100,
+                  oxygenProduced: Math.round(plantO2Produced * 1000) / 1000,
+                  co2Consumed: Math.round(plantCO2Consumed * 1000) / 1000,
+                  nitrateConsumed: Math.round(plantNitrateAbsorb * 1000) / 1000,
+                  nightOxygenConsumed: Math.round(plantNightO2Consumed * 1000) / 1000,
+                  nightCO2Released: Math.round(plantNightCO2Released * 1000) / 1000,
+                  algaeSuppression: Math.round(plantSuppression * 1000) / 1000,
+                  shelterBonus: exchangeShelterBonus,
+                  decompositionAmmonia: Math.round(decompositionAmmonia * 100) / 100
+                },
+                algae: {
+                  level: Math.round(newAlgae * 10) / 10,
+                  grazed: Math.round(algaeGrazed * 1000) / 1000,
+                  grazerLoad: Math.round(herbivoreGrazingLoad * 100) / 100
+                },
+                bacteria: {
+                  ammoniaToNitrite: Math.round(nitriteBact * 1000) / 1000,
+                  nitriteToNitrate: Math.round(nitrateBact * 1000) / 1000
+                },
+                atmosphere: {
+                  oxygenExchange: Math.round(surfaceExchange * 1000) / 1000
+                },
+                chemistryDelta: {
+                  ammonia: Math.round((newChem.ammonia - _waterChem.ammonia) * 100) / 100,
+                  nitrite: Math.round((newChem.nitrite - _waterChem.nitrite) * 100) / 100,
+                  nitrate: Math.round((newChem.nitrate - _waterChem.nitrate) * 10) / 10,
+                  dissolvedO2: Math.round((newChem.dissolvedO2 - _dissolvedO2) * 100) / 100,
+                  co2: Math.round((newChem.co2 - _co2) * 100) / 100
+                },
+                reasons: exchangeReasons.slice(0, 8)
+              };
+
               // Build final update
 
               var tickUpdate = {
@@ -16412,6 +17195,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                 algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress,
 
                 quarantinedFish: _quarantinedFish,
+                equipmentCondition: _nextEquipmentCondition,
+                equipmentFaults: _equipmentFaults,
+                lastEcosystemExchange: ecosystemExchangeSnapshot,
               };
 
               if (sickChanged) tickUpdate.fishSickness = newSickness;
@@ -16943,26 +17729,170 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
             // ═══ TUTORIAL OVERLAY ═══
-            !tutorialDismissed && tutorialStep < TUTORIAL_STEPS.length && React.createElement("div", {
-              className: "bg-gradient-to-r from-cyan-500 to-sky-500 rounded-xl p-3 text-white mb-2",
+            !tutorialDismissed && tutorialStep < TUTORIAL_STEPS.length && React.createElement("section", {
+              role: "region",
+              'aria-labelledby': "aquarium-learning-path-title",
+              className: "mb-2 rounded-2xl border border-cyan-300 bg-gradient-to-br from-cyan-50 via-white to-sky-50 p-3 shadow-sm",
               style: { animation: 'stemCardIn 0.3s ease-out' }
             },
-              React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-                React.createElement("span", { className: "text-lg" }, "\uD83D\uDCA1"),
-                React.createElement("span", { className: "font-bold text-sm" }, TUTORIAL_STEPS[tutorialStep].title),
-                React.createElement("span", { className: "ml-auto text-[11px] opacity-70" }, (tutorialStep + 1) + "/" + TUTORIAL_STEPS.length)
+              React.createElement("div", { className: "mb-2 flex flex-wrap items-center gap-2" },
+                React.createElement("span", { className: "text-xl", 'aria-hidden': "true" }, "\uD83C\uDF93"),
+                React.createElement("div", { className: "min-w-0 flex-1" },
+                  React.createElement("h3", { id: "aquarium-learning-path-title", className: "text-sm font-black text-cyan-950" }, "Guided Aquarium Learning Path"),
+                  React.createElement("p", { className: "text-[10px] text-cyan-800" }, "Learn by changing the ecosystem, observing evidence, and explaining the result.")
+                ),
+                React.createElement("span", { className: "rounded-full bg-cyan-100 px-2 py-1 text-[10px] font-bold text-cyan-800" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length + " evidence checks")
               ),
-              React.createElement("p", { className: "text-xs opacity-90 mb-2" }, TUTORIAL_STEPS[tutorialStep].msg),
-              React.createElement("div", { className: "flex gap-2" },
-                React.createElement("button", { "aria-label": __alloT('stem.aquarium.skip_tutorial', "Skip tutorial"),
+              React.createElement("div", {
+                role: "progressbar",
+                'aria-label': "Aquarium learning path progress",
+                'aria-valuemin': 0,
+                'aria-valuemax': 100,
+                'aria-valuenow': tutorialProgressPercent,
+                className: "mb-3 h-2 overflow-hidden rounded-full bg-cyan-100"
+              }, React.createElement("div", { className: "h-full rounded-full bg-cyan-600 transition-all", style: { width: tutorialProgressPercent + "%" } })),
+              React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white p-3" },
+                React.createElement("div", { className: "mb-2 flex items-start justify-between gap-2" },
+                  React.createElement("h4", { className: "text-sm font-black text-slate-900" }, currentTutorialLesson.title),
+                  React.createElement("span", { className: "shrink-0 rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600" }, "Lesson " + (tutorialStep + 1) + " of " + TUTORIAL_STEPS.length)
+                ),
+                React.createElement("p", { className: "mb-2 rounded-lg bg-cyan-50 p-2 text-[11px] font-semibold leading-relaxed text-cyan-950" }, currentTutorialLesson.concept),
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2" },
+                  React.createElement("div", { className: "rounded-lg border border-blue-100 bg-blue-50 p-2 text-[10px] leading-relaxed text-blue-950" },
+                    React.createElement("strong", { className: "block text-blue-800" }, "Do this"),
+                    currentTutorialLesson.objective
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50 p-2 text-[10px] leading-relaxed text-violet-950" },
+                    React.createElement("strong", { className: "block text-violet-800" }, "Why it matters"),
+                    currentTutorialLesson.why
+                  )
+                ),
+                React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed text-slate-600" },
+                  React.createElement("strong", { className: "text-slate-800" }, "Observe: "),
+                  currentTutorialLesson.observe
+                ),
+                React.createElement("div", {
+                  role: "status",
+                  'aria-live': "polite",
+                  className: "mt-2 rounded-lg border px-2 py-1.5 text-[10px] font-bold " + (currentTutorialEvidence.complete ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-amber-300 bg-amber-50 text-amber-900")
+                }, (currentTutorialEvidence.complete ? "\u2705 Evidence ready: " : "\uD83D\uDD0E Evidence needed: ") + currentTutorialEvidence.label)
+              ),
+              React.createElement("button", {
+                type: "button",
+                'aria-expanded': tutorialOutlineOpen,
+                'aria-controls': "aquarium-learning-outline",
+                onClick: function () { upd('tutorialOutlineOpen', !tutorialOutlineOpen); },
+                className: "mt-2 rounded-lg px-2 py-1 text-[10px] font-bold text-cyan-800 hover:bg-cyan-100"
+              }, tutorialOutlineOpen ? "Hide all lessons" : "View all lessons"),
+              tutorialOutlineOpen && React.createElement("ol", {
+                id: "aquarium-learning-outline",
+                role: "list",
+                className: "mt-1 grid gap-1 sm:grid-cols-2"
+              }, TUTORIAL_STEPS.map(function (lesson, lessonIndex) {
+                var lessonRecorded = !!tutorialProgress[lesson.id];
+                return React.createElement("li", { key: lesson.id },
+                  React.createElement("button", {
+                    type: "button",
+                    onClick: function () { selectTutorialLesson(lessonIndex); },
+                    'aria-current': lessonIndex === tutorialStep ? "step" : undefined,
+                    className: "w-full rounded-lg border px-2 py-1.5 text-left text-[10px] font-bold " + (lessonIndex === tutorialStep ? "border-cyan-500 bg-cyan-100 text-cyan-950" : lessonRecorded ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50")
+                  }, (lessonRecorded ? "\u2705 " : lessonIndex === tutorialStep ? "\u25B6 " : "\u25CB ") + lesson.title)
+                );
+              })),
+
+              React.createElement("button", {
+                type: "button",
+                'aria-expanded': tutorialNotebookOpen,
+                'aria-controls': "aquarium-lesson-notebook",
+                onClick: function () { upd('tutorialNotebookOpen', !tutorialNotebookOpen); },
+                className: "mt-2 flex w-full items-center justify-between rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[10px] font-bold text-indigo-900 hover:bg-indigo-100"
+              },
+                React.createElement("span", null, "\uD83D\uDCD3 Lesson lab notebook"),
+                React.createElement("span", { className: "rounded-full bg-white px-2 py-0.5" }, tutorialNotebookSavedCount + "/" + TUTORIAL_STEPS.length + " lessons with notes")
+              ),
+              tutorialNotebookOpen && React.createElement("div", {
+                id: "aquarium-lesson-notebook",
+                role: "group",
+                'aria-label': currentTutorialLesson.title + " lab notebook",
+                className: "mt-2 space-y-2 rounded-xl border border-indigo-200 bg-white p-3"
+              },
+                React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                  React.createElement("div", null,
+                    React.createElement("h5", { className: "text-[11px] font-black text-indigo-950" }, "Predict \u2192 Observe \u2192 Explain"),
+                    React.createElement("p", { className: "text-[9px] text-slate-500" }, "Notes autosave. Type, use your device's dictation, or leave them blank; writing is not required to operate the simulation.")
+                  ),
+                  React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700" }, "Autosaved")
+                ),
+                React.createElement("label", { htmlFor: "aquarium-note-prediction", className: "block text-[10px] font-black text-slate-800" }, "1. Prediction"),
+                React.createElement("p", { id: "aquarium-note-prediction-prompt", className: "text-[9px] leading-relaxed text-slate-600" }, currentTutorialLesson.predict),
+                React.createElement("textarea", {
+                  id: "aquarium-note-prediction",
+                  value: currentTutorialNote.prediction,
+                  maxLength: 2000,
+                  rows: 2,
+                  'aria-describedby': "aquarium-note-prediction-prompt",
+                  onChange: function (event) { updateTutorialNote('prediction', event.target.value); },
+                  placeholder: "I predict... because...",
+                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[10px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                }),
+                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                  React.createElement("label", { htmlFor: "aquarium-note-observation", className: "text-[10px] font-black text-slate-800" }, "2. Observation and evidence"),
+                  React.createElement("button", {
+                    type: "button",
+                    onClick: captureTutorialObservation,
+                    className: "rounded-lg border border-indigo-400 bg-indigo-50 px-2 py-1 text-[9px] font-bold text-indigo-800 hover:bg-indigo-100"
+                  }, "\uD83D\uDCCB Capture live readings")
+                ),
+                React.createElement("textarea", {
+                  id: "aquarium-note-observation",
+                  value: currentTutorialNote.observation,
+                  maxLength: 2000,
+                  rows: 3,
+                  onChange: function (event) { updateTutorialNote('observation', event.target.value); },
+                  placeholder: "I observed... The reading changed from... to...",
+                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 font-mono text-[9px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                }),
+                React.createElement("label", { htmlFor: "aquarium-note-explanation", className: "block text-[10px] font-black text-slate-800" }, "3. Claim, evidence, and reasoning"),
+                React.createElement("p", { id: "aquarium-note-explanation-prompt", className: "text-[9px] leading-relaxed text-slate-600" }, currentTutorialLesson.explain),
+                React.createElement("textarea", {
+                  id: "aquarium-note-explanation",
+                  value: currentTutorialNote.explanation,
+                  maxLength: 2000,
+                  rows: 3,
+                  'aria-describedby': "aquarium-note-explanation-prompt",
+                  onChange: function (event) { updateTutorialNote('explanation', event.target.value); },
+                  placeholder: "Claim: ... Evidence: ... Reasoning: ...",
+                  className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[10px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                }),
+                React.createElement("p", { className: "text-right text-[9px] text-slate-400" }, (currentTutorialNote.prediction.length + currentTutorialNote.observation.length + currentTutorialNote.explanation.length) + " characters saved for this lesson")
+              ),
+              React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
+                React.createElement("button", {
+                  type: "button",
+                  disabled: tutorialStep === 0,
+                  onClick: previousTutorial,
+                  className: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                }, "\u2190 Previous"),
+                React.createElement("button", {
+                  type: "button",
                   onClick: advanceTutorial,
-                  className: "px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all"
-                }, tutorialStep < TUTORIAL_STEPS.length - 1 ? "Next \u2192" : "Got it!"),
-                React.createElement("button", { "aria-label": __alloT('stem.aquarium.skip_tutorial_2', "Skip tutorial"),
+                  className: "rounded-lg border px-3 py-1.5 text-[10px] font-black " + (currentTutorialEvidence.complete ? "border-cyan-700 bg-cyan-700 text-white hover:bg-cyan-800" : "border-amber-500 bg-amber-50 text-amber-900 hover:bg-amber-100")
+                }, currentTutorialEvidence.complete ? (tutorialStep === TUTORIAL_STEPS.length - 1 ? "Record evidence & finish" : "Record evidence & continue \u2192") : "Check objective"),
+                React.createElement("button", {
+                  type: "button",
                   onClick: dismissTutorial,
-                  className: "px-3 py-1 hover:bg-white/10 rounded-lg text-[11px] opacity-70 transition-all"
-                }, __alloT('stem.aquarium.skip_tutorial_3', "Skip tutorial"))
+                  className: "rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100"
+                }, "Hide learning path")
               )
+            ),
+            tutorialDismissed && React.createElement("button", {
+              type: "button",
+              onClick: resumeTutorial,
+              'aria-label': "Resume Aquarium guided learning path, " + tutorialCompletedCount + " of " + TUTORIAL_STEPS.length + " evidence checks recorded",
+              className: "mb-2 flex w-full items-center justify-between rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-left text-[11px] font-bold text-cyan-900 hover:bg-cyan-100"
+            },
+              React.createElement("span", null, "\uD83C\uDF93 " + (tutorialCompletedCount === TUTORIAL_STEPS.length ? "Review completed learning path" : "Resume guided learning path")),
+              React.createElement("span", { className: "rounded-full bg-white px-2 py-0.5 text-[10px]" }, tutorialCompletedCount + "/" + TUTORIAL_STEPS.length)
             ),
 
             // ═══ ANATOMY VIEWER OVERLAY ═══
@@ -17385,6 +18315,114 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
+              var ecosystemPlantTotals = {
+                biomass: 0,
+                dayOxygen: 0,
+                dayCO2: 0,
+                dayNitrate: 0,
+                nightOxygen: 0,
+                nightCO2: 0
+              };
+              tankPlants.forEach(function (plantId) {
+                var plantDefinition = plantCatalog.find(function (candidate) { return candidate.id === plantId; });
+                if (!plantDefinition) return;
+                var focusMatchesPlant = ecosystemFocusType !== 'plant' || !ecosystemFocusId || ecosystemFocusId === plantId;
+                if (!focusMatchesPlant) return;
+                var currentPlantHealth = plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80;
+                var currentPlantBiomass = plantBiomass[plantId] !== undefined ? plantBiomass[plantId] : 1;
+                var currentPlantHealthFactor = currentPlantHealth / 100;
+                var currentPlantBiomassFactor = currentPlantBiomass / plantDefinition.maxSize;
+                var currentPlantLightEfficiency = (0.5 + currentLightDefinition.plantBoost) * currentLightOutput;
+                if (plantDefinition.light === 'low') currentPlantLightEfficiency = Math.max(0.7, currentPlantLightEfficiency);
+                if (plantDefinition.light === 'high' && algaeLevel > 50) currentPlantLightEfficiency *= 0.6;
+                var currentPlantPhotoRate = currentPlantHealthFactor * currentPlantBiomassFactor * currentPlantLightEfficiency;
+                ecosystemPlantTotals.biomass += currentPlantBiomass;
+                ecosystemPlantTotals.dayOxygen += plantDefinition.o2 * currentPlantPhotoRate;
+                ecosystemPlantTotals.dayCO2 += plantDefinition.co2Need * currentPlantPhotoRate;
+                ecosystemPlantTotals.dayNitrate += plantDefinition.nitrateAbsorb * currentPlantPhotoRate;
+                ecosystemPlantTotals.nightOxygen += plantDefinition.o2 * 0.15 * currentPlantBiomassFactor;
+                ecosystemPlantTotals.nightCO2 += plantDefinition.co2Need * 0.1 * currentPlantBiomassFactor;
+              });
+
+              var ecosystemFocusedFishLoad = tankFish.reduce(function (sum, speciesId, fishIndex) {
+                var fishInstanceId = fishInstanceIds[fishIndex];
+                if (ecosystemFocusType === 'fish' && ecosystemFocusId && ecosystemFocusId !== fishInstanceId) return sum;
+                var fishSpeciesDefinition = species.find(function (candidate) { return candidate.id === speciesId; });
+                return sum + (fishSpeciesDefinition ? fishSpeciesDefinition.load : 0);
+              }, 0);
+              var ecosystemFishOxygen = ecosystemFocusedFishLoad * 0.05;
+              var ecosystemFishCO2 = ecosystemFocusedFishLoad * 0.04;
+              var ecosystemFishAmmonia = ecosystemFocusedFishLoad * 0.02;
+              var ecosystemViewData = {
+                plantOxygen: 0,
+                plantCO2: 0,
+                plantNitrate: 0,
+                plantOxygenUse: 0,
+                fishOxygen: ecosystemFishOxygen,
+                fishCO2: ecosystemFishCO2,
+                fishAmmonia: ecosystemFishAmmonia,
+                phaseLabel: 'Current estimate'
+              };
+              if (ecosystemExchangeView === 'day') {
+                ecosystemViewData.plantOxygen = ecosystemPlantTotals.dayOxygen;
+                ecosystemViewData.plantCO2 = ecosystemPlantTotals.dayCO2;
+                ecosystemViewData.plantNitrate = ecosystemPlantTotals.dayNitrate;
+                ecosystemViewData.phaseLabel = 'Daylight hourly rate';
+              } else if (ecosystemExchangeView === 'night') {
+                ecosystemViewData.plantOxygenUse = ecosystemPlantTotals.nightOxygen;
+                ecosystemViewData.plantCO2 = -ecosystemPlantTotals.nightCO2;
+                ecosystemViewData.phaseLabel = 'Night respiration hourly rate';
+              } else if (ecosystemExchangeView === 'net') {
+                ecosystemViewData.plantOxygen = (ecosystemPlantTotals.dayOxygen * 14 - ecosystemPlantTotals.nightOxygen * 10) / 24;
+                ecosystemViewData.plantCO2 = (ecosystemPlantTotals.dayCO2 * 14 - ecosystemPlantTotals.nightCO2 * 10) / 24;
+                ecosystemViewData.plantNitrate = ecosystemPlantTotals.dayNitrate * 14 / 24;
+                ecosystemViewData.phaseLabel = '24-hour net average';
+              } else if (lastEcosystemExchange && !ecosystemFocusId) {
+                ecosystemViewData.plantOxygen = lastEcosystemExchange.plants ? lastEcosystemExchange.plants.oxygenProduced || 0 : 0;
+                ecosystemViewData.plantOxygenUse = lastEcosystemExchange.plants ? lastEcosystemExchange.plants.nightOxygenConsumed || 0 : 0;
+                ecosystemViewData.plantCO2 = lastEcosystemExchange.plants ? (lastEcosystemExchange.phase === 'night' ? -(lastEcosystemExchange.plants.nightCO2Released || 0) : lastEcosystemExchange.plants.co2Consumed || 0) : 0;
+                ecosystemViewData.plantNitrate = lastEcosystemExchange.plants ? lastEcosystemExchange.plants.nitrateConsumed || 0 : 0;
+                ecosystemViewData.fishOxygen = lastEcosystemExchange.fish ? lastEcosystemExchange.fish.oxygenConsumed || 0 : ecosystemFishOxygen;
+                ecosystemViewData.fishCO2 = lastEcosystemExchange.fish ? lastEcosystemExchange.fish.co2Released || 0 : ecosystemFishCO2;
+                ecosystemViewData.fishAmmonia = lastEcosystemExchange.fish ? lastEcosystemExchange.fish.ammoniaProduced || 0 : ecosystemFishAmmonia;
+                ecosystemViewData.phaseLabel = 'Last tick: ' + lastEcosystemExchange.phase;
+              } else if (lightsOn && simHour >= 6 && simHour < 20) {
+                ecosystemViewData.plantOxygen = ecosystemPlantTotals.dayOxygen;
+                ecosystemViewData.plantCO2 = ecosystemPlantTotals.dayCO2;
+                ecosystemViewData.plantNitrate = ecosystemPlantTotals.dayNitrate;
+                ecosystemViewData.phaseLabel = 'Live daylight estimate';
+              } else {
+                ecosystemViewData.plantOxygenUse = ecosystemPlantTotals.nightOxygen;
+                ecosystemViewData.plantCO2 = -ecosystemPlantTotals.nightCO2;
+                ecosystemViewData.phaseLabel = 'Live night estimate';
+              }
+
+              var ecosystemAllPlantBiomass = tankPlants.reduce(function (sum, plantId) { return sum + (plantBiomass[plantId] || 0); }, 0);
+              var ecosystemGrazerCount = tankFish.reduce(function (count, speciesId) {
+                var grazerSpecies = species.find(function (candidate) { return candidate.id === speciesId; });
+                return count + (grazerSpecies && grazerSpecies.diet && /herbivore|algae|biofilm|vegetation|detritivore/i.test(grazerSpecies.diet) ? 1 : 0);
+              }, 0);
+              var ecosystemAlgaeGrazed = lastEcosystemExchange && lastEcosystemExchange.algae ? lastEcosystemExchange.algae.grazed || 0 : 0;
+              var ecosystemShelterBonus = ecosystemAllPlantBiomass > 6 ? 25 : ecosystemAllPlantBiomass > 3 ? 15 : 0;
+              var ecosystemAlgaeSuppression = Math.round(Math.min(0.8, ecosystemAllPlantBiomass * 0.08) * 100);
+              var withoutPlantsNextOxygen = Math.max(0, waterChem.dissolvedO2 - Math.max(0, ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse));
+              var withoutPlantsNextNitrate = waterChem.nitrate + Math.max(0, ecosystemViewData.plantNitrate);
+              var withoutFishNextAmmonia = Math.max(0, waterChem.ammonia - ecosystemViewData.fishAmmonia);
+              var ecosystemFocusLabel = 'Whole ecosystem';
+              if (ecosystemFocusType === 'plant' && ecosystemFocusId) {
+                var focusedPlantSpecies = plantCatalog.find(function (candidate) { return candidate.id === ecosystemFocusId; });
+                ecosystemFocusLabel = focusedPlantSpecies ? focusedPlantSpecies.name : 'Selected plant';
+              } else if (ecosystemFocusType === 'fish' && ecosystemFocusId) {
+                var focusedFishIndex = fishInstanceIds.indexOf(ecosystemFocusId);
+                var focusedFishSpeciesId = focusedFishIndex >= 0 ? tankFish[focusedFishIndex] : null;
+                var focusedFishSpecies = species.find(function (candidate) { return candidate.id === focusedFishSpeciesId; });
+                ecosystemFocusLabel = fishNames[ecosystemFocusId] || (focusedFishSpecies ? focusedFishSpecies.name : 'Selected fish');
+              } else if (ecosystemFocusType !== 'all') {
+                ecosystemFocusLabel = ecosystemFocusType.charAt(0).toUpperCase() + ecosystemFocusType.slice(1);
+              }
+              var ecosystemCausalReasons = lastEcosystemExchange && Array.isArray(lastEcosystemExchange.reasons)
+                ? lastEcosystemExchange.reasons
+                : ['Run one aquarium-hour tick to capture exact causal exchange evidence.'];
               return React.createElement("div", { className: "space-y-3" },
 
                 // ── Pre-game brief: nitrogen cycle + goals ──
@@ -17729,6 +18767,198 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
+                // ?? Living ecosystem exchange network ??
+                React.createElement("section", {
+                  className: "rounded-2xl border border-teal-300 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 p-4 text-white shadow-xl",
+                  'aria-labelledby': "aquarium-exchange-network-title"
+                },
+                  React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                    React.createElement("div", null,
+                      React.createElement("h3", { id: "aquarium-exchange-network-title", className: "text-sm font-black" }, "\uD83C\uDF0D Living Ecosystem Exchange Network"),
+                      React.createElement("p", { className: "mt-0.5 text-[10px] text-cyan-100" }, "Follow matter, energy, shelter, and health through the whole tank.")
+                    ),
+                    React.createElement("div", { className: "rounded-lg border border-cyan-400/30 bg-black/20 px-2 py-1 text-right" },
+                      React.createElement("div", { className: "text-[8px] font-bold uppercase tracking-wider text-cyan-300" }, "Focus"),
+                      React.createElement("div", { className: "text-[10px] font-black text-white" }, ecosystemFocusLabel)
+                    )
+                  ),
+
+                  React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-1", role: "group", 'aria-label': "Exchange time view" },
+                    [{ id: 'live', label: '\u25CF Live tick' }, { id: 'day', label: '\u2600\uFE0F Day' }, { id: 'night', label: '\uD83C\uDF19 Night' }, { id: 'net', label: '\uD83D\uDCCA 24h net' }].map(function (viewOption) {
+                      return React.createElement("button", {
+                        key: viewOption.id,
+                        type: "button",
+                        onClick: function () { upd('ecosystemExchangeView', viewOption.id); },
+                        'aria-pressed': ecosystemExchangeView === viewOption.id,
+                        className: "rounded-full border px-2 py-1 text-[9px] font-black transition-all " + (ecosystemExchangeView === viewOption.id ? "border-cyan-300 bg-cyan-400 text-slate-950" : "border-white/20 bg-white/5 text-cyan-100 hover:bg-white/10")
+                      }, viewOption.label);
+                    }),
+                    React.createElement("span", { className: "ml-1 text-[9px] font-bold text-cyan-200" }, ecosystemViewData.phaseLabel)
+                  ),
+
+                  React.createElement("div", { className: "mt-2 flex flex-wrap gap-1", role: "group", 'aria-label': "Focus an ecosystem role" },
+                    [{ id: 'all', label: 'All' }, { id: 'fish', label: '\uD83D\uDC1F Organisms' }, { id: 'plant', label: '\uD83C\uDF3F Plants' }, { id: 'bacteria', label: '\uD83E\uDDA0 Bacteria' }, { id: 'algae', label: '\uD83D\uDFE2 Algae' }, { id: 'water', label: '\uD83D\uDCA7 Water' }].map(function (focusOption) {
+                      return React.createElement("button", {
+                        key: focusOption.id,
+                        type: "button",
+                        onClick: function () { updMulti({ ecosystemFocusType: focusOption.id, ecosystemFocusId: null }); },
+                        'aria-pressed': ecosystemFocusType === focusOption.id && !ecosystemFocusId,
+                        className: "rounded-md border px-2 py-1 text-[9px] font-bold " + (ecosystemFocusType === focusOption.id && !ecosystemFocusId ? "border-emerald-300 bg-emerald-400/25 text-emerald-100" : "border-white/15 bg-black/10 text-slate-200 hover:bg-white/10")
+                      }, focusOption.label);
+                    })
+                  ),
+
+                  React.createElement("div", {
+                    className: "mt-3 overflow-x-auto rounded-xl border border-white/15 bg-black/20 p-2",
+                    role: "group",
+                    'aria-label': "Closed-loop aquarium diagram. Fish use oxygen and release carbon dioxide and ammonia. Bacteria convert ammonia and nitrite into nitrate. Plants use nitrate and carbon dioxide, produce oxygen by day, compete with algae, and provide shelter. Grazing organisms consume algae."
+                  },
+                    React.createElement("div", { className: "space-y-2", style: { minWidth: '610px' } },
+                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: function () { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: null }); },
+                          'aria-pressed': ecosystemFocusType === 'fish',
+                          className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'fish' ? "border-cyan-300 bg-cyan-400/25 ring-2 ring-cyan-300/30" : "border-cyan-500/30 bg-cyan-950/70")
+                        },
+                          React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\uD83D\uDC1F"),
+                          React.createElement("div", { className: "text-[10px] font-black" }, ecosystemFocusType === 'fish' && ecosystemFocusId ? ecosystemFocusLabel : "Organisms"),
+                          React.createElement("div", { className: "text-[8px] text-cyan-200" }, ecosystemFocusedFishLoad.toFixed(1) + " bioload")
+                        ),
+                        React.createElement("div", { className: "flex flex-col items-center justify-center rounded-lg border border-rose-400/25 bg-rose-500/10 px-1 text-center" },
+                          React.createElement("div", { className: "text-lg text-rose-300", "aria-hidden": "true" }, "\u2192"),
+                          React.createElement("div", { className: "text-[9px] font-black text-rose-200" }, "WASTE"),
+                          React.createElement("div", { className: "text-[8px] text-rose-100" }, "+" + ecosystemViewData.fishAmmonia.toFixed(3) + " NH\u2083")
+                        ),
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: function () { updMulti({ ecosystemFocusType: 'bacteria', ecosystemFocusId: null }); },
+                          'aria-pressed': ecosystemFocusType === 'bacteria',
+                          className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'bacteria' ? "border-violet-300 bg-violet-400/25 ring-2 ring-violet-300/30" : "border-violet-500/30 bg-violet-950/60")
+                        },
+                          React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\uD83E\uDDA0"),
+                          React.createElement("div", { className: "text-[10px] font-black" }, "Nitrifying bacteria"),
+                          React.createElement("div", { className: "text-[8px] text-violet-200" }, "NH\u2083 \u2192 NO\u2082 \u2192 NO\u2083")
+                        ),
+                        React.createElement("div", { className: "flex flex-col items-center justify-center rounded-lg border border-amber-400/25 bg-amber-500/10 px-1 text-center" },
+                          React.createElement("div", { className: "text-lg text-amber-300", "aria-hidden": "true" }, "\u2192"),
+                          React.createElement("div", { className: "text-[9px] font-black text-amber-200" }, "NUTRIENT"),
+                          React.createElement("div", { className: "text-[8px] text-amber-100" }, ecosystemViewData.plantNitrate.toFixed(3) + " NO\u2083 used")
+                        ),
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: function () { updMulti({ ecosystemFocusType: 'plant', ecosystemFocusId: null }); },
+                          'aria-pressed': ecosystemFocusType === 'plant',
+                          className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'plant' ? "border-emerald-300 bg-emerald-400/25 ring-2 ring-emerald-300/30" : "border-emerald-500/30 bg-emerald-950/60")
+                        },
+                          React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\uD83C\uDF3F"),
+                          React.createElement("div", { className: "text-[10px] font-black" }, ecosystemFocusType === 'plant' && ecosystemFocusId ? ecosystemFocusLabel : "Plants"),
+                          React.createElement("div", { className: "text-[8px] text-emerald-200" }, ecosystemPlantTotals.biomass.toFixed(1) + " biomass")
+                        )
+                      ),
+
+                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
+                        React.createElement("div", { className: "rounded-lg border border-emerald-400/25 bg-emerald-500/10 p-1.5 text-center" },
+                          React.createElement("div", { className: "text-[9px] font-black text-emerald-200" }, "O\u2082 + SHELTER"),
+                          React.createElement("div", { className: "text-[8px] text-emerald-100" }, "+" + ecosystemViewData.plantOxygen.toFixed(3) + " O\u2082 \u2022 +" + ecosystemShelterBonus + "% fry")
+                        ),
+                        React.createElement("div", { className: "flex items-center justify-center text-xl font-black text-emerald-300", "aria-hidden": "true" }, "\u2190"),
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: function () { updMulti({ ecosystemFocusType: 'water', ecosystemFocusId: null }); },
+                          'aria-pressed': ecosystemFocusType === 'water',
+                          className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'water' ? "border-sky-300 bg-sky-400/25 ring-2 ring-sky-300/30" : "border-sky-500/30 bg-sky-950/60")
+                        },
+                          React.createElement("div", { className: "text-xl", "aria-hidden": "true" }, "\uD83D\uDCA7"),
+                          React.createElement("div", { className: "text-[10px] font-black" }, "Shared water"),
+                          React.createElement("div", { className: "text-[8px] text-sky-200" }, waterChem.dissolvedO2.toFixed(1) + " O\u2082 \u2022 " + waterChem.co2.toFixed(1) + " CO\u2082")
+                        ),
+                        React.createElement("div", { className: "flex items-center justify-center text-xl font-black text-cyan-300", "aria-hidden": "true" }, "\u2192"),
+                        React.createElement("div", { className: "rounded-lg border border-cyan-400/25 bg-cyan-500/10 p-1.5 text-center" },
+                          React.createElement("div", { className: "text-[9px] font-black text-cyan-200" }, "CO\u2082 + RESPIRATION"),
+                          React.createElement("div", { className: "text-[8px] text-cyan-100" }, "+" + ecosystemViewData.fishCO2.toFixed(3) + " fish CO\u2082 \u2022 -" + ecosystemViewData.plantOxygenUse.toFixed(3) + " O\u2082")
+                        )
+                      ),
+
+                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
+                        React.createElement("div", { className: "rounded-lg border border-lime-400/25 bg-lime-500/10 p-1.5 text-center" },
+                          React.createElement("div", { className: "text-[9px] font-black text-lime-200" }, "PLANT COMPETITION"),
+                          React.createElement("div", { className: "text-[8px] text-lime-100" }, "-" + ecosystemAlgaeSuppression + "% algae growth")
+                        ),
+                        React.createElement("div", { className: "flex items-center justify-center text-xl font-black text-lime-300", "aria-hidden": "true" }, "\u2192"),
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: function () { updMulti({ ecosystemFocusType: 'algae', ecosystemFocusId: null }); },
+                          'aria-pressed': ecosystemFocusType === 'algae',
+                          className: "rounded-xl border p-2 text-center " + (ecosystemFocusType === 'algae' ? "border-lime-300 bg-lime-400/25 ring-2 ring-lime-300/30" : "border-lime-500/30 bg-lime-950/60")
+                        },
+                          React.createElement("div", { className: "text-xl", "aria-hidden": "true" }, "\uD83D\uDFE2"),
+                          React.createElement("div", { className: "text-[10px] font-black" }, "Algae"),
+                          React.createElement("div", { className: "text-[8px] text-lime-200" }, algaeLevel.toFixed(1) + "% level")
+                        ),
+                        React.createElement("div", { className: "flex flex-col items-center justify-center rounded-lg border border-teal-400/25 bg-teal-500/10 p-1 text-center" },
+                          React.createElement("div", { className: "text-lg font-black text-teal-300", "aria-hidden": "true" }, "\u2192"),
+                          React.createElement("div", { className: "text-[8px] text-teal-100" }, ecosystemAlgaeGrazed.toFixed(3) + " grazed")
+                        ),
+                        React.createElement("div", { className: "rounded-lg border border-teal-400/25 bg-teal-500/10 p-1.5 text-center" },
+                          React.createElement("div", { className: "text-[9px] font-black text-teal-200" }, "\uD83D\uDC1F GRAZERS"),
+                          React.createElement("div", { className: "text-[8px] text-teal-100" }, ecosystemGrazerCount + " algae/biofilm feeders")
+                        )
+                      )
+                    )
+                  ),
+
+                  ecosystemFocusId && React.createElement("div", { className: "mt-2 rounded-lg border border-fuchsia-300/30 bg-fuchsia-400/10 p-2 text-[9px] text-fuchsia-100", role: "status" },
+                    "\uD83D\uDD0E Rates are traced through ", React.createElement("strong", null, ecosystemFocusLabel), ". Other nodes remain visible so its dependencies are not taken out of context."
+                  ),
+
+                  React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
+                    React.createElement("div", { className: "rounded-lg border border-cyan-300/20 bg-white/5 p-2" },
+                      React.createElement("div", { className: "text-[8px] font-black uppercase text-cyan-300" }, "Oxygen balance"),
+                      React.createElement("div", { className: "mt-0.5 text-sm font-black " + (ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse - ecosystemViewData.fishOxygen >= 0 ? "text-emerald-300" : "text-rose-300") }, (ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse - ecosystemViewData.fishOxygen >= 0 ? "+" : "") + (ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse - ecosystemViewData.fishOxygen).toFixed(3)),
+                      React.createElement("div", { className: "text-[8px] text-slate-300" }, "plant output - respiration")
+                    ),
+                    React.createElement("div", { className: "rounded-lg border border-amber-300/20 bg-white/5 p-2" },
+                      React.createElement("div", { className: "text-[8px] font-black uppercase text-amber-300" }, "Nitrogen exchange"),
+                      React.createElement("div", { className: "mt-0.5 text-sm font-black text-amber-100" }, "+" + ecosystemViewData.fishAmmonia.toFixed(3) + " / -" + ecosystemViewData.plantNitrate.toFixed(3)),
+                      React.createElement("div", { className: "text-[8px] text-slate-300" }, "fish ammonia / plant nitrate")
+                    ),
+                    React.createElement("div", { className: "rounded-lg border border-emerald-300/20 bg-white/5 p-2" },
+                      React.createElement("div", { className: "text-[8px] font-black uppercase text-emerald-300" }, "Habitat service"),
+                      React.createElement("div", { className: "mt-0.5 text-sm font-black text-emerald-100" }, "+" + ecosystemShelterBonus + "% fry survival"),
+                      React.createElement("div", { className: "text-[8px] text-slate-300" }, ecosystemAlgaeSuppression + "% algae suppression")
+                    )
+                  ),
+
+                  React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
+                    React.createElement("div", { className: "rounded-lg border border-rose-300/25 bg-rose-500/10 p-2" },
+                      React.createElement("div", { className: "text-[9px] font-black text-rose-200" }, "Without these plants next tick"),
+                      React.createElement("div", { className: "mt-1 text-[9px] leading-relaxed text-rose-50" }, "O\u2082 about " + withoutPlantsNextOxygen.toFixed(2) + "; nitrate about " + withoutPlantsNextNitrate.toFixed(1) + "; shelter bonus 0%.")
+                    ),
+                    React.createElement("div", { className: "rounded-lg border border-sky-300/25 bg-sky-500/10 p-2" },
+                      React.createElement("div", { className: "text-[9px] font-black text-sky-200" }, "Without these organisms next tick"),
+                      React.createElement("div", { className: "mt-1 text-[9px] leading-relaxed text-sky-50" }, "Ammonia about " + withoutFishNextAmmonia.toFixed(2) + "; O\u2082 demand falls by " + ecosystemViewData.fishOxygen.toFixed(3) + ".")
+                    ),
+                    React.createElement("div", { className: "rounded-lg border border-lime-300/25 bg-lime-500/10 p-2" },
+                      React.createElement("div", { className: "text-[9px] font-black text-lime-200" }, "Competition & grazing"),
+                      React.createElement("div", { className: "mt-1 text-[9px] leading-relaxed text-lime-50" }, "Plants suppress algae " + ecosystemAlgaeSuppression + "%; " + ecosystemGrazerCount + " grazers consumed " + ecosystemAlgaeGrazed.toFixed(3) + " last tick.")
+                    )
+                  ),
+
+                  React.createElement("details", { className: "mt-3 rounded-lg border border-white/15 bg-black/20 p-2", open: lastEcosystemExchange !== null },
+                    React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-cyan-100" }, "\uD83D\uDD0D Why did the ecosystem change?"),
+                    React.createElement("ul", { className: "mt-2 space-y-1", role: "log", 'aria-live': "polite" }, ecosystemCausalReasons.map(function (reason, reasonIndex) {
+                      return React.createElement("li", { key: 'exchange-reason-' + reasonIndex, className: "rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[9px] leading-relaxed text-slate-100" }, reason);
+                    })),
+                    lastEcosystemExchange && React.createElement("div", { className: "mt-2 flex flex-wrap gap-1 text-[8px] text-slate-300" },
+                      Object.keys(lastEcosystemExchange.chemistryDelta || {}).map(function (chemistryKey) {
+                        var deltaValue = lastEcosystemExchange.chemistryDelta[chemistryKey];
+                        return React.createElement("span", { key: chemistryKey, className: "rounded bg-black/30 px-1.5 py-0.5" }, chemistryKey + " " + (deltaValue > 0 ? "+" : "") + deltaValue);
+                      })
+                    )
+                  )
+                ),
+
                 // â”€â”€ Plant Management Panel â”€â”€
 
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
@@ -17777,7 +19007,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                           key: pid + '-' + idx,
 
-                          className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100 hover:border-emerald-300 transition-all",
+                          className: "flex items-center gap-2 rounded-lg border bg-white/80 p-2 transition-all " + (selectedPlantId === pid ? "border-emerald-600 ring-2 ring-emerald-200" : "border-emerald-100 hover:border-emerald-300"),
 
                           role: 'group',
 
@@ -17785,26 +19015,24 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         },
 
-                          React.createElement("span", { className: "text-lg" }, pSpec.icon || '\uD83C\uDF3F'),
-
-                          React.createElement("div", { className: "flex-1 min-w-0" },
-
-                            React.createElement("div", { className: "text-[11px] font-bold text-emerald-800 truncate" }, pSpec.name),
-
-                            React.createElement("div", { className: "flex items-center gap-2 mt-0.5" },
-
-                              React.createElement("div", { className: "flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden", "aria-hidden": "true" },
-
-                                React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
-
-                              ),
-
-                              React.createElement("span", { className: "text-[11px] font-mono " + hpTextColor }, hp.toFixed(0) + '%'),
-
-                              React.createElement("span", { className: "text-[11px] text-slate-200" }, '\uD83C\uDF3F' + bm.toFixed(1))
-
+                          React.createElement("button", {
+                            type: "button",
+                            onClick: function () { selectPlant(pid); },
+                            'aria-pressed': selectedPlantId === pid,
+                            'aria-label': "Learn about " + pSpec.name + ", " + hpStatus + ", " + hp.toFixed(0) + " percent health",
+                            className: "flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          },
+                            React.createElement("span", { className: "text-lg", 'aria-hidden': "true" }, pSpec.icon || '\uD83C\uDF3F'),
+                            React.createElement("div", { className: "min-w-0 flex-1" },
+                              React.createElement("div", { className: "truncate text-[11px] font-bold text-emerald-800" }, pSpec.name),
+                              React.createElement("div", { className: "mt-0.5 flex items-center gap-2" },
+                                React.createElement("div", { className: "h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100", "aria-hidden": "true" },
+                                  React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
+                                ),
+                                React.createElement("span", { className: "font-mono text-[11px] " + hpTextColor }, hp.toFixed(0) + '%'),
+                                React.createElement("span", { className: "text-[11px] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1))
+                              )
                             )
-
                           ),
 
                           React.createElement("button", { "aria-label": __alloT('stem.aquarium.remove_plant', "Remove plant"),
@@ -17835,40 +19063,266 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         var alreadyAdded = tankPlants.indexOf(ps.id) !== -1;
 
-                        return React.createElement("button", { key: ps.id,
-
-                          onClick: function () { if (!alreadyAdded) addPlant(ps.id); },
-
-                          disabled: alreadyAdded,
-
-                          className: "text-left rounded-lg p-1.5 text-[11px] transition-all " +
-
-                            (alreadyAdded
-
-                              ? "bg-emerald-100/50 text-emerald-400 cursor-not-allowed opacity-60"
-
-                              : "bg-white/70 hover:bg-white border border-emerald-100 hover:border-emerald-600 hover:shadow-sm cursor-pointer")
-
+                        return React.createElement("div", {
+                          key: ps.id,
+                          role: "group",
+                          'aria-label': ps.name + " catalog entry",
+                          className: "flex items-stretch gap-1 rounded-lg border p-1 transition-all " + (selectedPlantId === ps.id ? "border-emerald-600 bg-emerald-100 ring-1 ring-emerald-300" : "border-emerald-100 bg-white/70 hover:border-emerald-300")
                         },
-
-                          React.createElement("span", { className: "font-bold" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
-
-                          React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 leading-tight" },
-
-                            "O\u2082:" + (ps.o2 > 0 ? '+' : '') + ps.o2.toFixed(2) +
-
-                            " | NO\u2083:" + (ps.nitrateAbsorb > 0 ? '-' : '') + ps.nitrateAbsorb.toFixed(2) +
-
-                            " | \u2600\uFE0F" + ps.light
-
-                          )
-
+                          React.createElement("button", {
+                            type: "button",
+                            onClick: function () { selectPlant(ps.id); },
+                            'aria-pressed': selectedPlantId === ps.id,
+                            className: "min-w-0 flex-1 rounded-md p-1 text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          },
+                            React.createElement("span", { className: "block truncate text-[11px] font-bold text-emerald-900" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
+                            React.createElement("span", { className: "mt-0.5 block text-[9px] leading-tight text-slate-600" },
+                              "O\u2082 +" + ps.o2.toFixed(2) + " | NO\u2083 -" + ps.nitrateAbsorb.toFixed(2) + " | \u2600\uFE0F " + ps.light
+                            ),
+                            React.createElement("span", { className: "mt-0.5 block text-[9px] font-bold text-emerald-700" }, "Learn more")
+                          ),
+                          React.createElement("button", {
+                            type: "button",
+                            disabled: alreadyAdded,
+                            onClick: function () { addPlant(ps.id); },
+                            'aria-label': alreadyAdded ? ps.name + " is already planted" : "Plant " + ps.name,
+                            className: "shrink-0 rounded-md border px-1.5 text-[9px] font-black " + (alreadyAdded ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400" : "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700")
+                          }, alreadyAdded ? "\u2713" : "+ Plant")
                         );
 
                       })
 
                     )
 
+                  ),
+
+                  // Selected plant field guide and live specimen analysis
+                  selectedPlant && selectedPlantProfile && React.createElement("section", {
+                    className: "mt-3 rounded-xl border border-emerald-200 bg-white/95 p-3 shadow-sm",
+                    role: "region",
+                    'aria-labelledby': "aquarium-plant-profile-title",
+                    'aria-live': "polite"
+                  },
+                    React.createElement("div", { className: "flex items-start justify-between gap-2" },
+                      React.createElement("div", { className: "min-w-0" },
+                        React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
+                          React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, selectedPlant.icon || '\uD83C\uDF3F'),
+                          React.createElement("div", null,
+                            React.createElement("h4", { id: "aquarium-plant-profile-title", className: "text-sm font-black text-emerald-950" }, selectedPlant.name),
+                            React.createElement("div", { className: "text-[10px] italic text-slate-600" }, selectedPlantProfile.scientific + " \u2022 " + selectedPlantProfile.family)
+                          )
+                        ),
+                        React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" },
+                          React.createElement("span", { className: "rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800" }, tankPlants.indexOf(selectedPlant.id) !== -1 ? "Planted specimen" : "Catalog species"),
+                          React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold text-amber-800" }, selectedPlant.light + " light"),
+                          tankPlants.indexOf(selectedPlant.id) !== -1 && React.createElement("span", { className: "rounded-full bg-cyan-100 px-2 py-0.5 text-[9px] font-bold text-cyan-800" }, "Health " + Math.round(selectedPlantHealth) + "% \u2022 biomass " + selectedPlantBiomass.toFixed(1))
+                        )
+                      ),
+                      React.createElement("button", {
+                        type: "button",
+                        onClick: closePlantProfile,
+                        className: "rounded-md px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-800",
+                        'aria-label': "Close plant field guide"
+                      }, "\u2715")
+                    ),
+                    React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-700" }, selectedPlant.desc),
+                    React.createElement("div", { className: "mt-2 rounded-lg bg-emerald-50 p-2 text-[10px] leading-relaxed text-emerald-900" },
+                      React.createElement("strong", null, "Why it matters: "), selectedPlant.fact
+                    ),
+                    React.createElement("div", { className: "mt-3 grid gap-2 lg:grid-cols-2" },
+                      React.createElement("figure", { className: "overflow-hidden rounded-xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-blue-100 p-2" },
+                        React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                          React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-950" }, "Aquascape placement map"),
+                          React.createElement("span", { className: "rounded-full bg-white/80 px-2 py-0.5 text-[9px] font-black text-cyan-800" }, selectedPlantPlacementLabel)
+                        ),
+                        React.createElement("div", {
+                          className: "relative mt-2 overflow-hidden rounded-lg border-2 border-cyan-300",
+                          role: "img",
+                          'aria-label': selectedPlant.name + " placement diagram. Recommended zone: " + selectedPlantPlacementLabel + ". " + selectedPlantProfile.placement,
+                          style: { height: '148px', background: 'linear-gradient(180deg, #e0f2fe 0%, #67e8f9 16%, #0891b2 58%, #164e63 100%)' }
+                        },
+                          React.createElement("div", { style: { position: 'absolute', top: '16%', left: 0, right: 0, borderTop: '2px solid rgba(255,255,255,0.72)' } }),
+                          React.createElement("div", { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '25%', background: 'linear-gradient(180deg, #a16207 0%, #713f12 100%)', clipPath: 'polygon(0 34%, 20% 15%, 42% 30%, 63% 9%, 82% 28%, 100% 12%, 100% 100%, 0 100%)' } }),
+                          React.createElement("div", { style: { position: 'absolute', bottom: '22%', left: '54%', width: '26%', height: '24%', borderRadius: '60% 45% 12% 15%', background: 'linear-gradient(145deg, #64748b, #334155)', opacity: 0.85 } }),
+                          React.createElement("span", { style: { position: 'absolute', top: '2px', left: '5px', fontSize: '8px', fontWeight: 800, color: '#075985' } }, "SURFACE"),
+                          React.createElement("span", { style: { position: 'absolute', top: '35%', left: '5px', fontSize: '8px', fontWeight: 800, color: 'rgba(255,255,255,0.9)' } }, "BACK"),
+                          React.createElement("span", { style: { position: 'absolute', top: '59%', left: '5px', fontSize: '8px', fontWeight: 800, color: 'rgba(255,255,255,0.9)' } }, "MID"),
+                          React.createElement("span", { style: { position: 'absolute', bottom: '3px', left: '5px', fontSize: '8px', fontWeight: 800, color: '#fef3c7' } }, "FRONT / SUBSTRATE"),
+                          React.createElement("div", { style: { position: 'absolute', top: '18%', bottom: '18%', right: '3%', width: '17%', border: '1px dashed rgba(255,255,255,0.65)', borderRadius: '6px', background: selectedPlantPlacementZone === 'refugium' ? 'rgba(16,185,129,0.28)' : 'rgba(15,23,42,0.12)' } }),
+                          React.createElement("span", { style: { position: 'absolute', right: '4%', bottom: '19%', fontSize: '7px', fontWeight: 800, color: 'white', writingMode: 'vertical-rl' } }, "REFUGIUM"),
+                          React.createElement("div", {
+                            style: {
+                              position: 'absolute', top: selectedPlantZoneLayout.top, left: selectedPlantZoneLayout.left,
+                              transform: 'translate(-50%, -50%)', minWidth: '44px', textAlign: 'center',
+                              borderRadius: '999px', border: '2px solid white', background: 'rgba(5,150,105,0.9)',
+                              boxShadow: '0 0 0 4px rgba(52,211,153,0.34), 0 4px 12px rgba(0,0,0,0.3)',
+                              padding: '3px 6px', color: 'white', fontSize: '20px', lineHeight: 1
+                            }
+                          }, selectedPlant.icon || '\uD83C\uDF3F')
+                        ),
+                        React.createElement("figcaption", { className: "mt-1.5 text-[9px] leading-relaxed text-cyan-950" }, selectedPlantProfile.placement)
+                      ),
+
+                      React.createElement("figure", { className: "rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-2" },
+                        React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                          React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-950" }, "Plant physiology flow"),
+                          React.createElement("span", { className: "text-[9px] font-bold text-emerald-700" }, selectedPlantPhotosynthesisActive ? "DAY FLOW" : "REFERENCE FLOW")
+                        ),
+                        React.createElement("div", {
+                          className: "mt-2 items-center gap-1",
+                          role: "img",
+                          'aria-label': selectedPlant.name + " physiology diagram. Light, carbon dioxide, and nitrate enter the plant. Photosynthesis supports oxygen production, biomass growth, and habitat structure.",
+                          style: { display: 'grid', gridTemplateColumns: '1fr auto 1.1fr auto 1fr' }
+                        },
+                          React.createElement("div", { className: "space-y-1" },
+                            [[currentLightDefinition.icon || '\u2600\uFE0F', "Light", currentLightDefinition.name], ["CO\u2082", "Carbon", waterChem.co2.toFixed(1) + " mg/L"], ["NO\u2083", "Nitrogen", waterChem.nitrate.toFixed(1) + " ppm"]].map(function (input) {
+                              return React.createElement("div", { key: input[1], className: "rounded-md border border-amber-200 bg-amber-50 p-1 text-center" },
+                                React.createElement("div", { className: "text-[10px] font-black text-amber-900" }, input[0] + " " + input[1]),
+                                React.createElement("div", { className: "truncate text-[8px] text-amber-800" }, input[2])
+                              );
+                            })
+                          ),
+                          React.createElement("div", { "aria-hidden": "true", className: "text-lg font-black text-emerald-500" }, "\u2192"),
+                          React.createElement("div", { className: "rounded-xl border-2 border-emerald-400 bg-emerald-600 p-2 text-center text-white shadow-md" },
+                            React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, selectedPlant.icon || '\uD83C\uDF3F'),
+                            React.createElement("div", { className: "text-[9px] font-black" }, "PHOTOSYNTHESIS"),
+                            React.createElement("div", { className: "mt-0.5 text-[8px] text-emerald-100" }, selectedPlantPhotosynthesisActive ? "active now" : "depends on light period")
+                          ),
+                          React.createElement("div", { "aria-hidden": "true", className: "text-lg font-black text-emerald-500" }, "\u2192"),
+                          React.createElement("div", { className: "space-y-1" },
+                            [["O\u2082", "Oxygen", selectedPlantLiveContribution ? selectedPlantLiveContribution.oxygenPerHour.toFixed(3) + "/hr" : "\u2014"], ["\uD83C\uDF31", "Biomass", selectedPlantLiveContribution ? selectedPlantLiveContribution.projectedGrowth.toFixed(3) : "\u2014"], ["\uD83D\uDC1F", "Habitat", "cover + surface"]].map(function (output) {
+                              return React.createElement("div", { key: output[1], className: "rounded-md border border-cyan-200 bg-cyan-50 p-1 text-center" },
+                                React.createElement("div", { className: "text-[10px] font-black text-cyan-900" }, output[0] + " " + output[1]),
+                                React.createElement("div", { className: "text-[8px] text-cyan-800" }, output[2])
+                              );
+                            })
+                          )
+                        ),
+                        React.createElement("figcaption", { className: "mt-1.5 text-[9px] leading-relaxed text-emerald-950" }, "At night, photosynthesis stops but respiration continues; this specimen's modeled night O\u2082 use is " + (selectedPlantLiveContribution ? selectedPlantLiveContribution.nightOxygenUse.toFixed(3) : "0.000") + " per hour.")
+                      )
+                    ),
+
+                    React.createElement("figure", { className: "mt-2 rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-2", 'aria-labelledby': "aquarium-plant-resource-title" },
+                      React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
+                        React.createElement("h5", { id: "aquarium-plant-resource-title", className: "text-[10px] font-black uppercase tracking-wide text-indigo-950" }, "Live limiting-factor diagram"),
+                        selectedPlantLimitingResource && React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (selectedPlantLimitingResource.status === 'ready' ? "bg-emerald-100 text-emerald-800" : selectedPlantLimitingResource.status === 'close' ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800") },
+                          selectedPlantLimitingResource.status === 'ready' ? "Resources meet modeled demand" : "Watch: " + selectedPlantLimitingResource.label
+                        )
+                      ),
+                      React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-3" }, selectedPlantResourceDiagram.map(function (resource) {
+                        var resourceColor = resource.status === 'ready' ? '#10b981' : resource.status === 'close' ? '#f59e0b' : '#f43f5e';
+                        return React.createElement("div", { key: resource.id, className: "rounded-lg border border-white bg-white/80 p-2 shadow-sm" },
+                          React.createElement("div", { className: "flex items-center justify-between text-[9px]" },
+                            React.createElement("span", { className: "font-black text-slate-800" }, resource.icon + " " + resource.label),
+                            React.createElement("span", { className: "font-bold " + (resource.status === 'ready' ? "text-emerald-700" : resource.status === 'close' ? "text-amber-700" : "text-rose-700") }, resource.status === 'ready' ? "READY" : resource.status === 'close' ? "NEAR" : "LIMITING")
+                          ),
+                          React.createElement("div", {
+                            className: "relative mt-1.5 h-3 overflow-visible rounded-full bg-slate-200",
+                            role: "progressbar",
+                            'aria-label': resource.label + ". Available index " + resource.available + ", modeled need " + resource.need + ". " + resource.status + ".",
+                            'aria-valuemin': 0,
+                            'aria-valuemax': 100,
+                            'aria-valuenow': resource.available
+                          },
+                            React.createElement("div", { style: { width: resource.available + '%', height: '100%', borderRadius: '999px', background: resourceColor, transition: 'width 0.35s ease' } }),
+                            React.createElement("div", { title: "Modeled need " + resource.need, style: { position: 'absolute', left: resource.need + '%', top: '-3px', bottom: '-3px', width: '2px', background: '#312e81', transform: 'translateX(-1px)' } })
+                          ),
+                          React.createElement("div", { className: "mt-1 flex justify-between text-[8px] text-slate-600" },
+                            React.createElement("span", null, "Available " + resource.available),
+                            React.createElement("span", null, "Need \u2502 " + resource.need)
+                          ),
+                          React.createElement("div", { className: "mt-0.5 truncate text-[8px] text-slate-500", title: resource.detail }, resource.detail)
+                        );
+                      })),
+                      React.createElement("figcaption", { className: "mt-2 text-[9px] leading-relaxed text-indigo-900/80" }, "Teaching indices compare current simulator resources with this species' relative demand. The dark marker is modeled need; these are not laboratory units.")
+                    ),
+
+                    React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
+                      React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
+                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Identity & habitat"),
+                        React.createElement("dl", { className: "mt-1 space-y-1 text-[10px] leading-relaxed" },
+                          React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Native range: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.nativeRange)),
+                          React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Habitat: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.habitat)),
+                          React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Growth form: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.form))
+                        )
+                      ),
+                      React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
+                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Care envelope"),
+                        React.createElement("dl", { className: "mt-1 space-y-1 text-[10px] leading-relaxed" },
+                          React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Parameters: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.parameters)),
+                          React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Placement: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.placement)),
+                          React.createElement("div", null, React.createElement("dt", { className: "inline font-bold" }, "Substrate: "), React.createElement("dd", { className: "inline text-slate-700" }, selectedPlantProfile.substrate))
+                        )
+                      ),
+                      React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
+                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Light, carbon & nutrition"),
+                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Light: "), selectedPlantProfile.lightGuide),
+                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "CO\u2082: "), selectedPlantProfile.co2Guide),
+                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Nutrition: "), selectedPlantProfile.nutrition)
+                      ),
+                      React.createElement("div", { className: "rounded-lg border border-slate-200 p-2" },
+                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Growth & maintenance"),
+                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Propagation: "), selectedPlantProfile.propagation),
+                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Routine: "), selectedPlantProfile.maintenance),
+                        React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Diagnosis: "), selectedPlantProfile.diagnosis)
+                      )
+                    ),
+                    React.createElement("details", { className: "mt-2 rounded-lg border border-emerald-100 bg-emerald-50/40 p-2" },
+                      React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-emerald-900" }, "Ecology, compatibility & aquascaping"),
+                      React.createElement("p", { className: "mt-2 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Compatibility: "), selectedPlantProfile.compatibility),
+                      React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Ecology: "), selectedPlantProfile.ecology),
+                      React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-700" }, React.createElement("strong", null, "Aquascape role: "), selectedPlantProfile.aquascape),
+                      React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-rose-700" }, React.createElement("strong", null, "Watch for: "), selectedPlantProfile.cautions)
+                    ),
+                    tankPlants.indexOf(selectedPlant.id) !== -1 && selectedPlantLiveContribution && React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-200 bg-cyan-50 p-2" },
+                      React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
+                        React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-900" }, "Live specimen contribution"),
+                        React.createElement("span", { className: "text-[9px] font-bold " + (selectedPlantPhotosynthesisActive ? "text-emerald-700" : "text-slate-600") }, selectedPlantPhotosynthesisActive ? "\u25CF Photosynthesis active" : "\u25CB Photosynthesis paused")
+                      ),
+                      React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1 text-[9px] sm:grid-cols-5" },
+                        [["O\u2082 / hr", selectedPlantLiveContribution.oxygenPerHour.toFixed(3)], ["NO\u2083 / hr", selectedPlantLiveContribution.nitrateUsePerHour.toFixed(3)], ["CO\u2082 / hr", selectedPlantLiveContribution.co2UsePerHour.toFixed(3)], ["Night O\u2082 use", selectedPlantLiveContribution.nightOxygenUse.toFixed(3)], ["Growth forecast", selectedPlantLiveContribution.projectedGrowth.toFixed(3)]].map(function (metric) {
+                          return React.createElement("div", { key: metric[0], className: "rounded bg-white p-1.5 text-center" },
+                            React.createElement("div", { className: "font-black text-cyan-900" }, metric[1]),
+                            React.createElement("div", { className: "text-slate-500" }, metric[0])
+                          );
+                        })
+                      ),
+                      React.createElement("p", { className: "mt-1.5 text-[9px] leading-relaxed text-cyan-900/80" }, "Rates are simulator estimates using this specimen's health, biomass, light output, algae shading, and current photoperiod.")
+                    ),
+                    tankPlants.indexOf(selectedPlant.id) !== -1 && React.createElement("div", { className: "mt-2", role: "status" },
+                      React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-slate-700" }, "Care signals"),
+                      React.createElement("ul", { className: "mt-1 space-y-1" }, selectedPlantCareAlerts.map(function (alert, alertIndex) {
+                        var alertStyle = alert.severity === 'danger' ? 'border-rose-200 bg-rose-50 text-rose-800' : alert.severity === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800';
+                        return React.createElement("li", { key: 'plant-alert-' + alertIndex, className: "rounded border p-1.5 text-[10px] leading-relaxed " + alertStyle }, alert.text);
+                      }))
+                    ),
+                    React.createElement("div", { className: "mt-3 rounded-lg border border-violet-200 bg-violet-50 p-2" },
+                      React.createElement("h5", { className: "text-[10px] font-black uppercase tracking-wide text-violet-900" }, "Care reasoning check"),
+                      React.createElement("p", { className: "mt-1 text-[10px] font-bold text-slate-700" }, "Which care plan best fits " + selectedPlant.name + "?"),
+                      React.createElement("div", { className: "mt-2 space-y-1" }, selectedPlantCheckOptions.map(function (option, optionIndex) {
+                        var wasSelected = selectedPlantLearningAnswer && selectedPlantLearningAnswer.selected === optionIndex;
+                        return React.createElement("button", {
+                          key: 'plant-check-' + optionIndex,
+                          type: "button",
+                          onClick: function () { answerPlantLearningCheck(optionIndex); },
+                          'aria-pressed': !!wasSelected,
+                          className: "block w-full rounded border p-1.5 text-left text-[10px] leading-relaxed transition-colors " + (wasSelected ? "border-violet-600 bg-violet-100 text-violet-950" : "border-violet-100 bg-white text-slate-700 hover:border-violet-400")
+                        }, String.fromCharCode(65 + optionIndex) + ". " + option);
+                      })),
+                      selectedPlantLearningAnswer && React.createElement("div", {
+                        className: "mt-2 rounded p-1.5 text-[10px] leading-relaxed " + (selectedPlantLearningAnswer.correct ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"),
+                        role: "status"
+                      },
+                        React.createElement("strong", null, selectedPlantLearningAnswer.correct ? "Correct. " : "Not quite. "),
+                        selectedPlantLearningAnswer.correct ? "That plan respects this species' growth form and resource needs." : "The species-specific plan is: " + selectedPlantProfile.carePlan
+                      )
+                    ),
+                    tankPlants.indexOf(selectedPlant.id) === -1 && React.createElement("button", {
+                      type: "button",
+                      disabled: tankPlants.length >= 8,
+                      onClick: function () { addPlant(selectedPlant.id); },
+                      className: "mt-3 w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    }, tankPlants.length >= 8 ? "Plant slots full" : "\uD83C\uDF31 Plant this species")
                   ),
 
                   // Ecosystem tip
@@ -18072,7 +19526,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   className: "relative rounded-2xl overflow-hidden border-2 border-cyan-300/60 shadow-lg shadow-cyan-500/20",
                   role: "region",
-                  'aria-label': tank.name + " interactive tank. " + tankFish.length + " fish and " + tankPlants.length + " plants. Ammonia " + waterChem.ammonia.toFixed(2) + " ppm, nitrite " + waterChem.nitrite.toFixed(2) + " ppm, nitrate " + waterChem.nitrate.toFixed(1) + " ppm. Activate a fish to open anatomy details.",
+                  'aria-label': tank.name + " interactive tank. " + tankFish.length + " fish and " + tankPlants.length + " plants. Ammonia " + waterChem.ammonia.toFixed(2) + " ppm, nitrite " + waterChem.nitrite.toFixed(2) + " ppm, nitrate " + waterChem.nitrate.toFixed(1) + " ppm. Activate a fish for anatomy or a plant for its care profile.",
 
                   style: { height: '240px', transition: 'filter 0.8s ease', filter: (d.tankLight === 'blue') ? 'saturate(0.5) hue-rotate(20deg) brightness(0.55)' : (d.tankLight === 'night') ? 'saturate(0.2) brightness(0.2)' : 'none', background: selectedTank === 'reef' || selectedTank === 'invert' ? 'linear-gradient(180deg, #67e8f9 0%, #22d3ee 15%, #0891b2 40%, #155e75 70%, #164e63 100%)' : selectedTank === 'coldwater' ? 'linear-gradient(180deg, #bae6fd 0%, #7dd3fc 15%, #3b82f6 40%, #1e40af 70%, #1e3a5f 100%)' : selectedTank === 'brackish' ? 'linear-gradient(180deg, #a7f3d0 0%, #6ee7b7 15%, #059669 40%, #065f46 70%, #064e3b 100%)' : 'linear-gradient(180deg, #a5f3fc 0%, #67e8f9 15%, #22d3ee 40%, #0891b2 70%, #155e75 100%)' }
 
@@ -18174,9 +19628,38 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   }),
 
-                  // Decorative plants (6 with varied heights, widths, and leaf fronds)
+                  // Actual planted specimens are interactive and reflect health and biomass
+                  tankPlants.map(function (plantId, plantIndex) {
+                    var plantedSpecies = plantCatalog.find(function (candidate) { return candidate.id === plantId; });
+                    if (!plantedSpecies) return null;
+                    var specimenHealth = plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80;
+                    var specimenBiomass = plantBiomass[plantId] !== undefined ? plantBiomass[plantId] : 1;
+                    var specimenLeft = tankPlants.length === 1 ? 50 : 7 + (plantIndex * 86 / Math.max(1, tankPlants.length - 1));
+                    return React.createElement("button", {
+                      key: 'tank-plant-' + plantId + '-' + plantIndex,
+                      type: "button",
+                      onClick: function () { selectPlant(plantId); },
+                      'aria-label': "Select planted " + plantedSpecies.name + ". Health " + Math.round(specimenHealth) + " percent, biomass " + specimenBiomass.toFixed(1) + ".",
+                      'aria-pressed': selectedPlantId === plantId,
+                      title: plantedSpecies.name + " \u2014 select for care profile",
+                      className: "focus:outline-none focus:ring-2 focus:ring-emerald-300",
+                      style: {
+                        position: 'absolute', bottom: '23px', left: specimenLeft + '%', zIndex: 4,
+                        transform: 'translateX(-50%)', borderRadius: '999px',
+                        border: selectedPlantId === plantId ? '2px solid rgba(255,255,255,0.95)' : '1px solid rgba(255,255,255,0.35)',
+                        background: selectedPlantId === plantId ? 'rgba(5,150,105,0.72)' : 'rgba(6,78,59,0.18)',
+                        boxShadow: selectedPlantId === plantId ? '0 0 0 3px rgba(16,185,129,0.45), 0 3px 10px rgba(0,0,0,0.25)' : '0 2px 6px rgba(0,0,0,0.18)',
+                        padding: '2px 4px', fontSize: (17 + Math.min(17, specimenBiomass * 3)) + 'px',
+                        lineHeight: 1, opacity: Math.max(0.45, specimenHealth / 100),
+                        filter: specimenHealth < 45 ? 'grayscale(0.75) sepia(0.35)' : 'none',
+                        cursor: 'pointer', transition: 'filter 0.2s, opacity 0.2s, box-shadow 0.2s'
+                      }
+                    }, plantedSpecies.icon || '\uD83C\uDF3F');
+                  }),
 
-                  (selectedTank === 'planted' || selectedTank === 'freshwater' || selectedTank === 'brackish') && [0, 1, 2, 3, 4, 5].map(function (i) {
+                  // Decorative plants appear only before the learner plants real specimens
+
+                  tankPlants.length === 0 && (selectedTank === 'planted' || selectedTank === 'freshwater' || selectedTank === 'brackish') && [0, 1, 2, 3, 4, 5].map(function (i) {
 
                     var heights = [55, 38, 65, 42, 72, 30];
 
@@ -18717,6 +20200,140 @@ var d = (labToolData && labToolData._aquarium) || {};
                 // Action buttons
 
                 React.createElement("div", { className: "space-y-2" },
+                  React.createElement("section", {
+                    role: "region",
+                    'aria-label': "Aquarium equipment systems",
+                    className: "rounded-xl border border-indigo-200 bg-indigo-50/70 p-3"
+                  },
+                    React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" },
+                      React.createElement("h4", { className: "text-xs font-extrabold text-indigo-900" }, "\uD83D\uDD27 Life-Support Systems"),
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        equipmentFaultCount > 0 && React.createElement("span", { role: "alert", 'aria-live': "assertive", className: "rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white" }, "\u26D4 " + equipmentFaultCount + " offline"),
+                        equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status", 'aria-live': "polite", className: "rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800" }, "\u26A0\uFE0F " + equipmentNeedsServiceCount + " need service"),
+                        React.createElement("span", { className: "rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800", 'aria-label': coins + " coins available" }, "\uD83E\uDE99 " + coins)
+                      )
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-2" },
+                      Object.keys(EQUIPMENT_CATALOG).map(function (type) {
+                        var catalog = EQUIPMENT_CATALOG[type];
+                        var currentLevel = Math.max(0, Math.min(catalog.levels.length - 1, Number(equipment[type]) || 0));
+                        var current = catalog.levels[currentLevel];
+                        var next = currentLevel < catalog.levels.length - 1 ? catalog.levels[currentLevel + 1] : null;
+                        var condition = equipmentCondition[type] !== undefined ? equipmentCondition[type] : 100;
+                        var fault = equipmentFaults[type];
+                        var repairCost = 5 + currentLevel * 5;
+                        var conditionColor = fault ? "bg-slate-500" : condition <= 25 ? "bg-red-500" : condition <= 60 ? "bg-amber-500" : "bg-emerald-500";
+                        var impact;
+                        if (type === 'filter') impact = "Adds " + Math.round(current.ammoniaReduction * 100) + "% NH3 and " + Math.round(current.nitriteReduction * 100) + "% NO2 removal each hour.";
+                        else if (type === 'heater') impact = currentLevel === 0 ? "No active heat; temperature drifts toward room conditions." : Math.round(current.tempStability * 100) + "% temperature stability toward the tank target.";
+                        else if (type === 'light') impact = "Plant productivity x" + (0.5 + current.plantBoost).toFixed(1) + "; algae pressure x" + current.algaeMult.toFixed(1) + ".";
+                        else impact = "+" + current.o2Boost.toFixed(1) + " mg/L O2 per hour with added gas exchange.";
+                        impact += fault ? " SYSTEM OFFLINE: no output until repaired." : " Current output: " + Math.round(condition) + "%.";
+                        return React.createElement("div", {
+                          key: type,
+                          role: "group",
+                          'aria-label': catalog.name + ": " + current.name + ". " + (fault ? "System offline. " : "") + "Condition " + Math.round(condition) + " percent. " + impact,
+                          className: "rounded-lg border bg-white p-2 " + (fault ? "border-red-500 ring-1 ring-red-200" : condition <= 25 ? "border-red-300" : condition <= 60 ? "border-amber-300" : "border-indigo-100")
+                        },
+                          React.createElement("div", { className: "flex items-start justify-between gap-2" },
+                            React.createElement("div", { className: "min-w-0" },
+                              React.createElement("div", { className: "truncate text-[11px] font-extrabold text-slate-700" }, catalog.icon + " " + catalog.name),
+                              React.createElement("div", { className: "truncate text-[10px] font-semibold text-indigo-700", title: current.desc }, current.name)
+                            ),
+                              fault && React.createElement("span", { className: "rounded bg-red-600 px-1 text-[9px] font-black text-white" }, "OFFLINE"),
+                            React.createElement("div", { className: "flex shrink-0 items-center gap-1" },
+                              React.createElement("span", { className: "rounded bg-indigo-100 px-1 text-[9px] font-bold text-indigo-700" }, "Lv " + currentLevel),
+                              React.createElement("span", { className: "rounded bg-slate-100 px-1 text-[9px] font-bold text-slate-600" }, Math.round(condition) + "%")
+                            )
+                          ),
+                          React.createElement("p", { className: "my-1 text-[9px] leading-snug text-slate-600" }, impact),
+                          React.createElement("div", {
+                            role: "progressbar",
+                            'aria-label': catalog.name + " condition",
+                            'aria-valuemin': 0,
+                            'aria-valuemax': 100,
+                            'aria-valuenow': Math.round(condition),
+                            className: "mb-1 h-1.5 overflow-hidden rounded-full bg-slate-200"
+                          }, React.createElement("div", { className: "h-full rounded-full " + conditionColor, style: { width: condition + "%" } })),
+                          React.createElement("button", {
+                            type: "button",
+                            disabled: !next,
+                            onClick: function () { buyEquipment(type); },
+                            'aria-label': next ? "Upgrade " + catalog.name + " to " + next.name + " for " + next.cost + " coins" : catalog.name + " is fully upgraded",
+                            className: "w-full rounded-md border px-2 py-1 text-[10px] font-bold " + (next ? (coins >= next.cost ? "border-indigo-500 bg-indigo-50 text-indigo-700 hover:bg-indigo-100" : "border-slate-300 bg-slate-50 text-slate-500") : "cursor-not-allowed border-emerald-300 bg-emerald-50 text-emerald-700")
+                          }, next ? "Upgrade: " + next.name + " (" + next.cost + ")" : "\u2713 Maximum"),
+                          fault ? React.createElement("button", {
+                            type: "button",
+                            disabled: coins < repairCost,
+                            onClick: function () { repairEquipment(type); },
+                            'aria-label': "Repair " + catalog.name + " for " + repairCost + " coins",
+                            className: "mt-1 w-full rounded-md border border-red-600 bg-red-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500"
+                          }, "\uD83D\uDEE0\uFE0F Repair (" + repairCost + ")") : condition < 95 && React.createElement("button", {
+                            type: "button",
+                            onClick: function () { serviceEquipment(type); },
+                            'aria-label': "Service " + catalog.name + " and restore full output",
+                            className: "mt-1 w-full rounded-md border px-2 py-1 text-[10px] font-bold " + (condition <= 25 ? "border-red-500 bg-red-50 text-red-700 hover:bg-red-100" : "border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100")
+                          }, type === 'filter' ? "\uD83E\uDDFD Clean filter" : "\uD83D\uDD27 Service system")
+                        );
+                      })
+                    )
+                  ),
+                  waterChem && React.createElement("section", {
+                    role: "region",
+                    'aria-label': "Aquarium maintenance planner",
+                    className: "rounded-xl border p-3 " + (recommendedWaterChangePercent === 50 ? "border-red-300 bg-red-50" : maintenanceOverdue ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50")
+                  },
+                    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                      React.createElement("div", null,
+                        React.createElement("h4", { className: "text-xs font-extrabold text-slate-800" }, "\uD83D\uDCC5 Preventive Maintenance"),
+                        React.createElement("p", { className: "text-[10px] text-slate-600" }, maintenanceOverdue
+                          ? "Weekly service overdue by " + (hoursSinceWaterChange - 168) + " hours"
+                          : (168 - hoursSinceWaterChange) + " hours until weekly service")
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-1" },
+                        React.createElement("button", {
+                          type: "button",
+                          onClick: function () { doWaterChange(recommendedWaterChangePercent); },
+                          'aria-label': "Perform recommended " + recommendedWaterChangePercent + " percent water change",
+                          className: "rounded-lg border border-blue-600 bg-blue-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-blue-700"
+                        }, "\uD83D\uDCA7 Do recommended " + recommendedWaterChangePercent + "%"),
+                        React.createElement("button", {
+                          type: "button",
+                          'aria-expanded': maintenanceHistoryExpanded,
+                          'aria-controls': "aquarium-maintenance-history",
+                          onClick: function () { upd('maintenanceHistoryExpanded', !maintenanceHistoryExpanded); },
+                          className: "rounded-lg border border-slate-400 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50"
+                        }, maintenanceHistoryExpanded ? "Hide history" : "Service history")
+                      )
+                    ),
+                    React.createElement("div", {
+                      role: "progressbar",
+                      'aria-label': "Weekly water change schedule",
+                      'aria-valuemin': 0,
+                      'aria-valuemax': 168,
+                      'aria-valuenow': Math.min(168, hoursSinceWaterChange),
+                      className: "mt-2 h-2 overflow-hidden rounded-full bg-white"
+                    }, React.createElement("div", { className: "h-full rounded-full " + (maintenanceOverdue ? "bg-amber-500" : "bg-emerald-500"), style: { width: Math.min(100, hoursSinceWaterChange / 168 * 100) + "%" } })),
+                    React.createElement("p", { className: "mt-1 text-[10px] font-semibold text-slate-700", 'aria-live': "polite" }, "Recommendation: " + recommendedWaterChangePercent + "% ? " + maintenanceRecommendation),
+                    maintenanceHistoryExpanded && React.createElement("div", {
+                      id: "aquarium-maintenance-history",
+                      role: "list",
+                      'aria-label': "Water change service history",
+                      className: "mt-2 max-h-32 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1"
+                    }, maintenanceLog.length === 0
+                      ? React.createElement("p", { className: "px-1 py-1 text-[10px] text-slate-500" }, "No water changes recorded yet.")
+                      : maintenanceLog.slice().reverse().map(function (entry, historyIndex) {
+                        var serviceHour = (entry.hour < 10 ? "0" : "") + entry.hour;
+                        return React.createElement("div", { role: "listitem", key: entry.tick + "-service-" + historyIndex, className: "border-b border-slate-100 px-1 py-1 text-[10px] last:border-b-0" },
+                          React.createElement("div", { className: "flex justify-between gap-2 font-bold text-slate-700" },
+                            React.createElement("span", null, "Day " + entry.day + " " + serviceHour + ":00"),
+                            React.createElement("span", { className: "text-blue-700" }, entry.percent + "% change")
+                          ),
+                          entry.before && entry.after && React.createElement("div", { className: "text-slate-500" }, "NH3 " + entry.before.ammonia.toFixed(2) + "\u2192" + entry.after.ammonia.toFixed(2) + " | NO3 " + entry.before.nitrate.toFixed(1) + "\u2192" + entry.after.nitrate.toFixed(1) + " ppm"),
+                          React.createElement("div", { className: "text-slate-500" }, entry.reason)
+                        );
+                      }))
+                  ),
                   waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
                     React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[11px] font-bold text-blue-800" }, "Water change:"),
                     React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-300 bg-white px-2 py-1 text-[11px] font-bold text-blue-900", 'aria-label': "Water change percentage" },
@@ -18976,7 +20593,35 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var hungerTextColor = hunger >= 80 ? 'text-red-600' : hunger >= 50 ? 'text-amber-600' : 'text-green-600';
 
                         var illnessSeverity = fishSickness[fishKey] ? fishSickness[fishKey].severity : 0;
-                        var careScore = Math.max(0, Math.round(100 - hunger * 0.35 - stress * 0.35 - illnessSeverity * 15));
+                        var oxygenVitality = waterChem.dissolvedO2 >= 6 ? 100 : waterChem.dissolvedO2 >= 4 ? 65 + (waterChem.dissolvedO2 - 4) * 17.5 : waterChem.dissolvedO2 >= 2 ? 25 + (waterChem.dissolvedO2 - 2) * 20 : Math.max(0, waterChem.dissolvedO2 * 12.5);
+                        var nitrogenVitality = Math.max(0, 100 - Math.min(100, waterChem.ammonia * 60 + waterChem.nitrite * 80 + Math.max(0, waterChem.nitrate - 40) * 0.8));
+                        var temperatureVitality = sp && sp.tempRange
+                          ? (waterChem.temp >= sp.tempRange[0] && waterChem.temp <= sp.tempRange[1] ? 100 : Math.max(0, 100 - Math.min(Math.abs(waterChem.temp - sp.tempRange[0]), Math.abs(waterChem.temp - sp.tempRange[1])) * 20))
+                          : 80;
+                        var pHVitality = sp && sp.pHRange
+                          ? (waterChem.pH >= sp.pHRange[0] && waterChem.pH <= sp.pHRange[1] ? 100 : Math.max(0, 100 - Math.min(Math.abs(waterChem.pH - sp.pHRange[0]), Math.abs(waterChem.pH - sp.pHRange[1])) * 50))
+                          : 80;
+                        var spaceVitality = Math.max(20, 100 - Math.max(0, loadPct - 60) * 1.5);
+                        var shelterVitality = ecosystemAllPlantBiomass > 6 ? 100 : ecosystemAllPlantBiomass > 3 ? 80 : ecosystemAllPlantBiomass > 0 ? 58 : 35;
+                        var nutritionVitality = Math.max(0, 100 - hunger);
+                        var calmVitality = Math.max(0, 100 - stress);
+                        var illnessVitality = Math.max(0, 100 - illnessSeverity * 32);
+                        var vitalityFactors = [
+                          { id: 'oxygen', label: 'O\u2082', score: Math.round(oxygenVitality), detail: waterChem.dissolvedO2.toFixed(1) + ' mg/L dissolved oxygen' },
+                          { id: 'nitrogen', label: 'Water', score: Math.round(nitrogenVitality), detail: 'NH\u2083 ' + waterChem.ammonia.toFixed(2) + ', NO\u2082 ' + waterChem.nitrite.toFixed(2) },
+                          { id: 'temperature', label: 'Temp', score: Math.round(temperatureVitality), detail: waterChem.temp.toFixed(1) + '\u00B0F; species range ' + (sp && sp.tempRange ? sp.tempRange[0] + '\u2013' + sp.tempRange[1] : 'unknown') },
+                          { id: 'ph', label: 'pH', score: Math.round(pHVitality), detail: waterChem.pH.toFixed(1) + '; species range ' + (sp && sp.pHRange ? sp.pHRange[0] + '\u2013' + sp.pHRange[1] : 'unknown') },
+                          { id: 'space', label: 'Space', score: Math.round(spaceVitality), detail: loadPct + '% bioload capacity' },
+                          { id: 'shelter', label: 'Shelter', score: Math.round(shelterVitality), detail: ecosystemAllPlantBiomass.toFixed(1) + ' plant biomass' },
+                          { id: 'nutrition', label: 'Nutrition', score: Math.round(nutritionVitality), detail: hunger.toFixed(0) + '% hunger' },
+                          { id: 'stress', label: 'Calm', score: Math.round(calmVitality), detail: stress.toFixed(0) + '% stress' },
+                          { id: 'illness', label: 'Health', score: Math.round(illnessVitality), detail: illnessSeverity > 0 ? 'illness severity ' + illnessSeverity : 'no detected illness' }
+                        ];
+                        var careScore = Math.max(0, Math.min(100, Math.round(
+                          oxygenVitality * 0.15 + nitrogenVitality * 0.15 + temperatureVitality * 0.10 + pHVitality * 0.08 +
+                          spaceVitality * 0.07 + shelterVitality * 0.05 + nutritionVitality * 0.15 + calmVitality * 0.12 + illnessVitality * 0.13
+                        )));
+                        var limitingVitalityFactor = vitalityFactors.slice().sort(function (a, b) { return a.score - b.score; })[0];
                         var careScoreColor = careScore >= 80 ? 'text-green-700' : careScore >= 55 ? 'text-amber-700' : 'text-red-700';
                         var historyExpanded = expandedCareFish === fishKey;
                         var historyId = 'aquarium-care-history-' + fishKey;
@@ -18991,7 +20636,14 @@ var d = (labToolData && labToolData._aquarium) || {};
                               React.createElement("span", { className: "text-[11px] font-bold text-slate-600 truncate" }, displayName),
                               React.createElement("div", { className: "flex items-center gap-1" },
                                 isQuarantined && React.createElement("span", { className: "rounded bg-violet-100 px-1 text-[9px] font-bold text-violet-700", title: "In hospital tank for " + quarantineHours + " hours" }, "\uD83C\uDFE5 Hospital"),
-                                React.createElement("span", { className: "text-[11px] font-bold " + hungerTextColor }, hungerText)
+                                React.createElement("span", { className: "text-[11px] font-bold " + hungerTextColor }, hungerText),
+                                React.createElement("button", {
+                                  type: "button",
+                                  onClick: function () { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fishKey }); },
+                                  'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey,
+                                  'aria-label': "Trace " + displayName + " through the ecosystem exchange network",
+                                  className: "rounded border px-1 py-0.5 text-[8px] font-black " + (ecosystemFocusType === 'fish' && ecosystemFocusId === fishKey ? "border-fuchsia-500 bg-fuchsia-100 text-fuchsia-800" : "border-cyan-400 bg-cyan-50 text-cyan-700")
+                                }, "\uD83D\uDD0E Trace")
                               )
                             ),
                             React.createElement("input", {
@@ -19004,12 +20656,28 @@ var d = (labToolData && labToolData._aquarium) || {};
                               onBlur: function (event) { var completedName = event.target.value.trim(); if (completedName && (!lastCare || lastCare.msg !== 'Named ' + completedName)) appendFishCare(fishKey, 'Named ' + completedName); },
                               className: "mb-1 w-full rounded border border-slate-300 bg-white px-1 py-0.5 text-[10px] text-slate-700"
                             }),
-                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " care score " + careScore + " out of 100, age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
-                              React.createElement("span", { className: "font-bold whitespace-nowrap " + careScoreColor, title: "Care score combines hunger, stress, and illness" }, "Care " + careScore + "/100"),
+                            React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " vitality " + careScore + " out of 100. Limiting factor: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score + ". Age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
+                              React.createElement("span", { className: "font-bold whitespace-nowrap " + careScoreColor, title: "Vitality combines oxygen, nitrogen toxins, temperature, pH, space, shelter, nutrition, stress, and illness" }, "Vitality " + careScore + "/100"),
                               React.createElement("span", { className: "whitespace-nowrap" }, "\u2022 Age " + ageLabel),
                               lastCare && React.createElement("span", { className: "truncate", title: lastCare.msg }, "\u2022 " + lastCare.msg)
                             ),
                             React.createElement("div", { className: "flex items-center gap-1" },
+                            React.createElement("details", { className: "mb-1 rounded border border-indigo-100 bg-indigo-50/60 px-1.5 py-1" },
+                              React.createElement("summary", { className: "cursor-pointer text-[9px] font-bold text-indigo-800" }, "Why vitality? Limiting: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score),
+                              React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1", role: "list", 'aria-label': displayName + " vitality factors" }, vitalityFactors.map(function (factor) {
+                                var factorColor = factor.score >= 80 ? 'bg-emerald-500' : factor.score >= 55 ? 'bg-amber-500' : 'bg-rose-500';
+                                return React.createElement("div", { key: factor.id, role: "listitem", className: "rounded bg-white p-1", title: factor.detail },
+                                  React.createElement("div", { className: "flex justify-between gap-1 text-[8px]" },
+                                    React.createElement("span", { className: "font-bold text-slate-600" }, factor.label),
+                                    React.createElement("span", { className: "font-black text-slate-800" }, factor.score)
+                                  ),
+                                  React.createElement("div", { className: "mt-0.5 h-1 overflow-hidden rounded-full bg-slate-200", "aria-hidden": "true" },
+                                    React.createElement("div", { className: "h-full rounded-full " + factorColor, style: { width: factor.score + '%' } })
+                                  ),
+                                  React.createElement("div", { className: "mt-0.5 truncate text-[7px] text-slate-500" }, factor.detail)
+                                );
+                              }))
+                            ),
                               React.createElement("div", { className: "h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden" },
                                 React.createElement("div", { style: { width: (100 - hunger) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hungerColor })
                               ),

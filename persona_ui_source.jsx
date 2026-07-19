@@ -23,9 +23,15 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     const [newTerm, setNewTerm] = useState('');
     const dna = (config && config.lessonDNA) || null;
     if (!dna && !isEditing) return null;
-    const eq = (dna && dna.essentialQuestion) || '';
-    const concepts = (dna && Array.isArray(dna.goldenThread)) ? dna.goldenThread : [];
-    const terms = (dna && Array.isArray(dna.keyTerms)) ? dna.keyTerms : [];
+    const eq = dna && typeof dna.essentialQuestion === 'string' ? dna.essentialQuestion.slice(0, 1200) : '';
+    const concepts = (dna && Array.isArray(dna.goldenThread) ? dna.goldenThread : []).slice(0, 30).reduce((list, value) => {
+        if (typeof value === 'string' && value.trim()) list.push(value.trim().slice(0, 200));
+        return list;
+    }, []);
+    const terms = (dna && Array.isArray(dna.keyTerms) ? dna.keyTerms : []).slice(0, 60).reduce((list, value) => {
+        if (typeof value === 'string' && value.trim()) list.push(value.trim().slice(0, 200));
+        return list;
+    }, []);
     const hasAny = eq.trim() || concepts.length > 0 || terms.length > 0;
     if (!hasAny && !isEditing) return null;
     const writeDNA = (patch) => {
@@ -33,7 +39,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
         onUpdate(Object.assign({}, config, { lessonDNA: nextDNA }));
     };
     const addConcept = () => {
-        const v = (newConcept || '').trim();
+        const v = (newConcept || '').trim().slice(0, 200);
         if (!v) return;
         if (concepts.indexOf(v) !== -1) { setNewConcept(''); return; }
         writeDNA({ goldenThread: concepts.concat([v]) });
@@ -43,7 +49,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
         writeDNA({ goldenThread: concepts.filter(function(_, i) { return i !== idx; }) });
     };
     const addTerm = () => {
-        const v = (newTerm || '').trim();
+        const v = (newTerm || '').trim().slice(0, 200);
         if (!v) return;
         if (terms.indexOf(v) !== -1) { setNewTerm(''); return; }
         writeDNA({ keyTerms: terms.concat([v]) });
@@ -65,7 +71,8 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                     <textarea
                         aria-label={t('persona.essential_question') || 'Essential Question'}
                         value={eq}
-                        onChange={(e) => writeDNA({ essentialQuestion: e.target.value })}
+                        onChange={(e) => writeDNA({ essentialQuestion: e.target.value.slice(0, 1200) })}
+                        maxLength={1200}
                         placeholder={t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...'}
                         rows={2}
                         className="w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
@@ -83,6 +90,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 {c}
                                 {isEditing && (
                                     <button
+                                        type="button"
                                         onClick={() => removeConcept(i)}
                                         aria-label={t('persona.remove_concept_aria', { concept: c }) || ('Remove concept ' + c)}
                                         className="ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
@@ -97,8 +105,9 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 type="text"
                                 aria-label={t('persona.add_concept_placeholder') || 'Add concept'}
                                 value={newConcept}
+                                maxLength={200}
                                 onChange={(e) => setNewConcept(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addConcept(); } }}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) { e.preventDefault(); addConcept(); } }}
                                 placeholder={t('persona.add_concept_placeholder') || '+ add concept'}
                                 className="text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
                             />
@@ -116,6 +125,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 {term}
                                 {isEditing && (
                                     <button
+                                        type="button"
                                         onClick={() => removeTerm(i)}
                                         aria-label={t('persona.remove_term_aria', { term: term }) || ('Remove term ' + term)}
                                         className="ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
@@ -130,8 +140,9 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 type="text"
                                 aria-label={t('persona.add_term_placeholder') || 'Add term'}
                                 value={newTerm}
+                                maxLength={200}
                                 onChange={(e) => setNewTerm(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTerm(); } }}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) { e.preventDefault(); addTerm(); } }}
                                 placeholder={t('persona.add_term_placeholder') || '+ add term'}
                                 className="text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
                             />
@@ -298,8 +309,9 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             </div>
         </div>
         <button
+            type="button"
             data-help-key="blueprint_edit_toggle_btn"
-            aria-label={t('common.check')}
+            aria-label={isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
             onClick={() => setIsEditing(prev => !prev)}
             className={`p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
         >
@@ -351,6 +363,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                             </div>
                         </div>
                         <button
+                            type="button"
                             aria-label={t('common.delete')}
                             onClick={() => handleDelete(idx)}
                             className="mt-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
@@ -361,7 +374,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                     </div>
                 ))}
             </div>
-            <button data-help-key="blueprint_add_step_btn" aria-label={t('common.add')}
+            <button type="button" data-help-key="blueprint_add_step_btn" aria-label={t('blueprint.add_step')}
                 onClick={handleAddStep}
                 className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
             >
@@ -392,6 +405,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
       )}
       <div className="flex gap-3 pt-3 border-t border-slate-100">
           <button
+              type="button"
               data-help-key="blueprint_cancel_btn"
               aria-label={t('common.cancel')}
             onClick={onCancel}
@@ -400,6 +414,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             {t('blueprint.cancel')}
           </button>
           <button
+              type="button"
               data-help-key="blueprint_generate_pack_btn"
               aria-label={t('common.generate')}
             onClick={onConfirm}

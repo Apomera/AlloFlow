@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-19T02:09:29.884Z",
+  "generatedAt": "2026-07-19T04:31:54.862Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -11274,7 +11274,7 @@
       ],
       "findings": [],
       "references": [
-        "https://pubmed.ncbi.nlm.nih.gov/15661671/"
+        "https://doi.org/10.1037/0022-3514.71.2.364"
       ]
     },
     {
@@ -13073,6 +13073,7 @@
       ],
       "findings": [],
       "references": [
+        "https://doi.org/10.1073/pnas.48.10.1765",
         "https://doi.org/10.1038/nrn1723"
       ]
     },
@@ -14437,7 +14438,8 @@
       ],
       "findings": [],
       "references": [
-        "https://crisp.org.uiowa.edu/volume-5-issue-20-september-26-2000"
+        "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0",
+        "https://doi.org/10.1037/0033-2909.126.5.703"
       ]
     },
     {
@@ -14561,7 +14563,9 @@
       ],
       "findings": [],
       "references": [
-        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Behavior/BASC-3-Behavior-Assessment-System-for-Children-%7C-Third-Edition/p/100001402"
+        "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/basc-3/basc-3-rating-scales-multirater-report-sample.pdf",
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Behavior/Behavior-Assessment-System-for-Children-C-Third-Edition/p/100001402",
+        "https://pubmed.ncbi.nlm.nih.gov/19247829/"
       ]
     },
     {
@@ -15925,7 +15929,7 @@
       ],
       "findings": [],
       "references": [
-        "https://supreme.justia.com/cases/federal/us/362/402/"
+        "https://www.govinfo.gov/app/details/USREPORTS-362/USREPORTS-362-402"
       ]
     },
     {
@@ -16917,7 +16921,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1176/ajp.150.2.188"
+        "https://doi.org/10.1176/ajp.150.2.188",
+        "https://www.apa.org/monitor/oct04/dilemmas"
       ]
     },
     {
@@ -31550,7 +31555,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/4-3-stages-of-sleep"
+        "https://doi.org/10.1073/pnas.98.2.676",
+        "https://doi.org/10.1016/j.neuroimage.2010.06.016"
       ]
     },
     {
@@ -51084,7 +51090,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-3-treatment-modalities"
+        "https://doi.org/10.1111/famp.12943",
+        "https://ifs-institute.com/resources/articles/evolution-internal-family-systems-model-dr-richard-schwartz-ph-d"
       ]
     },
     {
@@ -54370,7 +54377,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+        "https://www150.statcan.gc.ca/n1/en/pub/12-587-x/12-587-x2003001-eng.pdf"
       ]
     },
     {
@@ -68817,7 +68824,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://doi.org/10.1016/S1364-6613(00)01538-2"
       ]
     },
     {
@@ -68941,7 +68948,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/10-introduction"
+        "https://doi.org/10.1007/978-1-4419-1005-9_215"
       ]
     },
     {
@@ -73406,7 +73413,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+        "https://doi.org/10.2307/j.ctvjf9vz4.11"
       ]
     },
     {
@@ -78862,7 +78869,9 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://dictionary.apa.org/halstead-reitan-neuropsychological-battery",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2364719/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3151309/"
       ]
     },
     {
@@ -85436,7 +85445,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp",
+        "https://doi.org/10.1016/j.brat.2014.04.006"
       ]
     },
     {
@@ -86056,7 +86066,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/dtoc.htm"
+        "https://www150.statcan.gc.ca/n1/pub/12-001-x/2019002/article/00006/02-eng.htm",
+        "https://www150.statcan.gc.ca/n1/en/pub/12-587-x/12-587-x2003001-eng.pdf"
       ]
     },
     {

@@ -1,16 +1,21 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:57.418Z",
+  "generatedAt": "2026-07-19T05:50:10.903Z",
   "packId": "praxis-speech-language-pathology-5331",
   "standard": {
-    "label": "AlloFlow independent 5331 source, structure, feedback, originality, safety, and linkage QA v1",
-    "meaning": "A pass confirms exact near-equal diagnostic allocation, balanced answer positions, independently authored prompts, official-sample fragment screening, authoritative-source allowlisting, substantive feedback, stable identifiers, and complete learning links.",
+    "label": "AlloFlow independent 5331 source, structure, response-form, feedback, originality, safety, and linkage QA v2",
+    "meaning": "A pass confirms exact near-equal diagnostic allocation, balanced answer positions, independently authored prompts, official-sample fragment screening, authoritative-source allowlisting, substantive feedback, responsive stem-key forms, stable identifiers, and complete learning links.",
     "limitation": "This is not ETS or ASHA approval, independent licensed-SLP validation, field testing, psychometric calibration, a scaled-score model, clinical evaluation, diagnosis, medical or swallowing-safety decision, treatment, supervision, or legal advice."
   },
   "blueprint": {
     "officialQuestionCount": 132,
     "timeMinutes": 150,
     "selectedResponse": true,
+    "simulationDomainCounts": {
+      "foundations-professional-practice": 44,
+      "screening-assessment-diagnosis": 44,
+      "treatment-planning-evaluation": 44
+    },
     "categories": {
       "foundations-professional-practice": {
         "questions": 44,
@@ -72,6 +77,8 @@
     ],
     "batchCountSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceBatchCount": 2,
+    "assistantAuthoredIndependentBatchCount": 0,
+    "independentDiagnosticBatchCount": 2,
     "guidedReviewBatchCount": 3,
     "learningActivityBankCount": 5
   },
@@ -82,8 +89,12 @@
     "findings": 0,
     "status": "pass",
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReasoningItems": 300,
     "independentQuestionTarget": 500,
     "newIndependentItemsNeeded": 400,
@@ -93,6 +104,8 @@
     "diagnosticBanks": 5,
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
   },
@@ -119,6 +132,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -173,6 +190,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -221,6 +242,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -275,6 +300,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -323,6 +352,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -377,6 +410,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -425,6 +462,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -479,6 +520,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -530,6 +575,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -578,6 +627,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -636,6 +689,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -688,6 +745,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -746,6 +807,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -798,6 +863,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -856,6 +925,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -908,6 +981,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -966,6 +1043,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1018,6 +1099,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1076,6 +1161,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1126,6 +1215,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1182,6 +1275,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1232,6 +1329,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1288,6 +1389,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1338,6 +1443,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1394,6 +1503,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1447,6 +1560,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1497,6 +1614,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1556,6 +1677,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1609,6 +1734,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1668,6 +1797,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1721,6 +1854,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1780,6 +1917,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1833,6 +1974,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -1892,6 +2037,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1948,6 +2097,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -1998,6 +2151,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2054,6 +2211,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2104,6 +2265,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2160,6 +2325,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2210,6 +2379,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2266,6 +2439,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2316,6 +2493,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2372,6 +2553,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2422,6 +2607,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2479,6 +2668,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2530,6 +2723,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2587,6 +2784,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2638,6 +2839,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2695,6 +2900,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2746,6 +2955,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2803,6 +3016,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2854,6 +3071,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -2911,6 +3132,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -2962,6 +3187,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3019,6 +3248,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3070,6 +3303,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3127,6 +3364,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3178,6 +3419,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3235,6 +3480,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3286,6 +3535,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3341,6 +3594,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3390,6 +3647,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3445,6 +3706,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3494,6 +3759,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3549,6 +3818,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3598,6 +3871,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3653,6 +3930,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3702,6 +3983,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3757,6 +4042,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3806,6 +4095,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3861,6 +4154,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -3910,6 +4207,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -3965,6 +4266,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4014,6 +4319,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4069,6 +4378,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4121,6 +4434,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4170,6 +4487,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4227,6 +4548,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4278,6 +4603,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4335,6 +4664,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4386,6 +4719,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4443,6 +4780,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4494,6 +4835,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4551,6 +4896,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4602,6 +4951,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4659,6 +5012,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4710,6 +5067,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4767,6 +5128,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4818,6 +5183,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4875,6 +5244,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -4926,6 +5299,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -4983,6 +5360,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5034,6 +5415,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5090,6 +5475,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5140,6 +5529,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5196,6 +5589,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5246,6 +5643,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5302,6 +5703,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5352,6 +5757,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5408,6 +5817,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5458,6 +5871,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5512,6 +5929,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5560,6 +5981,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5614,6 +6039,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5662,6 +6091,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5716,6 +6149,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5764,6 +6201,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5818,6 +6259,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5869,6 +6314,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -5917,6 +6366,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -5975,6 +6428,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6027,6 +6484,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6085,6 +6546,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6137,6 +6602,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6195,6 +6664,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6247,6 +6720,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6305,6 +6782,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6357,6 +6838,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6415,6 +6900,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6465,6 +6954,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6521,6 +7014,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6571,6 +7068,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6627,6 +7128,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6677,6 +7182,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6733,6 +7242,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6786,6 +7299,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6836,6 +7353,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -6895,6 +7416,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -6948,6 +7473,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7007,6 +7536,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7060,6 +7593,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7119,6 +7656,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7172,6 +7713,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7231,6 +7776,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7287,6 +7836,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7337,6 +7890,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7393,6 +7950,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7443,6 +8004,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7499,6 +8064,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7549,6 +8118,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7605,6 +8178,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7655,6 +8232,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7711,6 +8292,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7761,6 +8346,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7818,6 +8407,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7869,6 +8462,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -7926,6 +8523,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -7977,6 +8578,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8034,6 +8639,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8085,6 +8694,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8142,6 +8755,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8193,6 +8810,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8250,6 +8871,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8301,6 +8926,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8358,6 +8987,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8409,6 +9042,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8466,6 +9103,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8517,6 +9158,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8574,6 +9219,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8625,6 +9274,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8680,6 +9333,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8729,6 +9386,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8784,6 +9445,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8833,6 +9498,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8888,6 +9557,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -8937,6 +9610,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -8992,6 +9669,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9041,6 +9722,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9096,6 +9781,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9145,6 +9834,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9200,6 +9893,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9249,6 +9946,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9304,6 +10005,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9353,6 +10058,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9408,6 +10117,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9460,6 +10173,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9509,6 +10226,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9566,6 +10287,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9617,6 +10342,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9674,6 +10403,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9725,6 +10458,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9782,6 +10519,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9833,6 +10574,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9890,6 +10635,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -9941,6 +10690,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -9998,6 +10751,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10049,6 +10806,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10106,6 +10867,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10157,6 +10922,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10214,6 +10983,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10265,6 +11038,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10322,6 +11099,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10373,6 +11154,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10429,6 +11214,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10479,6 +11268,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10535,6 +11328,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10585,6 +11382,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10641,6 +11442,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10691,6 +11496,10 @@
         },
         {
           "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "response-form",
           "status": "pass"
         },
         {
@@ -10747,6 +11556,10 @@
           "status": "pass"
         },
         {
+          "check": "response-form",
+          "status": "pass"
+        },
+        {
           "check": "distractor-quality",
           "status": "pass"
         },
@@ -10777,14 +11590,27 @@
       ]
     }
   ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "a609f8a8a5d542804bf6c1fd6d76119cf147fbf3f3c0f33175eda9d2828c8761",
+    "learningLibrarySha256": "05f721c7d3bf36eb7e2de4490aa1fbb8cfc8260a2bf5de665502b11e91fd0f90",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  },
   "expansion": {
     "independentQuestionTarget": 500,
     "totalLearningActivities": 500,
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReasoningItems": 300,
     "newIndependentItemsNeeded": 400,
     "structurallyReviewedItems": 500,
@@ -10795,7 +11621,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   }
 }

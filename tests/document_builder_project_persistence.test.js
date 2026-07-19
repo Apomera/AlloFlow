@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 describe('Document Builder project draft loading', () => {
-  it('hands the saved draft and hydrated resources to the host validator', () => {
+  it('hands the saved draft and hydrated resources to the host validator', async () => {
     const builderDraft = {
       version: 1,
       source: 'history',
@@ -63,7 +63,9 @@ describe('Document Builder project draft loading', () => {
     expect(deps.restoreBuilderDraft).toHaveBeenCalledWith(builderDraft, [
       expect.objectContaining({ id: 'lesson-1', hydrated: true })
     ]);
-    expect(deps.projectFileInputRef.current.value).toBe('');
+    await vi.waitFor(() => {
+      expect(deps.projectFileInputRef.current.value).toBe('');
+    });
   });
 
   it('still calls the validator for older files so prior-project drafts are cleared', () => {
@@ -73,6 +75,46 @@ describe('Document Builder project draft loading', () => {
     MiscHandlers.handleLoadProject({ target: { files: [{ contents }] } }, deps);
 
     expect(deps.restoreBuilderDraft).toHaveBeenCalledWith(undefined, []);
+  });
+
+  it('brackets a valid import with a successful recovery lifecycle', async () => {
+    const onProjectLoadStart = vi.fn();
+    const onProjectLoadComplete = vi.fn();
+    const deps = makeLoadDeps({ onProjectLoadStart, onProjectLoadComplete });
+    const contents = JSON.stringify({
+      mode: 'teacher',
+      history: [{ id: 'lesson-2', type: 'quiz', data: {} }]
+    });
+
+    MiscHandlers.handleLoadProject({ target: { files: [{ contents }] } }, deps);
+
+    expect(onProjectLoadStart).toHaveBeenCalledWith(expect.objectContaining({
+      history: [expect.objectContaining({ id: 'lesson-2' })]
+    }));
+    await vi.waitFor(() => {
+      expect(onProjectLoadComplete).toHaveBeenCalledWith({ success: true });
+    });
+  });
+
+  it('reports a failed lifecycle when hydration fails after validation', async () => {
+    const onProjectLoadStart = vi.fn();
+    const onProjectLoadComplete = vi.fn();
+    const deps = makeLoadDeps({
+      onProjectLoadStart,
+      onProjectLoadComplete,
+      hydrateHistory: () => { throw new Error('hydrate failed'); }
+    });
+    const contents = JSON.stringify({
+      mode: 'teacher',
+      history: [{ id: 'broken', type: 'quiz', data: {} }]
+    });
+
+    MiscHandlers.handleLoadProject({ target: { files: [{ contents }] } }, deps);
+
+    await vi.waitFor(() => {
+      expect(onProjectLoadComplete).toHaveBeenCalledWith({ success: false });
+    });
+    expect(deps.warnLog).toHaveBeenCalled();
   });
 
   it('keeps the host-side import boundary versioned, size-limited, and active-content safe', () => {

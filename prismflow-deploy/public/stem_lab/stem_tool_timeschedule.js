@@ -39,6 +39,36 @@
     if (!m) return h + (h === 1 ? ' hour' : ' hours');
     return h + (h === 1 ? ' hour ' : ' hours ') + m + (m === 1 ? ' minute' : ' minutes');
   }
+  function forwardDuration(start, end) {
+    return (norm(end) - norm(start) + DAY) % DAY;
+  }
+  function timeWithDay(start, end, use24) {
+    var duration = forwardDuration(start, end);
+    return showTime(end, use24) + (duration > 0 && norm(end) <= norm(start) ? ' next day' : '');
+  }
+  function elapsedModelSignature(start, amount, direction) {
+    return norm(start) + '|' + Math.round(clamp(amount, 0, 720)) + '|' + (direction === -1 ? -1 : 1);
+  }
+  function elapsedModelCount(data) {
+    var signatures = (data && data.elapsedModelSignatures) || {};
+    return Object.keys(signatures).filter(function (key) {
+      return !!signatures[key] && /^\d+\|\d+\|(?:-1|1)$/.test(key);
+    }).length;
+  }
+  function scheduleTimeline(events) {
+    var previousEnd = null;
+    return (events || []).map(function(event) {
+      var start = norm(event[1]);
+      while (previousEnd != null && start < previousEnd) start += DAY;
+      var end = norm(event[2]);
+      while (end < start) end += DAY;
+      previousEnd = end;
+      return { event: event, start: start, end: end, duration: end - start };
+    });
+  }
+  function scheduleTimeLabel(absoluteMinutes, use24) {
+    return showTime(absoluteMinutes, use24) + (absoluteMinutes >= DAY ? ' next day' : '');
+  }
   function parseInputTime(value) {
     var m = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
     if (!m || +m[1] > 23 || +m[2] > 59) return null;
@@ -128,33 +158,44 @@
         ['Lunch', 740, 785, '#f59e0b'],
         ['Return train', 822, 898, '#ec4899']
       ]
+    },
+    overnight: {
+      label: 'Overnight Observation', icon: '\uD83C\uDF19',
+      events: [
+        ['Set up equipment', 1380, 1410, '#0ea5e9'],
+        ['Sky observation', 1410, 15, '#8b5cf6'],
+        ['Warm-up break', 30, 45, '#f59e0b'],
+        ['Analyze data', 60, 105, '#10b981'],
+        ['Pack up', 120, 150, '#ec4899']
+      ]
     }
   };
   function scheduleQuestions(schedule) {
     var e = schedule.events;
+    var timeline = scheduleTimeline(e);
+    var secondDuration = timeline[1].duration;
+    var nextGap = timeline[2].start - timeline[1].end;
+    var fullSpan = timeline[timeline.length - 1].end - timeline[0].start;
     return [
       {
-        prompt: 'How long does “' + e[1][0] + '” last?', type: 'duration',
-        answer: e[1][2] - e[1][1],
-        explanation: time12(e[1][2]) + ' − ' + time12(e[1][1]) + ' = ' +
-          durationText(e[1][2] - e[1][1]) + '.'
+        prompt: 'How long does "' + e[1][0] + '" last?', type: 'duration',
+        answer: secondDuration,
+        explanation: scheduleTimeLabel(timeline[1].end, false) + ' minus ' + scheduleTimeLabel(timeline[1].start, false) + ' = ' + durationText(secondDuration) + '.'
       },
       {
-        prompt: 'How much free time is between “' + e[1][0] + '” and “' + e[2][0] + '”?',
-        type: 'duration', answer: e[2][1] - e[1][2],
-        explanation: 'Count from ' + time12(e[1][2]) + ' to ' + time12(e[2][1]) +
-          ': ' + durationText(e[2][1] - e[1][2]) + '.'
+        prompt: 'How much free time is between "' + e[1][0] + '" and "' + e[2][0] + '"?',
+        type: 'duration', answer: nextGap,
+        explanation: 'Count from ' + scheduleTimeLabel(timeline[1].end, false) + ' to ' + scheduleTimeLabel(timeline[2].start, false) + ': ' + durationText(nextGap) + '.'
       },
       {
-        prompt: 'Write the start of “' + e[3][0] + '” in 24-hour time.',
+        prompt: 'Write the start of "' + e[3][0] + '" in 24-hour time.',
         type: 'time', answerFormat: '24', answer: e[3][1],
         explanation: time12(e[3][1]) + ' is ' + time24(e[3][1]) + '.'
       },
       {
         prompt: 'How much time passes from the first start to the last end?',
-        type: 'duration', answer: e[e.length - 1][2] - e[0][1],
-        explanation: time12(e[e.length - 1][2]) + ' − ' + time12(e[0][1]) +
-          ' = ' + durationText(e[e.length - 1][2] - e[0][1]) + '.'
+        type: 'duration', answer: fullSpan,
+        explanation: scheduleTimeLabel(timeline[timeline.length - 1].end, false) + ' minus ' + scheduleTimeLabel(timeline[0].start, false) + ' = ' + durationText(fullSpan) + '.'
       }
     ];
   }
@@ -196,12 +237,36 @@
       explanation: '21 − 12 = 9, so 21:07 is 9:07 PM.' }
   ];
 
+  var SCHEDULE_QUESTION_IDS = [];
+  Object.keys(SCHEDULES).forEach(function(scheduleKey) {
+    scheduleQuestions(SCHEDULES[scheduleKey]).forEach(function(_, index) {
+      SCHEDULE_QUESTION_IDS.push(scheduleKey + ':' + index);
+    });
+  });
+  var TIME_CHALLENGE_IDS = CHALLENGES.map(function(_, index) { return String(index); });
+
+  function countKnownKeys(map, allowedIds) {
+    map = map || {};
+    return allowedIds.filter(function(id) { return !!map[id]; }).length;
+  }
+  function scheduleSolvedCount(data) {
+    return countKnownKeys(data && data.scheduleSolvedKeys, SCHEDULE_QUESTION_IDS);
+  }
+  function timeChallengeSolvedCount(data) {
+    return countKnownKeys(data && data.solvedChallenges, TIME_CHALLENGE_IDS);
+  }
+
   window.TimeSchedulePure = Object.freeze({
     norm: norm,
     time12: time12,
     time24: time24,
     showTime: showTime,
     durationText: durationText,
+    forwardDuration: forwardDuration,
+    timeWithDay: timeWithDay,
+    elapsedModelSignature: elapsedModelSignature,
+    scheduleTimeline: scheduleTimeline,
+    scheduleTimeLabel: scheduleTimeLabel,
     parseInputTime: parseInputTime,
     parseTime: parseTime,
     parseDuration: parseDuration,
@@ -225,14 +290,14 @@
         check: function (d) { return (d && d.clockAdjustments || 0) >= 5; },
         progress: function (d) { return Math.min(5, d && d.clockAdjustments || 0) + '/5 adjustments'; } },
       { id: 'elapsed_explorer', label: 'Build 3 elapsed-time models', icon: '⏱️',
-        check: function (d) { return (d && d.elapsedModels || 0) >= 3; },
-        progress: function (d) { return Math.min(3, d && d.elapsedModels || 0) + '/3 models'; } },
+        check: function (d) { return elapsedModelCount(d) >= 3; },
+        progress: function (d) { return Math.min(3, elapsedModelCount(d)) + '/3 models'; } },
       { id: 'schedule_reasoner', label: 'Solve 3 schedule questions', icon: '📅',
-        check: function (d) { return (d && d.scheduleSolved || 0) >= 3; },
-        progress: function (d) { return Math.min(3, d && d.scheduleSolved || 0) + '/3 solved'; } },
+        check: function (d) { return scheduleSolvedCount(d) >= 3; },
+        progress: function (d) { return Math.min(3, scheduleSolvedCount(d)) + '/3 solved'; } },
       { id: 'time_master', label: 'Answer 5 challenges correctly', icon: '🏆',
-        check: function (d) { return (d && d.score && d.score.correct || 0) >= 5; },
-        progress: function (d) { return Math.min(5, d && d.score && d.score.correct || 0) + '/5 correct'; } }
+        check: function (d) { return timeChallengeSolvedCount(d) >= 5; },
+        progress: function (d) { return Math.min(5, timeChallengeSolvedCount(d)) + '/5 correct'; } }
     ],
     render: function (ctx) {
       var React = ctx.React, h = React.createElement;
@@ -271,7 +336,7 @@
       var sq = sqs[sqIndex];
       var chIndex = indexFor(d.challengeIndex, CHALLENGES.length);
       var challenge = CHALLENGES[chIndex];
-      var score = d.score || { correct: 0, total: 0 };
+      var score = Object.assign({ correct: 0, total: 0 }, d.score || {}, { correct: timeChallengeSolvedCount(d) });
 
       function setTab(id) {
         upd(function (current) {
@@ -301,9 +366,21 @@
         });
         announce('Clock changed to ' + time12(next) + ', or ' + time24(next) + '.');
       }
-      function markElapsed(patch) {
+      function markElapsed(changes) {
         upd(function (current) {
-          return Object.assign({}, patch, { elapsedModels: (current.elapsedModels || 0) + 1 });
+          var currentStart = current.elapsedStart == null ? 495 : norm(current.elapsedStart);
+          var currentAmount = clamp(current.elapsedDuration == null ? 95 : current.elapsedDuration, 0, 720);
+          var currentDirection = current.elapsedDirection === -1 ? -1 : 1;
+          var nextStart = changes.elapsedStart == null ? currentStart : norm(changes.elapsedStart);
+          var nextAmount = changes.elapsedDuration == null ? currentAmount : clamp(changes.elapsedDuration, 0, 720);
+          var nextDirection = changes.elapsedDirection == null ? currentDirection : (changes.elapsedDirection === -1 ? -1 : 1);
+          var changed = nextStart !== currentStart || nextAmount !== currentAmount || nextDirection !== currentDirection;
+          var signatures = Object.assign({}, current.elapsedModelSignatures || {});
+          if (changed) signatures[elapsedModelSignature(nextStart, nextAmount, nextDirection)] = true;
+          return Object.assign({}, changes, {
+            elapsedModelSignatures: signatures,
+            elapsedModels: Object.keys(signatures).length
+          });
         });
       }
       function formatToggle() {
@@ -511,8 +588,9 @@
                   (jumps.length ? ' = ' : '') + amount + ' minutes')))));
       }
       function scheduleView() {
-        var events = schedule.events, span = events[events.length - 1][2] - events[0][1];
-        var busy = events.reduce(function (sum, e) { return sum + e[2] - e[1]; }, 0);
+        var events = schedule.events, timeline = scheduleTimeline(events);
+        var span = timeline[timeline.length - 1].end - timeline[0].start;
+        var busy = timeline.reduce(function (sum, item) { return sum + item.duration; }, 0);
         var feedback = d.scheduleFeedback;
         var solvedKey = scheduleKey + ':' + sqIndex;
         var alreadySolved = !!(d.scheduleSolvedKeys || {})[solvedKey];
@@ -534,7 +612,7 @@
                 scheduleFeedback: { ok: true, index: sqIndex, schedule: scheduleKey,
                   message: 'Correct! ' + sq.explanation },
                 scheduleSolvedKeys: solved,
-                scheduleSolved: Object.keys(solved).length
+                scheduleSolved: countKnownKeys(solved, SCHEDULE_QUESTION_IDS)
               };
             });
             if (firstSolve) award('timeSchedule', 5, 'schedule reasoning');
@@ -552,8 +630,9 @@
               h('div', { className: 'bg-violet-700 text-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3' },
                 h('div', null, h('h4', { className: 'font-black' }, schedule.icon + ' ' + schedule.label),
                   h('p', { className: 'text-xs text-violet-100' },
-                    showTime(events[0][1], use24) + ' to ' +
-                    showTime(events[events.length - 1][2], use24))),
+                    scheduleTimeLabel(timeline[0].start, use24) + ' to ' +
+                    scheduleTimeLabel(timeline[timeline.length - 1].end, use24) +
+                    (timeline[timeline.length - 1].end >= DAY ? ' (crosses midnight)' : ''))),
                 h('select', { value: scheduleKey, 'aria-label': 'Choose a schedule',
                   onChange: function (e) { upd({ scheduleKey: e.target.value,
                     scheduleQuestionIndex: 0, scheduleAnswer: '', scheduleFeedback: null }); },
@@ -570,14 +649,15 @@
                         className: 'text-left px-3 py-3 font-black' }, label);
                     }))),
                   h('tbody', null, events.map(function (e, i) {
-                    var gap = i < events.length - 1 ? events[i + 1][1] - e[2] : null;
+                    var item = timeline[i];
+                    var gap = i < events.length - 1 ? timeline[i + 1].start - item.end : null;
                     return h('tr', { key: e[0], className: 'border-t border-violet-100' },
                       h('th', { scope: 'row', className: 'text-left px-3 py-3 font-bold whitespace-nowrap' },
                         h('span', { className: 'inline-block w-3 h-3 rounded-full mr-2',
                           style: { backgroundColor: e[3] }, 'aria-hidden': 'true' }), e[0]),
-                      h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, showTime(e[1], use24)),
-                      h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, showTime(e[2], use24)),
-                      h('td', { className: 'px-3 py-3 whitespace-nowrap' }, durationText(e[2] - e[1])),
+                      h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, scheduleTimeLabel(item.start, use24)),
+                      h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, scheduleTimeLabel(item.end, use24)),
+                      h('td', { className: 'px-3 py-3 whitespace-nowrap' }, durationText(item.duration)),
                       h('td', { className: 'px-3 py-3 whitespace-nowrap' }, gap == null ? '—' : durationText(gap)));
                   })))),
               h('div', { className: 'grid grid-cols-3 gap-2 bg-slate-50 border-t p-3 text-center' },
@@ -649,7 +729,7 @@
               return { challengeFeedback: { ok: true, index: chIndex,
                 message: challenge.explanation },
                 solvedChallenges: solved,
-                score: { correct: (currentScore.correct || 0) + (firstSolve ? 1 : 0),
+                score: { correct: countKnownKeys(solved, TIME_CHALLENGE_IDS),
                   total: (currentScore.total || 0) + 1 },
                 streak: streak, bestStreak: Math.max(current.bestStreak || 0, streak),
                 challengeTypesUsed: types };
@@ -669,6 +749,10 @@
           }
         }
         var accuracy = score.total ? Math.round((score.correct || 0) / score.total * 100) : 0;
+        var solvedChallengeCount = Object.keys(d.solvedChallenges || {}).filter(function(key) {
+          var index = Number(key);
+          return !!d.solvedChallenges[key] && Number.isInteger(index) && index >= 0 && index < CHALLENGES.length;
+        }).length;
         return h('section', { className: 'space-y-4',
           'aria-labelledby': 'ts-challenge-heading' },
           heading('ts-challenge-heading', 'Challenge Lab',
@@ -681,9 +765,10 @@
             h('span', { className: 'rounded-lg bg-sky-100 text-sky-800 px-3 py-2' }, accuracy + '%')),
           h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', role: 'progressbar',
             'aria-label': 'Challenge set progress', 'aria-valuemin': 0,
-            'aria-valuemax': CHALLENGES.length, 'aria-valuenow': chIndex + 1 },
+            'aria-valuemax': CHALLENGES.length, 'aria-valuenow': solvedChallengeCount,
+            'aria-valuetext': solvedChallengeCount + ' of ' + CHALLENGES.length + ' solved; currently viewing challenge ' + (chIndex + 1) },
             h('div', { className: 'h-full bg-gradient-to-r from-sky-500 to-indigo-600',
-              style: { width: ((chIndex + 1) / CHALLENGES.length * 100) + '%' } })),
+              style: { width: (solvedChallengeCount / CHALLENGES.length * 100) + '%' } })),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4' },
             h('div', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50 to-white p-4 flex items-center justify-center min-h-[280px]' },
               challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + chIndex, true) :

@@ -71,6 +71,8 @@ const pack = {
   contentReview: '200 source-reviewed questions plus 12 chapters, 60 checks, 75 flashcards, and 20 memory aids; independent licensed SLP and psychometric review pending',
   nativeQaUrl: './test_prep/speech_language_pathology_5331_native_qa.json', learningLibraryUrl: './test_prep/speech_language_pathology_5331_learning_library.json',
   learningLibraryQaUrl: './test_prep/speech_language_pathology_5331_learning_library_qa.json', simulationItemCount: 132, simulationTimeMinutes: 150,
+  officialSelectedResponseCount: 132, officialTotalTimeMinutes: 150,
+  simulationDomainCounts: { 'foundations-professional-practice': 44, 'screening-assessment-diagnosis': 44, 'treatment-planning-evaluation': 44 },
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS or ASHA. The official Praxis Speech-Language Pathology (5331) test currently has 132 selected-response questions in 150 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, clinical evaluations, diagnoses, medical or swallowing-safety decisions, treatment, legal advice, or substitutes for qualified supervision and current federal, state, local, licensure, certification, educational, health-care, privacy, consent, emergency, and reporting requirements.',
   domains: [
     { id: 'foundations-professional-practice', label: 'Foundations and Professional Practice', weight: 1 / 3 },

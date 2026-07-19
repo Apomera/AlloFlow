@@ -1716,7 +1716,7 @@
                          <div className="flex items-center gap-2">
                              <Loader2 className={`text-violet-600 ${isProcessing ? 'animate-spin motion-reduce:animate-none' : ''}`} size={20} />
                              <span className="font-bold text-slate-700 text-sm">
-                                 {isProcessing ? 'Generating...' : 'Word Sounds'}
+                                 {isProcessing ? tf('status.analyzing', 'Generating...') : tf('word_sounds.title', 'Word Sounds Studio')}
                              </span>
                          </div>
                          <button type="button" data-help-key="ws_gen_expand" onClick={() => { setIsMinimized(false); if (onExpand) onExpand(); }} className="p-1 hover:bg-slate-100 rounded text-slate-600">

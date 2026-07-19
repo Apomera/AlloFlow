@@ -8,8 +8,8 @@
 //  C. Options Listen — the per-option audio button rendered only when opt.audio
 //     existed, but nothing ever generated opt.audio (dead branch); now it falls back
 //     to on-demand TTS of the option text.
-//  D. Free-response nudge with a COST — hint halves the turn's XP gain (hintUsedTurn
-//     stamped by handleAdventureHint, applied in handleDiceRollComplete); one per scene.
+//  D. Free-response Strategy Hint — a validated Notice/Connect/Try scaffold, available
+//     once per scene with normal rewards and support-use metadata.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -70,29 +70,36 @@ describe('C. options Listen has an on-demand TTS fallback (was a dead branch)', 
   }
 });
 
-describe('D. free-response nudge costs half the turn XP gain', () => {
+describe('D. free-response Strategy Hint is useful, retryable, and reward-neutral', () => {
   for (const [name, s] of [['source', HANDLERS_SRC], ['module', HANDLERS_MOD]]) {
-    it(`handlers ${name}: handleAdventureHint exported, stamps hintUsedTurn BEFORE the await, never reveals the answer`, () => {
+    it(`handlers ${name}: validates a grounded Notice/Connect/Try scaffold before consuming the clue`, () => {
       expect(s).toContain('handleAdventureHint');
-      expect(s).toMatch(/hintUsedTurn: prev\.turnCount/);
-      expect(s).toMatch(/do NOT reveal the solution/);
+      expect(s).toContain('await resilientJsonParse');
+      expect(s).toContain('const notice =');
+      expect(s).toContain('const connect =');
+      expect(s).toContain('const tryStep =');
+      expect(s).toContain('Strategy Hint response was too vague');
+      expect(s).toMatch(/hintUsedTurn:\s*requestTurn/);
+      expect(s).toMatch(/currentHint:\s*null/);
     });
   }
   for (const [name, s] of [['source', SESSION_SRC], ['module', SESSION_MOD]]) {
-    it(`session ${name}: XP gain is halved only when the hint was used for THIS scene, never below 0`, () => {
-      expect(s).toMatch(/xpDelta > 0 && prev\.hintUsedTurn === prev\.turnCount/);
-      expect(s).toMatch(/Math\.round\(xpDelta \/ 2\)/);
+    it(`session ${name}: keeps earned XP intact and records scaffold use as metadata`, () => {
+      expect(s).not.toMatch(/Math\.round\(xpDelta \/ 2\)/);
+      expect(s).toMatch(/support:\s*['"]strategy_hint['"]/);
     });
   }
   for (const [name, s] of [['source', VIEW_SRC], ['module', VIEW_MOD]]) {
-    it(`view ${name}: hint button discloses the cost and locks after one use per scene`, () => {
-      expect(s).toMatch(/half XP this turn/);
-      expect((s.match(/hintUsedTurn === adventureState\.turnCount/g) || []).length).toBeGreaterThanOrEqual(2);
-      expect(s).toMatch(/hint_use_starter|Use this sentence starter/);
+    it(`view ${name}: presents the scaffold clearly without penalty language`, () => {
+      expect(s).not.toMatch(/half XP this turn|Need a nudge|Ask for a nudge/);
+      expect(s).toContain('renderStrategyHintCard');
+      expect(s).toContain('hint_button_helper');
+      expect(s).toMatch(/hintUsedTurn === adventureState\.turnCount/);
     });
   }
-  it('ANTI: hint wrapper delegates with the deps the handler needs', () => {
+  it('ANTI: hint wrapper delegates source, draft, objective, mode, and language context', () => {
     expect(ANTI).toMatch(/const handleAdventureHint = async \(\) =>/);
+    expect(ANTI).toMatch(/adventureTextInput,[\s\S]*standardsInput,[\s\S]*adventureLanguageMode/);
     expect(ANTI).toMatch(/prewarmAdventureAudio, handleAdventureHint,/);
   });
 });

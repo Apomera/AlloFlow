@@ -319,7 +319,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
+    "prompt": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
     "choices": [
       "Provide identical remediation in all academic areas.",
       "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
@@ -354,7 +354,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
+    "prompt": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
     "choices": [
       "Interpret the response as intentional defiance.",
       "Exclude the student from every future drill.",
@@ -389,7 +389,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
+    "prompt": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
     "choices": [
       "The student knew the work and was choosing to fail before.",
       "The checklist has changed the academic standard.",
@@ -494,7 +494,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
+    "prompt": "A student with a learning disability understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
     "choices": [
       "Reduce cognitive demand because speech is unclear.",
       "Answer every question for the student.",
@@ -529,7 +529,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a learner has both a visual impairment and a motor disability. How should the team plan access?",
+    "prompt": "A student with a learning disability also has visual and motor disabilities. How should the team plan access?",
     "choices": [
       "Add separate generic supports for each label without testing them together.",
       "Choose the support associated with the first diagnosis only.",
@@ -564,7 +564,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with dyslexia reads familiar words from memory but struggles to decode new words. Which instruction most directly addresses the need?",
+    "prompt": "A student with dyslexia reads familiar words from memory but struggles to decode new words. Which instruction most directly addresses the need?",
     "choices": [
       "Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice.",
       "Silent independent reading without corrective feedback.",
@@ -704,7 +704,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
     "choices": [
       "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal.",
       "Keep the mismatch because services and goals are unrelated sections.",
@@ -739,7 +739,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?",
     "choices": [
       "A modification that lowers the learning target.",
       "An accommodation that changes access or response conditions without changing the intended construct.",
@@ -844,7 +844,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. What should govern placement?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner can make progress in general education with supplementary aids, but scheduling would be easier in a separate class. What should govern placement?",
     "choices": [
       "The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services.",
       "Administrative convenience.",
@@ -1334,7 +1334,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
+    "prompt": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response?",
     "choices": [
       "A different activity with no connection to the same concept.",
       "A peer’s completed answers to copy.",
@@ -1369,7 +1369,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
+    "prompt": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
     "choices": [
       "Seat location as the only consideration.",
       "Written homework instead of participation in discussion.",
@@ -1404,7 +1404,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
+    "prompt": "A student with a learning disability and a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
     "choices": [
       "Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation.",
       "Assign an observer role for every laboratory activity.",
@@ -1439,7 +1439,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
+    "prompt": "A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?",
     "choices": [
       "Create a new response based on what seems convenient.",
       "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
@@ -1474,7 +1474,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, which goal best addresses adaptive behavior?",
+    "prompt": "When a documented individualized need includes adaptive behavior, which IEP goal is most useful?",
     "choices": [
       "The student will improve independence soon.",
       "The student will earn higher intelligence-test scores.",
@@ -1509,7 +1509,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?",
     "choices": [
       "Ask students to infer the pattern from an unrelated story without guidance.",
       "Have students memorize definitions only.",
@@ -1545,7 +1545,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?",
     "choices": [
       "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
       "It permanently limits students to one text type.",
@@ -1581,7 +1581,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?",
     "choices": [
       "Treat every letter as arbitrary.",
       "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
@@ -1617,7 +1617,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?",
     "choices": [
       "Counting letters and choosing the shortest pronunciation.",
       "Using context to replace word analysis.",
@@ -1653,7 +1653,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?",
     "choices": [
       "It is useful only for grammar labels.",
       "It eliminates the need for phonics.",
@@ -1689,7 +1689,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is orthographic mapping?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what is orthographic mapping?",
     "choices": [
       "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
       "They store the outline of the word as a picture.",
@@ -1725,7 +1725,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how does spelling instruction support reading?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, how does spelling instruction support reading?",
     "choices": [
       "Spelling and reading use unrelated systems.",
       "Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading.",
@@ -1761,7 +1761,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, which error analysis best guides phonics instruction?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, which error analysis best guides phonics instruction?",
     "choices": [
       "Whether the student knows the story theme.",
       "Whether the font is the preferred color.",
@@ -1797,7 +1797,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best response when context and decoding conflict?",
+    "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what is the best response when context and decoding conflict?",
     "choices": [
       "Accept the substitution because the meaning is plausible.",
       "Cover the word and guess again.",
@@ -1833,7 +1833,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which support is most likely to improve engagement while maintaining meaningful literacy instruction?",
+    "prompt": "During explicit literacy instruction for a student with a learning disability, what combination of supports best promotes engagement with grade-level text?",
     "choices": [
       "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
       "Offer only prizes for page counts.",
@@ -1869,7 +1869,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?",
     "choices": [
       "Writing practice automatically fixes every decoding need.",
       "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
@@ -1905,7 +1905,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?",
     "choices": [
       "Treat total word count as the only writing construct.",
       "Assume limited output means limited knowledge.",
@@ -1941,7 +1941,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?",
     "choices": [
       "Every subject uses identical text conventions.",
       "Content teachers should avoid literacy instruction.",
@@ -1977,7 +1977,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?",
     "choices": [
       "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention.",
       "Assume digital familiarity equals critical literacy.",
@@ -2013,7 +2013,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?",
     "choices": [
       "Every text must use the same difficulty and viewpoint.",
       "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
@@ -2049,7 +2049,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how can sentence-level instruction support literacy?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, how can sentence-level instruction support literacy?",
     "choices": [
       "Label parts of speech without connecting them to meaning.",
       "Reduce every text to short simple sentences permanently.",
@@ -2085,7 +2085,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what makes genre instruction transferable?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, what makes genre instruction transferable?",
     "choices": [
       "Require the same template for every genre.",
       "Focus only on page length.",
@@ -2121,7 +2121,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should evidence be taught in source-based writing?",
+    "prompt": "During explicit written-expression instruction for a student with a learning disability, how should evidence be taught in source-based writing?",
     "choices": [
       "Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately.",
       "Add more quotations without analysis.",
@@ -3182,7 +3182,7 @@
     "type": "single-choice",
     "domainId": "foundations-professional-responsibilities",
     "difficulty": "application",
-    "prompt": "During collaborative planning for a student with a learning disability, in effective co-teaching, what is the special educator’s role?",
+    "prompt": "During collaborative planning for a student with a learning disability, what is the special educator’s role?",
     "choices": [
       "Act primarily as the general educator’s assistant.",
       "Manage behavior while the general educator owns all content.",
@@ -3287,7 +3287,7 @@
     "type": "single-choice",
     "domainId": "foundations-professional-responsibilities",
     "difficulty": "application",
-    "prompt": "During collaborative planning for a student with a learning disability, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
+    "prompt": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
     "choices": [
       "Use the strategy only during therapy sessions.",
       "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data.",
@@ -3602,7 +3602,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, students are learning a common vowel correspondence. Which lesson design is strongest?",
+    "prompt": "When progress data identify a specific word-reading barrier, students are learning a common vowel correspondence. Which lesson design is strongest?",
     "choices": [
       "Ask students to infer the pattern from an unrelated story without guidance.",
       "Have students memorize definitions only.",
@@ -3778,7 +3778,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, what is the main purpose of a passage closely aligned with recently taught correspondences?",
+    "prompt": "When progress data identify a specific word-reading barrier, what is the main purpose of a passage closely aligned with recently taught correspondences?",
     "choices": [
       "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
       "It permanently limits students to one text type.",
@@ -3954,7 +3954,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, a frequently encountered word contains both regular and unexpected spellings. What should the teacher emphasize?",
+    "prompt": "When progress data identify a specific word-reading barrier, a frequently encountered word contains both regular and unexpected spellings. What should the teacher emphasize?",
     "choices": [
       "Treat every letter as arbitrary.",
       "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
@@ -4060,7 +4060,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, an adolescent can read short words but guesses at long academic words. What should intervention include?",
+    "prompt": "When progress data identify a specific word-reading barrier, a fifth-grade student can read short words but guesses at long academic words. What should instruction include?",
     "choices": [
       "Counting letters and choosing the shortest pronunciation.",
       "Using context to replace word analysis.",
@@ -4166,7 +4166,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, how can roots, bases, prefixes, and suffixes support older readers?",
+    "prompt": "When progress data identify a specific word-reading barrier, how can prefixes, suffixes, and roots support students reading complex grade-level words?",
     "choices": [
       "It is useful only for grammar labels.",
       "It eliminates the need for phonics.",
@@ -4447,7 +4447,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner identified with SLD calculates accurately but has persistent difficulty decoding unfamiliar words. What should guide support?",
+    "prompt": "A learner with a specific learning disability calculates accurately but has persistent difficulty decoding unfamiliar words. What should guide support?",
     "choices": [
       "Provide identical remediation in all academic areas.",
       "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
@@ -4482,7 +4482,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner with ASD becomes distressed when a loud timer signals transitions. What is the best initial support?",
+    "prompt": "A learner with a learning disability and autism becomes distressed when a loud timer signals transitions. What is the best initial support?",
     "choices": [
       "Interpret the response as intentional defiance.",
       "Exclude the student from every future drill.",
@@ -4517,7 +4517,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner with ADHD completes projects with interim deadlines but misses work when given one distant due date. Which interpretation is best?",
+    "prompt": "A learner with a learning disability and ADHD completes projects with interim deadlines but misses work when given one distant due date. Which interpretation is best?",
     "choices": [
       "The student knew the work and was choosing to fail before.",
       "The checklist has changed the academic standard.",
@@ -4622,7 +4622,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner uses an AAC system and needs extra response time during discussion. Which teacher response is best?",
+    "prompt": "A learner with a learning disability uses an AAC system and needs extra response time during discussion. Which teacher response is best?",
     "choices": [
       "Reduce cognitive demand because speech is unclear.",
       "Answer every question for the student.",
@@ -4657,7 +4657,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a student has hearing, mobility, and health-related needs that interact during laboratory work. What is the best approach?",
+    "prompt": "A student with a learning disability has hearing, mobility, and health-related needs that interact during laboratory work. What is the best approach?",
     "choices": [
       "Add separate generic supports for each label without testing them together.",
       "Choose the support associated with the first diagnosis only.",
@@ -4692,7 +4692,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner with persistent word-reading difficulty guesses unfamiliar words from pictures and first letters. What is the strongest instructional focus?",
+    "prompt": "A learner with a learning disability has persistent word-reading difficulty and guesses unfamiliar words from pictures and first letters. What is the strongest instructional focus?",
     "choices": [
       "Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice.",
       "Silent independent reading without corrective feedback.",
@@ -5252,7 +5252,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a learner who is blind is assigned a graph that is available only as a small image. What should the team provide?",
+    "prompt": "A learner with a learning disability who is blind is assigned a graph available only as a small image. What should the team provide?",
     "choices": [
       "A different activity with no connection to the same concept.",
       "A peer’s completed answers to copy.",
@@ -5287,7 +5287,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a hard-of-hearing student is entering a discussion-heavy class. What should the IEP team consider?",
+    "prompt": "A hard-of-hearing student with a learning disability is entering a discussion-heavy class. What should the IEP team consider?",
     "choices": [
       "Seat location as the only consideration.",
       "Written homework instead of participation in discussion.",
@@ -5322,7 +5322,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a learner with limited motor control cannot safely reach equipment in a standard workstation. Which response is best?",
+    "prompt": "A learner with a learning disability and limited motor control cannot safely reach equipment in a standard workstation. Which response is best?",
     "choices": [
       "Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation.",
       "Assign an observer role for every laboratory activity.",
@@ -5357,7 +5357,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a learner with a health condition experiences the event described in the school emergency plan. What is the correct response?",
+    "prompt": "A learner with a learning disability and a health condition experiences the event described in the school emergency plan. What is the correct response?",
     "choices": [
       "Create a new response based on what seems convenient.",
       "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
@@ -5392,7 +5392,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a team wants to measure growth in practical daily functioning. Which target is most appropriate?",
+    "prompt": "When a documented individualized need includes practical daily functioning, which target is most appropriate?",
     "choices": [
       "The student will improve independence soon.",
       "The student will earn higher intelligence-test scores.",
@@ -5427,7 +5427,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, how do readers establish rapid access to a word after successful encounters?",
+    "prompt": "When progress data identify a specific word-reading barrier, how do readers establish rapid access to a word after successful encounters?",
     "choices": [
       "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
       "They store the outline of the word as a picture.",
@@ -5463,7 +5463,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, why should encoding be included in a decoding intervention?",
+    "prompt": "When progress data identify a specific word-reading barrier, why should encoding be included in a decoding intervention?",
     "choices": [
       "Spelling and reading use unrelated systems.",
       "Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading.",
@@ -5499,7 +5499,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, a student repeatedly reads “plan” as “pan” and spells “best” as “bet.” What should the teacher examine?",
+    "prompt": "When progress data identify a specific word-reading barrier, a student repeatedly reads “plan” as “pan” and spells “best” as “bet.” What should the teacher examine?",
     "choices": [
       "Whether the student knows the story theme.",
       "Whether the font is the preferred color.",
@@ -5535,7 +5535,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, a student reads a word that fits the sentence meaning but does not match the printed letters. What should the teacher prompt?",
+    "prompt": "When progress data identify a specific word-reading barrier, a student reads a word that fits the sentence meaning but does not match the printed letters. What should the teacher prompt?",
     "choices": [
       "Accept the substitution because the meaning is plausible.",
       "Cover the word and guess again.",
@@ -5571,7 +5571,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "Progress evidence shows that a student with a learning disability can read assigned text with support but rarely chooses to persist. Which response best addresses engagement without lowering the learning goal?",
+    "prompt": "A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which response best supports engagement while preserving meaningful literacy instruction?",
     "choices": [
       "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
       "Offer only prizes for page counts.",
@@ -5607,7 +5607,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, why should a literacy plan integrate reading and composing rather than treat them as separate blocks?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, why should a literacy plan integrate reading and composing rather than treat them as separate blocks?",
     "choices": [
       "Writing practice automatically fixes every decoding need.",
       "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
@@ -5643,7 +5643,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, a student has strong ideas but writes little because spelling and handwriting are effortful. What should the teacher examine?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, the learner has strong ideas but writes little because spelling and handwriting are effortful. What should the teacher examine?",
     "choices": [
       "Treat total word count as the only writing construct.",
       "Assume limited output means limited knowledge.",
@@ -5679,7 +5679,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, why might reading a laboratory report require different supports from reading a historical argument?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, why might reading a laboratory report require different supports from reading a historical argument?",
     "choices": [
       "Every subject uses identical text conventions.",
       "Content teachers should avoid literacy instruction.",
@@ -5715,7 +5715,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, students click links rapidly but do not evaluate or integrate information. What instruction is needed?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, students click links rapidly but do not evaluate or integrate information. What instruction is needed?",
     "choices": [
       "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention.",
       "Assume digital familiarity equals critical literacy.",
@@ -5751,7 +5751,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, a grade team selects several texts around one science concept. What is the strongest rationale?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, a grade team selects several texts around one science concept. What is the strongest rationale?",
     "choices": [
       "Every text must use the same difficulty and viewpoint.",
       "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
@@ -5787,7 +5787,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, students understand ideas orally but struggle with complex written syntax. What should instruction include?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, students understand ideas orally but struggle with complex written syntax. What should instruction include?",
     "choices": [
       "Label parts of speech without connecting them to meaning.",
       "Reduce every text to short simple sentences permanently.",
@@ -5823,7 +5823,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, students can fill in one narrative organizer but cannot plan a new story. What should change?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, students can fill in one narrative organizer but cannot plan a new story. What should change?",
     "choices": [
       "Require the same template for every genre.",
       "Focus only on page length.",
@@ -5859,7 +5859,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, a student inserts quotations but does not connect them to a claim. What feedback is most useful?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, the learner inserts quotations but does not connect them to a claim. What feedback is most useful?",
     "choices": [
       "Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately.",
       "Add more quotations without analysis.",
@@ -7483,7 +7483,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. A candidate selects “Provide identical remediation in all academic areas”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. A candidate selects “Provide identical remediation in all academic areas”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption.",
       "\"Provide identical remediation in all academic areas.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -7530,7 +7530,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with autism covers their ears during fire-drill announcements and then misses directions. A candidate selects “Interpret the response as intentional defiance”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. A candidate selects “Interpret the response as intentional defiance”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements.",
       "\"Exclude the student from every future drill.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Sensory and communication needs can affect access and behavior.",
@@ -7577,7 +7577,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with ADHD begins work when directions are chunked and a checklist is visible. A candidate selects “The student knew the work and was choosing to fail before”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. A candidate selects “The student knew the work and was choosing to fail before”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability.",
       "\"The checklist has changed the academic standard.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -7718,7 +7718,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student understands grade-level ideas but has difficulty producing clear speech. A candidate selects “Reduce cognitive demand because speech is unclear”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability understands grade-level ideas but has difficulty producing clear speech. A candidate selects “Reduce cognitive demand because speech is unclear”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "A communication disability can limit how knowledge is expressed without indicating limited understanding. Accessible response modes and adequate wait time help the student demonstrate the intended construct.",
       "\"Answer every question for the student.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -7765,7 +7765,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a learner has both a visual impairment and a motor disability. A candidate selects “Add separate generic supports for each label without testing them together”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability also has visual and motor disabilities. A candidate selects “Add separate generic supports for each label without testing them together”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Co-occurring disabilities may interact in ways that are not captured by treating each label separately. Collaborative task analysis and trials show how combined access, communication, positioning, and health supports function.",
       "\"Choose the support associated with the first diagnosis only.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -7812,7 +7812,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "application",
-    "prompt": "For a student with a learning disability, a student with dyslexia reads familiar words from memory but struggles to decode new words. A candidate selects “Silent independent reading without corrective feedback”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with dyslexia reads familiar words from memory but struggles to decode new words. A candidate selects “Silent independent reading without corrective feedback”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Silent independent reading without corrective feedback.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Dyslexia commonly involves accurate or fluent word recognition, decoding, and spelling. Explicit, systematic instruction with modeling, guided practice, cumulative review, and feedback directly addresses these skills.",
@@ -8000,7 +8000,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. A candidate selects “Keep the mismatch because services and goals are unrelated sections”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. A candidate selects “Keep the mismatch because services and goals are unrelated sections”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Keep the mismatch because services and goals are unrelated sections.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective.",
@@ -8047,7 +8047,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “While developing an individualized program for a student with a learning disability, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?” A candidate selects “A modification that lowers the learning target”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?” A candidate selects “A modification that lowers the learning target”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "An accommodation changes how a learner accesses or responds while preserving what is measured. A modification changes the expected content, complexity, or performance standard.",
       "\"A modification that lowers the learning target.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -8188,7 +8188,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. A candidate selects “Administrative convenience”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner can make progress in general education with supplementary aids, but scheduling would be easier in a separate class. A candidate selects “Administrative convenience”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Administrative convenience.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Placement is individually determined, based on the IEP, and as close as possible to the child’s home. Removal from regular education occurs only when education there cannot be achieved satisfactorily with supports.",
@@ -8846,7 +8846,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student with low vision receives a worksheet containing a dense unlabeled diagram. A candidate selects “A different activity with no connection to the same concept”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. A candidate selects “A different activity with no connection to the same concept”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs.",
       "\"A peer’s completed answers to copy.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -8893,7 +8893,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student who is deaf uses sign language and will join a fast-paced seminar. A candidate selects “Seat location as the only consideration”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. A candidate selects “Seat location as the only consideration”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs.",
       "\"Written homework instead of participation in discussion.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Communication access is broader than hearing volume.",
@@ -8940,7 +8940,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "When removing an access barrier without changing the learning target, a student with a physical disability needs support positioning materials during science lab. A candidate selects “Assign an observer role for every laboratory activity”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A student with a learning disability and a physical disability needs support positioning materials during science lab. A candidate selects “Assign an observer role for every laboratory activity”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Assign an observer role for every laboratory activity.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency.",
@@ -8987,7 +8987,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “When removing an access barrier without changing the learning target, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?” A candidate selects “Create a new response based on what seems convenient”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?” A candidate selects “Create a new response based on what seems convenient”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role.",
       "\"Create a new response based on what seems convenient.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9034,7 +9034,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “When removing an access barrier without changing the learning target, which goal best addresses adaptive behavior?” A candidate selects “The student will improve independence soon”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “When a documented individualized need includes adaptive behavior, which IEP goal is most useful?” A candidate selects “The student will improve independence soon”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring.",
       "\"The student will earn higher intelligence-test scores.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9081,7 +9081,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?” A candidate selects “Ask students to infer the pattern from an unrelated story without guidance”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?” A candidate selects “Ask students to infer the pattern from an unrelated story without guidance”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence.",
       "\"Have students memorize definitions only.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9129,7 +9129,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?” A candidate selects “It permanently limits students to one text type”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?” A candidate selects “It permanently limits students to one text type”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"It permanently limits students to one text type.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing.",
@@ -9177,7 +9177,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?” A candidate selects “Treat every letter as arbitrary”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?” A candidate selects “Treat every letter as arbitrary”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape.",
       "\"Treat every letter as arbitrary.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9225,7 +9225,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?” A candidate selects “Counting letters and choosing the shortest pronunciation”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?” A candidate selects “Counting letters and choosing the shortest pronunciation”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context.",
       "\"Using context to replace word analysis.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9273,7 +9273,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?” A candidate selects “It is useful only for grammar labels”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?” A candidate selects “It is useful only for grammar labels”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge.",
       "\"It eliminates the need for phonics.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9321,7 +9321,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is orthographic mapping?” A candidate selects “They store the outline of the word as a picture”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what is orthographic mapping?” A candidate selects “They store the outline of the word as a picture”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"They store the outline of the word as a picture.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition.",
@@ -9369,7 +9369,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how does spelling instruction support reading?” A candidate selects “Spelling and reading use unrelated systems”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, how does spelling instruction support reading?” A candidate selects “Spelling and reading use unrelated systems”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links.",
       "\"Spelling and reading use unrelated systems.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9417,7 +9417,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, which error analysis best guides phonics instruction?” A candidate selects “Whether the student knows the story theme”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, which error analysis best guides phonics instruction?” A candidate selects “Whether the student knows the story theme”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly.",
       "\"Whether the font is the preferred color.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9465,7 +9465,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best response when context and decoding conflict?” A candidate selects “Accept the substitution because the meaning is plausible”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what is the best response when context and decoding conflict?” A candidate selects “Accept the substitution because the meaning is plausible”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition.",
       "\"Cover the word and guess again.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9513,7 +9513,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. A candidate selects “Offer only prizes for page counts”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit literacy instruction for a student with a learning disability, what combination of supports best promotes engagement with grade-level text?” A candidate selects “Offer only prizes for page counts”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Offer only prizes for page counts.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction.",
@@ -9561,7 +9561,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?” A candidate selects “Writing practice automatically fixes every decoding need”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?” A candidate selects “Writing practice automatically fixes every decoding need”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need.",
       "\"Writing practice automatically fixes every decoding need.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9609,7 +9609,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?” A candidate selects “Treat total word count as the only writing construct”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?” A candidate selects “Treat total word count as the only writing construct”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas.",
       "\"Assume limited output means limited knowledge.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9657,7 +9657,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?” A candidate selects “Every subject uses identical text conventions”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?” A candidate selects “Every subject uses identical text conventions”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge.",
       "\"Content teachers should avoid literacy instruction.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9705,7 +9705,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?” A candidate selects “Assume digital familiarity equals critical literacy”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?” A candidate selects “Assume digital familiarity equals critical literacy”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Assume digital familiarity equals critical literacy.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction.",
@@ -9753,7 +9753,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?” A candidate selects “Every text must use the same difficulty and viewpoint”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?” A candidate selects “Every text must use the same difficulty and viewpoint”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination.",
       "\"Every text must use the same difficulty and viewpoint.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9801,7 +9801,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how can sentence-level instruction support literacy?” A candidate selects “Label parts of speech without connecting them to meaning”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how can sentence-level instruction support literacy?” A candidate selects “Label parts of speech without connecting them to meaning”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Syntax instruction is most useful when students examine how sentence structures express relationships and apply that knowledge while comprehending and composing.",
       "\"Reduce every text to short simple sentences permanently.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9849,7 +9849,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what makes genre instruction transferable?” A candidate selects “Require the same template for every genre”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, what makes genre instruction transferable?” A candidate selects “Require the same template for every genre”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Genre knowledge becomes transferable when learners compare examples, discuss author choices, plan for audience and purpose, compose, receive feedback, and revise.",
       "\"Focus only on page length.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -9897,7 +9897,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should evidence be taught in source-based writing?” A candidate selects “Add more quotations without analysis”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how should evidence be taught in source-based writing?” A candidate selects “Add more quotations without analysis”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "\"Add more quotations without analysis.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "Evidence functions through relevance and reasoning; source-based writing requires accurate representation, attribution, integration, explanation, and attention to audience and purpose.",
@@ -11318,7 +11318,7 @@
     "type": "single-choice",
     "domainId": "foundations-professional-responsibilities",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “During collaborative planning for a student with a learning disability, in effective co-teaching, what is the special educator’s role?” A candidate selects “Act primarily as the general educator’s assistant”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “During collaborative planning for a student with a learning disability, what is the special educator’s role?” A candidate selects “Act primarily as the general educator’s assistant”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Co-teaching is a partnership with shared ownership. Roles may vary by lesson, but both educators contribute to planning, instruction, assessment, classroom management, and access for the whole class.",
       "\"Manage behavior while the general educator owns all content.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Co-teaching is a partnership with shared ownership.",
@@ -11459,7 +11459,7 @@
     "type": "single-choice",
     "domainId": "foundations-professional-responsibilities",
     "difficulty": "application",
-    "prompt": "During collaborative planning for a student with a learning disability, a student’s occupational therapist recommends a classroom positioning support. A candidate selects “Use the strategy only during therapy sessions”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. A candidate selects “Use the strategy only during therapy sessions”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective.",
       "\"Use the strategy only during therapy sessions.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Related services support educational access.",
@@ -11882,7 +11882,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, students are learning a common vowel correspondence. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When progress data identify a specific word-reading barrier, students are learning a common vowel correspondence. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Ask students to infer the pattern from an unrelated story without guidance” — Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence.",
       "“Have students memorize definitions only” — Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence.",
@@ -12118,7 +12118,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, what is the main purpose of a passage closely aligned with recently taught correspondences?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When progress data identify a specific word-reading barrier, what is the main purpose of a passage closely aligned with recently taught correspondences?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“It gives students a high opportunity to practice applying taught decoding patterns in connected reading” — Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing.",
       "“It permanently limits students to one text type” — Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing.",
@@ -12354,7 +12354,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, a frequently encountered word contains both regular and unexpected spellings. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When progress data identify a specific word-reading barrier, a frequently encountered word contains both regular and unexpected spellings. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Treat every letter as arbitrary” — Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape.",
       "“Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning” — Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape.",
@@ -12496,7 +12496,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, an adolescent can read short words but guesses at long academic words. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When progress data identify a specific word-reading barrier, a fifth-grade student can read short words but guesses at long academic words. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Counting letters and choosing the shortest pronunciation” — Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context.",
       "“Using context to replace word analysis” — Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context.",
@@ -12638,7 +12638,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, how can roots, bases, prefixes, and suffixes support older readers?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When progress data identify a specific word-reading barrier, how can prefixes, suffixes, and roots support students reading complex grade-level words?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“It is useful only for grammar labels” — Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge.",
       "“It eliminates the need for phonics” — Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge.",
@@ -13015,7 +13015,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner identified with SLD calculates accurately but has persistent difficulty decoding unfamiliar words. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a specific learning disability calculates accurately but has persistent difficulty decoding unfamiliar words. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Provide identical remediation in all academic areas” — Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption.",
       "“Target the documented area of academic need instead of assuming the disability affects every subject in the same way” — Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption.",
@@ -13062,7 +13062,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner with ASD becomes distressed when a loud timer signals transitions. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability and autism becomes distressed when a loud timer signals transitions. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Interpret the response as intentional defiance” — Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements.",
       "“Exclude the student from every future drill” — Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements.",
@@ -13109,7 +13109,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner with ADHD completes projects with interim deadlines but misses work when given one distant due date. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability and ADHD completes projects with interim deadlines but misses work when given one distant due date. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“The student knew the work and was choosing to fail before” — ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability.",
       "“The checklist has changed the academic standard” — ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability.",
@@ -13250,7 +13250,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner uses an AAC system and needs extra response time during discussion. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability uses an AAC system and needs extra response time during discussion. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Reduce cognitive demand because speech is unclear” — A communication disability can limit how knowledge is expressed without indicating limited understanding. Accessible response modes and adequate wait time help the student demonstrate the intended construct.",
       "“Answer every question for the student” — A communication disability can limit how knowledge is expressed without indicating limited understanding. Accessible response modes and adequate wait time help the student demonstrate the intended construct.",
@@ -13297,7 +13297,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a student has hearing, mobility, and health-related needs that interact during laboratory work. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A student with a learning disability has hearing, mobility, and health-related needs that interact during laboratory work. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Add separate generic supports for each label without testing them together” — Co-occurring disabilities may interact in ways that are not captured by treating each label separately. Collaborative task analysis and trials show how combined access, communication, positioning, and health supports function.",
       "“Choose the support associated with the first diagnosis only” — Co-occurring disabilities may interact in ways that are not captured by treating each label separately. Collaborative task analysis and trials show how combined access, communication, positioning, and health supports function.",
@@ -13344,7 +13344,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "When a team analyzes strengths and specific processing or academic needs, a learner with persistent word-reading difficulty guesses unfamiliar words from pictures and first letters. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability has persistent word-reading difficulty and guesses unfamiliar words from pictures and first letters. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice” — Dyslexia commonly involves accurate or fluent word recognition, decoding, and spelling. Explicit, systematic instruction with modeling, guided practice, cumulative review, and feedback directly addresses these skills.",
       "“Silent independent reading without corrective feedback” — Dyslexia commonly involves accurate or fluent word recognition, decoding, and spelling. Explicit, systematic instruction with modeling, guided practice, cumulative review, and feedback directly addresses these skills.",
@@ -14096,7 +14096,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a learner who is blind is assigned a graph that is available only as a small image. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability who is blind is assigned a graph available only as a small image. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“A different activity with no connection to the same concept” — Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs.",
       "“A peer’s completed answers to copy” — Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs.",
@@ -14143,7 +14143,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a hard-of-hearing student is entering a discussion-heavy class. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A hard-of-hearing student with a learning disability is entering a discussion-heavy class. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Seat location as the only consideration” — Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs.",
       "“Written homework instead of participation in discussion” — Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs.",
@@ -14190,7 +14190,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a learner with limited motor control cannot safely reach equipment in a standard workstation. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability and limited motor control cannot safely reach equipment in a standard workstation. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation” — Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency.",
       "“Assign an observer role for every laboratory activity” — Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency.",
@@ -14237,7 +14237,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a learner with a health condition experiences the event described in the school emergency plan. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner with a learning disability and a health condition experiences the event described in the school emergency plan. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Create a new response based on what seems convenient” — Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role.",
       "“Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified” — Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role.",
@@ -14284,7 +14284,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When selecting technology, routines, or adaptive supports for a student with a learning disability, a team wants to measure growth in practical daily functioning. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When a documented individualized need includes practical daily functioning, which target is most appropriate?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“The student will improve independence soon” — Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring.",
       "“The student will earn higher intelligence-test scores” — Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring.",
@@ -14331,7 +14331,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, how do readers establish rapid access to a word after successful encounters?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When progress data identify a specific word-reading barrier, how do readers establish rapid access to a word after successful encounters?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval” — Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition.",
       "“They store the outline of the word as a picture” — Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition.",
@@ -14379,7 +14379,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, why should encoding be included in a decoding intervention?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When progress data identify a specific word-reading barrier, why should encoding be included in a decoding intervention?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Spelling and reading use unrelated systems” — Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links.",
       "“Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading” — Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links.",
@@ -14427,7 +14427,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, a student repeatedly reads \"plan\" as \"pan\" and spells \"best\" as \"bet.\" What should the teacher examine?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When progress data identify a specific word-reading barrier, a student repeatedly reads \"plan\" as \"pan\" and spells \"best\" as \"bet.\" What should the teacher examine?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Whether the student knows the story theme” — Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly.",
       "“Whether the font is the preferred color” — Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly.",
@@ -14475,7 +14475,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When progress evidence identifies a specific reading barrier, during a recursive decoding lesson, a student reads a word that fits the sentence meaning but does not match the printed letters. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When progress data identify a specific word-reading barrier, a student reads a word that fits the sentence meaning but does not match the printed letters. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Accept the substitution because the meaning is plausible” — Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition.",
       "“Cover the word and guess again” — Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition.",
@@ -14523,7 +14523,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "Progress evidence shows that a student with a learning disability can read assigned text with support but rarely chooses to persist. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency” — Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction.",
       "“Offer only prizes for page counts” — Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction.",
@@ -14571,7 +14571,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When a writing sample identifies a teachable skill need, while teaching a recursive writing process, why should a literacy plan integrate reading and composing rather than treat them as separate blocks?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When teaching a recursive writing process to a student with a learning disability, why should a literacy plan integrate reading and composing rather than treat them as separate blocks?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Writing practice automatically fixes every decoding need” — Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need.",
       "“Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning” — Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need.",
@@ -14619,7 +14619,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, a student has strong ideas but writes little because spelling and handwriting are effortful. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, the learner has strong ideas but writes little because spelling and handwriting are effortful. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Treat total word count as the only writing construct” — Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas.",
       "“Assume limited output means limited knowledge” — Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas.",
@@ -14667,7 +14667,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When a writing sample identifies a teachable skill need, while teaching a recursive writing process, why might reading a laboratory report require different supports from reading a historical argument?” Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner is working through this task: “When teaching a recursive writing process to a student with a learning disability, why might reading a laboratory report require different supports from reading a historical argument?” Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Every subject uses identical text conventions” — Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge.",
       "“Content teachers should avoid literacy instruction” — Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge.",
@@ -14715,7 +14715,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, students click links rapidly but do not evaluate or integrate information. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, students click links rapidly but do not evaluate or integrate information. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention” — Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction.",
       "“Assume digital familiarity equals critical literacy” — Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction.",
@@ -14763,7 +14763,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, a grade team selects several texts around one science concept. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, a grade team selects several texts around one science concept. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Every text must use the same difficulty and viewpoint” — Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination.",
       "“Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives” — Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination.",
@@ -14811,7 +14811,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, students understand ideas orally but struggle with complex written syntax. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, students understand ideas orally but struggle with complex written syntax. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Label parts of speech without connecting them to meaning” — Syntax instruction is most useful when students examine how sentence structures express relationships and apply that knowledge while comprehending and composing.",
       "“Reduce every text to short simple sentences permanently” — Syntax instruction is most useful when students examine how sentence structures express relationships and apply that knowledge while comprehending and composing.",
@@ -14859,7 +14859,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, students can fill in one narrative organizer but cannot plan a new story. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, students can fill in one narrative organizer but cannot plan a new story. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Require the same template for every genre” — Genre knowledge becomes transferable when learners compare examples, discuss author choices, plan for audience and purpose, compose, receive feedback, and revise.",
       "“Focus only on page length” — Genre knowledge becomes transferable when learners compare examples, discuss author choices, plan for audience and purpose, compose, receive feedback, and revise.",
@@ -14907,7 +14907,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "When a writing sample identifies a teachable skill need, while teaching a recursive writing process, a student inserts quotations but does not connect them to a claim. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "When teaching a recursive writing process to a student with a learning disability, the learner inserts quotations but does not connect them to a claim. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "“Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately” — Evidence functions through relevance and reasoning; source-based writing requires accurate representation, attribution, integration, explanation, and attention to audience and purpose.",
       "“Add more quotations without analysis” — Evidence functions through relevance and reasoning; source-based writing requires accurate representation, attribution, integration, explanation, and attention to audience and purpose.",
@@ -16939,7 +16939,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "For a student with a learning disability, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. A team compares “Target the documented area of academic need instead of assuming the disability affects every subject in the same way” with “Provide identical remediation in all academic areas”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. A team compares “Target the documented area of academic need instead of assuming the disability affects every subject in the same way” with “Provide identical remediation in all academic areas”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Provide identical remediation in all academic areas” is better supported: Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption. In contrast, “Target the documented area of academic need instead of assuming the disability affects every subject in the same way” is not supported: \"Provide identical remediation in all academic areas.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Target the documented area of academic need instead of assuming the disability affects every subject in the same way” is better supported: Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption. In contrast, “Provide identical remediation in all academic areas” is not supported: \"Provide identical remediation in all academic areas.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -16986,7 +16986,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "For a student with a learning disability, a student with autism covers their ears during fire-drill announcements and then misses directions. A team compares “Plan a predictable, accessible warning and communication routine while teaching the student how to use it” with “Interpret the response as intentional defiance”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. A team compares “Plan a predictable, accessible warning and communication routine while teaching the student how to use it” with “Interpret the response as intentional defiance”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Interpret the response as intentional defiance” is better supported: Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements. In contrast, “Plan a predictable, accessible warning and communication routine while teaching the student how to use it” is not supported: \"Interpret the response as intentional defiance.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Sensory and communication needs can affect access and behavior.",
       "“Exclude the student from every future drill” is better supported: Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements. In contrast, “Plan a predictable, accessible warning and communication routine while teaching the student how to use it” is not supported: \"Exclude the student from every future drill.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Sensory and communication needs can affect access and behavior.",
@@ -17033,7 +17033,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "For a student with a learning disability, a student with ADHD begins work when directions are chunked and a checklist is visible. A team compares “Executive-function supports are improving task initiation, organization, and monitoring” with “The student knew the work and was choosing to fail before”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. A team compares “Executive-function supports are improving task initiation, organization, and monitoring” with “The student knew the work and was choosing to fail before”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“The student knew the work and was choosing to fail before” is better supported: ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability. In contrast, “Executive-function supports are improving task initiation, organization, and monitoring” is not supported: \"The student knew the work and was choosing to fail before.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“The checklist has changed the academic standard” is better supported: ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability. In contrast, “Executive-function supports are improving task initiation, organization, and monitoring” is not supported: \"The checklist has changed the academic standard.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -17174,7 +17174,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "For a student with a learning disability, a student understands grade-level ideas but has difficulty producing clear speech. A team compares “Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier” with “Reduce cognitive demand because speech is unclear”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability understands grade-level ideas but has difficulty producing clear speech. A team compares “Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier” with “Reduce cognitive demand because speech is unclear”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Reduce cognitive demand because speech is unclear” is better supported: A communication disability can limit how knowledge is expressed without indicating limited understanding. Accessible response modes and adequate wait time help the student demonstrate the intended construct. In contrast, “Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier” is not supported: \"Reduce cognitive demand because speech is unclear.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Answer every question for the student” is better supported: A communication disability can limit how knowledge is expressed without indicating limited understanding. Accessible response modes and adequate wait time help the student demonstrate the intended construct. In contrast, “Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier” is not supported: \"Answer every question for the student.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -17221,7 +17221,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "For a student with a learning disability, a learner has both a visual impairment and a motor disability. A team compares “Analyze the combined effect of the needs on each task and coordinate individualized supports across specialists” with “Add separate generic supports for each label without testing them together”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability also has visual and motor disabilities. A team compares “Analyze the combined effect of the needs on each task and coordinate individualized supports across specialists” with “Add separate generic supports for each label without testing them together”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Add separate generic supports for each label without testing them together” is better supported: Co-occurring disabilities may interact in ways that are not captured by treating each label separately. Collaborative task analysis and trials show how combined access, communication, positioning, and health supports function. In contrast, “Analyze the combined effect of the needs on each task and coordinate individualized supports across specialists” is not supported: \"Add separate generic supports for each label without testing them together.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Choose the support associated with the first diagnosis only” is better supported: Co-occurring disabilities may interact in ways that are not captured by treating each label separately. Collaborative task analysis and trials show how combined access, communication, positioning, and health supports function. In contrast, “Analyze the combined effect of the needs on each task and coordinate individualized supports across specialists” is not supported: \"Choose the support associated with the first diagnosis only.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -17268,7 +17268,7 @@
     "type": "single-choice",
     "domainId": "development-characteristics-learning-disabilities",
     "difficulty": "analysis",
-    "prompt": "For a student with a learning disability, a student with dyslexia reads familiar words from memory but struggles to decode new words. A team compares “Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice” with “Silent independent reading without corrective feedback”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with dyslexia reads familiar words from memory but struggles to decode new words. A team compares “Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice” with “Silent independent reading without corrective feedback”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice” is better supported: Dyslexia commonly involves accurate or fluent word recognition, decoding, and spelling. Explicit, systematic instruction with modeling, guided practice, cumulative review, and feedback directly addresses these skills. In contrast, “Silent independent reading without corrective feedback” is not supported: \"Silent independent reading without corrective feedback.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Silent independent reading without corrective feedback” is better supported: Dyslexia commonly involves accurate or fluent word recognition, decoding, and spelling. Explicit, systematic instruction with modeling, guided practice, cumulative review, and feedback directly addresses these skills. In contrast, “Explicit, systematic instruction in sound-symbol relationships and word analysis with cumulative practice” is not supported: \"Silent independent reading without corrective feedback.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -17456,7 +17456,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. A team compares “Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal” with “Keep the mismatch because services and goals are unrelated sections”. Which evaluation most accurately distinguishes them?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. A team compares “Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal” with “Keep the mismatch because services and goals are unrelated sections”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal” is better supported: IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective. In contrast, “Keep the mismatch because services and goals are unrelated sections” is not supported: \"Keep the mismatch because services and goals are unrelated sections.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Keep the mismatch because services and goals are unrelated sections” is better supported: IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective. In contrast, “Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal” is not supported: \"Keep the mismatch because services and goals are unrelated sections.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -17503,7 +17503,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “While developing an individualized program for a student with a learning disability, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?” A team compares “An accommodation that changes access or response conditions without changing the intended construct” with “A modification that lowers the learning target”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?” A team compares “An accommodation that changes access or response conditions without changing the intended construct” with “A modification that lowers the learning target”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“A modification that lowers the learning target” is better supported: An accommodation changes how a learner accesses or responds while preserving what is measured. A modification changes the expected content, complexity, or performance standard. In contrast, “An accommodation that changes access or response conditions without changing the intended construct” is not supported: \"A modification that lowers the learning target.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“An accommodation that changes access or response conditions without changing the intended construct” is better supported: An accommodation changes how a learner accesses or responds while preserving what is measured. A modification changes the expected content, complexity, or performance standard. In contrast, “A modification that lowers the learning target” is not supported: \"A modification that lowers the learning target.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -17644,7 +17644,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "While developing an individualized program for a student with a learning disability, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. A team compares “The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services” with “Administrative convenience”. Which evaluation most accurately distinguishes them?",
+    "prompt": "While developing an individualized program for a student with a learning disability, the learner can make progress in general education with supplementary aids, but scheduling would be easier in a separate class. A team compares “The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services” with “Administrative convenience”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services” is better supported: Placement is individually determined, based on the IEP, and as close as possible to the child’s home. Removal from regular education occurs only when education there cannot be achieved satisfactorily with supports. In contrast, “Administrative convenience” is not supported: \"Administrative convenience.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Administrative convenience” is better supported: Placement is individually determined, based on the IEP, and as close as possible to the child’s home. Removal from regular education occurs only when education there cannot be achieved satisfactorily with supports. In contrast, “The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services” is not supported: \"Administrative convenience.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18302,7 +18302,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When removing an access barrier without changing the learning target, a student with low vision receives a worksheet containing a dense unlabeled diagram. A team compares “An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner” with “A different activity with no connection to the same concept”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. A team compares “An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner” with “A different activity with no connection to the same concept”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“A different activity with no connection to the same concept” is better supported: Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs. In contrast, “An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner” is not supported: \"A different activity with no connection to the same concept.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“A peer’s completed answers to copy” is better supported: Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs. In contrast, “An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner” is not supported: \"A peer’s completed answers to copy.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18349,7 +18349,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When removing an access barrier without changing the learning target, a student who is deaf uses sign language and will join a fast-paced seminar. A team compares “The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers” with “Seat location as the only consideration”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. A team compares “The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers” with “Seat location as the only consideration”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Seat location as the only consideration” is better supported: Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs. In contrast, “The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers” is not supported: \"Seat location as the only consideration.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Communication access is broader than hearing volume.",
       "“Written homework instead of participation in discussion” is better supported: Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs. In contrast, “The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers” is not supported: \"Written homework instead of participation in discussion.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Communication access is broader than hearing volume.",
@@ -18396,7 +18396,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "When removing an access barrier without changing the learning target, a student with a physical disability needs support positioning materials during science lab. A team compares “Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation” with “Assign an observer role for every laboratory activity”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A student with a learning disability and a physical disability needs support positioning materials during science lab. A team compares “Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation” with “Assign an observer role for every laboratory activity”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation” is better supported: Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency. In contrast, “Assign an observer role for every laboratory activity” is not supported: \"Assign an observer role for every laboratory activity.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Assign an observer role for every laboratory activity” is better supported: Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency. In contrast, “Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation” is not supported: \"Assign an observer role for every laboratory activity.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18443,7 +18443,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When removing an access barrier without changing the learning target, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?” A team compares “Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified” with “Create a new response based on what seems convenient”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?” A team compares “Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified” with “Create a new response based on what seems convenient”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Create a new response based on what seems convenient” is better supported: Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role. In contrast, “Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified” is not supported: \"Create a new response based on what seems convenient.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified” is better supported: Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role. In contrast, “Create a new response based on what seems convenient” is not supported: \"Create a new response based on what seems convenient.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18490,7 +18490,7 @@
     "type": "single-choice",
     "domainId": "planning-managing-learning-environment",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “When removing an access barrier without changing the learning target, which goal best addresses adaptive behavior?” A team compares “Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities” with “The student will improve independence soon”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “When a documented individualized need includes adaptive behavior, which IEP goal is most useful?” A team compares “Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities” with “The student will improve independence soon”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“The student will improve independence soon” is better supported: Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring. In contrast, “Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities” is not supported: \"The student will improve independence soon.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“The student will earn higher intelligence-test scores” is better supported: Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring. In contrast, “Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities” is not supported: \"The student will earn higher intelligence-test scores.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18537,7 +18537,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?” A team compares “Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text” with “Ask students to infer the pattern from an unrelated story without guidance”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?” A team compares “Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text” with “Ask students to infer the pattern from an unrelated story without guidance”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Ask students to infer the pattern from an unrelated story without guidance” is better supported: Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence. In contrast, “Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text” is not supported: \"Ask students to infer the pattern from an unrelated story without guidance.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Have students memorize definitions only” is better supported: Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence. In contrast, “Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text” is not supported: \"Have students memorize definitions only.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18585,7 +18585,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?” A team compares “It gives students a high opportunity to practice applying taught decoding patterns in connected reading” with “It permanently limits students to one text type”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?” A team compares “It gives students a high opportunity to practice applying taught decoding patterns in connected reading” with “It permanently limits students to one text type”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“It gives students a high opportunity to practice applying taught decoding patterns in connected reading” is better supported: Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing. In contrast, “It permanently limits students to one text type” is not supported: \"It permanently limits students to one text type.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“It permanently limits students to one text type” is better supported: Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing. In contrast, “It gives students a high opportunity to practice applying taught decoding patterns in connected reading” is not supported: \"It permanently limits students to one text type.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18633,7 +18633,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?” A team compares “Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning” with “Treat every letter as arbitrary”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?” A team compares “Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning” with “Treat every letter as arbitrary”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Treat every letter as arbitrary” is better supported: Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape. In contrast, “Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning” is not supported: \"Treat every letter as arbitrary.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning” is better supported: Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape. In contrast, “Treat every letter as arbitrary” is not supported: \"Treat every letter as arbitrary.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18681,7 +18681,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?” A team compares “Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks” with “Counting letters and choosing the shortest pronunciation”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?” A team compares “Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks” with “Counting letters and choosing the shortest pronunciation”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Counting letters and choosing the shortest pronunciation” is better supported: Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context. In contrast, “Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks” is not supported: \"Counting letters and choosing the shortest pronunciation.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Using context to replace word analysis” is better supported: Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context. In contrast, “Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks” is not supported: \"Using context to replace word analysis.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18729,7 +18729,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?” A team compares “Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words” with “It is useful only for grammar labels”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?” A team compares “Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words” with “It is useful only for grammar labels”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“It is useful only for grammar labels” is better supported: Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge. In contrast, “Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words” is not supported: \"It is useful only for grammar labels.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“It eliminates the need for phonics” is better supported: Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge. In contrast, “Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words” is not supported: \"It eliminates the need for phonics.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18777,7 +18777,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is orthographic mapping?” A team compares “They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval” with “They store the outline of the word as a picture”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what is orthographic mapping?” A team compares “They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval” with “They store the outline of the word as a picture”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval” is better supported: Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition. In contrast, “They store the outline of the word as a picture” is not supported: \"They store the outline of the word as a picture.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“They store the outline of the word as a picture” is better supported: Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition. In contrast, “They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval” is not supported: \"They store the outline of the word as a picture.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18825,7 +18825,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how does spelling instruction support reading?” A team compares “Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading” with “Spelling and reading use unrelated systems”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, how does spelling instruction support reading?” A team compares “Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading” with “Spelling and reading use unrelated systems”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Spelling and reading use unrelated systems” is better supported: Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links. In contrast, “Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading” is not supported: \"Spelling and reading use unrelated systems.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading” is better supported: Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links. In contrast, “Spelling and reading use unrelated systems” is not supported: \"Spelling and reading use unrelated systems.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18873,7 +18873,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, which error analysis best guides phonics instruction?” A team compares “Whether the student represents and blends consonant clusters accurately in both decoding and encoding” with “Whether the student knows the story theme”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, which error analysis best guides phonics instruction?” A team compares “Whether the student represents and blends consonant clusters accurately in both decoding and encoding” with “Whether the student knows the story theme”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Whether the student knows the story theme” is better supported: Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly. In contrast, “Whether the student represents and blends consonant clusters accurately in both decoding and encoding” is not supported: \"Whether the student knows the story theme.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Whether the font is the preferred color” is better supported: Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly. In contrast, “Whether the student represents and blends consonant clusters accurately in both decoding and encoding” is not supported: \"Whether the font is the preferred color.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18921,7 +18921,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best response when context and decoding conflict?” A team compares “Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence” with “Accept the substitution because the meaning is plausible”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit, systematic word-reading intervention for a student with a learning disability, what is the best response when context and decoding conflict?” A team compares “Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence” with “Accept the substitution because the meaning is plausible”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Accept the substitution because the meaning is plausible” is better supported: Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition. In contrast, “Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence” is not supported: \"Accept the substitution because the meaning is plausible.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Cover the word and guess again” is better supported: Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition. In contrast, “Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence” is not supported: \"Cover the word and guess again.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -18969,7 +18969,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. A team compares “Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency” with “Offer only prizes for page counts”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit literacy instruction for a student with a learning disability, what combination of supports best promotes engagement with grade-level text?” A team compares “Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency” with “Offer only prizes for page counts”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency” is better supported: Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. In contrast, “Offer only prizes for page counts” is not supported: \"Offer only prizes for page counts.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Offer only prizes for page counts” is better supported: Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. In contrast, “Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency” is not supported: \"Offer only prizes for page counts.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19017,7 +19017,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?” A team compares “Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning” with “Writing practice automatically fixes every decoding need”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?” A team compares “Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning” with “Writing practice automatically fixes every decoding need”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Writing practice automatically fixes every decoding need” is better supported: Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need. In contrast, “Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning” is not supported: \"Writing practice automatically fixes every decoding need.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning” is better supported: Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need. In contrast, “Writing practice automatically fixes every decoding need” is not supported: \"Writing practice automatically fixes every decoding need.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19065,7 +19065,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?” A team compares “Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose” with “Treat total word count as the only writing construct”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?” A team compares “Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose” with “Treat total word count as the only writing construct”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Treat total word count as the only writing construct” is better supported: Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas. In contrast, “Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose” is not supported: \"Treat total word count as the only writing construct.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Assume limited output means limited knowledge” is better supported: Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas. In contrast, “Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose” is not supported: \"Assume limited output means limited knowledge.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19113,7 +19113,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?” A team compares “Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly” with “Every subject uses identical text conventions”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?” A team compares “Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly” with “Every subject uses identical text conventions”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Every subject uses identical text conventions” is better supported: Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge. In contrast, “Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly” is not supported: \"Every subject uses identical text conventions.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Content teachers should avoid literacy instruction” is better supported: Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge. In contrast, “Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly” is not supported: \"Content teachers should avoid literacy instruction.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19161,7 +19161,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?” A team compares “Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention” with “Assume digital familiarity equals critical literacy”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?” A team compares “Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention” with “Assume digital familiarity equals critical literacy”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention” is better supported: Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction. In contrast, “Assume digital familiarity equals critical literacy” is not supported: \"Assume digital familiarity equals critical literacy.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Assume digital familiarity equals critical literacy” is better supported: Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction. In contrast, “Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention” is not supported: \"Assume digital familiarity equals critical literacy.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19209,7 +19209,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?” A team compares “Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives” with “Every text must use the same difficulty and viewpoint”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?” A team compares “Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives” with “Every text must use the same difficulty and viewpoint”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Every text must use the same difficulty and viewpoint” is better supported: Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination. In contrast, “Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives” is not supported: \"Every text must use the same difficulty and viewpoint.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives” is better supported: Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination. In contrast, “Every text must use the same difficulty and viewpoint” is not supported: \"Every text must use the same difficulty and viewpoint.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19257,7 +19257,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how can sentence-level instruction support literacy?” A team compares “Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts” with “Label parts of speech without connecting them to meaning”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how can sentence-level instruction support literacy?” A team compares “Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts” with “Label parts of speech without connecting them to meaning”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Label parts of speech without connecting them to meaning” is better supported: Syntax instruction is most useful when students examine how sentence structures express relationships and apply that knowledge while comprehending and composing. In contrast, “Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts” is not supported: \"Label parts of speech without connecting them to meaning.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Reduce every text to short simple sentences permanently” is better supported: Syntax instruction is most useful when students examine how sentence structures express relationships and apply that knowledge while comprehending and composing. In contrast, “Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts” is not supported: \"Reduce every text to short simple sentences permanently.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19305,7 +19305,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what makes genre instruction transferable?” A team compares “Teach the purposes, flexible structures, language features, and decision making of the genre across varied models and writing tasks” with “Require the same template for every genre”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, what makes genre instruction transferable?” A team compares “Teach the purposes, flexible structures, language features, and decision making of the genre across varied models and writing tasks” with “Require the same template for every genre”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Require the same template for every genre” is better supported: Genre knowledge becomes transferable when learners compare examples, discuss author choices, plan for audience and purpose, compose, receive feedback, and revise. In contrast, “Teach the purposes, flexible structures, language features, and decision making of the genre across varied models and writing tasks” is not supported: \"Require the same template for every genre.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Focus only on page length” is better supported: Genre knowledge becomes transferable when learners compare examples, discuss author choices, plan for audience and purpose, compose, receive feedback, and revise. In contrast, “Teach the purposes, flexible structures, language features, and decision making of the genre across varied models and writing tasks” is not supported: \"Focus only on page length.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -19353,7 +19353,7 @@
     "type": "single-choice",
     "domainId": "instruction",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should evidence be taught in source-based writing?” A team compares “Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately” with “Add more quotations without analysis”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During explicit written-expression instruction for a student with a learning disability, how should evidence be taught in source-based writing?” A team compares “Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately” with “Add more quotations without analysis”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately” is better supported: Evidence functions through relevance and reasoning; source-based writing requires accurate representation, attribution, integration, explanation, and attention to audience and purpose. In contrast, “Add more quotations without analysis” is not supported: \"Add more quotations without analysis.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
       "“Add more quotations without analysis” is better supported: Evidence functions through relevance and reasoning; source-based writing requires accurate representation, attribution, integration, explanation, and attention to audience and purpose. In contrast, “Select relevant evidence, introduce and represent it accurately, explain how it supports the claim, and cite the source appropriately” is not supported: \"Add more quotations without analysis.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement.",
@@ -20774,7 +20774,7 @@
     "type": "single-choice",
     "domainId": "foundations-professional-responsibilities",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “During collaborative planning for a student with a learning disability, in effective co-teaching, what is the special educator’s role?” A team compares “Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction” with “Act primarily as the general educator’s assistant”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “During collaborative planning for a student with a learning disability, what is the special educator’s role?” A team compares “Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction” with “Act primarily as the general educator’s assistant”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Act primarily as the general educator’s assistant” is better supported: Co-teaching is a partnership with shared ownership. Roles may vary by lesson, but both educators contribute to planning, instruction, assessment, classroom management, and access for the whole class. In contrast, “Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction” is not supported: \"Act primarily as the general educator’s assistant.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Co-teaching is a partnership with shared ownership.",
       "“Manage behavior while the general educator owns all content” is better supported: Co-teaching is a partnership with shared ownership. Roles may vary by lesson, but both educators contribute to planning, instruction, assessment, classroom management, and access for the whole class. In contrast, “Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction” is not supported: \"Manage behavior while the general educator owns all content.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Co-teaching is a partnership with shared ownership.",
@@ -20915,7 +20915,7 @@
     "type": "single-choice",
     "domainId": "foundations-professional-responsibilities",
     "difficulty": "analysis",
-    "prompt": "During collaborative planning for a student with a learning disability, a student’s occupational therapist recommends a classroom positioning support. A team compares “Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data” with “Use the strategy only during therapy sessions”. Which evaluation most accurately distinguishes them?",
+    "prompt": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. A team compares “Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data” with “Use the strategy only during therapy sessions”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Use the strategy only during therapy sessions” is better supported: Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective. In contrast, “Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data” is not supported: \"Use the strategy only during therapy sessions.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Related services support educational access.",
       "“Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data” is better supported: Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective. In contrast, “Use the strategy only during therapy sessions” is not supported: \"Use the strategy only during therapy sessions.\" does not adequately address the assessed skill, explicit instruction, access, individualization, equity, or evidence requirement. Related services support educational access.",

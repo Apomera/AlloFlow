@@ -1,0 +1,434 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-option-feedback-wave-10",
+  "reviewedAt": "2026-07-18",
+  "scope": "Two source-checked questions per EPPP domain, prioritizing inaccurate sampling claims, mismatched explanations or citations, and conspicuous answer cues while replacing every selected incorrect-option explanation.",
+  "feedbackCriteria": [
+    "at least 100 characters and 16 words",
+    "names the actual neighboring concept or misconception",
+    "explains when that concept would apply",
+    "contrasts the option with the stem",
+    "does not restate the distractor, paste the overall rationale, append the full key, or use a stock rejection template"
+  ],
+  "sourceCorrections": [
+    "Replaced mismatched sources for the Halstead-Reitan battery, default-mode network, episodic buffer, and Internal Family Systems with sources that directly describe the tested construct.",
+    "Added primary or authoritative evidence for stratified-sampling allocation, Prolonged Exposure, the Dusky competence standard, moral disengagement, and door-in-the-face compliance.",
+    "Qualified historically bounded claims about Gilligan and boundary crossings so the keyed distinctions do not imply stronger consensus or legal generality than the sources support."
+  ],
+  "challengeCorrections": [
+    "Corrected two stratified-sampling items so stratification no longer falsely guarantees proportional allocation.",
+    "Reframed direct-definition and completion prompts as application or interpretation tasks with plausible neighboring constructs.",
+    "Repaired the episodic-buffer option feedback so each explanation addresses its current response option.",
+    "Removed answer-word leakage, duplicated alternatives, and asymmetric extreme cues while preserving every expected answer position."
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "reviewedItems": 16,
+    "domainsCovered": 8,
+    "detailedIncorrectOptionExplanations": 48,
+    "keyPositionsPreserved": 16,
+    "selectedOptionsWithWarningsAfter": 0,
+    "choicesRefined": 64,
+    "challengeRefinedItems": 16,
+    "promptsRefined": 16,
+    "rationalesRefined": 16,
+    "difficultyRefinedItems": 16,
+    "itemsWithStrengthenedReferences": 16,
+    "bankWarningsBefore": {
+      "itemsWithWarnings": 1421,
+      "incorrectOptionsWithWarnings": 4114,
+      "insufficientDetailOptions": 1491,
+      "genericTemplateOptions": 2558,
+      "choiceRestatementOptions": 1839,
+      "fullKeyEchoOptions": 1564
+    },
+    "bankWarningsAfter": {
+      "itemsWithWarnings": 1405,
+      "incorrectOptionsWithWarnings": 4066,
+      "insufficientDetailOptions": 1481,
+      "genericTemplateOptions": 2522,
+      "choiceRestatementOptions": 1809,
+      "fullKeyEchoOptions": 1538
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b014-assessment-2",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Pearson's official BASC-3 materials describe triangulation across parent, teacher, and self perspectives, distinguish the home/community and school contexts sampled by the rating forms, add direct observation and developmental-history methods, compare corresponding scores across raters, and caution that a generated report should not be the sole basis for diagnostic or treatment decisions. Peer-reviewed observational research further shows that parent-teacher discrepancies can track cross-context behavioral variation and informants' perspectives. The key therefore emphasizes contextual investigation and multi-method integration rather than averaging, informant hierarchy, or premature threshold attribution.",
+      "feedbackDesign": [
+        "cross-informant-score-averaging",
+        "informant-hierarchy",
+        "rater-threshold-overattribution"
+      ],
+      "qualityFlags": [
+        "Replaces absolute distractors with plausible but flawed methods for resolving a parent-teacher discrepancy.",
+        "Tests integrative interpretation of multi-informant evidence rather than simple recognition that several BASC-3 forms exist."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-assessment-041",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The APA Dictionary of Psychology identifies the Seashore Rhythm and Finger Tapping tests among the five core HRNB subtests. A peer-reviewed Brain and Language methods section describes the Reitan Rhythm Test as paired five-, six-, or seven-note patterns requiring same-or-different judgments, while peer-reviewed Behavior Research Methods documentation describes Finger Tapping as rapid index-finger key depression during timed 10-second trials administered separately to each hand. Together these sources support the exact nomenclature, task contrast, and preserved key.",
+      "feedbackDesign": [
+        "finger-tapping-domain-confusion",
+        "tactual-performance-visual-guidance",
+        "category-test-grip-strength-confusion"
+      ],
+      "qualityFlags": [
+        "Corrects the imprecise Rhythm Test label to Seashore Rhythm Test and replaces an unspecific battery-membership question with matched task demands.",
+        "Makes each distractor partly plausible by pairing a genuine HRNB subtest or function with one consequential mismatch."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-research-002",
+      "domainId": "research",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Statistics Canada defines stratified sampling by partitioning the target population into mutually exclusive, exhaustive strata and selecting samples within strata. Its survey manual separately distinguishes proportional from disproportionate allocation, confirming that unequal sampling fractions do not change a probability design into another sampling method.",
+      "feedbackDesign": [
+        "unequal-fractions-as-nonprobability",
+        "strata-versus-clusters",
+        "weights-versus-selection-design"
+      ],
+      "qualityFlags": [
+        "Corrects the bank's substantive overclaim that stratified random sampling necessarily produces proportional representation.",
+        "Uses unequal sampling fractions to distinguish stratification from allocation, clustering, nonprobability selection, and post-selection weighting."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v2-research-003",
+      "domainId": "research",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Statistics Canada explains that disproportionate allocation samples strata at different rates and that proportional allocation is only one option. For an aggregate population estimate after deliberate oversampling, stratum estimates must be recombined according to population sizes, equivalently using design weights based on selection probabilities; random selection within strata alone does not justify an unweighted pooled estimate.",
+      "feedbackDesign": [
+        "discarding-oversample",
+        "equal-stratum-weighting",
+        "unweighted-pooling-under-unequal-selection"
+      ],
+      "qualityFlags": [
+        "Replaces an inaccurate definition item with an advanced estimation decision following purposeful subgroup oversampling.",
+        "Separates the benefit of subgroup precision from the weighting required to recover a population-composition estimate."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b013-biological-2",
+      "domainId": "biological",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The original commissurotomy report and Gazzaniga's later review support the classic divided-visual-field dissociation: left-visual-field information reaches the right hemisphere, which can guide the left hand, while callosal disconnection prevents the usual left-hemisphere verbal report.",
+      "feedbackDesign": [
+        "verbal-access-without-manual-access",
+        "ipsilateral-hand-selection",
+        "absence-of-recognition-inference"
+      ],
+      "qualityFlags": [
+        "Wave 10 replaces a definition-level item with a lateralized visual-input, verbal-response, and manual-response application that requires tracing information flow.",
+        "The prompt explicitly states the classic paradigm and language-dominance assumptions so the keyed pattern is not misrepresented as invariant across all callosotomy patients."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v2-biological-008",
+      "domainId": "biological",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Raichle and colleagues identified a default mode through task-induced decreases from a high resting baseline, and Spreng and colleagues directly found default-network plus frontoparietal-control engagement during autobiographical planning versus dorsal-attention plus control-network engagement during visuospatial planning.",
+      "feedbackDesign": [
+        "goal-direction-equals-dorsal-attention",
+        "control-network-isolation",
+        "internal-external-network-reversal"
+      ],
+      "qualityFlags": [
+        "Wave 10 replaces an unrelated sleep reference and a simple rest definition with a primary fMRI contrast between internally and externally focused goal-directed planning.",
+        "The revision avoids the obsolete inference that the default network is merely passive or necessarily suppressed whenever cognition is goal directed."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-061",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Lazarus and Folkman define psychological stress transactionally as a person-environment relationship appraised as significant and as taxing or exceeding coping resources, distinguishing appraisal from an event count or a decontextualized physiological response.",
+      "feedbackDesign": [
+        "objective-exposure-index",
+        "arousal-first-account",
+        "context-free-life-event-count"
+      ],
+      "qualityFlags": [
+        "Wave 10 converts a definition prompt into a matched-event vignette that requires distinguishing transactional appraisal from exposure and response accounts.",
+        "The wording treats primary and secondary appraisal as conceptually distinct aspects of an evolving transaction without implying a mechanically fixed two-step sequence."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-059",
+      "domainId": "cognitive-affective",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Baddeley's 2000 model explicitly proposes a limited-capacity episodic buffer that temporarily stores multimodal information and binds inputs from working-memory subsystems and long-term memory into a unitary episodic representation.",
+      "feedbackDesign": [
+        "verbal-rehearsal",
+        "spatial-maintenance",
+        "executive-switching"
+      ],
+      "qualityFlags": [
+        "Wave 10 replaces option feedback that referred to obsolete choices with explanations tied to the current phonological, visuospatial, and executive alternatives.",
+        "The vignette holds unimodal retention relatively intact and targets cross-system binding, making the episodic-buffer inference more discriminating than a definition recall item."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b014-lifespan-2",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Gilligan's original critique foregrounded a moral voice organized around care, relationship, and responsibility that justice-centered accounts could undervalue; Jaffee and Hyde later found only small average sex differences and rejected strong claims of predominant sex-specific orientations.",
+      "feedbackDesign": [
+        "inverted-stage-hierarchy",
+        "developmental-structure-minimization",
+        "sex-as-strong-prior"
+      ],
+      "qualityFlags": [
+        "Wave 10 reframes the item as interpretation of a historical critique plus subsequent evidence rather than teaching a simple sex dichotomy.",
+        "The distractors represent plausible overextensions: inverting the hierarchy, discarding development, or classifying individuals, instead of implausible claims about infants or rejection of justice."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-lifespan-013",
+      "domainId": "lifespan",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Vygotsky defines the zone of proximal development as the distance between independently demonstrated problem solving and potential performance under adult guidance or in collaboration with a more capable peer.",
+      "feedbackDesign": [
+        "actual-development-level",
+        "beyond-assisted-performance",
+        "undifferentiated-developmental-span"
+      ],
+      "qualityFlags": [
+        "Wave 10 replaces malformed definition distractors with a three-level learning assessment that distinguishes independent performance, assisted performance, and performance not elicited by assistance.",
+        "The revision uses guidance and collaboration from Vygotsky's definition without attributing the later scaffolding metaphor directly to him."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v3-intervention-067",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The U.S. Department of Veterans Affairs National Center for PTSD identifies repeated imaginal exposure, repeated in-vivo approach to objectively safe avoided reminders, and post-exposure processing as core Prolonged Exposure procedures. Craske and colleagues distinguish exposure learning from requiring a particular amount of within-session fear reduction.",
+      "feedbackDesign": [
+        "habituation-as-required-endpoint",
+        "cognitive-therapy-sequencing-substitution",
+        "relaxation-as-safety-condition"
+      ],
+      "qualityFlags": [
+        "Replaces a component-recognition item with a treatment-planning vignette that requires distinguishing PE from plausible cognitive and relaxation-based alternatives.",
+        "Avoids implying that fear must decline by a fixed amount during every exposure for corrective learning to occur.",
+        "Specifies objectively safe reminders so in-vivo exposure is not confused with exposure to actual danger."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-v2-intervention-025",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Brenner, Schwartz, and Becker trace IFS from structural and strategic family-systems ideas to patterns of internal experience, while Schwartz's primary model account distinguishes proactive manager protection, reactive firefighter protection, exiled vulnerable experience, and Self-leadership. These sources establish what the model claims, not independent proof of its efficacy.",
+      "feedbackDesign": [
+        "damaged-self-misattribution",
+        "exile-and-self-role-reversal",
+        "freudian-construct-equivalence"
+      ],
+      "qualityFlags": [
+        "Replaces an obvious definition item with a vignette requiring application of manager, firefighter, exile, and Self roles.",
+        "Attributes all contested constructs explicitly to IFS and separates model literacy from empirical validation.",
+        "Replaces a mismatched general-treatment textbook citation with a founder-coauthored peer-reviewed account and a primary model source."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b016-professional-2",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Gutheil and Gabbard's foundational article distinguishes harmful boundary violations from nonharmful boundary issues and emphasizes contextual risk analysis. APA Ethics Committee commentary applies Ethics Code Standard 3.05 by asking whether a multiple relationship could impair objectivity, competence, or effectiveness or risk harm or exploitation.",
+      "feedbackDesign": [
+        "frame-departure-equals-violation",
+        "consent-as-complete-safeguard",
+        "single-event-isolation-error"
+      ],
+      "qualityFlags": [
+        "Uses an ambiguous but realistic boundary request instead of asking for a memorized definition.",
+        "Avoids treating either benign intent or client consent as a complete answer to power, exploitation, and clinical-effect questions.",
+        "Preserves the distinction between a descriptive boundary category and the prospective ethical analysis of a particular act."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b015-professional-2",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The Supreme Court's per curiam opinion in Dusky v. United States states that orientation and some recollection are insufficient; the test concerns present ability to consult with counsel with a reasonable degree of rational understanding and rational as well as factual understanding of the proceedings.",
+      "feedbackDesign": [
+        "memory-capacity-substitution",
+        "criminal-responsibility-timeframe",
+        "attorney-level-legal-knowledge"
+      ],
+      "qualityFlags": [
+        "Converts a direct quotation prompt into a functional vignette that separates rational consultation from intact factual knowledge.",
+        "Uses the primary United States Reports decision rather than a commercial case summary.",
+        "Asks which capacity is implicated without treating a diagnosis or delusion as automatically dispositive of competency."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b011-social-1",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Bandura, Barbaranelli, Caprara, and Pastorelli identify diffusion and displacement of responsibility as distinct ways of obscuring personal causal agency. Diffusion operates through division of labor, collective action, or group decision-making, whereas displacement attributes agency to an authority.",
+      "feedbackDesign": [
+        "displacement-versus-diffusion",
+        "moral-justification-confusion",
+        "consequence-distortion-confusion"
+      ],
+      "qualityFlags": [
+        "Replaces a broad definition item with a close discrimination among four mechanisms from the same theory.",
+        "Uses the original mechanism article rather than a later generic overview.",
+        "Makes the acknowledged harm and collective vote explicit so the answer turns on locus of agency rather than consequence minimization."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b026-social-2",
+      "domainId": "social-cultural",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Cialdini and colleagues' three original experiments tested a rejection-then-moderation sequence in which an extreme request was refused before a smaller target request. Compliance exceeded a small-request-only condition, and additional controls supported the authors' reciprocal-concessions account.",
+      "feedbackDesign": [
+        "foot-in-door-consistency-reversal",
+        "low-ball-postcommitment-confusion",
+        "contrast-as-exhaustive-account"
+      ],
+      "qualityFlags": [
+        "Moves beyond sequence recognition by asking what the original comparison and control logic supported.",
+        "Distinguishes door-in-the-face from foot-in-the-door and low-ball using commitment timing rather than conspicuous wording.",
+        "Qualifies the mechanism conclusion so a classic result is not presented as universal or exclusive."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

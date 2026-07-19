@@ -88,6 +88,24 @@ test.describe('3D Volume Explorer', () => {
     await expect(undoBtn).toBeVisible();
     await expect(undoBtn).toBeDisabled();
 
+    // Place a real block through the visible layer grid and verify its layer color.
+    const layerBuilder = page.locator('[data-volume-layer-builder="true"]');
+    await expect(layerBuilder).toBeVisible();
+    const firstPlacementCell = page.locator('[data-volume-cell="0-0-0"]');
+    await expect(firstPlacementCell).toHaveAttribute('aria-pressed', 'false');
+    const layerColor = page.locator('#volume-layer-color');
+    await layerColor.evaluate((input: HTMLInputElement) => {
+      input.value = '#00aa55';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await firstPlacementCell.click();
+    await expect(firstPlacementCell).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-volume-cube="true"][data-volume-layer="0"]')).toHaveAttribute('data-volume-layer-color', '#00aa55');
+    await expect(undoBtn).toBeEnabled();
+    await undoBtn.click();
+    await expect(firstPlacementCell).toHaveAttribute('aria-pressed', 'false');
+
     // Open library
     const libBtn = page.locator('button').filter({ hasText: /📚 Library/ });
     await libBtn.click({ force: true });

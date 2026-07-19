@@ -5,12 +5,15 @@ const fs=require('fs');
 const path=require('path');
 const root=path.resolve(__dirname,'..');
 const sourceDir=path.join(root,'test_prep');
+const deployDir=path.join(root,'prismflow-deploy','public','test_prep');
+const waitBuffer=new Int32Array(new SharedArrayBuffer(4));
+function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data);return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
 
 const targeted=JSON.parse(fs.readFileSync(path.join(__dirname,'test_prep_source_review_overrides_targeted_2026-07-16.json'),'utf8'));
-const authoredFiles=[
-  ['special_education_behavior_emotional_5372','test_prep_source_review_overrides_ebd_5372.json'],
-  ['special_education_intellectual_disabilities_5322','test_prep_source_review_overrides_id_5322.json'],
-];
+const retiredTargetedStems=new Set(['special_education_early_childhood_5692']);
+// These two instruction ranges are now authored durably in their item-content
+// generators. Do not mask them with the older partial postpass replacements.
+const authoredFiles=[];
 
 function choiceFeedback(choices,answerIndex,rationale,notes){
   return choices.map((choice,index)=>index===answerIndex?'Correct. '+rationale:'Not the best answer. '+notes[index]+' '+rationale);
@@ -26,8 +29,8 @@ const localPatches={
     }
   },
   special_education_learning_disabilities_5383:{
-    'ld5383-b1-053':{prompt:'A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which support is most likely to improve engagement while maintaining meaningful literacy instruction?'},
-    'ld5383-b2-053':{prompt:'Progress evidence shows that a student with a learning disability can read assigned text with support but rarely chooses to persist. Which response best addresses engagement without lowering the learning goal?'}
+    'ld5383-b1-053':{prompt:'During explicit literacy instruction for a student with a learning disability, what combination of supports best promotes engagement with grade-level text?'},
+    'ld5383-b2-053':{prompt:'A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which response best supports engagement while preserving meaningful literacy instruction?'}
   },
   special_education_behavior_emotional_5372:{
     'ebd5372-b2-010':{
@@ -61,7 +64,7 @@ for(const pack of Object.values(localPatches))for(const patch of Object.values(p
 }
 
 const byStem={};
-for(const entry of targeted)(byStem[entry.stem]||(byStem[entry.stem]={}))[entry.id]=entry.item;
+for(const entry of targeted)if(!retiredTargetedStems.has(entry.stem))(byStem[entry.stem]||(byStem[entry.stem]={}))[entry.id]=entry.item;
 for(const [stem,file] of authoredFiles){
   const entries=JSON.parse(fs.readFileSync(path.join(__dirname,file),'utf8'));
   if(entries.length!==34)throw Error(`${file}: expected 34 authored replacements, found ${entries.length}`);
@@ -108,6 +111,11 @@ for(const packFile of fs.readdirSync(sourceDir).filter(name=>name.endsWith('_pac
   });
   for(const id of [...Object.keys(overrides),...Object.keys(patches)])if(!sourceItems.some(item=>item.id===id))throw Error(`${stem}: override item ${id} not found`);
   pack.items=[...sourceItems,...pack.items.slice(200)];
-  fs.writeFileSync(file,JSON.stringify(pack,null,2)+'\n');
+  const packJson=JSON.stringify(pack,null,2)+'\n';
+  const itemsJson=JSON.stringify(pack.items,null,2)+'\n';
+  for(const dir of[sourceDir,deployDir]){
+    writeGeneratedFile(path.join(dir,packFile),packJson);
+    writeGeneratedFile(path.join(dir,stem+'_items.json'),itemsJson);
+  }
 }
 console.log(`Applied ${corrected} item-specific source-review corrections plus global editorial cleanup.`);

@@ -3,16 +3,21 @@
   "id": "praxis-reading-specialist-5302",
   "title": "Praxis Reading Specialist (5302) — 200 Source Questions + 300 Guided Review",
   "shortTitle": "Reading Specialist 5302 diagnostics",
-  "description": "Contains 200 source diagnostic questions and 300 source-derived guided-review tasks; the assistant audit found 100 distinct source content kernels. Two independently authored 100-question selected-response diagnostic batches linked to a 12-chapter learning library, six constructed-response workshops, targeted skill practice, and an optional 95-question selected-response timed segment. The official 5302 test currently has 95 selected-response questions and 2 constructed-response questions in 150 minutes.",
+  "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question selected-response diagnostic batches linked to a 12-chapter learning library, six constructed-response workshops, targeted skill practice, and an optional 95-question selected-response timed segment. The official 5302 test currently has 95 selected-response questions and 2 constructed-response questions in 150 minutes.",
   "credentialOwner": "Educational Testing Service (ETS)",
   "version": "1.0.0",
   "status": "ready",
   "accent": "rose",
-  "contentReview": "Assistant audit completed: the 200 source questions contain 100 distinct content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. The 300 additional activities are assistant-reviewed guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
+  "contentReview": "Assistant audit completed: 200 independent-practice items contain 100 distinct content kernels and 100 parallel variants under the normalized test. 300 additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
   "nativeQaUrl": "./test_prep/reading_specialist_5302_native_qa.json",
   "learningLibraryUrl": "./test_prep/reading_specialist_5302_learning_library.json",
   "learningLibraryQaUrl": "./test_prep/reading_specialist_5302_learning_library_qa.json",
   "simulationItemCount": 95,
+  "simulationDomainCounts": {
+    "curriculum-instruction": 47,
+    "assessment": 29,
+    "professional-leadership": 19
+  },
   "simulationTimeMinutes": 150,
   "simulationLabel": "95-question selected-response timed segment",
   "simulationNote": "The official test shares 150 minutes across 95 selected-response and 2 constructed-response questions. This timed segment contains selected-response items only; complete the written-response workshops separately. AlloFlow does not score constructed responses.",
@@ -41,14 +46,14 @@
     {
       "id": "diagnostic-batch-1",
       "label": "100-item source diagnostic bank 1",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "diagnostic-batch-2",
       "label": "100-item source diagnostic bank 2",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "guided-review-bank-1",
@@ -23616,21 +23621,35 @@
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
     }
   ],
+  "officialTotalTimeMinutes": 150,
   "diagnosticBatchCount": 5,
   "diagnosticBatchCountSemantics": "legacy-total-learning-activity-bank-alias",
   "sourceDiagnosticBatchCount": 2,
+  "assistantAuthoredIndependentBatchCount": 0,
+  "independentDiagnosticBatchCount": 2,
   "guidedReviewBatchCount": 3,
   "learningActivityBankCount": 5,
+  "sourceQuestionItems": 200,
+  "assistantAuthoredIndependentItems": 0,
+  "independentPracticeItems": 200,
+  "guidedReviewItems": 300,
   "distinctSourceContentKernels": 100,
   "parallelSourceVariants": 100,
+  "distinctIndependentContentKernels": 100,
+  "parallelIndependentVariants": 100,
   "newIndependentItemsNeeded": 400,
   "expansionVersion": "source-kernel-audit-plus-guided-review-v1",
+  "simulationDomainCountsBasis": "release-declared-selected-response-allocation",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "structurallyReviewedItems": 500,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReviewItems": 300,
     "independentQuestionTarget": 500,
     "newIndependentItemsNeeded": 400,
@@ -23649,8 +23668,8 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "limitation": "Normalized answer-set, rationale, and reference reuse is counted as one content kernel. Source-derived transformations are approved as guided practice, not as independent exam questions. Assistant review is not independent licensed-professional review or psychometric validation."
+    "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities, not 500 independent exam questions: 200 source questions (100 distinct content kernels; 100 parallel variants) plus 300 source-derived guided-review activities. 400 newly authored independent questions are needed to reach the 500-question target.",
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. It currently contains 100 distinct independent content kernels; 400 newly authored independent questions remain to reach 500.",
   "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

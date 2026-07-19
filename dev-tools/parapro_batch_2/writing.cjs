@@ -251,12 +251,12 @@ module.exports = {
       rationale: 'Writers generally revise ideas, evidence, and organization before polishing punctuation. Structural changes may alter many sentences, making early line editing inefficient or temporary.',
     },
     {
-      prompt: 'A student copies two sentences from a website into a report without quotation marks or attribution. Which response is appropriate?',
-      correct: 'Teach the student to quote or paraphrase accurately and cite the source before using the material.',
-      distractors: ['Leave the sentences unchanged because online text never needs attribution.', 'Change two words and present the passage as entirely original work.', 'Remove the website title but keep the copied wording without citation.'],
-      whyWrong: ['online sources still require appropriate attribution', 'minor word substitutions do not create an honest paraphrase', 'hiding source information increases rather than resolves the problem'],
-      correctWhy: 'The response addresses both accurate source use and transparent attribution while preserving the opportunity to learn.',
-      rationale: 'Copied language must be marked as a quotation or transformed into a genuine paraphrase, and the source must be cited. Instruction should correct the draft and build responsible research practice.',
+      prompt: 'A student copies two sentences from a website into a report without quotation marks or attribution. Which response best teaches responsible source use?',
+      correct: 'Help the student quote the sentences or paraphrase them genuinely, and cite the webpage.',
+      distractors: ['Keep the sentences because publicly available webpages may be copied into school reports.', 'Have the student change several words while preserving the sentence structure, then omit source credit.', 'Place quotation marks around the sentences but leave out where the language came from.'],
+      whyWrong: ['public availability does not remove the obligation to distinguish borrowed language and identify its source', 'minor substitutions that retain the original structure are not a genuine paraphrase, and missing credit still conceals the source', 'quotation marks identify borrowed wording but do not tell readers which source supplied the language'],
+      correctWhy: 'This response teaches both accurate handling of borrowed language and transparent identification of its source.',
+      rationale: 'Borrowed language must be presented as a quotation or recast as a genuine paraphrase, and the originating webpage must be cited. The response repairs the draft while teaching responsible research practice.',
     },
     {
       prompt: 'Two paragraphs shift from the benefits of walking to school to concerns about unsafe intersections. Which transition best supports the shift?',

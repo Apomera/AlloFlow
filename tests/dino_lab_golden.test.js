@@ -258,6 +258,42 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/aria-label="Identify the find choices"/);
     expect(html).toMatch(/aria-pressed="false"/);
   });
+  it('the section tabs use roving focus and Explore controls expose named groups', () => {
+    const html = renderTab('explore');
+    expect(html).toMatch(/role="tablist" aria-label="Dino Lab sections" aria-orientation="horizontal"/);
+    expect(html).toMatch(/id="dinotab-explore" role="tab" tabindex="0" aria-selected="true"/);
+    expect(html).toMatch(/id="dinotab-timeline" role="tab" tabindex="-1" aria-selected="false"/);
+    expect(html).toMatch(/aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"/);
+    expect(html).toMatch(/role="group" aria-label="Filter by geological period"/);
+    expect(html).toMatch(/role="group" aria-label="Filter by diet"/);
+    expect(html).toMatch(/role="group" aria-label="Filter by location"/);
+    expect(html).toMatch(/role="group" aria-label="Sort dinosaurs"/);
+    expect(html).toMatch(/class="dinolab-explore-layout"/);
+    expect(html).toMatch(/button:focus-visible/);
+  });
+
+  it('recovers an unknown persisted tab with a valid Explore tab-panel label', () => {
+    const data = baseData('unknown-stale-tab');
+    const html = renderTab(data);
+    expect(html).toMatch(/id="dinotab-explore" role="tab" tabindex="0" aria-selected="true"/);
+    expect(html).toMatch(/id="dinopanel" role="tabpanel" aria-labelledby="dinotab-explore"/);
+    expect(html).not.toMatch(/aria-labelledby="dinotab-unknown-stale-tab"/);
+  });
+  it('the Quiz and Classify feedback keeps answered choices reviewable', () => {
+    const quiz = renderTab('quiz');
+    expect(quiz).toMatch(/aria-disabled="true"/);
+    expect(quiz).toMatch(/aria-pressed="true"/);
+    expect(quiz).toMatch(/, correct answer"/);
+    expect(quiz).toMatch(/, selected incorrect answer"/);
+    expect(quiz).toMatch(/role="status" aria-live="polite" aria-atomic="true"/);
+
+    const classify = renderTab('classify');
+    expect(classify).toMatch(/aria-disabled="true"/);
+    expect(classify).toMatch(/aria-pressed="true"/);
+    expect(classify).toMatch(/, correct answer"/);
+    expect(classify).toMatch(/, selected incorrect answer"/);
+    expect(classify).toMatch(/role="status" aria-live="polite" aria-atomic="true"/);
+  });
   it('the 3D field station identifies the next open scan anchor', () => {
     const data = baseData('field3d');
     data.field3dScanLogged = { skull: true };

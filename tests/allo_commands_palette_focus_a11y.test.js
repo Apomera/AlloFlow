@@ -94,4 +94,36 @@ describe('AlloCommandPalette focus behavior', () => {
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(document.activeElement).toBe(opener);
   });
+
+  it('opens with a prefilled query from an external launcher and restores focus', async () => {
+    opener = document.createElement('button');
+    opener.type = 'button';
+    opener.textContent = 'Atlas launcher';
+    document.body.appendChild(opener);
+    opener.focus();
+
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(AlloCommandPalette, { ctx: { t: () => null } })));
+
+    act(() => window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette', {
+      detail: { query: 'stem lab', source: 'atlas' },
+    })));
+    await act(async () => { await Promise.resolve(); });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const input = dialog.querySelector('[role="combobox"]');
+    expect(input.value).toBe('stem lab');
+    expect(document.activeElement).toBe(input);
+    expect(dialog.textContent).toContain('Open the STEM Lab');
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Escape', bubbles: true,
+    })));
+    await act(async () => { await Promise.resolve(); });
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+  });
+
 });

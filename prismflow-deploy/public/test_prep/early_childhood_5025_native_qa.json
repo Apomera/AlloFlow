@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:55.883Z",
+  "generatedAt": "2026-07-19T05:50:07.412Z",
   "packId": "praxis-early-childhood-5025",
   "standard": {
-    "label": "AlloFlow Early Childhood 5025 source, structure, feedback, and learning-linkage QA v1",
+    "label": "AlloFlow Early Childhood 5025 source, semantic-link, option-feedback, and learning-library QA v2",
     "limitation": "Not ETS or standards-organization approval; independent early-childhood, disciplinary, cultural, accessibility, and psychometric validation remain pending."
   },
   "summary": {
@@ -12,19 +12,34 @@
     "findings": [],
     "status": "pass",
     "sourceItems": 200,
-    "distinctSourceContentKernels": 100,
-    "parallelSourceVariants": 100,
-    "guidedReasoningItems": 300,
+    "assistantAuthoredIndependentItems": 100,
+    "independentPracticeItems": 300,
+    "distinctSourceContentKernels": 105,
+    "parallelSourceVariants": 95,
+    "distinctIndependentContentKernels": 205,
+    "parallelIndependentVariants": 95,
+    "guidedReasoningItems": 200,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 400,
+    "newIndependentItemsNeeded": 295,
     "structuralStatus": "pass",
     "contentDistinctnessStatus": "target-not-met",
     "assistantReviewVerdict": "reviewed-target-not-met",
     "diagnosticBanks": 5,
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
-    "guidedReviewBanks": 3,
+    "assistantAuthoredIndependentBanks": 1,
+    "independentDiagnosticBanks": 3,
+    "guidedReviewBanks": 2,
     "learningActivityBanks": 5
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
+    "learningLibrarySha256": "cf98163a2c7c50d772c36414de9edf679ac04593edaab998f66ba24850017f38",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {
     "independentQuestionTarget": 500,
@@ -32,10 +47,14 @@
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
-    "distinctSourceContentKernels": 100,
-    "parallelSourceVariants": 100,
-    "guidedReasoningItems": 300,
-    "newIndependentItemsNeeded": 400,
+    "assistantAuthoredIndependentItems": 100,
+    "independentPracticeItems": 300,
+    "distinctSourceContentKernels": 105,
+    "parallelSourceVariants": 95,
+    "distinctIndependentContentKernels": 205,
+    "parallelIndependentVariants": 95,
+    "guidedReasoningItems": 200,
+    "newIndependentItemsNeeded": 295,
     "structurallyReviewedItems": 500,
     "reviewer": "OpenAI Codex",
     "examItemReview": "reviewed-target-not-met",
@@ -44,7 +63,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   }
 }

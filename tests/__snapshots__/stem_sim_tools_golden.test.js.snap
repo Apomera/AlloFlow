@@ -187,10 +187,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fligh
   "buttons": 48,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 207,
+  "lengthBucket": 210,
   "paths": 2,
   "selects": 2,
-  "sha": "feb4832640220aea",
+  "sha": "1daeeb85b33878c4",
   "svgs": 1,
 }
 `;

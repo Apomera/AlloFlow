@@ -2110,7 +2110,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 promptInstructions = "Create a hierarchical outline with main topics and sub-points.";
                 break;
             case 'Flow Chart':
-                promptInstructions = "Create a step-by-step process flow. If the process naturally has decision points, conditional paths, or branching logic (e.g., 'If X happens, go to step A; otherwise, go to step B'), include a 'connectsTo' array on each branch containing the 0-based indices of the steps it connects to. For simple linear flows where each step leads to the next, you may omit connectsTo. Example with branching: [{'title':'Check condition','items':['Evaluate X'],'connectsTo':[2,3]}, {'title':'Path A','items':['Do A'],'connectsTo':[4]}, {'title':'Path B','items':['Do B'],'connectsTo':[4]}, {'title':'Final step','items':['Done']}]. Aim for 5-8 steps total.";
+                promptInstructions = "Create a step-by-step process flow. If the process naturally has decision points, conditional paths, or branching logic (e.g., 'If X happens, go to step A; otherwise, go to step B'), include a 'connectsTo' array on each branch containing valid 0-based indices of the steps it connects to. Every target must be between 0 and the final branch index, and a step must not connect to itself. For simple linear flows where each step leads to the next, you may omit connectsTo. Example with branching: [{'title':'Check condition','items':['Evaluate X'],'connectsTo':[1,2]}, {'title':'Path A','items':['Do A'],'connectsTo':[3]}, {'title':'Path B','items':['Do B'],'connectsTo':[3]}, {'title':'Final step','items':['Done']}]. Aim for 5-8 steps total.";
                 break;
             case 'Key Concept Map':
                 promptInstructions = "Identify the central concept and branch out into key related attributes or sub-concepts. CRITICAL: Keep all labels extremely concise (max 4-5 words) to fit inside visual nodes.";
@@ -2379,37 +2379,69 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             dokInstruction = `Target Webb's Depth of Knowledge (DOK): ${dokLevel}`;
         }
         const _modeItemCount = (_modeStrategy && _modeStrategy.generation.defaultItemCount) || effectiveQuizCount;
-        // Use mode default ONLY when the caller didn't explicitly request a count
-        const _resolvedItemCount = (configOverride && configOverride.quizMcqCount) ? configOverride.quizMcqCount : _modeItemCount;
-        // Plan S Slice 2: per-mode item type mix. exit-ticket stays MCQ-only by default
-        // for back-compat; pre-check + review get fill-blank + short-answer in the mix.
-        // Plan S Slice 5+: smart-suggestion — when the curriculum already has a Timeline
-        // or Glossary, drop the corresponding new item type from the quiz mix to avoid
-        // redundant overlap with the dedicated tool. Teachers can still opt back in via
-        // explicit configOverride.itemTypes if they want both.
-        const _resolvedMix = Object.assign({}, (_modeStrategy && _modeStrategy.generation.defaultItemTypeMix) || { mcq: _resolvedItemCount });
+        const _hasOwnConfig = function (key) {
+            return !!(configOverride && Object.prototype.hasOwnProperty.call(configOverride, key));
+        };
+        const _clampQuizCount = function (value, max) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0;
+        };
+        const _supportedItemTypes = ['mcq', 'multi-select', 'fill-blank', 'short-answer', 'self-explanation', 'sequence-sense', 'relation-mismatch', 'answer-evidence', 'numeric-response'];
+        const _sanitizeItemMix = function (mix) {
+            const safe = {};
+            const source = mix && typeof mix === 'object' ? mix : {};
+            _supportedItemTypes.forEach(function (key) {
+                const count = _clampQuizCount(source[key], key === 'mcq' ? 20 : 5);
+                if (count > 0) safe[key] = count;
+            });
+            return safe;
+        };
+        const _hasExplicitItemTypes = _hasOwnConfig('itemTypes') && configOverride.itemTypes && typeof configOverride.itemTypes === 'object';
+        const _hasExplicitMcqCount = _hasOwnConfig('quizMcqCount');
+        const _explicitMcqCount = _hasExplicitMcqCount ? _clampQuizCount(configOverride.quizMcqCount, 20) : null;
+        // The mode is a preset. Explicit per-type counts are authoritative,
+        // including zero, and opt out of automatic Timeline/Glossary skips.
+        const _resolvedMix = _sanitizeItemMix(
+            (_modeStrategy && _modeStrategy.generation.defaultItemTypeMix) || { mcq: _modeItemCount }
+        );
+        if (!_hasExplicitItemTypes && _explicitMcqCount !== null) {
+            if (_explicitMcqCount > 0) _resolvedMix.mcq = _explicitMcqCount;
+            else delete _resolvedMix.mcq;
+        }
         const _hasTimelineArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'timeline'; });
         const _hasGlossaryArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'glossary'; });
         const _smartSkips = [];
-        if (_hasTimelineArtifact && _resolvedMix['sequence-sense']) {
+        if (!_hasExplicitItemTypes && _hasTimelineArtifact && _resolvedMix['sequence-sense']) {
             delete _resolvedMix['sequence-sense'];
             _smartSkips.push('sequence-sense (Timeline exists)');
         }
-        if (_hasGlossaryArtifact && _resolvedMix['relation-mismatch']) {
+        if (!_hasExplicitItemTypes && _hasGlossaryArtifact && _resolvedMix['relation-mismatch']) {
             delete _resolvedMix['relation-mismatch'];
             _smartSkips.push('relation-mismatch (Glossary exists)');
         }
-        // Allow explicit caller override: if configOverride.itemTypes is provided, use it as-is.
-        const _modeItemMix = (configOverride && configOverride.itemTypes && typeof configOverride.itemTypes === 'object')
-            ? configOverride.itemTypes
+        const _modeItemMix = _hasExplicitItemTypes
+            ? _sanitizeItemMix(configOverride.itemTypes)
             : _resolvedMix;
+        if (_explicitMcqCount !== null) {
+            if (_explicitMcqCount > 0) _modeItemMix.mcq = _explicitMcqCount;
+            else delete _modeItemMix.mcq;
+        }
         const _mcqCount = _modeItemMix.mcq || 0;
+        const _multiSelectCount = _modeItemMix['multi-select'] || 0;
         const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
         const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
         const _selfExplanationCount = _modeItemMix['self-explanation'] || 0;
-        // Slice 5: replaced 'sequencing'/'matching' with deeper diagnostic mechanics
         const _sequenceSenseCount = _modeItemMix['sequence-sense'] || 0;
         const _relationMismatchCount = _modeItemMix['relation-mismatch'] || 0;
+        const _answerEvidenceCount = _modeItemMix['answer-evidence'] || 0;
+        const _numericResponseCount = _modeItemMix['numeric-response'] || 0;
+        const _resolvedItemCount = _supportedItemTypes.reduce(function (total, key) {
+            return total + (_modeItemMix[key] || 0);
+        }, 0);
+        const _reflectionCount = _clampQuizCount(
+            _hasOwnConfig('quizReflectionCount') ? configOverride.quizReflectionCount : quizReflectionCount,
+            2
+        );
         // Slice 5: visual MCQ mode read from configOverride
         const _mcqVisualMode = (configOverride && configOverride.mcqVisualMode) || 'none';
         // Plan T v3+ Chunk 10: optional image-style hint. Empty preserves
@@ -2420,13 +2452,18 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // Build item-type-specific instruction blocks dynamically
         const _itemTypeBlocks = [];
         if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
+        if (_multiSelectCount > 0) _itemTypeBlocks.push(_multiSelectCount + ' Multi-Select Question(s) with 4-6 options and 2-4 correct answers; partial credit supported');
         if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
         if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
         if (_selfExplanationCount > 0) _itemTypeBlocks.push(_selfExplanationCount + ' Self-Explanation Prompt(s) (3-5 sentence explanation in own words)');
         if (_sequenceSenseCount > 0) _itemTypeBlocks.push(_sequenceSenseCount + ' Sequence Sense Question(s) (4-6 items where the student verifies order, diagnoses misplacement, and identifies the ordering principle)');
         if (_relationMismatchCount > 0) _itemTypeBlocks.push(_relationMismatchCount + ' Relation Mismatch Question(s) (4-5 pre-paired items where ONE pair is wrong; student finds it and picks the correct partner)');
-        const _includeReflections = (_quizMode === 'exit-ticket' && quizReflectionCount > 0);
-        if (_includeReflections) _itemTypeBlocks.push(quizReflectionCount + ' Open-Ended Reflection Question(s)');
+        if (_answerEvidenceCount > 0) _itemTypeBlocks.push(_answerEvidenceCount + ' Answer + Evidence Question(s) (choose an answer, then the evidence or reason that supports it)');
+        if (_numericResponseCount > 0) _itemTypeBlocks.push(_numericResponseCount + ' Numeric Response Question(s) with a correct value, tolerance, and optional units');
+        const _includeReflections = _reflectionCount > 0;
+        const _reflectionInstruction = _includeReflections
+            ? 'Additionally, generate exactly ' + _reflectionCount + ' unscored closing reflection prompt(s) in the reflections array. Ask about learning, remaining confusion, or a change in thinking; do not ask for confidence because confidence is collected per assessed item.'
+            : 'Return an empty reflections array.';
         const _itemTypeInstructions = _itemTypeBlocks.map(function (s, i) { return (i + 1) + '. ' + s + '.'; }).join('\n          ');
         // Plan S Slice 3e: misconception probe flag — when in pre-check or formative mode,
         // tell the LLM to use distractors rooted in COMMON STUDENT MISCONCEPTIONS rather
@@ -2451,42 +2488,59 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           - Test specific facts, vocabulary, relationships, claims, processes, or inferences in that source.
           - Do not ask generic topic questions that could be answered without reading the source.`;
         })();
-        // JSON shape varies by what's requested
-        const _jsonShape = `{
-            "questions": [
-              { "type": "mcq", "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }${_fillBlankCount > 0 ? `,
-              { "type": "fill-blank", "question": "Sentence with ___ for the blank.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedFill": "...", "acceptableAlternatives": ["alt1", "alt2"] }` : ''}${_shortAnswerCount > 0 ? `,
-              { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}${_selfExplanationCount > 0 ? `,
-              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}${_sequenceSenseCount > 0 ? `,
-              { "type": "sequence-sense", "question": "Below is a sequence. Verify and explain.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"items": ["earliest/first/cause", "second", "third", "latest/last/effect"], "presentedOrder": [0, 2, 1, 3], "intentionallyWrongIndex": 1, "orderingPrinciple": "chronological", "principleOptions": ["chronological", "cause-effect", "process", "size", "hierarchy"] }` : ''}${_relationMismatchCount > 0 ? `,
-              { "type": "relation-mismatch", "question": "One of these pairs is wrong. Find it and fix it.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"pairs": [{ "left": "A", "right": "correct A match" }, { "left": "B", "right": "correct B match" }, { "left": "C", "right": "WRONG match for C" }, { "left": "D", "right": "correct D match" }], "wrongPairIndex": 2, "correctPartnerForWrong": "actual right answer for C", "candidatePartners": ["distractor 1", "actual right answer for C", "distractor 2", "distractor 3"] }` : ''}
-            ]${_includeReflections ? `,
-            "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
-          }`;
+        // Build a type-aware JSON example. In particular, a customized
+        // zero-MCQ recipe must not show the model an MCQ object to imitate.
+        const _jsonExamplesByType = {
+            mcq: { type: 'mcq', question: 'Question text?', options: ['Option A', 'Option B', 'Option C', 'Option D'], correctAnswer: 'Option A', conceptLabel: 'short concept' },
+            'multi-select': { type: 'multi-select', question: 'Select every statement that is supported.', options: ['Correct statement A', 'Distractor B', 'Correct statement C', 'Distractor D'], correctAnswers: ['Correct statement A', 'Correct statement C'], conceptLabel: 'short concept' },
+            'fill-blank': { type: 'fill-blank', question: 'Sentence with ___ for the blank.', expectedFill: 'target phrase', acceptableAlternatives: ['accepted alternative'], conceptLabel: 'short concept' },
+            'short-answer': { type: 'short-answer', question: 'Open prompt requiring a 1-2 sentence response.', expectedAnswer: 'Concise reference answer covering the key idea.', conceptLabel: 'short concept' },
+            'self-explanation': { type: 'self-explanation', question: 'Explain the concept in your own words.', rubric: 'Reward the named key elements, relationships, and an accurate example.', conceptLabel: 'short concept' },
+            'sequence-sense': { type: 'sequence-sense', question: 'Verify and diagnose this sequence.', items: ['first', 'second', 'third', 'fourth'], presentedOrder: [0, 2, 1, 3], intentionallyWrongIndex: 1, orderingPrinciple: 'process', principleOptions: ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'], conceptLabel: 'short concept' },
+            'relation-mismatch': { type: 'relation-mismatch', question: 'Find and repair the incorrect pair.', pairs: [{ left: 'A', right: 'match A' }, { left: 'B', right: 'match B' }, { left: 'C', right: 'wrong match' }, { left: 'D', right: 'match D' }], wrongPairIndex: 2, correctPartnerForWrong: 'correct match C', candidatePartners: ['distractor 1', 'correct match C', 'distractor 2', 'distractor 3'], conceptLabel: 'short concept' },
+            'answer-evidence': { type: 'answer-evidence', question: 'Which claim is best supported?', answerOptions: ['Claim A', 'Claim B', 'Claim C', 'Claim D'], correctAnswer: 'Claim B', evidencePrompt: 'Which evidence or reason best supports that answer?', evidenceOptions: ['Evidence A', 'Evidence B', 'Evidence C', 'Evidence D'], correctEvidence: 'Evidence C', conceptLabel: 'short concept' },
+            'numeric-response': { type: 'numeric-response', question: 'Calculate the requested value. Include units when appropriate.', correctValue: 12.5, tolerance: 0.1, unit: 'cm', acceptableUnits: ['centimeter', 'centimeters'], conceptLabel: 'short concept' },
+        };
+        const _jsonExampleQuestions = _supportedItemTypes.filter(function (key) {
+            return (_modeItemMix[key] || 0) > 0;
+        }).map(function (key) {
+            const example = Object.assign({}, _jsonExamplesByType[key]);
+            if (effectiveLanguage !== 'English') {
+                example.question_en = 'English translation of the question';
+                if (key === 'mcq' || key === 'multi-select') example.options_en = ['English A', 'English B', 'English C', 'English D'];
+                if (key === 'answer-evidence') {
+                    example.answerOptions_en = ['English answer A', 'English answer B', 'English answer C', 'English answer D'];
+                    example.evidenceOptions_en = ['English evidence A', 'English evidence B', 'English evidence C', 'English evidence D'];
+                }
+            }
+            return example;
+        });
+        const _jsonShape = JSON.stringify({
+            questions: _jsonExampleQuestions,
+            reflections: _includeReflections
+                ? [effectiveLanguage !== 'English' ? { text: 'Reflection prompt', text_en: 'English reflection prompt' } : 'Reflection prompt']
+                : [],
+        }, null, 2);
         let result = '';
         if (usesLocalTextBackend) {
-        const localQuizCount = Math.max(3, Math.min(Number(_resolvedItemCount) || Number(effectiveQuizCount) || 5, 6));
         const prompt = `
-          Create a short source-grounded quiz for ${gradeLevel} students.
+          ${_modeFraming}
+          Quiz target: ${_modeQuestionTargets}.
+          Audience: ${gradeLevel} level students.
           Mode: ${_quizMode}.
           Language: ${effectiveLanguage}.
           ${dokInstruction}
           ${standardsPromptString ? `Target standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
+          ${_sourceGroundingInstruction}
+          Generate exactly ${_resolvedItemCount} assessed items using this exact item-type recipe:
+          ${_itemTypeInstructions}
+          ${_reflectionInstruction}
+          Follow the requested JSON example for each item type exactly. MCQs must have exactly 4 options and correctAnswer must exactly match one option. Every assessed item must include a short lowercase conceptLabel.
+          ${_useMisconceptionDistractors ? 'Build MCQ distractors from common student misconceptions or predictable errors, not random wrong answers.' : ''}
           ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
           ${useEmojis ? 'Use emojis only if they improve clarity.' : 'Do not use emojis.'}
-          Generate exactly ${localQuizCount} multiple choice questions.
-          Each question must test a specific fact, vocabulary term, relationship, process, or inference from the source excerpt.
-          Each question must have exactly 4 options.
-          The "correctAnswer" value must exactly match one option string.
-          Include "conceptLabel" as a short lowercase 2-4 word tag.
-          Return ONLY valid JSON:
-          {
-            "questions": [
-              { "type": "mcq", "question": "Question text?", "options": ["A", "B", "C", "D"], "correctAnswer": "A", "conceptLabel": "short concept" }
-            ],
-            "reflections": []
-          }
+          Return ONLY valid JSON matching this shape: ${_jsonShape}
           Source excerpt:
           """
           ${localExcerpt(textToProcess, 6500)}
@@ -2509,15 +2563,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_sourceGroundingInstruction}
           Include the following item types:
           ${_itemTypeInstructions}
+          ${_reflectionInstruction}
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
           IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
+          ${_multiSelectCount > 0 ? 'For each Multi-Select: provide 4-6 plausible options and a correctAnswers array containing the exact text of 2-4 correct options. Make every option independently judgeable. Avoid tricks such as all-of-the-above. The student receives partial credit for correct selections and loses credit for incorrect selections.' : ''}
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
           ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see (with one item intentionally moved out of position). Provide "intentionallyWrongIndex" — the position in presentedOrder where the misplaced item appears (or null if you want the displayed order to actually be correct). Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click the misplaced item if any, (3) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
           ${_relationMismatchCount > 0 ? 'For each Relation Mismatch Question: provide a "pairs" array of 4-5 {left, right} objects where ONE pair is intentionally WRONG. Provide "wrongPairIndex" pointing to that pair. Provide "correctPartnerForWrong" — the right column value that SHOULD have been paired with the wrong-pair\'s left item. Provide "candidatePartners" — an array of 4 strings that includes correctPartnerForWrong and 3 distractors. Choose content where genuine left-right relationships exist (term-definition, cause-effect, person-contribution, etc.) and the wrong pair encodes a believable confusion (not an obvious nonsense match).' : ''}
+          ${_answerEvidenceCount > 0 ? 'For each Answer + Evidence Question: provide answerOptions (exactly 4), correctAnswer (matching one answer option), evidencePrompt, evidenceOptions (exactly 4), and correctEvidence (matching one evidence option). The evidence must genuinely justify the correct answer; plausible distractors should reflect common reasoning errors.' : ''}
+          ${_numericResponseCount > 0 ? 'For each Numeric Response: provide correctValue as a number, tolerance as a non-negative number (0 for exact answers), unit as the preferred unit or an empty string, and acceptableUnits as common equivalent spellings for that SAME unit. Ask only questions with one unambiguous numeric result.' : ''}
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
@@ -2564,6 +2622,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 if (itemType === 'mcq') {
                     base.options = Array.isArray(q.options) ? q.options : ["True", "False"];
                     base.correctAnswer = q.correctAnswer || "";
+                } else if (itemType === 'multi-select') {
+                    base.options = Array.isArray(q.options) ? q.options.filter(function (s) { return typeof s === 'string' && s; }) : [];
+                    base.correctAnswers = Array.isArray(q.correctAnswers)
+                        ? q.correctAnswers.filter(function (s) { return typeof s === 'string' && base.options.indexOf(s) !== -1; })
+                        : (q.correctAnswer && base.options.indexOf(q.correctAnswer) !== -1 ? [q.correctAnswer] : []);
                 } else if (itemType === 'fill-blank') {
                     base.expectedFill = q.expectedFill || "";
                     base.acceptableAlternatives = Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [];
@@ -2591,6 +2654,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     base.wrongPairIndex = (typeof q.wrongPairIndex === 'number') ? q.wrongPairIndex : 0;
                     base.correctPartnerForWrong = q.correctPartnerForWrong || '';
                     base.candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners.filter(function (s) { return typeof s === 'string' && s; }) : [];
+                } else if (itemType === 'answer-evidence') {
+                    base.answerOptions = Array.isArray(q.answerOptions) ? q.answerOptions.filter(function (s) { return typeof s === 'string' && s; }) : [];
+                    base.correctAnswer = q.correctAnswer || '';
+                    base.evidencePrompt = q.evidencePrompt || 'Which evidence or reason best supports your answer?';
+                    base.evidenceOptions = Array.isArray(q.evidenceOptions) ? q.evidenceOptions.filter(function (s) { return typeof s === 'string' && s; }) : [];
+                    base.correctEvidence = q.correctEvidence || '';
+                } else if (itemType === 'numeric-response') {
+                    const parsedCorrectValue = Number(q.correctValue);
+                    const parsedTolerance = Number(q.tolerance);
+                    base.correctValue = Number.isFinite(parsedCorrectValue) ? parsedCorrectValue : 0;
+                    base.tolerance = Number.isFinite(parsedTolerance) ? Math.max(0, parsedTolerance) : 0;
+                    base.unit = typeof q.unit === 'string' ? q.unit.trim() : '';
+                    base.acceptableUnits = Array.isArray(q.acceptableUnits) ? q.acceptableUnits.filter(function (s) { return typeof s === 'string' && s.trim(); }).map(function (s) { return s.trim(); }) : [];
                 }
                 return base;
             });
@@ -2774,6 +2850,42 @@ ${_itemsBlock}`;
                 warnLog('[Quiz] Distractor validation outer error:', outerErr);
             }
         }
+        // Enforce the requested upper bounds after generation. Missing items
+        // cannot be invented safely, so surface a warning instead of silently
+        // claiming the requested recipe was fulfilled.
+        const _keptByType = {};
+        if (content && Array.isArray(content.questions)) {
+            content.questions = content.questions.filter(function (question) {
+                const key = question && question.type ? question.type : 'mcq';
+                const requested = _modeItemMix[key] || 0;
+                const kept = _keptByType[key] || 0;
+                if (kept >= requested) return false;
+                _keptByType[key] = kept + 1;
+                return true;
+            });
+        }
+        if (content && Array.isArray(content.reflections)) {
+            content.reflections = content.reflections.slice(0, _reflectionCount);
+        }
+        const _actualQuestions = content && Array.isArray(content.questions) ? content.questions : [];
+        const _actualReflections = content && Array.isArray(content.reflections) ? content.reflections : [];
+        const _actualItemMix = {};
+        _actualQuestions.forEach(function (question) {
+            const key = question && question.type ? question.type : 'mcq';
+            _actualItemMix[key] = (_actualItemMix[key] || 0) + 1;
+        });
+        const _countMismatch = _supportedItemTypes.some(function (key) {
+            return (_actualItemMix[key] || 0) !== (_modeItemMix[key] || 0);
+        }) || _actualReflections.length !== _reflectionCount;
+        if (content && typeof content === 'object') {
+            content.requestedItemTypeMix = Object.assign({}, _modeItemMix);
+            content.actualItemTypeMix = Object.assign({}, _actualItemMix);
+            content.requestedReflectionCount = _reflectionCount;
+            content.itemCountMismatch = _countMismatch;
+        }
+        if (_countMismatch) {
+            addToast('The AI returned fewer items than requested in at least one question type. Review the generated mix before sharing.', 'warning');
+        }
         // Plan S: stamp the mode onto the content so the view can render
         // mode-aware behavior (intro banner, AI explainer, confidence rating).
         if (content && typeof content === 'object') {
@@ -2787,8 +2899,10 @@ ${_itemsBlock}`;
         }
         const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
         const _smartSkipSuffix = _smartSkips.length > 0 ? ` · skipped: ${_smartSkips.join(', ')}` : '';
-        const _metaQuestionCount = usesLocalTextBackend && content && Array.isArray(content.questions) ? content.questions.length : _resolvedItemCount;
-        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_metaQuestionCount}MC/${_quizMode === 'exit-ticket' && !usesLocalTextBackend ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${usesLocalTextBackend ? ' - Local' : ''}${_smartSkipSuffix}`;
+        const _metaQuestionCount = _actualQuestions.length;
+        const _metaMcqCount = _actualItemMix.mcq || 0;
+        const _metaReflectionCount = _actualReflections.length;
+        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_metaQuestionCount} items; ${_metaMcqCount} MCQ${_metaReflectionCount > 0 ? `; ${_metaReflectionCount} Ref` : ''})${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${usesLocalTextBackend ? ' - Local' : ''}${_smartSkipSuffix}`;
         // Stamp smart-skip info onto the quiz content so the view module can
         // optionally surface it to teachers (future enhancement).
         if (content && typeof content === 'object' && _smartSkips.length > 0) {

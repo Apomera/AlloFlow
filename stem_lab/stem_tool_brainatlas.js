@@ -4750,8 +4750,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.beginPath(); ctx.arc(pt.x, pt.y, 7 + glow * 2, 0, Math.PI * 2); ctx.fill();
                   ctx.fillStyle = color;
                   ctx.beginPath(); ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2); ctx.fill();
-                  ctx.font = 'bold 9px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
-                  ctx.fillStyle = '#e2e8f0'; ctx.fillText(label, pt.x, pt.y - 13);
+                  brainAtlasDrawPathLabel(pt.x, pt.y - 15, label, color, Math.max(64, W * 0.13));
                   ctx.restore();
                 }
                 var scanX = x0 + scan * pW;
@@ -5169,19 +5168,18 @@ var d = labToolData.brainAtlas || {};
 
                 // Time scale bar (bottom)
                 ctx.save();
-                ctx.font = Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-                ctx.fillText('1 second', eMarginL + eTraceW * 0.85, H * 0.98);
-                // Scale bar line
-                var scaleW = eTraceW * 0.12;
+                var scaleCenterX = eMarginL + eTraceW * 0.85;
+                var scaleW = Math.max(48, Math.min(eTraceW * 0.18, 92));
+                var scaleY = H - 20;
+                brainAtlasDrawPathLabel(scaleCenterX, scaleY - 13, '1 second', '#64748b', Math.max(68, scaleW + 18));
+                // Scale bar line and end ticks share a fixed bottom-safe baseline.
                 ctx.beginPath();
-                ctx.moveTo(eMarginL + eTraceW * 0.79, H * 0.965);
-                ctx.lineTo(eMarginL + eTraceW * 0.91, H * 0.965);
+                ctx.moveTo(scaleCenterX - scaleW / 2, scaleY);
+                ctx.lineTo(scaleCenterX + scaleW / 2, scaleY);
                 ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
-                // End ticks
                 ctx.beginPath();
-                ctx.moveTo(eMarginL + eTraceW * 0.79, H * 0.96); ctx.lineTo(eMarginL + eTraceW * 0.79, H * 0.97);
-                ctx.moveTo(eMarginL + eTraceW * 0.91, H * 0.96); ctx.lineTo(eMarginL + eTraceW * 0.91, H * 0.97);
+                ctx.moveTo(scaleCenterX - scaleW / 2, scaleY - 5); ctx.lineTo(scaleCenterX - scaleW / 2, scaleY + 5);
+                ctx.moveTo(scaleCenterX + scaleW / 2, scaleY - 5); ctx.lineTo(scaleCenterX + scaleW / 2, scaleY + 5);
                 ctx.stroke();
                 ctx.restore();
 
@@ -5244,10 +5242,8 @@ var d = labToolData.brainAtlas || {};
                 ctx.restore();
 
                 // Hemisphere labels — positioned well above the brain ellipses
-                ctx.font = 'bold ' + Math.round(12 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'center';
-                ctx.fillText('LEFT', brCx - brRx * 0.52, brCy - brRy - 14);
-                ctx.fillText('RIGHT', brCx + brRx * 0.52, brCy - brRy - 14);
+                brainAtlasDrawPathLabel(brCx - brRx * 0.52, brCy - brRy * 0.68, 'LEFT', '#7c3aed', W * 0.12);
+                brainAtlasDrawPathLabel(brCx + brRx * 0.52, brCy - brRy * 0.68, 'RIGHT', '#7c3aed', W * 0.12);
 
                 // Corpus callosum (connecting bridge)
                 ctx.save();
@@ -5277,9 +5273,7 @@ var d = labToolData.brainAtlas || {};
                     ctx.fillStyle = '#7c3aed'; ctx.fill();
                   }
                 }
-                ctx.font = Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#7c3aed80'; ctx.textAlign = 'center';
-                ctx.fillText('Corpus Callosum', brCx, brCy + 3);
+                brainAtlasDrawPathLabel(brCx, brCy, 'Corpus Callosum', '#7c3aed', W * 0.20);
                 ctx.restore();
 
                 function callosalResearchCard(x, y, w, h, title, lines, color) {
@@ -5312,17 +5306,9 @@ var d = labToolData.brainAtlas || {};
                 ctx.fillStyle = bsGrad; ctx.fill();
                 ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
                 // Medulla pyramids label — offset to the right to avoid pathway overlap
-                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#7c3aed'; ctx.textAlign = 'left';
-                var medLabelX = brCx + 16;
+                var medLabelX = brCx + W * 0.07;
                 var medLabelY = H * 0.73;
-                // Background pill for readability
-                var medTW = ctx.measureText('Medulla Pyramids').width + 8;
-                ctx.beginPath(); ctx.roundRect(medLabelX - 4, medLabelY - 8, medTW, 13, 3);
-                ctx.fillStyle = '#f5f3ffdd'; ctx.fill();
-                ctx.strokeStyle = '#a78bfa40'; ctx.lineWidth = 0.5; ctx.stroke();
-                ctx.fillStyle = '#7c3aedb0'; ctx.textAlign = 'left';
-                ctx.fillText('Medulla Pyramids', medLabelX, medLabelY + 2);
+                brainAtlasDrawPathLabel(medLabelX, medLabelY, 'Medulla Pyramids', '#7c3aed', W * 0.20);
                 ctx.restore();
 
                 // ── Crossing Pathways with animated pulses ──
@@ -5449,7 +5435,7 @@ var d = labToolData.brainAtlas || {};
                   var insetBodyLineHeight = insetBodyPx + 2;
                   insetBodyLines.forEach(function (line, lineIndex) { ctx.fillText(line, bx + bw * 0.5, by + 25 + lineIndex * insetBodyLineHeight); });
 
-                  var sx = bx + 14, sy = by + insetHeaderH + 2, sw = bw * 0.36, sh = bh - insetHeaderH - 18;
+                  var sx = bx + 14, sy = by + insetHeaderH + 2, sw = bw * 0.36, sh = bh - insetHeaderH - 24;
                   ctx.fillStyle = '#f8fafc';
                   ctx.strokeStyle = '#cbd5e1';
                   ctx.lineWidth = 1;
@@ -5476,10 +5462,9 @@ var d = labToolData.brainAtlas || {};
                     ctx.fillStyle = '#dc2626';
                     ctx.fillText('KEY', sx + sw * 0.25, sy + sh * 0.50);
                   }
-                  ctx.fillStyle = '#64748b';
-                  ctx.font = Math.round(6.2 * fontScale) + 'px Inter, system-ui, sans-serif';
-                  ctx.fillText('left visual field', sx + sw * 0.25, sy + sh + 12);
-                  ctx.fillText('right visual field', sx + sw * 0.75, sy + sh + 12);
+                  var visualFieldLabelY = sy + sh + 11;
+                  brainAtlasDrawBoundedNodeLabel(sx + sw * 0.25, visualFieldLabelY, sw * 0.48, 20, 'left visual field', '', '#64748b', '#64748b');
+                  brainAtlasDrawBoundedNodeLabel(sx + sw * 0.75, visualFieldLabelY, sw * 0.48, 20, 'right visual field', '', '#64748b', '#64748b');
 
                   function conditionChip(x, y, title, body, color) {
                     brainAtlasDrawTeachingCard(x, y, bw * 0.245, bh * 0.270, title, body, color, true);
@@ -5515,10 +5500,8 @@ var d = labToolData.brainAtlas || {};
                 ctx.ellipse(brCx - brRx * 0.45, brCy - brRy * 0.15, brRx * 0.22, brRy * 0.45, 0, 0, Math.PI * 2);
                 ctx.fillStyle = '#f59e0b'; ctx.fill();
                 ctx.restore();
-                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#b45900cc'; ctx.textAlign = 'center';
-                ctx.fillText('Broca\u2019s', brCx - brRx * 0.65, brCy - brRy * 0.50);
-                ctx.fillText('Wernicke\u2019s', brCx - brRx * 0.25, brCy + brRy * 0.25);
+                brainAtlasDrawPathLabel(brCx - brRx * 0.65, brCy - brRy * 0.50, 'Broca\u2019s', '#b45900', W * 0.14);
+                brainAtlasDrawPathLabel(brCx - brRx * 0.25, brCy + brRy * 0.25, 'Wernicke\u2019s', '#b45900', W * 0.16);
 
                 // ── Legend (two rows to avoid cramping) ──
                 var legItems = [
@@ -5530,10 +5513,8 @@ var d = labToolData.brainAtlas || {};
                 brainAtlasDrawLegendGrid(W * 0.12, H * 0.805, W * 0.76, legItems, '#94a3b8', W * 0.34);
 
                 // Body silhouette labels at bottom — pushed below legend rows
-                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
-                ctx.fillText('\u2190 LEFT BODY', brCx - W * 0.30, H * 0.92);
-                ctx.fillText('RIGHT BODY \u2192', brCx + W * 0.30, H * 0.92);
+                brainAtlasDrawPathLabel(brCx - W * 0.30, H * 0.92, '\u2190 LEFT BODY', '#64748b', W * 0.20);
+                brainAtlasDrawPathLabel(brCx + W * 0.30, H * 0.92, 'RIGHT BODY \u2192', '#64748b', W * 0.20);
 
               }
 

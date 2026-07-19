@@ -60,4 +60,18 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("document.addEventListener('visibilitychange', onVisibilityChange)");
     expect(source).toContain("document.removeEventListener('visibilitychange', onVisibilityChange)");
   });
+
+  it('keeps the topic library compact, searchable, and responsive', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    expect(source).toContain("var navSearchHook = useState('')");
+    expect(source).toContain("type: 'search', value: navSearch");
+    expect(source).toContain("'aria-describedby': 'aq-topic-search-help'");
+    expect(source).toContain("'aria-keyshortcuts': 'Escape'");
+    expect(source).toContain("'aria-label': 'Clear topic search'");
+    expect(source).toContain("'aria-live': 'polite'");
+    expect(source).toContain("searchMatches.slice(0, 30)");
+    expect(source).toContain("currentArea ? ' · Current area' : ''");
+    expect(source).toContain("className: 'aq-primary-nav'");
+    expect(source).toContain('@media(max-width:620px)');
+  });
 });

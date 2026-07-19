@@ -41,6 +41,21 @@
     --violet: #a78bfa;
   }
   * { box-sizing: border-box; }
+  .skipLink {
+    position: fixed;
+    z-index: 10000;
+    top: 8px;
+    left: 8px;
+    transform: translateY(-160%);
+    padding: 10px 14px;
+    border: 2px solid #fbbf24;
+    border-radius: 8px;
+    background: #05070d;
+    color: #ffffff;
+    font-weight: 900;
+    text-decoration: none;
+  }
+  .skipLink:focus { transform: translateY(0); }
   html, body {
     height: 100%;
     min-height: 100%;
@@ -230,6 +245,12 @@
     font-weight: 700;
   }
   .checkrow input { margin-top: 2px; }
+  .checkrow input[type="checkbox"] {
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+  }
   details.advanced {
     margin-top: 10px;
     border: 1px solid var(--line);
@@ -238,6 +259,9 @@
     background: rgba(15, 23, 42, 0.48);
   }
   details.advanced summary {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
     cursor: pointer;
     color: #bdeee7;
     font-size: 12px;
@@ -245,6 +269,8 @@
     text-transform: uppercase;
   }
   input[type="file"] {
+    min-height: 40px;
+    padding: 8px 0;
     width: 100%;
     color: var(--soft);
     font-size: 12px;
@@ -258,6 +284,123 @@
   .status.ok { color: var(--green); }
   .status.warn { color: #fcd34d; }
   .status.err { color: var(--red); }
+  .complexPreview {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 10px;
+    background:
+      radial-gradient(circle at 88% 18%, rgba(56, 189, 248, 0.14), transparent 38%),
+      linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(8, 47, 73, 0.48));
+  }
+  .complexPreviewHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .complexPreviewHead b { color: #ccfbf1; font-size: 12px; letter-spacing: 0.02em; }
+  .complexPreviewBadge {
+    padding: 3px 7px;
+    border: 1px solid rgba(125, 211, 252, 0.32);
+    border-radius: 999px;
+    background: rgba(14, 116, 144, 0.22);
+    color: #bae6fd;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .complexPreviewStage { display: flex; flex-wrap: wrap; align-items: stretch; gap: 7px; min-height: 48px; }
+  .complexEntity {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+    min-width: 104px;
+    padding: 7px 8px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 9px;
+    background: rgba(15, 23, 42, 0.72);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.035), 0 5px 16px rgba(2, 6, 23, 0.2);
+  }
+  .complexEntityIcon {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    color: #07111f;
+    font-size: 11px;
+    font-weight: 950;
+  }
+  .complexEntityText { min-width: 0; }
+  .complexEntityText b, .complexEntityText small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .complexEntityText b { color: var(--text); font-size: 11px; }
+  .complexEntityText small { margin-top: 2px; color: var(--muted); font-size: 10px; }
+  .complexEntity[data-kind="protein"] { border-color: rgba(45, 212, 191, 0.38); }
+  .complexEntity[data-kind="protein"] .complexEntityIcon { background: #5eead4; }
+  .complexEntity[data-kind="dna"] { border-color: rgba(96, 165, 250, 0.38); }
+  .complexEntity[data-kind="dna"] .complexEntityIcon { background: #93c5fd; }
+  .complexEntity[data-kind="rna"] { border-color: rgba(192, 132, 252, 0.38); }
+  .complexEntity[data-kind="rna"] .complexEntityIcon { background: #d8b4fe; }
+  .complexEntity[data-kind="ligand"] { border-color: rgba(251, 191, 36, 0.38); }
+  .complexEntity[data-kind="ligand"] .complexEntityIcon { background: #fcd34d; }
+  .complexEntity[data-kind="ion"] { border-color: rgba(251, 113, 133, 0.38); }
+  .complexEntity[data-kind="ion"] .complexEntityIcon { background: #fda4af; }
+  .complexPreviewEmpty { align-self: center; color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .complexPreviewSummary { margin: 0; color: var(--soft); font-size: 11px; line-height: 1.4; }
+  .variantSandbox { border-color: rgba(192, 132, 252, 0.34) !important; background: linear-gradient(145deg, rgba(88, 28, 135, 0.14), rgba(15, 23, 42, 0.68)) !important; }
+  .variantControls { align-items: end; }
+  .variantSequenceTrack {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 3px; min-height: 40px; margin-top: 9px; padding: 7px;
+    border: 1px solid rgba(192, 132, 252, 0.24); border-radius: 8px; background: rgba(2, 6, 23, 0.42);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  .variantResidue {
+    display: inline-grid; place-items: center; width: 24px; height: 28px; border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 6px; color: var(--soft); background: rgba(30, 41, 59, 0.72); font-size: 11px; font-weight: 900;
+  }
+  .variantResidue.changed { border-color: #f0abfc; background: rgba(192, 38, 211, 0.24); color: #fae8ff; box-shadow: 0 0 0 1px rgba(240, 171, 252, 0.18); }
+  .variantResidue.focus { outline: 2px solid #67e8f9; outline-offset: 1px; }
+  .variantEllipsis { color: var(--muted); padding: 0 2px; }
+  .variantMutationList { display: flex; flex-wrap: wrap; gap: 6px; min-height: 25px; margin-top: 8px; }
+  .variantMutation {
+    display: inline-flex; align-items: center; padding: 4px 7px; border: 1px solid rgba(240, 171, 252, 0.34);
+    border-radius: 999px; background: rgba(126, 34, 206, 0.16); color: #fae8ff;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 10px; font-weight: 900;
+  }
+  .variantMutationEmpty { color: var(--muted); font-size: 11px; }
+  .variantActions { margin-top: 9px; }
+  .paeResultCompare { display: grid; gap: 7px; margin-top: 9px; }
+  .paeResultRow { display: grid; grid-template-columns: minmax(92px, auto) minmax(70px, 1fr) minmax(70px, auto); align-items: center; gap: 7px; color: var(--soft); font-size: 11px; }
+  .paeResultRow progress { width: 100%; height: 10px; }
+  .paeResultRow.original progress { accent-color: #5eead4; }
+  .paeResultRow.variant progress { accent-color: #d8b4fe; }
+  .paeResultValue { color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; text-align: right; }
+  .coordinateMetrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 9px; }
+  .coordinateMetric { padding: 7px; border: 1px solid var(--line); border-radius: 8px; background: rgba(15, 23, 42, 0.5); }
+  .coordinateMetric b { display: block; color: var(--muted); font-size: 10px; }
+  .coordinateMetric output { display: block; margin-top: 3px; color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
+  .coordinatePlot { display: block; width: 100%; height: auto; min-height: 150px; margin-top: 9px; border: 1px solid var(--line); border-radius: 8px; background: rgba(2, 6, 23, 0.42); }
+  .coordinatePlot .axis { stroke: #64748b; stroke-width: 1; }
+  .coordinatePlot .grid { stroke: #334155; stroke-width: 1; }
+  .coordinatePlot .originalLine { fill: none; stroke: #5eead4; stroke-width: 2; }
+  .coordinatePlot .variantLine { fill: none; stroke: #d8b4fe; stroke-width: 2; }
+  .coordinatePlot text { fill: #cbd5e1; font: 11px system-ui, sans-serif; }
+  .contactDifferenceCanvas { display: block; width: min(100%, 340px); height: auto; margin: 9px auto 0; border: 1px solid var(--line); background: #09111e; }
+  .coordinateLegend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; color: var(--muted); font-size: 11px; }
+  .coordinateLegend span { display: inline-flex; align-items: center; gap: 5px; }
+  .coordinateSwatch { width: 12px; height: 12px; border-radius: 3px; }
+  .coordinateSwatch.retained { background: #64748b; }
+  .coordinateSwatch.gained { background: #c084fc; }
+  .coordinateSwatch.lost { background: #f59e0b; }
+  @media (max-width: 420px) { .coordinateMetrics { grid-template-columns: 1fr; } }
+  .notebookEntries { display: grid; gap: 7px; margin-top: 9px; }
+  .notebookEntry { padding: 8px; border-left: 3px solid #5eead4; background: rgba(15, 23, 42, 0.46); color: var(--soft); font-size: 11px; line-height: 1.45; }
+  .notebookEntry b { display: block; margin-bottom: 3px; color: var(--text); }
+  .notebookEmpty { color: var(--muted); font-size: 11px; }
+  .annotationPlot { display: block; width: 100%; height: auto; margin-top: 9px; border: 1px solid var(--line); border-radius: 8px; background: rgba(2, 6, 23, 0.42); }
+  .annotationPlot .backbone { stroke: #64748b; stroke-width: 2; }
+  .annotationPlot .feature { fill: #38bdf8; opacity: 0.58; }
+  .annotationPlot .feature.selected { fill: #fbbf24; opacity: 0.92; }
+  .annotationPlot text { fill: #cbd5e1; font: 11px system-ui, sans-serif; }
   .output {
     max-height: 150px;
     overflow: auto;
@@ -293,7 +436,7 @@
     min-height: 36px;
     padding: 7px 11px;
     text-align: center;
-    background: rgba(16, 24, 39, 0.96);
+    background: #101827;
     border-color: var(--line2);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.34);
   }
@@ -304,6 +447,43 @@
     background: rgba(5, 7, 13, 0.92);
   }
   #molstar { position: absolute; inset: 0; }
+  #molstarCompare { position: absolute; inset: 0; display: none; }
+  .viewer.compareMode #molstar { right: 50%; border-right: 1px solid var(--line2); }
+  .viewer.compareMode #molstarCompare { display: block; left: 50%; }
+  .comparisonLabels {
+    position: absolute;
+    z-index: 7;
+    top: 52px;
+    left: 8px;
+    right: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    pointer-events: none;
+  }
+  .comparisonLabels[hidden] { display: none; }
+  .comparisonLabel {
+    width: max-content;
+    max-width: calc(100% - 8px);
+    padding: 4px 8px;
+    border: 1px solid var(--line2);
+    border-radius: 999px;
+    background: rgba(5, 7, 13, 0.9);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 900;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .comparisonLabel:last-child { justify-self: end; }
+  .comparisonFileGrid { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .comparisonDropZone {
+    margin-top: 8px; padding: 11px; border: 1px dashed rgba(94, 234, 212, 0.5); border-radius: 9px;
+    background: rgba(13, 148, 136, 0.08); color: var(--soft); text-align: center; font-size: 11px; line-height: 1.45;
+    transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  }
+  .comparisonDropZone.dragActive { border-color: #fbbf24; background: rgba(251, 191, 36, 0.12); transform: translateY(-1px); }
   .placeholder, .loadmsg {
     position: absolute;
     inset: 0;
@@ -315,10 +495,7 @@
     color: var(--muted);
     font-size: 14px;
     line-height: 1.5;
-    background:
-      linear-gradient(90deg, rgba(20, 184, 166, 0.12), transparent 38%),
-      linear-gradient(180deg, rgba(56, 189, 248, 0.10), transparent 45%),
-      #05070d;
+    background: #05070d;
   }
   .loadmsg { display: none; z-index: 4; }
   .details {
@@ -614,7 +791,7 @@
     padding: 10px;
     border: 1px solid rgba(167, 139, 250, 0.32);
     border-radius: 10px;
-    background: radial-gradient(circle at 18% 32%, rgba(20, 184, 166, 0.13), transparent 38%), rgba(15, 23, 42, 0.5);
+    background: #101827;
   }
   .paePrimerHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
   .paePrimerHead b { color: var(--text); font-size: 12px; }
@@ -624,14 +801,36 @@
   .paeLive { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
   .paeLive[hidden] { display: none; }
   .paeLive h3 { margin: 0 0 4px; color: var(--text); font-size: 13px; }
-  #paeLiveCanvas { display: block; width: 100%; height: auto; margin-top: 8px; border: 1px solid var(--line); border-radius: 9px; background: #05070d; }
-  .paeLiveScale { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; color: var(--muted); font-size: 10px; }
+  #paeLiveCanvas { display: block; width: 100%; height: auto; margin-top: 8px; border: 1px solid var(--line); border-radius: 9px; background: #05070d; cursor: crosshair; touch-action: manipulation; }
+  .paeLiveScale { display: grid; grid-template-columns: auto minmax(54px, 1fr) auto; align-items: center; gap: 7px; margin-top: 5px; color: var(--muted); font-size: 10px; }
+  .paeLiveScaleBar { height: 7px; border-radius: 999px; background: linear-gradient(90deg, #147d70, #b6c933, #ef5440); }
+  .paeMarkerKey { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; color: var(--muted); font-size: 10px; }
+  .paeMarkerKey span { display: inline-flex; align-items: center; gap: 5px; }
+  .paeMarkerSwatch { display: inline-block; width: 12px; height: 12px; }
+  .paeMarkerSelected { background: linear-gradient(90deg, transparent 42%, #f8fafc 42% 58%, transparent 58%), linear-gradient(0deg, transparent 42%, #f8fafc 42% 58%, transparent 58%); }
+  .paeMarkerReverse { border: 2px dashed #c4b5fd; border-radius: 50%; }
+  .paeLensBtn { margin-top: 7px; }
+  .paeEvidenceBtn { margin-top: 7px; }
+  .paePairCompare { display: grid; gap: 7px; margin-top: 8px; }
+  .paePairCompare[hidden] { display: none; }
+  .paePairRow > span { display: flex; justify-content: space-between; gap: 8px; color: var(--soft); font-size: 11px; }
+  .paePairRow output { color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  .paePairRow progress { display: block; width: 100%; height: 9px; margin-top: 3px; }
+  .paePairForward progress { accent-color: #5eead4; }
+  .paePairReverse progress { accent-color: #c4b5fd; }
+  .paePairHint { margin: 0; color: var(--muted); font-size: 11px; }
   .paeLiveControls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 9px; }
   .paeLiveControls label { margin: 0; }
   .paeLiveControls output { float: right; color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
   .paeLiveControls input { margin-top: 3px; }
+  input[type="range"] { min-height: 24px; }
   #paeLiveReading { margin-top: 8px; }
-  @media (max-width: 420px) { .paeLiveControls { grid-template-columns: 1fr; } }
+  @media (max-width: 420px) {
+    .paeLiveControls { grid-template-columns: 1fr; }
+    .complexPreviewHead { align-items: flex-start; flex-direction: column; }
+    .complexEntity { flex: 1 1 100%; }
+    .comparisonFileGrid { grid-template-columns: 1fr; }
+  }
   @media (max-width: 860px) {
     header { align-items: flex-start; flex-direction: column; }
     .links { justify-content: flex-start; }
@@ -644,6 +843,10 @@
     .viewer { min-height: 360px; }
     .facts { grid-template-columns: 1fr; }
     .flowNav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .viewer.compareMode #molstar { right: 0; bottom: 50%; border-right: 0; border-bottom: 1px solid var(--line2); }
+    .viewer.compareMode #molstarCompare { left: 0; top: 50%; }
+    .comparisonLabels { top: 50px; bottom: 8px; grid-template-columns: 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); }
+    .comparisonLabel:last-child { align-self: start; justify-self: start; }
   }
   body.viewerFocus {
     position: fixed;
@@ -671,6 +874,7 @@
 </style>
 </head>
 <body>
+<a class="skipLink" href="#viewerMain">Skip controls and go to the 3D viewer</a>
 <header>
   <div class="brand">
     <div class="mark" aria-hidden="true">aF</div>
@@ -902,9 +1106,119 @@
 
     <section aria-labelledby="importTitle" data-flow="explore">
       <h2 id="importTitle">Import result file</h2>
+      <label for="fileInput">AlphaFold or PDB structure file</label>
       <input id="fileInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent">
       <p class="help">Open a downloaded AlphaFold/PDB structure file locally. Files stay in this browser window.</p>
       <p class="status" id="fileStatus" role="status"></p>
+    </section>
+
+    <section aria-labelledby="comparisonTitle" data-flow="explore">
+      <h2 id="comparisonTitle">Original vs. variant results</h2>
+      <p class="help">Load two completed AlphaFold/PDB result files locally for a side-by-side visual comparison. The tool does not automatically align structures or infer biological impact.</p>
+      <div class="comparisonFileGrid">
+        <div><label for="comparisonOriginalInput">Original result</label><input id="comparisonOriginalInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent"></div>
+        <div><label for="comparisonVariantInput">Variant result</label><input id="comparisonVariantInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent"></div>
+      </div>
+      <div class="comparisonDropZone" id="comparisonDropZone" aria-label="Drop two local structure files here. The native file controls above remain available for keyboard users.">Or drop two structure files together. Files named WT, original, or reference are assigned as original; mutant or variant files are assigned as variant.</div>
+      <div class="row">
+        <button class="primary" id="openComparisonBtn" type="button">Open comparison</button>
+        <button class="secondary" id="fitComparisonBtn" type="button" disabled>Fit both</button>
+        <button class="secondary" id="closeComparisonBtn" type="button" disabled>Close comparison</button>
+      </div>
+      <label class="checkrow" for="syncComparisonCameraInput"><input id="syncComparisonCameraInput" type="checkbox" checked disabled>Synchronize orientation and zoom between both 3D viewers</label>
+      <label for="comparisonObservation">Observed model difference</label>
+      <textarea id="comparisonObservation" class="mini" placeholder="Example: The variant model shows a different loop position near residue 42, but local confidence is low."></textarea>
+      <button class="secondary" id="useComparisonEvidenceBtn" type="button" disabled>Use comparison as evidence</button>
+      <p class="status" id="comparisonStatus" role="status" aria-live="polite">Choose an original and variant result file.</p>
+      <details class="advanced" id="paeComparisonPanel">
+        <summary>Compare original and variant PAE</summary>
+        <p class="help">Optionally load the PAE JSON exported with each prediction. Matrices must describe the same residue and chain order.</p>
+        <div class="comparisonFileGrid">
+          <div><label for="originalPaeFileInput">Original PAE JSON</label><input id="originalPaeFileInput" type="file" accept=".json,application/json"></div>
+          <div><label for="variantPaeFileInput">Variant PAE JSON</label><input id="variantPaeFileInput" type="file" accept=".json,application/json"></div>
+        </div>
+        <button class="primary" id="loadPaeComparisonBtn" type="button">Load PAE comparison</button>
+        <div class="row">
+          <div class="field"><label for="comparisonAlignedResidue">Aligned residue</label><input id="comparisonAlignedResidue" type="number" min="1" max="1" value="1"></div>
+          <div class="field"><label for="comparisonComparedResidue">Compared residue</label><input id="comparisonComparedResidue" type="number" min="1" max="1" value="1"></div>
+        </div>
+        <div class="paeResultCompare" id="paeResultCompare" role="group" aria-label="Load original and variant PAE matrices to compare uncertainty." hidden>
+          <div class="paeResultRow original"><span>Original A to B</span><progress id="originalPaeForwardBar" max="31.75" value="0"></progress><output class="paeResultValue" id="originalPaeForwardValue">-</output></div>
+          <div class="paeResultRow variant"><span>Variant A to B</span><progress id="variantPaeForwardBar" max="31.75" value="0"></progress><output class="paeResultValue" id="variantPaeForwardValue">-</output></div>
+          <div class="paeResultRow original"><span>Original B to A</span><progress id="originalPaeReverseBar" max="31.75" value="0"></progress><output class="paeResultValue" id="originalPaeReverseValue">-</output></div>
+          <div class="paeResultRow variant"><span>Variant B to A</span><progress id="variantPaeReverseBar" max="31.75" value="0"></progress><output class="paeResultValue" id="variantPaeReverseValue">-</output></div>
+        </div>
+        <p class="status" id="paeComparisonReading" role="status" aria-live="polite">Choose two PAE JSON files.</p>
+        <button class="secondary" id="usePaeComparisonEvidenceBtn" type="button" disabled>Use PAE difference as evidence</button>
+      </details>
+      <details class="advanced" id="coordinateEvidenceLab">
+        <summary>Align and analyze PDB coordinates</summary>
+        <p class="help">For matching PDB or ENT files, align variant C-alpha coordinates to the original, compare coordinate RMSD, local confidence fields, residue contacts, and chain interfaces. Geometry differences do not establish function or stability.</p>
+        <button class="primary" id="analyzeCoordinatesBtn" type="button">Align and analyze PDB pair</button>
+        <div class="coordinateMetrics" id="coordinateMetrics" hidden>
+          <div class="coordinateMetric"><b>Matched residues</b><output id="matchedResidueCount">-</output></div>
+          <div class="coordinateMetric"><b>C-alpha RMSD</b><output id="coordinateRmsd">-</output></div>
+          <div class="coordinateMetric"><b>Contact changes</b><output id="contactChangeCount">-</output></div>
+        </div>
+        <svg class="coordinatePlot" id="confidenceComparisonPlot" viewBox="0 0 600 180" role="img" aria-label="Load and analyze two PDB files to compare residue confidence fields." hidden>
+          <line class="axis" x1="42" y1="10" x2="42" y2="150"></line><line class="axis" x1="42" y1="150" x2="584" y2="150"></line>
+          <line class="grid" x1="42" y1="80" x2="584" y2="80"></line>
+          <path class="originalLine" id="originalConfidencePath"></path><path class="variantLine" id="variantConfidencePath"></path>
+          <text x="8" y="16">100</text><text x="20" y="84">50</text><text x="28" y="154">0</text><text x="44" y="173">Original</text><text x="112" y="173">Variant</text>
+        </svg>
+        <div class="row">
+          <div class="field"><label for="coordinateResidueInput">Matched residue index</label><input id="coordinateResidueInput" type="number" min="1" max="1" value="1"></div>
+          <div class="field"><label for="coordinateRadiusInput">Radius (Angstroms)</label><input id="coordinateRadiusInput" type="number" min="4" max="12" step="1" value="8"></div>
+        </div>
+        <div class="output" id="coordinateNeighborhoodOutput" role="status" aria-live="polite" hidden></div>
+        <canvas class="contactDifferenceCanvas" id="contactDifferenceCanvas" width="340" height="340" role="img" aria-label="Load and analyze two PDB files to compare residue contacts." hidden></canvas>
+        <div class="coordinateLegend" id="contactDifferenceLegend" hidden><span><i class="coordinateSwatch retained"></i>Retained</span><span><i class="coordinateSwatch gained"></i>Gained</span><span><i class="coordinateSwatch lost"></i>Lost</span></div>
+        <div class="output" id="interfaceComparisonOutput" hidden></div>
+        <p class="status" id="coordinateAnalysisStatus" role="status" aria-live="polite">Open a matching original and variant PDB pair.</p>
+        <button class="secondary" id="useCoordinateEvidenceBtn" type="button" disabled>Use coordinate analysis as evidence</button>
+      </details>
+    </section>
+
+    <section aria-labelledby="notebookTitle" data-flow="explore support">
+      <h2 id="notebookTitle">Variant experiment notebook</h2>
+      <p class="help">Record evidence provenance and save a sequence-free local session. Structure files and raw sequences are never stored in the notebook.</p>
+      <label for="notebookNameInput">Investigation name</label>
+      <input id="notebookNameInput" type="text" value="AlphaFold variant investigation">
+      <div class="row">
+        <div class="field"><label for="notebookProvenanceSelect">Evidence source</label><select id="notebookProvenanceSelect">
+          <option value="model observation">Model observation</option><option value="AI hypothesis">AI hypothesis</option>
+          <option value="database annotation">Database annotation</option><option value="experimental/reference evidence">Experimental/reference evidence</option>
+        </select></div>
+      </div>
+      <label for="notebookEntryInput">Notebook entry</label>
+      <textarea id="notebookEntryInput" class="mini" placeholder="Record what was observed, what source supports it, and what remains uncertain."></textarea>
+      <div class="row">
+        <button class="primary" id="addNotebookEntryBtn" type="button">Add entry</button>
+        <button class="secondary" id="captureWorkspaceBtn" type="button">Capture current workspace</button>
+      </div>
+      <div class="notebookEntries" id="notebookEntries" aria-live="polite"><span class="notebookEmpty">No notebook entries yet.</span></div>
+      <div class="row">
+        <button class="secondary" id="saveNotebookBtn" type="button">Save locally</button>
+        <button class="secondary" id="restoreNotebookBtn" type="button">Restore</button>
+        <button class="secondary" id="downloadNotebookBtn" type="button">Download JSON</button>
+        <button class="secondary" id="downloadNotebookReportBtn" type="button">Download report (.md)</button>
+        <button class="secondary" id="clearNotebookBtn" type="button">Clear entries</button>
+      </div>
+      <p class="status" id="notebookStatus" role="status" aria-live="polite"></p>
+    </section>
+
+    <section aria-labelledby="annotationTitle" data-flow="explore support">
+      <h2 id="annotationTitle">Trusted annotation overlay</h2>
+      <p class="help">Import an official UniProt JSON record to compare database annotations with model observations. Imported annotations remain distinct from AlphaFold-derived evidence.</p>
+      <label for="annotationFileInput">UniProt JSON file</label>
+      <input id="annotationFileInput" type="file" accept=".json,application/json">
+      <div class="row">
+        <button class="primary" id="loadAnnotationsBtn" type="button">Load annotations</button>
+        <button class="secondary" id="useAnnotationEvidenceBtn" type="button" disabled>Use selected annotation as evidence</button>
+      </div>
+      <svg class="annotationPlot" id="annotationPlot" viewBox="0 0 600 130" role="img" aria-label="Load a UniProt JSON record to display annotations." hidden></svg>
+      <div class="output" id="annotationOutput" hidden></div>
+      <p class="status" id="annotationStatus" role="status" aria-live="polite">Choose an official UniProt JSON record.</p>
     </section>
 
     <section aria-labelledby="sequenceTitle" data-flow="explore">
@@ -980,11 +1294,62 @@
         </div>
         <p class="help">Server JSON uses the AlphaFold Server dialect. Local-code JSON uses the open AlphaFold 3 codebase dialect.</p>
       </details>
+      <div class="complexPreview" id="complexPreview" aria-labelledby="complexPreviewTitle">
+        <div class="complexPreviewHead">
+          <b id="complexPreviewTitle">Complex assembly preview</b>
+          <span class="complexPreviewBadge" id="complexPreviewFormat">AlphaFold Server JSON</span>
+        </div>
+        <div class="complexPreviewStage" id="complexPreviewStage" role="img" aria-label="No biomolecule components entered.">
+          <span class="complexPreviewEmpty">Add a protein, DNA, or RNA sequence to preview the assembly.</span>
+        </div>
+        <p class="complexPreviewSummary" id="complexPreviewSummary" aria-live="polite">Illustrative composition only; this is not a predicted structure.</p>
+      </div>
       <p class="status" id="sequenceStatus" role="status">No sequence entered.</p>
       <label class="checkrow" for="safetyConfirmInput">
         <input id="safetyConfirmInput" type="checkbox">
         I confirm these inputs are public, synthetic, or teacher-approved classroom samples, not personal, family, patient, private genetic-test, ancestry, or medical-report data.
       </label>
+      <details class="advanced variantSandbox" id="variantSandbox">
+        <summary>Protein variant sandbox</summary>
+        <p class="help">Explore amino-acid substitutions in a public or synthetic protein. This generates hypotheses to test; it does not predict disease, clinical risk, or experimental function.</p>
+        <div class="row variantControls">
+          <div class="field"><label for="variantPositionInput">Residue position</label><input id="variantPositionInput" type="number" min="1" max="1" step="1" value="1"></div>
+          <div class="field"><label for="variantAminoSelect">Replace with</label><select id="variantAminoSelect">
+            <option value="A">A - Alanine</option><option value="R">R - Arginine</option><option value="N">N - Asparagine</option><option value="D">D - Aspartate</option>
+            <option value="C">C - Cysteine</option><option value="Q">Q - Glutamine</option><option value="E">E - Glutamate</option><option value="G">G - Glycine</option>
+            <option value="H">H - Histidine</option><option value="I">I - Isoleucine</option><option value="L">L - Leucine</option><option value="K">K - Lysine</option>
+            <option value="M">M - Methionine</option><option value="F">F - Phenylalanine</option><option value="P">P - Proline</option><option value="S">S - Serine</option>
+            <option value="T">T - Threonine</option><option value="W">W - Tryptophan</option><option value="Y">Y - Tyrosine</option><option value="V">V - Valine</option>
+          </select></div>
+        </div>
+        <div class="row variantActions">
+          <button class="primary" id="variantApplyBtn" type="button">Apply substitution</button>
+          <button class="secondary" id="variantUndoBtn" type="button" disabled>Undo last</button>
+          <button class="secondary" id="variantResetBtn" type="button" disabled>Reset variant</button>
+        </div>
+        <p class="status" id="variantStatus" role="status">Add a valid protein sequence above to begin.</p>
+        <div class="variantSequenceTrack" id="variantSequenceTrack" role="img" aria-label="No protein variant sequence available."></div>
+        <div class="variantMutationList" id="variantMutationList" aria-label="Applied substitutions"><span class="variantMutationEmpty">No substitutions yet.</span></div>
+        <label for="variantChallengeSelect">Guided comparison challenge</label>
+        <select id="variantChallengeSelect">
+          <option value="charge">Introduce a charge contrast</option>
+          <option value="proline">Test a backbone-constraining proline</option>
+          <option value="glycine">Test a more flexible glycine</option>
+          <option value="conservative">Choose a broad-property match</option>
+        </select>
+        <div class="row variantActions">
+          <button class="secondary" id="applyVariantChallengeBtn" type="button">Set challenge replacement</button>
+          <button class="secondary" id="generateVariantScanBtn" type="button">Build 19-substitution scan</button>
+          <button class="secondary" id="copyVariantScanBtn" type="button" disabled>Copy scan manifest</button>
+        </div>
+        <div class="output" id="variantScanOutput" hidden></div>
+        <div class="row variantActions">
+          <button class="primary" id="variantAnalyzeBtn" type="button" disabled>Analyze possible impacts</button>
+          <button class="secondary" id="variantUseBtn" type="button" disabled>Use variant as protein input</button>
+        </div>
+        <p class="help">AI analysis receives mutation notation and broad amino-acid properties, not the full sequence. Validate hypotheses with a new structure prediction, confidence/PAE comparison, references, or experiments.</p>
+        <div class="output" id="variantAnalysisOutput" role="status" aria-live="polite" hidden></div>
+      </details>
       <div class="row">
         <button class="primary" id="prepareBtn" type="button">Prepare JSON</button>
         <button class="secondary" id="serverBtn" type="button">Open Server</button>
@@ -1009,8 +1374,8 @@
     <section aria-labelledby="confidenceTitle" data-flow="explore support submit">
       <h2 id="confidenceTitle">Confidence and PAE guide</h2>
       <div id="confidenceGuideOutput" class="summaryBox" aria-live="polite"></div>
-      <div class="legendGrid" id="confidenceLegend" aria-label="AlphaFold confidence legend"></div>
-      <div class="paePrimer" aria-labelledby="paePrimerTitle">
+      <div class="legendGrid" id="confidenceLegend" role="group" aria-label="AlphaFold confidence legend"></div>
+      <div class="paePrimer" role="region" aria-labelledby="paePrimerTitle">
         <div class="paePrimerHead"><b id="paePrimerTitle">How to read a PAE map</b><span class="paePrimerBadge">Concept preview</span></div>
         <svg viewBox="0 0 430 220" role="img" aria-labelledby="paePrimerSvgTitle paePrimerSvgDesc">
           <title id="paePrimerSvgTitle">Illustrative predicted aligned error matrix</title>
@@ -1045,12 +1410,20 @@
         <h3 id="paeLiveTitle">Loaded record PAE map</h3>
         <p class="help" id="paeLiveSummary">Choose a public record with predicted aligned error data.</p>
         <canvas id="paeLiveCanvas" width="340" height="340" role="img" aria-label="Loaded predicted aligned error matrix" aria-describedby="paeLiveSummary paeLiveReading"></canvas>
-        <div class="paeLiveScale" aria-hidden="true"><span>Low PAE / steadier placement</span><span>High PAE / uncertain placement</span></div>
+        <div class="paeLiveScale" aria-label="PAE color scale"><span>0 A lower</span><span class="paeLiveScaleBar" aria-hidden="true"></span><span><output id="paeScaleMax">31.8</output> A higher</span></div>
+        <div class="paeMarkerKey" aria-label="PAE selection marker key"><span><i class="paeMarkerSwatch paeMarkerSelected" aria-hidden="true"></i>Selected A to B</span><span><i class="paeMarkerSwatch paeMarkerReverse" aria-hidden="true"></i>Reverse B to A</span></div>
+        <button class="secondary paeLensBtn" id="paeLensBtn" type="button" aria-pressed="false" disabled>Show directional difference</button>
         <div class="paeLiveControls">
           <label for="paeAlignedResidue">Aligned residue <output id="paeAlignedValue" for="paeAlignedResidue">1</output><input id="paeAlignedResidue" type="range" min="1" max="1" value="1"></label>
           <label for="paeComparedResidue">Compared residue <output id="paeComparedValue" for="paeComparedResidue">1</output><input id="paeComparedResidue" type="range" min="1" max="1" value="1"></label>
         </div>
         <div class="summaryBox" id="paeLiveReading" role="status" aria-live="polite"></div>
+        <div class="paePairCompare" id="paePairCompare" aria-label="Selected directional PAE comparison" hidden>
+          <div class="paePairRow paePairForward"><span><b>A to B</b><output id="paeForwardValue">Unavailable</output></span><progress id="paeForwardBar" max="31.8" value="0" aria-label="Forward PAE unavailable"></progress></div>
+          <div class="paePairRow paePairReverse"><span><b>B to A</b><output id="paeReverseValue">Unavailable</output></span><progress id="paeReverseBar" max="31.8" value="0" aria-label="Reverse PAE unavailable"></progress></div>
+          <p class="paePairHint">Shorter bar means lower predicted aligned error.</p>
+        </div>
+        <button class="secondary paeEvidenceBtn" id="paeEvidenceBtn" type="button" disabled>Use selected pair as evidence</button>
         <p class="status" id="paeLiveStatus" role="status"></p>
       </div>
       <div class="activityActions">
@@ -1099,7 +1472,7 @@
     </section>
   </aside>
 
-  <main aria-label="AlphaFold structure viewer">
+  <main id="viewerMain" tabindex="-1" aria-label="AlphaFold structure viewer">
     <div class="viewer">
       <div class="viewerToolbar" role="toolbar" aria-label="Structure viewer controls">
         <button class="secondary" id="focusViewBtn" type="button" aria-pressed="false" aria-controls="molstar">Focus on protein</button>
@@ -1107,6 +1480,11 @@
         <span class="status" id="viewerToolbarStatus" role="status" aria-live="polite"></span>
       </div>
       <div id="molstar"></div>
+      <div id="molstarCompare" aria-label="Variant structure viewer"></div>
+      <div class="comparisonLabels" id="comparisonLabels" aria-hidden="true" hidden>
+        <span class="comparisonLabel" id="comparisonOriginalLabel">Original</span>
+        <span class="comparisonLabel" id="comparisonVariantLabel">Variant</span>
+      </div>
       <div class="placeholder" id="placeholder">
         Load a public AlphaFold DB structure, import a result file, or prepare safe AlphaFold input from the left panel.
       </div>
@@ -1709,7 +2087,30 @@
 
   var viewer = null;
   var viewerPromise = null;
+  var comparisonViewer = null;
+  var comparisonViewerPromise = null;
+  var comparisonLoaded = false;
+  var comparisonUrls = [];
+  var comparisonDroppedOriginal = null;
+  var comparisonDroppedVariant = null;
+  var comparisonCameraSubscriptions = [];
+  var comparisonCameraSyncGuard = false;
+  var comparisonCameraGuardTimer = 0;
+  var originalPaeComparison = null;
+  var variantPaeComparison = null;
+  var paeComparisonStatement = '';
+  var paeComparisonVersion = 0;
+  var coordinateAnalysis = null;
+  var coordinateAnalysisVersion = 0;
+  var notebookEntryState = [];
+  var importedAnnotations = null;
+  var annotationEvidenceStatement = '';
   var structureLoaded = false;
+  var structureLoadVersion = 0;
+  var structureLoadQueue = Promise.resolve();
+  var lookupVersion = 0;
+  var lookupController = null;
+  var localObjectUrls = [];
   var current = null;
   var lastJson = '';
   var openerOk = false;
@@ -1718,6 +2119,12 @@
   var pending = {};
   var reflectIndex = 0;
   var guideIndex = 0;
+  var variantBaseSequence = '';
+  var variantSequence = '';
+  var variantChanges = [];
+  var variantBusy = false;
+  var variantAnalysisVersion = 0;
+  var variantScanManifest = '';
 
   var examplesEl = document.getElementById('examples');
   var accessionInput = document.getElementById('accessionInput');
@@ -1725,6 +2132,71 @@
   var lookupStatus = document.getElementById('lookupStatus');
   var fileInput = document.getElementById('fileInput');
   var fileStatus = document.getElementById('fileStatus');
+  var comparisonOriginalInput = document.getElementById('comparisonOriginalInput');
+  var comparisonVariantInput = document.getElementById('comparisonVariantInput');
+  var comparisonDropZone = document.getElementById('comparisonDropZone');
+  var syncComparisonCameraInput = document.getElementById('syncComparisonCameraInput');
+  var openComparisonBtn = document.getElementById('openComparisonBtn');
+  var fitComparisonBtn = document.getElementById('fitComparisonBtn');
+  var closeComparisonBtn = document.getElementById('closeComparisonBtn');
+  var comparisonObservation = document.getElementById('comparisonObservation');
+  var useComparisonEvidenceBtn = document.getElementById('useComparisonEvidenceBtn');
+  var comparisonStatus = document.getElementById('comparisonStatus');
+  var originalPaeFileInput = document.getElementById('originalPaeFileInput');
+  var variantPaeFileInput = document.getElementById('variantPaeFileInput');
+  var loadPaeComparisonBtn = document.getElementById('loadPaeComparisonBtn');
+  var comparisonAlignedResidue = document.getElementById('comparisonAlignedResidue');
+  var comparisonComparedResidue = document.getElementById('comparisonComparedResidue');
+  var paeResultCompare = document.getElementById('paeResultCompare');
+  var paeComparisonReading = document.getElementById('paeComparisonReading');
+  var usePaeComparisonEvidenceBtn = document.getElementById('usePaeComparisonEvidenceBtn');
+  var originalPaeForwardBar = document.getElementById('originalPaeForwardBar');
+  var variantPaeForwardBar = document.getElementById('variantPaeForwardBar');
+  var originalPaeReverseBar = document.getElementById('originalPaeReverseBar');
+  var variantPaeReverseBar = document.getElementById('variantPaeReverseBar');
+  var originalPaeForwardValue = document.getElementById('originalPaeForwardValue');
+  var variantPaeForwardValue = document.getElementById('variantPaeForwardValue');
+  var originalPaeReverseValue = document.getElementById('originalPaeReverseValue');
+  var variantPaeReverseValue = document.getElementById('variantPaeReverseValue');
+  var analyzeCoordinatesBtn = document.getElementById('analyzeCoordinatesBtn');
+  var coordinateMetrics = document.getElementById('coordinateMetrics');
+  var matchedResidueCount = document.getElementById('matchedResidueCount');
+  var coordinateRmsd = document.getElementById('coordinateRmsd');
+  var contactChangeCount = document.getElementById('contactChangeCount');
+  var confidenceComparisonPlot = document.getElementById('confidenceComparisonPlot');
+  var originalConfidencePath = document.getElementById('originalConfidencePath');
+  var variantConfidencePath = document.getElementById('variantConfidencePath');
+  var coordinateResidueInput = document.getElementById('coordinateResidueInput');
+  var coordinateRadiusInput = document.getElementById('coordinateRadiusInput');
+  var coordinateNeighborhoodOutput = document.getElementById('coordinateNeighborhoodOutput');
+  var contactDifferenceCanvas = document.getElementById('contactDifferenceCanvas');
+  var contactDifferenceLegend = document.getElementById('contactDifferenceLegend');
+  var interfaceComparisonOutput = document.getElementById('interfaceComparisonOutput');
+  var coordinateAnalysisStatus = document.getElementById('coordinateAnalysisStatus');
+  var useCoordinateEvidenceBtn = document.getElementById('useCoordinateEvidenceBtn');
+  var comparisonLabels = document.getElementById('comparisonLabels');
+  var comparisonOriginalLabel = document.getElementById('comparisonOriginalLabel');
+  var comparisonVariantLabel = document.getElementById('comparisonVariantLabel');
+  var structureViewer = document.querySelector('.viewer');
+  var viewerMain = document.getElementById('viewerMain');
+  var notebookNameInput = document.getElementById('notebookNameInput');
+  var notebookProvenanceSelect = document.getElementById('notebookProvenanceSelect');
+  var notebookEntryInput = document.getElementById('notebookEntryInput');
+  var addNotebookEntryBtn = document.getElementById('addNotebookEntryBtn');
+  var captureWorkspaceBtn = document.getElementById('captureWorkspaceBtn');
+  var notebookEntries = document.getElementById('notebookEntries');
+  var saveNotebookBtn = document.getElementById('saveNotebookBtn');
+  var restoreNotebookBtn = document.getElementById('restoreNotebookBtn');
+  var downloadNotebookBtn = document.getElementById('downloadNotebookBtn');
+  var downloadNotebookReportBtn = document.getElementById('downloadNotebookReportBtn');
+  var clearNotebookBtn = document.getElementById('clearNotebookBtn');
+  var notebookStatus = document.getElementById('notebookStatus');
+  var annotationFileInput = document.getElementById('annotationFileInput');
+  var loadAnnotationsBtn = document.getElementById('loadAnnotationsBtn');
+  var useAnnotationEvidenceBtn = document.getElementById('useAnnotationEvidenceBtn');
+  var annotationPlot = document.getElementById('annotationPlot');
+  var annotationOutput = document.getElementById('annotationOutput');
+  var annotationStatus = document.getElementById('annotationStatus');
   var jobNameInput = document.getElementById('jobNameInput');
   var formatSelect = document.getElementById('formatSelect');
   var sequenceInput = document.getElementById('sequenceInput');
@@ -1739,6 +2211,25 @@
   var ionCountInput = document.getElementById('ionCountInput');
   var safetyConfirmInput = document.getElementById('safetyConfirmInput');
   var sequenceStatus = document.getElementById('sequenceStatus');
+  var complexPreviewStage = document.getElementById('complexPreviewStage');
+  var complexPreviewFormat = document.getElementById('complexPreviewFormat');
+  var complexPreviewSummary = document.getElementById('complexPreviewSummary');
+  var variantPositionInput = document.getElementById('variantPositionInput');
+  var variantAminoSelect = document.getElementById('variantAminoSelect');
+  var variantApplyBtn = document.getElementById('variantApplyBtn');
+  var variantUndoBtn = document.getElementById('variantUndoBtn');
+  var variantResetBtn = document.getElementById('variantResetBtn');
+  var variantStatus = document.getElementById('variantStatus');
+  var variantSequenceTrack = document.getElementById('variantSequenceTrack');
+  var variantMutationList = document.getElementById('variantMutationList');
+  var variantAnalyzeBtn = document.getElementById('variantAnalyzeBtn');
+  var variantUseBtn = document.getElementById('variantUseBtn');
+  var variantAnalysisOutput = document.getElementById('variantAnalysisOutput');
+  var variantChallengeSelect = document.getElementById('variantChallengeSelect');
+  var applyVariantChallengeBtn = document.getElementById('applyVariantChallengeBtn');
+  var generateVariantScanBtn = document.getElementById('generateVariantScanBtn');
+  var copyVariantScanBtn = document.getElementById('copyVariantScanBtn');
+  var variantScanOutput = document.getElementById('variantScanOutput');
   var prepareBtn = document.getElementById('prepareBtn');
   var serverBtn = document.getElementById('serverBtn');
   var jsonOutput = document.getElementById('jsonOutput');
@@ -1834,10 +2325,21 @@
   var paeComparedResidue = document.getElementById('paeComparedResidue');
   var paeAlignedValue = document.getElementById('paeAlignedValue');
   var paeComparedValue = document.getElementById('paeComparedValue');
+  var paeScaleMax = document.getElementById('paeScaleMax');
+  var paeLiveScale = document.querySelector('.paeLiveScale');
+  var paeLensBtn = document.getElementById('paeLensBtn');
+  var paeEvidenceBtn = document.getElementById('paeEvidenceBtn');
+  var paePairCompare = document.getElementById('paePairCompare');
+  var paeForwardValue = document.getElementById('paeForwardValue');
+  var paeReverseValue = document.getElementById('paeReverseValue');
+  var paeForwardBar = document.getElementById('paeForwardBar');
+  var paeReverseBar = document.getElementById('paeReverseBar');
   var paeLiveReading = document.getElementById('paeLiveReading');
   var paeLiveStatus = document.getElementById('paeLiveStatus');
   var paeMatrix = null;
+  var paeViewMode = 'pae';
   var paeRequestUrl = '';
+  var paeController = null;
 
   function el(tag, attrs, text) {
     var node = document.createElement(tag);
@@ -2399,10 +2901,119 @@
     var matrix = doc && (doc.predicted_aligned_error || doc.pae);
     if (!Array.isArray(matrix) || !matrix.length) throw new Error('No PAE matrix was found.');
     var size = matrix.length;
+    if (size > 2500) throw new Error('This PAE matrix is too large for the interactive map; use the source link instead.');
     if (matrix.some(function (row) { return !Array.isArray(row) || row.length < size; })) throw new Error('The PAE matrix is incomplete.');
     var max = Number(doc.max_predicted_aligned_error || doc.max_pae);
     if (!Number.isFinite(max) || max <= 0) max = 31.75;
     return { values: matrix, size: size, max: max };
+  }
+
+  function readJsonFile(file) {
+    if (!file) return Promise.reject(new Error('Choose both PAE JSON files.'));
+    if (Number(file.size) > 48 * 1024 * 1024) return Promise.reject(new Error('A PAE file is larger than the 48 MB classroom limit.'));
+    if (typeof file.text === 'function') return file.text().then(function (text) { return JSON.parse(text); });
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        try { resolve(JSON.parse(String(reader.result || ''))); } catch (error) { reject(error); }
+      };
+      reader.onerror = function () { reject(new Error('A PAE file could not be read.')); };
+      reader.readAsText(file);
+    });
+  }
+
+  function roundedPae(matrix, aligned, compared) {
+    var value = Number(matrix.values[aligned - 1][compared - 1]);
+    return Number.isFinite(value) ? Math.round(value * 10) / 10 : null;
+  }
+
+  function signedDifference(value) {
+    if (value == null) return 'unavailable';
+    return (value > 0 ? '+' : '') + value + ' Angstroms';
+  }
+
+  function renderPaeComparison() {
+    if (!originalPaeComparison || !variantPaeComparison) return;
+    var size = originalPaeComparison.size;
+    var aligned = Math.max(1, Math.min(size, Math.round(Number(comparisonAlignedResidue.value) || 1)));
+    var compared = Math.max(1, Math.min(size, Math.round(Number(comparisonComparedResidue.value) || 1)));
+    comparisonAlignedResidue.value = String(aligned);
+    comparisonComparedResidue.value = String(compared);
+    var originalForward = roundedPae(originalPaeComparison, aligned, compared);
+    var variantForward = roundedPae(variantPaeComparison, aligned, compared);
+    var originalReverse = roundedPae(originalPaeComparison, compared, aligned);
+    var variantReverse = roundedPae(variantPaeComparison, compared, aligned);
+    var max = Math.max(originalPaeComparison.max, variantPaeComparison.max, 1);
+    [
+      [originalPaeForwardBar, originalForward, 'Original A to B'],
+      [variantPaeForwardBar, variantForward, 'Variant A to B'],
+      [originalPaeReverseBar, originalReverse, 'Original B to A'],
+      [variantPaeReverseBar, variantReverse, 'Variant B to A']
+    ].forEach(function (item) {
+      item[0].max = max;
+      item[0].value = item[1] == null ? 0 : item[1];
+      item[0].setAttribute('aria-label', item[2] + (item[1] == null ? ' PAE unavailable' : ' PAE ' + item[1] + ' Angstroms out of ' + Math.round(max * 10) / 10));
+    });
+    originalPaeForwardValue.value = originalForward == null ? 'Unavailable' : originalForward + ' A';
+    variantPaeForwardValue.value = variantForward == null ? 'Unavailable' : variantForward + ' A';
+    originalPaeReverseValue.value = originalReverse == null ? 'Unavailable' : originalReverse + ' A';
+    variantPaeReverseValue.value = variantReverse == null ? 'Unavailable' : variantReverse + ' A';
+    var forwardDelta = originalForward == null || variantForward == null ? null : Math.round((variantForward - originalForward) * 10) / 10;
+    var reverseDelta = originalReverse == null || variantReverse == null ? null : Math.round((variantReverse - originalReverse) * 10) / 10;
+    paeComparisonStatement = 'PAE comparison for aligned residue ' + aligned + ' and compared residue ' + compared + ': original A-to-B ' + (originalForward == null ? 'unavailable' : originalForward + ' Angstroms') + ', variant A-to-B ' + (variantForward == null ? 'unavailable' : variantForward + ' Angstroms') + ', change ' + signedDifference(forwardDelta) + '; original B-to-A ' + (originalReverse == null ? 'unavailable' : originalReverse + ' Angstroms') + ', variant B-to-A ' + (variantReverse == null ? 'unavailable' : variantReverse + ' Angstroms') + ', change ' + signedDifference(reverseDelta) + '. A positive change means higher predicted alignment uncertainty in the variant; a negative change means lower uncertainty. It does not establish a functional effect.';
+    paeResultCompare.hidden = false;
+    paeResultCompare.setAttribute('aria-label', paeComparisonStatement);
+    setStatus(paeComparisonReading, paeComparisonStatement, 'ok');
+    usePaeComparisonEvidenceBtn.disabled = false;
+  }
+
+  function loadPaeComparison() {
+    var requestVersion = ++paeComparisonVersion;
+    var originalFile = originalPaeFileInput.files && originalPaeFileInput.files[0];
+    var variantFile = variantPaeFileInput.files && variantPaeFileInput.files[0];
+    originalPaeComparison = null;
+    variantPaeComparison = null;
+    paeComparisonStatement = '';
+    paeResultCompare.hidden = true;
+    usePaeComparisonEvidenceBtn.disabled = true;
+    setStatus(paeComparisonReading, 'Reading both PAE JSON files...', '');
+    Promise.all([readJsonFile(originalFile), readJsonFile(variantFile)]).then(function (payloads) {
+      if (requestVersion !== paeComparisonVersion) return;
+      var original = parsePaeData(payloads[0]);
+      var variant = parsePaeData(payloads[1]);
+      if (original.size !== variant.size) throw new Error('The PAE matrices have different dimensions; residue positions cannot be compared safely.');
+      originalPaeComparison = original;
+      variantPaeComparison = variant;
+      var size = original.size;
+      comparisonAlignedResidue.max = String(size);
+      comparisonComparedResidue.max = String(size);
+      var mutationPosition = variantChanges.length ? variantChanges[0].position : 0;
+      comparisonAlignedResidue.value = String(mutationPosition >= 1 && mutationPosition <= size ? mutationPosition : Math.max(1, Math.round(size * 0.25)));
+      comparisonComparedResidue.value = String(Math.max(1, Math.round(size * 0.75)));
+      renderPaeComparison();
+    }).catch(function (error) {
+      if (requestVersion !== paeComparisonVersion) return;
+      originalPaeComparison = null;
+      variantPaeComparison = null;
+      paeResultCompare.hidden = true;
+      usePaeComparisonEvidenceBtn.disabled = true;
+      setStatus(paeComparisonReading, 'PAE comparison unavailable: ' + String((error && error.message) || error).slice(0, 150), 'err');
+    });
+  }
+
+  function usePaeComparisonEvidence() {
+    if (!paeComparisonStatement) {
+      setStatus(paeComparisonReading, 'Load both PAE matrices before adding evidence.', 'warn');
+      return;
+    }
+    var existing = evidenceInput.value.trim();
+    if (existing.indexOf(paeComparisonStatement) >= 0) {
+      setStatus(paeComparisonReading, 'This PAE comparison is already in the evidence field.', 'warn');
+      return;
+    }
+    evidenceInput.value = existing ? existing + '\n' + paeComparisonStatement : paeComparisonStatement;
+    evidenceInput.dispatchEvent(new Event('input', { bubbles: true }));
+    setStatus(paeComparisonReading, 'PAE difference added to structure evidence with its uncertainty limitation.', 'ok');
   }
 
   function paeCellColor(value, max) {
@@ -2417,10 +3028,13 @@
     var n = paeMatrix.size, left = 28, top = 10, plot = 286, bins = Math.min(95, n), cell = plot / bins;
     ctx.clearRect(0, 0, 340, 340);
     for (var row = 0; row < bins; row++) {
-      var sourceRow = paeMatrix.values[Math.min(n - 1, Math.floor(row * n / bins))];
+      var rowIndex = Math.min(n - 1, Math.floor(row * n / bins));
+      var sourceRow = paeMatrix.values[rowIndex];
       for (var col = 0; col < bins; col++) {
-        var value = sourceRow[Math.min(n - 1, Math.floor(col * n / bins))];
-        ctx.fillStyle = paeCellColor(value, paeMatrix.max);
+        var colIndex = Math.min(n - 1, Math.floor(col * n / bins));
+        var value = Number(sourceRow[colIndex]);
+        if (paeViewMode === 'difference') value = Math.abs(value - Number(paeMatrix.values[colIndex][rowIndex]));
+        ctx.fillStyle = paeCellColor(Number.isFinite(value) ? value : paeMatrix.max, paeMatrix.max);
         ctx.fillRect(left + col * cell, top + row * cell, Math.ceil(cell), Math.ceil(cell));
       }
     }
@@ -2431,37 +3045,133 @@
     ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(left + plot, y); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + plot); ctx.stroke();
+    if (aligned !== compared) {
+      var reverseX = left + (aligned - 1) / Math.max(1, n - 1) * plot;
+      var reverseY = top + (compared - 1) / Math.max(1, n - 1) * plot;
+      ctx.strokeStyle = '#c4b5fd'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.arc(reverseX, reverseY, 6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    }
     ctx.fillStyle = '#cbd5e1'; ctx.font = '11px system-ui, sans-serif';
     ctx.fillText('1', left, 326); ctx.fillText(String(n), 298, 326); ctx.fillText('Compared residue', 110, 337);
     ctx.save(); ctx.translate(10, 215); ctx.rotate(-Math.PI / 2); ctx.fillText('Aligned residue', 0, 0); ctx.restore();
     var error = Number(paeMatrix.values[aligned - 1][compared - 1]);
     var score = Number.isFinite(error) ? Math.round(error * 10) / 10 : null;
+    var reverseError = Number(paeMatrix.values[compared - 1][aligned - 1]);
+    var reverseScore = Number.isFinite(reverseError) ? Math.round(reverseError * 10) / 10 : null;
     var meaning = score == null ? 'No numeric value is available.' : score <= 5 ? 'Low PAE supports this relative placement.' : score <= 15 ? 'Moderate PAE means the exact placement needs caution.' : 'High PAE signals an uncertain relationship; avoid a precise domain or interface claim.';
+    var directionNote = aligned === compared ? 'This diagonal cell compares the residue with itself.' : reverseScore == null ? 'The reverse-direction value is unavailable.' : 'Reverse direction, aligned residue ' + compared + ' to compared residue ' + aligned + ': ' + reverseScore + ' Angstroms PAE. The two directions can differ.';
+    var difference = score == null || reverseScore == null ? null : Math.round(Math.abs(score - reverseScore) * 10) / 10;
+    paeForwardBar.max = paeMatrix.max; paeReverseBar.max = paeMatrix.max;
+    paeForwardBar.hidden = score == null; paeReverseBar.hidden = reverseScore == null;
+    if (score != null) paeForwardBar.value = score;
+    if (reverseScore != null) paeReverseBar.value = reverseScore;
+    paeForwardValue.value = score == null ? 'Unavailable' : score + ' A';
+    paeReverseValue.value = reverseScore == null ? 'Unavailable' : reverseScore + ' A';
+    paeForwardBar.setAttribute('aria-label', score == null ? 'Forward A to B PAE unavailable' : 'Forward A to B PAE ' + score + ' Angstroms out of ' + paeMatrix.max);
+    paeReverseBar.setAttribute('aria-label', reverseScore == null ? 'Reverse B to A PAE unavailable' : 'Reverse B to A PAE ' + reverseScore + ' Angstroms out of ' + paeMatrix.max);
     paeAlignedValue.value = String(aligned); paeComparedValue.value = String(compared);
-    paeLiveReading.textContent = 'Aligned residue ' + aligned + ' to compared residue ' + compared + ': ' + (score == null ? 'PAE unavailable' : score + ' Angstroms PAE') + '. ' + meaning;
-    paeLiveCanvas.setAttribute('aria-label', 'PAE matrix with ' + n + ' residues. Current pair: aligned residue ' + aligned + ', compared residue ' + compared + ', ' + (score == null ? 'value unavailable' : score + ' Angstroms') + '.');
+    if (paeViewMode === 'difference') {
+      paeLiveReading.textContent = 'Directional difference for residues ' + aligned + ' and ' + compared + ': ' + (difference == null ? 'unavailable' : difference + ' Angstroms') + '. Forward A to B: ' + (score == null ? 'unavailable' : score + ' Angstroms') + '; reverse B to A: ' + (reverseScore == null ? 'unavailable' : reverseScore + ' Angstroms') + '. Larger differences show where alignment direction changes the uncertainty estimate more.';
+    } else {
+      paeLiveReading.textContent = 'Aligned residue ' + aligned + ' to compared residue ' + compared + ': ' + (score == null ? 'PAE unavailable' : score + ' Angstroms PAE') + '. ' + meaning + ' ' + directionNote;
+    }
+    paeLiveCanvas.setAttribute('aria-label', (paeViewMode === 'difference' ? 'Directional PAE difference map' : 'PAE matrix') + ' with ' + n + ' residues. Current pair: aligned residue ' + aligned + ', compared residue ' + compared + '. ' + paeLiveReading.textContent);
+  }
+
+  function selectedPaeEvidenceText() {
+    if (!paeMatrix) return '';
+    var aligned = Math.max(1, Math.min(paeMatrix.size, Number(paeAlignedResidue.value) || 1));
+    var compared = Math.max(1, Math.min(paeMatrix.size, Number(paeComparedResidue.value) || 1));
+    var forward = Number(paeMatrix.values[aligned - 1][compared - 1]);
+    var reverse = Number(paeMatrix.values[compared - 1][aligned - 1]);
+    var forwardScore = Number.isFinite(forward) ? Math.round(forward * 10) / 10 : null;
+    var reverseScore = Number.isFinite(reverse) ? Math.round(reverse * 10) / 10 : null;
+    var difference = forwardScore == null || reverseScore == null ? null : Math.round(Math.abs(forwardScore - reverseScore) * 10) / 10;
+    var source = current && (current.accession || current.entryId) ? ' for ' + (current.accession || current.entryId) : '';
+    var interpretation = forwardScore == null ? 'The selected value is unavailable.' : forwardScore <= 5 ? 'The low forward PAE supports confidence in this relative placement.' : forwardScore <= 15 ? 'The moderate forward PAE means the exact relative placement needs caution.' : 'The high forward PAE signals an uncertain relationship and should not support a precise domain or interface claim.';
+    return 'PAE evidence' + source + ': when aligned on residue ' + aligned + ', residue ' + compared + ' has ' + (forwardScore == null ? 'an unavailable PAE value' : forwardScore + ' Angstroms PAE') + '; the reverse direction is ' + (reverseScore == null ? 'unavailable' : reverseScore + ' Angstroms PAE') + (difference == null ? '' : ', a directional difference of ' + difference + ' Angstroms') + '. ' + interpretation + ' This is model-uncertainty evidence, not proof of biological function.';
+  }
+
+  function useSelectedPaeEvidence() {
+    var statement = selectedPaeEvidenceText();
+    if (!statement) { setStatus(paeLiveStatus, 'Load a PAE matrix before adding evidence.', 'warn'); return; }
+    var existing = evidenceInput.value.trim();
+    if (existing.indexOf(statement) >= 0) { setStatus(paeLiveStatus, 'This selected PAE comparison is already in the evidence field.', 'warn'); return; }
+    evidenceInput.value = existing ? existing + '\n' + statement : statement;
+    evidenceInput.dispatchEvent(new Event('input', { bubbles: true }));
+    setStatus(paeLiveStatus, 'Selected PAE comparison added to Structure evidence without replacing existing text.', 'ok');
+  }
+
+  function setPaeViewMode(mode) {
+    paeViewMode = mode === 'difference' ? 'difference' : 'pae';
+    var differenceMode = paeViewMode === 'difference';
+    paeLensBtn.setAttribute('aria-pressed', differenceMode ? 'true' : 'false');
+    paeLensBtn.textContent = differenceMode ? 'Show raw PAE values' : 'Show directional difference';
+    paeLiveScale.setAttribute('aria-label', differenceMode ? 'Directional PAE difference color scale' : 'PAE color scale');
+    if (paeMatrix) {
+      drawLivePae();
+      setStatus(paeLiveStatus, differenceMode ? 'Showing absolute A-to-B versus B-to-A PAE differences.' : 'Showing raw directional PAE values.', 'ok');
+    }
+  }
+
+  function selectLivePaeCell(event) {
+    if (!paeMatrix) return;
+    var rect = paeLiveCanvas.getBoundingClientRect();
+    var px = (event.clientX - rect.left) * paeLiveCanvas.width / Math.max(1, rect.width);
+    var py = (event.clientY - rect.top) * paeLiveCanvas.height / Math.max(1, rect.height);
+    var left = 28, top = 10, plot = 286;
+    if (px < left || py < top || px > left + plot || py > top + plot) return;
+    paeComparedResidue.value = String(Math.max(1, Math.min(paeMatrix.size, Math.round((px - left) / plot * (paeMatrix.size - 1)) + 1)));
+    paeAlignedResidue.value = String(Math.max(1, Math.min(paeMatrix.size, Math.round((py - top) / plot * (paeMatrix.size - 1)) + 1)));
+    drawLivePae();
   }
 
   function loadLivePae(record) {
     var url = record && record.paeDataUrl ? record.paeDataUrl : '';
+    if (paeController) paeController.abort();
+    paeController = typeof AbortController === 'function' ? new AbortController() : null;
+    var controller = paeController;
     paeRequestUrl = url; paeMatrix = null; paeLive.hidden = !url;
-    if (!url) return;
+    setPaeViewMode('pae');
+    paeLensBtn.disabled = true;
+    paeEvidenceBtn.disabled = true;
+    paePairCompare.hidden = true;
+    if (!url) {
+      paeController = null;
+      paeLiveSummary.textContent = 'Choose a public record with predicted aligned error data.';
+      paeLiveReading.textContent = '';
+      setStatus(paeLiveStatus, '', '');
+      return;
+    }
     paeLiveSummary.textContent = 'Loading PAE data for ' + (record.name || record.accession || 'this record') + '.';
     paeLiveReading.textContent = ''; setStatus(paeLiveStatus, 'Loading PAE matrix...', '');
-    fetch(url, { method: 'GET' }).then(function (response) { if (!response.ok) throw new Error('PAE request returned HTTP ' + response.status); return response.json(); }).then(function (payload) {
-      if (paeRequestUrl !== url) return;
+    var options = { method: 'GET' };
+    if (controller) options.signal = controller.signal;
+    fetch(url, options).then(function (response) {
+      if (!response.ok) throw new Error('PAE request returned HTTP ' + response.status);
+      var declaredBytes = Number(response.headers && response.headers.get && response.headers.get('content-length'));
+      if (Number.isFinite(declaredBytes) && declaredBytes > 48 * 1024 * 1024) throw new Error('This PAE file is too large for the interactive map; use the source link instead.');
+      return response.json();
+    }).then(function (payload) {
+      if (paeRequestUrl !== url || (controller && controller.signal.aborted)) return;
       paeMatrix = parsePaeData(payload);
+      paeLensBtn.disabled = false;
+      paeEvidenceBtn.disabled = false;
+      paePairCompare.hidden = false;
+      paeScaleMax.value = String(Math.round(paeMatrix.max * 10) / 10);
       var n = paeMatrix.size;
       paeAlignedResidue.max = String(n); paeComparedResidue.max = String(n);
       paeAlignedResidue.value = String(Math.max(1, Math.round(n * 0.25))); paeComparedResidue.value = String(Math.max(1, Math.round(n * 0.75)));
       paeLiveSummary.textContent = 'Live ' + n + ' by ' + n + ' PAE matrix. Each cell estimates the compared residue position error after alignment on another residue.';
-      setStatus(paeLiveStatus, 'PAE matrix loaded. Adjust either residue control.', 'ok');
+      setStatus(paeLiveStatus, 'PAE matrix loaded. Select a cell or adjust either residue control.', 'ok');
       drawLivePae();
     }).catch(function (error) {
-      if (paeRequestUrl !== url) return;
+      if ((error && error.name === 'AbortError') || paeRequestUrl !== url) return;
       paeLiveSummary.textContent = 'This record links to PAE information, but its numeric matrix could not be displayed.';
       paeLiveReading.textContent = String((error && error.message) || error).slice(0, 140);
       setStatus(paeLiveStatus, 'Live PAE map unavailable; the source link remains available.', 'warn');
+    }).finally(function () {
+      if (paeController === controller) paeController = null;
     });
   }
 
@@ -3178,12 +3888,27 @@
     return 'Inspect pLDDT coloring in the viewer; low-confidence regions should be interpreted cautiously.';
   }
 
+  function isCanceledRequest(error) {
+    return !!(error && (error.name === 'AbortError' || error.isCanceled));
+  }
+
+  function supersededLoadError() {
+    var error = new Error('Structure load superseded by a newer request.');
+    error.isCanceled = true;
+    return error;
+  }
+
+  function releaseLocalObjectUrls(keepUrl) {
+    localObjectUrls = localObjectUrls.filter(function (url) {
+      if (url === keepUrl) return true;
+      try { URL.revokeObjectURL(url); } catch (error) {}
+      return false;
+    });
+  }
   function ensureViewer() {
+    if (viewer) return Promise.resolve(viewer);
     if (viewerPromise) return viewerPromise;
-    if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) {
-      viewerPromise = Promise.reject(new Error('Mol* library did not load'));
-      return viewerPromise;
-    }
+    if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) return Promise.reject(new Error('Mol* library did not load'));
     viewerPromise = window.molstar.Viewer.create('molstar', {
       layoutIsExpanded: false,
       layoutShowControls: true,
@@ -3194,8 +3919,530 @@
       viewportShowSelectionMode: false,
       pdbProvider: 'rcsb',
       emdbProvider: 'rcsb'
-    }).then(function (v) { viewer = v; return v; });
+    }).then(function (v) {
+      viewer = v;
+      return v;
+    }).catch(function (error) {
+      viewer = null;
+      viewerPromise = null;
+      throw error;
+    });
     return viewerPromise;
+  }
+
+  function ensureComparisonViewer() {
+    if (comparisonViewer) return Promise.resolve(comparisonViewer);
+    if (comparisonViewerPromise) return comparisonViewerPromise;
+    if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) return Promise.reject(new Error('Mol* library did not load'));
+    comparisonViewerPromise = window.molstar.Viewer.create('molstarCompare', {
+      layoutIsExpanded: false,
+      layoutShowControls: true,
+      layoutShowRemoteState: false,
+      layoutShowSequence: true,
+      layoutShowLog: false,
+      viewportShowExpand: true,
+      viewportShowSelectionMode: false,
+      pdbProvider: 'rcsb',
+      emdbProvider: 'rcsb'
+    }).then(function (v) {
+      comparisonViewer = v;
+      return v;
+    }).catch(function (error) {
+      comparisonViewer = null;
+      comparisonViewerPromise = null;
+      throw error;
+    });
+    return comparisonViewerPromise;
+  }
+
+  function readTextFile(file) {
+    if (!file) return Promise.reject(new Error('Choose both structure files.'));
+    if (Number(file.size) > 120 * 1024 * 1024) return Promise.reject(new Error('A structure file is larger than the 120 MB classroom analysis limit.'));
+    if (typeof file.text === 'function') return file.text();
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(String(reader.result || '')); };
+      reader.onerror = function () { reject(new Error('A structure file could not be read.')); };
+      reader.readAsText(file);
+    });
+  }
+
+  function parsePdbCa(text) {
+    var residues = [];
+    String(text || '').split(/\r?\n/).forEach(function (line) {
+      if (line.slice(0, 6).trim() !== 'ATOM') return;
+      if (line.slice(12, 16).trim() !== 'CA') return;
+      var alt = line.charAt(16);
+      if (alt && alt !== ' ' && alt !== 'A') return;
+      var x = Number(line.slice(30, 38)), y = Number(line.slice(38, 46)), z = Number(line.slice(46, 54));
+      if (![x, y, z].every(Number.isFinite)) return;
+      var chain = line.charAt(21).trim() || '_';
+      var sequence = line.slice(22, 26).trim() + line.charAt(26).trim();
+      residues.push({
+        key: chain + ':' + sequence,
+        chain: chain,
+        sequence: sequence,
+        residue: line.slice(17, 20).trim() || 'UNK',
+        point: [x, y, z],
+        confidence: Number(line.slice(60, 66))
+      });
+    });
+    if (residues.length < 3) throw new Error('At least three C-alpha atoms are required for coordinate alignment.');
+    return residues;
+  }
+
+  function matchCoordinateResidues(original, variant) {
+    var variantByKey = {};
+    variant.forEach(function (item) { if (!variantByKey[item.key]) variantByKey[item.key] = item; });
+    var pairs = original.filter(function (item) { return !!variantByKey[item.key]; }).map(function (item) { return { original: item, variant: variantByKey[item.key] }; });
+    var strategy = 'chain and residue identifiers';
+    if (pairs.length < 3 && original.length === variant.length) {
+      var sameNames = original.filter(function (item, index) { return item.residue === variant[index].residue; }).length / original.length;
+      if (sameNames >= 0.8) {
+        pairs = original.map(function (item, index) { return { original: item, variant: variant[index] }; });
+        strategy = 'sequence order because chain identifiers differ';
+      }
+    }
+    if (pairs.length < 3) throw new Error('The PDB files do not contain enough matching C-alpha residue identifiers.');
+    return { pairs: pairs, strategy: strategy };
+  }
+
+  function quaternionRotation(q) {
+    var w = q[0], x = q[1], y = q[2], z = q[3];
+    return [
+      [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+      [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+      [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]
+    ];
+  }
+
+  function rotatePoint(rotation, point) {
+    return rotation.map(function (row) { return row[0] * point[0] + row[1] * point[1] + row[2] * point[2]; });
+  }
+
+  function calculateAlignment(pairs) {
+    var originalCenter = [0, 0, 0], variantCenter = [0, 0, 0];
+    pairs.forEach(function (pair) {
+      for (var axis = 0; axis < 3; axis++) {
+        originalCenter[axis] += pair.original.point[axis];
+        variantCenter[axis] += pair.variant.point[axis];
+      }
+    });
+    for (var axis = 0; axis < 3; axis++) {
+      originalCenter[axis] /= pairs.length;
+      variantCenter[axis] /= pairs.length;
+    }
+    var s = [[0,0,0],[0,0,0],[0,0,0]];
+    pairs.forEach(function (pair) {
+      var q = pair.variant.point.map(function (value, i) { return value - variantCenter[i]; });
+      var p = pair.original.point.map(function (value, i) { return value - originalCenter[i]; });
+      for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) s[i][j] += q[i] * p[j];
+    });
+    var sxx=s[0][0],sxy=s[0][1],sxz=s[0][2],syx=s[1][0],syy=s[1][1],syz=s[1][2],szx=s[2][0],szy=s[2][1],szz=s[2][2];
+    var n = [
+      [sxx+syy+szz, syz-szy, szx-sxz, sxy-syx],
+      [syz-szy, sxx-syy-szz, sxy+syx, szx+sxz],
+      [szx-sxz, sxy+syx, -sxx+syy-szz, syz+szy],
+      [sxy-syx, szx+sxz, syz+szy, -sxx-syy+szz]
+    ];
+    var quaternion = [1,0,0,0];
+    for (var iteration = 0; iteration < 80; iteration++) {
+      var next = n.map(function (row) { return row.reduce(function (sum, value, index) { return sum + value * quaternion[index]; }, 0); });
+      var norm = Math.sqrt(next.reduce(function (sum, value) { return sum + value * value; }, 0)) || 1;
+      quaternion = next.map(function (value) { return value / norm; });
+    }
+    var rotation = quaternionRotation(quaternion);
+    var rotatedCenter = rotatePoint(rotation, variantCenter);
+    var translation = originalCenter.map(function (value, i) { return value - rotatedCenter[i]; });
+    var squared = 0;
+    pairs.forEach(function (pair) {
+      var transformed = rotatePoint(rotation, pair.variant.point).map(function (value, i) { return value + translation[i]; });
+      squared += transformed.reduce(function (sum, value, i) { var delta = value - pair.original.point[i]; return sum + delta * delta; }, 0);
+      pair.variantAligned = Object.assign({}, pair.variant, { point: transformed });
+    });
+    return { rotation: rotation, translation: translation, rmsd: Math.sqrt(squared / pairs.length) };
+  }
+
+  function transformPdbCoordinates(text, alignment) {
+    function fixed(value) { return Number(value).toFixed(3).padStart(8, ' '); }
+    return String(text || '').split(/\r?\n/).map(function (line) {
+      var record = line.slice(0, 6).trim();
+      if (record !== 'ATOM' && record !== 'HETATM') return line;
+      var point = [Number(line.slice(30,38)), Number(line.slice(38,46)), Number(line.slice(46,54))];
+      if (!point.every(Number.isFinite)) return line;
+      var transformed = rotatePoint(alignment.rotation, point).map(function (value, i) { return value + alignment.translation[i]; });
+      return line.slice(0,30) + fixed(transformed[0]) + fixed(transformed[1]) + fixed(transformed[2]) + line.slice(54);
+    }).join('\n');
+  }
+
+  function coordinateDistance(a, b) {
+    return Math.sqrt(a.reduce(function (sum, value, i) { var delta = value - b[i]; return sum + delta * delta; }, 0));
+  }
+
+  function structureFileInfo(file) {
+    var name = String((file && file.name) || '');
+    var ext = name.toLowerCase().split('.').pop();
+    if (['cif', 'mmcif', 'bcif', 'pdb', 'ent'].indexOf(ext) < 0) return null;
+    return { name: name || 'local structure', format: (ext === 'pdb' || ext === 'ent') ? 'pdb' : 'mmcif', binary: ext === 'bcif' };
+  }
+
+  function clearMolstar(target) {
+    return target && target.plugin && typeof target.plugin.clear === 'function' ? Promise.resolve(target.plugin.clear()) : Promise.resolve();
+  }
+
+  function loadViewerUrl(target, url, info) {
+    if (!target || typeof target.loadStructureFromUrl !== 'function') return Promise.reject(new Error('This Mol* build does not expose URL loading'));
+    return target.loadStructureFromUrl(url, info.format, info.binary);
+  }
+
+  function pairedStructureFiles() {
+    return {
+      original: (comparisonOriginalInput.files && comparisonOriginalInput.files[0]) || comparisonDroppedOriginal,
+      variant: (comparisonVariantInput.files && comparisonVariantInput.files[0]) || comparisonDroppedVariant
+    };
+  }
+
+  function stopComparisonCameraSync() {
+    comparisonCameraSubscriptions.forEach(function (subscription) {
+      try {
+        if (subscription && typeof subscription.unsubscribe === 'function') subscription.unsubscribe();
+        else if (typeof subscription === 'function') subscription();
+      } catch (error) {}
+    });
+    comparisonCameraSubscriptions = [];
+    comparisonCameraSyncGuard = false;
+    if (comparisonCameraGuardTimer) clearTimeout(comparisonCameraGuardTimer);
+    comparisonCameraGuardTimer = 0;
+  }
+
+  function comparisonCameraApi(target) {
+    var canvas = target && target.plugin && target.plugin.canvas3d;
+    var camera = canvas && canvas.camera;
+    if (!canvas || !camera || !camera.stateChanged || typeof camera.stateChanged.subscribe !== 'function' || typeof camera.getSnapshot !== 'function' || typeof canvas.requestCameraReset !== 'function') return null;
+    return { canvas: canvas, camera: camera };
+  }
+
+  function copyComparisonCamera(source, target) {
+    if (comparisonCameraSyncGuard || !syncComparisonCameraInput.checked || !comparisonLoaded) return;
+    var sourceApi = comparisonCameraApi(source), targetApi = comparisonCameraApi(target);
+    if (!sourceApi || !targetApi) return;
+    comparisonCameraSyncGuard = true;
+    try { targetApi.canvas.requestCameraReset({ snapshot: sourceApi.camera.getSnapshot(), durationMs: 0 }); } catch (error) {}
+    if (comparisonCameraGuardTimer) clearTimeout(comparisonCameraGuardTimer);
+    comparisonCameraGuardTimer = setTimeout(function () { comparisonCameraSyncGuard = false; comparisonCameraGuardTimer = 0; }, 32);
+  }
+
+  function startComparisonCameraSync(announce) {
+    stopComparisonCameraSync();
+    if (!comparisonLoaded || !syncComparisonCameraInput.checked) return false;
+    var originalApi = comparisonCameraApi(viewer), variantApi = comparisonCameraApi(comparisonViewer);
+    if (!originalApi || !variantApi) {
+      syncComparisonCameraInput.checked = false;
+      syncComparisonCameraInput.disabled = true;
+      if (announce) setStatus(comparisonStatus, 'Camera synchronization is unavailable in this viewer build. Both structures can still be rotated independently.', 'warn');
+      return false;
+    }
+    comparisonCameraSubscriptions.push(originalApi.camera.stateChanged.subscribe(function () { copyComparisonCamera(viewer, comparisonViewer); }));
+    comparisonCameraSubscriptions.push(variantApi.camera.stateChanged.subscribe(function () { copyComparisonCamera(comparisonViewer, viewer); }));
+    copyComparisonCamera(viewer, comparisonViewer);
+    if (announce) setStatus(comparisonStatus, 'Camera synchronization on. Rotate or zoom either structure to update both views.', 'ok');
+    return true;
+  }
+
+  function fitComparison(announce) {
+    if (!comparisonLoaded) {
+      if (announce) setStatus(comparisonStatus, 'Open an original and variant result before fitting both views.', 'warn');
+      return false;
+    }
+    var targets = [viewer, comparisonViewer];
+    var fitted = 0;
+    targets.forEach(function (target) {
+      var camera = target && target.plugin && target.plugin.managers && target.plugin.managers.camera;
+      if (camera && typeof camera.reset === 'function') {
+        try { camera.reset(); fitted += 1; } catch (error) {}
+      }
+    });
+    if (announce) setStatus(comparisonStatus, fitted === 2 ? 'Both structures were fitted. Rotate each view to inspect matching regions.' : 'One view could not be fitted; use its Mol* reset-camera control.', fitted === 2 ? 'ok' : 'warn');
+    return fitted === 2;
+  }
+
+  function deactivateComparison(announce) {
+    stopComparisonCameraSync();
+    comparisonLoaded = false;
+    structureViewer.classList.remove('compareMode');
+    comparisonLabels.hidden = true;
+    viewerMain.setAttribute('aria-label', 'AlphaFold structure viewer');
+    fitComparisonBtn.disabled = true;
+    closeComparisonBtn.disabled = true;
+    syncComparisonCameraInput.disabled = true;
+    useComparisonEvidenceBtn.disabled = true;
+    if (comparisonViewer) clearMolstar(comparisonViewer).catch(function () {});
+    if (viewer && typeof viewer.handleResize === 'function') viewer.handleResize();
+    if (announce) setStatus(comparisonStatus, 'Comparison closed. The original structure remains in the main viewer.', 'ok');
+  }
+
+  function openStructureComparison() {
+    var selectedPair = pairedStructureFiles();
+    var originalFile = selectedPair.original;
+    var variantFile = selectedPair.variant;
+    var originalInfo = structureFileInfo(originalFile);
+    var variantInfo = structureFileInfo(variantFile);
+    if (!originalFile || !variantFile) {
+      setStatus(comparisonStatus, 'Choose both an original and a variant result file.', 'err');
+      return;
+    }
+    if (!originalInfo || !variantInfo) {
+      setStatus(comparisonStatus, 'Use CIF, mmCIF, BCIF, PDB, or ENT structure files for both results.', 'err');
+      return;
+    }
+    var loadVersion = ++structureLoadVersion;
+    resetCoordinateAnalysis();
+    structureLoaded = false;
+    comparisonLoaded = false;
+    fitStructureBtn.disabled = true;
+    fitComparisonBtn.disabled = true;
+    closeComparisonBtn.disabled = true;
+    syncComparisonCameraInput.disabled = true;
+    useComparisonEvidenceBtn.disabled = true;
+    structureViewer.classList.add('compareMode');
+    comparisonLabels.hidden = false;
+    comparisonOriginalLabel.textContent = 'Original: ' + originalInfo.name;
+    comparisonVariantLabel.textContent = 'Variant: ' + variantInfo.name;
+    showLoading('Loading original and variant structures into side-by-side Mol* viewers...');
+    setStatus(comparisonStatus, 'Loading both local result files...', '');
+
+    Promise.all([ensureViewer(), ensureComparisonViewer()]).then(function (targets) {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+      return Promise.all([clearMolstar(targets[0]), clearMolstar(targets[1])]).then(function () { return targets; });
+    }).then(function (targets) {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+      releaseLocalObjectUrls('');
+      var originalUrl = URL.createObjectURL(originalFile);
+      var variantUrl = URL.createObjectURL(variantFile);
+      comparisonUrls = [originalUrl, variantUrl];
+      localObjectUrls.push(originalUrl, variantUrl);
+      return Promise.all([loadViewerUrl(targets[0], originalUrl, originalInfo), loadViewerUrl(targets[1], variantUrl, variantInfo)]);
+    }).then(function () {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+      comparisonLoaded = true;
+      structureLoaded = true;
+      viewerMain.setAttribute('aria-label', 'Side-by-side original and variant structure viewers');
+      fitStructureBtn.disabled = false;
+      fitComparisonBtn.disabled = false;
+      closeComparisonBtn.disabled = false;
+      syncComparisonCameraInput.disabled = false;
+      useComparisonEvidenceBtn.disabled = !comparisonObservation.value.trim();
+      current = {
+        source: 'Local original-versus-variant comparison',
+        accession: 'local pair',
+        name: originalInfo.name + ' vs. ' + variantInfo.name,
+        organism: 'Not provided',
+        length: 'Two locally loaded structure results',
+        confidence: 'Inspect and compare confidence and PAE from the corresponding result packages; visible shape differences alone do not establish biological impact.',
+        citation: citationFor({ source: 'Uploaded file' })
+      };
+      renderDetails(current);
+      hideLoading();
+      if (viewer && typeof viewer.handleResize === 'function') viewer.handleResize();
+      if (comparisonViewer && typeof comparisonViewer.handleResize === 'function') comparisonViewer.handleResize();
+      window.requestAnimationFrame(function () { fitComparison(false); startComparisonCameraSync(false); });
+      setStatus(comparisonStatus, 'Comparison ready. Camera lock follows either view when supported; inspect confidence before interpreting shape differences.', 'ok');
+      setStatus(viewerToolbarStatus, 'Original and variant result comparison is open.', 'ok');
+    }).catch(function (error) {
+      if (loadVersion !== structureLoadVersion || isCanceledRequest(error)) return;
+      structureLoaded = false;
+      deactivateComparison(false);
+      releaseLocalObjectUrls('');
+      loadmsg.textContent = 'Could not open the comparison. ' + String((error && error.message) || error).slice(0, 130);
+      loadmsg.style.display = 'flex';
+      setStatus(comparisonStatus, 'Comparison failed. Check that both files are valid supported structure results.', 'err');
+    });
+  }
+
+  function closeStructureComparison() {
+    if (!comparisonLoaded && !structureViewer.classList.contains('compareMode')) return;
+    ++structureLoadVersion;
+    deactivateComparison(true);
+    hideLoading();
+    setStatus(viewerToolbarStatus, 'Returned to the original structure viewer.', 'ok');
+    scheduleStructureFit();
+  }
+
+  function useComparisonEvidence() {
+    var observation = comparisonObservation.value.trim();
+    if (!comparisonLoaded) {
+      setStatus(comparisonStatus, 'Open both result files before recording comparison evidence.', 'warn');
+      return;
+    }
+    if (!observation) {
+      setStatus(comparisonStatus, 'Describe one visible or confidence-supported difference first.', 'warn');
+      comparisonObservation.focus();
+      return;
+    }
+    var names = comparisonOriginalLabel.textContent.replace(/^Original:\s*/, '') + ' vs. ' + comparisonVariantLabel.textContent.replace(/^Variant:\s*/, '');
+    var evidence = 'Original-versus-variant model comparison (' + names + '): ' + observation + ' This is a model observation, not proof of a functional or biological effect.';
+    evidenceInput.value = (evidenceInput.value.trim() ? evidenceInput.value.trim() + '\n' : '') + evidence;
+    if (!cautionInput.value.trim()) cautionInput.value = 'The structures were not automatically aligned, and prediction differences require confidence/PAE checks, trusted references, or experiments.';
+    renderGuide();
+    setStatus(comparisonStatus, 'Comparison observation added to structure evidence with a model-limit reminder.', 'ok');
+  }
+
+  function contactState(pairA, pairB) {
+    var originalDistance = coordinateDistance(pairA.original.point, pairB.original.point);
+    var variantDistance = coordinateDistance(pairA.variantAligned.point, pairB.variantAligned.point);
+    var originalContact = originalDistance <= 8, variantContact = variantDistance <= 8;
+    return { originalDistance: originalDistance, variantDistance: variantDistance, original: originalContact, variant: variantContact, state: originalContact && variantContact ? 'retained' : variantContact ? 'gained' : originalContact ? 'lost' : 'none' };
+  }
+
+  function calculateContactAnalysis(pairs) {
+    var gained = 0, lost = 0, retained = 0, interfaces = {}, limit = Math.min(pairs.length, 1200);
+    for (var i = 0; i < limit; i++) for (var j = i + 1; j < limit; j++) {
+      if (pairs[i].original.chain === pairs[j].original.chain && Math.abs(i - j) <= 2) continue;
+      var result = contactState(pairs[i], pairs[j]);
+      if (result.state === 'gained') gained++; else if (result.state === 'lost') lost++; else if (result.state === 'retained') retained++;
+      if (pairs[i].original.chain !== pairs[j].original.chain && result.state !== 'none') {
+        var key = [pairs[i].original.chain, pairs[j].original.chain].sort().join('-');
+        if (!interfaces[key]) interfaces[key] = { original: 0, variant: 0 };
+        if (result.original) interfaces[key].original++;
+        if (result.variant) interfaces[key].variant++;
+      }
+    }
+    return { gained: gained, lost: lost, retained: retained, interfaces: interfaces, limit: limit };
+  }
+
+  function confidencePath(pairs, field) {
+    return pairs.map(function (pair, index) {
+      var value = Number(pair[field].confidence); if (!Number.isFinite(value)) value = 0;
+      var x = 42 + index / Math.max(1, pairs.length - 1) * 542, y = 150 - Math.max(0, Math.min(100, value)) / 100 * 140;
+      return (index ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+  }
+
+  function drawContactDifference() {
+    if (!coordinateAnalysis) return;
+    var pairs = coordinateAnalysis.pairs, n = pairs.length, bins = Math.min(100, n), ctx = contactDifferenceCanvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, 340, 340); ctx.fillStyle = '#09111e'; ctx.fillRect(0, 0, 340, 340);
+    var left = 20, top = 20, plot = 300, cell = plot / bins;
+    for (var row = 0; row < bins; row++) {
+      var i = Math.min(n - 1, Math.floor(row * n / bins));
+      for (var col = 0; col < bins; col++) {
+        var j = Math.min(n - 1, Math.floor(col * n / bins));
+        var state = i === j ? 'retained' : contactState(pairs[i], pairs[j]).state;
+        if (state === 'none') continue;
+        ctx.fillStyle = state === 'gained' ? '#c084fc' : state === 'lost' ? '#f59e0b' : '#64748b';
+        ctx.fillRect(left + col * cell, top + row * cell, Math.ceil(cell), Math.ceil(cell));
+      }
+    }
+    ctx.strokeStyle = '#94a3b8'; ctx.strokeRect(left, top, plot, plot);
+    contactDifferenceCanvas.setAttribute('aria-label', 'Contact-difference map for ' + n + ' matched residues: ' + coordinateAnalysis.contacts.gained + ' gained, ' + coordinateAnalysis.contacts.lost + ' lost, and ' + coordinateAnalysis.contacts.retained + ' retained contacts at the 8 Angstrom C-alpha threshold.');
+    contactDifferenceCanvas.hidden = false; contactDifferenceLegend.hidden = false;
+  }
+
+  function renderCoordinateNeighborhood() {
+    if (!coordinateAnalysis) return;
+    var pairs = coordinateAnalysis.pairs, index = Math.max(1, Math.min(pairs.length, Math.round(Number(coordinateResidueInput.value) || 1))) - 1;
+    var radius = Math.max(4, Math.min(12, Number(coordinateRadiusInput.value) || 8));
+    coordinateResidueInput.value = String(index + 1); coordinateRadiusInput.value = String(radius);
+    var target = pairs[index];
+    var neighbors = pairs.map(function (pair, pairIndex) {
+      return { pair: pair, index: pairIndex, original: coordinateDistance(target.original.point, pair.original.point), variant: coordinateDistance(target.variantAligned.point, pair.variantAligned.point) };
+    }).filter(function (item) { return item.index !== index && (item.original <= radius || item.variant <= radius); })
+      .sort(function (a, b) { return Math.min(a.original, a.variant) - Math.min(b.original, b.variant); }).slice(0, 16);
+    var lines = ['Neighborhood for matched residue ' + (index + 1) + ' (' + target.original.residue + ' ' + target.original.key + '), radius ' + radius + ' Angstroms.'];
+    if (!neighbors.length) lines.push('No other matched C-alpha atoms fall within this radius in either model.');
+    neighbors.forEach(function (item) {
+      var delta = Math.round((item.variant - item.original) * 10) / 10;
+      lines.push(item.pair.original.residue + ' ' + item.pair.original.key + ': original ' + item.original.toFixed(1) + ' A, variant ' + item.variant.toFixed(1) + ' A, change ' + (delta > 0 ? '+' : '') + delta + ' A.');
+    });
+    lines.push('C-alpha proximity is a geometric clue, not a direct atom-contact, binding, stability, or functional measurement.');
+    coordinateNeighborhoodOutput.textContent = lines.join('\n'); coordinateNeighborhoodOutput.hidden = false;
+  }
+
+  function renderInterfaceComparison() {
+    if (!coordinateAnalysis) return;
+    var keys = Object.keys(coordinateAnalysis.contacts.interfaces), lines = ['Chain-interface contact summary at the 8 Angstrom C-alpha threshold.'];
+    if (!keys.length) lines.push('No cross-chain contacts were found among the matched residues.');
+    keys.forEach(function (key) {
+      var item = coordinateAnalysis.contacts.interfaces[key], delta = item.variant - item.original;
+      lines.push(key + ': original ' + item.original + ', variant ' + item.variant + ', change ' + (delta > 0 ? '+' : '') + delta + '.');
+    });
+    lines.push('Interface contact counts depend on model alignment, chain matching, and the chosen threshold.');
+    interfaceComparisonOutput.textContent = lines.join('\n'); interfaceComparisonOutput.hidden = false;
+  }
+
+  function renderCoordinateAnalysis() {
+    if (!coordinateAnalysis) return;
+    var analysis = coordinateAnalysis;
+    coordinateMetrics.hidden = false; matchedResidueCount.value = String(analysis.pairs.length); coordinateRmsd.value = analysis.alignment.rmsd.toFixed(2) + ' A';
+    contactChangeCount.value = '+' + analysis.contacts.gained + ' / -' + analysis.contacts.lost;
+    originalConfidencePath.setAttribute('d', confidencePath(analysis.pairs, 'original')); variantConfidencePath.setAttribute('d', confidencePath(analysis.pairs, 'variant'));
+    confidenceComparisonPlot.hidden = false;
+    confidenceComparisonPlot.setAttribute('aria-label', 'C-alpha B-factor or pLDDT-field comparison across ' + analysis.pairs.length + ' matched residues. Teal is original and purple is variant. Interpret as pLDDT only when prediction confidence is stored in the B-factor field.');
+    coordinateResidueInput.max = String(analysis.pairs.length);
+    var suggested = variantChanges.length ? variantChanges[0].position : Number(variantPositionInput.value);
+    coordinateResidueInput.value = String(Math.max(1, Math.min(analysis.pairs.length, suggested || 1)));
+    renderCoordinateNeighborhood(); drawContactDifference(); renderInterfaceComparison(); useCoordinateEvidenceBtn.disabled = false;
+  }
+
+  function resetCoordinateAnalysis() {
+    coordinateAnalysisVersion += 1;
+    coordinateAnalysis = null;
+    coordinateMetrics.hidden = true;
+    confidenceComparisonPlot.hidden = true;
+    coordinateNeighborhoodOutput.hidden = true;
+    contactDifferenceCanvas.hidden = true;
+    contactDifferenceLegend.hidden = true;
+    interfaceComparisonOutput.hidden = true;
+    useCoordinateEvidenceBtn.disabled = true;
+    analyzeCoordinatesBtn.disabled = false;
+  }
+
+  function analyzeCoordinatePair() {
+    var selectedPair = pairedStructureFiles();
+    var originalFile = selectedPair.original;
+    var variantFile = selectedPair.variant;
+    var originalInfo = structureFileInfo(originalFile), variantInfo = structureFileInfo(variantFile);
+    if (!comparisonLoaded) { setStatus(coordinateAnalysisStatus, 'Open the original and variant structures in the comparison viewer first.', 'warn'); return; }
+    if (!originalInfo || !variantInfo || originalInfo.format !== 'pdb' || variantInfo.format !== 'pdb') {
+      setStatus(coordinateAnalysisStatus, 'Coordinate alignment currently requires PDB or ENT files for both structures.', 'err'); return;
+    }
+    var requestVersion = ++coordinateAnalysisVersion;
+    coordinateAnalysis = null; useCoordinateEvidenceBtn.disabled = true; analyzeCoordinatesBtn.disabled = true;
+    setStatus(coordinateAnalysisStatus, 'Reading C-alpha coordinates and calculating the best-fit alignment...', '');
+    Promise.all([readTextFile(originalFile), readTextFile(variantFile)]).then(function (texts) {
+      if (requestVersion !== coordinateAnalysisVersion) return;
+      var original = parsePdbCa(texts[0]), variant = parsePdbCa(texts[1]), matching = matchCoordinateResidues(original, variant);
+      var alignment = calculateAlignment(matching.pairs), contacts = calculateContactAnalysis(matching.pairs);
+      coordinateAnalysis = { original: original, variant: variant, pairs: matching.pairs, alignment: alignment, contacts: contacts, strategy: matching.strategy };
+      var alignedPdb = transformPdbCoordinates(texts[1], alignment), alignedUrl = URL.createObjectURL(new Blob([alignedPdb], { type: 'chemical/x-pdb' }));
+      localObjectUrls.push(alignedUrl);
+      return clearMolstar(comparisonViewer).then(function () {
+        if (requestVersion !== coordinateAnalysisVersion) return;
+        return loadViewerUrl(comparisonViewer, alignedUrl, { format: 'pdb', binary: false });
+      });
+    }).then(function () {
+      if (requestVersion !== coordinateAnalysisVersion || !coordinateAnalysis) return;
+      comparisonVariantLabel.textContent = comparisonVariantLabel.textContent.replace(/ \(aligned\)$/, '') + ' (aligned)';
+      if (comparisonViewer && typeof comparisonViewer.handleResize === 'function') comparisonViewer.handleResize();
+      fitComparison(false); renderCoordinateAnalysis();
+      setStatus(coordinateAnalysisStatus, 'Aligned ' + coordinateAnalysis.pairs.length + ' matched residues by ' + coordinateAnalysis.strategy + '. C-alpha RMSD is ' + coordinateAnalysis.alignment.rmsd.toFixed(2) + ' Angstroms. Review confidence and contact evidence before making a claim.', 'ok');
+    }).catch(function (error) {
+      if (requestVersion !== coordinateAnalysisVersion) return;
+      coordinateAnalysis = null;
+      setStatus(coordinateAnalysisStatus, 'Coordinate analysis unavailable: ' + String((error && error.message) || error).slice(0, 150), 'err');
+    }).finally(function () {
+      if (requestVersion === coordinateAnalysisVersion) analyzeCoordinatesBtn.disabled = false;
+    });
+  }
+
+  function useCoordinateEvidence() {
+    if (!coordinateAnalysis) { setStatus(coordinateAnalysisStatus, 'Run coordinate analysis before adding evidence.', 'warn'); return; }
+    var statement = 'Coordinate comparison: ' + coordinateAnalysis.pairs.length + ' matched C-alpha residues aligned with RMSD ' + coordinateAnalysis.alignment.rmsd.toFixed(2) + ' Angstroms; at an 8 Angstrom C-alpha threshold, ' + coordinateAnalysis.contacts.gained + ' contacts were gained and ' + coordinateAnalysis.contacts.lost + ' were lost in the variant model. These are model-geometry observations, not proof of changed function, binding, or stability.';
+    var existing = evidenceInput.value.trim();
+    if (existing.indexOf(statement) < 0) evidenceInput.value = existing ? existing + '\n' + statement : statement;
+    evidenceInput.dispatchEvent(new Event('input', { bubbles: true }));
+    setStatus(coordinateAnalysisStatus, 'Coordinate metrics added to structure evidence with a geometry limitation.', 'ok');
   }
 
   function fitStructure(announce) {
@@ -3226,7 +4473,8 @@
     focusViewBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     focusViewBtn.textContent = isActive ? 'Exit focus view' : 'Focus on protein';
     setStatus(viewerToolbarStatus, isActive ? 'Protein focus view opened. Press Escape to exit.' : 'Protein focus view closed.', 'ok');
-    window.dispatchEvent(new Event('resize'));
+    if (viewer && typeof viewer.handleResize === 'function') viewer.handleResize();
+    else window.dispatchEvent(new Event('resize'));
     scheduleStructureFit();
     focusViewBtn.focus();
   }
@@ -3243,31 +4491,46 @@
   }
 
   function loadStructure(record, format, isBinary) {
+    if (structureViewer.classList.contains('compareMode')) deactivateComparison(false);
+    resetCoordinateAnalysis();
+    var loadVersion = ++structureLoadVersion;
     current = record;
     structureLoaded = false;
     fitStructureBtn.disabled = true;
     renderDetails(record);
     showLoading('Loading structure into Mol*...');
-    return ensureViewer().then(function (v) {
-      if (typeof v.loadStructureFromUrl === 'function') {
-        return v.loadStructureFromUrl(record.modelUrl, format || 'mmcif', !!isBinary);
-      }
-      if (record.accession && typeof v.loadAlphaFoldDb === 'function') {
-        return v.loadAlphaFoldDb(record.accession);
-      }
-      throw new Error('This Mol* build does not expose URL loading');
+    var operation = structureLoadQueue.then(function () {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+      return ensureViewer();
+    }).then(function (v) {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+      var keepUrl = record.source === 'Uploaded file' ? record.modelUrl : '';
+      releaseLocalObjectUrls(keepUrl);
+      var cleared = v.plugin && typeof v.plugin.clear === 'function' ? v.plugin.clear() : Promise.resolve();
+      return Promise.resolve(cleared).then(function () {
+        if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+        if (typeof v.loadStructureFromUrl === 'function') return v.loadStructureFromUrl(record.modelUrl, format || 'mmcif', !!isBinary);
+        if (record.accession && typeof v.loadAlphaFoldDb === 'function') return v.loadAlphaFoldDb(record.accession);
+        throw new Error('This Mol* build does not expose URL loading');
+      });
     }).then(function () {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
       structureLoaded = true;
       fitStructureBtn.disabled = false;
       hideLoading();
       scheduleStructureFit();
-    }).catch(function (e) {
+      return true;
+    }).catch(function (error) {
+      if (loadVersion !== structureLoadVersion || isCanceledRequest(error)) throw supersededLoadError();
       structureLoaded = false;
       fitStructureBtn.disabled = true;
-      loadmsg.textContent = 'Could not load the structure. ' + String((e && e.message) || e).slice(0, 130);
+      if (record.source === 'Uploaded file') releaseLocalObjectUrls('');
+      loadmsg.textContent = 'Could not load the structure. ' + String((error && error.message) || error).slice(0, 130);
       loadmsg.style.display = 'flex';
-      throw e;
+      throw error;
     });
+    structureLoadQueue = operation.catch(function () {});
+    return operation;
   }
 
   function lookup(accession) {
@@ -3276,15 +4539,23 @@
       setStatus(lookupStatus, 'Enter a UniProt or AlphaFold accession.', 'warn');
       return;
     }
+    var requestVersion = ++lookupVersion;
+    if (lookupController) lookupController.abort();
+    lookupController = typeof AbortController === 'function' ? new AbortController() : null;
+    var controller = lookupController;
     accessionInput.value = acc;
     lookupBtn.disabled = true;
     setStatus(lookupStatus, 'Looking up ' + acc + ' in AlphaFold DB...', '');
-    fetch(API_ROOT + encodeURIComponent(acc), { method: 'GET' })
+    var options = { method: 'GET' };
+    if (controller) options.signal = controller.signal;
+    fetch(API_ROOT + encodeURIComponent(acc), options)
       .then(function (res) {
+        if (requestVersion !== lookupVersion) throw supersededLoadError();
         if (!res.ok) throw new Error('AlphaFold DB returned HTTP ' + res.status);
         return res.json();
       })
       .then(function (data) {
+        if (requestVersion !== lookupVersion) throw supersededLoadError();
         var rec = Array.isArray(data) ? data[0] : data;
         if (!rec) throw new Error('No public AlphaFold DB prediction was found for ' + acc);
         var record = pickRecord(rec, acc);
@@ -3292,10 +4563,13 @@
         toOpener({ type: 'allocaf-db-hit', accession: record.accession });
         return loadStructure(record, 'mmcif', false);
       })
-      .catch(function (e) {
-        setStatus(lookupStatus, String((e && e.message) || e), 'err');
+      .catch(function (error) {
+        if (requestVersion !== lookupVersion || isCanceledRequest(error)) return;
+        setStatus(lookupStatus, String((error && error.message) || error), 'err');
       })
       .finally(function () {
+        if (requestVersion !== lookupVersion) return;
+        lookupController = null;
         lookupBtn.disabled = false;
       });
   }
@@ -3384,6 +4658,201 @@
     if (max && n > max) n = max;
     if (input) input.value = String(n);
     return n;
+  }
+
+  var NOTEBOOK_STORAGE_KEY = 'alloflow_alphafold_variant_notebook_v1';
+
+  function renderNotebookEntries() {
+    notebookEntries.textContent = '';
+    if (!notebookEntryState.length) {
+      notebookEntries.appendChild(el('span', { class: 'notebookEmpty' }, 'No notebook entries yet.'));
+      return;
+    }
+    notebookEntryState.forEach(function (entry, index) {
+      var item = el('div', { class: 'notebookEntry' });
+      item.appendChild(el('b', null, (index + 1) + '. ' + entry.provenance));
+      item.appendChild(el('span', null, entry.text));
+      notebookEntries.appendChild(item);
+    });
+  }
+
+  function addNotebookEntry() {
+    var text = notebookEntryInput.value.trim();
+    if (!text) { setStatus(notebookStatus, 'Write a notebook entry before adding it.', 'warn'); notebookEntryInput.focus(); return; }
+    notebookEntryState.push({ provenance: notebookProvenanceSelect.value, text: text.slice(0, 1600), createdAt: new Date().toISOString() });
+    notebookEntryInput.value = '';
+    renderNotebookEntries();
+    setStatus(notebookStatus, 'Notebook entry added with source type: ' + notebookProvenanceSelect.value + '.', 'ok');
+  }
+
+  function captureWorkspace() {
+    var lines = [];
+    if (current) lines.push('Structure context: ' + (current.name || current.source || 'loaded structure') + '.');
+    if (variantChanges.length) lines.push('Active substitutions: ' + variantChanges.map(mutationNotation).join(', ') + '.');
+    if (comparisonLoaded) lines.push('Comparison: ' + comparisonOriginalLabel.textContent + '; ' + comparisonVariantLabel.textContent + '.');
+    if (paeComparisonStatement) lines.push(paeComparisonStatement);
+    if (coordinateAnalysis) lines.push('Coordinate alignment: ' + coordinateAnalysis.pairs.length + ' matched residues, RMSD ' + coordinateAnalysis.alignment.rmsd.toFixed(2) + ' Angstroms, ' + coordinateAnalysis.contacts.gained + ' gained and ' + coordinateAnalysis.contacts.lost + ' lost C-alpha contacts.');
+    if (claimInput.value.trim()) lines.push('Claim: ' + claimInput.value.trim());
+    if (evidenceInput.value.trim()) lines.push('Evidence: ' + evidenceInput.value.trim());
+    if (cautionInput.value.trim()) lines.push('Limit or next test: ' + cautionInput.value.trim());
+    if (!lines.length) { setStatus(notebookStatus, 'Load or analyze something before capturing the workspace.', 'warn'); return; }
+    notebookEntryState.push({ provenance: 'model observation', text: lines.join(' ').slice(0, 3000), createdAt: new Date().toISOString() });
+    renderNotebookEntries();
+    setStatus(notebookStatus, 'Current sequence-free workspace summary captured.', 'ok');
+  }
+
+  function notebookSnapshot() {
+    return {
+      version: 1,
+      name: String(notebookNameInput.value || 'AlphaFold variant investigation').trim().slice(0, 120),
+      savedAt: new Date().toISOString(),
+      privacy: 'No raw sequences or structure-file contents are stored.',
+      entries: notebookEntryState.slice(0, 100),
+      reasoning: { claim: claimInput.value.trim(), evidence: evidenceInput.value.trim(), caution: cautionInput.value.trim() },
+      context: current ? { source: current.source || '', name: current.name || '', accession: current.accession || '' } : null
+    };
+  }
+
+  function saveNotebook() {
+    try {
+      localStorage.setItem(NOTEBOOK_STORAGE_KEY, JSON.stringify(notebookSnapshot()));
+      setStatus(notebookStatus, 'Notebook saved locally without raw sequences or structure files.', 'ok');
+    } catch (error) {
+      setStatus(notebookStatus, 'Local save is unavailable in this browser. Download the notebook instead.', 'warn');
+    }
+  }
+
+  function restoreNotebook() {
+    try {
+      var raw = localStorage.getItem(NOTEBOOK_STORAGE_KEY);
+      if (!raw) { setStatus(notebookStatus, 'No locally saved notebook was found.', 'warn'); return; }
+      var data = JSON.parse(raw);
+      if (!data || data.version !== 1 || !Array.isArray(data.entries)) throw new Error('Unsupported notebook format');
+      notebookNameInput.value = String(data.name || 'AlphaFold variant investigation').slice(0, 120);
+      notebookEntryState = data.entries.slice(0, 100).map(function (entry) {
+        return { provenance: String(entry.provenance || 'model observation').slice(0, 80), text: String(entry.text || '').slice(0, 3000), createdAt: String(entry.createdAt || '') };
+      }).filter(function (entry) { return !!entry.text; });
+      if (data.reasoning) {
+        claimInput.value = String(data.reasoning.claim || '').slice(0, 4000);
+        evidenceInput.value = String(data.reasoning.evidence || '').slice(0, 8000);
+        cautionInput.value = String(data.reasoning.caution || '').slice(0, 4000);
+      }
+      renderNotebookEntries(); renderGuide();
+      setStatus(notebookStatus, 'Notebook restored. Structure files and sequences must be loaded again.', 'ok');
+    } catch (error) {
+      setStatus(notebookStatus, 'The saved notebook could not be restored.', 'err');
+    }
+  }
+
+  function downloadNotebook() {
+    var json = JSON.stringify(notebookSnapshot(), null, 2), url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    var a = el('a', { href: url, download: 'alphafold_variant_notebook.json' });
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
+    setStatus(notebookStatus, 'Notebook JSON downloaded.', 'ok');
+  }
+
+  function notebookMarkdown() {
+    var snapshot = notebookSnapshot();
+    var clean = function (value) { return String(value || '').replace(/\r\n?/g, '\n').trim(); };
+    var lines = ['# ' + clean(snapshot.name), '', 'Generated: ' + snapshot.savedAt, '', '> Privacy: ' + snapshot.privacy, ''];
+    if (snapshot.context) lines.push('## Structure context', '', '- Name: ' + clean(snapshot.context.name || 'Not recorded'), '- Source: ' + clean(snapshot.context.source || 'Not recorded'), '- Accession: ' + clean(snapshot.context.accession || 'Not recorded'), '');
+    lines.push('## Claim-evidence-limit reasoning', '', '### Claim', '', clean(snapshot.reasoning.claim) || '_Not recorded._', '', '### Evidence', '', clean(snapshot.reasoning.evidence) || '_Not recorded._', '', '### Limits and next tests', '', clean(snapshot.reasoning.caution) || '_Not recorded._', '', '## Evidence notebook', '');
+    if (!snapshot.entries.length) lines.push('_No notebook entries._', '');
+    snapshot.entries.forEach(function (entry, index) { lines.push('### ' + (index + 1) + '. ' + clean(entry.provenance || 'Evidence'), '', clean(entry.text), '', entry.createdAt ? '_Recorded: ' + clean(entry.createdAt) + '_' : '', ''); });
+    lines.push('## Interpretation reminder', '', 'AlphaFold and other structure predictions are model evidence. Differences between predictions do not by themselves establish function, stability, pathogenicity, or experimental truth.', '');
+    return lines.join('\n');
+  }
+
+  function downloadNotebookReport() {
+    var markdown = notebookMarkdown();
+    var url = URL.createObjectURL(new Blob([markdown], { type: 'text/markdown;charset=utf-8' }));
+    var safeName = String(notebookNameInput.value || 'alphafold_variant_report').trim().replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80) || 'alphafold_variant_report';
+    var a = el('a', { href: url, download: safeName + '.md' });
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
+    setStatus(notebookStatus, 'Readable Markdown report downloaded with privacy and interpretation reminders.', 'ok');
+  }
+
+  function clearNotebook() {
+    notebookEntryState = [];
+    renderNotebookEntries();
+    setStatus(notebookStatus, 'Notebook entries cleared. The locally saved copy remains until you save again.', 'ok');
+  }
+
+  function svgNode(tag, attrs, text) {
+    var node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.keys(attrs || {}).forEach(function (key) { node.setAttribute(key, attrs[key]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function normalizeUniProtAnnotations(payload) {
+    var features = payload && Array.isArray(payload.features) ? payload.features : [];
+    var normalized = features.map(function (feature) {
+      var location = feature.location || {};
+      var start = Number(location.start && (location.start.value != null ? location.start.value : location.start));
+      var end = Number(location.end && (location.end.value != null ? location.end.value : location.end));
+      if (!Number.isFinite(start)) return null;
+      if (!Number.isFinite(end)) end = start;
+      return { type: String(feature.type || 'Feature').slice(0, 80), description: String(feature.description || feature.type || 'Annotation').slice(0, 240), start: Math.max(1, Math.round(start)), end: Math.max(1, Math.round(end)) };
+    }).filter(Boolean).slice(0, 500);
+    if (!features.length || !normalized.length) throw new Error('No supported UniProt features were found.');
+    var sequenceLength = Number(payload && payload.sequence && payload.sequence.length);
+    if (!Number.isFinite(sequenceLength) || sequenceLength < 1) sequenceLength = normalized.reduce(function (max, item) { return Math.max(max, item.end); }, 1);
+    var accession = String((payload && (payload.primaryAccession || payload.uniProtkbId)) || 'imported UniProt record').slice(0, 80);
+    return { features: normalized, length: sequenceLength, accession: accession };
+  }
+
+  function renderAnnotations() {
+    if (!importedAnnotations) return;
+    var position = Math.max(1, Math.round(Number(variantPositionInput.value) || Number(coordinateResidueInput.value) || 1));
+    var data = importedAnnotations, selected = data.features.filter(function (feature) { return position >= feature.start && position <= feature.end; });
+    annotationPlot.textContent = '';
+    annotationPlot.appendChild(svgNode('line', { class: 'backbone', x1: 42, y1: 66, x2: 580, y2: 66 }));
+    data.features.slice(0, 180).forEach(function (feature, index) {
+      var x = 42 + (feature.start - 1) / Math.max(1, data.length - 1) * 538;
+      var width = Math.max(3, (feature.end - feature.start + 1) / Math.max(1, data.length) * 538);
+      var active = position >= feature.start && position <= feature.end;
+      annotationPlot.appendChild(svgNode('rect', { class: 'feature' + (active ? ' selected' : ''), x: x.toFixed(1), y: 24 + (index % 3) * 20, width: width.toFixed(1), height: 12, rx: 3 }));
+    });
+    var markerX = 42 + (position - 1) / Math.max(1, data.length - 1) * 538;
+    annotationPlot.appendChild(svgNode('line', { x1: markerX, y1: 12, x2: markerX, y2: 91, stroke: '#f8fafc', 'stroke-width': 2 }));
+    annotationPlot.appendChild(svgNode('text', { x: 42, y: 116 }, '1'));
+    annotationPlot.appendChild(svgNode('text', { x: 560, y: 116 }, String(data.length)));
+    annotationPlot.appendChild(svgNode('text', { x: Math.max(44, Math.min(545, markerX - 15)), y: 105 }, String(position)));
+    annotationPlot.hidden = false;
+    var lines = ['UniProt record ' + data.accession + ': ' + data.features.length + ' imported features. Selected residue ' + position + '.'];
+    if (!selected.length) lines.push('No imported feature spans the selected residue.');
+    selected.forEach(function (feature) { lines.push(feature.type + ' ' + feature.start + '-' + feature.end + ': ' + feature.description); });
+    annotationOutput.textContent = lines.join('\n'); annotationOutput.hidden = false;
+    annotationEvidenceStatement = selected.length ? 'UniProt annotation evidence for ' + data.accession + ' at residue ' + position + ': ' + selected.map(function (feature) { return feature.type + ' ' + feature.start + '-' + feature.end + ' (' + feature.description + ')'; }).join('; ') + '. This is database annotation evidence, distinct from AlphaFold model observations.' : '';
+    annotationPlot.setAttribute('aria-label', lines.join(' '));
+    useAnnotationEvidenceBtn.disabled = !annotationEvidenceStatement;
+    setStatus(annotationStatus, selected.length ? 'Annotations loaded; ' + selected.length + ' feature' + (selected.length === 1 ? '' : 's') + ' overlap the selected residue.' : 'Annotations loaded; none overlap the selected residue.', selected.length ? 'ok' : 'warn');
+  }
+
+  function loadAnnotations() {
+    var file = annotationFileInput.files && annotationFileInput.files[0];
+    useAnnotationEvidenceBtn.disabled = true; annotationEvidenceStatement = '';
+    setStatus(annotationStatus, 'Reading UniProt JSON...', '');
+    readJsonFile(file).then(function (payload) {
+      importedAnnotations = normalizeUniProtAnnotations(payload);
+      renderAnnotations();
+    }).catch(function (error) {
+      importedAnnotations = null; annotationPlot.hidden = true; annotationOutput.hidden = true;
+      setStatus(annotationStatus, 'Annotation import unavailable: ' + String((error && error.message) || error).slice(0, 150), 'err');
+    });
+  }
+
+  function useAnnotationEvidence() {
+    if (!annotationEvidenceStatement) { setStatus(annotationStatus, 'Choose a residue covered by an imported feature first.', 'warn'); return; }
+    var existing = evidenceInput.value.trim();
+    if (existing.indexOf(annotationEvidenceStatement) < 0) evidenceInput.value = existing ? existing + '\n' + annotationEvidenceStatement : annotationEvidenceStatement;
+    evidenceInput.dispatchEvent(new Event('input', { bubbles: true }));
+    notebookEntryState.push({ provenance: 'database annotation', text: annotationEvidenceStatement, createdAt: new Date().toISOString() });
+    renderNotebookEntries();
+    setStatus(annotationStatus, 'Annotation added to evidence and the notebook with database provenance.', 'ok');
   }
 
   function safeJobName() {
@@ -3502,8 +4971,286 @@
     };
   }
 
+  function renderComplexPreview(v) {
+    var items = [];
+    var totalCopies = 0;
+    complexPreviewStage.textContent = '';
+    complexPreviewFormat.textContent = v.format === 'local' ? 'AlphaFold 3 local JSON' : 'AlphaFold Server JSON';
+
+    function addItem(kind, icon, label, detail, count) {
+      var copies = Math.max(1, Number(count) || 1);
+      items.push({ kind: kind, icon: icon, label: label, detail: detail, copies: copies });
+      totalCopies += copies;
+    }
+
+    if (v.protein.present) addItem('protein', 'P', 'Protein x' + v.proteinCount, v.protein.seq.length + ' aa each', v.proteinCount);
+    if (v.dna.present) {
+      var dnaCopies = dnaRevCompInput.checked ? 2 : 1;
+      addItem('dna', 'D', 'DNA x' + dnaCopies, v.dna.seq.length + ' nt' + (dnaCopies === 2 ? ' + reverse complement' : ''), dnaCopies);
+    }
+    if (v.rna.present) addItem('rna', 'R', 'RNA x1', v.rna.seq.length + ' nt', 1);
+    if (v.ligand) addItem('ligand', 'L', stripCcd(v.ligand) + ' x' + v.ligandCount, 'ligand', v.ligandCount);
+    if (v.ion) addItem('ion', 'I', v.ion + ' x' + v.ionCount, 'ion', v.ionCount);
+
+    if (!items.length) {
+      complexPreviewStage.appendChild(el('span', { class: 'complexPreviewEmpty' }, 'Add a protein, DNA, or RNA sequence to preview the assembly.'));
+      complexPreviewStage.setAttribute('aria-label', 'No biomolecule components entered.');
+      complexPreviewSummary.textContent = 'Illustrative composition only; this is not a predicted structure.';
+      return;
+    }
+
+    items.forEach(function (item) {
+      var card = el('span', { class: 'complexEntity', 'data-kind': item.kind });
+      card.appendChild(el('span', { class: 'complexEntityIcon', 'aria-hidden': 'true' }, item.icon));
+      var text = el('span', { class: 'complexEntityText' });
+      text.appendChild(el('b', null, item.label));
+      text.appendChild(el('small', null, item.detail));
+      card.appendChild(text);
+      complexPreviewStage.appendChild(card);
+    });
+
+    var spoken = items.map(function (item) { return item.label + ', ' + item.detail; }).join('; ');
+    complexPreviewStage.setAttribute('aria-label', 'Illustrative complex composition: ' + spoken + '.');
+    complexPreviewSummary.textContent = items.length + ' component type' + (items.length === 1 ? '' : 's') + ', ' + totalCopies + ' total cop' + (totalCopies === 1 ? 'y' : 'ies') + '. Illustrative composition only; not a predicted structure.';
+  }
+
+  var AA_PROPERTY = {
+    A: 'small nonpolar', R: 'positive charged', N: 'polar', D: 'negative charged', C: 'sulfur-containing',
+    Q: 'polar', E: 'negative charged', G: 'small flexible', H: 'partly positive aromatic', I: 'hydrophobic',
+    L: 'hydrophobic', K: 'positive charged', M: 'sulfur-containing hydrophobic', F: 'aromatic hydrophobic',
+    P: 'rigid backbone', S: 'small polar', T: 'polar', W: 'large aromatic', Y: 'aromatic polar', V: 'hydrophobic'
+  };
+
+  function mutationNotation(change) {
+    return change.from + change.position + change.to;
+  }
+
+  function clearVariantAnalysis() {
+    variantAnalysisVersion += 1;
+    variantBusy = false;
+    variantAnalyzeBtn.textContent = 'Analyze possible impacts';
+    variantAnalysisOutput.hidden = true;
+    variantAnalysisOutput.textContent = '';
+  }
+
+  function syncVariantBase(force) {
+    var protein = validateSequence(sequenceInput.value);
+    if (force || protein.seq !== variantBaseSequence) {
+      variantBaseSequence = protein.seq;
+      variantSequence = protein.seq;
+      variantChanges = [];
+      variantScanManifest = '';
+      variantScanOutput.hidden = true;
+      variantScanOutput.textContent = '';
+      copyVariantScanBtn.disabled = true;
+      clearVariantAnalysis();
+    }
+    renderVariantBuilder();
+  }
+
+  function renderVariantBuilder(message, cls) {
+    var protein = validateSequence(sequenceInput.value);
+    var length = protein.seq.length;
+    var position = Math.max(1, Math.min(Math.max(1, length), Math.round(Number(variantPositionInput.value) || 1)));
+    variantPositionInput.max = String(Math.max(1, length));
+    variantPositionInput.value = String(position);
+    variantSequenceTrack.textContent = '';
+    variantMutationList.textContent = '';
+
+    if (!protein.present || !protein.valid) {
+      variantApplyBtn.disabled = true;
+      variantUndoBtn.disabled = true;
+      variantResetBtn.disabled = true;
+      variantAnalyzeBtn.disabled = true;
+      variantUseBtn.disabled = true;
+      variantSequenceTrack.setAttribute('aria-label', 'No valid protein sequence available for variant building.');
+      variantMutationList.appendChild(el('span', { class: 'variantMutationEmpty' }, 'No substitutions yet.'));
+      setStatus(variantStatus, message || 'Add a valid protein sequence above to begin.', cls || '');
+      return;
+    }
+
+    variantApplyBtn.disabled = variantBusy;
+    var start = Math.max(0, position - 11);
+    var end = Math.min(variantSequence.length, position + 10);
+    if (start > 0) variantSequenceTrack.appendChild(el('span', { class: 'variantEllipsis', 'aria-hidden': 'true' }, '...'));
+    for (var i = start; i < end; i++) {
+      var changed = variantChanges.some(function (item) { return item.position === i + 1; });
+      var className = 'variantResidue' + (changed ? ' changed' : '') + (i + 1 === position ? ' focus' : '');
+      variantSequenceTrack.appendChild(el('span', { class: className, 'aria-hidden': 'true' }, variantSequence.charAt(i)));
+    }
+    if (end < variantSequence.length) variantSequenceTrack.appendChild(el('span', { class: 'variantEllipsis', 'aria-hidden': 'true' }, '...'));
+
+    var notations = variantChanges.map(mutationNotation);
+    variantSequenceTrack.setAttribute('aria-label', 'Protein sequence window around residue ' + position + '. ' + (notations.length ? 'Applied substitutions: ' + notations.join(', ') + '.' : 'No substitutions applied.'));
+    if (notations.length) {
+      notations.forEach(function (notation) { variantMutationList.appendChild(el('span', { class: 'variantMutation' }, notation)); });
+    } else {
+      variantMutationList.appendChild(el('span', { class: 'variantMutationEmpty' }, 'No substitutions yet.'));
+    }
+
+    variantUndoBtn.disabled = !variantChanges.length || variantBusy;
+    variantResetBtn.disabled = !variantChanges.length || variantBusy;
+    variantAnalyzeBtn.disabled = !variantChanges.length || !safetyConfirmInput.checked || variantBusy;
+    variantUseBtn.disabled = !variantChanges.length || variantBusy;
+    if (message) {
+      setStatus(variantStatus, message, cls || '');
+    } else if (variantChanges.length && !safetyConfirmInput.checked) {
+      setStatus(variantStatus, notations.join(', ') + '. Confirm the classroom-safe input source before analysis.', 'warn');
+    } else if (variantChanges.length) {
+      setStatus(variantStatus, notations.join(', ') + '. Ready for cautious impact analysis or a new prediction.', 'ok');
+    } else {
+      setStatus(variantStatus, 'Choose a residue and replacement amino acid to build a comparison variant.', '');
+    }
+  }
+
+  function aminoGroup(aa) {
+    if ('KRH'.indexOf(aa) >= 0) return 'positive or partly positive';
+    if ('DE'.indexOf(aa) >= 0) return 'negative';
+    if ('AILMV'.indexOf(aa) >= 0) return 'aliphatic hydrophobic';
+    if ('FWY'.indexOf(aa) >= 0) return 'aromatic';
+    if ('STNQ'.indexOf(aa) >= 0) return 'polar';
+    if (aa === 'C') return 'sulfur-containing';
+    return 'backbone-special';
+  }
+
+  function applyVariantChallenge() {
+    syncVariantBase(false);
+    if (!variantBaseSequence) { renderVariantBuilder('Add a valid protein sequence before choosing a challenge.', 'warn'); return; }
+    var position = Math.max(1, Math.min(variantBaseSequence.length, Math.round(Number(variantPositionInput.value) || 1)));
+    var original = variantSequence.charAt(position - 1), challenge = variantChallengeSelect.value, replacement = 'D';
+    if (challenge === 'charge') replacement = 'DE'.indexOf(original) >= 0 ? 'K' : 'KRH'.indexOf(original) >= 0 ? 'E' : 'D';
+    else if (challenge === 'proline') replacement = original === 'P' ? 'G' : 'P';
+    else if (challenge === 'glycine') replacement = original === 'G' ? 'P' : 'G';
+    else {
+      var candidates = AA.split('').filter(function (aa) { return aa !== original && aminoGroup(aa) === aminoGroup(original); });
+      replacement = candidates[0] || (original === 'A' ? 'V' : 'A');
+    }
+    variantAminoSelect.value = replacement;
+    renderVariantBuilder('Challenge ready: compare ' + original + position + replacement + '. Apply it, predict both models, then test geometry and uncertainty evidence.', 'ok');
+  }
+
+  function generateVariantScan() {
+    syncVariantBase(false);
+    if (!variantBaseSequence) { renderVariantBuilder('Add a valid protein sequence before building a scan.', 'warn'); return; }
+    var position = Math.max(1, Math.min(variantBaseSequence.length, Math.round(Number(variantPositionInput.value) || 1)));
+    var original = variantBaseSequence.charAt(position - 1);
+    var lines = ['Classroom 19-substitution scan at residue ' + position + ' (' + original + ')', 'Notation | Broad comparison'];
+    AA.split('').filter(function (aa) { return aa !== original; }).forEach(function (aa) {
+      lines.push(original + position + aa + ' | ' + (aminoGroup(aa) === aminoGroup(original) ? 'same broad group: ' + aminoGroup(aa) : aminoGroup(original) + ' to ' + aminoGroup(aa)));
+    });
+    lines.push('Planning heuristic only. Run selected variants and compare model confidence, PAE, geometry, references, or experiments.');
+    variantScanManifest = lines.join('\n');
+    variantScanOutput.textContent = variantScanManifest;
+    variantScanOutput.hidden = false;
+    copyVariantScanBtn.disabled = false;
+    renderVariantBuilder('Generated all 19 single substitutions at residue ' + position + '. The group labels organize comparisons; they do not rank biological impact.', 'ok');
+  }
+
+  function copyVariantScan() {
+    if (!variantScanManifest) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(variantScanManifest).then(function () { renderVariantBuilder('Scan manifest copied.', 'ok'); })
+        .catch(function () { renderVariantBuilder('Copy failed. Select the manifest text and copy manually.', 'warn'); });
+    } else renderVariantBuilder('Clipboard unavailable. Select the manifest text and copy manually.', 'warn');
+  }
+
+  function applyVariantSubstitution() {
+    syncVariantBase(false);
+    if (!variantBaseSequence) return;
+    var position = Math.round(Number(variantPositionInput.value) || 0);
+    if (position < 1 || position > variantSequence.length) {
+      renderVariantBuilder('Residue position must be between 1 and ' + variantSequence.length + '.', 'err');
+      return;
+    }
+    var replacement = variantAminoSelect.value;
+    var original = variantBaseSequence.charAt(position - 1);
+    var currentAa = variantSequence.charAt(position - 1);
+    if (currentAa === replacement) {
+      renderVariantBuilder('Residue ' + position + ' is already ' + replacement + '.', 'warn');
+      return;
+    }
+    variantSequence = variantSequence.slice(0, position - 1) + replacement + variantSequence.slice(position);
+    variantChanges = variantChanges.filter(function (item) { return item.position !== position; });
+    if (replacement !== original) variantChanges.push({ position: position, from: original, to: replacement });
+    clearVariantAnalysis();
+    renderVariantBuilder((replacement === original ? 'Restored ' : 'Applied ') + original + position + replacement + '.', 'ok');
+  }
+
+  function undoVariantSubstitution() {
+    var change = variantChanges.pop();
+    if (!change) return;
+    variantSequence = variantSequence.slice(0, change.position - 1) + change.from + variantSequence.slice(change.position);
+    variantPositionInput.value = String(change.position);
+    clearVariantAnalysis();
+    renderVariantBuilder('Undid ' + mutationNotation(change) + '.', 'ok');
+  }
+
+  function resetVariant() {
+    variantSequence = variantBaseSequence;
+    variantChanges = [];
+    clearVariantAnalysis();
+    renderVariantBuilder('Variant reset to the original protein sequence.', 'ok');
+  }
+
+  function useVariantAsInput() {
+    if (!variantChanges.length) return;
+    var applied = variantChanges.map(mutationNotation).join(', ');
+    sequenceInput.value = variantSequence;
+    variantBaseSequence = variantSequence;
+    variantChanges = [];
+    clearVariantAnalysis();
+    updateSequenceStatus();
+    renderVariantBuilder('Variant (' + applied + ') is now the protein input. Prepare JSON to run a new prediction.', 'ok');
+  }
+
+  function localVariantHypothesis() {
+    var details = variantChanges.map(function (change) {
+      return mutationNotation(change) + ' changes ' + (AA_PROPERTY[change.from] || 'amino-acid') + ' to ' + (AA_PROPERTY[change.to] || 'amino-acid') + '.';
+    }).join(' ');
+    return '- Property change: ' + details + '\n- Possible impact: the substitution could alter local packing, charge, flexibility, or interactions, but its direction and size depend on the residue location and structural context.\n- Next test: run the variant as a separate prediction, compare local confidence and PAE with the original, inspect whether the site is buried or at an interface, and check trusted references or experiments.';
+  }
+
+  function analyzeVariant() {
+    if (!variantChanges.length || variantBusy) return;
+    if (!safetyConfirmInput.checked) {
+      renderVariantBuilder('Confirm the classroom-safe input source before requesting analysis.', 'err');
+      return;
+    }
+    var hypothesis = localVariantHypothesis();
+    variantAnalysisOutput.hidden = false;
+    if (!(openerOk && aiAvailable)) {
+      variantAnalysisOutput.textContent = hypothesis + '\n\nBuilt-in hypothesis guide; AI is unavailable. This is not experimental or clinical evidence.';
+      return;
+    }
+    variantBusy = true;
+    var analysisVersion = ++variantAnalysisVersion;
+    variantAnalyzeBtn.textContent = 'Analyzing...';
+    renderVariantBuilder('AI is comparing broad amino-acid properties and suggesting validation steps.', '');
+    var variantPayload = {
+      mutations: variantChanges.map(mutationNotation),
+      mutationDetails: variantChanges.map(function (change) {
+        return { notation: mutationNotation(change), fromProperty: AA_PROPERTY[change.from], toProperty: AA_PROPERTY[change.to] };
+      }),
+      proteinLength: variantSequence.length,
+      gradeBand: currentGradeTutorial().label
+    };
+    var meta = current || { source: 'Prepared classroom sequence', name: safeJobName(), length: variantSequence.length + ' amino acids', confidence: 'No variant prediction has been run yet.' };
+    askAi(meta, '', 'allocaf-ai-variant-request', { variant: variantPayload }).then(function (res) {
+      if (analysisVersion !== variantAnalysisVersion) return;
+      var text = res && !res.error && res.text ? String(res.text).trim() : '';
+      variantAnalysisOutput.textContent = text || (hypothesis + '\n\nAI analysis was unavailable; showing the built-in hypothesis guide instead.');
+      variantAnalysisOutput.hidden = false;
+    }).finally(function () {
+      if (analysisVersion !== variantAnalysisVersion) return;
+      variantBusy = false;
+      variantAnalyzeBtn.textContent = 'Analyze possible impacts';
+      renderVariantBuilder();
+    });
+  }
+
   function updateSequenceStatus() {
     var v = collectInput();
+    renderComplexPreview(v);
     if (!v.components.length) {
       setStatus(sequenceStatus, 'No protein, DNA, or RNA sequence entered.', '');
     } else if (v.warnings.length) {
@@ -3545,6 +5292,7 @@
     var format = (ext === 'pdb' || ext === 'ent') ? 'pdb' : 'mmcif';
     var isBinary = ext === 'bcif';
     var url = URL.createObjectURL(file);
+    localObjectUrls.push(url);
     var record = {
       source: 'Uploaded file',
       accession: 'local',
@@ -3560,6 +5308,7 @@
       setStatus(fileStatus, 'Loaded ' + name + '.', 'ok');
       toOpener({ type: 'allocaf-file-imported', name: name });
     }).catch(function (e) {
+      if (isCanceledRequest(e)) return;
       setStatus(fileStatus, 'Could not load ' + name + '. ' + String((e && e.message) || e).slice(0, 120), 'err');
     });
   }
@@ -3748,7 +5497,66 @@
     if (ev.key === 'Enter') lookup(accessionInput.value);
   });
   fileInput.addEventListener('change', function () { loadLocalFile(fileInput.files && fileInput.files[0]); });
-  sequenceInput.addEventListener('input', updateSequenceStatus);
+  comparisonOriginalInput.addEventListener('change', function () {
+    comparisonDroppedOriginal = null;
+    resetCoordinateAnalysis();
+    setStatus(comparisonStatus, comparisonOriginalInput.files && comparisonOriginalInput.files[0] ? 'Original selected. Choose a variant result file.' : 'Choose an original and variant result file.', '');
+  });
+  comparisonVariantInput.addEventListener('change', function () {
+    comparisonDroppedVariant = null;
+    resetCoordinateAnalysis();
+    setStatus(comparisonStatus, comparisonVariantInput.files && comparisonVariantInput.files[0] ? 'Variant selected. Open the comparison when both files are ready.' : 'Choose an original and variant result file.', '');
+  });
+  comparisonDropZone.addEventListener('dragover', function (event) { event.preventDefault(); comparisonDropZone.classList.add('dragActive'); });
+  comparisonDropZone.addEventListener('dragleave', function () { comparisonDropZone.classList.remove('dragActive'); });
+  comparisonDropZone.addEventListener('drop', function (event) {
+    event.preventDefault(); comparisonDropZone.classList.remove('dragActive');
+    var files = Array.prototype.slice.call((event.dataTransfer && event.dataTransfer.files) || []).filter(function (file) { return !!structureFileInfo(file); });
+    if (files.length !== 2) { setStatus(comparisonStatus, 'Drop exactly two supported structure files. You can also use the original and variant file controls.', 'err'); return; }
+    var originalPattern = /(^|[_. -])(wt|wild.?type|original|reference|control)([_. -]|$)/i;
+    var variantPattern = /(^|[_. -])(variant|mutant|mutation|mutated)([_. -]|$)/i;
+    var originalIndex = files.findIndex(function (file) { return originalPattern.test(file.name); });
+    var variantIndex = files.findIndex(function (file) { return variantPattern.test(file.name); });
+    if (originalIndex < 0 || variantIndex < 0 || originalIndex === variantIndex) { originalIndex = 0; variantIndex = 1; }
+    comparisonDroppedOriginal = files[originalIndex]; comparisonDroppedVariant = files[variantIndex];
+    resetCoordinateAnalysis();
+    setStatus(comparisonStatus, 'Paired files ready: original ' + comparisonDroppedOriginal.name + '; variant ' + comparisonDroppedVariant.name + '. Select Open comparison.', 'ok');
+  });
+  openComparisonBtn.addEventListener('click', openStructureComparison);
+  fitComparisonBtn.addEventListener('click', function () { fitComparison(true); });
+  closeComparisonBtn.addEventListener('click', closeStructureComparison);
+  syncComparisonCameraInput.addEventListener('change', function () {
+    if (syncComparisonCameraInput.checked) startComparisonCameraSync(true);
+    else { stopComparisonCameraSync(); setStatus(comparisonStatus, 'Camera synchronization off. Each structure can now be rotated independently.', 'ok'); }
+  });
+  comparisonObservation.addEventListener('input', function () { useComparisonEvidenceBtn.disabled = !comparisonLoaded || !comparisonObservation.value.trim(); });
+  useComparisonEvidenceBtn.addEventListener('click', useComparisonEvidence);
+  originalPaeFileInput.addEventListener('change', function () {
+    paeComparisonVersion += 1; originalPaeComparison = null; paeComparisonStatement = ''; paeResultCompare.hidden = true; usePaeComparisonEvidenceBtn.disabled = true;
+    setStatus(paeComparisonReading, 'Original PAE selected. Choose the matching variant PAE JSON.', '');
+  });
+  variantPaeFileInput.addEventListener('change', function () {
+    paeComparisonVersion += 1; variantPaeComparison = null; paeComparisonStatement = ''; paeResultCompare.hidden = true; usePaeComparisonEvidenceBtn.disabled = true;
+    setStatus(paeComparisonReading, 'Variant PAE selected. Load both matrices when ready.', '');
+  });
+  loadPaeComparisonBtn.addEventListener('click', loadPaeComparison);
+  comparisonAlignedResidue.addEventListener('input', renderPaeComparison);
+  comparisonComparedResidue.addEventListener('input', renderPaeComparison);
+  usePaeComparisonEvidenceBtn.addEventListener('click', usePaeComparisonEvidence);
+  analyzeCoordinatesBtn.addEventListener('click', analyzeCoordinatePair);
+  coordinateResidueInput.addEventListener('input', renderCoordinateNeighborhood);
+  coordinateRadiusInput.addEventListener('input', renderCoordinateNeighborhood);
+  useCoordinateEvidenceBtn.addEventListener('click', useCoordinateEvidence);
+  sequenceInput.addEventListener('input', function () { syncVariantBase(true); updateSequenceStatus(); });
+  variantPositionInput.addEventListener('input', function () { renderVariantBuilder(); if (importedAnnotations) renderAnnotations(); });
+  variantApplyBtn.addEventListener('click', applyVariantSubstitution);
+  variantUndoBtn.addEventListener('click', undoVariantSubstitution);
+  variantResetBtn.addEventListener('click', resetVariant);
+  variantAnalyzeBtn.addEventListener('click', analyzeVariant);
+  variantUseBtn.addEventListener('click', useVariantAsInput);
+  applyVariantChallengeBtn.addEventListener('click', applyVariantChallenge);
+  generateVariantScanBtn.addEventListener('click', generateVariantScan);
+  copyVariantScanBtn.addEventListener('click', copyVariantScan);
   jobNameInput.addEventListener('input', updateSequenceStatus);
   formatSelect.addEventListener('change', updateSequenceStatus);
   proteinCountInput.addEventListener('input', updateSequenceStatus);
@@ -3760,7 +5568,7 @@
   ligandCountInput.addEventListener('input', updateSequenceStatus);
   ionSelect.addEventListener('change', updateSequenceStatus);
   ionCountInput.addEventListener('input', updateSequenceStatus);
-  safetyConfirmInput.addEventListener('change', updateSequenceStatus);
+  safetyConfirmInput.addEventListener('change', function () { updateSequenceStatus(); renderVariantBuilder(); });
   copyTutorialBtn.addEventListener('click', copyTutorial);
   flowButtons.forEach(function (btn) {
     btn.addEventListener('click', function () { setFlowMode(btn.getAttribute('data-flow-mode')); });
@@ -3792,6 +5600,9 @@
   });
   paeAlignedResidue.addEventListener('input', drawLivePae);
   paeComparedResidue.addEventListener('input', drawLivePae);
+  paeLiveCanvas.addEventListener('click', selectLivePaeCell);
+  paeLensBtn.addEventListener('click', function () { setPaeViewMode(paeViewMode === 'difference' ? 'pae' : 'difference'); });
+  paeEvidenceBtn.addEventListener('click', useSelectedPaeEvidence);
   routeSelect.addEventListener('change', function () { renderRoute(); renderLmsAssignment(); renderGuide(); });
   readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
@@ -3814,10 +5625,21 @@
   copyActivityCardBtn.addEventListener('click', copyActivityCard);
   copyRubricBtn.addEventListener('click', copyRubric);
   coachBtn.addEventListener('click', coach);
+  addNotebookEntryBtn.addEventListener('click', addNotebookEntry);
+  captureWorkspaceBtn.addEventListener('click', captureWorkspace);
+  saveNotebookBtn.addEventListener('click', saveNotebook);
+  restoreNotebookBtn.addEventListener('click', restoreNotebook);
+  downloadNotebookBtn.addEventListener('click', downloadNotebook);
+  downloadNotebookReportBtn.addEventListener('click', downloadNotebookReport);
+  clearNotebookBtn.addEventListener('click', clearNotebook);
+  loadAnnotationsBtn.addEventListener('click', loadAnnotations);
+  useAnnotationEvidenceBtn.addEventListener('click', useAnnotationEvidence);
 
   var params = new URLSearchParams(window.location.search);
   var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
   if (requested) lookup(requested);
+  syncVariantBase(true);
+  updateSequenceStatus();
   renderFlowMode();
   renderPresetSummary();
   renderGradeTutorial();
@@ -3827,7 +5649,13 @@
   hello();
   setTimeout(hello, 900);
   setTimeout(renderAiState, 2600);
-  window.addEventListener('beforeunload', function () { toOpener({ type: 'allocaf-closed' }); });
+  window.addEventListener('beforeunload', function () {
+    stopComparisonCameraSync();
+    if (lookupController) lookupController.abort();
+    if (paeController) paeController.abort();
+    releaseLocalObjectUrls('');
+    toOpener({ type: 'allocaf-closed' });
+  });
 })();
 </script>
 </body>

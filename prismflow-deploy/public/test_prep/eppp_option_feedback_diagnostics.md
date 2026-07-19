@@ -8,19 +8,19 @@ Generated: 2026-07-18
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 1421 |
-| Incorrect options with one or more warnings | 4114 |
-| Insufficient-detail warnings | 1491 |
-| Generic-template warnings | 2558 |
-| Choice-restatement warnings | 1839 |
-| Full-key-echo warnings | 1564 |
+| Questions with one or more warnings | 1405 |
+| Incorrect options with one or more warnings | 4066 |
+| Insufficient-detail warnings | 1481 |
+| Generic-template warnings | 2522 |
+| Choice-restatement warnings | 1809 |
+| Full-key-echo warnings | 1538 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |
 | Wave-07 incorrect options with warnings | 0 of 48 |
 | Wave-08 incorrect options with warnings | 0 of 48 |
 | Wave-09 incorrect options with warnings | 0 of 48 |
 
-The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, eppp-option-feedback-wave-07, eppp-option-feedback-wave-08, eppp-option-feedback-wave-09) pass this diagnostic: all 192 incorrect-option explanations identify the option-specific misconception and teach the relevant distinction without the flagged stock patterns.
+The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, eppp-option-feedback-wave-07, eppp-option-feedback-wave-08, eppp-option-feedback-wave-09, eppp-option-feedback-wave-10) pass this diagnostic: all 240 incorrect-option explanations identify the option-specific misconception and teach the relevant distinction without the flagged stock patterns.
 
 ## Highest-priority repair docket
 

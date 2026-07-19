@@ -204,3 +204,116 @@ describe('science-sim + studio render goldens', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
+
+describe('Space Explorer mission dossier contract', () => {
+  it('builds a teachable mission dossier and deterministic local event deck', () => {
+    loadTool('stem_lab/stem_tool_spaceexplorer.js', 'spaceExplorer');
+    const pure = window.StemLab.spaceExplorerPure;
+    expect(pure).toBeTruthy();
+
+    const dest = {
+      id: 'europa',
+      name: 'Europa',
+      difficulty: 2,
+      hazards: ['radiation belts', 'ice crust instability'],
+      scienceFocus: ['oceanography', 'astrobiology']
+    };
+    const dossier = pure.buildMissionDossier(dest, { o2: 80, power: 70, hull: 100, fuel: 90, science: 0 }, [], []);
+    expect(dossier.riskBand).toMatch(/training|moderate|high|extreme/);
+    expect(dossier.guidingQuestion).toContain('Europa');
+    expect(dossier.stagePlan.map((x) => x.name)).toEqual(['Arrival', 'Survey', 'Departure']);
+    expect(dossier.evidenceGoals).toHaveLength(3);
+    expect(dossier.evidenceGoals[0].label).toBe('oceanography');
+
+    const event = pure.buildLocalMissionEvent(dest, { o2: 80, power: 70, hull: 100, fuel: 90, science: 0 }, 1, 11, []);
+    expect(event.title).toBeTruthy();
+    expect(event.description).toContain('Europa');
+    expect(event.choices.map((x) => x.quality)).toEqual(['optimal', 'adequate', 'poor']);
+    expect(event.hiddenOption).toBeTruthy();
+    expect(event.stemConcepts.length).toBeGreaterThan(0);
+
+    const assessment = pure.assessMissionIntent(
+      'I predict oceanography evidence will decide whether the crew can survive Europa.',
+      [{ turn: 1, title: 'Ice Fault', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }],
+      dossier
+    );
+    expect(assessment.hasIntent).toBe(true);
+    expect(assessment.status).toMatch(/partly supported|strongly supported/);
+    expect(assessment.supportCount).toBeGreaterThan(0);
+    expect(assessment.revisionPrompt).toContain('Next run');
+
+    const protocol = pure.buildMissionProtocol(
+      'I predict oceanography evidence and science data will decide whether the crew can survive Europa.',
+      dossier,
+      dest
+    );
+    expect(protocol.id).toBe('evidence_first');
+    expect(protocol.ruleText).toContain('science +3');
+    const applied = pure.applyMissionProtocol(protocol, { o2: 80, power: 70, hull: 100, fuel: 90, morale: 80, science: 12 }, { quality: 'optimal' }, { title: 'Ice Fault' });
+    expect(applied.applied).toBe(true);
+    expect(applied.resources.science).toBe(15);
+    expect(applied.resources.power).toBe(69);
+
+    const lens = pure.buildProtocolEventLens(protocol, dossier, 0, []);
+    expect(lens.category).toBe('science');
+    expect(lens.promptLine).toContain('Evidence-first protocol');
+    const protocolEvent = pure.buildLocalMissionEvent(dest, { o2: 80, power: 70, hull: 100, fuel: 90, science: 0 }, 0, 11, [], protocol, dossier);
+    expect(protocolEvent.protocolLens.protocolId).toBe('evidence_first');
+    expect(protocolEvent.description).toContain('Evidence-first protocol');
+
+    const forecast = pure.buildMissionForecast(dest, { o2: 22, power: 70, hull: 100, fuel: 90, morale: 80, science: 0 }, 1, 11, dossier, protocol, [], { life: 0, science: 2, shields: 0, comms: 0 });
+    expect(forecast.category).toMatch(/systems|science/);
+    expect(forecast.recommendedSystem).toBeTruthy();
+    expect(forecast.summary).toContain('consider');
+  });
+
+  it('renders dossier, evidence tracker, and debrief review surfaces', () => {
+    loadTool('stem_lab/stem_tool_spaceexplorer.js', 'spaceExplorer');
+    const base = {
+      destination: 'europa',
+      resources: { o2: 80, power: 70, hull: 100, fuel: 90, science: 12 },
+      crew: [],
+      missionLog: [],
+      decisionLog: [],
+      missionIntent: 'I predict oceanography evidence and science data will decide whether the crew can survive Europa.',
+      protocolLog: [],
+      missionEvidence: []
+    };
+
+    const briefing = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, { missionPhase: 'briefing' }) });
+    expect(briefing).toContain('data-spaceexplorer-dossier');
+    expect(briefing).toContain('Mission Dossier');
+    expect(briefing).toContain('data-spaceexplorer-intent');
+    expect(briefing).toContain('Commander');
+    expect(briefing).toContain('data-spaceexplorer-protocol');
+    expect(briefing).toContain('Evidence-first protocol');
+    expect(briefing).toContain('data-spaceexplorer-deck-lens');
+
+    const allocate = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, { missionPhase: 'allocate', powerAllocation: { life: 0, science: 2, shields: 0, comms: 0 } }) });
+    expect(allocate).toContain('data-spaceexplorer-forecast');
+    expect(allocate).toContain('Mission Forecast');
+
+    const explore = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
+      missionPhase: 'explore',
+      missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }]
+    }) });
+    expect(explore).toContain('data-spaceexplorer-evidence');
+    expect(explore).toContain('Expedition Evidence');
+    expect(explore).toContain('Latest observation');
+    expect(explore).toContain('Hypothesis status');
+
+    const debrief = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
+      missionPhase: 'debrief',
+      missionResult: 'success',
+      turn: 4,
+      protocolLog: [{ turn: 1, protocol: 'Evidence-first protocol', effects: { science: 3, power: -1 }, note: 'Protocol applied.' }],
+      decisionLog: [{ title: 'Ice Fault', chosen: 'Map it', quality: 'optimal', optimal: 'Map it', lesson: 'Evidence before action.' }],
+      missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }]
+    }) });
+    expect(debrief).toContain('data-spaceexplorer-dossier-review');
+    expect(debrief).toContain('MISSION DOSSIER REVIEW');
+    expect(debrief).toContain('data-spaceexplorer-intent-review');
+    expect(debrief).toContain('HYPOTHESIS REVIEW');
+    expect(debrief).toContain('Protocol tested');
+  });
+});

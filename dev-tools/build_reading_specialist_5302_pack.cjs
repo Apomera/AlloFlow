@@ -73,7 +73,7 @@ const pack = {
   credentialOwner: 'Educational Testing Service (ETS)', version: '1.0.0', status: 'ready', accent: 'rose',
   contentReview: '200 source-reviewed selected-response questions plus 12 chapters, 60 checks, 75 flashcards, 20 memory aids, and 6 constructed-response workshops; independent reading-specialist and psychometric review pending',
   nativeQaUrl: './test_prep/reading_specialist_5302_native_qa.json', learningLibraryUrl: './test_prep/reading_specialist_5302_learning_library.json',
-  learningLibraryQaUrl: './test_prep/reading_specialist_5302_learning_library_qa.json', simulationItemCount: 95, simulationTimeMinutes: 150,
+  learningLibraryQaUrl: './test_prep/reading_specialist_5302_learning_library_qa.json', simulationItemCount: 95, simulationDomainCounts: {"curriculum-instruction":47,"assessment":29,"professional-leadership":19}, simulationTimeMinutes: 150,
   simulationLabel: '95-question selected-response timed segment',
   simulationNote: 'The official test shares 150 minutes across 95 selected-response and 2 constructed-response questions. This timed segment contains selected-response items only; complete the written-response workshops separately. AlloFlow does not score constructed responses.',
   officialSelectedResponseCount: 95, officialConstructedResponseCount: 2,

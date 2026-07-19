@@ -87,13 +87,20 @@
     ]
   };
 
+  var MODE_IDS = MODES.map(function(mode) { return mode.id; });
+  var CHALLENGE_IDS = [];
+  Object.keys(CHALLENGES).forEach(function(mode) {
+    CHALLENGES[mode].forEach(function(challenge) { CHALLENGE_IDS.push(challenge.id); });
+  });
+
   function visitedCount(d) {
     var visited = Object.assign({ ratioTable: true }, (d && d.modesVisited) || {});
-    return Object.keys(visited).filter(function(id) { return visited[id]; }).length;
+    return MODE_IDS.filter(function(id) { return !!visited[id]; }).length;
   }
 
   function solvedCount(d) {
-    return Object.keys((d && d.solvedChallenges) || {}).filter(function(id) { return d.solvedChallenges[id]; }).length;
+    var solved = (d && d.solvedChallenges) || {};
+    return CHALLENGE_IDS.filter(function(id) { return !!solved[id]; }).length;
   }
 
   function solvedInMode(d, mode) {
@@ -146,36 +153,64 @@
     return isFinite(numeric) && nearlyEqual(numeric, challenge.answer);
   }
 
-  function parsePairs(xText, yText) {
+  function parsePairInput(xText, yText) {
     var xs = String(xText == null ? '' : xText).split(',');
     var ys = String(yText == null ? '' : yText).split(',');
     var pairs = [];
-    for (var i = 0; i < Math.min(xs.length, ys.length); i++) {
-      var x = Number(xs[i].trim());
-      var y = Number(ys[i].trim());
-      if (isFinite(x) && isFinite(y) && xs[i].trim() !== '' && ys[i].trim() !== '') pairs.push({ x: x, y: y });
+    var errors = [];
+    var rowCount = Math.max(xs.length, ys.length);
+    if (xs.length !== ys.length) errors.push('Enter the same number of x-values and y-values.');
+    for (var i = 0; i < rowCount; i++) {
+      var xRaw = i < xs.length ? xs[i].trim() : '';
+      var yRaw = i < ys.length ? ys[i].trim() : '';
+      if (!xRaw || !yRaw) {
+        errors.push('Row ' + (i + 1) + ': enter both an x-value and a y-value.');
+        continue;
+      }
+      var x = Number(xRaw);
+      var y = Number(yRaw);
+      if (!isFinite(x) || !isFinite(y)) {
+        errors.push('Row ' + (i + 1) + ': use numbers only.');
+        continue;
+      }
+      if (x < 0 || y < 0) {
+        errors.push('Row ' + (i + 1) + ': this first-quadrant graph requires nonnegative values.');
+        continue;
+      }
+      pairs.push({ x: x, y: y });
     }
-    return pairs;
+    return { pairs: pairs, errors: errors, complete: errors.length === 0, rowCount: rowCount };
   }
 
-  function analyzeProportionalPairs(pairs) {
-    pairs = Array.isArray(pairs) ? pairs : [];
+  function parsePairs(xText, yText) {
+    var diagnostic = parsePairInput(xText, yText);
+    return diagnostic.complete ? diagnostic.pairs : [];
+  }
+
+  function analyzeProportionalPairs(input) {
+    var diagnostic = Array.isArray(input) ? { pairs: input, errors: [], complete: true } : (input || { pairs: [], errors: ['No coordinate data supplied.'], complete: false });
+    var pairs = Array.isArray(diagnostic.pairs) ? diagnostic.pairs : [];
+    var errors = Array.isArray(diagnostic.errors) ? diagnostic.errors : [];
     var nonzeroPairs = pairs.filter(function(pair) { return pair.x !== 0; });
     var hasInvalidOrigin = pairs.some(function(pair) { return pair.x === 0 && pair.y !== 0; });
     var rates = nonzeroPairs.map(function(pair) { return pair.y / pair.x; });
-    var valid = pairs.length >= 2 && nonzeroPairs.length > 0;
+    var complete = diagnostic.complete !== false && errors.length === 0;
+    var valid = complete && pairs.length >= 2 && nonzeroPairs.length > 0;
     return {
       valid: valid,
       proportional: valid && !hasInvalidOrigin && rates.every(function(rate) { return nearlyEqual(rate, rates[0]); }),
       rates: rates,
-      constant: rates.length && rates.every(function(rate) { return nearlyEqual(rate, rates[0]); }) ? rates[0] : null,
-      hasInvalidOrigin: hasInvalidOrigin
+      constant: valid && rates.every(function(rate) { return nearlyEqual(rate, rates[0]); }) ? rates[0] : null,
+      hasInvalidOrigin: hasInvalidOrigin,
+      errors: errors.slice(),
+      complete: complete
     };
   }
 
   root.RatioLabPure = {
     gcd: gcd,
     parsePairs: parsePairs,
+    parsePairInput: parsePairInput,
     analyzeProportionalPairs: analyzeProportionalPairs,
     challengeIsCorrect: challengeIsCorrect,
     challenges: CHALLENGES
@@ -228,6 +263,7 @@
       var border = isContrast ? '#ffffff' : (isDark ? '#3a4961' : '#cbd5e1');
       var accent = isContrast ? '#ffff00' : (isDark ? '#a5b4fc' : '#4f46e5');
       var accentStrong = isContrast ? '#ffff00' : '#4338ca';
+      var accentText = isContrast ? '#000000' : '#ffffff';
       var success = isContrast ? '#00ff66' : (isDark ? '#6ee7b7' : '#047857');
       var warning = isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#a16207');
       var cardStyle = { background: panel, border: '1px solid ' + border };
@@ -236,8 +272,10 @@
       function update(patch) {
         setLabToolData(function(previous) {
           previous = previous || {};
+          var current = previous._ratioLab || {};
+          var changes = typeof patch === 'function' ? patch(current) : patch;
           return Object.assign({}, previous, {
-            _ratioLab: Object.assign({}, previous._ratioLab || {}, patch)
+            _ratioLab: Object.assign({}, current, changes || {})
           });
         });
       }
@@ -259,12 +297,34 @@
       }
 
       function chooseMode(nextMode) {
-        var visited = Object.assign({}, d.modesVisited || {});
-        visited[mode] = true;
-        visited[nextMode] = true;
-        update({ mode: nextMode, modesVisited: visited, challengeIndex: 0, challengeAnswer: '', challengeFeedback: null });
+        update(function(current) {
+          var visited = Object.assign({}, current.modesVisited || {});
+          var cursors = Object.assign({}, current.challengeCursorByMode || {});
+          visited[mode] = true;
+          visited[nextMode] = true;
+          cursors[mode] = challengeIndex;
+          var nextChallenges = CHALLENGES[nextMode] || [];
+          var nextIndex = clamp(Math.floor(finiteNumber(cursors[nextMode], 0)), 0, Math.max(0, nextChallenges.length - 1));
+          return { mode: nextMode, modesVisited: visited, challengeCursorByMode: cursors, challengeIndex: nextIndex, challengeAnswer: '', challengeFeedback: null };
+        });
         var selected = MODES.filter(function(item) { return item.id === nextMode; })[0];
         announce((selected ? selected.title : nextMode) + ' opened.');
+      }
+
+      function moveMode(event, index) {
+        var nextIndex = null;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % MODES.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + MODES.length) % MODES.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = MODES.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        var nextMode = MODES[nextIndex].id;
+        chooseMode(nextMode);
+        if (typeof document !== 'undefined') {
+          var nextTab = document.getElementById('ratio-tab-' + nextMode);
+          if (nextTab) nextTab.focus();
+        }
       }
 
       function numericField(label, value, key, options) {
@@ -320,7 +380,7 @@
               )),
               h('tbody', null, factors.map(function(factor) {
                 var active = factor === selectedFactor;
-                return h('tr', { key: factor, style: { background: active ? (isDark ? '#312e81' : '#eef2ff') : 'transparent' } },
+                return h('tr', { key: factor, style: { background: active ? (isContrast ? accentStrong : (isDark ? '#312e81' : '#eef2ff')) : 'transparent', color: active && isContrast ? accentText : text } },
                   h('th', { scope: 'row', className: 'p-2 text-left' }, '\u00D7' + factor + (active ? ' (selected)' : '')),
                   h('td', { className: 'p-2 text-right font-mono' }, first * factor),
                   h('td', { className: 'p-2 text-right font-mono' }, second * factor)
@@ -470,7 +530,7 @@
             h('div', { role: 'img', 'aria-label': 'Percent tape showing approximately ' + formatNumber(tapePercent) + ' percent', className: 'space-y-2' },
               h('div', { className: 'grid grid-cols-10 gap-1' }, segments.map(function(segment) {
                 var filled = segment < filledSegments;
-                return h('div', { key: segment, className: 'h-12 rounded-sm flex items-center justify-center text-[10px] font-bold', style: { background: filled ? accentStrong : soft, color: filled ? '#ffffff' : muted, border: '1px solid ' + border } }, (segment + 1) * 10 + '%');
+                return h('div', { key: segment, className: 'h-12 rounded-sm flex items-center justify-center text-[10px] font-bold', style: { background: filled ? accentStrong : soft, color: filled ? accentText : muted, border: '1px solid ' + border } }, (segment + 1) * 10 + '%');
               })),
               h('p', { className: 'text-xs', style: { color: muted } }, tapePercent > 100 ? 'The tape fills at 100%; the result extends beyond one whole.' : 'Each section represents 10% of one whole. Partial tens are rounded up visually; use the exact result above.')
             )
@@ -481,18 +541,19 @@
       function renderProportional() {
         var xText = d.propX == null ? '0, 1, 2, 4' : d.propX;
         var yText = d.propY == null ? '0, 3, 6, 12' : d.propY;
-        var pairs = parsePairs(xText, yText);
-        var analysis = analyzeProportionalPairs(pairs);
+        var pairInput = parsePairInput(xText, yText);
+        var pairs = pairInput.pairs;
+        var analysis = analyzeProportionalPairs(pairInput);
         var rates = analysis.rates;
         var proportional = analysis.proportional;
         var validForDecision = analysis.valid;
-        var graphPairs = pairs.filter(function(pair) { return pair.x >= 0 && pair.y >= 0; }).slice().sort(function(a, b) { return a.x - b.x; });
+        var graphPairs = pairInput.complete ? pairs.slice().sort(function(a, b) { return a.x - b.x; }) : [];
         var maxX = Math.max.apply(null, [1].concat(graphPairs.map(function(pair) { return pair.x; })));
         var maxY = Math.max.apply(null, [1].concat(graphPairs.map(function(pair) { return pair.y; })));
         function scaleX(value) { return 42 + (value / maxX) * 290; }
         function scaleY(value) { return 185 - (value / maxY) * 145; }
-        var pointString = graphPairs.map(function(pair) { return scaleX(pair.x) + ',' + scaleY(pair.y); }).join(' ');
-        var verdict = !validForDecision ? 'Enter at least two valid coordinate pairs.' : (proportional ? 'Proportional: the unit rate is constant.' : 'Not proportional: the evidence does not show one constant unit rate through the origin.');
+        var includesOrigin = graphPairs.some(function(pair) { return pair.x === 0 && pair.y === 0; });
+        var verdict = pairInput.errors.length ? pairInput.errors[0] : !validForDecision ? 'Enter at least two valid coordinate pairs, including one with a nonzero x-value.' : (proportional ? 'Proportional: the unit rate is constant.' : 'Not proportional: the evidence does not show one constant unit rate through the origin.');
 
         function setExample(isProportional) {
           update(isProportional ? { propX: '0, 1, 2, 4', propY: '0, 3, 6, 12' } : { propX: '0, 1, 2, 4', propY: '0, 3, 7, 12' });
@@ -518,7 +579,11 @@
                 h('input', { value: yText, onChange: function(event) { update({ propY: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm font-mono', style: inputStyle, 'aria-label': 'y-values, comma separated' })
               )
             ),
-            h('p', { className: 'text-xs mt-2', style: { color: muted } }, 'Use the same number of x- and y-values. The graph displays nonnegative pairs.')
+            h('p', { className: 'text-xs mt-2', style: { color: muted } }, 'Use the same number of x- and y-values. This first-quadrant graph requires a nonnegative number in every row.'),
+            pairInput.errors.length > 0 && h('div', { role: 'alert', className: 'mt-3 rounded-lg p-3 text-xs font-semibold', style: { background: soft, color: warning, border: '1px solid ' + warning } },
+              h('p', { className: 'font-bold' }, 'Fix the coordinate list before making a proportionality decision:'),
+              h('ul', { className: 'mt-1 list-disc pl-5 space-y-1' }, pairInput.errors.map(function(error, index) { return h('li', { key: index }, error); }))
+            )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
             h('div', { className: 'rounded-xl p-4 overflow-x-auto', style: cardStyle },
@@ -541,12 +606,12 @@
             h('div', { className: 'rounded-xl p-3', style: cardStyle },
               h('svg', { viewBox: '0 0 360 220', className: 'w-full min-h-[220px]', role: 'img', 'aria-labelledby': 'ratio-graph-title ratio-graph-desc' },
                 h('title', { id: 'ratio-graph-title' }, 'Relationship graph'),
-                h('desc', { id: 'ratio-graph-desc' }, pairs.length ? 'Graph of ' + pairs.length + ' table points. ' + verdict : 'No valid points are available to graph.'),
+                h('desc', { id: 'ratio-graph-desc' }, graphPairs.length ? 'Graph of ' + graphPairs.length + ' plotted table points. ' + (proportional && !includesOrigin ? 'A proportional model ray is extended through the origin. ' : '') + verdict : 'No complete set of points is available to graph. ' + verdict),
                 h('line', { x1: 42, y1: 185, x2: 340, y2: 185, stroke: text, strokeWidth: 2 }),
                 h('line', { x1: 42, y1: 185, x2: 42, y2: 28, stroke: text, strokeWidth: 2 }),
                 h('text', { x: 340, y: 205, textAnchor: 'end', style: { fill: muted, fontSize: '11px' } }, 'x'),
                 h('text', { x: 24, y: 35, style: { fill: muted, fontSize: '11px' } }, 'y'),
-                graphPairs.length > 1 && h('polyline', { points: pointString, fill: 'none', stroke: proportional ? success : warning, strokeWidth: 3, strokeLinejoin: 'round' }),
+                validForDecision && proportional && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, 'data-proportional-ray': 'true' }),
                 graphPairs.map(function(pair, index) {
                   return h('g', { key: index },
                     h('circle', { cx: scaleX(pair.x), cy: scaleY(pair.y), r: 5, fill: accentStrong, stroke: panel, strokeWidth: 2 }, h('title', null, '(' + pair.x + ', ' + pair.y + ')')),
@@ -558,7 +623,7 @@
           ),
           h('div', { className: 'rounded-xl p-4', role: 'status', 'aria-live': 'polite', style: { background: soft, border: '1px solid ' + border } },
             h('div', { className: 'font-bold', style: { color: validForDecision ? (proportional ? success : warning) : muted } }, verdict),
-            validForDecision && h('p', { className: 'text-xs mt-1', style: { color: muted } }, proportional ? 'Table evidence: all defined y \u00F7 x values equal ' + formatNumber(rates[0]) + '. Graph evidence: the points follow a straight path through (0,0).' : 'Check for changing y \u00F7 x values, a nonzero y-value when x = 0, or points that do not lie on one straight line through the origin.')
+            validForDecision && h('p', { className: 'text-xs mt-1', style: { color: muted } }, proportional ? 'Table evidence: all defined y \u00F7 x values equal ' + formatNumber(rates[0]) + '. Graph evidence: ' + (includesOrigin ? 'the entered points include (0,0) and follow the model ray.' : 'the model ray extends the constant relationship through (0,0), even though the origin was not entered.') : 'Check for changing y \u00F7 x values, a nonzero y-value when x = 0, or points that do not lie on one straight line through the origin.')
           )
         );
       }
@@ -576,8 +641,11 @@
       var challengeIndex = clamp(Math.floor(finiteNumber(d.challengeIndex, 0)), 0, modeChallenges.length - 1);
       var challenge = modeChallenges[challengeIndex];
       var feedback = d.challengeFeedback;
+      var challengeSolved = !!((d.solvedChallenges || {})[challenge.id]);
+      var challengeCheckPending = false;
 
       function checkChallenge() {
+        if (challengeSolved || challengeCheckPending) return;
         if (!normalizeAnswer(d.challengeAnswer)) {
           update({ challengeFeedback: { correct: false, message: 'Enter an answer before checking.' } });
           announce('Enter an answer before checking.');
@@ -585,10 +653,13 @@
         }
         var correct = challengeIsCorrect(challenge, d.challengeAnswer);
         if (correct) {
-          var solved = Object.assign({}, d.solvedChallenges || {});
-          var firstSolve = !solved[challenge.id];
-          solved[challenge.id] = true;
-          update({ solvedChallenges: solved, challengeFeedback: { correct: true, message: 'Correct! ' + challenge.explain } });
+          challengeCheckPending = true;
+          var firstSolve = !((d.solvedChallenges || {})[challenge.id]);
+          update(function(current) {
+            var solved = Object.assign({}, current.solvedChallenges || {});
+            solved[challenge.id] = true;
+            return { solvedChallenges: solved, challengeFeedback: { correct: true, message: 'Correct! ' + challenge.explain } };
+          });
           announce('Correct. ' + challenge.explain);
           if (firstSolve && typeof ctx.awardXP === 'function') {
             try { ctx.awardXP('ratioLab', 15, 'Ratio Lab challenge'); } catch (error) {}
@@ -602,7 +673,11 @@
 
       function nextChallenge() {
         var next = (challengeIndex + 1) % modeChallenges.length;
-        update({ challengeIndex: next, challengeAnswer: '', challengeFeedback: null });
+        update(function(current) {
+          var cursors = Object.assign({}, current.challengeCursorByMode || {});
+          cursors[mode] = next;
+          return { challengeCursorByMode: cursors, challengeIndex: next, challengeAnswer: '', challengeFeedback: null };
+        });
         announce('Challenge ' + (next + 1) + ' of ' + modeChallenges.length + '.');
       }
 
@@ -631,7 +706,7 @@
         ),
 
         h('nav', { className: 'rounded-xl p-2', style: cardStyle, 'aria-label': 'Ratio Lab learning modes' },
-          h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'tablist', 'aria-label': 'Learning mode' }, MODES.map(function(item) {
+          h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'tablist', 'aria-label': 'Learning mode' }, MODES.map(function(item, index) {
             var selected = item.id === mode;
             return h('button', {
               key: item.id,
@@ -639,17 +714,18 @@
               type: 'button',
               role: 'tab',
               'aria-selected': selected,
-              'aria-controls': 'ratio-panel-' + item.id,
+              'aria-controls': 'ratio-mode-panel',
               tabIndex: selected ? 0 : -1,
+              onKeyDown: function(event) { moveMode(event, index); },
               onClick: function() { chooseMode(item.id); },
               className: 'rounded-lg px-2 py-3 text-xs font-bold min-h-[54px]',
-              style: { background: selected ? accentStrong : soft, color: selected ? '#ffffff' : text, border: '1px solid ' + (selected ? accentStrong : border) }
+              style: { background: selected ? accentStrong : soft, color: selected ? accentText : text, border: '1px solid ' + (selected ? accentStrong : border) }
             }, h('span', { className: 'block text-base mb-1', 'aria-hidden': 'true' }, item.icon), item.short);
           }))
         ),
 
         h('section', {
-          id: 'ratio-panel-' + mode,
+          id: 'ratio-mode-panel',
           role: 'tabpanel',
           'aria-labelledby': 'ratio-tab-' + mode,
           className: 'space-y-3'
@@ -661,7 +737,7 @@
           renderModeContent()
         ),
 
-        h('section', { className: 'rounded-2xl p-4 sm:p-5 space-y-4', 'aria-labelledby': 'ratio-challenge-heading', style: { background: isDark ? '#191d36' : '#eef2ff', border: '2px solid ' + accent } },
+        h('section', { className: 'rounded-2xl p-4 sm:p-5 space-y-4', 'aria-labelledby': 'ratio-challenge-heading', style: { background: isContrast ? '#000000' : (isDark ? '#191d36' : '#eef2ff'), border: '2px solid ' + accent } },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
             h('div', null,
               h('h2', { id: 'ratio-challenge-heading', className: 'font-black' }, '\uD83C\uDFAF Deterministic challenge'),
@@ -687,7 +763,7 @@
                 challenge.suffix && h('span', { className: 'pr-3 text-xs font-bold', 'aria-hidden': 'true' }, challenge.suffix)
               )
             ),
-            h('button', { type: 'submit', className: 'rounded-lg px-5 py-2.5 font-bold', style: { background: accentStrong, color: '#ffffff', border: isContrast ? '2px solid #ffffff' : 'none' } }, 'Check answer')
+            h('button', { type: 'submit', disabled: challengeSolved, className: 'rounded-lg px-5 py-2.5 font-bold disabled:opacity-70', style: { background: accentStrong, color: accentText, border: isContrast ? '2px solid #ffffff' : 'none' } }, challengeSolved ? 'Solved' : 'Check answer')
           ),
           feedback && h('div', { id: 'ratio-challenge-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-lg p-3 text-sm font-semibold', style: { background: panel, border: '1px solid ' + (feedback.correct ? success : warning), color: feedback.correct ? success : warning } }, feedback.message)
         ),

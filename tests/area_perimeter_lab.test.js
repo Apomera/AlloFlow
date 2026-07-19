@@ -35,6 +35,10 @@ describe('Area & Perimeter Lab', () => {
     expect(pure.factorPairs(Infinity)).toEqual([]);
     expect(pure.isCorrectNumericAnswer('', 28)).toBe(false);
     expect(pure.isCorrectNumericAnswer('28', 28)).toBe(true);
+    const modeQuest = tool.questHooks.find((hook) => hook.id === 'measurement_tour');
+    const challengeQuest = tool.questHooks.find((hook) => hook.id === 'challenge_five');
+    expect(modeQuest.progress({ modeVisits: { explore: true, bogus: true } })).toBe('1/5 modes');
+    expect(challengeQuest.progress({ solvedChallenges: { bogus: true }, score: { correct: 99 } })).toBe('0/5 solved');
   });
 
   it('renders every learning mode with stable text alternatives', () => {
@@ -94,7 +98,28 @@ describe('Area & Perimeter Lab', () => {
     await React.act(async () => { root.unmount(); });
   });
 
-  it('scores each deterministic challenge once and awards scoped XP', async () => {
+  it('draws equal-area and challenge rectangles with a uniform unit scale', () => {
+    loadTool(FILE, ID);
+    const factors = renderTool(ID, { _areaPerimeter: { mode: 'investigate', targetArea: 24 } });
+    document.body.innerHTML = factors;
+    const factorRects = [...document.querySelectorAll('rect[data-factor-pair]')];
+    expect(factorRects).toHaveLength(4);
+    const pixelAreas = factorRects.map((rect) => Number(rect.getAttribute('width')) * Number(rect.getAttribute('height')));
+    expect(Math.max(...pixelAreas) - Math.min(...pixelAreas)).toBeLessThan(0.000001);
+    expect(new Set(factorRects.map((rect) => rect.getAttribute('data-square-unit'))).size).toBe(1);
+
+    const challenge = renderTool(ID, { _areaPerimeter: { mode: 'challenge', challengeIndex: 0 } });
+    document.body.innerHTML = challenge;
+    const rectangle = document.querySelector('rect[data-challenge-shape="rectangle"]');
+    expect(rectangle).toBeTruthy();
+    expect(Number(rectangle.getAttribute('width')) / Number(rectangle.getAttribute('height'))).toBeCloseTo(7 / 4, 6);
+
+    const secondChallenge = renderTool(ID, { _areaPerimeter: { mode: 'challenge', challengeIndex: 1 } });
+    expect(secondChallenge).toContain('picture frame');
+    expect(secondChallenge).toContain('Perimeter');
+  });
+
+  it('scores each deterministic challenge once under rapid activation', async () => {
     const tool = loadTool(FILE, ID);
     let latest;
     const awardXP = vi.fn();
@@ -111,13 +136,26 @@ describe('Area & Perimeter Lab', () => {
     await React.act(async () => { root.render(React.createElement(App)); });
     const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
     expect(check).toBeTruthy();
-    await React.act(async () => { check.click(); });
+    await React.act(async () => { check.click(); check.click(); });
     expect(latest._areaPerimeter.solvedChallenges['0']).toBe(true);
     expect(latest._areaPerimeter.score).toEqual({ correct: 1, attempts: 1 });
     expect(awardXP).toHaveBeenCalledWith('areaPerimeter', 5, 'Area & Perimeter challenge');
-    await React.act(async () => { check.click(); });
-    expect(latest._areaPerimeter.score).toEqual({ correct: 1, attempts: 2 });
     expect(awardXP).toHaveBeenCalledTimes(1);
+    const solved = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Solved');
+    expect(solved).toBeTruthy();
+    expect(solved.disabled).toBe(true);
+
+    let next = [...document.querySelectorAll('button')].find((button) => button.textContent.startsWith('Next'));
+    await React.act(async () => { next.click(); });
+    expect(latest._areaPerimeter.challengeIndex).toBe(1);
+    expect(document.body.textContent).toContain('picture frame');
+    const previous = [...document.querySelectorAll('button')].find((button) => button.textContent.includes('Previous'));
+    await React.act(async () => { previous.click(); });
+    expect(latest._areaPerimeter.challengeIndex).toBe(0);
+    const revisitedInput = document.getElementById('ap-answer');
+    expect(revisitedInput.value).toBe('28');
+    expect(revisitedInput.disabled).toBe(true);
+    expect(document.body.textContent).toContain('Solved previously. Area = length');
     await React.act(async () => { root.unmount(); });
   });
   it('is wired into the host catalog, plugin allowlist, lazy loader, and deployment mirrors', () => {
@@ -128,5 +166,6 @@ describe('Area & Perimeter Lab', () => {
     expect(host).toContain('areaPerimeter: true');
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_areaperimeter.js'");
+    expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_areaperimeter.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
   });
 });

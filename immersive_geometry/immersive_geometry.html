@@ -54,7 +54,7 @@
   .stateline { font-size: 13px; font-weight: 700; margin: 0 0 3px; }
   #measure { color: var(--dim); font-size: 12.5px; min-height: 32px; margin-bottom: 11px; line-height: 1.4; }
   #measure b { color: var(--text); font-variant-numeric: tabular-nums; }
-  #boundaryMeasure { color: var(--p2); font-size: 11.5px; font-weight: 700; line-height: 1.4; margin: -6px 0 8px; }
+  #boundaryMeasure { color: var(--p2); font-size: 11.5px; font-weight: 700; line-height: 1.4; margin: -6px 0 8px; white-space: pre-line; }
   .measuretoggle { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); font-size: 11px; margin: -4px 0 10px; cursor: pointer; }
   .measuretoggle input { width: 17px; height: 17px; margin: 0; accent-color: var(--focus); }
   .measuretoggle input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
@@ -74,6 +74,7 @@
   .missionactions { display: inline-flex; gap: 5px; }
   .missionactions button { min-width: 70px; }
   .missiongoal { color: var(--text); font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .missionmeasure { color: var(--accent2); font-size: 10.5px; font-weight: 750; line-height: 1.35; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
   .missionsteps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 6px 0; }
   .missionsteps button { appearance: none; width: 100%; padding: 4px 2px; border: 1px solid var(--line); border-radius: 5px; background: transparent; color: var(--dim); font: inherit; font-size: 9.5px; font-weight: 700; text-align: center; cursor: pointer; }
   .missionsteps button.current { border-color: var(--focus); color: var(--focus); }
@@ -85,6 +86,7 @@
   .missionhint:hover { border-color: var(--focus); }
   .missionhint:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .mission.done .missionprogress { color: var(--p2); font-weight: 800; }
+  .mission.done .missionmeasure { color: var(--p2); }
   .missiontoggle { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); font-size: 11px; margin-top: 6px; cursor: pointer; }
   .missiontoggle input { width: 17px; height: 17px; margin: 0; accent-color: var(--focus); }
   .missiontoggle input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
@@ -125,6 +127,7 @@
   <section class="mission" id="missionBox" aria-labelledby="missionTitle">
     <div class="missionhead"><strong id="missionTitle">Stretch mission</strong><span class="missionactions"><button class="q" id="uiMission" type="button">New target</button><button class="q" id="uiFresh" type="button">Start over</button></span></div>
     <div class="missiongoal" id="missionGoal">Make a segment with L = 2.1 units.</div>
+    <div class="missionmeasure" id="missionMeasure">Length — target 2.1 units · stretch to 1D to compare</div>
     <div class="missionsteps" id="missionSteps" role="list" aria-label="Mission progress">
       <span role="listitem"><button id="missionStep0" type="button">Segment</button></span><span role="listitem"><button id="missionStep1" type="button">Rectangle</button></span><span role="listitem"><button id="missionStep2" type="button">Box</button></span><span role="listitem"><button id="missionStep3" type="button">Cube</button></span>
     </div>
@@ -256,7 +259,7 @@
 
   <!-- Rig: camera + laser controllers + mouse cursor -->
   <a-entity id="rig" position="0 0 0">
-    <a-entity id="camera" camera position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 24">
+    <a-entity id="camera" camera position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="enabled: false">
       <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30"></a-entity>
     </a-entity>
     <a-entity id="handL" laser-controls="hand: left"  raycaster="objects: .clickable; lineColor: #7aa2ff; far: 8"></a-entity>
@@ -309,6 +312,13 @@ function loadSavedState() {
 var SAVED_STATE = loadSavedState();
 
 function r1(n) { return Math.round(n * 100) / 100; }
+function metricValue(d, dimensions) {
+  if (!dimensions) return NaN;
+  if (d === 1) return Number(dimensions.L);
+  if (d === 2) return Number(dimensions.L) * Number(dimensions.W);
+  if (d === 3) return Number(dimensions.L) * Number(dimensions.W) * Number(dimensions.H);
+  return NaN;
+}
 
 AFRAME.registerComponent('stretch-lab', {
   init: function () {
@@ -332,7 +342,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.el.appendChild(this.targetGhost);
     this.targetLabel = document.createElement('a-text');
     this.targetLabel.setAttribute('value', 'TARGET'); this.targetLabel.setAttribute('align', 'center');
-    this.targetLabel.setAttribute('width', '0.8'); this.targetLabel.setAttribute('color', '#facc15');
+    this.targetLabel.setAttribute('width', '1.05'); this.targetLabel.setAttribute('color', '#facc15');
     this.targetLabel.setAttribute('visible', 'false'); this.targetLabel.setAttribute('side', 'double');
     this.el.appendChild(this.targetLabel);
 
@@ -406,7 +416,13 @@ AFRAME.registerComponent('stretch-lab', {
 
   setMissionHint: function (axisIndex, direction, complete, mission, dimensions) {
     var axisNames = ['X', 'Z', 'Y'], keys = ['L', 'W', 'H'], axisColors = ['#38bdf8', '#4ade80', '#f472b6'];
-    if (this.targetLabel) this.targetLabel.setAttribute('value', complete ? 'TARGET\nDONE' : axisIndex >= 0 ? 'TARGET\n' + (direction > 0 ? 'GROW ' : 'SHRINK ') + axisNames[axisIndex] : 'TARGET');
+    if (this.targetLabel) {
+      var targetMetric = mission ? ['', 'L', 'A', 'V'][mission.d] + ' ' + r1(metricValue(mission.d, mission)) : '';
+      var targetValue = 'TARGET' + (targetMetric ? '\n' + targetMetric : '');
+      if (complete) targetValue += '\nDONE';
+      else if (axisIndex >= 0) targetValue += '\n' + (direction > 0 ? 'GROW ' : 'SHRINK ') + axisNames[axisIndex];
+      this.targetLabel.setAttribute('value', targetValue);
+    }
     if (this.handleTags) this.handleTags.forEach(function (tag, i) {
       var current = dimensions && isFinite(dimensions[keys[i]]) ? r1(dimensions[keys[i]]) : '';
       var matched = !!(mission && i < mission.d && current !== '' && Math.abs(current - mission[keys[i]]) <= 0.03);
@@ -601,6 +617,7 @@ window.addEventListener('load', function () {
   var axisTargetOut = document.getElementById('axisTargetOut'), axisTargetTick = document.getElementById('axisTargetTick');
   var lastHapticState = null;
   var missionBox = document.getElementById('missionBox'), missionTitle = document.getElementById('missionTitle'), missionGoal = document.getElementById('missionGoal');
+  var missionMeasure = document.getElementById('missionMeasure');
   var missionProgress = document.getElementById('missionProgress'), missionHint = document.getElementById('missionHint'), uiMission = document.getElementById('uiMission');
   var uiFresh = document.getElementById('uiFresh'), sessionNote = document.getElementById('sessionNote');
   var uiGhost = document.getElementById('uiGhost'), uiBoundary = document.getElementById('uiBoundary');
@@ -617,11 +634,27 @@ window.addEventListener('load', function () {
     }
   }
 
+  function targetBoundaryLine(mission) {
+    if (!mission || mission.d < 2) return '';
+    if (mission.d === 2) return 'Target P = 2 \u00d7 (L + W) = ' + r1(2 * (mission.L + mission.W)) + ' units';
+    return 'Target SA = 2 \u00d7 (LW + LH + WH) = ' + r1(2 * (mission.L * mission.W + mission.L * mission.H + mission.W * mission.H)) + ' units\u00b2';
+  }
+
+  function boundaryComparison(s, mission) {
+    if (!showBoundary) return '';
+    var lines = [];
+    if (s && s.boundary) lines.push('Current ' + s.boundary);
+    var targetLine = targetBoundaryLine(mission);
+    if (targetLine) lines.push(targetLine);
+    return lines.join('\n');
+  }
+
   function renderMeasureLabels(s) {
-    var showExtra = !!(showBoundary && s && s.boundary);
-    if (boundaryMeasure) { boundaryMeasure.hidden = !showExtra; boundaryMeasure.textContent = showExtra ? s.boundary : ''; }
-    if (label3d && s) label3d.setAttribute('text', 'value', s.title + '\n' + s.measure + (showExtra ? '\n' + s.boundary : '') + (s.d ? '\nEditing: ' + s.axisLabel : ''));
-    if (labelBack) labelBack.setAttribute('height', showExtra ? '1.12' : '0.78');
+    var boundaryText = boundaryComparison(s, MISSIONS[missionIndex]);
+    var boundaryLines = boundaryText ? boundaryText.split('\n').length : 0;
+    if (boundaryMeasure) { boundaryMeasure.hidden = !boundaryText; boundaryMeasure.textContent = boundaryText; }
+    if (label3d && s) label3d.setAttribute('text', 'value', s.title + '\n' + s.measure + (boundaryText ? '\n' + boundaryText : '') + (s.d ? '\nEditing: ' + s.axisLabel : ''));
+    if (labelBack) labelBack.setAttribute('height', boundaryLines > 1 ? '1.38' : boundaryLines ? '1.12' : '0.78');
     var vrMeasureText = document.getElementById('vrMeasureText');
     if (vrMeasureText) vrMeasureText.setAttribute('value', 'P/SA ' + (showBoundary ? 'on' : 'off'));
   }
@@ -745,7 +778,8 @@ window.addEventListener('load', function () {
     if (!labelWrap || !s) return;
     var currentHeight = s.d >= 3 ? s.dimensions.H : THIN;
     var targetHeight = showTarget && mission && mission.d >= 3 ? mission.H : THIN;
-    var clearance = showBoundary && s.boundary ? 0.68 : 0.42;
+    var boundaryLines = showBoundary ? (s.boundary ? 1 : 0) + (mission && mission.d >= 2 ? 1 : 0) : 0;
+    var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42;
     var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance);
     var y = workspacePose.baseY + defaultY - 1.1;
     labelWrap.object3D.position.set(workspacePose.x, y, workspacePose.z);
@@ -803,6 +837,13 @@ window.addEventListener('load', function () {
     else if (s.d > mission.d) parts.push('Collapse to ' + mission.d + 'D');
     keys.forEach(function (key) { parts.push(key + ' ' + r1(s.dimensions[key]) + ' / ' + r1(mission[key])); });
     currentMissionAction = action;
+    var metricName = ['', 'Length', 'Area', 'Volume'][mission.d];
+    var targetMeasure = r1(metricValue(mission.d, mission));
+    var currentMeasure = s.d >= mission.d ? r1(metricValue(mission.d, s.dimensions)) : null;
+    var metricUnits = ' units' + (mission.d === 2 ? '\u00b2' : mission.d === 3 ? '\u00b3' : '');
+    if (missionMeasure) missionMeasure.textContent = currentMeasure === null
+      ? metricName + ' \u2014 target ' + targetMeasure + metricUnits + '; stretch to ' + mission.d + 'D to compare'
+      : metricName + ' \u2014 current ' + currentMeasure + ' \u00b7 target ' + targetMeasure + metricUnits;
     if (missionGoal) missionGoal.textContent = mission.goal;
     if (missionProgress) missionProgress.textContent = done ? 'Complete — choose a new target when ready.' : parts.join(' • ');
     if (missionHint) {
@@ -877,6 +918,7 @@ window.addEventListener('load', function () {
     showBoundary = !!value;
     if (uiBoundary) uiBoundary.checked = showBoundary;
     renderMeasureLabels(lastMissionState);
+    positionMeasurePanel(lastMissionState, MISSIONS[missionIndex]);
     saveLabState(lastMissionState);
     if (announce) live.textContent = 'Boundary measures ' + (showBoundary ? 'shown.' : 'hidden.');
   }
@@ -952,15 +994,16 @@ window.addEventListener('load', function () {
     var textEntry = e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range';
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !textEntry) {
       var shortcut = String(e.key).toLowerCase();
-      if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo(); e.preventDefault(); return; }
-      if (shortcut === 'y') { doRedo(); e.preventDefault(); return; }
+      if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo(); e.preventDefault(); e.stopPropagation(); return; }
+      if (shortcut === 'y') { doRedo(); e.preventDefault(); e.stopPropagation(); return; }
     }
     if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    var handled = true;
     switch (e.key) {
-      case 'ArrowUp':    doStretch();  e.preventDefault(); break;
-      case 'ArrowDown':  doCollapse(); e.preventDefault(); break;
-      case 'ArrowRight': doGrow();     e.preventDefault(); break;
-      case 'ArrowLeft':  doShrink();   e.preventDefault(); break;
+      case 'ArrowUp':    doStretch();  break;
+      case 'ArrowDown':  doCollapse(); break;
+      case 'ArrowRight': doGrow();     break;
+      case 'ArrowLeft':  doShrink();   break;
       case 'r': case 'R': if (e.shiftKey) startOver(); else doReset(); break;
       case 'a': case 'A': doAxis(1);   break;
       case 'u': case 'U': doUndo();    break;
@@ -969,8 +1012,10 @@ window.addEventListener('load', function () {
       case 'm': case 'M': toggleBoundaryMeasures(!showBoundary, true); break;
       case 'f': case 'F': focusMissionStep(); break;
       case '1': case '2': case '3': case '4': selectMission(Number(e.key) - 1); break;
+      default: handled = false;
     }
-  });
+    if (handled) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
 
   // VR controller thumbstick = resize / select an active axis (throttled)
   var lastStick = 0, lastAxisStick = 0;

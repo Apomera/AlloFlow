@@ -61,6 +61,10 @@ describe('Persona Chat WCAG dialog behavior', () => {
     expect(buttons.length).toBeGreaterThanOrEqual(34);
     for (const button of buttons) expect(button).toContain('type="button"');
   });
+
+  it('does not dismiss nested dialogs while an IME composition is active', () => {
+    expect(countMatches(/e\.isComposing \|\| \(e\.nativeEvent && e\.nativeEvent\.isComposing\) \|\| e\.keyCode === 229/g)).toBeGreaterThanOrEqual(4);
+  });
 });
 
 describe('Persona Chat reduced motion and generated copies', () => {

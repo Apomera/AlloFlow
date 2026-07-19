@@ -70,8 +70,8 @@ describe('Anatomy Lab accessibility', () => {
   it('keeps diagram keyboard navigation scoped to the canvas', () => {
     const html = renderAnatomy({ _activeTab: 'explore' });
     expect(html).toContain('data-anatomy-canvas-help="true"');
-    expect(html).toContain('Use the arrow keys to move through visible structures');
-    expect(html).toContain('R/L labels show the patient');
+    expect(html).toContain('Select markers with pointer or arrow keys.');
+    expect(html).toContain('R/L always indicates the patient');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("e.currentTarget.tagName !== 'CANVAS'");
@@ -691,5 +691,284 @@ describe('Anatomy Lab connection disclosure semantics', () => {
     expect(source).toContain('onClick: function() { showAnatomySystem(connectionSystemId, conn.title); }');
     expect(source).toContain("announceToSR('Showing ' + SYSTEMS[systemId].name + ' diagram for ' + contextLabel + '.')");
     expect(source).not.toContain("return h('button', { 'aria-label': conn.title");
+  });
+});
+describe('Anatomy Lab adaptive study support', () => {
+  it('lets learners persist a validated confidence rating from structure details', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'skull',
+      _structureConfidence: { skull: 'practice', forged: 'mastered' }
+    });
+    expect(html).toContain('aria-label="Learning confidence for Skull (Cranium)"');
+    expect(html).toContain('>! Need practice</button>');
+    expect(html).toContain('Saved to your study plan');
+    expect(html).not.toContain('forged');
+
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("safeEnumMap(d._structureConfidence, knownStructureIds, CONFIDENCE_LEVELS)");
+    expect(source).toContain("var CONFIDENCE_LEVELS = ['practice', 'learning', 'mastered'];");
+  });
+
+  it('filters structures by unseen, review, and mastered study states', () => {
+    const mastered = renderAnatomy({
+      system: 'skeletal', complexity: 3, _studyFilter: 'mastered',
+      _structureConfidence: { skull: 'mastered' }
+    });
+    expect(mastered).toContain('aria-label="Filter structures by study status"');
+    expect(mastered).toContain('Skeletal - anterior - 1 matching');
+    expect(mastered).toContain('Got it');
+
+    const emptyReview = renderAnatomy({ system: 'skeletal', complexity: 3, _studyFilter: 'review' });
+    expect(emptyReview).toContain('No structures match this study filter.');
+    expect(emptyReview).toContain('Show all structures');
+
+    const invalidFilter = renderAnatomy({ system: 'skeletal', complexity: 3, _studyFilter: 'forged' });
+    expect(invalidFilter).toContain('Skeletal - anterior - 19 matching');
+  });
+
+  it('recommends a next step from current progress and review needs', () => {
+    const newLearner = renderAnatomy({ system: 'skeletal', complexity: 3 });
+    expect(newLearner).toContain('aria-label="Recommended next study step"');
+    expect(newLearner).toContain('Take the guided tour');
+    expect(newLearner).toContain('Start tour');
+
+    const returningLearner = renderAnatomy({
+      system: 'skeletal', complexity: 3, _tourCompleted: true,
+      _structuresViewed: { skull: true }, _structureConfidence: { skull: 'practice' }
+    });
+    expect(returningLearner).toContain('Review Skull (Cranium)');
+    expect(returningLearner).toContain('Review now');
+  });
+
+  it('adds confidence reflection only after a flashcard answer is revealed', () => {
+    const hidden = renderAnatomy({ _activeTab: 'flashcards', _flashcardFlipped: false });
+    expect(hidden).not.toContain('Learning confidence for Skull (Cranium)');
+    const revealed = renderAnatomy({ _activeTab: 'flashcards', _flashcardFlipped: true });
+    expect(revealed).toContain('Learning confidence for Skull (Cranium)');
+  });
+});
+
+describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
+  it('uses a compact atlas stage with balanced system navigation', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("grid-template-columns:repeat(5,minmax(0,1fr))");
+    expect(source).toContain("border-top:4px solid var(--anatomy-accent)");
+    expect(source).toContain("backgroundSize: '24px 24px,24px 24px,100% 100%'");
+    expect(source).toContain(".anatomy-mode-card p{display:none}");
+
+    const html = renderAnatomy({ system: 'circulatory', complexity: 3 });
+    expect(html).toContain('class="anatomy-mode-icon"');
+    expect(html).toContain('radial-gradient(circle at 50% 38%');
+    expect(html).toContain('border border-slate-300');
+  });
+
+  it('keeps long selected and hovered labels inside the canvas', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("var selectedLabel = st.name.length > 26");
+    expect(source).toContain('pillX = Math.max(5, Math.min(W - pillW - 5, pillX));');
+    expect(source).toContain('if (htx < 4) htx = 4;');
+    expect(source).toContain('if (htx + boxW > W - 4) htx = W - boxW - 4;');
+  });
+
+  it('makes structure markers more visible without changing hit targets', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var r = isSel ? 10 : isHover ? 8 : 6;');
+    expect(source).toContain("cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 2; cCtx.stroke();");
+    expect(source).toContain("cCtx.shadowColor = 'rgba(15,23,42,0.22)'");
+  });
+
+  it('uses neutral inactive tabs so the active learning mode is visually dominant', () => {
+    const explore = renderAnatomy({ _activeTab: 'explore' });
+    expect(explore).toContain('bg-slate-800 text-white border border-slate-800');
+    expect(explore).toContain('bg-white text-slate-600 hover:bg-slate-100 border border-slate-300');
+
+    const pathways = renderAnatomy({ _activeTab: 'pathways' });
+    expect(pathways).toContain('bg-rose-700 text-white border border-rose-700');
+  });
+
+  it('shows system-level exploration progress with accessible labels', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3,
+      _structuresViewed: { skull: true }
+    });
+    expect(html).toContain('class="anatomy-system-button');
+    expect(html).toContain('aria-label="Skeletal. 1 of ');
+    expect(html).toContain(' structures explored."');
+    expect(html).toContain('class="anatomy-system-meter"');
+  });
+
+  it('reflows learning modes into a touch-friendly grid on small screens', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('@media (max-width:720px)');
+    expect(source).toContain('.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))}');
+    expect(source).toContain('.anatomy-tab-strip{grid-template-columns:1fr 1fr}');
+    expect(source).not.toContain('overflow-x:auto;flex-wrap:nowrap');
+  });
+
+  it('adds a larger, ringed hover state without obscuring selection', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var isHover = hoverStructure === st.id;');
+    expect(source).toContain('if (isHover && !isSel)');
+    expect(source).toContain("cCtx.strokeStyle = sys.accent + 'a0'; cCtx.lineWidth = 2; cCtx.stroke();");
+  });
+
+  it('deconflicts dense markers while keeping anatomical anchors visible', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var markerLayout = {};');
+    expect(source).toContain('return Math.sqrt(dx * dx + dy * dy) < 18;');
+    expect(source).toContain('var placedMarker = markerPosition(st);');
+    expect(source).toContain('cCtx.moveTo(placedMarker.baseX * W, placedMarker.baseY * H);');
+    expect(source).toContain('var clickMarker = markerPosition(st);');
+    expect(source).toContain('var hoverMarker = markerPosition(st);');
+  });
+
+  it('provides accessible zoom, pan, and reset controls with persisted view state', () => {
+    const defaultHtml = renderAnatomy({ system: 'nervous', complexity: 3 });
+    expect(defaultHtml).toContain('aria-label="Diagram zoom and pan controls"');
+    expect(defaultHtml).toContain('aria-label="Zoom in on anatomy diagram"');
+    expect(defaultHtml).toContain('aria-label="Pan anatomy diagram left"');
+    expect(defaultHtml).toContain('aria-label="Reset anatomy diagram view"');
+    expect(defaultHtml).toContain('class="anatomy-canvas-frame"');
+    expect(defaultHtml).toContain('aria-label="Zoom 100 percent"');
+    expect(defaultHtml).toContain('translate(0px,0px) scale(1)');
+    expect(defaultHtml).not.toContain('data-anatomy-minimap="true"');
+
+    const zoomedHtml = renderAnatomy({
+      system: 'nervous', complexity: 3,
+      _canvasZoom: 1.25, _canvasPanX: 18, _canvasPanY: -18
+    });
+    expect(zoomedHtml).toContain('>125%</span>');
+    expect(zoomedHtml).toContain('translate(18px,-18px) scale(1.25)');
+    expect(zoomedHtml).toContain('aria-label="Zoom 125 percent, diagram moved 18 pixels right, diagram moved 18 pixels up"');
+    expect(zoomedHtml).toContain('class="anatomy-canvas border-2 is-zoomed"');
+  });
+
+  it('explains patient perspective visually and to assistive technology', () => {
+    const anterior = renderAnatomy({ view: 'anterior' });
+    expect(anterior).toContain('Patient right is on your left');
+    expect(anterior).toContain('Patient perspective. R appears on the viewer left and L appears on the viewer right.');
+    expect(anterior).toContain('Patient right is on the viewer left; patient left is on the viewer right.');
+
+    const posterior = renderAnatomy({ view: 'posterior' });
+    expect(posterior).toContain('Patient left/right align with you');
+    expect(posterior).toContain('Patient perspective. L and R align with the viewer.');
+  });
+
+  it('keeps the enhanced canvas responsive and keyboard navigable', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('.anatomy-canvas-frame{position:relative;width:min(360px,100%);aspect-ratio:360/520');
+    expect(source).toContain('.anatomy-canvas-toolbar-group{display:flex;align-items:center;gap:3px;flex-wrap:wrap');
+    expect(source).toContain("if (e.shiftKey && (e.key === 'ArrowDown'");
+    expect(source).toContain("if (e.key === '+' || e.key === '=')");
+    expect(source).toContain("if (e.key === '0')");
+  });
+
+  it('supports direct drag panning and controlled wheel zoom without accidental selection', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var handleCanvasPointerDown = function(e)');
+    expect(source).toContain('var handleCanvasPointerMove = function(e)');
+    expect(source).toContain('var finishCanvasPointerGesture = function(e, shouldCommit)');
+    expect(source).toContain('canvas.setPointerCapture(e.pointerId)');
+    expect(source).toContain('canvas.releasePointerCapture(e.pointerId)');
+    expect(source).toContain('if (drag.moved) canvas._anatomySuppressClick = true;');
+    expect(source).toContain('if (e.currentTarget._anatomySuppressClick)');
+    expect(source).toContain('if (!(e.ctrlKey || e.metaKey)) return;');
+    expect(source).toContain('onPointerCancel: handleCanvasPointerCancel');
+    expect(source).toContain('onWheel: handleCanvasWheel');
+    expect(source).toContain('.anatomy-canvas.is-zoomed{touch-action:none;cursor:grab;}');
+  });
+
+  it('supports 200 percent inspection with axis-aware bounds and a minimap', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'skull',
+      _canvasZoom: 2, _canvasPanX: 999, _canvasPanY: -999
+    });
+    expect(html).toContain('aria-label="Zoom 200 percent, diagram moved 180 pixels right, diagram moved 260 pixels up"');
+    expect(html).toContain('translate(180px,-260px) scale(2)');
+    expect(html).toContain('data-anatomy-minimap="true"');
+    expect(html).toContain('class="anatomy-minimap-viewport"');
+    expect(html).toContain('left:0%;top:50%;width:50%;height:50%');
+    expect(html).toContain('class="anatomy-minimap-selected"');
+  });
+
+  it('can focus the viewport on the selected anatomical structure', () => {
+    const selected = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'skull'
+    });
+    expect(selected).toContain('aria-label="Focus anatomy diagram on Skull (Cranium)"');
+
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var CANVAS_ZOOM_LEVELS = [1, 1.25, 1.5, 2];');
+    expect(source).toContain('function canvasPanLimitForZoom(zoom, axis)');
+    expect(source).toContain("return Math.round((axis === 'y' ? 520 : 360) * (zoom - 1) / 2);");
+    expect(source).toContain('function focusSelectedStructure()');
+    expect(source).toContain('var focusPanX = (0.5 - focusMarker.x) * 360 * focusZoom;');
+    expect(source).toContain('var minimapViewportWidth = 100 / canvasZoom;');
+  });
+
+  it('uses a five-column touch control grid with 44 pixel targets on narrow screens', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('.anatomy-canvas-toolbar{align-items:stretch;flex-direction:column}');
+    expect(source).toContain('.anatomy-canvas-toolbar-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:5px}');
+    expect(source).toContain('.anatomy-canvas-toolbar button{width:100%;min-width:0;min-height:44px}');
+    expect(source).toContain('.anatomy-minimap{right:6px;bottom:6px}');
+  });
+
+  it('exposes canvas shortcuts and linked instructions to assistive technology', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'skull'
+    });
+    expect(html).toContain('aria-describedby="anatomy-canvas-instructions"');
+    expect(html).toContain('aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight');
+    expect(html).toContain('id="anatomy-canvas-instructions"');
+    expect(html).toContain('aria-keyshortcuts="F"');
+    expect(html).toContain('aria-keyshortcuts="Home 0"');
+    expect(html).toContain('Press F to focus the selected structure');
+
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("if (e.key === 'Home')");
+    expect(source).toContain("String(e.key || '').toLowerCase() === 'f' && sel");
+  });
+
+  it('retains visible control boundaries in Windows forced-colors mode', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('@media (forced-colors:active)');
+    expect(source).toContain('border:1px solid CanvasText!important');
+    expect(source).toContain('.anatomy-marker-legend-symbol{forced-color-adjust:auto');
+    expect(source).toContain('.anatomy-minimap-viewport{border-color:Highlight!important}');
+  });
+
+  it('maps study confidence to non-color symbols on anatomy markers', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var markerConfidence = structureConfidence[st.id] || null;');
+    expect(source).toContain("markerConfidence === 'practice' ? '!' : markerConfidence === 'learning' ? '~' : '\u2713'");
+    expect(source).toContain("cCtx.strokeText(markerStatusSymbol, px, py + 0.5);");
+    expect(source).toContain("cCtx.fillText(markerStatusSymbol, px, py + 0.5);");
+    expect(source).toContain('var markerStatusVisible = !spotterActive || spotterFeedback !== null;');
+  });
+
+  it('renders a compact marker learning-status legend', () => {
+    const html = renderAnatomy({ system: 'skeletal', complexity: 3 });
+    expect(html).toContain('aria-label="Marker learning status legend"');
+    expect(html).toContain('class="anatomy-marker-legend-title">Pin status');
+    expect(html).toContain('data-status="unrated"');
+    expect(html).toContain('data-status="practice"');
+    expect(html).toContain('data-status="learning"');
+    expect(html).toContain('data-status="mastered"');
+    expect(html).toContain('>Review</span>');
+    expect(html).toContain('>Got it</span>');
+  });
+
+  it('announces the selected structure study status in the canvas description', () => {
+    const mastered = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'skull',
+      _structureConfidence: { skull: 'mastered' }
+    });
+    expect(mastered).toContain('Skull (Cranium) selected. Study status Got it.');
+
+    const unrated = renderAnatomy({
+      system: 'skeletal', complexity: 3, selectedStructure: 'skull'
+    });
+    expect(unrated).toContain('Skull (Cranium) selected. Study status Unrated.');
   });
 });

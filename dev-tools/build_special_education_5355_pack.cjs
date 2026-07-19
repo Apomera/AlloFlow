@@ -121,6 +121,9 @@ const pack = {
   learningLibraryQaUrl: './test_prep/special_education_5355_learning_library_qa.json',
   simulationItemCount: 120,
   simulationTimeMinutes: 120,
+  officialSelectedResponseCount: 120,
+  officialTotalTimeMinutes: 120,
+  simulationDomainCounts: { 'development-differences': 32, 'planning-instruction-environment': 38, assessment: 27, 'professional-practice-collaboration': 23 },
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS. The official Praxis Special Education: Foundational Knowledge (5355) test currently has 120 selected-response questions in two hours; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, licenses, legal advice, or substitutes for current federal, state, and local requirements.',
   domains: [
     { id: 'development-differences', label: 'Human Development and Individual Learning Differences', weight: 0.26 },

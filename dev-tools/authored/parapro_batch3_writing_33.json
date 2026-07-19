@@ -36,7 +36,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-002",
@@ -75,7 +76,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-003",
@@ -114,7 +116,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-004",
@@ -153,7 +156,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-005",
@@ -192,7 +196,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-006",
@@ -231,7 +236,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-007",
@@ -270,7 +276,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-008",
@@ -309,7 +316,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-009",
@@ -348,7 +356,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-010",
@@ -388,7 +397,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-011",
@@ -427,7 +437,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-012",
@@ -467,7 +478,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-013",
@@ -507,7 +519,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-014",
@@ -547,7 +560,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-015",
@@ -587,7 +601,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-016",
@@ -627,7 +642,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-017",
@@ -635,20 +651,20 @@
     "domainId": "writing",
     "contentFocus": "basic-skills-knowledge",
     "difficulty": "developing",
-    "prompt": "In the sentence \"The student council delivered the donated books to the shelter after lunch,\" which words form the complete predicate?",
+    "prompt": "In the sentence “After rehearsal, the drama students stored the costumes,” which words form the complete predicate?",
     "choices": [
-      "the student council",
-      "delivered the donated books to the shelter after lunch",
-      "the donated books",
-      "after lunch"
+      "the drama students stored",
+      "stored the costumes",
+      "the costumes",
+      "After rehearsal, the drama students"
     ],
     "answerIndex": 1,
-    "rationale": "The complete predicate includes the verb and all the words that complete or modify it. In this sentence, \"delivered the donated books to the shelter after lunch\" tells what the subject, \"the student council,\" did.",
+    "rationale": "The complete predicate contains the verb and the words that complete its meaning. In this sentence, stored the costumes tells what the complete subject, the drama students, did.",
     "choiceRationales": [
-      "\"The student council\" is the complete subject, not the predicate.",
-      "This group contains the verb \"delivered\" and all of its complements and modifiers, so it is the complete predicate.",
-      "\"The donated books\" is the direct object within the predicate, not the complete predicate.",
-      "\"After lunch\" is a prepositional phrase within the predicate, not the complete predicate."
+      "This group begins with the complete subject and then adds the verb, so it crosses the subject-predicate boundary rather than naming the complete predicate.",
+      "This group contains the verb stored and its direct object the costumes, so it states the full action performed by the sentence’s subject.",
+      "This group is the direct object receiving the action; without the verb stored, it cannot function as the complete predicate of the sentence.",
+      "This group contains an introductory phrase and the complete subject, but it omits the verb and object that state what the students did."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -666,7 +682,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-018",
@@ -705,7 +722,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-019",
@@ -715,18 +733,18 @@
     "difficulty": "developing",
     "prompt": "A writer claims that ten minutes of daily partner reading improved fluency in a fifth-grade class. Which evidence would most directly support the claim?",
     "choices": [
-      "One student said that partner reading was the favorite part of the school day.",
-      "The classroom library contains fiction and nonfiction books on six shelves.",
-      "Class averages on comparable one-minute reading checks rose from 104 to 118 correct words per minute after six weeks, during which partner reading was the only change to the fluency routine.",
-      "The teacher has used several different literacy activities during the year."
+      "A student survey reports that partner reading is the most enjoyable part of the literacy block for most classmates.",
+      "A library inventory shows that the classroom offers six shelves containing both fiction and nonfiction titles.",
+      "Comparable one-minute checks increased from 104 to 118 correct words per minute after six weeks while the fluency routine otherwise remained unchanged.",
+      "A teacher log confirms that daily partner reading occurred for six weeks but includes no measurements of fluency or reading rate."
     ],
     "answerIndex": 2,
-    "rationale": "The before-and-after class averages use comparable fluency measures, and the statement identifies partner reading as the only change to the fluency routine. This evidence therefore addresses both the measured improvement and the claimed explanation more directly than the other details do.",
+    "rationale": "The comparable checks document a class-level increase in the stated fluency measure, and the unchanged remainder of the routine makes the partner-reading explanation more plausible. The evidence supports the claim without proving that no other influence contributed.",
     "choiceRationales": [
-      "A preference statement concerns enjoyment, not whether reading fluency improved.",
-      "The number and types of books do not show a change in students' fluency.",
-      "Comparable pre- and post-routine rates document class fluency growth, and the unchanged remainder of the routine strengthens the connection to partner reading.",
-      "The existence of other activities is too general and supplies no fluency outcome."
+      "Enjoyment data can describe students’ preferences, but it provides no measured fluency outcome and therefore cannot establish the improvement named in the claim.",
+      "The classroom inventory describes available materials rather than a before-and-after change in reading performance, so it does not address the claimed outcome.",
+      "The comparable rates document improvement in the relevant measure, while the stable remainder of the routine strengthens the proposed connection to partner reading.",
+      "An implementation log verifies that the routine occurred, but without performance measurements it cannot show whether the class’s fluency improved during that period."
     ],
     "skillIds": [
       "writing-organization-evidence"
@@ -745,7 +763,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-020",
@@ -785,7 +804,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-021",
@@ -825,7 +845,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-writing-022",
@@ -865,7 +886,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-writing-023",
@@ -905,7 +927,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-024",
@@ -945,7 +968,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-025",
@@ -985,7 +1009,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-026",
@@ -1025,7 +1050,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-027",
@@ -1066,7 +1092,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-028",
@@ -1106,7 +1133,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-029",
@@ -1146,7 +1174,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-030",
@@ -1186,7 +1215,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-031",
@@ -1226,7 +1256,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-032",
@@ -1266,7 +1297,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-writing-033",
@@ -1276,18 +1308,18 @@
     "difficulty": "applied",
     "prompt": "The teacher asks a paraeducator to collect progress-monitoring data for a student's goal of organizing opinion paragraphs with a clear claim, two related reasons, and a conclusion. Which method would provide the most useful evidence of progress toward that goal?",
     "choices": [
-      "Use the teacher-provided opinion prompts regularly, score each response with the teacher's claim-reasons-conclusion rubric, and graph the results over time.",
-      "Record only how long the student holds a pencil during independent work.",
-      "Count every word in one final paper without examining the paragraph's parts.",
-      "Ask the student once whether writing feels easier and use that answer as the only measure."
+      "Score regular responses to teacher-provided prompts using the claim-reasons-conclusion rubric and graph results across dates.",
+      "Time responses to teacher-provided prompts and graph the minutes without scoring the claim, reasons, or conclusion.",
+      "Count words in each opinion paragraph and record totals without examining how the claim and reasons are organized.",
+      "Ask the student to rate writing confidence after one paragraph and use that rating without collecting another response."
     ],
     "answerIndex": 0,
-    "rationale": "Repeated comparable writing samples scored with criteria that match the goal show whether the targeted organizational elements are improving. Graphing the scores makes the pattern across time visible.",
+    "rationale": "Comparable writing samples scored with criteria that directly match the goal show whether the targeted organizational elements are improving. Graphing repeated rubric results makes change across time visible to the instructional team.",
     "choiceRationales": [
-      "This method repeatedly measures the exact paragraph elements named in the student's goal.",
-      "Pencil-use duration does not show whether claims, reasons, and conclusions are organized.",
-      "Word count measures length, not the presence or relationship of the targeted paragraph parts.",
-      "A single self-report can add context but is insufficient as the only evidence of writing performance."
+      "This method repeatedly measures the precise paragraph elements in the goal with a teacher-provided tool, producing comparable evidence of progress across dates.",
+      "Completion time may describe pace, but it does not show whether the required organizational elements are present or connected in the student’s writing.",
+      "Word totals measure length rather than organization, so a longer paragraph could receive a higher count while still lacking a coherent claim or reasons.",
+      "A single confidence rating can provide useful context, but it is not repeated performance evidence and does not measure the paragraph features in the goal."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1306,6 +1338,7 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

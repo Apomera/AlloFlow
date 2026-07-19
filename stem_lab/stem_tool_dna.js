@@ -210,7 +210,7 @@ window.StemLab = window.StemLab || {
     'Glu':{full:'Glutamic acid',abbr:'E',type:'negative',color:'#a855f7'},
     'His':{full:'Histidine',abbr:'H',type:'positive',color:'#ef4444'},
     'Gln':{full:'Glutamine',abbr:'Q',type:'polar',color:'#3b82f6'},
-    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color: 'var(--allo-stem-text-soft, #94a3b8)'}
+    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#94a3b8'}
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
@@ -405,6 +405,92 @@ window.StemLab = window.StemLab || {
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
+      var dnaCleanupRef = React.useRef(null);
+      if (!dnaCleanupRef.current) dnaCleanupRef.current = {};
+      var dnaCleanup = dnaCleanupRef.current;
+      var dnaCompletionRef = React.useRef({});
+      var prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      React.useEffect(function() {
+        return function() {
+          Object.keys(dnaCleanup).forEach(function(key) {
+            if (typeof dnaCleanup[key] === 'function') dnaCleanup[key]();
+            dnaCleanup[key] = null;
+          });
+        };
+      }, []);
+
+      function sizeDnaCanvas(cv, ctx2d) {
+        var rect = typeof cv.getBoundingClientRect === 'function' ? cv.getBoundingClientRect() : { width: 0, height: 0 };
+        var cssWidth = Math.max(1, Math.round(cv.offsetWidth || rect.width || 1));
+        var cssHeight = Math.max(1, Math.round(cv.offsetHeight || rect.height || 1));
+        var dpr = Math.max(1, Math.min(3, (typeof window !== 'undefined' && window.devicePixelRatio) || 1));
+        var pixelWidth = Math.round(cssWidth * dpr);
+        var pixelHeight = Math.round(cssHeight * dpr);
+        var resized = cv.width !== pixelWidth || cv.height !== pixelHeight;
+        if (resized) {
+          cv.width = pixelWidth;
+          cv.height = pixelHeight;
+        }
+        if (typeof ctx2d.setTransform === 'function') ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+        else if (resized && typeof ctx2d.scale === 'function') ctx2d.scale(dpr, dpr);
+        return { width: cssWidth, height: cssHeight };
+      }
+
+      function createDnaCanvasLoop(cv, drawFrame) {
+        var frameId = null;
+        var stopped = false;
+        var inViewport = true;
+        function isHidden() { return typeof document !== 'undefined' && document.hidden; }
+        function next(shouldContinue) {
+          if (stopped || !shouldContinue || prefersReducedMotion || isHidden() || !inViewport || frameId != null) return;
+          frameId = requestAnimationFrame(function() {
+            frameId = null;
+            drawFrame();
+          });
+        }
+        function onVisibilityChange() {
+          if (stopped) return;
+          if (isHidden()) {
+            if (frameId != null) cancelAnimationFrame(frameId);
+            frameId = null;
+          } else if (cv.isConnected) {
+            drawFrame();
+          }
+        }
+        function onIntersection(entries) {
+          if (stopped || !entries || !entries.length) return;
+          var nextInViewport = !!entries[0].isIntersecting;
+          if (nextInViewport === inViewport) return;
+          inViewport = nextInViewport;
+          if (!inViewport) {
+            if (frameId != null) cancelAnimationFrame(frameId);
+            frameId = null;
+          } else if (!isHidden() && cv.isConnected) {
+            drawFrame();
+          }
+        }
+        var resizeObserver = typeof window !== 'undefined' && typeof window.ResizeObserver === 'function'
+          ? new window.ResizeObserver(function() { if (!stopped && !isHidden() && cv.isConnected) drawFrame(); })
+          : null;
+        var intersectionObserver = typeof window !== 'undefined' && typeof window.IntersectionObserver === 'function'
+          ? new window.IntersectionObserver(onIntersection, { threshold: 0 })
+          : null;
+        if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibilityChange);
+        if (resizeObserver) resizeObserver.observe(cv);
+        if (intersectionObserver) intersectionObserver.observe(cv);
+        return {
+          next: next,
+          stop: function() {
+            stopped = true;
+            if (frameId != null) cancelAnimationFrame(frameId);
+            frameId = null;
+            if (resizeObserver) resizeObserver.disconnect();
+            if (intersectionObserver) intersectionObserver.disconnect();
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibilityChange);
+          }
+        };
+      }
 
       var d = (labToolData && labToolData.dnaLab) || {};
       var upd = function(key, val) { setLabToolData(function(prev) { var nd = Object.assign({}, prev.dnaLab || {}); nd[key] = val; return Object.assign({}, prev, { dnaLab: nd }); }); };
@@ -488,7 +574,7 @@ window.StemLab = window.StemLab || {
       // CANVAS: DNA Helix (callback ref)
       // ═══════════════════════════════════════════
       var _dnaCanvasRef = function(cv) {
-        if (window._dnaCleanup.dnaAnim) { window._dnaCleanup.dnaAnim(); window._dnaCleanup.dnaAnim = null; }
+        if (dnaCleanup.dnaAnim) { dnaCleanup.dnaAnim(); dnaCleanup.dnaAnim = null; }
         if (!cv) return;
         if (tab !== 'build' && tab !== 'transcribe') return;
         var ctx2d = cv.getContext('2d');
@@ -497,11 +583,10 @@ window.StemLab = window.StemLab || {
         // the same value) reallocates + CLEARS the canvas and resets the ctx transform.
         // Only resize when the size actually changed, and persist the animation tick on
         // the node — otherwise the helix wobble snaps back to 0 on every render (stutter).
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var w = cv.offsetWidth, hh = cv.offsetHeight;
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, hh = canvasSize.height;
         var _tick = cv._dnaTick || 0;
-        var _animId = null;
+        var loop = null;
         var currentAnimStep = animStep;
         var hoveredIndex = -1;
 
@@ -530,8 +615,8 @@ window.StemLab = window.StemLab || {
 
         cv.onmousemove = function(e) {
           var rect = cv.getBoundingClientRect();
-          var scaleX = cv.width / rect.width / 2;
-          var scaleY = cv.height / rect.height / 2;
+          var scaleX = w / Math.max(1, rect.width);
+          var scaleY = hh / Math.max(1, rect.height);
           var mX = (e.clientX - rect.left) * scaleX;
           var mY = (e.clientY - rect.top) * scaleY;
 
@@ -580,7 +665,9 @@ window.StemLab = window.StemLab || {
         };
 
         function draw() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; hh = canvasSize.height;
           ctx2d.clearRect(0, 0, w, hh);
           var baseW = Math.min(32, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -697,26 +784,32 @@ window.StemLab = window.StemLab || {
 
           _tick++;
           cv._dnaTick = _tick; // persist across ref re-fires so the wobble stays continuous
-          _animId = requestAnimationFrame(draw);
+          loop.next(tab === 'build' || animPlaying);
         }
+        loop = createDnaCanvasLoop(cv, draw);
         draw();
-        window._dnaCleanup.dnaAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.dnaAnim = loop.stop;
       };
 
       // ═══ Transcription timer ═══
-      if (tab === 'transcribe' && animPlaying) {
+      React.useEffect(function() {
+        if (tab !== 'transcribe' || !animPlaying) return;
         if (animStep >= dnaSeq.length) {
           updMulti({ animPlaying: false, mRNA: fullMRNA });
+          var completionKey = fullMRNA;
+          if (dnaCompletionRef.current.transcribe !== completionKey) {
+            dnaCompletionRef.current.transcribe = completionKey;
           announceToSR('Transcription complete. mRNA: ' + fullMRNA);
           awardStemXP('dnaLab', 10, 'Completed transcription');
           checkBadge('messenger');
-        } else {
-          if (window._dnaCleanup.transcribeTimer) clearTimeout(window._dnaCleanup.transcribeTimer);
-          window._dnaCleanup.transcribeTimer = setTimeout(function() {
-            updMulti({ animStep: animStep + 1, mRNA: fullMRNA.substring(0, animStep + 1) });
-          }, 600 / speed);
+          }
+          return;
         }
-      }
+        var timer = setTimeout(function() {
+          updMulti({ animStep: animStep + 1, mRNA: fullMRNA.substring(0, animStep + 1) });
+        }, 600 / speed);
+        return function() { clearTimeout(timer); };
+      }, [tab, animPlaying, animStep, dnaSeq.length, fullMRNA, speed]);
 
       // ═══════════════════════════════════════════
       // CANVAS: Replication Fork (callback ref)
@@ -725,20 +818,21 @@ window.StemLab = window.StemLab || {
       var replPlaying = !!d.replPlaying;
 
       var _replCanvasRef = function(cv) {
-        if (window._dnaCleanup.replAnim) { window._dnaCleanup.replAnim(); window._dnaCleanup.replAnim = null; }
+        if (dnaCleanup.replAnim) { dnaCleanup.replAnim(); dnaCleanup.replAnim = null; }
         if (!cv) return;
         if (tab !== 'replicate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, h2 = H / 2;
-        var _tick = 0; var _animId = null;
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, h2 = canvasSize.height;
+        var _tick = cv._dnaReplTick || 0;
+        var loop = null;
         var currentReplStep = replStep;
 
         function drawRepl() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; h2 = canvasSize.height;
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(28, (w - 100) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -804,30 +898,29 @@ window.StemLab = window.StemLab || {
           ctx2d.fillText("3' \u2192 5' (Lagging)", 10, midY + 60);
 
           _tick++;
-          _animId = requestAnimationFrame(drawRepl);
+          cv._dnaReplTick = _tick; // preserve helix phase when each replication step reattaches the callback ref
+          loop.next(replPlaying && currentReplStep < dnaSeq.length);
         }
+        loop = createDnaCanvasLoop(cv, drawRepl);
         drawRepl();
-        window._dnaCleanup.replAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.replAnim = loop.stop;
       };
 
       // ═══════════════════════════════════════════
       // CANVAS: Translation (callback ref)
       // ═══════════════════════════════════════════
       var _translationCanvasRef = function(cv) {
-        if (window._dnaCleanup.transAnim) { window._dnaCleanup.transAnim(); window._dnaCleanup.transAnim = null; }
+        if (dnaCleanup.transAnim) { dnaCleanup.transAnim(); dnaCleanup.transAnim = null; }
         if (!cv) return;
         if (tab !== 'translate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, hh = H / 2;
-        var _tick = 0;
-        var _animId = null;
-
-        var lastStep = -1;
-        var stepStartTime = Date.now();
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, hh = canvasSize.height;
+        var _tick = cv._dnaTransTick || 0;
+        var loop = null;
+        var lastStep = cv._dnaTransStep != null ? cv._dnaTransStep : -1;
+        var stepStartTime = lastStep === transStep && cv._dnaTransStepStart ? cv._dnaTransStepStart : Date.now();
 
         function drawTRNA(ctx, x, y, anticodon, aaChar, hasAA, alpha) {
           ctx.save();
@@ -874,7 +967,9 @@ window.StemLab = window.StemLab || {
         }
 
         function drawTrans() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; hh = canvasSize.height;
           ctx2d.clearRect(0, 0, w, hh);
 
           // Track step duration & progress
@@ -882,8 +977,10 @@ window.StemLab = window.StemLab || {
           if (transStep !== lastStep) {
             lastStep = transStep;
             stepStartTime = Date.now();
+            cv._dnaTransStep = lastStep;
+            cv._dnaTransStepStart = stepStartTime;
           }
-          var pct = transPlaying ? Math.min(1, (Date.now() - stepStartTime) / duration) : 0;
+          var pct = transPlaying ? (prefersReducedMotion ? 1 : Math.min(1, (Date.now() - stepStartTime) / duration)) : 0;
 
           var midY = hh / 2 + 10;
           var yChannel = midY + 15;
@@ -1083,36 +1180,46 @@ window.StemLab = window.StemLab || {
           }
 
           _tick++;
-          _animId = requestAnimationFrame(drawTrans);
+          cv._dnaTransTick = _tick;
+          cv._dnaTransStep = lastStep;
+          cv._dnaTransStepStart = stepStartTime;
+          loop.next(transPlaying);
         }
-
+        loop = createDnaCanvasLoop(cv, drawTrans);
         drawTrans();
-        window._dnaCleanup.transAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.transAnim = loop.stop;
       };
 
       // ═══ Replication timer ═══
+      React.useEffect(function() {
       if (tab === 'replicate' && replPlaying) {
         if (replStep >= dnaSeq.length) {
           updMulti({ replPlaying: false });
+          var completionKey = dnaSeq + ':' + dnaSeq.length;
+          if (dnaCompletionRef.current.replicate !== completionKey) {
+            dnaCompletionRef.current.replicate = completionKey;
           announceToSR('DNA replication complete! Two identical copies created.');
           awardStemXP('dnaLab', 15, 'Completed DNA replication');
           addToast('\uD83E\uDDEC Replication complete! Two daughter strands formed.', 'success');
           if (typeof stemCelebrate === 'function') stemCelebrate();
           checkBadge('copyMachine');
           if (speed >= 4) checkBadge('speedDemon');
+          }
         } else {
-          if (window._dnaCleanup.replTimer) clearTimeout(window._dnaCleanup.replTimer);
-          window._dnaCleanup.replTimer = setTimeout(function() {
+          var timer = setTimeout(function() {
             upd('replStep', replStep + 1);
           }, 500 / speed);
+          return function() { clearTimeout(timer); };
         }
       }
+      }, [tab, replPlaying, replStep, dnaSeq, speed]);
 
       // ═══ Translation state + timer ═══
       var transStep = d.transStep || 0;
       var transPlaying = !!d.transPlaying;
       var builtProtein = d.builtProtein || [];
 
+      React.useEffect(function() {
       if (tab === 'translate' && transPlaying) {
         var tPos = transStep * 3;
         if (tPos + 3 > fullMRNA.length) {
@@ -1122,18 +1229,23 @@ window.StemLab = window.StemLab || {
           var tAA = CODON_TABLE[tCodon];
           if (!tAA || tAA === 'Stop') {
             updMulti({ transPlaying: false, protein: builtProtein });
+            var completionKey = fullMRNA + ':' + builtProtein.length;
+            if (dnaCompletionRef.current.translate !== completionKey) {
+              dnaCompletionRef.current.translate = completionKey;
             announceToSR('Translation complete. Protein has ' + builtProtein.length + ' amino acids.');
             awardStemXP('dnaLab', 15, 'Completed translation');
             checkBadge('ribosomePro');
+            }
           } else {
-            if (window._dnaCleanup.transTimer) clearTimeout(window._dnaCleanup.transTimer);
-            window._dnaCleanup.transTimer = setTimeout(function() {
+            var timer = setTimeout(function() {
               updMulti({ transStep: transStep + 1, builtProtein: builtProtein.concat([{ codon: tCodon, aa: tAA, pos: tPos }]) });
               announceToSR('Codon ' + tCodon + ' = ' + (AA_PROPS[tAA] ? AA_PROPS[tAA].full : tAA));
             }, 800 / speed);
+            return function() { clearTimeout(timer); };
           }
         }
       }
+      }, [tab, transPlaying, transStep, fullMRNA, builtProtein, speed]);
 
       // ═══ CHALLENGE HELPERS ═══
       var challengeTier = d.challengeTier || 0;
@@ -1251,6 +1363,7 @@ window.StemLab = window.StemLab || {
       }
 
       // CRISPR scanning timer
+      React.useEffect(function() {
       if (tab === 'crispr' && crisprPhase === 'scanning') {
         if (!selectedPAMSite) {
           updMulti({ crisprPhase: 'design' });
@@ -1258,38 +1371,43 @@ window.StemLab = window.StemLab || {
           var targetPos = selectedPAMSite.cutSite;
           if (crisprScanPos >= targetPos) {
             updMulti({ crisprPhase: 'cut' });
+            var completionKey = dnaSeq + ':' + targetPos;
+            if (dnaCompletionRef.current.crisprTarget !== completionKey) {
+              dnaCompletionRef.current.crisprTarget = completionKey;
             announceToSR('Cas9 found target! PAM site located. Ready to cut.');
             addToast('\uD83C\uDFAF Cas9 found the target PAM site!', 'success');
             stemBeep && stemBeep();
+            }
           } else {
-            if (window._dnaCleanup.crisprTimer) clearTimeout(window._dnaCleanup.crisprTimer);
-            window._dnaCleanup.crisprTimer = setTimeout(function() {
+            var timer = setTimeout(function() {
               upd('crisprScanPos', crisprScanPos + 1);
             }, 200 / speed);
+            return function() { clearTimeout(timer); };
           }
         }
       }
+      }, [tab, crisprPhase, crisprScanPos, selectedPAMSite, speed]);
 
       // ═══════════════════════════════════════════
       // CANVAS: CRISPR (callback ref)
       // ═══════════════════════════════════════════
       var _crisprCanvasRef = function(cv) {
-        if (window._dnaCleanup.crisprAnim) { window._dnaCleanup.crisprAnim(); window._dnaCleanup.crisprAnim = null; }
+        if (dnaCleanup.crisprAnim) { dnaCleanup.crisprAnim(); dnaCleanup.crisprAnim = null; }
         if (!cv) return;
         if (tab !== 'crispr') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, h2 = H / 2;
-        var _tick = 0; var _animId = null;
-
-        var lastPhase = '';
-        var phaseStartTime = Date.now();
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, h2 = canvasSize.height;
+        var _tick = cv._dnaCrisprTick || 0;
+        var loop = null;
+        var lastPhase = cv._dnaCrisprPhase || '';
+        var phaseStartTime = lastPhase === crisprPhase && cv._dnaCrisprPhaseStart ? cv._dnaCrisprPhaseStart : Date.now();
 
         function drawCRISPR() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; h2 = canvasSize.height;
           ctx2d.clearRect(0, 0, w, h2);
           var baseW = Math.min(24, (w - 80) / dnaSeq.length);
           var startX = (w - dnaSeq.length * baseW) / 2;
@@ -1298,8 +1416,10 @@ window.StemLab = window.StemLab || {
           if (crisprPhase !== lastPhase) {
             lastPhase = crisprPhase;
             phaseStartTime = Date.now();
+            cv._dnaCrisprPhase = lastPhase;
+            cv._dnaCrisprPhaseStart = phaseStartTime;
           }
-          var elapsed = Date.now() - phaseStartTime;
+          var elapsed = prefersReducedMotion ? 1200 : Date.now() - phaseStartTime;
 
           var cutSite = selectedPAMSite ? selectedPAMSite.cutSite : 0;
           
@@ -1560,10 +1680,14 @@ window.StemLab = window.StemLab || {
           ctx2d.fillStyle = '#8b5cf6'; ctx2d.fillText('\u25CF Cas9 protein', w - 90, h2 - 25);
 
           _tick++;
-          _animId = requestAnimationFrame(drawCRISPR);
+          cv._dnaCrisprTick = _tick;
+          cv._dnaCrisprPhase = lastPhase;
+          cv._dnaCrisprPhaseStart = phaseStartTime;
+          loop.next(crisprPhase === 'scanning' || ((crisprPhase === 'cut' || crisprPhase === 'done') && elapsed < 1200));
         }
+        loop = createDnaCanvasLoop(cv, drawCRISPR);
         drawCRISPR();
-        window._dnaCleanup.crisprAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.crisprAnim = loop.stop;
       };
 
       // ═══ FORENSICS HELPERS ═══
@@ -1581,22 +1705,24 @@ window.StemLab = window.StemLab || {
       }
 
       var _forensicCanvasRef = function(cv) {
-        if (window._dnaCleanup.forensicAnim) { window._dnaCleanup.forensicAnim(); window._dnaCleanup.forensicAnim = null; }
+        if (dnaCleanup.forensicAnim) { dnaCleanup.forensicAnim(); dnaCleanup.forensicAnim = null; }
         if (!cv) return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
-        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
-        var W = _tw, H = _th;
-        var w = W / 2, h2 = H / 2;
-        var _tick = 0; var _animId = null;
-        var start = Date.now();
+        var canvasSize = sizeDnaCanvas(cv, ctx2d);
+        var w = canvasSize.width, h2 = canvasSize.height;
+        var runKey = forensicCase + ':' + (forensicGelRun ? 'run' : 'idle');
+        var _tick = cv._dnaForensicTick || 0;
+        var start = cv._dnaForensicRunKey === runKey && cv._dnaForensicStart ? cv._dnaForensicStart : Date.now();
+        var loop = null;
 
         function drawForensics() {
-          if (!ctx2d.canvas.isConnected) { if (_animId) cancelAnimationFrame(_animId); return; }
+          if (!ctx2d.canvas.isConnected) return;
+          canvasSize = sizeDnaCanvas(cv, ctx2d);
+          w = canvasSize.width; h2 = canvasSize.height;
           ctx2d.clearRect(0, 0, w, h2);
           
-          var progress = Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration
+          var progress = prefersReducedMotion ? 1 : Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration
 
           // Gel background (high-contrast dark indigo)
           ctx2d.fillStyle = '#0c1322';
@@ -1700,11 +1826,15 @@ window.StemLab = window.StemLab || {
           }
 
           _tick++;
-          _animId = requestAnimationFrame(drawForensics);
+          cv._dnaForensicTick = _tick;
+          cv._dnaForensicRunKey = runKey;
+          cv._dnaForensicStart = start;
+          loop.next(progress < 1);
         }
 
+        loop = createDnaCanvasLoop(cv, drawForensics);
         drawForensics();
-        window._dnaCleanup.forensicAnim = function() { if (_animId) cancelAnimationFrame(_animId); };
+        dnaCleanup.forensicAnim = loop.stop;
       };
 
       function checkForensicAnswer() {

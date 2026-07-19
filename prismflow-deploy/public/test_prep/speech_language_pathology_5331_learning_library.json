@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:35.532Z",
+  "generatedAt": "2026-07-19T05:08:41.456Z",
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",
   "packId": "praxis-speech-language-pathology-5331",
   "title": "Praxis Speech-Language Pathology (5331) learning library",
@@ -1765,10 +1765,10 @@
         },
         {
           "id": "slp5331-ch-08-check-02",
-          "prompt": "When is a videofluoroscopic swallowing study especially useful?",
+          "prompt": "Which instrumental study uses dynamic radiography to examine bolus flow through oral, pharyngeal, and upper-esophageal swallowing events?",
           "choices": [
             "A pure-tone audiogram.",
-            "A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations.",
+            "A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations.",
             "A laryngeal perceptual rating only.",
             "A standardized vocabulary test."
           ],
@@ -1785,12 +1785,12 @@
         },
         {
           "id": "slp5331-ch-08-check-03",
-          "prompt": "What is a major advantage of fiberoptic endoscopic evaluation of swallowing?",
+          "prompt": "Which statement accurately identifies a major advantage of FEES?",
           "choices": [
-            "FEES directly displays the oral preparatory phase.",
-            "FEES measures hearing thresholds.",
-            "FEES, when clinically appropriate and within qualified scope and procedures.",
-            "FEES eliminates the need for informed consent."
+            "VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.",
+            "Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.",
+            "FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate.",
+            "FEES directly images the oral preparatory phase and upper esophagus throughout every swallow."
           ],
           "answerIndex": 2,
           "rationale": "FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
@@ -1825,7 +1825,7 @@
         },
         {
           "id": "slp5331-ch-08-check-05",
-          "prompt": "Which finding is most associated with oral-phase swallowing difficulty?",
+          "prompt": "Prolonged mastication, poor bolus formation, and oral residue most directly implicate which swallowing phases?",
           "choices": [
             "The oral preparatory and oral transit phases.",
             "The esophageal phase only.",
@@ -2613,10 +2613,10 @@
           "id": "slp5331-ch-12-check-02",
           "prompt": "How should a postural swallowing strategy be prescribed?",
           "choices": [
-            "Yes, because posture has identical effects for everyone.",
-            "No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects.",
-            "Yes, without explaining the purpose.",
-            "No posture can ever affect swallowing."
+            "Recommend the same posture for every patient because its effects are identical.",
+            "Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects.",
+            "Use the posture without explaining its purpose or checking response.",
+            "Avoid every posture because no postural change can affect swallowing."
           ],
           "answerIndex": 1,
           "rationale": "Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",

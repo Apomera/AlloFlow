@@ -2500,6 +2500,11 @@ function _alloHasAnyStudentEntry() {
         return false;
     }
 }
+function _alloShouldSuppressLearnerDeviceStorage(isTeacher, showingStudentEntry, sessionCode) {
+    return _alloHasAnyStudentEntry()
+        || Boolean(showingStudentEntry)
+        || (!isTeacher && (Boolean(sessionCode) || _alloMbBridgeActive()));
+}
 function _isQrStudentAiDisabled() {
     if (typeof window === 'undefined') return false;
     try {
@@ -3269,7 +3274,12 @@ const TEACHER_ONLY_TYPES = [
     'udl-advice',
     'brainstorm',
     'alignment-report',
-    'video-ref'
+    'video-ref',
+    'persona-transcript',
+    'persona-reflection',
+    'persona-summary',
+    'persona-session',
+    'persona-session-read-aloud'
 ];
 let globalAudioCtx = null;
 let globalTtsUrlCache = _ttsState.urlCache;
@@ -3521,7 +3531,13 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         getState: () => ({ ..._state }),
     };
 }
-const GlobalMuteButton = React.memo(({ className = '' }) => {
+const GlobalMuteButton = React.memo(({
+    className = '',
+    muteLabel = 'Mute all audio',
+    unmuteLabel = 'Unmute all audio',
+    muteTitle = 'Mute all audio',
+    unmuteTitle = 'Unmute all audio',
+}) => {
     const [muted, setMuted] = React.useState(isGlobalMuted());
     React.useEffect(() => {
         const handler = (e) => setMuted(e.detail.muted);
@@ -3538,8 +3554,8 @@ const GlobalMuteButton = React.memo(({ className = '' }) => {
             onClick={toggle}
             className={`flex items-center gap-2 ${className} ${muted ? 'ring-2 ring-red-400 !bg-red-500 !text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]' : ''}`}
             data-help-key="global_mute_toggle"
-            title={(muted ? t('a11y.unmute_all_audio_title') : t('a11y.mute_all_audio_title')) || (muted ? 'Unmute all audio' : 'Mute all audio')}
-            aria-label={(muted ? t('a11y.unmute_all_audio') : t('a11y.mute_all_audio')) || (muted ? 'Unmute all audio' : 'Mute all audio')}
+            title={muted ? unmuteTitle : muteTitle}
+            aria-label={muted ? unmuteLabel : muteLabel}
         >
             {muted ? <VolumeX size={18} className="animate-pulse" /> : <Volume2 size={18} />}
         </button>
@@ -5006,6 +5022,333 @@ const extractSourceTextForProcessing = (text, preferEnglish = true) => {
     throw new Error('[extractSourceTextForProcessing] TextPipelineHelpers module not loaded — reload the page');
 };
 const MAX_OFFLINE_ITEMS = 50;
+const ALLO_WORKSPACE_RECOVERY_NAMESPACE = 'workspace_recovery';
+const ALLO_WORKSPACE_RECOVERY_KEY = 'store_v1';
+const ALLO_WORKSPACE_RECOVERY = (() => {
+  const VERSION = 1;
+  const MAX_SNAPSHOTS = 3;
+  const emptyStore = () => ({ version: VERSION, legacyMigrationComplete: false, removedSnapshotIds: {}, snapshots: [] });
+  const newId = () => {
+    try {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return 'workspace-' + crypto.randomUUID();
+    } catch (_) {}
+    return 'workspace-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  };
+  const isSupportedPayload = (candidate) => !candidate || candidate.version == null || candidate.version === VERSION;
+  const normalizeSnapshot = (candidate) => {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || !isSupportedPayload(candidate)) return null;
+    const workspace = candidate.workspace && typeof candidate.workspace === 'object' ? candidate.workspace : null;
+    const history = workspace && Array.isArray(workspace.history) ? workspace.history.filter(item => item && typeof item === 'object') : null;
+    const hasDraft = Boolean(workspace && (
+      (typeof workspace.inputText === 'string' && workspace.inputText.trim())
+      || (typeof workspace.sourceTopic === 'string' && workspace.sourceTopic.trim())
+      || workspace.builderDraft
+    ));
+    if (!workspace || !history || (history.length === 0 && !hasDraft)) return null;
+    const savedMs = Date.parse(candidate.savedAt || '');
+    return {
+      ...candidate,
+      version: VERSION,
+      id: typeof candidate.id === 'string' && candidate.id ? candidate.id.slice(0, 120) : newId(),
+      title: typeof candidate.title === 'string' && candidate.title.trim() ? candidate.title.trim().slice(0, 160) : 'Untitled workspace',
+      savedAt: Number.isFinite(savedMs) ? new Date(savedMs).toISOString() : new Date().toISOString(),
+      resourceCount: history.length,
+      assetPolicy: candidate.assetPolicy === 'text-only' ? 'text-only' : 'full',
+      omittedAssets: Math.max(0, Number(candidate.omittedAssets) || 0),
+      omittedAssetManifest: Array.isArray(candidate.omittedAssetManifest) ? candidate.omittedAssetManifest.slice(0, 500) : [],
+      workspace: { ...workspace, history }
+    };
+  };
+  const normalizeStore = (candidate) => {
+    if (candidate && Array.isArray(candidate.snapshots) && !isSupportedPayload(candidate)) return emptyStore();
+    const source = candidate && Array.isArray(candidate.snapshots)
+      ? candidate.snapshots
+      : (candidate && candidate.workspace ? [candidate] : []);
+    const removedSnapshotIds = {};
+    const removedSource = candidate && candidate.removedSnapshotIds;
+    const putRemovedSnapshotId = (id, value) => Object.defineProperty(removedSnapshotIds, id, {
+      value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+    const hasRemovedSnapshotId = (id) => Object.prototype.hasOwnProperty.call(removedSnapshotIds, id);
+    if (removedSource && typeof removedSource === 'object' && !Array.isArray(removedSource)) {
+      Object.keys(removedSource).forEach(id => {
+        if (typeof id !== 'string' || !id || id.length > 120) return;
+        const removedAt = removedSource[id];
+        putRemovedSnapshotId(id, typeof removedAt === 'string' && removedAt ? removedAt.slice(0, 80) : true);
+      });
+    } else if (Array.isArray(removedSource)) {
+      removedSource.forEach(id => {
+        if (typeof id === 'string' && id && id.length <= 120) putRemovedSnapshotId(id, true);
+      });
+    }
+    const seen = new Set();
+    const snapshots = source.map(normalizeSnapshot).filter(snapshot => {
+      if (!snapshot || hasRemovedSnapshotId(snapshot.id) || seen.has(snapshot.id)) return false;
+      seen.add(snapshot.id);
+      return true;
+    }).sort((a, b) => Date.parse(b.savedAt) - Date.parse(a.savedAt)).slice(0, MAX_SNAPSHOTS);
+    return {
+      version: VERSION,
+      legacyMigrationComplete: Boolean(candidate && candidate.legacyMigrationComplete),
+      removedSnapshotIds,
+      snapshots
+    };
+  };
+  const upsert = (store, snapshot) => {
+    const normalized = normalizeSnapshot(snapshot);
+    const current = normalizeStore(store);
+    if (!normalized || Object.prototype.hasOwnProperty.call(current.removedSnapshotIds, normalized.id)) return current;
+    const existing = current.snapshots.find(item => item.id === normalized.id);
+    if (existing && Date.parse(existing.savedAt) >= Date.parse(normalized.savedAt)) return current;
+    return normalizeStore({
+      ...current,
+      snapshots: [normalized, ...current.snapshots.filter(item => item.id !== normalized.id)]
+    });
+  };
+  const remove = (store, id) => {
+    const current = normalizeStore(store);
+    const safeId = typeof id === 'string' ? id.slice(0, 120) : '';
+    if (!safeId) return current;
+    return normalizeStore({
+      ...current,
+      legacyMigrationComplete: true,
+      removedSnapshotIds: { ...current.removedSnapshotIds, [safeId]: new Date().toISOString() },
+      snapshots: current.snapshots.filter(snapshot => snapshot.id !== safeId)
+    });
+  };
+  const createOmissionTracker = (snapshot) => {
+    const omittedAssetManifest = Array.isArray(snapshot?.omittedAssetManifest)
+      ? snapshot.omittedAssetManifest.slice(0, 500)
+      : [];
+    const omissionKey = (entry) => String(entry?.path || '') + '\u0000' + String(entry?.kind || '') + '\u0000' + String(entry?.reason || '');
+    const knownOmissions = new Set(omittedAssetManifest.map(omissionKey));
+    let omittedAssets = Math.max(omittedAssetManifest.length, Number(snapshot?.omittedAssets) || 0);
+    const record = (entry) => {
+      const key = omissionKey(entry);
+      if (knownOmissions.has(key)) return;
+      knownOmissions.add(key);
+      omittedAssets += 1;
+      if (omittedAssetManifest.length < 500) omittedAssetManifest.push(entry);
+    };
+    return { omittedAssetManifest, get omittedAssets() { return omittedAssets; }, record };
+  };
+  const visitPlainObject = (value, path, visit) => {
+    if (Array.isArray(value)) return value.map((item, index) => visit(item, path + '[' + index + ']'));
+    if (!value || typeof value !== 'object') return value;
+    if (typeof Date !== 'undefined' && value instanceof Date) return value;
+    if (typeof Map !== 'undefined' && value instanceof Map) return value;
+    if (typeof Set !== 'undefined' && value instanceof Set) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) return value;
+    const out = {};
+    Object.keys(value).forEach(key => { out[key] = visit(value[key], path ? path + '.' + key : key); });
+    return out;
+  };
+  const stripSessionOnlyAssets = (snapshot) => {
+    const tracker = createOmissionTracker(snapshot);
+    const visit = (value, path) => {
+      if (typeof value === 'string' && /^blob:/i.test(value)) {
+        tracker.record({ path, kind: 'blob-url', approximateBytes: value.length, reason: 'session-only-url' });
+        return null;
+      }
+      return visitPlainObject(value, path, visit);
+    };
+    const stripped = visit(snapshot, 'snapshot');
+    return {
+      ...stripped,
+      assetPolicy: tracker.omittedAssets > 0 ? 'text-only' : (snapshot.assetPolicy === 'text-only' ? 'text-only' : 'full'),
+      omittedAssets: tracker.omittedAssets,
+      omittedAssetManifest: tracker.omittedAssetManifest
+    };
+  };
+  const stripLargeAssets = (snapshot) => {
+    const tracker = createOmissionTracker(snapshot);
+    const visit = (value, path) => {
+      if (typeof value === 'string') {
+        const dataMatch = value.match(/^data:((?:image|audio|video)[/][^;,]+|application[/]pdf)[;,]/i);
+        const mediaKey = /(?:image|audio|video|media|attachment|avatar|scene|thumbnail|karaoke|recording)/i.test(path);
+        const unprefixedBase64 = mediaKey && value.length > 4096 && !/[^a-z0-9+=/]/i.test(value);
+        if (dataMatch || /^blob:/i.test(value) || unprefixedBase64) {
+          tracker.record({
+            path,
+            kind: dataMatch ? dataMatch[1].toLowerCase() : (/^blob:/i.test(value) ? 'blob-url' : 'base64-media'),
+            approximateBytes: Math.round(value.length * (dataMatch || unprefixedBase64 ? 0.75 : 1)),
+            reason: 'device-quota'
+          });
+          return null;
+        }
+        return value;
+      }
+      if (typeof Blob !== 'undefined' && value instanceof Blob) {
+        tracker.record({ path, kind: value.type || 'blob', approximateBytes: value.size || 0, reason: 'device-quota' });
+        return null;
+      }
+      if (typeof ArrayBuffer !== 'undefined' && (value instanceof ArrayBuffer || ArrayBuffer.isView(value))) {
+        const size = value.byteLength || 0;
+        tracker.record({ path, kind: 'binary-media', approximateBytes: size, reason: 'device-quota' });
+        return null;
+      }
+      return visitPlainObject(value, path, visit);
+    };
+    const stripped = visit(snapshot, 'snapshot');
+    return {
+      ...stripped,
+      assetPolicy: 'text-only',
+      omittedAssets: tracker.omittedAssets,
+      omittedAssetManifest: tracker.omittedAssetManifest
+    };
+  };
+  const summary = (snapshot) => {
+    const normalized = normalizeSnapshot(snapshot);
+    if (!normalized) return null;
+    return {
+      id: normalized.id,
+      title: normalized.title,
+      savedAt: normalized.savedAt,
+      resourceCount: normalized.resourceCount,
+      assetPolicy: normalized.assetPolicy,
+      omittedAssets: normalized.omittedAssets
+    };
+  };
+  return { VERSION, MAX_SNAPSHOTS, emptyStore, newId, isSupportedPayload, normalizeSnapshot, normalizeStore, upsert, remove, stripSessionOnlyAssets, stripLargeAssets, summary };
+})();
+const _alloCreateDefaultStudentProjectSettings = () => ({
+  hideStudentAiFeatures: false,
+  allowStudentByokAi: false,
+  allowDictation: true,
+  allowSocraticTutor: true,
+  socraticCustomInstructions: '',
+  allowFreeResponse: true,
+  allowPersonaFreeResponse: true,
+  adventureMinXP: 0,
+  adventureUnlockXP: 0,
+  nickname: '',
+  baseXP: 100,
+  adventurePermissions: {
+    allowCustomInstructions: false,
+    allowModeSwitch: false,
+    allowDifficultySwitch: true,
+    allowLanguageSwitch: true,
+    allowVisualsToggle: true,
+    allowCloudImageStorage: false,
+    lockAllSettings: false
+  }
+});
+
+const _alloNormalizeStudentProjectSettings = (candidate) => {
+  const defaults = _alloCreateDefaultStudentProjectSettings();
+  const source = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
+  const sourcePermissions = source.adventurePermissions && typeof source.adventurePermissions === 'object' && !Array.isArray(source.adventurePermissions)
+    ? source.adventurePermissions
+    : {};
+  const cleanText = (value, max) => typeof value === 'string' ? value.slice(0, max) : '';
+  const nonNegative = (value, fallback) => {
+    const number = Number(value);
+    return Number.isFinite(number) && number >= 0 ? Math.min(number, 1000000) : fallback;
+  };
+  return {
+    hideStudentAiFeatures: source.hideStudentAiFeatures === true,
+    allowStudentByokAi: source.allowStudentByokAi === true,
+    allowDictation: source.allowDictation !== false,
+    allowSocraticTutor: source.allowSocraticTutor !== false,
+    socraticCustomInstructions: cleanText(source.socraticCustomInstructions, 4000),
+    allowFreeResponse: source.allowFreeResponse !== false,
+    allowPersonaFreeResponse: source.allowPersonaFreeResponse !== false,
+    adventureMinXP: nonNegative(source.adventureMinXP, defaults.adventureMinXP),
+    adventureUnlockXP: nonNegative(source.adventureUnlockXP, defaults.adventureUnlockXP),
+    nickname: cleanText(source.nickname, 120),
+    baseXP: Math.max(1, nonNegative(source.baseXP, defaults.baseXP)),
+    adventurePermissions: {
+      allowCustomInstructions: sourcePermissions.allowCustomInstructions === true,
+      allowModeSwitch: sourcePermissions.allowModeSwitch === true,
+      allowDifficultySwitch: sourcePermissions.allowDifficultySwitch !== false,
+      allowLanguageSwitch: sourcePermissions.allowLanguageSwitch !== false,
+      allowVisualsToggle: sourcePermissions.allowVisualsToggle !== false,
+      allowCloudImageStorage: sourcePermissions.allowCloudImageStorage === true,
+      lockAllSettings: sourcePermissions.lockAllSettings === true
+    }
+  };
+};
+
+const _alloCaptureCanvasSelAuthoringState = () => {
+  if (typeof window === 'undefined') return { stations: [], toolData: {}, snapshots: [] };
+  const stations = Array.isArray(window.__alloflowSelStations) ? window.__alloflowSelStations : [];
+  const toolData = window.__alloflowSelToolData && typeof window.__alloflowSelToolData === 'object' && !Array.isArray(window.__alloflowSelToolData)
+    ? window.__alloflowSelToolData
+    : {};
+  const snapshots = Array.isArray(window.__alloflowSelSnapshots) ? window.__alloflowSelSnapshots : [];
+  return { stations, toolData, snapshots };
+};
+
+const _alloApplyCanvasSelAuthoringState = (candidate) => {
+  if (typeof window === 'undefined') return;
+  const source = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
+  const stations = Array.isArray(source.stations) ? source.stations : [];
+  const toolData = source.toolData && typeof source.toolData === 'object' && !Array.isArray(source.toolData) ? source.toolData : {};
+  const snapshots = Array.isArray(source.snapshots) ? source.snapshots : [];
+  const priorToolData = window.__alloflowSelToolData && typeof window.__alloflowSelToolData === 'object' ? window.__alloflowSelToolData : {};
+  const isSafeLegacyKey = (key) => typeof key === 'string' && /^(?:allo|alloflow|sel)[a-z0-9_.:-]{0,120}$/i.test(key);
+  try {
+    Object.keys(priorToolData).forEach(toolId => {
+      const key = priorToolData[toolId]?._lsKey;
+      if (isSafeLegacyKey(key)) localStorage.removeItem(key);
+    });
+  } catch (_) {}
+  window.__alloflowSelStations = stations;
+  window.__alloflowSelToolData = toolData;
+  window.__alloflowSelSnapshots = snapshots;
+  try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(stations)); } catch (_) {}
+  try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(snapshots)); } catch (_) {}
+  Object.keys(toolData).forEach(toolId => {
+    try {
+      const slot = toolData[toolId];
+      const key = slot && slot._lsKey;
+      if (isSafeLegacyKey(key)) localStorage.setItem(key, JSON.stringify(slot._lsValue !== undefined ? slot._lsValue : slot));
+    } catch (_) {}
+  });
+  if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('alloflow-sel-stations-restored'));
+    window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-restored'));
+    window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
+  }
+};
+
+const _alloCanvasSelAuthoringFingerprint = () => {
+  try { return JSON.stringify(_alloCaptureCanvasSelAuthoringState()); } catch (_) { return ''; }
+};
+
+const _alloGetCanvasDeviceStorage = async () => {
+  if (typeof window === 'undefined') throw new Error('Device storage is unavailable outside the browser.');
+  if (!window.__alloDeviceStoragePromise) {
+    window.__alloDeviceStoragePromise = window.alloDeviceStorage
+      ? Promise.resolve(window.alloDeviceStorage)
+      : new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1-recovery-atomic1';
+          script.onload = () => window.alloDeviceStorage
+            ? resolve(window.alloDeviceStorage)
+            : reject(new Error('Device storage module did not register.'));
+          script.onerror = () => reject(new Error('Device storage module could not load.'));
+          document.head.appendChild(script);
+        });
+  }
+  try {
+    if (!window.__alloDeviceStorageReadyPromise) {
+      window.__alloDeviceStorageReadyPromise = window.__alloDeviceStoragePromise.then(async (deviceStorage) => {
+        await deviceStorage.ready();
+        return deviceStorage;
+      });
+    }
+    return await window.__alloDeviceStorageReadyPromise;
+  } catch (error) {
+    try { delete window.__alloDeviceStoragePromise; } catch (_) { window.__alloDeviceStoragePromise = null; }
+    try { delete window.__alloDeviceStorageReadyPromise; } catch (_) { window.__alloDeviceStorageReadyPromise = null; }
+    throw error;
+  }
+};
 const LENGTH_THRESHOLDS = {
     MIN_VARIANCE: 0.6,
     MAX_VARIANCE: 1.4
@@ -5372,6 +5715,16 @@ const SESSION_TIER1_LEAVES = new Set([
   // docs/DATA_PRIVACY_POSTURE.md. Without this leaf, a probe pushed to a
   // student device completed into a toast and was recorded NOWHERE.
   'wsProbeResult',
+  // Private AlloHaven classroom recognition. Each student's roster entry holds
+  // at most 20 fixed-schema events: generated id, enum reason, 1-2 tokens, and
+  // timestamp. No observation notes, behavior labels, or other free text cross
+  // the backend. The session is temporary; the student device moves each event
+  // into AlloHaven's local append-only ledger and de-duplicates by event id.
+  'havenRewards',
+  // Teacher-controlled pilot guardrail. Fixed schema only:
+  // { enabled: boolean, perStudentTokenCap: 2|4|6|8, updatedAt: ms }.
+  // No student identifiers, notes, balances, or generated content.
+  'havenRecognitionConfig',
 ]);
 // Help-signal vocabulary shared by the student sender and the teacher's Live
 // Session Center. Enum-only by design: keep free text out of this channel so
@@ -5383,6 +5736,128 @@ const LIVE_SIGNAL_OPTIONS = [
   { id: 'ready', emoji: '✅', label: "I'm ready" },
 ];
 const LIVE_SIGNAL_FRESH_MS = 10 * 60 * 1000;
+const ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY = 'alloflow_allohaven_classroom_reward_inbox_v1';
+const ALLOHAVEN_CLASSROOM_REWARD_REASONS = Object.freeze([
+  { id: 'ready_to_learn', label: 'Ready to learn' },
+  { id: 'used_support', label: 'Used a support or asked for help' },
+  { id: 'reengaged', label: 'Returned to learning' },
+  { id: 'collaboration', label: 'Collaboration' },
+  { id: 'repaired_harm', label: 'Restorative repair' },
+  { id: 'self_regulation', label: 'Self-regulation' },
+  { id: 'goal_progress', label: 'Individual goal progress' },
+]);
+const ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS = new Set(ALLOHAVEN_CLASSROOM_REWARD_REASONS.map(reason => reason.id));
+const ALLOHAVEN_RECOGNITION_CAPS = Object.freeze([2, 4, 6, 8]);
+const DEFAULT_ALLOHAVEN_RECOGNITION_CONFIG = Object.freeze({ enabled: false, perStudentTokenCap: 4, updatedAt: 0 });
+
+const normalizeAlloHavenClassroomReward = (reward) => {
+  if (!reward || typeof reward !== 'object' || Array.isArray(reward)) return null;
+  const id = String(reward.id || '');
+  const reasonId = String(reward.reasonId || '');
+  const amount = Math.floor(Number(reward.amount) || 0);
+  const at = Number(reward.at) || 0;
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(id)) return null;
+  if (!ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(reasonId)) return null;
+  if (amount < 1 || amount > 2) return null;
+  if (!Number.isFinite(at) || at < 1) return null;
+  return { id, reasonId, amount, at };
+};
+
+const normalizeAlloHavenRecognitionConfig = (config) => {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return null;
+  if (typeof config.enabled !== 'boolean') return null;
+  const perStudentTokenCap = Math.floor(Number(config.perStudentTokenCap) || 0);
+  const updatedAt = Number(config.updatedAt) || 0;
+  if (!ALLOHAVEN_RECOGNITION_CAPS.includes(perStudentTokenCap)) return null;
+  if (!Number.isFinite(updatedAt) || updatedAt < 1) return null;
+  return { enabled: config.enabled, perStudentTokenCap, updatedAt };
+};
+
+const getAlloHavenRecognitionConfig = (config) => (
+  normalizeAlloHavenRecognitionConfig(config) || DEFAULT_ALLOHAVEN_RECOGNITION_CONFIG
+);
+
+const getAlloHavenSessionRecognitionTokens = (entry, optimisticRewards = []) => {
+  const safeEntry = entry && typeof entry === 'object' ? entry : {};
+  const seen = new Set();
+  return (Array.isArray(safeEntry.havenRewards) ? safeEntry.havenRewards : [])
+    .concat(Array.isArray(optimisticRewards) ? optimisticRewards : [])
+    .reduce((total, rawReward) => {
+      const reward = normalizeAlloHavenClassroomReward(rawReward);
+      if (!reward || seen.has(reward.id)) return total;
+      seen.add(reward.id);
+      return total + reward.amount;
+    }, 0);
+};
+const buildAlloHavenRecognitionAudit = (roster, limit = 8) => {
+  const safeRoster = roster && typeof roster === 'object' ? roster : {};
+  const boundedLimit = Math.max(1, Math.min(20, Math.floor(Number(limit) || 8)));
+  const seen = new Set();
+  const events = [];
+  Object.entries(safeRoster).forEach(([uid, rawEntry]) => {
+    const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
+    const studentName = String(entry.name || 'Student').slice(0, 80);
+    (Array.isArray(entry.havenRewards) ? entry.havenRewards : []).forEach(rawReward => {
+      const reward = normalizeAlloHavenClassroomReward(rawReward);
+      if (!reward || seen.has(reward.id)) return;
+      seen.add(reward.id);
+      const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === reward.reasonId);
+      events.push({
+        id: reward.id,
+        uid,
+        studentName,
+        reasonId: reward.reasonId,
+        reasonLabel: reason ? reason.label : 'Positive progress',
+        amount: reward.amount,
+        at: reward.at
+      });
+    });
+  });
+  return events.sort((a, b) => b.at - a.at).slice(0, boundedLimit);
+};
+
+const queueAlloHavenClassroomRewards = (incoming) => {
+  const normalized = (Array.isArray(incoming) ? incoming : [incoming])
+    .map(normalizeAlloHavenClassroomReward)
+    .filter(Boolean);
+  if (!normalized.length || typeof localStorage === 'undefined') return { queued: [], duplicateCount: 0 };
+  let inbox = [];
+  let havenState = {};
+  try {
+    const parsedInbox = JSON.parse(localStorage.getItem(ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY) || '[]');
+    inbox = Array.isArray(parsedInbox) ? parsedInbox : [];
+  } catch (_) { inbox = []; }
+  try {
+    const parsedHaven = JSON.parse(localStorage.getItem('alloflow_allohaven_v1') || '{}');
+    havenState = parsedHaven && typeof parsedHaven === 'object' ? parsedHaven : {};
+  } catch (_) { havenState = {}; }
+  const seen = new Set();
+  inbox.forEach(reward => { if (reward && reward.id) seen.add(String(reward.id)); });
+  (Array.isArray(havenState.earnings) ? havenState.earnings : []).forEach(entry => {
+    const rewardId = entry && entry.metadata && entry.metadata.rewardId;
+    if (rewardId) seen.add(String(rewardId));
+  });
+  const queued = [];
+  normalized.forEach(reward => {
+    if (seen.has(reward.id)) return;
+    seen.add(reward.id);
+    queued.push(reward);
+  });
+  if (!queued.length) return { queued: [], duplicateCount: normalized.length };
+  const nextInbox = inbox.concat(queued).slice(-50);
+  try {
+    localStorage.setItem(ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY, JSON.stringify(nextInbox));
+    window.dispatchEvent(new CustomEvent('alloflow-haven-classroom-reward-pending', { detail: { count: queued.length } }));
+  } catch (_) {
+    return { queued: [], duplicateCount: normalized.length };
+  }
+  return { queued, duplicateCount: normalized.length - queued.length };
+};
+
+if (typeof window !== 'undefined') {
+  window.__alloQueueHavenClassroomRewards = queueAlloHavenClassroomRewards;
+}
+
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
     return Promise.reject(new Error('writeToSession: invalid arguments'));
@@ -5397,7 +5872,13 @@ const writeToSession = async (sessionRef, payload) => {
       );
     }
   }
-  safePayload = stripUndefined(safePayload);
+  if (Object.prototype.hasOwnProperty.call(safePayload, 'havenRecognitionConfig')) {
+    const normalizedConfig = normalizeAlloHavenRecognitionConfig(safePayload.havenRecognitionConfig);
+    if (!normalizedConfig) {
+      return Promise.reject(new Error('writeToSession: invalid AlloHaven recognition config'));
+    }
+    safePayload = { ...safePayload, havenRecognitionConfig: normalizedConfig };
+  }  safePayload = stripUndefined(safePayload);
   const violations = [];
   Object.keys(safePayload).forEach(key => {
     const leaf = key.split('.').pop();
@@ -6422,28 +6903,7 @@ const AlloFlowContent = () => {
       document.head.appendChild(link);
     }
   }, []);
-  const [studentProjectSettings, setStudentProjectSettings] = useState({
-      hideStudentAiFeatures: false,
-      allowStudentByokAi: false,
-      allowDictation: true,
-      allowSocraticTutor: true,
-      socraticCustomInstructions: '',
-      allowFreeResponse: true,
-      allowPersonaFreeResponse: true,
-      adventureMinXP: 0,
-      adventureUnlockXP: 0,
-      nickname: '',
-      baseXP: 100,
-      adventurePermissions: {
-          allowCustomInstructions: false,
-          allowModeSwitch: false,
-          allowDifficultySwitch: true,
-          allowLanguageSwitch: true,
-          allowVisualsToggle: true,
-          allowCloudImageStorage: false,
-          lockAllSettings: false
-      }
-  });
+  const [studentProjectSettings, setStudentProjectSettings] = useState(_alloCreateDefaultStudentProjectSettings);
   const [settingsState, settingsDispatch] = useReducer(settingsReducer, SETTINGS_INITIAL_STATE);
   const { isProjectSettingsOpen, theme, showTextSettings, showVoiceSettings, wordSearchLang, standardDeckLang, targetTranslationLang } = settingsState;
   const setIsProjectSettingsOpen = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'isProjectSettingsOpen', value: v });
@@ -7305,7 +7765,10 @@ Return ONLY JSON in this shape:
   const [studentWorkStatus, setStudentWorkStatus] = useState('idle');
   const isStudentWorkLoaded = useRef(false);
   useEffect(() => {
-      if (!isStudentWorkLoaded.current) return;
+      if (!isStudentWorkLoaded.current || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, null)) {
+          setStudentWorkStatus('idle');
+          return;
+      }
       setStudentWorkStatus('saving');
       const handler = setTimeout(async () => {
           try {
@@ -7316,7 +7779,7 @@ Return ONLY JSON in this shape:
           }
       }, 1000);
       return () => clearTimeout(handler);
-  }, [studentResponses]);
+  }, [studentResponses, isTeacherMode, showStudentEntry]);
   const [generatedContent, setGeneratedContent] = useState(null);
   const handleStudentInput = (resourceId, questionKey, value) => {
       setStudentResponses(prev => ({
@@ -7777,7 +8240,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'a1627a42e';
+    var pluginCdnVersion = '1784435613022';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -8014,38 +8477,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=a1627a42e');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=a1627a42e');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=a1627a42e');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=a1627a42e');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=a1627a42e');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=a1627a42e');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=a1627a42e');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=a1627a42e');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=a1627a42e');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=a1627a42e');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=a1627a42e');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=a1627a42e');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=a1627a42e');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a1627a42e');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=a1627a42e');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=a1627a42e');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=a1627a42e');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=a1627a42e');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=a1627a42e');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=a1627a42e');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=a1627a42e');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=a1627a42e');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=a1627a42e');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=a1627a42e');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=a1627a42e'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=a1627a42e'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -8054,84 +8517,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=a1627a42e');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=a1627a42e');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=a1627a42e');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=a1627a42e');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=a1627a42e');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=a1627a42e');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=a1627a42e');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=a1627a42e');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=a1627a42e');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=a1627a42e');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=a1627a42e');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=a1627a42e');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=a1627a42e');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=a1627a42e'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=a1627a42e');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=a1627a42e');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=a1627a42e');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=a1627a42e');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=a1627a42e');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=a1627a42e');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=a1627a42e');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=a1627a42e');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=a1627a42e'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=a1627a42e');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=a1627a42e');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=a1627a42e'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=a1627a42e');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=a1627a42e');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=a1627a42e');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=a1627a42e');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=a1627a42e');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=a1627a42e');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=a1627a42e');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=a1627a42e'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=a1627a42e'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=a1627a42e'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=a1627a42e'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=a1627a42e'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=a1627a42e');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=a1627a42e');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=a1627a42e');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=a1627a42e');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=a1627a42e');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=a1627a42e');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=a1627a42e');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=a1627a42e');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=a1627a42e');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=a1627a42e');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=a1627a42e');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=a1627a42e');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=a1627a42e');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=a1627a42e');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -8168,68 +8631,71 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=8c891bde');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=a1627a42e');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=a1627a42e');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=a1627a42e');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=a1627a42e');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=a1627a42e');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=a1627a42e');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=a1627a42e');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=a1627a42e');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=a1627a42e');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=a1627a42e');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=a1627a42e');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=a1627a42e');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=a1627a42e');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=a1627a42e');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=a1627a42e');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=1d1891ac');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=a1627a42e');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=a1627a42e');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=a1627a42e');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=a1627a42e');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=a1627a42e');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=a1627a42e');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=a1627a42e');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=a1627a42e');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=a1627a42e');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=a1627a42e');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=a1627a42e');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=a1627a42e');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=a1627a42e');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=a1627a42e');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=a1627a42e');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=a1627a42e');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=a1627a42e');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=a1627a42e');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=4d7e68c6');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=a1627a42e');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=a1627a42e');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=a1627a42e');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=a1627a42e');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=a1627a42e');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=a1627a42e');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=a1627a42e');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=a1627a42e');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=a1627a42e');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=a1627a42e');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=a1627a42e');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=a1627a42e');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=a1627a42e');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=a1627a42e');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=a1627a42e');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=a1627a42e');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=a1627a42e');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=a1627a42e');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=a1627a42e');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=a1627a42e');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -8254,6 +8720,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_datastudio.js', 'stem_lab/stem_tool_coding.js', 'stem_lab/stem_tool_applab.js',
         'stem_lab/stem_tool_dataplot.js', 'stem_lab/stem_tool_geo.js', 'stem_lab/stem_tool_titration.js',
         'stem_lab/stem_tool_volume.js', 'stem_lab/stem_tool_numberline.js', 'stem_lab/stem_tool_areamodel.js',
+        'stem_lab/stem_tool_arithmetic.js',
+        'stem_lab/stem_tool_ratios.js',
+        'stem_lab/stem_tool_areaperimeter.js',
+        'stem_lab/stem_tool_timeschedule.js',
         'stem_lab/stem_tool_fractions.js', 'stem_lab/stem_tool_manipulatives.js', 'stem_lab/stem_tool_money.js',
         'stem_lab/stem_tool_coordgrid.js', 'stem_lab/stem_tool_angles.js', 'stem_lab/stem_tool_archstudio.js',
         'stem_lab/stem_tool_physics.js', 'stem_lab/stem_tool_brainatlas.js', 'stem_lab/stem_tool_inequality.js',
@@ -8875,6 +9345,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [personaReflectionInput, setPersonaReflectionInput] = useState('');
   const [isGradingReflection, setIsGradingReflection] = useState(false);
   const personaReflectionSubmitRef = useRef(false);
+  const personaReflectionLastSavedKeyRef = useRef(null);
   const personaReflectionIdentityRef = useRef('');
   const personaReflectionPromptRequestRef = useRef(0);
   const personaReflectionPromptAbortRef = useRef(null);
@@ -8908,9 +9379,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [globalPoints, setGlobalPoints] = useState(0);
   useEffect(() => {
-      if (!lzLoaded) return;
+      if (!lzLoaded || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, null)) return;
       storageDB.set('allo_global_points', globalPoints);
-  }, [globalPoints, lzLoaded]);
+  }, [globalPoints, lzLoaded, isTeacherMode, showStudentEntry]);
   const [completedActivities, setCompletedActivities] = useState(() => {
       if (typeof window !== 'undefined') {
           const saved = safeGetItem('allo_completed_activities');
@@ -8933,9 +9404,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       try { safeSetItem('allo_completed_activities', JSON.stringify(Array.from(completedActivities.entries()))); } catch(e) { warnLog('localStorage write failed', e); }
   }, [completedActivities]);
   useEffect(() => {
-      if (!lzLoaded) return;
+      if (!lzLoaded || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, null)) return;
       storageDB.set('allo_point_history', pointHistory);
-  }, [pointHistory, lzLoaded]);
+  }, [pointHistory, lzLoaded, isTeacherMode, showStudentEntry]);
   const [gameCompletions, setGameCompletions] = useState(() => {
       if (typeof window !== 'undefined') {
           try {
@@ -10336,6 +10807,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     activeGoldBuff: false,
     activeGoldBuffTurns: 0,
     narrativeLedger: '',
+    assistedKnowledge: [],
     lastKeyItemTurn: 0,
     debateMomentum: 50,
     debateTopic: null,
@@ -10416,18 +10888,30 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
   const [personaAutoRead, setPersonaAutoRead] = useState(false);
   const [personaAutoReadEpoch, setPersonaAutoReadEpoch] = useState(0);
+  const createPersonaTtsMessageKey = (message, index) => {
+      const seed = [message?.role || '', message?.speakerName || '', message?.text || ''].join('\u241f');
+      let hash = 2166136261;
+      for (let offset = 0; offset < seed.length; offset += 1) {
+          hash ^= seed.charCodeAt(offset);
+          hash = Math.imul(hash, 16777619);
+      }
+      return `${index}:${seed.length}:${(hash >>> 0).toString(36)}`;
+  };
   // Persistent queue refs intentionally outlive chat/isLoading renders. A
   // generation token cancels only on an explicit toggle-off or session change,
   // so a new message cannot cut off audio already playing.
   const personaAutoReadRef = useRef(false);
   const personaTtsQueueRef = useRef([]);
-  const personaTtsQueuedIndicesRef = useRef(new Set());
+  const personaTtsQueuedMessageKeysRef = useRef(new Set());
+  const personaTtsHistoryKeysRef = useRef([]);
   const personaTtsQueueRunningRef = useRef(false);
   const personaTtsQueueGenerationRef = useRef(0);
   const personaTtsProcessorRef = useRef(null);
   const personaAutoReadWasEnabledRef = useRef(false);
   const personaTtsVoiceSignature = JSON.stringify({
       selectedVoice: String(selectedVoice || ''),
+      voiceSpeed: Number.isFinite(Number(voiceSpeed)) ? Number(voiceSpeed) : 1,
+      language: String(currentUiLanguage || leveledTextLanguage || 'English'),
       single: personaState.selectedCharacter ? {
           name: personaState.selectedCharacter.name || '',
           voice: personaState.selectedCharacter.voice || '',
@@ -10453,7 +10937,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!personaAutoRead) {
           personaTtsQueueGenerationRef.current += 1;
           personaTtsQueueRef.current = [];
-          personaTtsQueuedIndicesRef.current.clear();
+          personaTtsQueuedMessageKeysRef.current.clear();
           personaAutoReadWasEnabledRef.current = false;
           setPanelTtsPending([]);
       }
@@ -10474,7 +10958,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!enabled) {
           personaTtsQueueGenerationRef.current += 1;
           personaTtsQueueRef.current = [];
-          personaTtsQueuedIndicesRef.current.clear();
+          personaTtsQueuedMessageKeysRef.current.clear();
           personaAutoReadWasEnabledRef.current = false;
           setPanelTtsPending([]);
           if (shouldStop) {
@@ -10496,7 +10980,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               const hadActiveAudio = personaTtsQueueRunningRef.current || personaTtsQueueRef.current.length > 0;
               personaTtsQueueGenerationRef.current += 1;
               personaTtsQueueRef.current = [];
-              personaTtsQueuedIndicesRef.current.clear();
+              personaTtsQueuedMessageKeysRef.current.clear();
               personaAutoReadWasEnabledRef.current = false;
               setPanelTtsPending([]);
               if (hadActiveAudio) {
@@ -10855,6 +11339,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // the single entry point for live activities; livePollPreset seeds the
   // polling HostPanel composer for one-tap presets like Quick Check.
   const [showLiveDock, setShowLiveDock] = useState(false);
+  const [havenRewardReasonId, setHavenRewardReasonId] = useState('ready_to_learn');
+  const [havenRewardAmount, setHavenRewardAmount] = useState(1);
+  const [havenRewardBusy, setHavenRewardBusy] = useState(false);
+  const [havenConfigBusy, setHavenConfigBusy] = useState(false);
+  const [havenRewardReceipt, setHavenRewardReceipt] = useState(null);
+  const [showHavenRewardAudit, setShowHavenRewardAudit] = useState(false);
   const [livePollPreset, setLivePollPreset] = useState(null);
   const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
@@ -10863,6 +11353,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // "Cannot access 'sessionData' before initialization" on every load
   // because the const block ran synchronously before useState declared it.
   const [sessionData, setSessionData] = useState(null);
+  const havenRecognitionConfig = getAlloHavenRecognitionConfig(sessionData && sessionData.havenRecognitionConfig);
   // Auto-open the Pictionary guest overlay on students once the teacher has
   // assigned them a role (drawer or guesser) in the live session. We watch the
   // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
@@ -10881,6 +11372,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Role cleared (round resolved) — overlay stays open in v1 to show the
     // "round resolved" state until the student dismisses it manually.
   }, [isTeacherMode, activeSessionCode, _picMyRole, user && user.uid]);
+  const myHavenRewards = (!isTeacherMode && user && user.uid && sessionData && sessionData.roster
+    && sessionData.roster[user.uid] && Array.isArray(sessionData.roster[user.uid].havenRewards))
+    ? sessionData.roster[user.uid].havenRewards : [];
+  React.useEffect(() => {
+    if (isTeacherMode || !activeSessionCode || !myHavenRewards.length) return;
+    const result = queueAlloHavenClassroomRewards(myHavenRewards);
+    if (!result.queued.length) return;
+    const total = result.queued.reduce((sum, reward) => sum + reward.amount, 0);
+    const latest = result.queued[result.queued.length - 1];
+    const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === latest.reasonId);
+    addToast(
+      '🪙 +' + total + ' AlloHaven token' + (total === 1 ? '' : 's') + ' · ' + (reason ? reason.label : 'Positive progress'),
+      'success'
+    );
+  }, [
+    isTeacherMode,
+    activeSessionCode,
+    user && user.uid,
+    myHavenRewards.length,
+    myHavenRewards.length ? myHavenRewards[myHavenRewards.length - 1].id : null
+  ]);
   React.useEffect(() => {
     const handler = () => {
       if (!isTeacherMode) {
@@ -10906,6 +11418,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [joinAppIdInput, setJoinAppIdInput] = useState('');
   const [isJoinPopoverOpen, setIsJoinPopoverOpen] = useState(false);
   const sessionUnsubscribeRef = useRef(null);
+  const havenRewardDraftsRef = useRef({});
+  const havenRewardSendLockRef = useRef(false);
   const currentGenContentIdRef = useRef(null);
   // Consume-once key for group resource pushes in student-paced mode:
   // "{groupId}|{resourceId}|{resourceAt}". Without it, every unrelated
@@ -11112,6 +11626,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, [adventureEffects]);
   useEffect(() => {
+      if (_alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) return;
       if (adventureState.turnCount > 0 && !adventureState.isLoading) {
           const saveAsync = async () => {
               const sanitizedState = {
@@ -11160,7 +11675,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [adventureState, adventureDifficulty, adventureInputMode, adventureLanguageMode,
       adventureChanceMode, adventureFreeResponseEnabled, adventureConsistentCharacters,
       isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle,
-      adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode]);
+      adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode,
+      isTeacherMode, showStudentEntry, activeSessionCode]);
   const [isGateOpen, setIsGateOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState(null);
   const onGateUnlock = () => {
@@ -11963,7 +12479,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           ? Promise.resolve(window.alloDeviceStorage)
           : new Promise((resolve, reject) => {
               const script = document.createElement('script');
-              script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+              script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1-recovery-atomic1';
               script.onload = () => window.alloDeviceStorage ? resolve(window.alloDeviceStorage) : reject(new Error('device storage unavailable'));
               script.onerror = () => reject(new Error('device storage failed to load'));
               document.head.appendChild(script);
@@ -13244,6 +13760,130 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [generatedContent?.id]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [history, setHistory] = useState([]);
+  const [canvasRecoveryDecisionMade, setCanvasRecoveryDecisionMade] = useState(() => !isCanvas);
+  const [canvasRecoveryDialogMode, setCanvasRecoveryDialogMode] = useState(() => isCanvas ? 'checking' : null);
+  const [canvasRecoveryStore, setCanvasRecoveryStore] = useState(() => ALLO_WORKSPACE_RECOVERY.emptyStore());
+  const [canvasRecoveryStoreAuthoritative, setCanvasRecoveryStoreAuthoritative] = useState(false);
+  const [canvasRecoverySaveStatus, setCanvasRecoverySaveStatus] = useState(() => isCanvas ? 'checking' : 'inactive');
+  const [canvasRecoveryError, setCanvasRecoveryError] = useState('');
+  const [canvasRecoveryEraseId, setCanvasRecoveryEraseId] = useState(null);
+  const [canvasRecoveryBusyId, setCanvasRecoveryBusyId] = useState(null);
+  const [canvasRecoveryRevision, setCanvasRecoveryRevision] = useState(0);
+  const canvasRecoveryStoreRef = useRef(ALLO_WORKSPACE_RECOVERY.emptyStore());
+  const canvasRecoveryCurrentIdRef = useRef(ALLO_WORKSPACE_RECOVERY.newId());
+  const canvasRecoveryBootCheckedRef = useRef(false);
+  const canvasRecoveryDialogRef = useRef(null);
+  const canvasRecoveryImportPreviousIdRef = useRef(null);
+  const canvasRecoveryImportInputRef = useRef(null);
+  const canvasRecoveryPreviousFocusRef = useRef(null);
+  const canvasRecoveryDialogWasOpenRef = useRef(false);
+  const canvasRecoveryMutationInProgressRef = useRef(false);
+  const canvasRecoverySaveTokenRef = useRef(0);
+  const canvasRecoveryPendingSaveCountRef = useRef(0);
+  const canvasRecoveryImmediateSaveRef = useRef(false);
+  const canvasRecoveryWriteQueueRef = useRef(Promise.resolve());
+  const canvasRecoverySelFingerprintRef = useRef(_alloCanvasSelAuthoringFingerprint());
+  const queueCanvasRecoveryStorage = (operation) => {
+      const run = () => operation();
+      const queued = canvasRecoveryWriteQueueRef.current.catch(() => undefined).then(() => {
+          if (typeof navigator !== 'undefined' && navigator.locks && typeof navigator.locks.request === 'function') {
+              return navigator.locks.request('alloflow-workspace-recovery-v1', { mode: 'exclusive' }, run);
+          }
+          return run();
+      });
+      canvasRecoveryWriteQueueRef.current = queued.catch(() => undefined);
+      return queued;
+  };
+  useEffect(() => {
+      if (!isCanvas || typeof document === 'undefined') return undefined;
+      const requestImmediateSave = () => {
+          canvasRecoveryImmediateSaveRef.current = true;
+          setCanvasRecoveryRevision(value => value + 1);
+      };
+      const onVisibilityChange = () => {
+          if (document.visibilityState === 'hidden') requestImmediateSave();
+      };
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      if (typeof window !== 'undefined') window.addEventListener('pagehide', requestImmediateSave);
+      return () => {
+          document.removeEventListener('visibilitychange', onVisibilityChange);
+          if (typeof window !== 'undefined') window.removeEventListener('pagehide', requestImmediateSave);
+      };
+  }, [isCanvas]);
+  const beginCanvasRecoveryPendingSave = () => {
+      canvasRecoveryPendingSaveCountRef.current += 1;
+      setPendingSync(true);
+  };
+  useEffect(() => {
+      canvasRecoveryStoreRef.current = canvasRecoveryStore;
+  }, [canvasRecoveryStore]);
+  useEffect(() => {
+      if (typeof document === 'undefined') return;
+      const isOpen = Boolean(canvasRecoveryDialogMode);
+      if (isOpen && !canvasRecoveryDialogWasOpenRef.current) {
+          canvasRecoveryPreviousFocusRef.current = document.activeElement;
+      } else if (!isOpen && canvasRecoveryDialogWasOpenRef.current) {
+          const previous = canvasRecoveryPreviousFocusRef.current;
+          canvasRecoveryPreviousFocusRef.current = null;
+          if (previous && typeof previous.focus === 'function') setTimeout(() => previous.focus(), 0);
+      }
+      canvasRecoveryDialogWasOpenRef.current = isOpen;
+  }, [canvasRecoveryDialogMode]);
+  useEffect(() => {
+      if (!isCanvas || !canvasRecoveryDecisionMade || typeof window === 'undefined') return undefined;
+      const checkForSelAuthoringChanges = () => {
+          const nextFingerprint = _alloCanvasSelAuthoringFingerprint();
+          if (nextFingerprint === canvasRecoverySelFingerprintRef.current) return;
+          canvasRecoverySelFingerprintRef.current = nextFingerprint;
+          setCanvasRecoveryRevision(value => value + 1);
+      };
+      canvasRecoverySelFingerprintRef.current = _alloCanvasSelAuthoringFingerprint();
+      const eventNames = [
+          'alloflow-sel-stations-changed',
+          'alloflow-sel-tooldata-changed',
+          'alloflow-sel-snapshots-changed',
+          'alloflow-sel-stations-restored',
+          'alloflow-sel-tooldata-restored',
+          'alloflow-sel-snapshots-restored'
+      ];
+      eventNames.forEach(name => window.addEventListener(name, checkForSelAuthoringChanges));
+      const timer = setInterval(checkForSelAuthoringChanges, 2000);
+      return () => {
+          clearInterval(timer);
+          eventNames.forEach(name => window.removeEventListener(name, checkForSelAuthoringChanges));
+      };
+  }, [isCanvas, canvasRecoveryDecisionMade]);
+  useEffect(() => {
+      if (!canvasRecoveryDialogMode || typeof document === 'undefined') return undefined;
+      const dialog = canvasRecoveryDialogRef.current;
+      if (!dialog) return undefined;
+      const selector = 'button:not([disabled]), input:not([disabled]), [href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const focusFirst = () => {
+          const preferred = dialog.querySelector('[data-recovery-autofocus]') || dialog.querySelector(selector);
+          if (preferred && typeof preferred.focus === 'function') preferred.focus();
+      };
+      const timer = setTimeout(focusFirst, 0);
+      const onKeyDown = (event) => {
+          if (event.key === 'Escape') {
+              event.preventDefault();
+              if (canvasRecoveryDialogMode === 'manage' && !canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode('choice');
+              else if (canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode(null);
+              return;
+          }
+          if (event.key !== 'Tab') return;
+          const focusable = Array.from(dialog.querySelectorAll(selector)).filter(node => node.offsetParent !== null);
+          if (!focusable.length) { event.preventDefault(); return; }
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      };
+      dialog.addEventListener('keydown', onKeyDown);
+      return () => {
+          clearTimeout(timer);
+          dialog.removeEventListener('keydown', onKeyDown);
+      };
+  }, [canvasRecoveryDialogMode, canvasRecoveryDecisionMade]);
   // Video Studio 'video-ref' card player: clicking a video-ref history item
   // opens this overlay (bytes are never in packs — playback comes from the
   // teacher's hosted link or a re-attached local file).
@@ -14294,22 +14934,143 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   useEffect(() => {
     if (!lzLoaded) return;
-    // A joining/active live student (Firebase OR mailbox) must never have its
-    // live resource pack clobbered by the offline-history loader. The old guard
-    // only caught activeSessionCode, which is still null during the async
-    // mailbox join, so a bridged/QR student slipped through and the loader wiped
-    // the pack — which the mailbox, unlike Firebase, cannot re-hydrate. Read the
-    // URL param directly so this holds regardless of effect ordering, and
-    // re-check after the await below.
-    const _qrLiveStudent = (typeof window !== 'undefined' && window.__alloQrStudentMode)
-        || _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp');
-    if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive() || _qrLiveStudent)) {
+    // Student entry is identified synchronously from the URL/window marker; role state starts as teacher.
+    const isCanvasStudentEntry = () => _alloHasAnyStudentEntry()
+        || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
+    const protectCanvasStudentEntry = () => {
+        canvasRecoveryBootCheckedRef.current = true;
+        isStudentWorkLoaded.current = false;
+        setGlobalPoints(0);
+        setPointHistory([]);
+        setHasSavedAdventure(false);
+        canvasRecoverySaveTokenRef.current += 1;
+        canvasRecoveryPendingSaveCountRef.current = 0;
+        canvasRecoveryStoreRef.current = ALLO_WORKSPACE_RECOVERY.emptyStore();
+        canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+        clearCanvasWorkspaceState();
+        setCanvasRecoveryStore(ALLO_WORKSPACE_RECOVERY.emptyStore());
+        setCanvasRecoveryStoreAuthoritative(false);
+        setCanvasRecoveryDecisionMade(true);
+        setCanvasRecoveryDialogMode(null);
+        setCanvasRecoverySaveStatus('inactive');
+        setCanvasRecoveryError('');
+        setLastSaved(null);
+        setPendingSync(false);
         setIsHistoryLoaded(true);
+    };
+    if (isCanvasStudentEntry()) {
+        protectCanvasStudentEntry();
         return;
     }
-    if (isTeacherMode && activeSessionCode && isHistoryLoaded) {
-        return;
+    if (isCanvas) {
+        if (canvasRecoveryBootCheckedRef.current) return;
+        canvasRecoveryBootCheckedRef.current = true;
+        let cancelled = false;
+        const loadCanvasWorkspace = async () => {
+            if (isStorageDisabled) {
+                setCanvasRecoveryStoreAuthoritative(false);
+                setCanvasRecoveryDecisionMade(false);
+                setCanvasRecoveryDialogMode('error');
+                setCanvasRecoverySaveStatus('error');
+                setCanvasRecoveryError('On-device storage is disabled in this browser.');
+                setIsHistoryLoaded(true);
+                return;
+            }
+            setCanvasRecoveryDecisionMade(false);
+            setCanvasRecoveryDialogMode('checking');
+            setCanvasRecoverySaveStatus('checking');
+            setCanvasRecoveryError('');
+            try {
+                const deviceStorage = await _alloGetCanvasDeviceStorage();
+                const rawStore = await deviceStorage.get(ALLO_WORKSPACE_RECOVERY_NAMESPACE, ALLO_WORKSPACE_RECOVERY_KEY);
+                if (cancelled) return;
+                if (isCanvasStudentEntry()) { protectCanvasStudentEntry(); return; }
+                if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(rawStore)) {
+                    const unsupported = new Error('Saved work was created by a newer AlloFlow version. Export or update AlloFlow before changing it.');
+                    unsupported.code = 'allo/recovery-version-unsupported';
+                    throw unsupported;
+                }
+                let store = ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore);
+                let migrationWarning = '';
+                // One-time compatibility offer for the older capped history cache.
+                if (!store.legacyMigrationComplete) {
+                    let migrated = null;
+                    if (store.snapshots.length === 0) {
+                        const legacy = await storageDB.get('allo_offline_history');
+                        const legacyItems = legacy && (legacy.items || (Array.isArray(legacy) ? legacy : []));
+                        if (Array.isArray(legacyItems) && legacyItems.length > 0) {
+                            const restoredLegacy = hydrateHistory(legacyItems);
+                            migrated = {
+                                version: ALLO_WORKSPACE_RECOVERY.VERSION,
+                                id: ALLO_WORKSPACE_RECOVERY.newId(),
+                                title: restoredLegacy[restoredLegacy.length - 1]?.title || 'Recovered legacy resource pack',
+                                savedAt: new Date().toISOString(),
+                                assetPolicy: 'text-only',
+                                omittedAssets: 1,
+                                omittedAssetManifest: [{
+                                    path: 'snapshot.workspace.history',
+                                    kind: 'legacy-cache',
+                                    approximateBytes: 0,
+                                    reason: 'legacy-cache-may-be-partial'
+                                }],
+                                workspace: {
+                                    history: restoredLegacy,
+                                    units: [],
+                                    profiles: [],
+                                    activeResourceId: restoredLegacy[restoredLegacy.length - 1]?.id || null,
+                                    activeView: restoredLegacy[restoredLegacy.length - 1]?.type || 'input'
+                                }
+                            };
+                        }
+                    }
+                    try {
+                        const migrationResult = await deviceStorage.mutateRecovery(
+                            ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                            ALLO_WORKSPACE_RECOVERY_KEY,
+                            { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'markLegacyMigrated', snapshot: migrated },
+                            { queue: false }
+                        );
+                        store = ALLO_WORKSPACE_RECOVERY.normalizeStore(migrationResult.store);
+                    } catch (_) {
+                        if (migrated) {
+                            migrationWarning = 'Older cached work was found, but its recovery copy could not yet be confirmed on this device.';
+                        }
+                    }
+                }
+                canvasRecoveryStoreRef.current = store;
+                if (cancelled) return;
+                if (isCanvasStudentEntry()) { protectCanvasStudentEntry(); return; }
+                setCanvasRecoveryStoreAuthoritative(true);
+                setCanvasRecoveryStore(store);
+                const latest = store.snapshots[0] || null;
+                if (latest) {
+                    canvasRecoveryCurrentIdRef.current = latest.id;
+                    setLastSaved(new Date(latest.savedAt));
+                    setCanvasRecoverySaveStatus(migrationWarning ? 'error' : 'saved');
+                    setCanvasRecoveryError(migrationWarning);
+                    setCanvasRecoveryDecisionMade(false);
+                    setCanvasRecoveryDialogMode('choice');
+                } else {
+                    setCanvasRecoveryDecisionMade(true);
+                    setCanvasRecoveryDialogMode(null);
+                    setCanvasRecoverySaveStatus('idle');
+                }
+            } catch (error) {
+                if (cancelled || isCanvasStudentEntry()) return;
+                warnLog('Canvas workspace recovery check failed:', error);
+                setCanvasRecoveryError(String(error?.message || 'Saved work could not be checked on this device.'));
+                setCanvasRecoverySaveStatus('error');
+                setCanvasRecoveryStoreAuthoritative(false);
+                setCanvasRecoveryDecisionMade(false);
+                setCanvasRecoveryDialogMode('error');
+            } finally {
+                if (!cancelled) setIsHistoryLoaded(true);
+            }
+        };
+        loadCanvasWorkspace();
+        return () => { cancelled = true; };
     }
+    if (isTeacherMode && activeSessionCode && isHistoryLoaded) return;
     const loadLocalData = async () => {
         if (isStorageDisabled) {
             setIsHistoryLoaded(true);
@@ -14319,43 +15080,35 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             const savedHistory = await storageDB.get('allo_offline_history');
             if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()
                 || _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp'))) {
-                return; // a live student joined during the await — leave the pack intact (finally sets loaded)
+                return;
             }
             if (savedHistory) {
                 const items = savedHistory.items || (Array.isArray(savedHistory) ? savedHistory : []);
-                if (Array.isArray(items)) {
-                    setHistory(hydrateHistory(items));
-                }
+                if (Array.isArray(items)) setHistory(hydrateHistory(items));
             } else {
                 setHistory([]);
             }
-        } catch (e) {
-            warnLog("Critical Error loading offline history:", e);
-            if (addToastRef.current) {
-                addToastRef.current(t('toasts.data_load_error'), "error");
-            }
+        } catch (error) {
+            warnLog('Critical Error loading offline history:', error);
+            if (addToastRef.current) addToastRef.current(t('toasts.data_load_error'), 'error');
         } finally {
             setIsHistoryLoaded(true);
         }
         try {
             const savedProfiles = await storageDB.get('allo_offline_profiles');
-            if (savedProfiles && savedProfiles.items && Array.isArray(savedProfiles.items)) {
-                setProfiles(savedProfiles.items);
-            }
-        } catch (e) {
-            warnLog("Error loading offline profiles:", e);
+            if (savedProfiles && Array.isArray(savedProfiles.items)) setProfiles(savedProfiles.items);
+        } catch (error) {
+            warnLog('Error loading offline profiles:', error);
         }
         try {
             const savedUnits = await storageDB.get('allo_offline_units');
-            if (savedUnits && savedUnits.items && Array.isArray(savedUnits.items)) {
-                setUnits(savedUnits.items);
-            }
-        } catch (e) {
-            warnLog("Error loading offline units:", e);
+            if (savedUnits && Array.isArray(savedUnits.items)) setUnits(savedUnits.items);
+        } catch (error) {
+            warnLog('Error loading offline units:', error);
         }
     };
     loadLocalData();
-  }, [activeSessionCode, lzLoaded, isStorageDisabled]);
+  }, [activeSessionCode, lzLoaded, isStorageDisabled, isCanvas, isTeacherMode]);
   useEffect(() => {
     if (!isHistoryLoaded || isStorageDisabled || isCanvas || (!isTeacherMode && activeSessionCode)) return;
     setPendingSync(true);
@@ -17098,7 +17851,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [activeSidebarTab, setActiveSidebarTab] = useState('create');
   const [isHistoryMaximized, setIsHistoryMaximized] = useState(false);
   const [showQuizAnswers, setShowQuizAnswers] = useState(false);
-  const [quizMcqCount, setQuizMcqCount] = useState(10);
+  const [quizMcqCount, setQuizMcqCount] = useState(3);
   const [quizReflectionCount, setQuizReflectionCount] = useState(3);
   const [quizCustomInstructions, setQuizCustomInstructions] = useState('');
   const [quizItemTypeMix, setQuizItemTypeMix] = useState(null);
@@ -17325,7 +18078,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   }, [playbackRate]);
   useEffect(() => {
-      if (!lzLoaded) return;
+      if (!lzLoaded || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) {
+          setIsDraftSaving(false);
+          return;
+      }
       const saveDraft = setTimeout(async () => {
           const draftData = {
               inputText,
@@ -17360,29 +18116,39 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       targetStandards,
       useEmojis,
       keepCitations,
-      lzLoaded
+      lzLoaded,
+      isTeacherMode,
+      showStudentEntry,
+      activeSessionCode
   ]);
   useEffect(() => {
-      if (!lzLoaded) return;
+      if (!lzLoaded || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) return;
+      let cancelled = false;
+      const shouldStop = () => cancelled || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
       const initLocalData = async () => {
           try {
               const savedPoints = await storageDB.get('allo_global_points');
+              if (shouldStop()) return;
               if (savedPoints !== null) setGlobalPoints(parseInt(savedPoints, 10) || 0);
               const savedHistory = await storageDB.get('allo_point_history');
+              if (shouldStop()) return;
               if (savedHistory && Array.isArray(savedHistory)) setPointHistory(savedHistory);
           } catch (e) { warnLog("Points Load Error", e); }
           try {
               const savedWork = await storageDB.get('allo_student_work');
+              if (shouldStop()) return;
               if (savedWork) setStudentResponses(savedWork);
               isStudentWorkLoaded.current = true;
           } catch (e) { warnLog("Student Work Load Error", e); }
           try {
               const advSave = await storageDB.get('allo_adventure_save');
+              if (shouldStop()) return;
               if (advSave && advSave.turnCount > 0) setHasSavedAdventure(true);
           } catch (e) { warnLog("Adventure Check Error", e); }
           if (!inputText) {
               try {
                   const parsed = await storageDB.get('allo_draft_content');
+                  if (shouldStop()) return;
                   if (parsed) {
                       if (parsed.inputText) setInputText(parsed.inputText);
                       if (parsed.gradeLevel) setGradeLevel(parsed.gradeLevel);
@@ -17404,7 +18170,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       };
       initLocalData();
-  }, [lzLoaded]);
+      return () => { cancelled = true; };
+  }, [lzLoaded, isTeacherMode, showStudentEntry, activeSessionCode]);
   useEffect(() => {
     if (!readingRuler) return;
     const handleMouseMove = (e) => {
@@ -21724,7 +22491,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // host code; all imperative speech routing lives in the CDN helper.
   window.AlloModules = window.AlloModules || {}; window.AlloModules.AlloBotRef = alloBotRef;
   window.__contentEngineState = {
-    inputText, gradeLevel, sourceTopic, generatedContent,
+    inputText, gradeLevel, sourceTopic, generatedContent, currentUiLanguage,
     leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
     conceptInput, interestInput, languageInput, activeView, showSourceGen,
     generationStep, isGeneratingSource, selectionMenu, phonicsData,
@@ -21825,8 +22592,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // the render-time `_personasLiveRef.current = { ..., stopPlayback, ... }` capture ~1,200 lines
   // above its definition. As a const function expression there, it crashed AlloFlowContent on mount
   // with a temporal-dead-zone ReferenceError. (Still recreated each render, so no behavior change.)
-  function stopPlayback() {
-    const stoppedContentId = playingContentId;
+  function stopPlayback(reason = 'manual', contentIdOverride = null, playbackSessionIdOverride = null) {
+    const stoppedContentId = contentIdOverride || playingContentId;
+    const stoppedPlaybackSessionId = playbackSessionIdOverride ?? playbackSessionRef.current;
+    const normalizedStopReason = typeof reason === 'string' && reason ? reason : 'manual';
     _ceStopPlayback();
     if (playbackTimeoutRef.current) { clearTimeout(playbackTimeoutRef.current); playbackTimeoutRef.current = null; }
     setIsPlaying(false); setIsPaused(false); setPlayingContentId(null);
@@ -21834,7 +22603,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     isPlayingRef.current = false; isSystemAudioActiveRef.current = false;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     try {
-      window.dispatchEvent(new CustomEvent('alloflow:playback-stopped', { detail: { contentId: stoppedContentId || null } }));
+      window.dispatchEvent(new CustomEvent('alloflow:playback-stopped', { detail: {
+        contentId: stoppedContentId || null,
+        playbackSessionId: stoppedPlaybackSessionId,
+        reason: normalizedStopReason
+      } }));
     } catch (_) {}
   };
   const togglePause = useCallback((e) => {
@@ -22065,7 +22838,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }, contentId);
     throw new Error("[playSequence] PhaseKHelpers module not loaded - reload the page");
   };
-  const handleSpeak = async (text, contentId, startIndex = 0) => {
+  const handleSpeak = async (text, contentId, startIndex = 0, forceRestart = false) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.handleSpeak === "function") return _m.handleSpeak(text, contentId, startIndex, {
         isPlaying,
@@ -22272,7 +23045,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         calculateLocalFluencyMetrics,
         applyGlobalCitations,
         chunkText,
-      });
+      }, forceRestart);
     throw new Error("[handleSpeak] PhaseKHelpers module not loaded - reload the page");
   };
   useEffect(() => {
@@ -23870,6 +24643,40 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
+  const prepareReadAloudArtifactAudio = async (options = {}) => {
+      const moduleValue = window.AlloModules && window.AlloModules.ReadAloudArtifactAudio;
+      if (!moduleValue || typeof moduleValue.create !== 'function') {
+          const error = new Error('Read-aloud artifact audio is still loading. Please try again.');
+          error.code = 'artifact-audio-unavailable';
+          throw error;
+      }
+      const preparer = moduleValue.create({ callTTS });
+      return preparer.prepare({
+          ...options,
+          defaultVoice: options.defaultVoice || selectedVoice || 'Kore',
+          language: options.language || leveledTextLanguage || currentUiLanguage || 'English',
+          speed: options.speed || voiceSpeed || 1,
+      });
+  };
+  const _getPrivatePersonaArtifactStorage = async () => {
+      if (!window.__alloDeviceStoragePromise) {
+          window.__alloDeviceStoragePromise = window.alloDeviceStorage
+              ? Promise.resolve(window.alloDeviceStorage)
+              : new Promise((resolve, reject) => {
+                  const script = document.createElement('script');
+                  script.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds1';
+                  script.onload = () => window.alloDeviceStorage
+                      ? resolve(window.alloDeviceStorage)
+                      : reject(new Error('Device storage is unavailable.'));
+                  script.onerror = () => reject(new Error('Device storage failed to load.'));
+                  document.head.appendChild(script);
+              });
+      }
+      const storage = await window.__alloDeviceStoragePromise;
+      if (!storage || typeof storage.ready !== 'function') throw new Error('Device storage is unavailable.');
+      await storage.ready();
+      return storage;
+  };
   _exportLiveRef.current = {
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
       profiles, adventureState,
@@ -23877,7 +24684,137 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       externalCBMScores, interventionLogs,
       setIsProcessing, setShowStorybookExportModal,
       addToast, parseMarkdownToHTML, generateResourceHTML, rehydrateHistoryWithImages,
+      prepareReadAloudArtifactAudio, selectedVoice, voiceSpeed,
+      leveledTextLanguage, currentUiLanguage,
       t,
+  };
+  const handleSavePrivatePersonaSession = async () => {
+      const runtime = window.AlloModules && window.AlloModules.PersonaSessionArtifact;
+      if (!runtime || typeof runtime.buildPrivateSessionArtifact !== 'function') {
+          addToast('Private Persona session tools are still loading. Please try again.', 'error');
+          return null;
+      }
+      const chatHistory = Array.isArray(personaState && personaState.chatHistory)
+          ? personaState.chatHistory : [];
+      if (!chatHistory.length) return null;
+      const participants = personaState.mode === 'panel'
+          ? (personaState.selectedCharacters || []).slice(0, 2)
+          : [personaState.selectedCharacter].filter(Boolean);
+      const participantNames = participants.map(character => String(character && character.name || '').trim()).filter(Boolean);
+      const defaultVoice = selectedVoice || 'Kore';
+      const language = leveledTextLanguage || currentUiLanguage || 'English';
+      const voiceBySpeaker = {};
+      participants.forEach(character => {
+          const name = String(character && character.name || '').trim();
+          const voice = String(character && character.voice || '').trim();
+          if (name && voice) {
+              voiceBySpeaker[name] = voice;
+              voiceBySpeaker[name.toLocaleLowerCase()] = voice;
+          }
+      });
+      const sessionId = 'persona-session-' + Date.now();
+      const resourceId = generatedContent && generatedContent.id
+          ? String(generatedContent.id) : undefined;
+      const input = {
+          sessionId,
+          sessionKey: sessionId,
+          resourceId,
+          title: participantNames.length
+              ? 'Private conversation with ' + participantNames.join(' & ')
+              : 'Private Persona conversation',
+          language,
+          selectedVoice: defaultVoice,
+          defaultVoice,
+          voiceBySpeaker,
+          personaState,
+      };
+      setIsProcessing(true);
+      addToast('Preparing a private Persona session and its narration...', 'info');
+      try {
+          const runtimeOptions = {
+              maxChunkChars: 280,
+              selectedVoice: defaultVoice,
+              defaultVoice,
+              voiceBySpeaker,
+              voiceByRole: { learner: defaultVoice, persona: defaultVoice },
+              synthesisRate: voiceSpeed || 1,
+          };
+          const normalized = runtime.normalizePersonaSession(input, runtimeOptions);
+          const plannedSegments = normalized.narrationPlan.map(plan => ({
+              segmentId: plan.chunkId,
+              text: plan.text,
+              voice: voiceBySpeaker[plan.speaker]
+                  || voiceBySpeaker[String(plan.speaker || '').toLocaleLowerCase()]
+                  || defaultVoice,
+              language: plan.language || language,
+              speed: voiceSpeed || 1,
+          }));
+          let audioBatch = { audioBySegmentId: {}, total: plannedSegments.length, prepared: 0, failed: plannedSegments.length, errors: [] };
+          try {
+              audioBatch = await prepareReadAloudArtifactAudio({
+                  ownerApproved: true,
+                  resourceId: sessionId,
+                  resourceType: 'persona-session-read-aloud',
+                  adapterId: 'persona-session-artifact',
+                  scopeId: 'transcript',
+                  source: 'persona-owner-save',
+                  defaultVoice,
+                  language,
+                  speed: voiceSpeed || 1,
+                  segments: plannedSegments,
+              });
+          } catch (error) {
+              warnLog('[PersonaArtifact] Narration unavailable; saving the complete text session', error);
+          }
+          const built = await runtime.buildPrivateSessionArtifact(input, {
+              ...runtimeOptions,
+              prepareNarration: async request => {
+                  const audio = audioBatch.audioBySegmentId[request.chunkId];
+                  if (audio) return audio;
+                  const error = new Error('Narration was unavailable for this transcript chunk.');
+                  error.code = 'narration-unavailable';
+                  throw error;
+              },
+          });
+          let persistence = null;
+          let download = null;
+          let persistenceError = null;
+          let downloadError = null;
+          try {
+              const deviceStorage = await _getPrivatePersonaArtifactStorage();
+              persistence = await runtime.persistPrivateSessionArtifact(built.artifact, { deviceStorage });
+          } catch (error) {
+              persistenceError = error;
+              warnLog('[PersonaArtifact] Device persistence failed', error);
+          }
+          try {
+              download = runtime.downloadOwnerCopy(built.artifact, {
+                  ownerInitiated: true,
+                  filename: built.artifact.title,
+              });
+          } catch (error) {
+              downloadError = error;
+              warnLog('[PersonaArtifact] Owner download failed', error);
+          }
+          if (!persistence && !download) throw (persistenceError || downloadError || new Error('Private session could not be saved.'));
+          const clipMessage = built.narration.failures.length
+              ? ' ' + built.narration.embedded + '/' + built.narration.attempted + ' narration clips were included.'
+              : ' ' + built.narration.embedded + ' narration clips were included.';
+          if (persistence && download) {
+              addToast('Private Persona session saved on this device and downloaded.' + clipMessage, 'success');
+          } else if (download) {
+              addToast('Private Persona session downloaded; on-device persistence was unavailable.' + clipMessage, 'warning');
+          } else {
+              addToast('Private Persona session saved on this device; the download was unavailable.' + clipMessage, 'warning');
+          }
+          return built.artifact;
+      } catch (error) {
+          warnLog('[PersonaArtifact] Save failed', error);
+          addToast('Could not save the private Persona session: ' + (error && error.message ? error.message : 'Unknown error'), 'error');
+          return null;
+      } finally {
+          setIsProcessing(false);
+      }
   };
   const runAutonomousRemediation = (_docPipeline && _docPipeline.runAutonomousRemediation) ? _docPipeline.runAutonomousRemediation : async (h) => ({ html: h, score: 0, passes: 0, log: [] });
   const processExpertCommand = (_docPipeline && _docPipeline.processExpertCommand) ? _docPipeline.processExpertCommand : async (c, h) => ({ type: 'error', html: h });
@@ -24145,6 +25082,200 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
   };
 
+  const handleUpdateHavenRecognitionConfig = async (patch) => {
+      if (!activeSessionCode || havenConfigBusy) return;
+      const requestedCap = Math.floor(Number(patch && patch.perStudentTokenCap) || havenRecognitionConfig.perStudentTokenCap);
+      const nextConfig = {
+          enabled: patch && typeof patch.enabled === 'boolean' ? patch.enabled : havenRecognitionConfig.enabled,
+          perStudentTokenCap: ALLOHAVEN_RECOGNITION_CAPS.includes(requestedCap) ? requestedCap : havenRecognitionConfig.perStudentTokenCap,
+          updatedAt: Date.now()
+      };
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      setHavenConfigBusy(true);
+      try {
+          await writeToSession(sessionRef, { havenRecognitionConfig: nextConfig });
+          setHavenRewardReceipt(null);
+          addToast(
+              nextConfig.enabled
+                  ? ('AlloHaven recognition enabled · ' + nextConfig.perStudentTokenCap + '-token session cap per student.')
+                  : 'AlloHaven recognition is off for this session.',
+              'success'
+          );
+      } catch (error) {
+          warnLog('Could not update AlloHaven recognition settings.', error);
+          addToast('Could not update the recognition settings. Please try again.', 'error');
+      } finally {
+          setHavenConfigBusy(false);
+      }
+  };
+  const handleRecognizeStudent = async (uid) => {
+      if (!havenRecognitionConfig.enabled) {
+          addToast('Enable AlloHaven recognition for this session before sending an award.', 'info');
+          return;
+      }
+      if (havenRewardSendLockRef.current || !activeSessionCode || !uid || !ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(havenRewardReasonId)) return;
+      havenRewardSendLockRef.current = true;
+      setHavenRewardBusy(true);
+      const amount = havenRewardAmount === 2 ? 2 : 1;
+      const awardedAt = Date.now();
+      const reward = {
+          id: 'haven-' + awardedAt.toString(36) + '-' + Math.random().toString(36).slice(2, 10),
+          reasonId: havenRewardReasonId,
+          amount,
+          at: awardedAt
+      };
+      const remote = sessionData && sessionData.roster && sessionData.roster[uid]
+          && Array.isArray(sessionData.roster[uid].havenRewards)
+          ? sessionData.roster[uid].havenRewards : [];
+      const optimistic = Array.isArray(havenRewardDraftsRef.current[uid])
+          ? havenRewardDraftsRef.current[uid] : [];
+      const tokensUsed = getAlloHavenSessionRecognitionTokens({ havenRewards: remote }, optimistic);
+      if (tokensUsed + amount > havenRecognitionConfig.perStudentTokenCap) {
+          havenRewardSendLockRef.current = false;
+          setHavenRewardBusy(false);
+          addToast('This student has reached the session recognition limit for the selected token amount.', 'info');
+          return;
+      }
+      const byId = new Map();
+      remote.concat(optimistic).forEach(item => {
+          const valid = normalizeAlloHavenClassroomReward(item);
+          if (valid) byId.set(valid.id, valid);
+      });
+      byId.set(reward.id, reward);
+      const nextRewards = Array.from(byId.values())
+          .sort((a, b) => a.at - b.at)
+          .slice(-20);
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      try {
+          await writeToSession(sessionRef, { [`roster.${uid}.havenRewards`]: nextRewards });
+          havenRewardDraftsRef.current[uid] = nextRewards;
+          const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+          const studentEntry = sessionData && sessionData.roster && sessionData.roster[uid];
+          setHavenRewardReceipt({
+              count: 1,
+              scopeLabel: (studentEntry && studentEntry.name) || 'student',
+              skippedCount: 0,
+              reasonLabel: reason ? reason.label : 'Positive progress',
+              amount,
+              at: awardedAt
+          });
+          addToast(
+              'Recognition sent privately · +' + amount + ' AlloHaven token' + (amount === 1 ? '' : 's')
+              + (reason ? ' · ' + reason.label : ''),
+              'success'
+          );
+      } catch (error) {
+          warnLog('Could not send AlloHaven classroom recognition.', error);
+          addToast('Could not send the AlloHaven recognition. Please try again.', 'error');
+      } finally {
+          havenRewardSendLockRef.current = false;
+          setHavenRewardBusy(false);
+      }
+  };
+
+  const handleRecognizeStudents = async (uids, scopeLabel = 'students') => {
+      if (!havenRecognitionConfig.enabled) {
+          addToast('Enable AlloHaven recognition for this session before sending an award.', 'info');
+          return;
+      }
+      if (havenRewardSendLockRef.current || havenRewardBusy || !activeSessionCode || !ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(havenRewardReasonId)) return;
+      const roster = (sessionData && sessionData.roster) || {};
+      const targetUids = Array.from(new Set(Array.isArray(uids) ? uids : []))
+          .filter(uid => uid && roster[uid]);
+      if (!targetUids.length) {
+          addToast('No connected students are available for this recognition.', 'info');
+          return;
+      }
+      const amount = havenRewardAmount === 2 ? 2 : 1;
+      const awardedAt = Date.now();
+      let cappedCount = 0;
+      const prepared = targetUids.map((uid, index) => {
+          const remote = Array.isArray(roster[uid].havenRewards) ? roster[uid].havenRewards : [];
+          const optimistic = Array.isArray(havenRewardDraftsRef.current[uid])
+              ? havenRewardDraftsRef.current[uid] : [];
+          const tokensUsed = getAlloHavenSessionRecognitionTokens({ havenRewards: remote }, optimistic);
+          if (tokensUsed + amount > havenRecognitionConfig.perStudentTokenCap) {
+              cappedCount += 1;
+              return null;
+          }
+          const reward = {
+              id: 'haven-' + awardedAt.toString(36) + '-' + index.toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+              reasonId: havenRewardReasonId,
+              amount,
+              at: awardedAt
+          };
+          const byId = new Map();
+          remote.concat(optimistic).forEach(item => {
+              const valid = normalizeAlloHavenClassroomReward(item);
+              if (valid) byId.set(valid.id, valid);
+          });
+          byId.set(reward.id, reward);
+          return {
+              uid,
+              rewards: Array.from(byId.values()).sort((a, b) => a.at - b.at).slice(-20)
+          };
+      }).filter(Boolean);
+      if (!prepared.length) {
+          addToast('All selected students are at the session recognition limit for this token amount.', 'info');
+          return;
+      }
+      const batches = [];
+      for (let index = 0; index < prepared.length; index += 40) {
+          batches.push(prepared.slice(index, index + 40));
+      }
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      let delivered = 0;
+      havenRewardSendLockRef.current = true;
+      setHavenRewardBusy(true);
+      try {
+          for (const batch of batches) {
+              const payload = {};
+              batch.forEach(item => { payload[`roster.${item.uid}.havenRewards`] = item.rewards; });
+              await writeToSession(sessionRef, payload);
+              batch.forEach(item => { havenRewardDraftsRef.current[item.uid] = item.rewards; });
+              delivered += batch.length;
+          }
+          const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+          setHavenRewardReceipt({
+              count: delivered,
+              scopeLabel: scopeLabel || 'students',
+              skippedCount: cappedCount,
+              reasonLabel: reason ? reason.label : 'Positive progress',
+              amount,
+              at: awardedAt
+          });
+          addToast(
+              'Recognition sent privately to ' + delivered + ' ' + (scopeLabel || 'students')
+              + ' · +' + amount + ' token' + (amount === 1 ? '' : 's') + ' each'
+              + (reason ? ' · ' + reason.label : '')
+              + (cappedCount ? ' · ' + cappedCount + ' at session cap' : ''),
+              'success'
+          );
+      } catch (error) {
+          warnLog('Could not finish the batched AlloHaven recognition.', error);
+          if (delivered > 0) {
+              const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === havenRewardReasonId);
+              setHavenRewardReceipt({
+                  count: delivered,
+                  scopeLabel: 'students reached before interruption',
+                  skippedCount: cappedCount,
+                  reasonLabel: reason ? reason.label : 'Positive progress',
+                  amount,
+                  at: awardedAt,
+                  partial: true
+              });
+          }
+          addToast(
+              delivered > 0
+                  ? ('Recognition reached ' + delivered + ' students before the connection stopped. You can retry the remaining students.')
+                  : 'Could not send the AlloHaven recognition. Please try again.',
+              'error'
+          );
+      } finally {
+          havenRewardSendLockRef.current = false;
+          setHavenRewardBusy(false);
+      }
+  };
   // Plan T Slice Ta: student-side response submission to live session.
   // Writes to a NEW field `quizState.allResponses[uid][questionIdx]` so the
   // existing `quizState.responses[uid]` (one-question-at-a-time presentation
@@ -24722,6 +25853,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
     const _builderOpenerElRef = React.useRef(null);
   const _builderDraftRestoreRef = React.useRef(false);
+  const _builderRecoverySaveTimerRef = React.useRef(null);
   const openExportPreview = (mode = 'print') => {
     try { _builderOpenerElRef.current = document.activeElement; } catch (_) {}
     _builderDraftRestoreRef.current = false;
@@ -24787,7 +25919,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // ExportPreviewView receives as setShowExportPreview).
   const setShowExportPreviewWrapped = (v) => {
     if (v === false) {
+      if (_builderRecoverySaveTimerRef.current) {
+        clearTimeout(_builderRecoverySaveTimerRef.current);
+        _builderRecoverySaveTimerRef.current = null;
+      }
       _syncBuilderEditsToRemediation();
+      if (isCanvas) setCanvasRecoveryRevision(value => value + 1);
       setExportPreviewSource('history');
       // Focus restore (WCAG 2.4.3): return focus to whatever opened the
       // builder — previously focus dropped to <body> on close.
@@ -24983,7 +26120,590 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
     }
   };
-  const getSkippedResources = () => {
+
+  const resetCanvasWorkspaceSettings = () => {
+      setGradeLevel('3rd Grade');
+      setDifferentiationRange('None');
+      setTextFormat('Standard Text');
+      setLeveledTextLength('Same as Source');
+      setStudentInterests([]);
+      setLeveledTextCustomInstructions('');
+      setGlossaryCustomInstructions('');
+      setAdventureCustomInstructions('');
+      setPersonaCustomInstructions('');
+      setUseEmojis(false);
+      setKeepCitations(true);
+      setIncludeCharts(false);
+      setDokLevel('');
+      setTargetStandards([]);
+      setStandardInputValue('');
+      setStandardMode('ai');
+      setSelectedLanguages([]);
+      setLeveledTextLanguage('English');
+      setSourceTone('Informative');
+      setSourceLevel('5th Grade');
+      setSourceVocabulary('');
+      setSourceLength('250');
+      setStudentProjectSettings(_alloCreateDefaultStudentProjectSettings());
+      setSourceCustomInstructions('');
+      setResourceCount('Auto');
+      setFullPackTargetGroup('none');
+      _alloApplyCanvasSelAuthoringState(null);
+      setSelectedProfileId('');
+  };
+
+  const clearCanvasWorkspaceState = () => {
+      try { window.__alloBuilderEditedPack = null; } catch (_) {}
+      setHistory([]);
+      setGeneratedContent(null);
+      setActiveView('input');
+      setActiveSidebarTab('create');
+      setInputText('');
+      setSourceTopic('');
+      setUnits([]);
+      setProfiles([]);
+      setActiveUnitId('all');
+      setPersistedLessonDNA(null);
+      resetCanvasWorkspaceSettings();
+      setStudentResponses({});
+      setStudentProgressLog([]);
+      setStickers([]);
+      setGuidedMode(false);
+      resetGuidedProgress();
+      setWordSoundsHistory([]);
+      wsDispatch({ type: 'WS_RESET' });
+      setWordSoundsBadges([]);
+      setPhonemeMastery({});
+      setWordSoundsDailyProgress({ date: new Date().toDateString(), completed: 0, goalMet: false });
+      setWordSoundsConfusionPatterns({});
+  };
+
+  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {
+
+      const existing = canvasRecoveryStoreRef.current.snapshots.find(item => item.id === workspaceId);
+      let builderDraft = null;
+      try {
+          if (typeof window !== 'undefined' && window.__alloBuilderEditedPack) builderDraft = await _getBuilderDraftForProject();
+      } catch (_) {}
+      const savedAt = new Date().toISOString();
+      const title = String(sourceTopic || history[history.length - 1]?.title || 'Untitled workspace').trim().slice(0, 160) || 'Untitled workspace';
+      const snapshot = {
+          version: ALLO_WORKSPACE_RECOVERY.VERSION,
+          id: workspaceId,
+          title,
+          createdAt: existing?.createdAt || savedAt,
+          savedAt,
+          assetPolicy: existing?.assetPolicy === 'text-only' ? 'text-only' : 'full',
+          omittedAssets: existing?.omittedAssets || 0,
+          omittedAssetManifest: Array.isArray(existing?.omittedAssetManifest) ? existing.omittedAssetManifest : [],
+          workspace: {
+              history,
+              units,
+              profiles,
+              selectedProfileId,
+              activeResourceId: generatedContent?.id || null,
+              activeView,
+              selAuthoringState: _alloCaptureCanvasSelAuthoringState(),
+              activeUnitId,
+              activeSidebarTab,
+              inputText,
+              sourceTopic,
+              persistedLessonDNA,
+              builderDraft,
+              guidedProgress: {
+                  enabled: guidedMode,
+                  step: guidedStep,
+                  selectedIds: guidedSelectedIds,
+                  completedIds: guidedCompletedIds
+              },
+              lessonSettings: {
+                  gradeLevel,
+                  differentiationRange,
+                  textFormat,
+                  leveledTextLength,
+                  studentInterests,
+                  leveledTextCustomInstructions,
+                  glossaryCustomInstructions,
+                  adventureCustomInstructions,
+                  personaCustomInstructions,
+                  useEmojis,
+                  keepCitations,
+                  includeCharts,
+                  dokLevel,
+                  targetStandards,
+                  standardInputValue,
+                  standardMode,
+                  selectedLanguages,
+                  leveledTextLanguage,
+                  sourceTone,
+                  sourceLevel,
+                  sourceVocabulary,
+                  sourceLength,
+                  sourceCustomInstructions,
+                  resourceCount,
+                  fullPackTargetGroup
+              },
+              projectState: {
+                  studentProjectSettings: _alloNormalizeStudentProjectSettings(studentProjectSettings),
+                  responses: studentResponses,
+                  progressLog: studentProgressLog,
+                  stickers: Array.isArray(stickers) ? stickers : []
+              },
+              wordSoundsState: {
+                  history: wordSoundsHistory,
+                  families: wordSoundsFamilies,
+                  audioLibrary: wordSoundsAudioLibrary,
+                  badges: wordSoundsBadges,
+                  phonemeMastery,
+                  dailyProgress: wordSoundsDailyProgress,
+                  confusionPatterns: wordSoundsConfusionPatterns,
+                  sessionScore: wordSoundsScore
+              }
+          }
+      };
+      return ALLO_WORKSPACE_RECOVERY.stripSessionOnlyAssets(snapshot);
+  };
+
+  const restoreCanvasWorkspaceSnapshot = async (candidate) => {
+      const snapshot = ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(candidate);
+      if (!snapshot) {
+          setCanvasRecoveryError('This saved workspace is incomplete and could not be restored.');
+          return false;
+      }
+      if (canvasRecoveryMutationInProgressRef.current) return false;
+      const snapshotWasStored = canvasRecoveryStoreRef.current.snapshots.some(item => item.id === snapshot.id);
+      if (!snapshotWasStored) {
+          const stagedStore = ALLO_WORKSPACE_RECOVERY.upsert(canvasRecoveryStoreRef.current, snapshot);
+          canvasRecoveryStoreRef.current = stagedStore;
+          setCanvasRecoveryStore(stagedStore);
+      }
+      canvasRecoveryMutationInProgressRef.current = true;
+      canvasRecoverySaveTokenRef.current += 1;
+      canvasRecoveryPendingSaveCountRef.current = 0;
+      setPendingSync(false);
+      canvasRecoveryCurrentIdRef.current = snapshot.id;
+      setCanvasRecoveryBusyId(snapshot.id);
+      setCanvasRecoverySaveStatus('restoring');
+      try {
+          const workspace = snapshot.workspace;
+          resetCanvasWorkspaceSettings();
+          const restoredHistory = hydrateHistory(workspace.history);
+          setHistory(restoredHistory);
+          setUnits(Array.isArray(workspace.units) ? workspace.units : []);
+          const restoredProfiles = Array.isArray(workspace.profiles) ? workspace.profiles : [];
+          setProfiles(restoredProfiles);
+          setSelectedProfileId(
+              typeof workspace.selectedProfileId === 'string' && restoredProfiles.some(profile => profile?.id === workspace.selectedProfileId)
+                  ? workspace.selectedProfileId
+                  : ''
+          );
+          setInputText(typeof workspace.inputText === 'string' ? workspace.inputText : '');
+          setSourceTopic(typeof workspace.sourceTopic === 'string' ? workspace.sourceTopic : '');
+          setPersistedLessonDNA(workspace.persistedLessonDNA ?? null);
+          const settings = workspace.lessonSettings || {};
+          if (typeof settings.gradeLevel === 'string') setGradeLevel(settings.gradeLevel);
+          if (typeof settings.differentiationRange === 'string') setDifferentiationRange(settings.differentiationRange);
+          if (typeof settings.textFormat === 'string') setTextFormat(settings.textFormat);
+          if (typeof settings.leveledTextLength === 'string') setLeveledTextLength(settings.leveledTextLength);
+          if (Array.isArray(settings.studentInterests)) setStudentInterests(settings.studentInterests);
+          if (typeof settings.leveledTextCustomInstructions === 'string') setLeveledTextCustomInstructions(settings.leveledTextCustomInstructions);
+          if (typeof settings.glossaryCustomInstructions === 'string') setGlossaryCustomInstructions(settings.glossaryCustomInstructions);
+          if (typeof settings.adventureCustomInstructions === 'string') setAdventureCustomInstructions(settings.adventureCustomInstructions);
+          if (typeof settings.personaCustomInstructions === 'string') setPersonaCustomInstructions(settings.personaCustomInstructions);
+          if (typeof settings.useEmojis === 'boolean') setUseEmojis(settings.useEmojis);
+          if (typeof settings.keepCitations === 'boolean') setKeepCitations(settings.keepCitations);
+          if (typeof settings.includeCharts === 'boolean') setIncludeCharts(settings.includeCharts);
+          if (typeof settings.dokLevel === 'string') setDokLevel(settings.dokLevel);
+          if (Array.isArray(settings.targetStandards)) setTargetStandards(settings.targetStandards);
+          if (typeof settings.standardInputValue === 'string') setStandardInputValue(settings.standardInputValue);
+          if (typeof settings.standardMode === 'string') setStandardMode(settings.standardMode);
+          if (Array.isArray(settings.selectedLanguages)) setSelectedLanguages(settings.selectedLanguages);
+          if (typeof settings.leveledTextLanguage === 'string') setLeveledTextLanguage(settings.leveledTextLanguage);
+          if (typeof settings.sourceTone === 'string') setSourceTone(settings.sourceTone);
+          if (typeof settings.sourceLevel === 'string') setSourceLevel(settings.sourceLevel);
+          if (typeof settings.sourceVocabulary === 'string') setSourceVocabulary(settings.sourceVocabulary);
+          if (typeof settings.sourceLength === 'string') setSourceLength(settings.sourceLength);
+          if (typeof settings.sourceCustomInstructions === 'string') setSourceCustomInstructions(settings.sourceCustomInstructions);
+          if (settings.resourceCount !== undefined) setResourceCount(settings.resourceCount);
+          if (typeof settings.fullPackTargetGroup === 'string') setFullPackTargetGroup(settings.fullPackTargetGroup);
+          const guided = workspace.guidedProgress || {};
+          setGuidedMode(typeof guided.enabled === 'boolean' ? guided.enabled : false);
+          setGuidedStep(Number.isInteger(guided.step) ? guided.step : 0);
+          setGuidedSelectedIds(guided.selectedIds === null || Array.isArray(guided.selectedIds) ? guided.selectedIds : null);
+          setGuidedCompletedIds(Array.isArray(guided.completedIds) ? guided.completedIds : []);
+          const projectState = workspace.projectState || {};
+          setStudentResponses(projectState.responses && typeof projectState.responses === 'object' ? projectState.responses : {});
+          setStudentProjectSettings(_alloNormalizeStudentProjectSettings(projectState.studentProjectSettings));
+          _alloApplyCanvasSelAuthoringState(workspace.selAuthoringState);
+          setStudentProgressLog(Array.isArray(projectState.progressLog) ? projectState.progressLog : []);
+          setStickers(Array.isArray(projectState.stickers) ? projectState.stickers : []);
+          const wordSounds = workspace.wordSoundsState || {};
+          setWordSoundsHistory(Array.isArray(wordSounds.history) ? wordSounds.history : []);
+          setWordSoundsFamilies(wordSounds.families && typeof wordSounds.families === 'object' ? wordSounds.families : {});
+          setWordSoundsAudioLibrary(wordSounds.audioLibrary && typeof wordSounds.audioLibrary === 'object' ? wordSounds.audioLibrary : {});
+          setWordSoundsBadges(Array.isArray(wordSounds.badges) ? wordSounds.badges : []);
+          setPhonemeMastery(wordSounds.phonemeMastery && typeof wordSounds.phonemeMastery === 'object' ? wordSounds.phonemeMastery : {});
+          setWordSoundsDailyProgress(wordSounds.dailyProgress && typeof wordSounds.dailyProgress === 'object' ? wordSounds.dailyProgress : { date: new Date().toDateString(), completed: 0, goalMet: false });
+          setWordSoundsConfusionPatterns(wordSounds.confusionPatterns && typeof wordSounds.confusionPatterns === 'object' ? wordSounds.confusionPatterns : {});
+          setWordSoundsScore(wordSounds.sessionScore && typeof wordSounds.sessionScore === 'object' ? wordSounds.sessionScore : { correct: 0, total: 0, streak: 0 });
+          await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory);
+          setActiveUnitId(workspace.activeUnitId !== undefined ? workspace.activeUnitId : 'all');
+          setActiveSidebarTab(typeof workspace.activeSidebarTab === 'string' ? workspace.activeSidebarTab : 'create');
+          const activeItem = restoredHistory.find(item => item.id === workspace.activeResourceId)
+              || restoredHistory[restoredHistory.length - 1]
+              || null;
+          setGeneratedContent(null);
+          setActiveView('input');
+          if (activeItem && workspace.activeView !== 'input') {
+              const savedView = typeof workspace.activeView === 'string' ? workspace.activeView : activeItem.type;
+              setTimeout(() => {
+                  handleRestoreView(activeItem);
+                  if (!['readingBook', 'video-ref', 'video-transcript', 'manipulative-resource'].includes(activeItem.type)) {
+                      setActiveView(savedView);
+                  }
+              }, 0);
+          }
+          setLastSaved(snapshotWasStored ? new Date(snapshot.savedAt) : null);
+          setCanvasRecoveryError('');
+          setCanvasRecoveryDecisionMade(true);
+          setCanvasRecoveryDialogMode(null);
+          setCanvasRecoverySaveStatus(snapshotWasStored ? 'saved' : 'idle');
+          setCanvasRecoveryRevision(value => value + 1);
+          addToast('Previous workspace restored from this device.', 'success');
+          return true;
+      } catch (error) {
+          warnLog('Canvas workspace restore failed:', error);
+          setCanvasRecoveryError(String(error?.message || 'The workspace could not be restored.'));
+          setCanvasRecoverySaveStatus('error');
+          canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+          if (!snapshotWasStored) {
+              const rolledBackStore = ALLO_WORKSPACE_RECOVERY.remove(canvasRecoveryStoreRef.current, snapshot.id);
+              canvasRecoveryStoreRef.current = rolledBackStore;
+              setCanvasRecoveryStore(rolledBackStore);
+          }
+          return false;
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const startFreshCanvasWorkspace = () => {
+      canvasRecoverySaveTokenRef.current += 1;
+      canvasRecoveryPendingSaveCountRef.current = 0;
+      canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+      clearCanvasWorkspaceState();
+      setPendingSync(false);
+      setCanvasRecoveryError('');
+      setCanvasRecoveryDecisionMade(true);
+      setCanvasRecoveryDialogMode(null);
+      setCanvasRecoverySaveStatus('idle');
+      setLastSaved(null);
+      setCanvasRecoveryRevision(value => value + 1);
+      addToast(canvasRecoveryStoreRef.current.snapshots.length > 0
+          ? 'Fresh workspace started. Your previous saved work is still available on this device.'
+          : 'Fresh workspace started.', 'info');
+  };
+
+  const openCanvasRecoveryManager = () => {
+      setCanvasRecoveryEraseId(null);
+      setCanvasRecoveryDialogMode('manage');
+  };
+
+  const retryCanvasRecoveryStorage = async () => {
+      if (canvasRecoveryMutationInProgressRef.current) return;
+      canvasRecoveryMutationInProgressRef.current = true;
+      setCanvasRecoveryBusyId('storage-retry');
+      setCanvasRecoverySaveStatus('checking');
+      try {
+          const store = await queueCanvasRecoveryStorage(async () => {
+              const deviceStorage = await _alloGetCanvasDeviceStorage();
+              const rawStore = await deviceStorage.get(ALLO_WORKSPACE_RECOVERY_NAMESPACE, ALLO_WORKSPACE_RECOVERY_KEY);
+              if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(rawStore)) {
+                  throw new Error('Saved work was created by a newer AlloFlow version and cannot be changed by this version.');
+              }
+              return ALLO_WORKSPACE_RECOVERY.normalizeStore(rawStore);
+          });
+          canvasRecoveryStoreRef.current = store;
+          setCanvasRecoveryStore(store);
+          setCanvasRecoveryStoreAuthoritative(true);
+          setCanvasRecoveryError('');
+          if (store.snapshots.length > 0) {
+              setCanvasRecoverySaveStatus('saved');
+              if (!canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode('choice');
+          } else {
+              setCanvasRecoverySaveStatus('idle');
+              if (!canvasRecoveryDecisionMade) {
+                  setCanvasRecoveryDecisionMade(true);
+                  setCanvasRecoveryDialogMode(null);
+              }
+          }
+          setCanvasRecoveryRevision(value => value + 1);
+      } catch (error) {
+          setCanvasRecoveryStoreAuthoritative(false);
+          setCanvasRecoveryError(String(error?.message || 'Saved work could not be checked on this device.'));
+          setCanvasRecoverySaveStatus('error');
+          if (!canvasRecoveryDecisionMade) setCanvasRecoveryDialogMode('error');
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const continueWithoutCanvasRecovery = () => {
+      setCanvasRecoveryDecisionMade(true);
+      setCanvasRecoveryDialogMode(null);
+  };
+
+  const requestCanvasRecoveryErase = (snapshotId) => {
+      setCanvasRecoveryEraseId(snapshotId);
+      setTimeout(() => {
+          const candidates = Array.from(canvasRecoveryDialogRef.current?.querySelectorAll('[data-recovery-confirm]') || []);
+          const confirm = candidates.find(node => node.dataset.recoveryConfirm === snapshotId);
+          if (confirm && typeof confirm.focus === 'function') confirm.focus();
+      }, 0);
+  };
+
+  const exportCanvasRecoverySnapshot = (candidate) => {
+      const snapshot = ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(candidate);
+      if (!snapshot) return;
+      const project = {
+          mode: 'teacher',
+          timestamp: snapshot.savedAt,
+          history: snapshot.workspace.history,
+          builderDraft: snapshot.workspace.builderDraft || null,
+          responses: snapshot.workspace.projectState?.responses || {},
+          progressLog: snapshot.workspace.projectState?.progressLog || [],
+          stickers: snapshot.workspace.projectState?.stickers || [],
+          workspaceRecovery: snapshot
+      };
+      const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow-Workspace-' + snapshot.savedAt.slice(0, 10) + '.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  };
+
+  const eraseCanvasRecoverySnapshot = async (snapshotId) => {
+      if (canvasRecoveryMutationInProgressRef.current) return;
+      canvasRecoveryMutationInProgressRef.current = true;
+      canvasRecoverySaveTokenRef.current += 1;
+      canvasRecoveryPendingSaveCountRef.current = 0;
+      setPendingSync(false);
+      setCanvasRecoveryBusyId(snapshotId);
+      try {
+          const nextStore = await queueCanvasRecoveryStorage(async () => {
+              const deviceStorage = await _alloGetCanvasDeviceStorage();
+              const target = canvasRecoveryStoreRef.current.snapshots.find(item => item.id === snapshotId);
+              const isLegacyMigration = Boolean(target?.omittedAssetManifest?.some(item => item?.kind === 'legacy-cache'));
+              const mutationResult = await deviceStorage.mutateRecovery(
+                  ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                  ALLO_WORKSPACE_RECOVERY_KEY,
+                  { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'remove', snapshotId },
+                  { queue: false }
+              );
+              const next = ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);
+              if (isLegacyMigration) {
+                  try { await deviceStorage.remove('app_kv', 'allo_offline_history', { queue: false }); } catch (_) {}
+                  try { await storageDB.del('allo_offline_history'); } catch (_) {}
+              }
+              return next;
+          });
+          canvasRecoveryStoreRef.current = nextStore;
+          setCanvasRecoveryStore(nextStore);
+          setCanvasRecoveryStoreAuthoritative(true);
+          setCanvasRecoveryEraseId(null);
+          if (canvasRecoveryCurrentIdRef.current === snapshotId) {
+              canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+              clearCanvasWorkspaceState();
+              setLastSaved(null);
+              setCanvasRecoverySaveStatus('idle');
+          }
+          setCanvasRecoveryError('');
+          addToast('Saved workspace erased from this device.', 'info');
+      } catch (error) {
+          setCanvasRecoveryError(String(error?.message || 'The saved workspace could not be erased.'));
+          setCanvasRecoverySaveStatus('error');
+      } finally {
+          canvasRecoveryMutationInProgressRef.current = false;
+          setCanvasRecoveryBusyId(null);
+      }
+  };
+
+  const handleCanvasRecoveryImport = (event) => {
+      const input = event?.currentTarget || event?.target;
+      const file = input?.files?.[0];
+      if (!file) return;
+      setCanvasRecoveryBusyId('import-read');
+      const reader = new FileReader();
+      reader.onload = async (loadEvent) => {
+          try {
+              const parsed = JSON.parse(String(loadEvent?.target?.result || ''));
+              if (parsed && Object.prototype.hasOwnProperty.call(parsed, 'workspaceRecovery')) {
+                  if (!ALLO_WORKSPACE_RECOVERY.isSupportedPayload(parsed.workspaceRecovery)) {
+                      throw new Error('This recovery file was created by a newer AlloFlow version.');
+                  }
+                  const recovered = ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(parsed.workspaceRecovery);
+                  if (!recovered) throw new Error('This recovery file does not contain a valid workspace.');
+                  setCanvasRecoveryBusyId(null);
+                  const imported = {
+                      ...recovered,
+                      id: ALLO_WORKSPACE_RECOVERY.newId(),
+                      title: (recovered.title + ' (imported)').slice(0, 160),
+                      createdAt: new Date().toISOString(),
+                      savedAt: new Date().toISOString()
+                  };
+                  await restoreCanvasWorkspaceSnapshot(imported);
+                  return;
+              }
+              // Older teacher/student project files continue through the established importer.
+              handleLoadProject({ target: { files: [file] } });
+          } catch (error) {
+              setCanvasRecoveryError(String(error?.message || 'The project file could not be imported.'));
+              setCanvasRecoverySaveStatus('error');
+          } finally {
+              setCanvasRecoveryBusyId(null);
+              if (input) input.value = '';
+          }
+      };
+      reader.onerror = () => {
+          setCanvasRecoveryBusyId(null);
+          setCanvasRecoveryError('The project file could not be read.');
+          setCanvasRecoverySaveStatus('error');
+          if (input) input.value = '';
+      };
+      reader.readAsText(file);
+  };
+
+  useEffect(() => {
+      if (!isCanvas || !canvasRecoveryDecisionMade || !isHistoryLoaded || isStorageDisabled || canvasRecoveryMutationInProgressRef.current) return undefined;
+      const liveStudentEntry = _alloHasAnyStudentEntry()
+          || (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()));
+      const hasMeaningfulWorkspace = history.length > 0
+          || (typeof inputText === 'string' && Boolean(inputText.trim()))
+          || (typeof sourceTopic === 'string' && Boolean(sourceTopic.trim()));
+      if (liveStudentEntry || !hasMeaningfulWorkspace) return undefined;
+      const saveToken = ++canvasRecoverySaveTokenRef.current;
+      const workspaceId = canvasRecoveryCurrentIdRef.current;
+      const saveDelay = canvasRecoveryImmediateSaveRef.current ? 0 : 1500;
+      canvasRecoveryImmediateSaveRef.current = false;
+      const timeoutId = setTimeout(async () => {
+          if (saveToken !== canvasRecoverySaveTokenRef.current
+              || canvasRecoveryMutationInProgressRef.current
+              || canvasRecoveryCurrentIdRef.current !== workspaceId) return;
+          beginCanvasRecoveryPendingSave();
+          setCanvasRecoverySaveStatus('saving');
+          try {
+              const snapshot = await buildCanvasWorkspaceSnapshot(workspaceId);
+              if (saveToken !== canvasRecoverySaveTokenRef.current
+                  || canvasRecoveryMutationInProgressRef.current
+                  || canvasRecoveryCurrentIdRef.current !== workspaceId) return;
+              const result = await queueCanvasRecoveryStorage(async () => {
+                  if (saveToken !== canvasRecoverySaveTokenRef.current
+                      || canvasRecoveryMutationInProgressRef.current
+                      || canvasRecoveryCurrentIdRef.current !== workspaceId) return null;
+                  const deviceStorage = await _alloGetCanvasDeviceStorage();
+                  let mutationResult;
+                  let degraded = false;
+                  try {
+                      mutationResult = await deviceStorage.mutateRecovery(
+                          ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                          ALLO_WORKSPACE_RECOVERY_KEY,
+                          { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot },
+                          { queue: false }
+                      );
+                  } catch (fullError) {
+                      const quotaMessage = String(fullError?.name || '') + ' ' + String(fullError?.message || '');
+                      if (!/quota|exceed|too large/i.test(quotaMessage)) throw fullError;
+                      degraded = true;
+                      let reducedSnapshot = ALLO_WORKSPACE_RECOVERY.stripLargeAssets(snapshot);
+                      try {
+                          mutationResult = await deviceStorage.mutateRecovery(
+                              ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                              ALLO_WORKSPACE_RECOVERY_KEY,
+                              { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot: reducedSnapshot },
+                              { queue: false }
+                          );
+                      } catch (mediaOnlyError) {
+                          const secondQuota = String(mediaOnlyError?.name || '') + ' ' + String(mediaOnlyError?.message || '');
+                          if (!/quota|exceed|too large/i.test(secondQuota) || !reducedSnapshot.workspace?.builderDraft) throw mediaOnlyError;
+                          const manifest = Array.isArray(reducedSnapshot.omittedAssetManifest)
+                              ? reducedSnapshot.omittedAssetManifest.slice(0, 499)
+                              : [];
+                          manifest.push({
+                              path: 'snapshot.workspace.builderDraft',
+                              kind: 'document-builder-draft',
+                              approximateBytes: Number(reducedSnapshot.workspace.builderDraft.storedByteLength) || 0,
+                              reason: 'device-quota'
+                          });
+                          reducedSnapshot = {
+                              ...reducedSnapshot,
+                              assetPolicy: 'text-only',
+                              omittedAssets: (Number(reducedSnapshot.omittedAssets) || 0) + 1,
+                              omittedAssetManifest: manifest,
+                              workspace: { ...reducedSnapshot.workspace, builderDraft: null }
+                          };
+                          mutationResult = await deviceStorage.mutateRecovery(
+                              ALLO_WORKSPACE_RECOVERY_NAMESPACE,
+                              ALLO_WORKSPACE_RECOVERY_KEY,
+                              { version: ALLO_WORKSPACE_RECOVERY.VERSION, action: 'upsert', snapshot: reducedSnapshot },
+                              { queue: false }
+                          );
+                      }
+                  }
+                  const nextStore = ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);
+                  return { nextStore, degraded };
+              });
+              if (!result) return;
+              canvasRecoveryStoreRef.current = result.nextStore;
+              setCanvasRecoveryStore(result.nextStore);
+              setCanvasRecoveryStoreAuthoritative(true);
+              if (result.degraded && canvasRecoveryCurrentIdRef.current === workspaceId) {
+                  addToast('Workspace saved as history and settings; large media or the Builder draft could not fit on this device.', 'warning');
+              }
+              if (saveToken === canvasRecoverySaveTokenRef.current && canvasRecoveryCurrentIdRef.current === workspaceId) {
+                  const saved = result.nextStore.snapshots.find(item => item.id === workspaceId);
+                  if (!saved) {
+                      canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+                      setLastSaved(null);
+                      setCanvasRecoveryError('This workspace was erased in another tab. Further edits will start a new workspace.');
+                      setCanvasRecoverySaveStatus('idle');
+                      addToast('This saved workspace was erased in another tab. Your current screen remains open but is no longer saved.', 'info');
+                      return;
+                  }
+                  setLastSaved(new Date(saved.savedAt));
+                  setCanvasRecoveryError('');
+                  setCanvasRecoverySaveStatus('saved');
+              }
+          } catch (error) {
+              if (saveToken === canvasRecoverySaveTokenRef.current && canvasRecoveryCurrentIdRef.current === workspaceId) {
+                  warnLog('Canvas workspace save failed:', error);
+                  setCanvasRecoveryError(String(error?.message || 'This workspace could not be saved on this device.'));
+                  setCanvasRecoverySaveStatus('error');
+              }
+          } finally {
+              canvasRecoveryPendingSaveCountRef.current = Math.max(0, canvasRecoveryPendingSaveCountRef.current - 1);
+              if (canvasRecoveryPendingSaveCountRef.current === 0) setPendingSync(false);
+          }
+      }, saveDelay);
+      return () => {
+          if (canvasRecoverySaveTokenRef.current === saveToken) canvasRecoverySaveTokenRef.current += 1;
+          clearTimeout(timeoutId);
+      };
+  }, [
+      isCanvas, canvasRecoveryDecisionMade, isHistoryLoaded, isStorageDisabled, activeSessionCode, isTeacherMode,
+      history, units, profiles, selectedProfileId, generatedContent?.id, activeView, activeUnitId, activeSidebarTab,
+      inputText, sourceTopic, persistedLessonDNA, gradeLevel, differentiationRange, textFormat,
+      leveledTextLength, studentInterests, leveledTextCustomInstructions, glossaryCustomInstructions,
+      adventureCustomInstructions, personaCustomInstructions, useEmojis, keepCitations, includeCharts,
+      dokLevel, targetStandards, standardInputValue, standardMode, selectedLanguages, leveledTextLanguage,
+      sourceTone, sourceLevel, sourceVocabulary, sourceLength, sourceCustomInstructions, resourceCount,
+      fullPackTargetGroup, studentProjectSettings, guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds, studentResponses,
+      studentProgressLog, stickers, wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary,
+      wordSoundsBadges, phonemeMastery, wordSoundsDailyProgress, wordSoundsConfusionPatterns,
+      wordSoundsScore, canvasRecoveryRevision
+  ]);  const getSkippedResources = () => {
     const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
     return skipped.map(item => item.title || getDefaultTitle(item.type));
   };
@@ -25097,7 +26817,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       doc.querySelectorAll('img').forEach(_wireBuilderCropImage);
       // Dirty flag for the edit-loss guard above: any user edit marks the
       // body so settings-driven re-renders can't silently wipe hand edits.
-      try { doc.addEventListener('input', function () { try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {} }); } catch (_) {}
+      try { doc.addEventListener('input', function () {
+        try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+        if (isCanvas) {
+          if (_builderRecoverySaveTimerRef.current) clearTimeout(_builderRecoverySaveTimerRef.current);
+          _builderRecoverySaveTimerRef.current = setTimeout(() => {
+            _builderRecoverySaveTimerRef.current = null;
+            setCanvasRecoveryRevision(value => value + 1);
+          }, 500);
+        }
+      }); } catch (_) {}
       const editStyle = doc.createElement('style');
       // The id lets export paths strip this editor-only CSS so it never
       // ships inside a student-facing document.
@@ -25397,7 +27126,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         warnLog('[Export preview] applyA11yInspector failed:', _inspErr);
       }
     }
-  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode]);
+  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas]);
 
   React.useEffect(() => {
     if (!showExportPreview) {
@@ -25964,6 +27693,36 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             if (!m || !m.attempts) return;
             const key = m.uid || ('file:' + (m.nickname || 'student'));
             setImportedConceptMastery(prev => ({ ...prev, [key]: { attempts: m.attempts, nickname: m.nickname || null, savedAt: m.savedAt || null } }));
+        },
+        onProjectLoadStart: () => {
+            if (!isCanvas) return;
+            if (canvasRecoveryMutationInProgressRef.current) {
+                throw new Error('Another saved-work operation is still running.');
+            }
+            canvasRecoveryImportPreviousIdRef.current = canvasRecoveryCurrentIdRef.current;
+            canvasRecoveryMutationInProgressRef.current = true;
+            canvasRecoverySaveTokenRef.current += 1;
+            canvasRecoveryPendingSaveCountRef.current = 0;
+            canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+            setPendingSync(false);
+            setCanvasRecoveryBusyId('project-import');
+            setCanvasRecoverySaveStatus('restoring');
+        },
+        onProjectLoadComplete: ({ success }) => {
+            if (!isCanvas || !canvasRecoveryImportPreviousIdRef.current) return;
+            if (!success) {
+                canvasRecoveryCurrentIdRef.current = canvasRecoveryImportPreviousIdRef.current;
+                setCanvasRecoverySaveStatus(canvasRecoveryStoreRef.current.snapshots.length > 0 ? 'saved' : 'idle');
+            } else {
+                setCanvasRecoveryDecisionMade(true);
+                setCanvasRecoveryDialogMode(null);
+                setCanvasRecoverySaveStatus('idle');
+                setLastSaved(null);
+                setCanvasRecoveryRevision(value => value + 1);
+            }
+            canvasRecoveryImportPreviousIdRef.current = null;
+            canvasRecoveryMutationInProgressRef.current = false;
+            setCanvasRecoveryBusyId(null);
         },
       });
     throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
@@ -27456,13 +29215,60 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       `;
       executeStartAdventure(sequelContext);
   };
-  // Free-response nudge (2026-07-16): delegates to AdventureHandlers. Costs half
-  // the turn's XP gain (applied in handleDiceRollComplete via hintUsedTurn).
+  // Free-response Strategy Hint: a once-per-scene formative scaffold with no XP penalty.
   const handleAdventureHint = async () => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
     if (_m && typeof _m.handleAdventureHint === "function") return _m.handleAdventureHint({
-        adventureState, setAdventureState, callGemini, addToast, t, warnLog, resilientJsonParse, gradeLevel
+        adventureState,
+        adventureTextInput,
+        setAdventureState,
+        callGemini,
+        addToast,
+        t,
+        warnLog,
+        resilientJsonParse,
+        gradeLevel,
+        sourceTopic,
+        inputText,
+        standardsInput,
+        adventureInputMode,
+        adventureLanguageMode,
+        selectedLanguages,
+        adventureCustomInstructions,
+        isSocialStoryMode,
+        socialStoryFocus,
     });
+  };
+  const handleGuidingHand = async (item) => {
+    const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
+    if (_m && typeof _m.handleGuidingHand === "function") return _m.handleGuidingHand(item, {
+      adventureState,
+      adventureInputMode,
+      adventureLanguageMode,
+      adventureFreeResponseEnabled,
+      adventureConsistentCharacters,
+      adventureCustomInstructions,
+      isAdventureStoryMode,
+      isSocialStoryMode,
+      socialStoryFocus,
+      sourceTopic,
+      inputText,
+      gradeLevel,
+      currentUiLanguage,
+      lastTurnSnapshot,
+      setAdventureState,
+      callGemini,
+      resilientJsonParse,
+      addToast,
+      t,
+      warnLog,
+      generateAdventureImage,
+      playAdventureEventSound,
+      alloBotRef,
+      ADVENTURE_GUARDRAIL,
+      NARRATIVE_GUARDRAILS,
+    });
+    throw new Error("[handleGuidingHand] AdventureHandlers module not loaded - reload the page");
   };
   const executeStartAdventure = async (contextOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.AdventureHandlers;
@@ -27874,11 +29680,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           addToast(t('adventure.toasts.broadcast_error'), "error");
       }
   };
-  const handleUseItem = (itemInput) => {
+  const handleUseItem = async (itemInput) => {
       const item = (itemInput && itemInput.id) ? itemInput : selectedInventoryItem;
       if (!item) return;
       if (item.effectType === 'key_item') {
           addToast(t('adventure.toasts.key_item_usage', { item: item.name }), "info");
+          return;
+      }
+      if (item.effectType === 'story_assist') {
+          setSelectedInventoryItem(null);
+          await handleGuidingHand(item);
           return;
       }
       if (item.effectType === 'hint') {
@@ -30056,7 +31867,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const hadActiveAudio = personaTtsQueueRunningRef.current || personaTtsQueueRef.current.length > 0;
       personaTtsQueueGenerationRef.current += 1;
       personaTtsQueueRef.current = [];
-      personaTtsQueuedIndicesRef.current.clear();
+      personaTtsQueuedMessageKeysRef.current.clear();
+      personaTtsHistoryKeysRef.current = [];
       personaAutoReadWasEnabledRef.current = false;
       lastReadPersonaIndexRef.current = -1;
       setPanelTtsPending([]);
@@ -30076,7 +31888,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       personaAutoReadRef.current = false;
       personaTtsQueueGenerationRef.current += 1;
       personaTtsQueueRef.current = [];
-      personaTtsQueuedIndicesRef.current.clear();
+      personaTtsQueuedMessageKeysRef.current.clear();
+      personaTtsHistoryKeysRef.current = [];
       if (hadActiveAudio) {
           try { stopPlayback(); } catch (_) {}
       }
@@ -30089,12 +31902,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               count: 1,
               shouldContinue: () => (
                   personaAutoReadRef.current &&
+                  isPersonaChatOpen &&
                   !(typeof isGlobalMuted === 'function' && isGlobalMuted()) &&
                   entry.generation === personaTtsQueueGenerationRef.current
               ),
               deps: {
                   callTTS, splitTextToSentences, getSideBySideContent,
                   selectedVoice, AVAILABLE_VOICES, personaState,
+                  currentUiLanguage, leveledTextLanguage, voiceSpeed,
                   _isCanvasEnv, _ttsState
               }
           });
@@ -30107,13 +31922,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (personaTtsQueueRunningRef.current) return;
       personaTtsQueueRunningRef.current = true;
       try {
-          while (personaAutoReadRef.current && !(typeof isGlobalMuted === 'function' && isGlobalMuted())) {
+          while (personaAutoReadRef.current && isPersonaChatOpen && !(typeof isGlobalMuted === 'function' && isGlobalMuted())) {
               const entry = personaTtsQueueRef.current.shift();
               if (!entry) break;
-              personaTtsQueuedIndicesRef.current.delete(entry.index);
+              personaTtsQueuedMessageKeysRef.current.delete(entry.messageKey);
               if (entry.generation !== personaTtsQueueGenerationRef.current) continue;
               setPanelTtsPending(prev => prev.filter(index => index !== entry.index));
-              await new Promise(resolve => {
+              const completedPlaybackSessionId = await new Promise(resolve => {
                   const contentId = `persona-message-${entry.index}`;
                   const wordCount = String(entry.msg?.text || '').trim().split(/\s+/).filter(Boolean).length;
                   const hardCapMs = Math.min(90000, Math.max(18000, wordCount * 900 + 12000));
@@ -30121,6 +31936,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   let settled = false;
                   let poll = null;
                   let timer = null;
+                  let expectedPlaybackSessionId = null;
                   const cleanup = () => {
                       if (poll) clearInterval(poll);
                       if (timer) clearTimeout(timer);
@@ -30130,14 +31946,28 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                       if (settled) return;
                       settled = true;
                       cleanup();
-                      resolve();
+                      resolve(expectedPlaybackSessionId);
                   };
                   const onPlaybackStopped = (event) => {
-                      if (event?.detail?.contentId === contentId) settle();
+                      if (
+                          expectedPlaybackSessionId != null &&
+                          event?.detail?.contentId === contentId &&
+                          event?.detail?.playbackSessionId === expectedPlaybackSessionId
+                      ) {
+                          const reason = String(event?.detail?.reason || 'manual');
+                          if (reason !== 'ended') {
+                              personaTtsQueueGenerationRef.current += 1;
+                              personaTtsQueueRef.current = [];
+                              personaTtsQueuedMessageKeysRef.current.clear();
+                              setPanelTtsPending([]);
+                          }
+                          settle();
+                      }
                   };
                   window.addEventListener('alloflow:playback-stopped', onPlaybackStopped);
                   try {
-                      const speakResult = handleSpeak(entry.msg.text, contentId, 0);
+                      const speakResult = handleSpeak(entry.msg.text, contentId, 0, true);
+                      expectedPlaybackSessionId = playbackSessionRef.current;
                       Promise.resolve(speakResult).catch(error => {
                           warnLog('Persona auto-read playback failed:', error);
                           settle();
@@ -30161,11 +31991,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                           entry.generation === personaTtsQueueGenerationRef.current &&
                           isPlayingRef.current
                       ) {
-                          try { stopPlayback(); } catch (_) {}
+                          try { stopPlayback('persona-auto-read-timeout', contentId, expectedPlaybackSessionId); } catch (_) {}
                       }
                       settle();
                   }, hardCapMs);
               });
+              if (
+                  completedPlaybackSessionId != null &&
+                  playbackSessionRef.current !== completedPlaybackSessionId &&
+                  isPlayingRef.current
+              ) {
+                  // A manual/global playback superseded this entry. Respect the
+                  // learner's explicit choice instead of interrupting it with
+                  // the remaining auto-read backlog.
+                  personaTtsQueueGenerationRef.current += 1;
+                  personaTtsQueueRef.current = [];
+                  personaTtsQueuedMessageKeysRef.current.clear();
+                  setPanelTtsPending([]);
+                  break;
+              }
           }
       } finally {
           personaTtsQueueRunningRef.current = false;
@@ -30183,6 +32027,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const enqueuePersonaTtsMessages = (messages) => {
       if (
           !personaAutoReadRef.current ||
+          !isPersonaChatOpen ||
           (typeof isGlobalMuted === 'function' && isGlobalMuted()) ||
           !Array.isArray(messages) ||
           messages.length === 0
@@ -30190,9 +32035,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const generation = personaTtsQueueGenerationRef.current;
       const added = [];
       messages.forEach(({ msg, index }) => {
-          if (!msg || msg.role !== 'model' || personaTtsQueuedIndicesRef.current.has(index)) return;
-          const entry = { msg, index, generation };
-          personaTtsQueuedIndicesRef.current.add(index);
+          const messageKey = createPersonaTtsMessageKey(msg, index);
+          if (!msg || msg.role !== 'model' || personaTtsQueuedMessageKeysRef.current.has(messageKey)) return;
+          const entry = { msg, index, messageKey, generation };
+          personaTtsQueuedMessageKeysRef.current.add(messageKey);
           personaTtsQueueRef.current.push(entry);
           added.push(entry);
           prewarmQueuedPersonaMessage(entry);
@@ -30203,12 +32049,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
   useEffect(() => {
       const history = Array.isArray(personaState.chatHistory) ? personaState.chatHistory : [];
+      const historyKeys = history.map((message, index) => createPersonaTtsMessageKey(message, index));
+      const previousHistoryKeys = personaTtsHistoryKeysRef.current;
       const lastIndex = history.length - 1;
       if (!personaAutoRead) {
           // Keep the cursor current while disabled. Enabling is handled as a
           // distinct transition and intentionally selects only the latest
           // existing character turn, not the full transcript backlog.
           lastReadPersonaIndexRef.current = lastIndex;
+          personaTtsHistoryKeysRef.current = historyKeys;
           personaAutoReadWasEnabledRef.current = false;
           return;
       }
@@ -30223,11 +32072,31 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               }
           }
       } else {
-          for (let index = lastReadPersonaIndexRef.current + 1; index <= lastIndex; index += 1) {
-              if (history[index]?.role === 'model') newMessages.push({ msg: history[index], index });
+          let commonPrefixLength = 0;
+          while (
+              commonPrefixLength < previousHistoryKeys.length &&
+              commonPrefixLength < historyKeys.length &&
+              previousHistoryKeys[commonPrefixLength] === historyKeys[commonPrefixLength]
+          ) commonPrefixLength += 1;
+          if (historyKeys.length > previousHistoryKeys.length && commonPrefixLength === previousHistoryKeys.length) {
+              for (let index = previousHistoryKeys.length; index <= lastIndex; index += 1) {
+                  if (history[index]?.role === 'model') newMessages.push({ msg: history[index], index });
+              }
+          } else if (historyKeys.length >= previousHistoryKeys.length) {
+              // A retry, transcript repair, or bounded rolling history can
+              // replace a model turn without increasing the array length.
+              // Read only the latest changed character turn, never a shifted
+              // transcript backlog.
+              for (let index = lastIndex; index >= 0; index -= 1) {
+                  if (history[index]?.role === 'model' && historyKeys[index] !== previousHistoryKeys[index]) {
+                      newMessages.push({ msg: history[index], index });
+                      break;
+                  }
+              }
           }
       }
       lastReadPersonaIndexRef.current = lastIndex;
+      personaTtsHistoryKeysRef.current = historyKeys;
       enqueuePersonaTtsMessages(newMessages);
   }, [personaState.chatHistory, personaAutoRead, personaAutoReadEpoch, personaTtsVoiceSignature]);
   useEffect(() => {
@@ -30395,6 +32264,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         toFocusText,
         personaReflectionInput,
         personaReflectionSubmitRef,
+        personaReflectionLastSavedKeyRef,
         personaReflectionIdentityRef,
         personaReflectionGradeAbortRef,
         personaReflectionContextTokenRef,
@@ -33975,6 +35845,216 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         ? { backgroundColor: '#0B1120', backgroundImage: 'radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%)' }
         : (theme === 'contrast' ? { backgroundColor: '#000000' } : undefined)}>
 
+      {isCanvas && isAppReady && canvasRecoveryDialogMode && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/75 p-4"
+          role="presentation">
+          <div ref={canvasRecoveryDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="canvas-recovery-title"
+            aria-describedby="canvas-recovery-description"
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-indigo-200 bg-white p-6 text-slate-800 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-indigo-600">Saved on this device</p>
+                <h2 id="canvas-recovery-title" className="text-2xl font-black text-slate-900">
+                  {canvasRecoveryDialogMode === 'checking' ? 'Checking this device…'
+                    : canvasRecoveryDialogMode === 'error' ? 'Device recovery needs attention'
+                    : canvasRecoveryDialogMode === 'manage' ? 'Manage saved work'
+                    : 'Continue where you left off?'}
+                </h2>
+                <p id="canvas-recovery-description" className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {canvasRecoveryDialogMode === 'checking'
+                    ? 'AlloFlow is securely checking this browser for earlier resource-pack work.'
+                    : canvasRecoveryDialogMode === 'error'
+                      ? 'No saved work will be overwritten unless AlloFlow can first read the device store.'
+                      : canvasRecoveryDialogMode === 'manage'
+                        ? 'Restore, export, or permanently erase resource-pack work kept by this browser for Gemini Canvas.'
+                        : 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.'}
+                </p>
+              </div>
+              {canvasRecoveryDecisionMade && (
+                <button type="button" onClick={() => setCanvasRecoveryDialogMode(null)}
+                  className="min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100"
+                  aria-label="Close saved work manager">×</button>
+              )}
+            </div>
+
+            {canvasRecoveryDialogMode === 'checking' ? (
+              <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-6 text-center" role="status" aria-live="polite">
+                <RefreshCw className="mx-auto mb-3 animate-spin text-indigo-700" size={30} aria-hidden="true" />
+                <p className="font-bold text-slate-900">Checking saved work…</p>
+                <p className="mt-2 text-sm text-slate-600">This can take a few seconds in Gemini Canvas.</p>
+              </div>
+            ) : canvasRecoveryDialogMode === 'error' ? (
+              <div>
+                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
+                  {canvasRecoveryError || 'Saved work could not be checked on this device.'}
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <button type="button" data-recovery-autofocus="true"
+                    disabled={Boolean(canvasRecoveryBusyId)}
+                    onClick={retryCanvasRecoveryStorage}
+                    className="min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+                    {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : 'Retry device recovery'}
+                  </button>
+                  <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
+                    onClick={continueWithoutCanvasRecovery}
+                    className="min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60">
+                    Work without device recovery
+                  </button>
+                </div>
+                <p className="mt-4 text-xs leading-relaxed text-slate-600">
+                  Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.
+                </p>
+              </div>
+            ) : canvasRecoveryDialogMode === 'choice' ? (() => {
+              const latest = canvasRecoveryStore.snapshots[0];
+              if (!latest) return (
+                <div>
+                  <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No restorable workspace was found.</p>
+                  <button type="button" data-recovery-autofocus="true" onClick={startFreshCanvasWorkspace}
+                    className="mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white hover:bg-indigo-800">
+                    Start a fresh workspace
+                  </button>
+                </div>
+              );
+              const savedDate = new Date(latest.savedAt);
+              return (
+                <>
+                  <div className="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
+                    <div className="font-black text-slate-900">{latest.title}</div>
+                    <div className="mt-1 text-sm text-slate-600">
+                      {latest.resourceCount} {latest.resourceCount === 1 ? 'resource' : 'resources'} · Saved {savedDate.toLocaleString()}
+                    </div>
+                    {latest.assetPolicy === 'text-only' && (
+                      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+                        Resource history and settings are saved. {latest.omittedAssets || 'Some'} media or draft asset(s) were omitted; export to review details.
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button type="button" data-recovery-autofocus="true"
+                      disabled={Boolean(canvasRecoveryBusyId)}
+                      onClick={() => restoreCanvasWorkspaceSnapshot(latest)}
+                      className="min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+                      {canvasRecoveryBusyId === latest.id ? 'Restoring…' : 'Continue previous work'}
+                    </button>
+                    <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={startFreshCanvasWorkspace}
+                      className="min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100">
+                      Start a fresh workspace
+                    </button>
+                    <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={openCanvasRecoveryManager}
+                      className="min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100">
+                      Manage saved work ({canvasRecoveryStore.snapshots.length})
+                    </button>
+                    <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
+                      onClick={() => canvasRecoveryImportInputRef.current?.click()}
+                      className="min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
+                      Import project file
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs text-slate-500">
+                    AlloFlow keeps the 3 most recent device workspaces. Export important work before creating a fourth.
+                  </p>
+                  <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+                    Shared computer? Saved work can be opened by another person using this browser profile. Export anything important, then erase it from Manage saved work.
+                  </p>
+                </>
+              );
+            })() : (
+              <>
+                  {!canvasRecoveryStoreAuthoritative && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+                      <p className="text-sm font-semibold text-red-800">Saved work has not been safely re-read yet.</p>
+                      <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={retryCanvasRecoveryStorage}
+                        className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60">
+                        {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : 'Retry device storage'}
+                      </button>
+                    </div>
+                  )}
+                <div className="space-y-3">
+                  {canvasRecoveryStore.snapshots.length === 0 && (
+                    <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No saved work remains on this device.</p>
+                  )}
+                  {canvasRecoveryStore.snapshots.map((snapshot, index) => (
+                    <div key={snapshot.id} className="rounded-2xl border border-slate-200 p-4">
+                      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                        <div>
+                          <div className="font-black text-slate-900">{snapshot.title}</div>
+                          <div className="mt-1 text-xs text-slate-600">
+                            {snapshot.resourceCount} {snapshot.resourceCount === 1 ? 'resource' : 'resources'} · {new Date(snapshot.savedAt).toLocaleString()}
+                          </div>
+                          <div className={'mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')}>
+                            {snapshot.assetPolicy === 'full' ? 'Resource pack saved with supported media' : 'Resource history and settings saved; omissions recorded'}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" data-recovery-autofocus={index === 0 ? 'true' : undefined}
+                            disabled={Boolean(canvasRecoveryBusyId)}
+                            onClick={() => restoreCanvasWorkspaceSnapshot(snapshot)}
+                            className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60">
+                            Restore
+                          </button>
+                          <button type="button" onClick={() => exportCanvasRecoverySnapshot(snapshot)}
+                            className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                            Export
+                          </button>
+                          {canvasRecoveryEraseId === snapshot.id ? (
+                            <>
+                              <button type="button" data-recovery-confirm={snapshot.id}
+                                disabled={Boolean(canvasRecoveryBusyId)}
+                                onClick={() => eraseCanvasRecoverySnapshot(snapshot.id)}
+                                className="min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-bold text-white hover:bg-red-800 disabled:opacity-60">
+                                Confirm erase
+                              </button>
+                              <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => setCanvasRecoveryEraseId(null)}
+                                className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
+                              onClick={() => requestCanvasRecoveryErase(snapshot.id)}
+                              className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">
+                              Erase
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  {!canvasRecoveryDecisionMade ? (
+                    <button type="button" onClick={() => setCanvasRecoveryDialogMode('choice')}
+                      className="min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100">
+                      Back
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => setCanvasRecoveryDialogMode(null)}
+                      className="min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100">
+                      Close
+                    </button>
+                  )}
+                  <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
+                    onClick={() => canvasRecoveryImportInputRef.current?.click()}
+                    className="min-h-11 flex-1 rounded-xl bg-indigo-50 px-4 py-3 text-center font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-60">
+                    Import project file
+                  </button>
+                </div>
+              </>
+            )}
+            <input ref={canvasRecoveryImportInputRef} type="file" accept=".json,application/json"
+              className="hidden" tabIndex={-1} aria-hidden="true" onChange={handleCanvasRecoveryImport} />
+            {canvasRecoveryError && canvasRecoveryDialogMode !== 'error' && (
+              <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-800">
+                {canvasRecoveryError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
       {kokoroLoadState && kokoroLoadState.loading && (
         <div role="status" aria-live="polite" aria-label={t('common.alloflow_loading_aria') || 'AlloFlow loading'} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -35600,7 +37680,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             handleClosePersonaChat, handleGenerateReflectionPrompt,
             handlePanelChatSubmit, handlePersonaChatSubmit, generatePersonaFollowUps, generatePanelFollowUps,
             handlePersonaTopicSpark, handleRetryPortraitGeneration,
-            handleSavePersonaChat, handleSaveReflection, handleGeneratePersonaSummary,
+            handleSavePersonaChat: handleSavePrivatePersonaSession, handleSaveReflection, handleGeneratePersonaSummary,
             handleSetIsPersonaReflectionOpenToFalse,
             handleSetPersonaDefinitionDataToNull,
             handleSpeak, handleTogglePersonaAutoSend,
@@ -36008,7 +38088,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 ${activeView === 'ui-tool-wordsounds' ? 'border-pink-600 shadow-xl shadow-pink-500/20' : 'border-slate-200 hover:border-pink-200 shadow-lg shadow-pink-500/10'}
               `}>
                 <button
-                    aria-label={t('common.volume')}
+                    aria-label={t('sidebar.tool_wordsounds') || t('word_sounds.title') || 'Word Sounds'}
+                    aria-expanded={expandedTools.includes('ui-tool-wordsounds')}
                   onClick={() => toggleTool('ui-tool-wordsounds')}
                   className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-pink-50 transition-colors"
                 >
@@ -36450,7 +38531,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             )}
             {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
         </aside>
         {!isFullscreen && !isZenMode && (
             <div
@@ -38329,6 +40410,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
           .filter(({ entry }) => entry.signal && entry.signalAt && (dockNow - entry.signalAt) < LIVE_SIGNAL_FRESH_MS)
           .sort((a, b) => (b.entry.signalAt || 0) - (a.entry.signalAt || 0));
+        const recentHavenRecognition = buildAlloHavenRecognitionAudit(rosterEntries, 8);
         const signalMeta = (id) => LIVE_SIGNAL_OPTIONS.find(o => o.id === id) || { emoji: '✋', label: id };
         const clearSignal = (uid) => {
           writeToSession(dockSessionRef, { [`roster.${uid}.signal`]: null, [`roster.${uid}.signalAt`]: null }).catch(() => {});
@@ -38386,6 +40468,115 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <span aria-hidden="true">👥</span>{t('groups.manage_button') || 'Groups'}
                   </button>
                 </div>
+                <div style={dockGroupLabel}>Recognize</div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:6,padding:'0.45rem',background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:9}}>
+                  <div style={{gridColumn:'1 / -1',display:'grid',gridTemplateColumns:'1fr auto',gap:6,padding:'0.4rem',borderRadius:7,background:'white',border:'1px solid #86efac'}}>
+                    <button type="button" role="switch" aria-checked={havenRecognitionConfig.enabled} disabled={havenConfigBusy || havenRewardBusy} onClick={() => handleUpdateHavenRecognitionConfig({ enabled: !havenRecognitionConfig.enabled })} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,border:'none',background:'transparent',padding:0,color:'#14532d',fontSize:'0.7rem',fontWeight:900,cursor:havenConfigBusy?'wait':'pointer'}}>
+                      <span>{havenRecognitionConfig.enabled ? 'Recognition enabled' : 'Recognition off'}</span>
+                      <span aria-hidden="true" style={{width:30,height:17,borderRadius:999,background:havenRecognitionConfig.enabled?'#16a34a':'#cbd5e1',padding:2,display:'flex',justifyContent:havenRecognitionConfig.enabled?'flex-end':'flex-start'}}><span style={{width:13,height:13,borderRadius:'50%',background:'white',display:'block'}}></span></span>
+                    </button>
+                    <label style={{display:'flex',alignItems:'center',gap:4,fontSize:'0.66rem',fontWeight:800,color:'#166534'}}>
+                      Session cap
+                      <select value={havenRecognitionConfig.perStudentTokenCap} disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy} onChange={(event) => handleUpdateHavenRecognitionConfig({ perStudentTokenCap: Number(event.target.value) })} aria-label="AlloHaven per-student session token cap" style={{border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.2rem',fontSize:'0.68rem'}}>
+                        {ALLOHAVEN_RECOGNITION_CAPS.map(cap => <option key={cap} value={cap}>{cap}</option>)}
+                      </select>
+                    </label>
+                    <p style={{gridColumn:'1 / -1',margin:0,fontSize:'0.61rem',lineHeight:1.35,color:'#4d7c0f'}}>{havenRecognitionConfig.enabled ? ('Each student can receive up to ' + havenRecognitionConfig.perStudentTokenCap + ' tokens in this session.') : 'Opt in to use recognition in this session. It remains off by default.'}</p>
+                  </div>
+                  <label style={{display:'flex',flexDirection:'column',gap:3,fontSize:'0.68rem',fontWeight:800,color:'#166534'}}>
+                    Positive progress
+                    <select
+                      value={havenRewardReasonId}
+                      onChange={(event) => setHavenRewardReasonId(event.target.value)}
+                      disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy}
+                      aria-label="AlloHaven recognition reason"
+                      style={{minWidth:0,width:'100%',border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.3rem',fontSize:'0.72rem'}}
+                    >
+                      {ALLOHAVEN_CLASSROOM_REWARD_REASONS.map(reason => (
+                        <option key={reason.id} value={reason.id}>{reason.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label style={{display:'flex',flexDirection:'column',gap:3,fontSize:'0.68rem',fontWeight:800,color:'#166534'}}>
+                    Tokens
+                    <select
+                      value={havenRewardAmount}
+                      onChange={(event) => setHavenRewardAmount(Number(event.target.value) === 2 ? 2 : 1)}
+                      disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy}
+                      aria-label="AlloHaven token amount"
+                      style={{border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.3rem',fontSize:'0.72rem'}}
+                    >
+                      <option value={1}>+1</option>
+                      <option value={2}>+2</option>
+                    </select>
+                  </label>
+                  <p style={{gridColumn:'1 / -1',margin:0,fontSize:'0.64rem',lineHeight:1.35,color:'#3f6212'}}>
+                    Choose a reason, then use the leaf button beside a student. Awards are private; no behavior notes are synced.
+                  </p>
+                  <div style={{gridColumn:'1 / -1',display:'flex',flexWrap:'wrap',gap:5}}>
+                    <button
+                      type="button"
+                      disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy || Object.keys(rosterEntries).length === 0}
+                      onClick={() => handleRecognizeStudents(Object.keys(rosterEntries), 'students')}
+                      aria-label={'Recognize all connected students with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's') + ' each'}
+                      style={{border:'1px solid #15803d',borderRadius:7,background:'#166534',color:'white',padding:'0.3rem 0.48rem',fontSize:'0.68rem',fontWeight:800,cursor:havenRewardBusy?'wait':'pointer',opacity:havenRewardBusy?0.65:1}}
+                    >
+                      {havenRewardBusy ? 'Sending…' : '🌿 Recognize class'}
+                    </button>
+                    {Object.entries((sessionData && sessionData.groups) || {}).map(([groupId, group]) => {
+                      const groupUids = Object.keys(rosterEntries).filter(uid => rosterEntries[uid] && rosterEntries[uid].groupId === groupId);
+                      if (!groupUids.length) return null;
+                      const groupLabel = (group && group.name) || 'Group';
+                      return (
+                        <button
+                          key={'haven-group-' + groupId}
+                          type="button"
+                          disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy}
+                          onClick={() => handleRecognizeStudents(groupUids, 'students in ' + groupLabel)}
+                          aria-label={'Recognize ' + groupLabel + ' group, ' + groupUids.length + ' students, with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's') + ' each'}
+                          style={{border:'1px solid #86efac',borderRadius:7,background:'white',color:'#166534',padding:'0.3rem 0.48rem',fontSize:'0.68rem',fontWeight:800,cursor:havenRewardBusy?'wait':'pointer',opacity:havenRewardBusy?0.65:1}}
+                        >
+                          {groupLabel + ' (' + groupUids.length + ')'}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {havenRewardReceipt ? (
+                    <div role="status" aria-live="polite" aria-atomic="true" style={{gridColumn:'1 / -1',padding:'0.38rem 0.45rem',borderRadius:7,background:havenRewardReceipt.partial?'#fffbeb':'#dcfce7',border:'1px solid '+(havenRewardReceipt.partial?'#fde68a':'#86efac'),fontSize:'0.66rem',lineHeight:1.4,color:havenRewardReceipt.partial?'#92400e':'#14532d'}}>
+                      <strong>{havenRewardReceipt.partial ? 'Partial delivery' : 'Last delivery confirmed'}</strong>
+                      {' · ' + havenRewardReceipt.count + ' ' + havenRewardReceipt.scopeLabel}
+                      {' · +' + havenRewardReceipt.amount + ' each · ' + havenRewardReceipt.reasonLabel}
+                      {havenRewardReceipt.skippedCount ? ' · ' + havenRewardReceipt.skippedCount + ' skipped at session cap' : ''}
+                      {' · ' + new Date(havenRewardReceipt.at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}
+                    </div>
+                  ) : null}
+                  {recentHavenRecognition.length > 0 ? (
+                    <div style={{gridColumn:'1 / -1'}}>
+                      <button
+                        type="button"
+                        onClick={() => setShowHavenRewardAudit(value => !value)}
+                        aria-expanded={showHavenRewardAudit}
+                        aria-controls="allohaven-recognition-delivery-audit"
+                        style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',border:'none',background:'transparent',padding:'0.15rem 0',fontSize:'0.66rem',fontWeight:800,color:'#166534',cursor:'pointer'}}
+                      >
+                        <span>Recent private deliveries ({recentHavenRecognition.length})</span>
+                        <span aria-hidden="true">{showHavenRewardAudit ? '▴' : '▾'}</span>
+                      </button>
+                      {showHavenRewardAudit ? (
+                        <ol id="allohaven-recognition-delivery-audit" aria-label="Recent private AlloHaven recognition deliveries" style={{listStyle:'none',margin:'0.3rem 0 0',padding:0,display:'flex',flexDirection:'column',gap:3,maxHeight:130,overflowY:'auto'}}>
+                          {recentHavenRecognition.map(event => (
+                            <li key={event.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:4,padding:'0.3rem 0.38rem',borderRadius:6,background:'white',border:'1px solid #bbf7d0',fontSize:'0.64rem',color:'#365314'}}>
+                              <span style={{fontWeight:800,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{event.studentName + ' · ' + event.reasonLabel}</span>
+                              <span style={{fontWeight:900}}>+{event.amount}</span>
+                              <time dateTime={new Date(event.at).toISOString()} style={{gridColumn:'1 / -1',color:'#64748b'}}>{new Date(event.at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time>
+                            </li>
+                          ))}
+                        </ol>
+                      ) : null}
+                      <p style={{margin:'0.3rem 0 0',fontSize:'0.6rem',lineHeight:1.35,color:'#4d7c0f'}}>Teacher-only delivery audit. No balances, rankings, or behavior notes.</p>
+                    </div>
+                  ) : null}
+                </div>
                 {(() => {
                   // Students: delivery status (which resource each student is
                   // actually viewing vs their target) + per-student push of the
@@ -38433,6 +40624,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               : seenAge < 200000
                                 ? { color: '#b45309', label: t('live_dock.presence_quiet') || 'quiet for 2+ min' }
                                 : { color: '#dc2626', label: t('live_dock.presence_gone') || 'disconnected?' };
+                          const rewardTokensUsed = getAlloHavenSessionRecognitionTokens(entry, havenRewardDraftsRef.current[uid]);
+                          const rewardTokensRemaining = Math.max(0, havenRecognitionConfig.perStudentTokenCap - rewardTokensUsed);
+                          const canRecognizeStudent = havenRecognitionConfig.enabled && rewardTokensRemaining >= havenRewardAmount && !havenConfigBusy && !havenRewardBusy;
                           return (
                             <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.3rem 0.45rem',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,fontSize:'0.75rem'}}>
                               <span role="img" aria-label={presence.label} title={presence.label} style={{width:8,height:8,borderRadius:'50%',background:presence.color,flexShrink:0,display:'inline-block'}}></span>
@@ -38461,6 +40655,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                   style={{background:'white',border:'1px solid #fca5a5',borderRadius:6,padding:'0.05rem 0.35rem',cursor:'pointer',fontSize:'0.68rem',fontWeight:700,color:'#b91c1c'}}
                                 >✕</button>
                               ) : null}
+                              <button
+                                onClick={() => handleRecognizeStudent(uid)}
+                                disabled={!canRecognizeStudent}
+                                aria-label={'Recognize ' + (entry.name || 'student') + ' with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's')}
+                                title={canRecognizeStudent ? (rewardTokensRemaining + ' session recognition tokens remaining') : 'Session recognition is off or the selected amount would exceed this student’s cap'}
+                                style={{background:canRecognizeStudent?'#166534':'#cbd5e1',color:canRecognizeStudent?'white':'#64748b',border:'none',borderRadius:6,padding:'0.05rem 0.38rem',cursor:canRecognizeStudent?'pointer':'not-allowed',fontSize:'0.72rem',fontWeight:800}}
+                              >
+                                <span aria-hidden="true">🌿</span>+{havenRewardAmount}
+                              </button>
                               <button
                                 onClick={() => canPushCurrent && handleSetStudentResource(uid, generatedContent.id)}
                                 disabled={!canPushCurrent}

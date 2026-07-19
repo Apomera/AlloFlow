@@ -31,4 +31,31 @@ describe('header control accessibility', () => {
     expect(source).toContain('animate-bounce motion-reduce:animate-none');
     expect(source).not.toMatch(/<div\s+onClick=\{dismissHelpOnboarding\}/);
   });
+
+  it('passes reactive localized names to the memoized global mute control', () => {
+    expect(source).toContain("muteLabel={t('a11y.mute_all_audio') || 'Mute all audio'}");
+    expect(source).toContain("unmuteLabel={t('a11y.unmute_all_audio') || 'Unmute all audio'}");
+    expect(source).toContain("muteTitle={t('a11y.mute_all_audio_title') || 'Mute all audio'}");
+    expect(source).toContain("unmuteTitle={t('a11y.unmute_all_audio_title') || 'Unmute all audio'}");
+  });
+  it('localizes the remaining header control names and reading-theme options', () => {
+    expect(source).toContain("const readThisPageTitle = t('read_this_page.title')");
+    expect(source).toContain("const notebookLabel = t('cmd.open_notebook')");
+    expect(source).toContain("t('header.personal_ai_connect')");
+    expect(source).toContain("t('header.personal_ai_disconnect')");
+    expect(source).toContain("t('header.reading_theme_easy_read')");
+    expect(source).toContain('aria-label={th.label}');
+
+    expect(source).not.toContain("aria-label={showReadThisPage ? 'Close Read This Page panel'");
+    expect(source).not.toContain('Open my notebook, ${notebookEntryCount}');
+    expect(source).not.toContain("aria-label={window.__alloStudentAiConfigured ? 'Personal AI connected'");
+    expect(source).not.toContain("aria-label='Disconnect personal AI and erase session key'");
+    expect(source).not.toContain("aria-label={th.label + ' theme'}");
+  });
+
+  it('keeps localized visible text aligned with the personal-AI accessible names', () => {
+    expect(source).toContain("personalAIReadyLabel = t('header.personal_ai_ready')");
+    expect(source).toContain('{window.__alloStudentAiConfigured ? personalAIReadyLabel : personalAIConnectLabel}');
+    expect(source).toContain("<span className='hidden xl:inline'>{personalAIDisconnectLabel}</span>");
+  });
 });

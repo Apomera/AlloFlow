@@ -1,6 +1,6 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-19T02:09:29.884Z
+Generated: 2026-07-19T04:31:54.862Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v3.1.0
 
@@ -235,7 +235,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-b012-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b012-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b013-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
-| eppp-b013-biological-2 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b013-biological-2 | biological | legacy-seeded-re-authored | pass | 2 |
 | eppp-b013-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-b013-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-b013-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |
@@ -257,9 +257,9 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-b014-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |
 | eppp-b014-social-2 | social-cultural | legacy-seeded-re-authored | pass | 1 |
 | eppp-b014-lifespan-1 | lifespan | legacy-seeded-re-authored | pass | 1 |
-| eppp-b014-lifespan-2 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b014-lifespan-2 | lifespan | legacy-seeded-re-authored | pass | 2 |
 | eppp-b014-assessment-1 | assessment | legacy-seeded-re-authored | pass | 1 |
-| eppp-b014-assessment-2 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b014-assessment-2 | assessment | legacy-seeded-re-authored | pass | 3 |
 | eppp-b014-intervention-1 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-b014-intervention-2 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-b014-research-1 | research | legacy-seeded-re-authored | pass | 1 |
@@ -297,7 +297,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-b016-research-1 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-b016-research-2 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-b016-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
-| eppp-b016-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b016-professional-2 | professional | legacy-seeded-re-authored | pass | 2 |
 | eppp-b017-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-b017-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-b017-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
@@ -533,7 +533,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v2-biological-005 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-006 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-007 | biological | legacy-seeded-re-authored | pass | 1 |
-| eppp-v2-biological-008 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-v2-biological-008 | biological | legacy-seeded-re-authored | pass | 2 |
 | eppp-v2-biological-009 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-010 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-011 | biological | legacy-seeded-re-authored | pass | 1 |
@@ -848,7 +848,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v2-intervention-022 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-intervention-023 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-intervention-024 | intervention | legacy-seeded-re-authored | pass | 1 |
-| eppp-v2-intervention-025 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-v2-intervention-025 | intervention | legacy-seeded-re-authored | pass | 2 |
 | eppp-v2-intervention-026 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-intervention-027 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-intervention-028 | intervention | legacy-seeded-re-authored | pass | 1 |
@@ -1296,7 +1296,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v3-assessment-038 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-039 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-040 | assessment | legacy-seeded-re-authored | pass | 1 |
-| eppp-v3-assessment-041 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-v3-assessment-041 | assessment | legacy-seeded-re-authored | pass | 3 |
 | eppp-v3-assessment-042 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-043 | assessment | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-assessment-044 | assessment | legacy-seeded-re-authored | pass | 1 |
@@ -1402,7 +1402,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v3-intervention-064 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-intervention-065 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-intervention-066 | intervention | legacy-seeded-re-authored | pass | 1 |
-| eppp-v3-intervention-067 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-v3-intervention-067 | intervention | legacy-seeded-re-authored | pass | 2 |
 | eppp-v3-intervention-068 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-intervention-069 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-intervention-070 | intervention | legacy-seeded-re-authored | pass | 1 |
@@ -1412,7 +1412,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v3-intervention-074 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-intervention-075 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-research-001 | research | legacy-seeded-re-authored | pass | 1 |
-| eppp-v3-research-002 | research | legacy-seeded-re-authored | pass | 1 |
+| eppp-v3-research-002 | research | legacy-seeded-re-authored | pass | 2 |
 | eppp-v3-research-003 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-research-004 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-research-005 | research | legacy-seeded-re-authored | pass | 1 |

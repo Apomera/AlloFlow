@@ -205,7 +205,7 @@ function AdventureView(props) {
   var handleShopPurchase = props.handleShopPurchase;
   var handleSpeak = props.handleSpeak;
   var prewarmAdventureAudio = props.prewarmAdventureAudio; // scene TTS pre-warm (2026-07-16)
-  var handleAdventureHint = props.handleAdventureHint; // free-response nudge, costs half the turn's XP gain
+  var handleAdventureHint = props.handleAdventureHint; // once-per-scene free-response Strategy Hint
   var handleStartAdventure = props.handleStartAdventure;
   var handleStartOptionEdit = props.handleStartOptionEdit;
   var handleStartSequel = props.handleStartSequel;
@@ -237,6 +237,57 @@ function AdventureView(props) {
   var xpProgressPercent = Math.max(0, Math.min(100, xpValue / xpMax * 100));
   var energyValue = Math.max(0, Math.min(100, Number(adventureState.energy) || 0));
   var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
+  var renderStrategyHintCard = function (isDark) {
+    var hint = adventureState.currentHint;
+    if (!hint || hint.turn !== adventureState.turnCount) return null;
+    var notice = hint.notice || hint.text;
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      className: isDark ? 'p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-50 text-sm backdrop-blur-sm' : 'p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-sm'
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 font-black mb-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, '\u{1F4A1}'), /*#__PURE__*/React.createElement("span", null, t('adventure.hint_card_title') || 'Strategy Hint')), hint.loading ? /*#__PURE__*/React.createElement("div", null, t('adventure.hint_loading') || 'Building a strategy hint...') : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2"
+    }, notice && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+      className: "font-black uppercase tracking-wide text-[10px] mr-2"
+    }, t('adventure.hint_notice_label') || 'Notice'), /*#__PURE__*/React.createElement("span", null, notice)), hint.connect && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+      className: "font-black uppercase tracking-wide text-[10px] mr-2"
+    }, t('adventure.hint_connect_label') || 'Connect'), /*#__PURE__*/React.createElement("span", null, hint.connect)), hint.tryStep && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+      className: "font-black uppercase tracking-wide text-[10px] mr-2"
+    }, t('adventure.hint_try_label') || 'Try'), /*#__PURE__*/React.createElement("span", null, hint.tryStep)), hint.starter && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => setAdventureTextInput(hint.starter + ' '),
+      className: isDark ? 'mt-1 px-2 py-1 rounded-lg bg-amber-400/20 border border-amber-300/40 text-amber-50 text-xs font-bold hover:bg-amber-400/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300' : 'mt-1 px-2 py-1 rounded-lg bg-amber-100 border border-amber-400 text-amber-950 text-xs font-bold hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700',
+      title: t('adventure.hint_use_starter') || 'Use this sentence starter'
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, '\u21B3', " "), "\"", hint.starter, "\""), /*#__PURE__*/React.createElement("div", {
+      className: isDark ? 'text-[11px] text-amber-100/80 italic' : 'text-[11px] text-amber-800 italic'
+    }, t('adventure.hint_footer') || 'The next move is still yours.')));
+  };
+  var renderStrategyHintButton = function (isDark) {
+    if (!handleAdventureHint) return null;
+    var hint = adventureState.currentHint;
+    var hintLoading = !!(hint && hint.turn === adventureState.turnCount && hint.loading);
+    var hintUsed = adventureState.hintUsedTurn === adventureState.turnCount;
+    return /*#__PURE__*/React.createElement("div", {
+      className: isDark ? 'w-full' : 'self-start'
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => handleAdventureHint(),
+      disabled: adventureState.isLoading || hintLoading || hintUsed,
+      className: isDark ? 'min-h-11 w-full bg-transparent border border-amber-400/40 text-amber-200 p-2 rounded-xl text-xs font-bold hover:bg-amber-400/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black' : 'min-h-11 px-3 py-2 rounded-xl border border-amber-400 text-amber-800 text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2',
+      title: t('adventure.hint_button_title') || 'Get one grounded clue and a response strategy'
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, '\u{1F4A1}', " "), hintUsed ? t('adventure.hint_used') || 'Clue used this scene' : t('adventure.hint_button') || 'Give me a clue'), !hintUsed && /*#__PURE__*/React.createElement("div", {
+      className: isDark ? 'mt-1 text-center text-[10px] text-amber-100/70' : 'mt-1 text-[10px] text-slate-600'
+    }, t('adventure.hint_button_helper') || 'One clue per scene. You still decide what happens.'));
+  };
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
     title: t('adventure.error.title'),
     fallbackMessage: t('adventure.error.fallback'),
@@ -1366,18 +1417,7 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), " ", t('adventure.retry_action'))) : adventureState.currentScene && (adventureFreeResponseEnabled ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
-  }, adventureState.currentHint && adventureState.currentHint.turn === adventureState.turnCount && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    className: "p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-100 text-sm backdrop-blur-sm"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold mr-1",
-    "aria-hidden": "true"
-  }, "💡"), adventureState.currentHint.loading ? t('adventure.hint_loading') || 'Thinking of a nudge…' : adventureState.currentHint.text, !adventureState.currentHint.loading && adventureState.currentHint.starter && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => setAdventureTextInput(adventureState.currentHint.starter + ' '),
-    className: "ml-2 px-2 py-0.5 rounded-lg bg-amber-400/20 border border-amber-300/40 text-amber-50 text-xs font-bold hover:bg-amber-400/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300",
-    title: t('adventure.hint_use_starter') || 'Use this sentence starter'
-  }, "⤷ “", adventureState.currentHint.starter, "”")), /*#__PURE__*/React.createElement("textarea", {
+  }, renderStrategyHintCard(true), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('adventure.aria_free_response') || 'Type your adventure action',
     "data-help-key": "adventure_input_field",
     value: adventureTextInput,
@@ -1400,13 +1440,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Send, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('adventure.send_action')), handleAdventureHint && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => handleAdventureHint(),
-    disabled: adventureState.isLoading || adventureState.hintUsedTurn === adventureState.turnCount,
-    className: "min-h-11 w-full bg-transparent border border-amber-400/40 text-amber-200 p-2 rounded-xl text-xs font-bold hover:bg-amber-400/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-    title: t('adventure.hint_button_title') || 'Ask for a nudge — this turn will earn half XP'
-  }, "💡 ", adventureState.hintUsedTurn === adventureState.turnCount ? t('adventure.hint_used') || 'Hint used this scene' : t('adventure.hint_button') || 'Need a nudge? (half XP this turn)')) : /*#__PURE__*/React.createElement("div", {
+  }), " ", t('adventure.send_action')), renderStrategyHintButton(true)) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-3"
   }, (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);
@@ -1718,24 +1752,7 @@ function AdventureView(props) {
     className: "text-[11px]"
   }, t('adventure.act_button')))), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-2 flex flex-col gap-2"
-  }, adventureState.currentHint && adventureState.currentHint.turn === adventureState.turnCount && /*#__PURE__*/React.createElement("div", {
-    role: "status",
-    className: "p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-sm"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "font-bold mr-1",
-    "aria-hidden": "true"
-  }, "💡"), adventureState.currentHint.loading ? t('adventure.hint_loading') || 'Thinking of a nudge…' : adventureState.currentHint.text, !adventureState.currentHint.loading && adventureState.currentHint.starter && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => setAdventureTextInput(adventureState.currentHint.starter + ' '),
-    className: "ml-2 px-2 py-0.5 rounded-lg bg-amber-100 border border-amber-400 text-amber-900 text-xs font-bold hover:bg-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
-    title: t('adventure.hint_use_starter') || 'Use this sentence starter'
-  }, "⤷ “", adventureState.currentHint.starter, "”")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => handleAdventureHint(),
-    disabled: adventureState.isLoading || adventureState.hintUsedTurn === adventureState.turnCount,
-    className: "min-h-11 self-start px-3 py-2 rounded-xl border border-amber-400 text-amber-700 text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
-    title: t('adventure.hint_button_title') || 'Ask for a nudge — this turn will earn half XP'
-  }, "💡 ", adventureState.hintUsedTurn === adventureState.turnCount ? t('adventure.hint_used') || 'Hint used this scene' : t('adventure.hint_button') || 'Need a nudge? (half XP this turn)')), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
+  }, renderStrategyHintCard(false), renderStrategyHintButton(false)), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-3"
@@ -1790,8 +1807,9 @@ function AdventureView(props) {
     id: "adventure-inventory-item-title",
     className: "text-xl font-black text-indigo-900 mb-1"
   }, selectedInventoryItem.name), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full mb-3 border border-indigo-300"
-  }, t(`adventure.effects.${selectedInventoryItem.effectType}`) || selectedInventoryItem.effectType || "Consumable"), /*#__PURE__*/React.createElement("p", {
+    className: "inline-block max-w-full truncate whitespace-nowrap text-[11px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full mb-3 border border-indigo-300",
+    title: t(`adventure.effects.${selectedInventoryItem.effectType}_label`) || t(`adventure.effects.${selectedInventoryItem.effectType}`) || selectedInventoryItem.effectType || "Consumable"
+  }, t(`adventure.effects.${selectedInventoryItem.effectType}_label`) || t(`adventure.effects.${selectedInventoryItem.effectType}`) || selectedInventoryItem.effectType || "Consumable"), /*#__PURE__*/React.createElement("p", {
     id: "adventure-inventory-item-description",
     className: "text-sm text-slate-700 mb-6 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-300 w-full"
   }, selectedInventoryItem.description || t('adventure.inventory_fallback_desc')), /*#__PURE__*/React.createElement("div", {

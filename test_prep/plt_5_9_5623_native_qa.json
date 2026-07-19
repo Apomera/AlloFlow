@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:56.194Z",
+  "generatedAt": "2026-07-19T05:50:11.428Z",
   "packId": "praxis-plt-grades-5-9-5623",
   "standard": {
-    "label": "AlloFlow PLT Grades 5–9 5623 source, structure, feedback, case-practice, and linkage QA v1",
+    "label": "AlloFlow PLT Grades 5–9 5623 source, structure, feedback, case-practice, linkage, and grade-band QA v2",
     "limitation": "Not ETS or CCSSO approval; independent grades 5–9 educator, accessibility, legal, and psychometric validation remain pending."
   },
   "summary": {
@@ -24,7 +24,33 @@
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
-    "learningActivityBanks": 5
+    "learningActivityBanks": 5,
+    "packIntegrity": {
+      "expectedCode": "5623",
+      "expectedPackId": "praxis-plt-grades-5-9-5623",
+      "sourceItemsReviewed": 200,
+      "allItemsReviewed": 500,
+      "packIdentityMisses": 0,
+      "sourceItemIdentityMisses": 0,
+      "foreignCodeOccurrences": 0,
+      "k6ContaminationOccurrences": 0,
+      "foreignBandOccurrences": 0,
+      "outOfBandOccurrences": 0,
+      "malformedBandOccurrences": 0,
+      "encodingCorruptionOccurrences": 0,
+      "negativeGates": "pass"
+    },
+    "libraryIntegrity": {
+      "expectedCode": "5623",
+      "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
+      "referenceSets": 223,
+      "officialSourceReferenceSets": 223,
+      "foreignCodeOccurrences": 0,
+      "k6ContaminationOccurrences": 0,
+      "foreignBandOccurrences": 0,
+      "outOfBandOccurrences": 0,
+      "negativeGates": "pass"
+    }
   },
   "expansion": {
     "independentQuestionTarget": 500,
@@ -46,5 +72,14 @@
     ],
     "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
     "findings": []
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "3e0010b976873dab441b2d2d8acaad956268428011af639fe1d14529a3b257d8",
+    "learningLibrarySha256": "57c52918cb36dd79d15c40cdcbd60c3c868a5cf4aefdec72da18491d084c9c8a",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:42.569Z",
+  "generatedAt": "2026-07-19T05:08:52.643Z",
   "libraryId": "praxis-teaching-reading-5205-learning-library",
   "packId": "praxis-teaching-reading-5205",
   "title": "Praxis Teaching Reading: Elementary (5205) learning library",
@@ -852,7 +852,7 @@
           "prompt": "When an elementary teacher analyzes decoding evidence, why use unfamiliar or pseudoword decoding tasks?",
           "choices": [
             "Background knowledge of the story.",
-            "Application of phoneme?grapheme and word-analysis knowledge without relying only on stored word familiarity.",
+            "Application of phoneme–grapheme and word-analysis knowledge without relying only on stored word familiarity.",
             "Writing organization.",
             "Listening comprehension only."
           ],
@@ -1252,7 +1252,7 @@
           "prompt": "When using fluency evidence to guide instruction, how should a baseline be established?",
           "choices": [
             "Select the lowest score to show maximum growth.",
-            "Use multiple valid observations or the measure?s recommended baseline procedure to reduce the influence of an atypical score.",
+            "Use multiple valid observations or the measure's recommended baseline procedure to reduce the influence of an atypical score.",
             "Use a score from an unrelated skill.",
             "Wait until intervention ends to define the baseline."
           ],
@@ -1633,7 +1633,7 @@
           "choices": [
             "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
             "Offer only prizes for page counts.",
-            "Lower every task below the student?s skill level.",
+            "Lower every task below the student's skill level.",
             "Require public comparison with faster readers."
           ],
           "answerIndex": 0,
@@ -1677,7 +1677,7 @@
             "Score supported listening as an unaided decoding measure."
           ],
           "answerIndex": 2,
-          "rationale": "Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -1829,15 +1829,15 @@
       "knowledgeChecks": [
         {
           "id": "tr5205-ch-09-check-01",
-          "prompt": "In a K–6 literary or informational text lesson, what makes coaching job embedded?",
+          "prompt": "In a K–6 literary or informational text lesson, after learning a new text-structure routine, what action best helps a classroom teacher determine whether it improves comprehension?",
           "choices": [
-            "Use collaborative goal setting, co-planning, modeling or co-teaching, observation, feedback, rehearsal, and student evidence in the actual context.",
-            "Send a generic article only.",
-            "Wait until annual evaluation.",
-            "Require implementation without materials or practice."
+            "Plan an aligned lesson, model and guide the routine, collect student work and discussion evidence, reflect on access and understanding, and adapt the next lesson.",
+            "Use the routine unchanged for the full year before examining any student evidence.",
+            "Ask another employee to certify the routine as effective without observing students use it.",
+            "Replace the current curriculum immediately because the routine was engaging during training."
           ],
           "answerIndex": 0,
-          "rationale": "Job-embedded professional learning connects evidence and explanation with supported enactment, reflection, feedback, and iterative refinement. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "A classroom teacher transfers new learning through bounded classroom use, explicit instruction, student evidence, reflection, and adjustment. Enjoyment or exposure alone cannot show whether a routine improves the intended comprehension process for the learners using it. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -1849,15 +1849,15 @@
         },
         {
           "id": "tr5205-ch-09-check-02",
-          "prompt": "In a K–6 literary or informational text lesson, when is modeling most effective in coaching?",
+          "prompt": "In a K–6 literary or informational text lesson, when modeling how to analyze informational-text structure for students, what makes the demonstration instructionally useful?",
           "choices": [
-            "An unannounced performance with no debrief.",
-            "A shared focus, explanation of key decisions, observable look-fors, debriefing, teacher rehearsal, and follow-up evidence.",
-            "A script the teacher must copy regardless of students.",
-            "Feedback limited to whether the lesson was entertaining."
+            "Complete the analysis silently so students can imitate the finished answer without hearing the reasoning.",
+            "Think aloud about the evidence and decision, identify useful look-fors, guide student rehearsal, require independent application, and check whether students can explain the structure.",
+            "Name every possible text structure at once and postpone student practice until the end of the unit.",
+            "Show one polished example and assume students will transfer the process to unfamiliar texts independently."
           ],
           "answerIndex": 1,
-          "rationale": "Modeling supports transfer when the instructional reasoning is visible and the teacher can analyze, practice, adapt, and receive feedback. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "Instructional modeling makes otherwise hidden comprehension decisions visible, then moves students through guided rehearsal to independent use. The classroom teacher checks student explanation and transfer rather than treating a demonstration as sufficient instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -1869,15 +1869,15 @@
         },
         {
           "id": "tr5205-ch-09-check-03",
-          "prompt": "In a K–6 literary or informational text lesson, how should professional learning be evaluated?",
+          "prompt": "In a K–6 literary or informational text lesson, after introducing a source-evaluation routine, what evidence should a classroom teacher use to judge whether instruction is working?",
           "choices": [
-            "Satisfaction ratings are sufficient.",
-            "One student score proves causation.",
-            "Changes in educator knowledge and practice, implementation conditions, student opportunity and outcomes, and unintended effects over time.",
-            "Attendance guarantees implementation."
+            "Use student enjoyment as the sole measure because motivation proves that the target skill was learned.",
+            "Count how many screens students opened without examining the credibility decisions they made.",
+            "Compare aligned student explanations and source choices over time, note access and misconception patterns, and use the results to plan reteaching or extension.",
+            "Wait for an annual total score even though current student work can guide the next instructional step."
           ],
           "answerIndex": 2,
-          "rationale": "Professional learning evaluation moves beyond reaction to learning, enactment, system support, and relevant student evidence without overclaiming causality. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "A classroom teacher evaluates an instructional change with evidence that matches the taught construct. Student work, explanations, patterns across learners, and change over time can guide the next lesson; satisfaction or activity counts alone cannot demonstrate source-evaluation skill. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -1889,15 +1889,15 @@
         },
         {
           "id": "tr5205-ch-09-check-04",
-          "prompt": "In a K–6 literary or informational text lesson, what is a constructive response to instructional disagreement?",
+          "prompt": "In a K–6 literary or informational text lesson, two classroom teachers disagree about how to teach students to compare sources. What is the most responsible contribution from each teacher?",
           "choices": [
-            "Choose the loudest position.",
-            "Avoid the issue until conflict disappears.",
-            "Frame disagreement as personal resistance.",
-            "Define the shared student goal, surface assumptions and evidence, examine data and standards, agree on a testable plan, and set a review point."
+            "Insist that personal experience settles the question and avoid collecting evidence from either classroom.",
+            "Use different unrecorded approaches indefinitely so no shared instructional decision is required.",
+            "Ask students to vote on which teacher is correct before clarifying the learning goal or evidence.",
+            "Define the shared student goal, examine standards and student evidence, state the instructional assumptions, agree on a feasible classroom trial, and set a date to review results."
           ],
           "answerIndex": 3,
-          "rationale": "Collaborative conflict resolution preserves relationships while making the instructional question, evidence, decision process, and follow-up explicit. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "A classroom teacher can resolve an instructional disagreement through a shared learner goal, transparent evidence, a bounded test of practice, and planned review. This collaborative contribution remains tied to classroom instruction rather than assuming authority over personnel or a schoolwide program. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -1909,15 +1909,15 @@
         },
         {
           "id": "tr5205-ch-09-check-05",
-          "prompt": "In a K–6 literary or informational text lesson, how do adult-learning principles inform literacy coaching?",
+          "prompt": "In a K–6 literary or informational text lesson, students bring different background knowledge and experience to a digital-text task. How should the classroom teacher plan instruction?",
           "choices": [
-            "Use relevant problems, prior expertise, choice, active practice, feedback, collaboration, and immediate application while maintaining clear outcomes.",
-            "Assume adults learn best through passive compliance.",
-            "Avoid acknowledging existing expertise.",
-            "Separate all learning from classroom problems."
+            "Connect the goal to relevant knowledge, offer accessible examples and purposeful choices, model the process, provide active guided practice and feedback, and maintain the same intended outcome.",
+            "Assign separate lower-level outcomes to students before checking what knowledge or support each one needs.",
+            "Deliver the identical explanation again at greater speed so every student receives equal treatment.",
+            "Let students skip the comprehension goal whenever the topic or text format is unfamiliar."
           ],
           "answerIndex": 0,
-          "rationale": "Effective adult learning is purposeful, respectful, active, context connected, and supported over time rather than a one-time information delivery. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "Responsive classroom teaching uses evidence about prerequisite knowledge and access to vary examples, scaffolds, practice, and feedback while preserving the intended literacy outcome. Difference does not justify lowering expectations or withholding explicit instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -2029,15 +2029,15 @@
       "knowledgeChecks": [
         {
           "id": "tr5205-ch-10-check-01",
-          "prompt": "When adapting comprehension instruction from evidence, how should a literacy program be evaluated?",
+          "prompt": "When adapting comprehension instruction from evidence, a classroom teacher is piloting a new comprehension unit. What evidence can the teacher appropriately gather to inform future classroom use?",
           "choices": [
-            "Implementation and opportunity, component outcomes and growth, subgroup access, educator learning, materials, intervention coherence, stakeholder experience, and unintended effects.",
-            "The vendor?s testimonials only.",
-            "One grade?s highest score.",
-            "Teacher compliance without student evidence."
+            "Document which lessons and supports were implemented, examine student work and growth by relevant group, note access and usability, gather student or family input, and share limitations through the school review process.",
+            "Decide independently that every classroom must adopt the unit after one successful lesson.",
+            "Report only the highest student score and omit implementation differences or access barriers.",
+            "Judge the materials from the cover design without examining instruction or student evidence."
           ],
           "answerIndex": 0,
-          "rationale": "Program evaluation examines whether the design was enacted, for whom it worked, under what conditions, and what should be sustained, adapted, or discontinued. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "A classroom teacher can contribute implementation details, student evidence, access observations, and stakeholder experience while clearly stating limitations. The teacher informs an established review process but does not claim unilateral authority to adopt or discontinue a schoolwide program. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -2049,15 +2049,15 @@
         },
         {
           "id": "tr5205-ch-10-check-02",
-          "prompt": "When adapting comprehension instruction from evidence, how should leaders select literacy materials or programs?",
+          "prompt": "When adapting comprehension instruction from evidence, before using an optional reading resource, how should a classroom teacher evaluate its suitability?",
           "choices": [
-            "Select the most colorful materials.",
-            "Examine independent evidence quality and fit, content and instructional design, assessment alignment, population, implementation demands, accessibility, cost, and monitoring plan.",
-            "Treat a citation list as proof of effectiveness.",
-            "Ignore local capacity and learner profiles."
+            "Accept the vendor phrase as sufficient evidence and begin replacing required instruction immediately.",
+            "Examine independent evidence, the precise literacy target, learner and text fit, accessibility, instructional demands, and alignment with approved curriculum and school procedures.",
+            "Choose the resource with the most colorful materials without checking its instructional target.",
+            "Use the resource because another grade mentioned it even if it conflicts with approved curriculum and learner access needs."
           ],
           "answerIndex": 1,
-          "rationale": "Responsible adoption combines evidence appraisal with curricular quality, contextual fit, equity, feasibility, professional learning, and an explicit evaluation plan. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "The classroom teacher evaluates whether a resource addresses the intended skill, fits current learners and instruction, is accessible, and complies with adopted procedures. A vendor claim or popularity is not a substitute for independent evidence and curricular alignment. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -2069,15 +2069,15 @@
         },
         {
           "id": "tr5205-ch-10-check-03",
-          "prompt": "When adapting comprehension instruction from evidence, how should identifiable literacy data be shared?",
+          "prompt": "When adapting comprehension instruction from evidence, a classroom teacher wants to share a student reading profile with staff members. What should the teacher do first?",
           "choices": [
-            "Share because all employees work for the district.",
-            "Remove the name but leave uniquely identifying details.",
-            "Verify legitimate educational interest, applicable FERPA and local policy, consent or authority, secure method, and the minimum information needed.",
-            "Post the profile in the staff room."
+            "Send the complete profile to every employee because all school staff automatically need every education record.",
+            "Post the profile in a shared public folder so future collaborators can find it without requesting access.",
+            "Verify legitimate educational interest and local policy, use an approved secure method, and share only the information needed with authorized recipients.",
+            "Replace the student name with initials and then send all details through any convenient personal account."
           ],
           "answerIndex": 2,
-          "rationale": "Education records require role-based, purpose-limited, secure handling under current law and policy; professional curiosity is not the same as legitimate educational interest. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "A classroom teacher must handle identifiable education records through purpose-limited, role-appropriate, secure procedures. Convenience or general employment does not establish legitimate educational interest, and removing a name may not remove identifiability. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -2089,15 +2089,15 @@
         },
         {
           "id": "tr5205-ch-10-check-04",
-          "prompt": "When adapting comprehension instruction from evidence, how should a teacher handle a financial conflict?",
+          "prompt": "When adapting comprehension instruction from evidence, a classroom teacher is offered compensation for promoting one commercial reading resource. What is the responsible response?",
           "choices": [
-            "Hide the relationship if the program is popular.",
-            "Use student data in marketing without authorization.",
-            "Guarantee results to justify the purchase.",
-            "Disclose the conflict, follow ethics and procurement rules, present objective evidence and alternatives, and recuse when impartial judgment cannot be preserved."
+            "Accept the benefit privately because classroom expertise makes disclosure unnecessary.",
+            "Recommend the resource to families first and report the compensation only if someone asks later.",
+            "Hide the vendor relationship but promise to use the resource only with students who volunteer.",
+            "Decline or disclose the benefit as required, follow school ethics and purchasing rules, present objective evidence and alternatives, and recuse from a recommendation when impartiality is compromised."
           ],
           "answerIndex": 3,
-          "rationale": "Transparency and independent evidence protect students, schools, and professional trust when personal interests could influence recommendations. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "A classroom teacher protects students and public trust by disclosing or avoiding personal benefits, following school rules, and separating evidence from commercial influence. Recusal is appropriate when a financial interest prevents an impartial recommendation. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -2109,15 +2109,15 @@
         },
         {
           "id": "tr5205-ch-10-check-05",
-          "prompt": "When adapting comprehension instruction from evidence, what makes literacy advocacy evidence based?",
+          "prompt": "When adapting comprehension instruction from evidence, what is an evidence-based way for a classroom teacher to advocate for improved reading access?",
           "choices": [
-            "Combine student and family experience with disaggregated data, research quality, legal and equity analysis, resource implications, implementation planning, and measurable review.",
-            "Dismiss lived experience because it is not experimental.",
-            "Promise the policy will help every student.",
-            "Present only evidence supporting the preferred position."
+            "Combine student and family perspectives with classroom evidence and relevant research, identify the access barrier, propose a feasible instructional change through established channels, and monitor its effects.",
+            "Present the single story as proof that one change will benefit every learner in every classroom.",
+            "Wait until all uncertainty disappears before communicating any documented access barrier.",
+            "Demand a schoolwide purchase without describing the student need, evidence, implementation, or review plan."
           ],
           "answerIndex": 0,
-          "rationale": "Responsible advocacy integrates multiple forms of evidence, identifies uncertainty and tradeoffs, centers affected communities, and includes a way to evaluate consequences. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
+          "rationale": "Classroom advocacy is strongest when the teacher centers affected learners, connects experience with evidence, proposes a role-appropriate instructional response, collaborates through established channels, and checks consequences. One story can prompt inquiry but cannot establish a universal conclusion by itself. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
             "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -2862,7 +2862,7 @@
       "domainId": "phonics-decoding",
       "domain": "Phonics and Decoding",
       "front": "When an elementary teacher analyzes decoding evidence, why use unfamiliar or pseudoword decoding tasks?",
-      "back": "Application of phoneme?grapheme and word-analysis knowledge without relying only on stored word familiarity.",
+      "back": "Application of phoneme–grapheme and word-analysis knowledge without relying only on stored word familiarity.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3066,7 +3066,7 @@
       "domainId": "vocabulary-fluency",
       "domain": "Vocabulary and Fluency",
       "front": "When using fluency evidence to guide instruction, how should a baseline be established?",
-      "back": "Use multiple valid observations or the measure?s recommended baseline procedure to reduce the influence of an atypical score.",
+      "back": "Use multiple valid observations or the measure's recommended baseline procedure to reduce the influence of an atypical score.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3337,8 +3337,8 @@
       "skillId": "knowledge-text-structure-digital",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "In a K–6 literary or informational text lesson, what makes coaching job embedded?",
-      "back": "Use collaborative goal setting, co-planning, modeling or co-teaching, observation, feedback, rehearsal, and student evidence in the actual context.",
+      "front": "In a K–6 literary or informational text lesson, after learning a new text-structure routine, what action best helps a classroom teacher determine whether it improves comprehension?",
+      "back": "Plan an aligned lesson, model and guide the routine, collect student work and discussion evidence, reflect on access and understanding, and adapt the next lesson.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3354,8 +3354,8 @@
       "skillId": "knowledge-text-structure-digital",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "In a K–6 literary or informational text lesson, when is modeling most effective in coaching?",
-      "back": "A shared focus, explanation of key decisions, observable look-fors, debriefing, teacher rehearsal, and follow-up evidence.",
+      "front": "In a K–6 literary or informational text lesson, when modeling how to analyze informational-text structure for students, what makes the demonstration instructionally useful?",
+      "back": "Think aloud about the evidence and decision, identify useful look-fors, guide student rehearsal, require independent application, and check whether students can explain the structure.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3371,8 +3371,8 @@
       "skillId": "knowledge-text-structure-digital",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "In a K–6 literary or informational text lesson, how should professional learning be evaluated?",
-      "back": "Changes in educator knowledge and practice, implementation conditions, student opportunity and outcomes, and unintended effects over time.",
+      "front": "In a K–6 literary or informational text lesson, after introducing a source-evaluation routine, what evidence should a classroom teacher use to judge whether instruction is working?",
+      "back": "Compare aligned student explanations and source choices over time, note access and misconception patterns, and use the results to plan reteaching or extension.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3388,8 +3388,8 @@
       "skillId": "knowledge-text-structure-digital",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "In a K–6 literary or informational text lesson, what is a constructive response to instructional disagreement?",
-      "back": "Define the shared student goal, surface assumptions and evidence, examine data and standards, agree on a testable plan, and set a review point.",
+      "front": "In a K–6 literary or informational text lesson, two classroom teachers disagree about how to teach students to compare sources. What is the most responsible contribution from each teacher?",
+      "back": "Define the shared student goal, examine standards and student evidence, state the instructional assumptions, agree on a feasible classroom trial, and set a date to review results.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3405,8 +3405,8 @@
       "skillId": "knowledge-text-structure-digital",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "In a K–6 literary or informational text lesson, how do adult-learning principles inform literacy coaching?",
-      "back": "Use relevant problems, prior expertise, choice, active practice, feedback, collaboration, and immediate application while maintaining clear outcomes.",
+      "front": "In a K–6 literary or informational text lesson, students bring different background knowledge and experience to a digital-text task. How should the classroom teacher plan instruction?",
+      "back": "Connect the goal to relevant knowledge, offer accessible examples and purposeful choices, model the process, provide active guided practice and feedback, and maintain the same intended outcome.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3422,8 +3422,8 @@
       "skillId": "knowledge-text-structure-digital",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "In a K–6 literary or informational text lesson, what makes a literacy data meeting productive?",
-      "back": "Use a focused question, prepared disaggregated evidence, agreed norms, analysis of instruction and access, a documented action, owner, measure, and review date.",
+      "front": "In a K–6 literary or informational text lesson, before a grade-level meeting about comprehension, what should a classroom teacher prepare to support an instructional decision?",
+      "back": "Bring a focused question, representative student work and disaggregated evidence, relevant instructional observations, a feasible next action, and a way to monitor the result.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3439,8 +3439,8 @@
       "skillId": "diverse-readers-assessment-decisions",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "When adapting comprehension instruction from evidence, how should a literacy program be evaluated?",
-      "back": "Implementation and opportunity, component outcomes and growth, subgroup access, educator learning, materials, intervention coherence, stakeholder experience, and unintended effects.",
+      "front": "When adapting comprehension instruction from evidence, a classroom teacher is piloting a new comprehension unit. What evidence can the teacher appropriately gather to inform future classroom use?",
+      "back": "Document which lessons and supports were implemented, examine student work and growth by relevant group, note access and usability, gather student or family input, and share limitations through the school review process.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3456,8 +3456,8 @@
       "skillId": "diverse-readers-assessment-decisions",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "When adapting comprehension instruction from evidence, how should leaders select literacy materials or programs?",
-      "back": "Examine independent evidence quality and fit, content and instructional design, assessment alignment, population, implementation demands, accessibility, cost, and monitoring plan.",
+      "front": "When adapting comprehension instruction from evidence, before using an optional reading resource, how should a classroom teacher evaluate its suitability?",
+      "back": "Examine independent evidence, the precise literacy target, learner and text fit, accessibility, instructional demands, and alignment with approved curriculum and school procedures.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3473,8 +3473,8 @@
       "skillId": "diverse-readers-assessment-decisions",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "When adapting comprehension instruction from evidence, how should identifiable literacy data be shared?",
-      "back": "Verify legitimate educational interest, applicable FERPA and local policy, consent or authority, secure method, and the minimum information needed.",
+      "front": "When adapting comprehension instruction from evidence, a classroom teacher wants to share a student reading profile with staff members. What should the teacher do first?",
+      "back": "Verify legitimate educational interest and local policy, use an approved secure method, and share only the information needed with authorized recipients.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3490,8 +3490,8 @@
       "skillId": "diverse-readers-assessment-decisions",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "When adapting comprehension instruction from evidence, how should a teacher handle a financial conflict?",
-      "back": "Disclose the conflict, follow ethics and procurement rules, present objective evidence and alternatives, and recuse when impartial judgment cannot be preserved.",
+      "front": "When adapting comprehension instruction from evidence, a classroom teacher is offered compensation for promoting one commercial reading resource. What is the responsible response?",
+      "back": "Decline or disclose the benefit as required, follow school ethics and purchasing rules, present objective evidence and alternatives, and recuse from a recommendation when impartiality is compromised.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -3507,8 +3507,8 @@
       "skillId": "diverse-readers-assessment-decisions",
       "domainId": "comprehension",
       "domain": "Comprehension of Literary and Informational Text",
-      "front": "When adapting comprehension instruction from evidence, what makes literacy advocacy evidence based?",
-      "back": "Combine student and family experience with disaggregated data, research quality, legal and equity analysis, resource implications, implementation planning, and measurable review.",
+      "front": "When adapting comprehension instruction from evidence, what is an evidence-based way for a classroom teacher to advocate for improved reading access?",
+      "back": "Combine student and family perspectives with classroom evidence and relevant research, identify the access barrier, propose a feasible instructional change through established channels, and monitor its effects.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",

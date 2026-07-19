@@ -276,11 +276,11 @@ module.exports = {
     },
     {
       prompt: 'A student says -6 is greater than -2 because 6 is greater than 2. Which support best corrects the comparison?',
-      correct: 'Place both values on a number line and compare which point lies farther to the right.',
-      distractors: ['Remove both negative signs whenever negative numbers are compared.', 'Tell the student that the number with more symbols is always smaller.', 'Use only positive-number examples and avoid returning to the comparison.'],
-      whyWrong: ['removing signs changes the quantities and causes the misconception', 'symbol count is not a mathematical comparison rule', 'avoiding negative values does not repair the idea'],
-      correctWhy: 'The number line shows that negative 2 lies to the right of negative 6 and is therefore greater.',
-      rationale: 'The student is comparing absolute values instead of signed values. A number line provides a spatial model in which greater numbers are farther right, making -2 greater than -6.',
+      correct: 'Place both values on a number line; the point farther right represents the greater number.',
+      distractors: ['Compare their distances from zero and choose the value with the greater distance.', 'Rewrite both as positive values, compare 6 and 2, and then restore the negative signs.', 'Compare the digits first and use the negative signs after choosing the larger digit.'],
+      whyWrong: ['distance from zero compares absolute value, which repeats the student’s original error instead of comparing signed values', 'temporarily removing and then restoring both signs preserves the same mistaken comparison between the magnitudes', 'choosing by digit size before considering each sign again treats magnitude as though it determines order'],
+      correctWhy: 'The spatial model establishes that negative 2 lies to the right of negative 6, so negative 2 is greater.',
+      rationale: 'The student is comparing absolute values instead of signed values. Locating both numbers on a number line makes their order visible: values increase from left to right, so -2 is greater than -6.',
     },
     {
       prompt: 'A student reports that the class reading time was usually 60 minutes because one student read for 60 minutes; all other times were between 18 and 25 minutes. What should be examined?',

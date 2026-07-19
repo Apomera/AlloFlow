@@ -3962,11 +3962,34 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const [nodePositions, setNodePositions] = useState({});
   const dragRef = useRef({ active: false, id: null, startX: 0, startY: 0, origX: 0, origY: 0 });
 
-  // Serialize data to detect actual content changes, not just reference changes
+  const pipelineDataRef = useRef(data);
+  pipelineDataRef.current = data;
+
+  const getStepTargets = useCallback((origIdx) => {
+    const pipelineData = pipelineDataRef.current;
+    const stepCount = pipelineData?.steps?.length || 0;
+    const rawTargets = pipelineData?.steps?.[origIdx]?.connectsTo;
+    if (Array.isArray(rawTargets)) {
+      const validTargets = [...new Set(rawTargets
+        .map(target => Number(target))
+        .filter(target => Number.isInteger(target) && target >= 0 && target < stepCount && target !== origIdx))];
+      if (validTargets.length > 0) return validTargets;
+    }
+    return origIdx < stepCount - 1 ? [origIdx + 1] : [];
+  }, []);
+
+  // Serialize all game-relevant data so parent renders do not reset the board,
+  // while genuine edits to labels, details, or branch destinations do.
   const dataFingerprint = useMemo(() => {
     if (!data?.steps?.length) return '';
-    return JSON.stringify(data.steps.map(s => typeof s === 'string' ? s : s.title));
-  }, [data]);
+    return JSON.stringify(data.steps.map((s, i) => typeof s === 'string'
+      ? { title: s, items: [], connectsTo: i < data.steps.length - 1 ? [i + 1] : [] }
+      : {
+          title: s.title || '',
+          items: Array.isArray(s.items) ? s.items : [],
+          connectsTo: getStepTargets(i),
+        }));
+  }, [data, getStepTargets]);
 
   useEffect(() => {
     if (!dataFingerprint || !data?.steps?.length) return;
@@ -3974,7 +3997,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       id: `pb-${i}-${Math.random().toString(36).substr(2,6)}`,
       title: typeof s === 'string' ? s : (s.title || s),
       items: s.items || [],
-      connectsTo: s.connectsTo || null,
+      connectsTo: getStepTargets(i),
       originalIndex: i,
     }));
     const shuffled = [...steps];
@@ -3990,32 +4013,41 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setConnectingFrom(null);
     setChecked(false);
     setNodePositions({});
-  }, [dataFingerprint]);
+  }, [dataFingerprint, getStepTargets]);
 
   // Build the set of correct connections from data
   const correctConnectionSet = useMemo(() => {
     const set = new Set();
     if (!data?.steps?.length) return set;
-    data.steps.forEach((step, i) => {
-      if (step.connectsTo && Array.isArray(step.connectsTo) && step.connectsTo.length > 0) {
-        step.connectsTo.forEach(target => set.add(`${i}->${target}`));
-      } else if (i < data.steps.length - 1) {
-        set.add(`${i}->${i + 1}`);
-      }
+    data.steps.forEach((_step, i) => {
+      getStepTargets(i).forEach(target => set.add(`${i}->${target}`));
     });
     return set;
-  }, [data]);
+  }, [dataFingerprint, getStepTargets]);
 
   const totalRequired = correctConnectionSet.size;
 
   // How many outgoing connections does a node need?
   const getRequiredOutCount = (origIdx) => {
-    const step = data?.steps?.[origIdx];
-    if (step?.connectsTo && Array.isArray(step.connectsTo) && step.connectsTo.length > 0) {
-      return step.connectsTo.length;
-    }
-    return origIdx < (data?.steps?.length || 0) - 1 ? 1 : 0;
+    return getStepTargets(origIdx).length;
   };
+
+  const addConnection = useCallback((fromId, toId, requiredOut) => {
+    setConnections(prev => {
+      // Keep a single copy of an edge, but allow several branches to converge
+      // on the same target node. A merge is a valid flow-chart relationship.
+      let next = prev.filter(c => !(c.fromId === fromId && c.toId === toId));
+      const maxOutgoing = Math.max(1, requiredOut);
+      const outgoing = next.filter(c => c.fromId === fromId);
+      if (maxOutgoing === 1) {
+        next = next.filter(c => c.fromId !== fromId);
+      } else if (outgoing.length >= maxOutgoing) {
+        const oldest = outgoing[0];
+        next = next.filter(c => c !== oldest);
+      }
+      return [...next, { fromId, toId }];
+    });
+  }, []);
 
   // Recalculate arrow positions
   const recalcArrows = useCallback(() => {
@@ -4073,21 +4105,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       // For branching nodes, allow multiple outgoing connections
       const fromStep = shuffledSteps.find(s => s.id === connectingFrom);
       const requiredOut = getRequiredOutCount(fromStep?.originalIndex);
-      const existingFromCount = connections.filter(c => c.fromId === connectingFrom).length;
-      setConnections(prev => {
-        let filtered = prev;
-        // If this source already has max outgoing connections, remove oldest
-        if (requiredOut <= 1) {
-          filtered = prev.filter(c => c.fromId !== connectingFrom);
-        } else if (existingFromCount >= requiredOut) {
-          // Remove the first outgoing connection to make room
-          const firstOut = prev.find(c => c.fromId === connectingFrom);
-          if (firstOut) filtered = prev.filter(c => c !== firstOut);
-        }
-        // Remove any existing connection TO this target
-        filtered = filtered.filter(c => c.toId !== nodeId);
-        return [...filtered, { fromId: connectingFrom, toId: nodeId }];
-      });
+      addConnection(connectingFrom, nodeId, requiredOut);
       const toStep = shuffledSteps.find(s => s.id === nodeId);
       setAnnouncement(`Connected "${fromStep?.title}" → "${toStep?.title}".`);
       setConnectingFrom(null);
@@ -4107,18 +4125,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         // For branching, allow multiple outgoing
         const kbStep = shuffledSteps.find(s => s.id === keyboardSelectedId);
         const requiredOut = getRequiredOutCount(kbStep?.originalIndex);
-        const existingFromCount = connections.filter(c => c.fromId === keyboardSelectedId).length;
-        setConnections(prev => {
-          let filtered = prev;
-          if (requiredOut <= 1) {
-            filtered = prev.filter(c => c.fromId !== keyboardSelectedId);
-          } else if (existingFromCount >= requiredOut) {
-            const firstOut = prev.find(c => c.fromId === keyboardSelectedId);
-            if (firstOut) filtered = prev.filter(c => c !== firstOut);
-          }
-          filtered = filtered.filter(c => c.toId !== nodeId);
-          return [...filtered, { fromId: keyboardSelectedId, toId: nodeId }];
-        });
+        addConnection(keyboardSelectedId, nodeId, requiredOut);
         setAnnouncement(`Connected steps.`);
         setKeyboardSelectedId(null);
         if (playSound) playSound('click');

@@ -1196,6 +1196,168 @@ var _lazyIcon = function (name) {
         })}</div>}</div> : null;
     return <div className="p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm" role="region" aria-label={t("a11y.live_results_dashboard")}>{header}{body}{reflectionsEl}{explainerModalEl}</div>;
   }
+  function _quizEmitDeterministicAnswer(p, itemType, answer, confidence) {
+    if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
+    try {
+      p.onSubmitLiveAnswer({
+        questionIdx: p.questionIdx,
+        itemType: itemType,
+        conceptLabel: p.q && p.q.conceptLabel || '',
+        answer: answer,
+        confidence: confidence || null,
+        timestamp: Date.now()
+      });
+    } catch (e) {}
+  }
+  function _quizConfidenceButtons(p) {
+    if (!p.enabled || !p.grade || p.grade.status === 'idk') return null;
+    var labels = { knew: 'I knew this', guessed: 'I guessed', 'no-idea': 'No idea' };
+    return <div className="mt-2 flex items-center gap-2 flex-wrap text-xs"><span className="text-slate-600 font-semibold">How sure were you?</span>{['knew', 'guessed', 'no-idea'].map(function (level) {
+      return <button key={level} type="button" onClick={function () { p.onChange(level); }} className={'px-2 py-0.5 rounded border transition-colors motion-reduce:transition-none ' + (p.value === level ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')}>{labels[level]}</button>;
+    })}</div>;
+  }
+  function MultiSelectCard(p) {
+    var q = p.q;
+    var options = Array.isArray(q.options) ? q.options : [];
+    var correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+    var selectedState = React.useState([]);
+    var selected = selectedState[0];
+    var setSelected = selectedState[1];
+    var gradeState = React.useState(null);
+    var grade = gradeState[0];
+    var setGrade = gradeState[1];
+    var submittedAnswerState = React.useState(null);
+    var submittedAnswer = submittedAnswerState[0];
+    var setSubmittedAnswer = submittedAnswerState[1];
+    var confidenceState = React.useState(null);
+    var confidence = confidenceState[0];
+    var setConfidence = confidenceState[1];
+    var renderRules = p.modeStrategy && p.modeStrategy.render || {};
+    function toggleOption(idx) {
+      if (grade) return;
+      setSelected(function (prev) {
+        return prev.indexOf(idx) === -1 ? prev.concat([idx]).sort(function (a, b) { return a - b; }) : prev.filter(function (n) { return n !== idx; });
+      });
+    }
+    function submit() {
+      if (selected.length === 0 || correctAnswers.length === 0) return;
+      var correctIndices = options.map(function (opt, idx) { return correctAnswers.indexOf(opt) !== -1 ? idx : -1; }).filter(function (idx) { return idx >= 0; });
+      var selectedCorrect = selected.filter(function (idx) { return correctIndices.indexOf(idx) !== -1; }).length;
+      var selectedWrong = selected.length - selectedCorrect;
+      var earned = Math.max(0, selectedCorrect - selectedWrong);
+      var score = Math.round(100 * earned / Math.max(1, correctIndices.length));
+      var exact = selectedWrong === 0 && selectedCorrect === correctIndices.length;
+      var status = exact ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+      var answer = { selectedIndices: selected.slice(), selectedTexts: selected.map(function (idx) { return options[idx]; }), status: status, score: score };
+      setGrade({ status: status, score: score, selectedCorrect: selectedCorrect, selectedWrong: selectedWrong, totalCorrect: correctIndices.length });
+      setSubmittedAnswer(answer);
+      _quizEmitDeterministicAnswer(p, 'multi-select', answer, confidence);
+    }
+    function markIDK() {
+      var answer = { idk: true };
+      setGrade({ status: 'idk', score: 0 });
+      setSubmittedAnswer(answer);
+      _quizEmitDeterministicAnswer(p, 'multi-select', answer, confidence);
+    }
+    function updateConfidence(level) {
+      setConfidence(level);
+      if (submittedAnswer) _quizEmitDeterministicAnswer(p, 'multi-select', submittedAnswer, level);
+    }
+    function reset() { setSelected([]); setGrade(null); setSubmittedAnswer(null); setConfidence(null); }
+    if (options.length === 0) return null;
+    var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Multi-select</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p><p className="text-[11px] text-slate-500 mt-1">Select every correct answer. Incorrect selections reduce partial credit.</p></div></div><div className="space-y-2">{options.map(function (opt, idx) {
+      var active = selected.indexOf(idx) !== -1;
+      return <button key={idx} type="button" aria-pressed={active} disabled={!!grade} onClick={function () { toggleOption(idx); }} className={'w-full flex items-start gap-2 text-left px-3 py-2 rounded-lg border text-sm transition-colors motion-reduce:transition-none disabled:cursor-default ' + (active ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}><span aria-hidden="true" className={'mt-0.5 w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black ' + (active ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400')}>{active ? '✓' : ''}</span><span>{opt}</span></button>;
+    })}</div>{!grade && <div className="mt-3 flex items-center gap-2 flex-wrap"><button type="button" onClick={submit} disabled={selected.length === 0} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check selections</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ All correct' : grade.status === 'partially-correct' ? grade.score + '% partial credit' : 'Not yet — review your selections'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{grade.selectedCorrect + ' of ' + grade.totalCorrect + ' correct choices selected' + (grade.selectedWrong ? '; ' + grade.selectedWrong + ' incorrect choice' + (grade.selectedWrong === 1 ? '' : 's') + ' selected.' : '.')}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
+  }
+  function AnswerEvidenceCard(p) {
+    var q = p.q;
+    var answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+    var evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+    var answerState = React.useState(null);
+    var answerIdx = answerState[0];
+    var setAnswerIdx = answerState[1];
+    var evidenceState = React.useState(null);
+    var evidenceIdx = evidenceState[0];
+    var setEvidenceIdx = evidenceState[1];
+    var gradeState = React.useState(null);
+    var grade = gradeState[0];
+    var setGrade = gradeState[1];
+    var submittedState = React.useState(null);
+    var submitted = submittedState[0];
+    var setSubmitted = submittedState[1];
+    var confidenceState = React.useState(null);
+    var confidence = confidenceState[0];
+    var setConfidence = confidenceState[1];
+    var renderRules = p.modeStrategy && p.modeStrategy.render || {};
+    function submit() {
+      if (answerIdx === null || evidenceIdx === null) return;
+      var answerCorrect = answers[answerIdx] === q.correctAnswer;
+      var evidenceCorrect = evidence[evidenceIdx] === q.correctEvidence;
+      var score = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
+      var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
+      var payload = { answerIdx: answerIdx, answerText: answers[answerIdx], evidenceIdx: evidenceIdx, evidenceText: evidence[evidenceIdx], answerCorrect: answerCorrect, evidenceCorrect: evidenceCorrect, score: score, status: status };
+      setGrade(payload);
+      setSubmitted(payload);
+      _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence);
+    }
+    function markIDK() { var payload = { idk: true }; setGrade({ status: 'idk', score: 0 }); setSubmitted(payload); _quizEmitDeterministicAnswer(p, 'answer-evidence', payload, confidence); }
+    function updateConfidence(level) { setConfidence(level); if (submitted) _quizEmitDeterministicAnswer(p, 'answer-evidence', submitted, level); }
+    function reset() { setAnswerIdx(null); setEvidenceIdx(null); setGrade(null); setSubmitted(null); setConfidence(null); }
+    if (answers.length === 0 || evidence.length === 0) return null;
+    var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
+    function optionGrid(items, selectedIdx, setter, disabled) {
+      return <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{items.map(function (opt, idx) { return <button key={idx} type="button" disabled={disabled} aria-pressed={selectedIdx === idx} onClick={function () { setter(idx); }} className={'px-3 py-2 rounded-lg border text-sm text-left transition-colors motion-reduce:transition-none disabled:cursor-default ' + (selectedIdx === idx ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-300' : 'bg-slate-50 border-slate-200 hover:border-indigo-300')}>{String.fromCharCode(65 + idx) + '. ' + opt}</button>; })}</div>;
+    }
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Answer + evidence</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p></div></div><div className="space-y-4"><div><p className="text-xs font-bold text-slate-700 mb-2">Part 1 — Choose the best answer</p>{optionGrid(answers, answerIdx, setAnswerIdx, !!grade)}</div>{answerIdx !== null && <div><p className="text-xs font-bold text-slate-700 mb-2">{'Part 2 — ' + (q.evidencePrompt || 'Which evidence or reason best supports your answer?')}</p>{optionGrid(evidence, evidenceIdx, setEvidenceIdx, !!grade)}</div>}</div>{!grade && <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={answerIdx === null || evidenceIdx === null} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check both parts</button>{renderRules.allowIDontKnow && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}</div>}{grade && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'both parts correct' : grade.status === 'partially-correct' ? 'one part correct' : 'needs review')}</div>{grade.status !== 'idk' && <ul className={'mt-1 text-xs text-' + color + '-900'}><li>{(grade.answerCorrect ? '✓ ' : '✗ ') + 'Answer'}</li><li>{(grade.evidenceCorrect ? '✓ ' : '✗ ') + 'Supporting evidence or reason'}</li></ul>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade, value: confidence, onChange: updateConfidence })}</div>;
+  }
+  function _quizParseNumericResponse(raw) {
+    var text = String(raw || '').trim().replace(/,/g, '');
+    var fraction = text.match(/^([+-]?\d+)\s*\/\s*(\d+)(?:\s+(.+))?$/);
+    if (fraction && Number(fraction[2]) !== 0) return { value: Number(fraction[1]) / Number(fraction[2]), unit: String(fraction[3] || '').trim() };
+    var decimal = text.match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:\s*(.*))?$/i);
+    if (!decimal) return null;
+    var value = Number(decimal[1]);
+    return Number.isFinite(value) ? { value: value, unit: String(decimal[2] || '').trim() } : null;
+  }
+  function _quizNormalizeUnit(unit) { return String(unit || '').trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' '); }
+  function NumericResponseCard(p) {
+    var q = p.q;
+    var responseState = React.useState('');
+    var response = responseState[0];
+    var setResponse = responseState[1];
+    var gradeState = React.useState(null);
+    var grade = gradeState[0];
+    var setGrade = gradeState[1];
+    var submittedState = React.useState(null);
+    var submitted = submittedState[0];
+    var setSubmitted = submittedState[1];
+    var confidenceState = React.useState(null);
+    var confidence = confidenceState[0];
+    var setConfidence = confidenceState[1];
+    var renderRules = p.modeStrategy && p.modeStrategy.render || {};
+    function submit() {
+      var parsed = _quizParseNumericResponse(response);
+      if (!parsed) { setGrade({ status: 'invalid', score: 0 }); return; }
+      var expected = Number(q.correctValue);
+      var tolerance = Math.max(0, Number(q.tolerance) || 0);
+      var valueCorrect = Number.isFinite(expected) && Math.abs(parsed.value - expected) <= tolerance + 1e-9;
+      var expectedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(_quizNormalizeUnit).filter(Boolean);
+      var unitCorrect = expectedUnits.length === 0 || expectedUnits.indexOf(_quizNormalizeUnit(parsed.unit)) !== -1;
+      var score = valueCorrect && unitCorrect ? 100 : valueCorrect || unitCorrect && expectedUnits.length > 0 ? 50 : 0;
+      var status = score === 100 ? 'correct' : score === 50 ? 'partially-correct' : 'incorrect';
+      var payload = { text: response, numericValue: parsed.value, unit: parsed.unit, valueCorrect: valueCorrect, unitCorrect: unitCorrect, status: status, score: score };
+      setGrade(payload);
+      setSubmitted(payload);
+      _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence);
+    }
+    function markIDK() { var payload = { idk: true }; setGrade({ status: 'idk', score: 0 }); setSubmitted(payload); _quizEmitDeterministicAnswer(p, 'numeric-response', payload, confidence); }
+    function updateConfidence(level) { setConfidence(level); if (submitted) _quizEmitDeterministicAnswer(p, 'numeric-response', submitted, level); }
+    function reset() { setResponse(''); setGrade(null); setSubmitted(null); setConfidence(null); }
+    var color = grade && grade.status === 'correct' ? 'emerald' : grade && grade.status === 'partially-correct' ? 'amber' : grade && grade.status === 'idk' ? 'sky' : grade ? 'rose' : 'slate';
+    return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">Numeric response</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p>{q.unit && <p className="text-[11px] text-slate-500 mt-1">{'Include units (' + q.unit + ').'}</p>}</div></div><input type="text" inputMode="decimal" aria-label="Numeric response" value={response} onChange={function (e) { setResponse(e.target.value); }} onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } }} disabled={!!grade && grade.status !== 'invalid'} placeholder={q.unit ? 'Example: 12.5 ' + q.unit : 'Enter a number'} className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50" />{!grade || grade.status === 'invalid' ? <div className="mt-3 flex gap-2 flex-wrap"><button type="button" onClick={submit} disabled={!response.trim()} className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50">Check value</button>{renderRules.allowIDontKnow && !grade && <button type="button" onClick={markIDK} className="px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold">I don't know</button>}{grade && grade.status === 'invalid' && <span className="text-xs text-rose-700 self-center">Enter a number, optionally followed by its unit.</span>}</div> : null}{grade && grade.status !== 'invalid' && <div className={'mt-3 p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-300'} role="status" aria-live="polite"><div className={'text-xs font-bold text-' + color + '-900'}>{grade.status === 'idk' ? 'Marked “I don’t know”' : grade.status === 'correct' ? '✓ Correct value and units' : grade.status === 'partially-correct' ? 'Partially correct — check the value or units' : 'Not yet — check your calculation and units'}</div>{grade.status !== 'idk' && <p className={'text-xs mt-1 text-' + color + '-900'}>{'Expected ' + q.correctValue + (q.unit ? ' ' + q.unit : '') + (Number(q.tolerance) > 0 ? ' (±' + q.tolerance + ')' : '') + '.'}</p>}<button type="button" onClick={reset} className="mt-2 px-3 py-1 rounded bg-white border border-slate-300 text-slate-700 text-xs font-semibold">Try again</button></div>}{_quizConfidenceButtons({ enabled: !!renderRules.allowConfidenceRating, grade: grade && grade.status !== 'invalid' ? grade : null, value: confidence, onChange: updateConfidence })}</div>;
+  }
   function FreeformItemsBlock(p) {
     var allQuestions = Array.isArray(p.questions) ? p.questions : [];
     var freeform = allQuestions.map(function (q, idx) {
@@ -1204,10 +1366,19 @@ var _lazyIcon = function (name) {
         idx: idx
       };
     }).filter(function (entry) {
-      return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch');
+      return entry.q && (entry.q.type === 'multi-select' || entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch' || entry.q.type === 'answer-evidence' || entry.q.type === 'numeric-response');
     });
     if (freeform.length === 0) return null;
-    return <div className="space-y-4 mt-6"><h4 className="font-bold text-slate-700 flex items-center gap-2 text-base"><span aria-hidden="true">✏️</span> Open-Response Items</h4><p className="text-xs text-slate-600 mb-2">Type your answer and click "Grade my answer" — an AI will give you immediate feedback.</p>{freeform.map(function (entry) {
+    return <div className="space-y-4 mt-6"><h4 className="font-bold text-slate-700 flex items-center gap-2 text-base"><span aria-hidden="true">＋</span> Additional Assessment Items</h4><p className="text-xs text-slate-600 mb-2">Interactive formats are graded instantly. Written responses receive immediate AI feedback.</p>{freeform.map(function (entry) {
+        if (entry.q.type === 'multi-select') {
+          return <MultiSelectCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} />;
+        }
+        if (entry.q.type === 'answer-evidence') {
+          return <AnswerEvidenceCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} />;
+        }
+        if (entry.q.type === 'numeric-response') {
+          return <NumericResponseCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} />;
+        }
         if (entry.q.type === 'sequence-sense') {
           return <SequenceSenseCard key={entry.idx} q={entry.q} itemNumber={entry.idx + 1} questionIdx={entry.idx} onSubmitLiveAnswer={p.onSubmitLiveAnswer} modeStrategy={p.modeStrategy} callGemini={p.callGemini} callTTS={p.callTTS} gradeLevel={p.gradeLevel} />;
         }
@@ -1357,7 +1528,7 @@ var _lazyIcon = function (name) {
     }
     var statusColor = grade.status === 'correct' ? 'emerald' : grade.status === 'partially-correct' ? 'amber' : grade.status === 'incorrect' ? 'rose' : grade.status === 'error' ? 'rose' : grade.status === 'idk' ? 'sky' : 'slate';
     var statusLabel = grade.status === 'correct' ? '✓ Correct' : grade.status === 'partially-correct' ? '~ Close' : grade.status === 'incorrect' ? '✗ Not yet' : grade.status === 'unclear' ? '? Unclear' : grade.status === 'error' ? '! Error' : grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : '';
-    var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' : q.type === 'self-explanation' ? 'Self-explanation' : 'Short answer';
+    var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' : q.type === 'self-explanation' ? 'Explain your reasoning' : 'Brief written response';
     return <div className="bg-white p-5 rounded-xl border border-slate-300 shadow-sm"><div className="flex items-start gap-3 mb-3"><span className="flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5">{p.itemNumber}</span><div className="flex-1 min-w-0"><span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1">{typeLabel}</span><p className="text-sm text-slate-800 leading-relaxed">{q.question || ''}</p></div></div>{q.type === 'fill-blank' ? <input aria-label={t("a11y.fill_in_blank")} type="text" value={response} onChange={function (ev) {
         setResponse(ev.target.value);
       }} onKeyDown={function (ev) {
@@ -2010,7 +2181,7 @@ var _lazyIcon = function (name) {
         derangeShuffle,
         openEscapeRoomSettings
       }} t={t} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} playSound={playSound} globalPoints={globalPoints} inputText={inputText} /> : null : isPresentationMode ? <div className="space-y-8 animate-in motion-reduce:animate-none fade-in duration-500"><div className="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg"><h2 className="font-bold text-xl flex items-center gap-2"><MonitorPlay size={24} className="text-teal-700" /> {t('quiz.presentation_board')}</h2><button type="button" aria-label={t('common.reset_presentation')} onClick={resetPresentation} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none"><RefreshCw size={14} /> {t('quiz.reset_board')}</button></div>{generatedContent?.data.questions.map((q, i) => {
-          if (!q || !Array.isArray(q.options)) return null;
+          if (!q || (q.type && q.type !== 'mcq') || !Array.isArray(q.options)) return null;
           const pState = presentationState[i] || {};
           const isAnswered = !!pState.selectedOption;
           const isCorrectlyAnswered = pState.isCorrect;
@@ -2054,7 +2225,7 @@ var _lazyIcon = function (name) {
               }()}</div>)}</div><McqEnhancements q={q} questionIdx={i} modeStrategy={_modeStrat} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} onSubmitLiveAnswer={onSubmitLiveAnswer} currentConfidence={studentMcqConfidence[i] || null} onSetConfidence={function (lvl) {
             setMcqConfidence(i, lvl, q);
           }} />{q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && <div className="mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in motion-reduce:animate-none slide-in-from-top-2 relative"><Stamp label={t('quiz.verified_stamp')} position="top-2 right-2" size="small" /><button type="button" aria-label={isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check')} onClick={() => handleFactCheck(i)} disabled={isFactChecking[i]} className="absolute bottom-2 right-2 p-1.5 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors motion-reduce:transition-none" title={t('quiz.regenerate_check')}><RefreshCw size={14} className={isFactChecking[i] ? "animate-spin " + quizreducedMotionClass : ""} /></button><Sparkles size={14} className="mt-0.5 shrink-0 text-yellow-600" /><div className="flex-grow"><div className="whitespace-pre-line leading-relaxed text-slate-700">{renderFormattedText(q.factCheck)}</div></div></div>}</div>)}{Array.isArray(generatedContent?.data?.questions) && generatedContent.data.questions.some(function (q) {
-          return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch');
+          return q && (q.type === 'multi-select' || q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch' || q.type === 'answer-evidence' || q.type === 'numeric-response');
         }) && <FreeformItemsBlock questions={generatedContent.data.questions} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} QuizAIHelpers={window.AlloModules && window.AlloModules.QuizAIHelpers} modeStrategy={_modeStrat} onSubmitLiveAnswer={onSubmitLiveAnswer} />}{(Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0 || generatedContent?.data.reflection) && <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"><h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2"><PenTool size={16} /> {t('quiz.reflections')}</h4>{Array.isArray(generatedContent?.data.reflections) ? <div className="space-y-6">{generatedContent?.data.reflections.map((ref, i) => {
               const text = typeof ref === 'string' ? ref : ref.text || ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : '');
               const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;

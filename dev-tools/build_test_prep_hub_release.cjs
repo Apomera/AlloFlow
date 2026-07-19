@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-const { execFileSync } = require('child_process');
+const { execFileSync: rawExecFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const waitBuffer = new Int32Array(new SharedArrayBuffer(4));
+function execFileSync(file,args,options){let error;for(let attempt=1;attempt<=4;attempt++){try{return rawExecFileSync(file,args,options)}catch(caught){error=caught;if(attempt<4)Atomics.wait(waitBuffer,0,0,250*attempt)}}throw error}
+function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;attempt++){try{fs.writeFileSync(file,data,'utf8');return}catch(caught){error=caught;if(attempt<8)Atomics.wait(waitBuffer,0,0,150*attempt)}}throw error}
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep_hub_source.jsx');
@@ -115,7 +118,33 @@ const prepareTestPrepPacksPath=path.join(root,'dev-tools','prepare_test_prep_pac
 const applyTestPrepSourceReviewCorrectionsPath=path.join(root,'dev-tools','apply_test_prep_source_review_corrections.cjs');
 const writeTestPrepAssistantReviewPath=path.join(root,'dev-tools','write_test_prep_assistant_review.cjs');
 const verifyTestPrepAssistantReviewPath=path.join(root,'dev-tools','verify_test_prep_assistant_review.cjs');
+const buildTestPrepReferenceCatalogPath=path.join(root,'dev-tools','build_test_prep_reference_catalog.cjs');
+const reviewNonEpppAgainstEpppPath=path.join(root,'dev-tools','review_non_eppp_against_eppp.cjs');
+const applyTestPrepIndependentAdditionsPath=path.join(root,'dev-tools','apply_test_prep_independent_additions.cjs');
 const expandTestPrepPacksPath=path.join(root,'dev-tools','expand_test_prep_packs_to_500.cjs');
+const bindNonEpppNativeQaPath=path.join(root,'dev-tools','bind_non_eppp_native_qa.cjs');
+const postCorrectionQaPaths = [
+  paraProLibraryQaPath, paraProQaPath,
+  specialEducation5355LibraryQaPath, specialEducation5355QaPath,
+  schoolCounselor5422LibraryQaPath, schoolCounselor5422QaPath,
+  schoolPsychologist5403LibraryQaPath, schoolPsychologist5403QaPath,
+  speechLanguagePathology5331LibraryQaPath, speechLanguagePathology5331QaPath,
+  audiology5343LibraryQaPath, audiology5343QaPath,
+  readingSpecialist5302LibraryQaPath, readingSpecialist5302QaPath,
+  educationalLeadership5412LibraryQaPath, educationalLeadership5412QaPath,
+  pltK65622LibraryQaPath, pltK65622QaPath,
+  praxisCore5752LibraryQaPath, praxisCore5752QaPath,
+  esol5362LibraryQaPath, esol5362QaPath,
+  teachingReading5205QaPath, earlyChildhood5025QaPath, pltEarlyChildhood5621QaPath,
+  specialEducationEarlyChildhood5692QaPath, specialEducationSevereProfound5547QaPath,
+  specialEducationLearningDisabilities5383QaPath, specialEducationBehaviorEmotional5372QaPath,
+  specialEducationIntellectualDisabilities5322QaPath, plt595623QaPath, plt7125624QaPath,
+  schoolLibrarian5312QaPath,
+];
+const postExpansionQaPaths = [
+  pltEarlyChildhood5621QaPath, plt595623QaPath, plt7125624QaPath,
+  specialEducationLearningDisabilities5383QaPath, specialEducationSevereProfound5547QaPath,
+];
 const outputPath = path.join(root, 'test_prep_hub_module.js');
 const deployOutputPath = path.join(root, 'prismflow-deploy', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
@@ -171,6 +200,7 @@ if(!fs.existsSync(plt595623SourcePath))throw Error('PLT Grades 5–9 5623 source
 if(!fs.existsSync(plt7125624SourcePath))throw Error('PLT Grades 7–12 5624 source missing');
 if(!fs.existsSync(schoolLibrarian5312SourcePath))throw Error('School Librarian 5312 source missing');
 const skipPackRebuild=process.argv.includes('--skip-pack-rebuild');
+const skipEpppPreviewRebuild=process.argv.includes('--skip-eppp-preview-rebuild');
 if(skipPackRebuild){
   const packs=fs.readdirSync(path.join(root,'test_prep')).filter(name=>name.endsWith('_pack.json')&&!name.startsWith('eppp'));
   if(packs.length!==22)throw Error('Current-snapshot build requires 22 non-EPPP packs');
@@ -181,7 +211,7 @@ if(skipPackRebuild){
     const guidedBanks=3-authoredBanks;
     const expectedKinds=[...Array(2).fill('source-diagnostic'),...Array(authoredBanks).fill('independent-diagnostic'),...Array(guidedBanks).fill('guided-review')];
     const expectedVersion=authoredBanks?'source-kernel-audit-plus-independent-batches-and-guided-review-v2':'source-kernel-audit-plus-guided-review-v1';
-    if(pack.items?.length!==500||pack.sections?.length!==5||!String(pack.assistantReview?.verdict||'').startsWith('reviewed-target-')||!pack.bankDisclosure||pack.sourceDiagnosticBatchCount!==2||pack.independentDiagnosticBatchCount&&pack.independentDiagnosticBatchCount!==independentBanks||pack.guidedReviewBatchCount!==guidedBanks||pack.learningActivityBankCount!==5||pack.expansionVersion!==expectedVersion||JSON.stringify(pack.sections.map(section=>section.kind))!==JSON.stringify(expectedKinds))throw Error(name+': current snapshot has stale or invalid audit metadata');
+    if(pack.items?.length!==500||pack.sections?.length!==5||!String(pack.assistantReview?.verdict||'').startsWith('reviewed-target-')||!pack.bankDisclosure||pack.sourceDiagnosticBatchCount!==2||pack.independentDiagnosticBatchCount!==independentBanks||pack.guidedReviewBatchCount!==guidedBanks||pack.learningActivityBankCount!==5||pack.expansionVersion!==expectedVersion||JSON.stringify(pack.sections.map(section=>section.kind))!==JSON.stringify(expectedKinds))throw Error(name+': current snapshot has stale or invalid audit metadata');
   }
 }
 if(!skipPackRebuild){
@@ -246,11 +276,20 @@ execFileSync(process.execPath,[plt595623BuildPath],{cwd:root,stdio:'inherit'});e
 execFileSync(process.execPath,[plt7125624BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[plt7125624LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[plt7125624QaPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[schoolLibrarian5312BuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[schoolLibrarian5312LibraryBuildPath],{cwd:root,stdio:'inherit'});execFileSync(process.execPath,[schoolLibrarian5312QaPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[applyTestPrepSourceReviewCorrectionsPath],{cwd:root,stdio:'inherit'});
+for (const qaPath of postCorrectionQaPaths) execFileSync(process.execPath,[qaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[bindNonEpppNativeQaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[applyTestPrepIndependentAdditionsPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[expandTestPrepPacksPath],{cwd:root,stdio:'inherit'});
-execFileSync(process.execPath,[writeTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
-execFileSync(process.execPath, [eppp2027PreviewBuildPath], { cwd: root, stdio: 'inherit' });
-execFileSync(process.execPath, [eppp2027PreviewQaPath], { cwd: root, stdio: 'inherit' });
+for (const qaPath of postExpansionQaPaths) execFileSync(process.execPath,[qaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[bindNonEpppNativeQaPath],{cwd:root,stdio:'inherit'});
+if (!skipEpppPreviewRebuild) {
+  execFileSync(process.execPath, [eppp2027PreviewBuildPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [eppp2027PreviewQaPath], { cwd: root, stdio: 'inherit' });
 }
+}
+execFileSync(process.execPath,[buildTestPrepReferenceCatalogPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[writeTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[reviewNonEpppAgainstEpppPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[verifyTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
@@ -391,7 +430,7 @@ const prelude = 'const TEST_PREP_GUIDED_EXPANSION = (' + guidedCore.factorySourc
   + 'const PLT_5_9_5623_PRACTICE_PACK = ' + JSON.stringify(embedPack(plt595623Pack)) + ';\n\n'
   + 'const PLT_7_12_5624_PRACTICE_PACK = ' + JSON.stringify(embedPack(plt7125624Pack)) + ';\n\n'
   + 'const SCHOOL_LIBRARIAN_5312_PRACTICE_PACK = ' + JSON.stringify(embedPack(schoolLibrarian5312Pack)) + ';\n\n';
-fs.writeFileSync(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n', 'utf8');
+writeGeneratedFile(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n');
 
 try {
   const esbuildPath = path.join(root, 'node_modules', 'esbuild', 'bin', 'esbuild');
@@ -442,6 +481,7 @@ ${compiled}
     buildReviewSet: testPrepBuildReviewSet,
     buildTargetedSet: testPrepBuildTargetedSet,
     buildCustomQuiz: testPrepBuildCustomQuiz,
+    buildSimulationSet: testPrepBuildSimulationSet,
     searchPack: testPrepSearchPack,
     normalizeFlashcardSchedule: normalizeTestPrepFlashcardSchedule,
     rateFlashcard: testPrepRateFlashcard,
@@ -461,9 +501,9 @@ ${compiled}
 })();
 `;
 
-  fs.writeFileSync(outputPath, output, 'utf8');
+  writeGeneratedFile(outputPath, output);
   fs.mkdirSync(path.dirname(deployOutputPath), { recursive: true });
-  fs.writeFileSync(deployOutputPath, output, 'utf8');
+  writeGeneratedFile(deployOutputPath, output);
   console.log('Built Test Prep Hub release with ParaPro, Praxis Special Education 5355, Praxis School Counselor 5422, Praxis School Psychologist 5403, Praxis Speech-Language Pathology 5331, Praxis Audiology 5343, Praxis Reading Specialist 5302, Praxis Educational Leadership 5412, Praxis PLT K?6 5622, Praxis Core 5752, Praxis ESOL 5362, Teaching Reading 5205, Early Childhood 5025, and PLT Early Childhood 5621 (' + output.split('\n').length + ' lines).');
 } finally {
   try { fs.unlinkSync(tempEntryPath); } catch (_) {}

@@ -141,7 +141,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('this.handleTags = []');
     expect(source).toContain('this.handleTags[i] = tag');
     expect(source).toContain('setMissionHint: function (axisIndex, direction, complete, mission, dimensions)');
-    expect(source).toContain("complete ? 'TARGET\\nDONE'");
+    expect(source).toContain("if (complete) targetValue += '\\nDONE'");
     expect(source).toContain("(direction > 0 ? 'GROW ' : 'SHRINK ')");
     expect(source).toContain('c.setMissionHint(hintAxis, hintDirection, done, mission, s.dimensions)');
   });
@@ -156,7 +156,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('function positionMeasurePanel(s, mission)');
     expect(source).toContain('var currentHeight = s.d >= 3 ? s.dimensions.H : THIN');
     expect(source).toContain('var targetHeight = showTarget && mission && mission.d >= 3 ? mission.H : THIN');
-    expect(source).toContain('var clearance = showBoundary && s.boundary ? 0.68 : 0.42');
+    expect(source).toContain('var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42');
     expect(source).toContain('var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
   });
@@ -231,8 +231,8 @@ describe('Immersive Geometry stretch mechanics', () => {
   it('persists boundary preferences and expands spatial labels only when needed', () => {
     expect(source).toContain('showBoundary: saved.showBoundary === true');
     expect(source).toContain('showBoundary: showBoundary');
-    expect(source).toContain("labelBack.setAttribute('height', showExtra ? '1.12' : '0.78')");
-    expect(source).toContain('var clearance = showBoundary && s.boundary ? 0.68 : 0.42');
+    expect(source).toContain("labelBack.setAttribute('height', boundaryLines > 1 ? '1.38' : boundaryLines ? '1.12' : '0.78')");
+    expect(source).toContain('var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42');
     expect(source).toContain('showBoundary = false; completedMask = 0; SAVED_STATE = null');
   });
   it('tracks current and completed guided missions accessibly', () => {
@@ -455,5 +455,61 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('labelWrap.object3D.position.set(workspacePose.x, y, workspacePose.z)');
     expect(source).toContain('labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
+  });
+  it('compares mission length, area, and volume from raw dimensions', () => {
+    expect(source).toContain('function metricValue(d, dimensions)');
+    expect(source).toContain('if (d === 1) return Number(dimensions.L)');
+    expect(source).toContain('if (d === 2) return Number(dimensions.L) * Number(dimensions.W)');
+    expect(source).toContain('if (d === 3) return Number(dimensions.L) * Number(dimensions.W) * Number(dimensions.H)');
+    expect(source).toContain("var metricName = ['', 'Length', 'Area', 'Volume'][mission.d]");
+    expect(source).toContain("mission.d === 2 ? '\\u00b2' : mission.d === 3 ? '\\u00b3'");
+  });
+
+  it('shows mission metric comparison on desktop and the spatial target', () => {
+    expect(source).toContain('id="missionMeasure"');
+    expect(source).toContain('var currentMeasure = s.d >= mission.d');
+    expect(source).toContain("metricName + ' \\u2014 current ' + currentMeasure");
+    expect(source).toContain("' \\u00b7 target ' + targetMeasure + metricUnits");
+    expect(source).toContain("var targetMetric = mission ? ['', 'L', 'A', 'V'][mission.d]");
+    expect(source).toContain("var targetValue = 'TARGET' + (targetMetric ? '\\n' + targetMetric : '')");
+    expect(source).toContain("if (complete) targetValue += '\\nDONE'");
+    expect(source).toContain('.mission.done .missionmeasure');
+  });
+  it('compares current and target perimeter or surface area', () => {
+    expect(source).toContain('function targetBoundaryLine(mission)');
+    expect(source).toContain("Target P = 2 \\u00d7 (L + W) = ");
+    expect(source).toContain('2 * (mission.L + mission.W)');
+    expect(source).toContain("Target SA = 2 \\u00d7 (LW + LH + WH) = ");
+    expect(source).toContain('mission.L * mission.W + mission.L * mission.H + mission.W * mission.H');
+    expect(source).toContain("lines.push('Current ' + s.boundary)");
+    expect(source).toContain("return lines.join('\\n')");
+  });
+
+  it('sizes and repositions measurement panels for multiline boundary comparison', () => {
+    expect(source).toContain("white-space: pre-line");
+    expect(source).toContain("boundaryText.split('\\n').length");
+    expect(source).toContain("boundaryLines > 1 ? '1.38' : boundaryLines ? '1.12' : '0.78'");
+    expect(source).toContain('var boundaryLines = showBoundary ? (s.boundary ? 1 : 0) + (mission && mission.d >= 2 ? 1 : 0) : 0');
+    expect(source).toContain('var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42');
+    const toggle = source.match(/function toggleBoundaryMeasures\(value, announce\) \{[\s\S]*?\n  \}/);
+    expect(toggle).not.toBeNull();
+    expect(toggle[0]).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
+  });
+  it('isolates lab shortcuts from scene locomotion', () => {
+    expect(source).toContain('wasd-controls="enabled: false"');
+    expect(source).not.toContain('wasd-controls="acceleration: 24"');
+    expect(source).toContain("window.addEventListener('keydown', function (e)");
+    expect(source).toContain('var handled = true');
+    expect(source).toContain('default: handled = false');
+    expect(source).toContain('if (handled) { e.preventDefault(); e.stopPropagation(); }');
+    expect(source).toContain('}, true);');
+  });
+
+  it('preserves native text editing while capturing standard undo and redo', () => {
+    expect(source).toContain("e.target.type !== 'range'");
+    expect(source).toContain("if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return");
+    expect(source).toContain("shortcut === 'z'");
+    expect(source).toContain("shortcut === 'y'");
+    expect(source).toContain('e.preventDefault(); e.stopPropagation(); return;');
   });
 });

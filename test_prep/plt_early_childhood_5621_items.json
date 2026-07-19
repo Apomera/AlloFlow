@@ -1809,7 +1809,7 @@
       "The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct.",
       "The student mastered 75 percent of the curriculum.",
       "The student earned exactly 75 raw-score points.",
-      "The student is performing at grade 7.5."
+      "The student is performing at grade 2.5."
     ],
     "answerIndex": 0,
     "rationale": "Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
@@ -1826,7 +1826,7 @@
       "Correct. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
       "Not the best answer. \"The student mastered 75 percent of the curriculum.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
       "Not the best answer. \"The student earned exactly 75 raw-score points.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
-      "Not the best answer. \"The student is performing at grade 7.5.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence."
+      "Not the best answer. \"The student is performing at grade 2.5.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence."
     ],
     "skillIds": [
       "measurement-scoring-interpretation-communication"
@@ -1948,7 +1948,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "In a preschool–grade 3 setting, a fourth grader receives a grade-equivalent score of 6.2 on a standardized test. What is a defensible interpretation?",
+    "prompt": "In a preschool–grade 3 setting, a second grader receives a grade-equivalent score of 3.2 on a standardized test. What is a defensible interpretation?",
     "choices": [
       "The student should automatically skip two grades.",
       "On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement.",
@@ -2020,7 +2020,7 @@
     "type": "single-choice",
     "domainId": "students-as-learners",
     "difficulty": "application",
-    "prompt": "In a preschool–grade 3 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades birth–grade 3?",
+    "prompt": "In a preschool–grade 3 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in preschool–grade 3?",
     "choices": [
       "Use loss of all movement as routine punishment.",
       "Require identical motor performance from every learner.",
@@ -6201,7 +6201,7 @@
       "The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct.",
       "The student mastered 75 percent of the curriculum.",
       "The student earned exactly 75 raw-score points.",
-      "The student is performing at grade 7.5."
+      "The student is performing at grade 2.5."
     ],
     "answerIndex": 0,
     "rationale": "Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
@@ -6218,7 +6218,7 @@
       "Correct. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
       "Not the best answer. \"The student mastered 75 percent of the curriculum.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
       "Not the best answer. \"The student earned exactly 75 raw-score points.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
-      "Not the best answer. \"The student is performing at grade 7.5.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence."
+      "Not the best answer. \"The student is performing at grade 2.5.\" conflicts with development, evidence, access, ethics, or the educator’s role. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence."
     ],
     "skillIds": [
       "measurement-scoring-interpretation-communication"
@@ -9609,7 +9609,7 @@
       "\"The student mastered 75 percent of the curriculum.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
       "Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
       "\"The student earned exactly 75 raw-score points.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
-      "\"The student is performing at grade 7.5.\" conflicts with development, evidence, access, ethics, or the educator’s role."
+      "\"The student is performing at grade 2.5.\" conflicts with development, evidence, access, ethics, or the educator’s role."
     ],
     "answerIndex": 0,
     "rationale": "The candidate selected “The student mastered 75 percent of the curriculum”. \"The student mastered 75 percent of the curriculum.\" conflicts with development, evidence, access, ethics, or the educator’s role. This feedback directly evaluates the selected response. “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” remains the source-supported response. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
@@ -9796,7 +9796,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "In a preschool–grade 3 setting, a fourth grader receives a grade-equivalent score of 6.2 on a standardized test. A candidate selects “The student should automatically skip two grades”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "In a preschool–grade 3 setting, a second grader receives a grade-equivalent score of 3.2 on a standardized test. A candidate selects “The student should automatically skip two grades”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Grade-equivalent scores describe comparison of a test score with norm-group performance and are easily overinterpreted as curriculum mastery or instructional placement.",
       "\"The student should automatically skip two grades.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
@@ -9892,7 +9892,7 @@
     "type": "single-choice",
     "domainId": "students-as-learners",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “In a preschool–grade 3 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades birth–grade 3?” A candidate selects “Use loss of all movement as routine punishment”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “In a preschool–grade 3 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in preschool–grade 3?” A candidate selects “Use loss of all movement as routine punishment”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments.",
       "\"Require identical motor performance from every learner.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
@@ -15465,7 +15465,7 @@
       "“The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
       "“The student mastered 75 percent of the curriculum” — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
       "“The student earned exactly 75 raw-score points” — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
-      "“The student is performing at grade 7.5” — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score."
+      "“The student is performing at grade 2.5” — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score."
     ],
     "answerIndex": 0,
     "rationale": "The evidence statement accurately describes “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct”. Pairing that same evidence with another response creates a mismatch. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
@@ -19209,7 +19209,7 @@
       "“The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” is better supported: Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. In contrast, “The student mastered 75 percent of the curriculum” is not supported: \"The student mastered 75 percent of the curriculum.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
       "“The student mastered 75 percent of the curriculum” is better supported: Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. In contrast, “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” is not supported: \"The student mastered 75 percent of the curriculum.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
       "“The student earned exactly 75 raw-score points” is better supported: Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. In contrast, “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” is not supported: \"The student earned exactly 75 raw-score points.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
-      "“The student is performing at grade 7.5” is better supported: Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. In contrast, “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” is not supported: \"The student is performing at grade 7.5.\" conflicts with development, evidence, access, ethics, or the educator’s role."
+      "“The student is performing at grade 2.5” is better supported: Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score. In contrast, “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” is not supported: \"The student is performing at grade 2.5.\" conflicts with development, evidence, access, ethics, or the educator’s role."
     ],
     "answerIndex": 0,
     "rationale": "The accurate comparison assigns the affirmative source feedback to “The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct” and the item-specific limitation to “The student mastered 75 percent of the curriculum”. Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
@@ -19396,7 +19396,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "analysis",
-    "prompt": "In a preschool–grade 3 setting, a fourth grader receives a grade-equivalent score of 6.2 on a standardized test. A team compares “On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement” with “The student should automatically skip two grades”. Which evaluation most accurately distinguishes them?",
+    "prompt": "In a preschool–grade 3 setting, a second grader receives a grade-equivalent score of 3.2 on a standardized test. A team compares “On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement” with “The student should automatically skip two grades”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“The student should automatically skip two grades” is better supported: Grade-equivalent scores describe comparison of a test score with norm-group performance and are easily overinterpreted as curriculum mastery or instructional placement. In contrast, “On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement” is not supported: \"The student should automatically skip two grades.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
       "“On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement” is better supported: Grade-equivalent scores describe comparison of a test score with norm-group performance and are easily overinterpreted as curriculum mastery or instructional placement. In contrast, “The student should automatically skip two grades” is not supported: \"The student should automatically skip two grades.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
@@ -19492,7 +19492,7 @@
     "type": "single-choice",
     "domainId": "students-as-learners",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “In a preschool–grade 3 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades birth–grade 3?” A team compares “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” with “Use loss of all movement as routine punishment”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “In a preschool–grade 3 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in preschool–grade 3?” A team compares “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” with “Use loss of all movement as routine punishment”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Use loss of all movement as routine punishment” is better supported: Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments. In contrast, “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” is not supported: \"Use loss of all movement as routine punishment.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
       "“Require identical motor performance from every learner” is better supported: Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments. In contrast, “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” is not supported: \"Require identical motor performance from every learner.\" conflicts with development, evidence, access, ethics, or the educator’s role.",

@@ -625,7 +625,9 @@ function GuidedModeBanner({
         <div aria-hidden="true" className="allo-guided-ring" style={{
           position: 'fixed', top: guidedRect.top - 6, left: guidedRect.left - 6,
           width: guidedRect.width + 12, height: guidedRect.height + 12,
-          borderRadius: '18px', pointerEvents: 'none', zIndex: 9000,
+          // Keep the ring in the ordinary left-panel layer. A high global z-index made it
+          // escape above unrelated modal backdrops even though it only decorates this panel.
+          borderRadius: '18px', pointerEvents: 'none', zIndex: 1,
           boxShadow: '0 0 0 2px rgba(99,102,241,.7), 0 0 22px rgba(99,102,241,.45)',
           animation: 'alloGuidedRingPulse 2s ease-in-out infinite',
         }} />

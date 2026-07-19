@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:47.743Z",
+  "generatedAt": "2026-07-19T05:09:00.454Z",
   "libraryId": "praxis-special-education-learning-disabilities-5383-learning-library",
   "packId": "praxis-special-education-learning-disabilities-5383",
   "title": "Praxis Special Education: Teaching Students with Learning Disabilities (5383) learning library",
@@ -409,7 +409,7 @@
       "knowledgeChecks": [
         {
           "id": "ld5383-ch-02-check-01",
-          "prompt": "For a student with a learning disability, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
+          "prompt": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
           "choices": [
             "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
             "Provide identical remediation in all academic areas.",
@@ -428,7 +428,7 @@
         },
         {
           "id": "ld5383-ch-02-check-02",
-          "prompt": "For a student with a learning disability, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
+          "prompt": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
           "choices": [
             "Interpret the response as intentional defiance.",
             "Plan a predictable, accessible warning and communication routine while teaching the student how to use it.",
@@ -447,7 +447,7 @@
         },
         {
           "id": "ld5383-ch-02-check-03",
-          "prompt": "For a student with a learning disability, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
+          "prompt": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
           "choices": [
             "The student knew the work and was choosing to fail before.",
             "The checklist has changed the academic standard.",
@@ -466,15 +466,15 @@
         },
         {
           "id": "ld5383-ch-02-check-04",
-          "prompt": "For a student with a learning disability, a student with an emotional or behavioral disability argues mainly during unpredictable peer-group tasks. What perspective is most useful?",
+          "prompt": "A student with a learning disability argues mainly during unpredictable peer-group reading tasks but participates when roles and steps are explicit. What perspective is most useful?",
           "choices": [
-            "Assume the behavior will occur equally in every setting.",
-            "Conclude that peers alone caused the disability.",
-            "Remove all social learning opportunities permanently.",
-            "Examine interactions among the learner, task, peers, expectations, and consequences rather than locating the problem only within the child."
+            "Assume the behavior will occur equally in every class.",
+            "Conclude that peers caused the learning disability.",
+            "Remove all collaborative literacy opportunities permanently.",
+            "Examine interactions among the learner, literacy demand, peer structure, expectations, supports, and consequences rather than locating the problem only within the learner."
           ],
           "answerIndex": 3,
-          "rationale": "An ecological perspective considers how behavior emerges through interactions between the learner and the environment. Context-specific data can guide prevention, instruction, and reinforcement of more effective responses. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+          "rationale": "An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
@@ -485,15 +485,15 @@
         },
         {
           "id": "ld5383-ch-02-check-05",
-          "prompt": "For a student with a learning disability, which information is essential when considering educational needs associated with intellectual disability?",
+          "prompt": "Which evidence best identifies an individualized learning-disability profile for instructional planning?",
           "choices": [
-            "Information about both intellectual functioning and adaptive behavior across conceptual, social, and practical domains.",
-            "A reading score by itself.",
+            "Multiple measures of specific academic skills, error patterns, language and cultural context, instruction received, response to intervention, strengths, and functional classroom performance.",
+            "A single low reading score by itself.",
             "Physical appearance and medical history only.",
-            "The expectations of one classroom without other contexts."
+            "The expectations of one classroom without other evidence."
           ],
           "answerIndex": 0,
-          "rationale": "Intellectual disability involves limitations in intellectual functioning and adaptive behavior. Educational planning therefore considers functional conceptual, social, and practical performance across relevant environments. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+          "rationale": "Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
@@ -656,7 +656,7 @@
         },
         {
           "id": "ld5383-ch-03-check-04",
-          "prompt": "While developing an individualized program for a student with a learning disability, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+          "prompt": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
           "choices": [
             "Keep the mismatch because services and goals are unrelated sections.",
             "Delete the goal rather than examine the program.",
@@ -675,7 +675,7 @@
         },
         {
           "id": "ld5383-ch-03-check-05",
-          "prompt": "While developing an individualized program for a student with a learning disability, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
+          "prompt": "While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?",
           "choices": [
             "An accommodation that changes access or response conditions without changing the intended construct.",
             "A modification that lowers the learning target.",
@@ -979,7 +979,7 @@
       "knowledgeChecks": [
         {
           "id": "ld5383-ch-05-check-01",
-          "prompt": "When removing an access barrier without changing the learning target, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
+          "prompt": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response?",
           "choices": [
             "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
             "A different activity with no connection to the same concept.",
@@ -998,7 +998,7 @@
         },
         {
           "id": "ld5383-ch-05-check-02",
-          "prompt": "When removing an access barrier without changing the learning target, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
+          "prompt": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
           "choices": [
             "Seat location as the only consideration.",
             "The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers.",
@@ -1017,7 +1017,7 @@
         },
         {
           "id": "ld5383-ch-05-check-03",
-          "prompt": "When removing an access barrier without changing the learning target, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
+          "prompt": "A student with a learning disability and a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
           "choices": [
             "Assign an observer role for every laboratory activity.",
             "Move the student without consulting the established plan.",
@@ -1036,7 +1036,7 @@
         },
         {
           "id": "ld5383-ch-05-check-04",
-          "prompt": "When removing an access barrier without changing the learning target, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
+          "prompt": "A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?",
           "choices": [
             "Create a new response based on what seems convenient.",
             "Give food or medication not authorized in the plan.",
@@ -1055,7 +1055,7 @@
         },
         {
           "id": "ld5383-ch-05-check-05",
-          "prompt": "When removing an access barrier without changing the learning target, which goal best addresses adaptive behavior?",
+          "prompt": "When a documented individualized need includes adaptive behavior, which IEP goal is most useful?",
           "choices": [
             "Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities.",
             "The student will improve independence soon.",
@@ -1174,7 +1174,7 @@
       "knowledgeChecks": [
         {
           "id": "ld5383-ch-06-check-01",
-          "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?",
+          "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?",
           "choices": [
             "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
             "Ask students to infer the pattern from an unrelated story without guidance.",
@@ -1194,7 +1194,7 @@
         },
         {
           "id": "ld5383-ch-06-check-02",
-          "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?",
+          "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?",
           "choices": [
             "It permanently limits students to one text type.",
             "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
@@ -1214,7 +1214,7 @@
         },
         {
           "id": "ld5383-ch-06-check-03",
-          "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?",
+          "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?",
           "choices": [
             "Treat every letter as arbitrary.",
             "Require visual memorization without sound analysis.",
@@ -1234,7 +1234,7 @@
         },
         {
           "id": "ld5383-ch-06-check-04",
-          "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?",
+          "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?",
           "choices": [
             "Counting letters and choosing the shortest pronunciation.",
             "Using context to replace word analysis.",
@@ -1254,7 +1254,7 @@
         },
         {
           "id": "ld5383-ch-06-check-05",
-          "prompt": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?",
+          "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?",
           "choices": [
             "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
             "It is useful only for grammar labels.",
@@ -1374,7 +1374,7 @@
       "knowledgeChecks": [
         {
           "id": "ld5383-ch-07-check-01",
-          "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?",
+          "prompt": "During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?",
           "choices": [
             "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
             "Writing practice automatically fixes every decoding need.",
@@ -1394,7 +1394,7 @@
         },
         {
           "id": "ld5383-ch-07-check-02",
-          "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?",
+          "prompt": "During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?",
           "choices": [
             "Treat total word count as the only writing construct.",
             "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
@@ -1414,7 +1414,7 @@
         },
         {
           "id": "ld5383-ch-07-check-03",
-          "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?",
+          "prompt": "During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?",
           "choices": [
             "Every subject uses identical text conventions.",
             "Content teachers should avoid literacy instruction.",
@@ -1434,7 +1434,7 @@
         },
         {
           "id": "ld5383-ch-07-check-04",
-          "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?",
+          "prompt": "During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?",
           "choices": [
             "Assume digital familiarity equals critical literacy.",
             "Ban all hyperlinks without teaching evaluation.",
@@ -1454,7 +1454,7 @@
         },
         {
           "id": "ld5383-ch-07-check-05",
-          "prompt": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?",
+          "prompt": "During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?",
           "choices": [
             "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
             "Every text must use the same difficulty and viewpoint.",
@@ -2149,7 +2149,7 @@
       "knowledgeChecks": [
         {
           "id": "ld5383-ch-11-check-01",
-          "prompt": "During collaborative planning for a student with a learning disability, in effective co-teaching, what is the special educator’s role?",
+          "prompt": "During collaborative planning for a student with a learning disability, what is the special educator’s role?",
           "choices": [
             "Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction.",
             "Act primarily as the general educator’s assistant.",
@@ -2206,7 +2206,7 @@
         },
         {
           "id": "ld5383-ch-11-check-04",
-          "prompt": "During collaborative planning for a student with a learning disability, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
+          "prompt": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
           "choices": [
             "Use the strategy only during therapy sessions.",
             "Modify the recommendation without informing the specialist.",
@@ -2532,7 +2532,7 @@
       "chapterId": "ld5383-ch-02",
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
-      "front": "For a student with a learning disability, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
+      "front": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
       "back": "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2547,7 +2547,7 @@
       "chapterId": "ld5383-ch-02",
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
-      "front": "For a student with a learning disability, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
+      "front": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
       "back": "Plan a predictable, accessible warning and communication routine while teaching the student how to use it.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2562,7 +2562,7 @@
       "chapterId": "ld5383-ch-02",
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
-      "front": "For a student with a learning disability, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
+      "front": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
       "back": "Executive-function supports are improving task initiation, organization, and monitoring.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2577,8 +2577,8 @@
       "chapterId": "ld5383-ch-02",
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
-      "front": "For a student with a learning disability, a student with an emotional or behavioral disability argues mainly during unpredictable peer-group tasks. What perspective is most useful?",
-      "back": "Examine interactions among the learner, task, peers, expectations, and consequences rather than locating the problem only within the child.",
+      "front": "A student with a learning disability argues mainly during unpredictable peer-group reading tasks but participates when roles and steps are explicit. What perspective is most useful?",
+      "back": "Examine interactions among the learner, literacy demand, peer structure, expectations, supports, and consequences rather than locating the problem only within the learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2592,8 +2592,8 @@
       "chapterId": "ld5383-ch-02",
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
-      "front": "For a student with a learning disability, which information is essential when considering educational needs associated with intellectual disability?",
-      "back": "Information about both intellectual functioning and adaptive behavior across conceptual, social, and practical domains.",
+      "front": "Which evidence best identifies an individualized learning-disability profile for instructional planning?",
+      "back": "Multiple measures of specific academic skills, error patterns, language and cultural context, instruction received, response to intervention, strengths, and functional classroom performance.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2607,7 +2607,7 @@
       "chapterId": "ld5383-ch-02",
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
-      "front": "For a student with a learning disability, a student understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
+      "front": "A student with a learning disability understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
       "back": "Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2667,7 +2667,7 @@
       "chapterId": "ld5383-ch-03",
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
-      "front": "While developing an individualized program for a student with a learning disability, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+      "front": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
       "back": "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2682,7 +2682,7 @@
       "chapterId": "ld5383-ch-03",
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
-      "front": "While developing an individualized program for a student with a learning disability, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
+      "front": "While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?",
       "back": "An accommodation that changes access or response conditions without changing the intended construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2697,7 +2697,7 @@
       "chapterId": "ld5383-ch-03",
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
-      "front": "While developing an individualized program for a student with a learning disability, during IEP development, when should assistive technology be considered?",
+      "front": "During IEP development for a student with a learning disability, when should the team consider assistive technology?",
       "back": "The team should consider whether assistive technology devices or services are needed for the individual learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2802,7 +2802,7 @@
       "chapterId": "ld5383-ch-05",
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
-      "front": "When removing an access barrier without changing the learning target, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
+      "front": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response?",
       "back": "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2817,7 +2817,7 @@
       "chapterId": "ld5383-ch-05",
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
-      "front": "When removing an access barrier without changing the learning target, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
+      "front": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
       "back": "The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2832,7 +2832,7 @@
       "chapterId": "ld5383-ch-05",
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
-      "front": "When removing an access barrier without changing the learning target, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
+      "front": "A student with a learning disability and a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
       "back": "Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2847,7 +2847,7 @@
       "chapterId": "ld5383-ch-05",
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
-      "front": "When removing an access barrier without changing the learning target, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
+      "front": "A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?",
       "back": "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2862,7 +2862,7 @@
       "chapterId": "ld5383-ch-05",
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
-      "front": "When removing an access barrier without changing the learning target, which goal best addresses adaptive behavior?",
+      "front": "When a documented individualized need includes adaptive behavior, which IEP goal is most useful?",
       "back": "Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2877,7 +2877,7 @@
       "chapterId": "ld5383-ch-05",
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
-      "front": "When removing an access barrier without changing the learning target, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response? Focus: Assistive Technology, Adaptive Access, and Learning Routines.",
+      "front": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response? Focus: Assistive Technology, Adaptive Access, and Learning Routines.",
       "back": "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2892,7 +2892,7 @@
       "chapterId": "ld5383-ch-06",
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
-      "front": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?",
+      "front": "During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?",
       "back": "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2908,7 +2908,7 @@
       "chapterId": "ld5383-ch-06",
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
-      "front": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?",
+      "front": "During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?",
       "back": "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2924,7 +2924,7 @@
       "chapterId": "ld5383-ch-06",
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
-      "front": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?",
+      "front": "During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?",
       "back": "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2940,7 +2940,7 @@
       "chapterId": "ld5383-ch-06",
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
-      "front": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?",
+      "front": "During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?",
       "back": "Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2956,7 +2956,7 @@
       "chapterId": "ld5383-ch-06",
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
-      "front": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?",
+      "front": "During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?",
       "back": "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2972,7 +2972,7 @@
       "chapterId": "ld5383-ch-06",
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
-      "front": "During explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is orthographic mapping?",
+      "front": "During explicit, systematic word-reading intervention for a student with a learning disability, what is orthographic mapping?",
       "back": "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2988,7 +2988,7 @@
       "chapterId": "ld5383-ch-07",
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
-      "front": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?",
+      "front": "During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?",
       "back": "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3004,7 +3004,7 @@
       "chapterId": "ld5383-ch-07",
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
-      "front": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?",
+      "front": "During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?",
       "back": "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3020,7 +3020,7 @@
       "chapterId": "ld5383-ch-07",
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
-      "front": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?",
+      "front": "During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?",
       "back": "Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3036,7 +3036,7 @@
       "chapterId": "ld5383-ch-07",
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
-      "front": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?",
+      "front": "During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?",
       "back": "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3052,7 +3052,7 @@
       "chapterId": "ld5383-ch-07",
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
-      "front": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?",
+      "front": "During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?",
       "back": "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3068,7 +3068,7 @@
       "chapterId": "ld5383-ch-07",
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
-      "front": "During explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how can sentence-level instruction support literacy?",
+      "front": "During explicit written-expression instruction for a student with a learning disability, how can sentence-level instruction support literacy?",
       "back": "Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3360,7 +3360,7 @@
       "chapterId": "ld5383-ch-11",
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
-      "front": "During collaborative planning for a student with a learning disability, in effective co-teaching, what is the special educator’s role?",
+      "front": "During collaborative planning for a student with a learning disability, what is the special educator’s role?",
       "back": "Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3405,7 +3405,7 @@
       "chapterId": "ld5383-ch-11",
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
-      "front": "During collaborative planning for a student with a learning disability, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
+      "front": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
       "back": "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [

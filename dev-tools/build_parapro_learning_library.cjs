@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const path = require('path');
 const reading = require('./parapro_learning/reading.cjs');
 const mathematics = require('./parapro_learning/mathematics.cjs');
@@ -11,6 +12,29 @@ const memoryAids = require('./parapro_learning/memory_aids.cjs');
 const root = path.resolve(__dirname, '..');
 const chaptersSource = [...reading, ...mathematics, ...writing];
 const ETS = 'https://www.ets.org/pdfs/parapro/1755.pdf';
+const SUPPLEMENTAL_SOURCES = [
+  {
+    "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/14",
+    "title": "Improving Reading Comprehension in Kindergarten Through 3rd Grade",
+    "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+    "summary": "Five evidence-rated recommendations address comprehension strategies, text structure, high-quality discussion, purposeful text selection, and an engaging reading context.",
+    "credibility": "An IES/WWC government practice guide developed through expert-panel analysis and systematic evidence review; retain its recommendation-specific evidence ratings when applying it."
+  },
+  {
+    "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/29",
+    "title": "Providing Reading Interventions for Students in Grades 4–9",
+    "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+    "summary": "Evidence-based intervention recommendations cover decoding, fluency, comprehension-building practices, and supported work with challenging text.",
+    "credibility": "An IES/WWC government practice guide developed through expert-panel analysis and systematic evidence review; retain its recommendation-specific evidence ratings when applying it."
+  },
+  {
+    "url": "https://data.census.gov/",
+    "title": "Explore Census Data",
+    "organization": "U.S. Census Bureau, U.S. Department of Commerce",
+    "summary": "The Census Bureau’s centralized data platform supports searches across demographic and economic tables, profiles, maps, and public-use data.",
+    "credibility": "A primary federal statistical source; verify the dataset, year, table, geography, estimates, and margins of error when applicable."
+  }
+];
 let checkCursor = 0;
 
 function makeCheck(chapter, seed, index) {
@@ -117,6 +141,7 @@ const library = {
   description: 'Twelve concise, independently authored chapters connected to the Reading, Mathematics, and Writing skills practiced in the ParaPro diagnostic bank.',
   reviewStandard: 'AlloFlow ParaPro learning-library source and editorial review v1',
   simulation: { questionCount: 90, timeMinutes: 150, note: 'Independent timed simulation using original AlloFlow items; not an official ETS form or score.' },
+  supplementalSources: SUPPLEMENTAL_SOURCES,
   summary: {
     chapters: chapters.length,
     sections: chapters.reduce((sum, chapter) => sum + chapter.sectionCount, 0),
@@ -145,6 +170,6 @@ for (const target of [
   path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'parapro_learning_library.json'),
 ]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, output, 'utf8');
+  writeGeneratedFile(target, output, 'utf8');
 }
 console.log('Built ParaPro learning library: 12 chapters, 60 checks, 75 flashcards, and 20 memory aids.');

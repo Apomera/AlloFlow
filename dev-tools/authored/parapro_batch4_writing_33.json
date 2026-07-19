@@ -36,7 +36,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-002",
@@ -75,7 +76,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-003",
@@ -114,7 +116,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-004",
@@ -153,7 +156,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-005",
@@ -192,7 +196,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-006",
@@ -231,7 +236,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-007",
@@ -270,7 +276,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-008",
@@ -309,7 +316,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-009",
@@ -348,7 +356,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-010",
@@ -387,7 +396,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-011",
@@ -426,7 +436,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-012",
@@ -465,7 +476,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-013",
@@ -504,7 +516,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-014",
@@ -543,7 +556,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-015",
@@ -583,7 +597,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-016",
@@ -622,7 +637,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-017",
@@ -661,7 +677,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-018",
@@ -700,7 +717,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-writing-019",
@@ -740,7 +758,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-020",
@@ -780,7 +799,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-021",
@@ -820,7 +840,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-022",
@@ -860,7 +881,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-writing-023",
@@ -900,7 +922,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-024",
@@ -940,7 +963,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-025",
@@ -980,7 +1004,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-026",
@@ -1020,7 +1045,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-027",
@@ -1060,7 +1086,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-028",
@@ -1100,7 +1127,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-029",
@@ -1140,7 +1168,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-030",
@@ -1180,7 +1209,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-031",
@@ -1220,7 +1250,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-032",
@@ -1260,7 +1291,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-writing-033",
@@ -1300,6 +1332,7 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

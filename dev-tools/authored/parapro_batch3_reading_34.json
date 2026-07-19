@@ -35,7 +35,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-002",
@@ -73,7 +74,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-003",
@@ -111,7 +113,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-004",
@@ -149,7 +152,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-005",
@@ -187,7 +191,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-reading-006",
@@ -225,7 +230,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-007",
@@ -263,7 +269,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-008",
@@ -301,7 +308,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-009",
@@ -339,7 +347,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-reading-010",
@@ -377,7 +386,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-011",
@@ -415,7 +425,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-012",
@@ -453,7 +464,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "analysis-and-evaluation"
   },
   {
     "id": "parapro-b3-reading-013",
@@ -491,7 +503,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-014",
@@ -529,7 +542,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-015",
@@ -567,7 +581,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-016",
@@ -577,18 +592,18 @@
     "difficulty": "advanced",
     "prompt": "A transit guide includes a route map showing station connections and a timetable showing departure times. A traveler needs to go from Lake Station to Museum Station, transfer once, and arrive before 10:00 a.m. Which approach would best answer the traveler's question?",
     "choices": [
-      "Use only the guide's cover photograph to identify the fastest train.",
-      "Use only the alphabetical station index to calculate arrival time.",
-      "Use the timetable to select any train before checking whether the stations connect.",
-      "Use the map to identify a valid transfer route, then use the timetable to verify an arrival before 10:00."
+      "Use the map to find a route with one transfer, then choose the earliest departure without checking the scheduled arrival.",
+      "Use the timetable to find an arrival before 10:00, then assume Lake and Museum connect without consulting the map.",
+      "Use the station index to locate Lake and Museum, then select a departure without checking the transfer route or arrival.",
+      "Use the map to identify a one-transfer route, then check the timetable for a scheduled arrival before 10:00."
     ],
     "answerIndex": 3,
-    "rationale": "The map answers the route-and-transfer part of the information need, while the timetable answers the departure-and-arrival part; both features are necessary to satisfy all conditions.",
+    "rationale": "The route map establishes a valid connection and transfer, while the timetable establishes whether that route reaches the destination before the deadline. Both sources are needed because neither one answers every condition by itself.",
     "choiceRationales": [
-      "A cover image is decorative and does not provide route connections or scheduled travel times.",
-      "An index can locate station information but cannot by itself establish a transfer or arrival time.",
-      "A suitable time is not enough if the selected train does not follow a route connecting the stations.",
-      "This sequence uses each text feature for the information it is designed to provide and checks every constraint."
+      "This sequence checks the connection but never verifies the scheduled arrival, so the selected trip could fail the before-10:00 requirement even if its departure is early.",
+      "A timetable can identify a suitable arrival, but assuming the stations connect leaves the route and required transfer unverified; the map is still necessary.",
+      "The station index locates names rather than establishing a connected route or schedule, so it cannot verify either the transfer or the arrival deadline.",
+      "This sequence assigns the connection task to the map and the time task to the timetable, thereby checking the route, transfer, and deadline together."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -605,7 +620,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "analysis-and-evaluation"
   },
   {
     "id": "parapro-b3-reading-017",
@@ -643,7 +659,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-018",
@@ -681,7 +698,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-reading-019",
@@ -719,7 +737,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-020",
@@ -757,7 +776,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-021",
@@ -795,7 +815,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-022",
@@ -833,7 +854,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "analysis-and-evaluation"
   },
   {
     "id": "parapro-b3-reading-023",
@@ -871,7 +893,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-reading-024",
@@ -910,7 +933,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-025",
@@ -949,7 +973,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-026",
@@ -988,7 +1013,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-027",
@@ -1027,7 +1053,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-028",
@@ -1066,7 +1093,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-029",
@@ -1105,7 +1133,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-030",
@@ -1144,7 +1173,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-031",
@@ -1183,7 +1213,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-032",
@@ -1222,7 +1253,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-033",
@@ -1232,18 +1264,18 @@
     "difficulty": "advanced",
     "prompt": "A multilingual learner says scarce and abundant are synonyms after reading, \"Water was scarce on the trail but abundant near the spring.\" Which response would best help the learner distinguish the words?",
     "choices": [
-      "Ask the learner to use but and the contrast between the two locations to infer that scarce means limited and abundant means plentiful, then identify the words as antonyms.",
-      "Tell the learner that words appearing in the same sentence are always synonyms.",
-      "Translate only spring and supply the relationship without examining the two target words.",
-      "Have the learner count the letters in scarce and abundant to decide whether their meanings match."
+      "Use but and the contrasting water locations to infer scarce means limited and abundant means plentiful, then classify the words as antonyms.",
+      "Use the fact that both words describe water amounts to conclude that scarce and abundant are synonyms with different levels of emphasis.",
+      "Define scarce from the dry trail context, but treat abundant as the name of a place near the spring rather than compare the meanings.",
+      "Replace scarce and abundant with the general word water, then decide that the original terms share a meaning because they share a topic."
     ],
     "answerIndex": 0,
-    "rationale": "The conjunction but signals contrast, and the locations differ in water availability. Using those clues shows that scarce and abundant have opposite meanings and are therefore antonyms.",
+    "rationale": "The conjunction but signals a contrast between limited water on the trail and plentiful water near the spring. Combining that signal with the two contexts establishes the meanings and shows that scarce and abundant are antonyms.",
     "choiceRationales": [
-      "This scaffold uses a signal word and sentence meaning to establish both definitions and the antonym relationship.",
-      "Co-occurrence does not determine a word relationship, and this rule would reinforce the student's misconception.",
-      "Translating an unrelated context word and giving the answer do not teach comparison of the target meanings.",
-      "Word length has no reliable relationship to whether two words are synonyms or antonyms."
+      "This scaffold integrates the contrast signal with both location clues, allowing the learner to infer each definition and the antonym relationship from the sentence.",
+      "Sharing the topic of water does not make the terms synonymous; the conjunction and the different levels of availability establish opposite meanings.",
+      "The surrounding phrase describes where water is plentiful, so treating abundant as a place name ignores both its grammatical role and the contrast.",
+      "Replacing both terms with a broad topic word removes the information needed to compare their meanings and does not resolve the learner’s misconception."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1261,7 +1293,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-reading-034",
@@ -1300,6 +1333,7 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

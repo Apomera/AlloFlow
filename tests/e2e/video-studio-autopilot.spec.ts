@@ -184,6 +184,39 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   });
   const allDemoTransitionsLocked = { plan: true, official: true, start: true, rehearse: true, preflight: true };
   const allDemoTransitionsUnlocked = { plan: false, official: false, start: false, rehearse: false, preflight: false };
+  const demoTemplateTransitionLocks = () => studio.evaluate(() => {
+    const disabled = (id: string) => (document.getElementById(id) as HTMLButtonElement | HTMLInputElement | HTMLSelectElement).disabled;
+    return {
+      select: disabled('demoTemplateSelect'),
+      name: disabled('demoTemplateName'),
+      save: disabled('demoTemplateSaveBtn'),
+      load: disabled('demoTemplateLoadBtn'),
+      duplicate: disabled('demoDuplicateBtn'),
+      remove: disabled('demoTemplateDeleteBtn'),
+    };
+  });
+  const allTemplateTransitionsLocked = { select: true, name: true, save: true, load: true, duplicate: true, remove: true };
+  const allTemplateTransitionsUnlocked = { select: false, name: false, save: false, load: false, duplicate: false, remove: false };
+  const demoPlanEditorTransitionLocks = () => studio.evaluate(() => {
+    const byId = (id: string) => (document.getElementById(id) as HTMLButtonElement | HTMLInputElement | HTMLSelectElement).disabled;
+    const byLabel = (label: string) => (document.querySelector(`[aria-label="${label}"]`) as HTMLButtonElement | HTMLInputElement | HTMLTextAreaElement).disabled;
+    return {
+      goal: byId('demoGoal'),
+      audio: byId('demoAudioMode'),
+      openingTitle: byId('demoOpeningTitle'),
+      scriptStyle: byId('demoScriptStyle'),
+      include: byLabel('Include step 1'),
+      parameter: byLabel('Step 1 topic'),
+      narration: byLabel('Step 1 narration'),
+      hold: byLabel('Step 1 result hold seconds'),
+      moveDown: byLabel('Move step 1 later'),
+      reset: byId('demoPlanResetBtn'),
+      clearDraft: byId('demoDraftClearBtn'),
+      draftNarration: byId('demoScriptDraftBtn'),
+    };
+  });
+  const allPlanEditorTransitionsLocked = { goal: true, audio: true, openingTitle: true, scriptStyle: true, include: true, parameter: true, narration: true, hold: true, moveDown: true, reset: true, clearDraft: true, draftNarration: true };
+  const allPlanEditorTransitionsUnlocked = { goal: false, audio: false, openingTitle: false, scriptStyle: false, include: false, parameter: false, narration: false, hold: false, moveDown: false, reset: false, clearDraft: false, draftNarration: false };
   await expect(demoPlanButton).toBeVisible();
   const composerBox = await studio.locator('.demo-goal-composer').boundingBox();
   const planButtonBox = await demoPlanButton.boundingBox();
@@ -255,9 +288,12 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoRepairBtn')).toBeHidden();
   await studio.locator('#demoPlanResetBtn').click();
   await expect(studio.locator('#demoPlanList > div').first()).toContainText('First custom step');
+  await expect.poll(demoPlanEditorTransitionLocks).toEqual(allPlanEditorTransitionsUnlocked);
   await studio.locator('#demoRehearseBtn').click();
+  await expect.poll(demoPlanEditorTransitionLocks).toEqual(allPlanEditorTransitionsLocked);
   await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
   await expect(studio.locator('#demoStatus')).toContainText('Readiness check passed. No app actions ran');
+  await expect.poll(demoPlanEditorTransitionLocks).toEqual(allPlanEditorTransitionsUnlocked);
   await expect(demoPlanButton).toBeEnabled();
   await expect(studio.locator('#demoOfficialTextBtn')).toBeEnabled();
 
@@ -279,7 +315,9 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.locator('#demoAudioMode').selectOption('captions');
   await studio.locator('#demoStartBtn').click();
   await expect.poll(demoTransitionLocks).toEqual(allDemoTransitionsLocked);
+  await expect.poll(demoPlanEditorTransitionLocks).toEqual(allPlanEditorTransitionsLocked);
   await expect(studio.locator('#takesList .take')).toHaveCount(1, { timeout: 15_000 });
+  await expect.poll(demoPlanEditorTransitionLocks).toEqual(allPlanEditorTransitionsUnlocked);
   await expect.poll(() => studio.evaluate(() => new Promise<number>((resolve) => {
     const open = indexedDB.open('allo_video_studio');
     open.onerror = () => resolve(0);
@@ -350,12 +388,48 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
   await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');
   await expect(demoPlanButton).toBeEnabled();
+  await studio.locator('#demoTemplateSelect').selectOption({ index: 1 });
+  await expect.poll(demoTemplateTransitionLocks).toEqual(allTemplateTransitionsUnlocked);
+  const validationCountBeforeAtomicCancel = await page.evaluate(() => (window as any).bridgeLog.filter((type: string) => type === 'allostudio-demovalidate-request').length);
+  await demoGoal.fill('Slow planning fixture');
+  await demoPlanButton.click();
+  await expect.poll(demoTemplateTransitionLocks).toEqual(allTemplateTransitionsLocked);
+  await expect(studio.locator('#demoPlanCancelBtn')).toBeVisible();
+  await studio.locator('#demoPlanCancelBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Planning cancelled. Nothing ran');
+  await expect.poll(demoTemplateTransitionLocks).toEqual(allTemplateTransitionsUnlocked);
+  await studio.waitForTimeout(1650);
+  await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
+  await studio.locator('#demoPreflightBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Preflight refreshed. The current plan is ready.');
+  expect(await page.evaluate(() => (window as any).bridgeLog.filter((type: string) => type === 'allostudio-demovalidate-request').length)).toBe(validationCountBeforeAtomicCancel);
+  const validationCountBeforeIndependentTemplate = await page.evaluate(() => (window as any).bridgeLog.filter((type: string) => type === 'allostudio-demovalidate-request').length);
+  await studio.locator('#demoTemplateName').fill('Official tutorial copy');
+  await studio.locator('#demoTemplateSaveBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Saved reusable tutorial template');
+  const savedOfficialTemplate = await studio.evaluate(() => {
+    const selectedId = (document.getElementById('demoTemplateSelect') as HTMLSelectElement).value;
+    const rows = JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]');
+    return rows.find((item: any) => item.id === selectedId) || null;
+  });
+  expect(savedOfficialTemplate?.officialId).toBeNull();
+  await studio.locator('#demoTemplateLoadBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Loaded tutorial template: Official tutorial copy');
+  await expect(studio.locator('#demoPlanList input[type="checkbox"]').first()).toBeEnabled();
+  await expect(studio.locator('#demoPreflightStatus')).toContainText('Preflight passed');
+  await expect.poll(() => page.evaluate(() => (window as any).bridgeLog.filter((type: string) => type === 'allostudio-demovalidate-request').length)).toBeGreaterThan(validationCountBeforeIndependentTemplate);
+  await studio.locator('#demoOfficialTextBtn').click();
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'true');
+  await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');
+  await expect(studio.locator('#demoPlanList input[type="checkbox"]').first()).toBeDisabled();
+  await demoGoal.fill('Official tutorial: adapt a short science passage for Grade 5 readers');
   await studio.getByLabel('Step 1 narration').fill('Teacher-approved source walkthrough.');
   await studio.getByLabel('Step 1 result hold seconds').fill('0.5');
   await studio.getByLabel('Step 1 result hold seconds').press('Tab');
   await studio.getByLabel('Step 2 result hold seconds').fill('0.5');
   await studio.getByLabel('Step 2 result hold seconds').press('Tab');
   await expect(studio.locator('#demoPreflightStatus')).toContainText('Preflight passed');
+  await expect(studio.getByLabel('Step 1 result hold seconds')).toHaveValue('1');
   await studio.locator('#demoRehearseBtn').click();
   await expect(studio.locator('#demoStatus')).toContainText('Readiness check passed. No app actions ran');
   await expect(demoPlanButton).toBeEnabled();
@@ -367,7 +441,7 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#clipList')).toBeEmpty();
   await studio.locator('#demoStartBtn').click();
   await expect.poll(() => page.evaluate(() => (window as any).lastRunSteps?.[0]?.script)).toBe('Teacher-approved source walkthrough.');
-  await expect.poll(() => page.evaluate(() => (window as any).lastRunSteps?.[0]?.pauseAfter)).toBe(0.5);
+  await expect.poll(() => page.evaluate(() => (window as any).lastRunSteps?.[0]?.pauseAfter)).toBe(1);
 
   await expect(studio.locator('#clipList')).toContainText('Regenerate', { timeout: 20000 });
   await expect(studio.getByLabel('text for caption 1')).toHaveValue('Teacher-approved source walkthrough.');

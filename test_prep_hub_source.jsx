@@ -465,6 +465,8 @@ function normalizeTestPrepPack(pack) {
     batchSize: Math.max(1, Math.min(500, Math.round(testPrepFinite(input.batchSize, 100)))),
     simulationItemCount: Math.max(0, Math.min(500, Math.round(testPrepFinite(input.simulationItemCount, 0)))),
     simulationTimeMinutes: Math.max(0, Math.min(600, Math.round(testPrepFinite(input.simulationTimeMinutes, 0)))),
+    simulationDomainCounts: Object.fromEntries(domains.map((domain) => [domain.id, Math.max(0, Math.min(500, Math.round(testPrepFinite(input.simulationDomainCounts && input.simulationDomainCounts[domain.id], 0))))]).filter((entry) => entry[1] > 0)),
+    simulationDomainCountsBasis: String(input.simulationDomainCountsBasis || '').trim().slice(0, 160),
     simulationLabel: String(input.simulationLabel || '').trim().slice(0, 120),
     simulationNote: String(input.simulationNote || '').trim().slice(0, 600),
     officialSelectedResponseCount: Math.max(0, Math.min(500, Math.round(testPrepFinite(input.officialSelectedResponseCount, 0)))),
@@ -494,6 +496,24 @@ function normalizeTestPrepPack(pack) {
   };
 }
 
+function testPrepBuildSimulationSet(pack) {
+  const items = Array.isArray(pack && pack.items) ? pack.items : [];
+  const requested = Math.max(0, Math.floor(testPrepFinite(pack && pack.simulationItemCount, 0)));
+  const counts = pack && pack.simulationDomainCounts && typeof pack.simulationDomainCounts === 'object' ? pack.simulationDomainCounts : {};
+  const entries = (pack && Array.isArray(pack.domains) ? pack.domains : [])
+    .map((domain) => [domain.id, Math.max(0, Math.floor(testPrepFinite(counts[domain.id], 0)))])
+    .filter((entry) => entry[1] > 0);
+  if (!requested || entries.reduce((sum, entry) => sum + entry[1], 0) !== requested) return items.slice(0, requested);
+  const independent = items.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item');
+  const queues = entries.map(([domainId, count]) => ({ domainId, count, items: independent.filter((item) => item.domainId === domainId).slice(0, count) }));
+  if (queues.some((queue) => queue.items.length !== queue.count)) return items.slice(0, requested);
+  const selected = [];
+  for (let position = 0; selected.length < requested; position += 1) {
+    queues.forEach((queue) => { if (queue.items[position]) selected.push(queue.items[position]); });
+  }
+  return selected;
+}
+
 function validateTestPrepPack(pack) {
   const normalized = normalizeTestPrepPack(pack);
   const errors = [];
@@ -508,6 +528,15 @@ function validateTestPrepPack(pack) {
     if (seen.has(item.id)) errors.push('Duplicate item id: ' + item.id + '.');
     seen.add(item.id);
   });
+  if (normalized.simulationItemCount) {
+    const simulationEntries = Object.entries(normalized.simulationDomainCounts || {});
+    const simulationTotal = simulationEntries.reduce((sum, entry) => sum + entry[1], 0);
+    if (!simulationEntries.length || simulationTotal !== normalized.simulationItemCount) errors.push('Simulation domain counts must total the declared simulation item count.');
+    for (const [domainId, required] of simulationEntries) {
+      const available = normalized.items.filter((item) => item.domainId === domainId && item.examItemStatus !== 'not-approved-as-independent-exam-item').length;
+      if (available < required) errors.push('Simulation domain ' + domainId + ' needs ' + required + ' independent items; only ' + available + ' are available.');
+    }
+  }
   if (normalized.status === 'ready' && !normalized.items.length) errors.push('A ready pack must contain at least one item.');
   return { valid: errors.length === 0, errors, pack: normalized };
 }
@@ -2032,7 +2061,7 @@ function TestPrepHub(props) {
     startPracticeSet({
       mode: 'simulation',
       label: selectedPack.simulationLabel || 'Optional timed simulation',
-      items: selectedPack.items.slice(0, selectedPack.simulationItemCount),
+      items: testPrepBuildSimulationSet(selectedPack),
     });
   }
 

@@ -30,6 +30,7 @@ const runLatestEditorialReplay=()=>{
   require('./repair_eppp_option_feedback_wave_07.cjs');
   require('./repair_eppp_option_feedback_wave_08.cjs');
   require('./repair_eppp_option_feedback_wave_09.cjs');
+  require('./repair_eppp_option_feedback_wave_10.cjs');
   require('./audit_eppp_distractor_quality.cjs');
   require('./audit_eppp_option_feedback.cjs');
 };

@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
 const sourcePack = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'parapro_pack.json'), 'utf8'));
@@ -32,13 +33,14 @@ const pack = {
   title: 'ParaPro Assessment (1755) - 200-Item Diagnostic Bank',
   shortTitle: 'ParaPro diagnostic batches 1-2',
   description: 'Two independently authored 100-question diagnostic batches connected to a 12-chapter learning library, targeted practice, and an optional 90-question timed simulation. The official ParaPro Assessment currently has 90 questions; AlloFlow practice is not an official form or score.',
-  version: '0.4.0',
+  version: '0.7.0',
   contentReview: '200 source-reviewed questions plus 12 chapters, 60 checks, 75 flashcards, and 20 memory aids; independent educator review pending',
   batchSize: 100,
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS. The official ParaPro Assessment currently has 90 questions; these expanded 100-item diagnostic batches are not official-length simulations. Practice results are not official or scaled ParaPro scores, pass predictions, certifications, or substitutes for current state and local requirements.',
   learningLibraryUrl: './test_prep/parapro_learning_library.json',
   learningLibraryQaUrl: './test_prep/parapro_learning_library_qa.json',
   simulationItemCount: 90,
+  simulationDomainCounts: { reading: 30, mathematics: 30, writing: 30 },
   simulationTimeMinutes: 150,
   sections: [
     { id: 'diagnostic-batch-1', label: 'Independent 100-item diagnostic batch 1', timeMinutes: null },
@@ -46,13 +48,14 @@ const pack = {
   ],
   items: mergedItems,
 };
-const packForWrite = expandedSourceMode ? { ...sourcePack, items: mergedItems.concat(expandedTail) } : pack;
+const packForWrite = expandedSourceMode ? { ...pack, items: mergedItems.concat(expandedTail) } : pack;
 const blueprintUrl = 'https://www.ets.org/pdfs/parapro/1755.pdf';
 const domains = ['reading', 'mathematics', 'writing'];
 const allowedHosts = new Set(['ets.org', 'www.ets.org', 'ies.ed.gov', 'openstax.org']);
 const expectedBatchCounts = { reading: { total: 34, skills: 23, application: 11 }, mathematics: { total: 33, skills: 22, application: 11 }, writing: { total: 33, skills: 22, application: 11 } };
 const expectedPackCounts = { reading: { total: 68, skills: 46, application: 22 }, mathematics: { total: 66, skills: 44, application: 22 }, writing: { total: 66, skills: 44, application: 22 } };
 const officialBlueprintCounts = { reading: { total: 30, skills: 20, application: 10 }, mathematics: { total: 30, skills: 20, application: 10 }, writing: { total: 30, skills: 20, application: 10 } };
+const expectedSimulationDomainCounts = { reading: 30, mathematics: 30, writing: 30 };
 const librarySkillById = new Map(librarySkills.map((skill) => [skill.id, skill]));
 const libraryChapterIds = new Set((learningLibrary.chapters || []).map((chapter) => chapter.id));
 const checks = ['blueprint-alignment', 'learning-linkage', 'authoritative-source', 'one-best-answer', 'distractor-quality', 'clue-resistance', 'rationale-quality', 'provenance'];
@@ -77,7 +80,7 @@ const validSource = (reference) => {
 
 if (pack.schemaVersion !== 1 || pack.id !== 'parapro-1755-practice-1' || pack.status !== 'ready') add(null, 'blueprint-alignment', 'Invalid pack identity, schema, or status.');
 if (learningLibrary.libraryId !== 'parapro-1755-learning-library' || librarySkills.length !== 12 || (learningLibrary.chapters || []).length !== 12) add(null, 'learning-linkage', 'Learning-library contract is invalid.');
-if (pack.learningLibraryUrl !== './test_prep/parapro_learning_library.json' || pack.simulationItemCount !== 90 || pack.simulationTimeMinutes !== 150) add(null, 'learning-linkage', 'Pack learning or simulation metadata is invalid.');
+if (pack.learningLibraryUrl !== './test_prep/parapro_learning_library.json' || pack.simulationItemCount !== 90 || pack.simulationTimeMinutes !== 150 || JSON.stringify(pack.simulationDomainCounts) !== JSON.stringify(expectedSimulationDomainCounts)) add(null, 'learning-linkage', 'Pack learning or simulation metadata is invalid.');
 if (!Array.isArray(batch1Supplement) || batch1Supplement.length !== 10 || batch1SupplementById.size !== 10) add(null, 'provenance', 'Batch 1 supplement must contain 10 unique items.');
 if (!Array.isArray(batch2Items) || batch2Items.length !== 100 || batch2ById.size !== 100) add(null, 'provenance', 'Batch 2 must contain 100 unique items.');
 if (![90, 100, 200].includes(sourceItems.length)) add(null, 'provenance', 'Release source must contain the reviewed 90-item core, Batch 1, or the merged 200-item bank.');
@@ -207,10 +210,10 @@ ${reports.map((item) => `| ${item.id} | ${item.domainId} | ${item.blueprintRole}
 
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(packForWrite, null, 2) + '\n', 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(packForWrite, null, 2) + '\n', 'utf8');
   if (!expandedSourceMode) {
-    fs.writeFileSync(path.join(outputRoot, 'parapro_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-    fs.writeFileSync(path.join(outputRoot, 'parapro_native_qa.md'), markdown, 'utf8');
+    writeGeneratedFile(path.join(outputRoot, 'parapro_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
+    writeGeneratedFile(path.join(outputRoot, 'parapro_native_qa.md'), markdown, 'utf8');
   }
 }
 console.log('ParaPro QA: ' + passedItems + '/' + pack.items.length + ' base items passed; pack status ' + status + (expandedSourceMode ? '; preserved ' + packForWrite.items.length + '-item expanded pack and expansion QA.' : '.') );

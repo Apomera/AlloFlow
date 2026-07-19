@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:46.642Z",
+  "generatedAt": "2026-07-19T05:08:58.456Z",
   "libraryId": "praxis-special-education-severe-profound-5547-learning-library",
   "packId": "praxis-special-education-severe-profound-5547",
   "title": "Praxis Special Education: Severe to Profound (5547) learning library",
@@ -225,7 +225,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-01-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a kindergarten teacher notices that one child reaches several language milestones later than classmates. What is the most appropriate first interpretation?",
+          "prompt": "When interpreting development, context, and variability for a learner with intensive support needs, a kindergarten teacher notices that one child reaches several language milestones later than classmates. What is the most appropriate first interpretation?",
           "choices": [
             "Development follows broad patterns, but individual variation requires information from multiple sources and settings before conclusions are drawn.",
             "Any difference from a class average proves a disability.",
@@ -245,7 +245,7 @@
         },
         {
           "id": "sp5547-ch-01-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a student solves multistep problems during small-group instruction but rarely begins the same work during a noisy whole-class period. What should the teacher examine first?",
+          "prompt": "When interpreting development, context, and variability for a learner with intensive support needs, a student solves multistep problems during small-group instruction but rarely begins the same work during a noisy whole-class period. What should the teacher examine first?",
           "choices": [
             "Assume the student has forgotten the underlying skill.",
             "Compare task demands, environmental conditions, supports, and performance across the two contexts.",
@@ -265,7 +265,7 @@
         },
         {
           "id": "sp5547-ch-01-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a teacher wants to understand a learner’s self-regulation needs. Which information is most useful?",
+          "prompt": "When interpreting development, context, and variability for a learner with intensive support needs, a teacher wants to understand a learner’s self-regulation needs. Which information is most useful?",
           "choices": [
             "A single global rating completed months ago.",
             "The support profile without current observations.",
@@ -285,7 +285,7 @@
         },
         {
           "id": "sp5547-ch-01-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a multilingual learner has difficulty following rapid oral directions in English but demonstrates the task after a peer models it. Which interpretation is best?",
+          "prompt": "When interpreting development, context, and variability for a learner with intensive support needs, a multilingual learner has difficulty following rapid oral directions in English but demonstrates the task after a peer models it. Which interpretation is best?",
           "choices": [
             "The performance automatically establishes an intellectual disability.",
             "Visual modeling should be removed to reveal the true score.",
@@ -305,7 +305,7 @@
         },
         {
           "id": "sp5547-ch-01-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a student with a disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
+          "prompt": "When interpreting development, context, and variability for a learner with intensive support needs, a student with a disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
           "choices": [
             "Use age-respectful materials while matching the instructional steps and supports to the learner’s current needs.",
             "Match all materials to developmental level regardless of age.",
@@ -425,15 +425,15 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-02-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
+          "prompt": "A learner with severe or profound disabilities uses AAC to select relevant ideas but needs support organizing them in a shared written paragraph. Which response is best?",
           "choices": [
-            "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
-            "Provide identical remediation in all academic areas.",
-            "Infer low overall intelligence from the one difficulty.",
-            "Replace instruction with permanent adult completion."
+            "Provide an age-respectful model, ensure AAC access, jointly construct an example, use a visual organizer, and fade prompts while preserving the learner’s authorship.",
+            "Provide identical remediation in every academic area.",
+            "Infer that the learner has no ideas because speech is limited.",
+            "Have an adult permanently choose and write every response."
           ],
           "answerIndex": 0,
-          "rationale": "Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
+          "rationale": "The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
             "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
@@ -445,7 +445,7 @@
         },
         {
           "id": "sp5547-ch-02-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
+          "prompt": "When analyzing an individualized profile with possible co-occurring needs, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
           "choices": [
             "Interpret the response as intentional defiance.",
             "Plan a predictable, accessible warning and communication routine while teaching the student how to use it.",
@@ -465,7 +465,7 @@
         },
         {
           "id": "sp5547-ch-02-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
+          "prompt": "When analyzing an individualized profile with possible co-occurring needs, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
           "choices": [
             "The student knew the work and was choosing to fail before.",
             "The checklist has changed the academic standard.",
@@ -485,15 +485,15 @@
         },
         {
           "id": "sp5547-ch-02-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a student with an emotional or behavioral disability argues mainly during unpredictable peer-group tasks. What perspective is most useful?",
+          "prompt": "A learner with severe or profound disabilities shows distress during a noisy group routine but participates in a predictable small group with communication and sensory supports. What perspective is most useful?",
           "choices": [
-            "Assume the behavior will occur equally in every setting.",
-            "Conclude that peers alone caused the disability.",
-            "Remove all social learning opportunities permanently.",
-            "Examine interactions among the learner, task, peers, expectations, and consequences rather than locating the problem only within the child."
+            "Assume distress will occur equally in every setting.",
+            "Conclude that peers alone cause the disability.",
+            "Remove all group-learning opportunities permanently.",
+            "Examine interactions among communication access, sensory conditions, health, task demands, peer structure, supports, and consequences rather than locating the problem only within the learner."
           ],
           "answerIndex": 3,
-          "rationale": "An ecological perspective considers how behavior emerges through interactions between the learner and the environment. Context-specific data can guide prevention, instruction, and reinforcement of more effective responses. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
+          "rationale": "An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
             "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
@@ -505,15 +505,15 @@
         },
         {
           "id": "sp5547-ch-02-check-05",
-          "prompt": "For a learner with severe or profound disabilities, which information is essential when considering educational needs associated with intellectual disability?",
+          "prompt": "Which evidence is essential when planning age-respectful support for a learner with severe or profound disabilities?",
           "choices": [
-            "Information about both intellectual functioning and adaptive behavior across conceptual, social, and practical domains.",
-            "A reading score by itself.",
-            "Physical appearance and medical history only.",
-            "The expectations of one classroom without other contexts."
+            "Integrated evidence about communication, health, sensory and motor access, adaptive and academic skills, preferences, relationships, participation, and performance across settings.",
+            "A single reading score by itself.",
+            "The disability label and physical appearance only.",
+            "One adult’s expectations without learner or team evidence."
           ],
           "answerIndex": 0,
-          "rationale": "Intellectual disability involves limitations in intellectual functioning and adaptive behavior. Educational planning therefore considers functional conceptual, social, and practical performance across relevant environments. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
+          "rationale": "Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
             "https://praxis.ets.org/test/special-education-severe-to-profound-5547.html",
@@ -625,7 +625,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-03-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
+          "prompt": "When removing sensory, physical, communication, or health access barriers, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
           "choices": [
             "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
             "A different activity with no connection to the same concept.",
@@ -645,7 +645,7 @@
         },
         {
           "id": "sp5547-ch-03-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
+          "prompt": "When removing sensory, physical, communication, or health access barriers, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
           "choices": [
             "Seat location as the only consideration.",
             "The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers.",
@@ -665,7 +665,7 @@
         },
         {
           "id": "sp5547-ch-03-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
+          "prompt": "When removing sensory, physical, communication, or health access barriers, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
           "choices": [
             "Assign an observer role for every laboratory activity.",
             "Move the student without consulting the established plan.",
@@ -685,7 +685,7 @@
         },
         {
           "id": "sp5547-ch-03-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
+          "prompt": "When removing sensory, physical, communication, or health access barriers, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
           "choices": [
             "Create a new response based on what seems convenient.",
             "Give food or medication not authorized in the plan.",
@@ -705,7 +705,7 @@
         },
         {
           "id": "sp5547-ch-03-check-05",
-          "prompt": "For a learner with severe or profound disabilities, which goal best addresses adaptive behavior?",
+          "prompt": "When removing sensory, physical, communication, or health access barriers, which goal best addresses adaptive behavior?",
           "choices": [
             "Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities.",
             "The student will improve independence soon.",
@@ -825,7 +825,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-04-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+          "prompt": "During person-centered IEP and transition planning, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
           "choices": [
             "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal.",
             "Keep the mismatch because services and goals are unrelated sections.",
@@ -845,7 +845,7 @@
         },
         {
           "id": "sp5547-ch-04-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
+          "prompt": "During person-centered IEP and transition planning, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
           "choices": [
             "A modification that lowers the learning target.",
             "An accommodation that changes access or response conditions without changing the intended construct.",
@@ -865,7 +865,7 @@
         },
         {
           "id": "sp5547-ch-04-check-03",
-          "prompt": "For a learner with severe or profound disabilities, during IEP development, when should assistive technology be considered?",
+          "prompt": "During person-centered IEP and transition planning, when should assistive technology be considered?",
           "choices": [
             "Only after every low-technology support has failed for a full year.",
             "Only when a parent has already purchased a device.",
@@ -885,7 +885,7 @@
         },
         {
           "id": "sp5547-ch-04-check-04",
-          "prompt": "For a learner with severe or profound disabilities, which information must the IEP team consider during development?",
+          "prompt": "During person-centered IEP and transition planning, which information must the IEP team consider during development?",
           "choices": [
             "Only the lowest standardized score.",
             "Only services already available at the school.",
@@ -905,7 +905,7 @@
         },
         {
           "id": "sp5547-ch-04-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. What should govern placement?",
+          "prompt": "During person-centered IEP and transition planning, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. What should govern placement?",
           "choices": [
             "The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services.",
             "Administrative convenience.",
@@ -1025,7 +1025,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-05-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a teacher introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
+          "prompt": "During explicit, systematic instruction for meaningful participation, a teacher introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
           "choices": [
             "A clear model-guided practice-independent practice sequence with frequent checks and corrective feedback.",
             "Discovery learning with no initial explanation.",
@@ -1045,7 +1045,7 @@
         },
         {
           "id": "sp5547-ch-05-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a learner is acquiring a multistep hand-washing routine. What is the purpose of task analysis?",
+          "prompt": "During explicit, systematic instruction for meaningful participation, a learner is acquiring a multistep hand-washing routine. What is the purpose of task analysis?",
           "choices": [
             "To measure general intelligence.",
             "To break the complex routine into observable, teachable steps that can be prompted, measured, and chained.",
@@ -1065,7 +1065,7 @@
         },
         {
           "id": "sp5547-ch-05-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a student solves equations accurately with a step card. What should happen next?",
+          "prompt": "During explicit, systematic instruction for meaningful participation, a student solves equations accurately with a step card. What should happen next?",
           "choices": [
             "Remove all support abruptly and stop collecting data.",
             "Keep every prompt permanently regardless of performance.",
@@ -1085,7 +1085,7 @@
         },
         {
           "id": "sp5547-ch-05-check-04",
-          "prompt": "For a learner with severe or profound disabilities, which lesson design best reflects Universal Design for Learning?",
+          "prompt": "During explicit, systematic instruction for meaningful participation, which lesson design best reflects Universal Design for Learning?",
           "choices": [
             "Create a separate lower goal for every student before instruction.",
             "Offer many decorative choices unrelated to the goal.",
@@ -1105,7 +1105,7 @@
         },
         {
           "id": "sp5547-ch-05-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a student guesses unfamiliar words from pictures. Which instructional response best targets decoding?",
+          "prompt": "During explicit, systematic instruction for meaningful participation, a student guesses unfamiliar words from pictures. Which instructional response best targets decoding?",
           "choices": [
             "Explicit, cumulative practice connecting phonemes with graphemes and blending them to read words.",
             "More silent reading with no word-level instruction.",
@@ -1225,7 +1225,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-06-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
+          "prompt": "When designing a predictable, communication-accessible learning environment, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
           "choices": [
             "Teach, model, practice, and visually display a short consistent arrival routine, then acknowledge successful use.",
             "Wait for errors and deliver increasingly severe consequences.",
@@ -1245,7 +1245,7 @@
         },
         {
           "id": "sp5547-ch-06-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
+          "prompt": "When designing a predictable, communication-accessible learning environment, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
           "choices": [
             "The student’s personality type.",
             "The antecedent task, the observable behavior, and the consequence of escaping or delaying the work.",
@@ -1265,7 +1265,7 @@
         },
         {
           "id": "sp5547-ch-06-check-03",
-          "prompt": "For a learner with severe or profound disabilities, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
+          "prompt": "When designing a predictable, communication-accessible learning environment, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
           "choices": [
             "Use a punishment unrelated to attention.",
             "Remove academic instruction permanently.",
@@ -1285,7 +1285,7 @@
         },
         {
           "id": "sp5547-ch-06-check-04",
-          "prompt": "For a learner with severe or profound disabilities, which replacement behavior is best for a student who leaves work to escape confusing directions?",
+          "prompt": "When designing a predictable, communication-accessible learning environment, which replacement behavior is best for a student who leaves work to escape confusing directions?",
           "choices": [
             "Remain silent until the period ends.",
             "Ask for peer attention unrelated to the task.",
@@ -1305,7 +1305,7 @@
         },
         {
           "id": "sp5547-ch-06-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
+          "prompt": "When designing a predictable, communication-accessible learning environment, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
           "choices": [
             "It is immediate and behavior-specific, linking the student’s action to the taught expectation.",
             "It praises a fixed trait rather than an action.",
@@ -1425,7 +1425,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-07-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
+          "prompt": "When selecting and administering an accessible assessment, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
           "choices": [
             "Use the native language or appropriate communication mode and a format most likely to show what the learner knows, unless clearly infeasible.",
             "Translate the final score but keep the inaccessible administration.",
@@ -1445,7 +1445,7 @@
         },
         {
           "id": "sp5547-ch-07-check-02",
-          "prompt": "For a learner with severe or profound disabilities, which assessment is most useful for adjusting tomorrow’s instruction?",
+          "prompt": "When selecting and administering an accessible assessment, which assessment is most useful for adjusting tomorrow’s instruction?",
           "choices": [
             "A distant annual accountability score only.",
             "A brief formative task or observation aligned to the taught steps, followed by error analysis.",
@@ -1465,7 +1465,7 @@
         },
         {
           "id": "sp5547-ch-07-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a reading assessment is intended to measure comprehension, but a student’s documented motor disability prevents use of the response booklet. What is the best response?",
+          "prompt": "When selecting and administering an accessible assessment, a reading assessment is intended to measure comprehension, but a student’s documented motor disability prevents use of the response booklet. What is the best response?",
           "choices": [
             "Lower the content standard automatically.",
             "Score unanswered items as lack of science knowledge.",
@@ -1485,7 +1485,7 @@
         },
         {
           "id": "sp5547-ch-07-check-04",
-          "prompt": "For a learner with severe or profound disabilities, what does a criterion-referenced interpretation show?",
+          "prompt": "When selecting and administering an accessible assessment, what does a criterion-referenced interpretation show?",
           "choices": [
             "The student’s percentile rank in a norm group.",
             "The stability of the score across raters.",
@@ -1505,7 +1505,7 @@
         },
         {
           "id": "sp5547-ch-07-check-05",
-          "prompt": "For a learner with severe or profound disabilities, which observation definition is most useful for collecting behavior data?",
+          "prompt": "When selecting and administering an accessible assessment, which observation definition is most useful for collecting behavior data?",
           "choices": [
             "“Leaves seat” means both feet cross the desk-area boundary without teacher permission during independent work.",
             "The student is disruptive.",
@@ -1625,7 +1625,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-08-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a general education team sees persistent difficulty and begins a targeted intervention. What is an appropriate prereferral practice?",
+          "prompt": "During a comprehensive, multidisciplinary evaluation, a general education team sees persistent difficulty and begins a targeted intervention. What is an appropriate prereferral practice?",
           "choices": [
             "Define the concern, implement an evidence-based support with adequate intensity, and monitor response using repeated data.",
             "Wait for failure without changing instruction.",
@@ -1645,7 +1645,7 @@
         },
         {
           "id": "sp5547-ch-08-check-02",
-          "prompt": "For a learner with severe or profound disabilities, a school says it will not evaluate a student until every tier of intervention has been completed. What is the problem?",
+          "prompt": "During a comprehensive, multidisciplinary evaluation, a school says it will not evaluate a student until every tier of intervention has been completed. What is the problem?",
           "choices": [
             "Intervention is prohibited once an evaluation is considered.",
             "Response-to-intervention procedures may not be used to delay or deny a timely evaluation when disability is suspected.",
@@ -1665,7 +1665,7 @@
         },
         {
           "id": "sp5547-ch-08-check-03",
-          "prompt": "For a learner with severe or profound disabilities, what is the role of parent information in an evaluation?",
+          "prompt": "During a comprehensive, multidisciplinary evaluation, what is the role of parent information in an evaluation?",
           "choices": [
             "Exclude it because only school data count.",
             "Accept it as the sole criterion for eligibility.",
@@ -1685,7 +1685,7 @@
         },
         {
           "id": "sp5547-ch-08-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a student is referred for reading difficulty, but records also show significant hearing and communication concerns. How broad should the evaluation be?",
+          "prompt": "During a comprehensive, multidisciplinary evaluation, a student is referred for reading difficulty, but records also show significant hearing and communication concerns. How broad should the evaluation be?",
           "choices": [
             "Test only the original referral concern.",
             "Administer one general intelligence measure.",
@@ -1705,7 +1705,7 @@
         },
         {
           "id": "sp5547-ch-08-check-05",
-          "prompt": "For a learner with severe or profound disabilities, why can no single test score determine special education eligibility?",
+          "prompt": "During a comprehensive, multidisciplinary evaluation, why can no single test score determine special education eligibility?",
           "choices": [
             "Integrate multiple technically sound measures, observations, histories, and contextual information through the team decision process.",
             "Ignore every score that conflicts with the lowest one.",
@@ -1825,7 +1825,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-09-check-01",
-          "prompt": "For a learner with severe or profound disabilities, a student’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
+          "prompt": "When reviewing repeated progress and implementation data, a student’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
           "choices": [
             "The trend is below the desired rate of improvement, so implementation and instruction should be reviewed rather than waiting for the annual meeting.",
             "The most recent one-point increase proves the goal will be met.",
@@ -1845,7 +1845,7 @@
         },
         {
           "id": "sp5547-ch-09-check-02",
-          "prompt": "For a learner with severe or profound disabilities, what is the purpose of a goal line on a progress graph?",
+          "prompt": "When reviewing repeated progress and implementation data, what is the purpose of a goal line on a progress graph?",
           "choices": [
             "The class average on each assessment.",
             "The expected rate of improvement needed to move from baseline to the goal.",
@@ -1865,7 +1865,7 @@
         },
         {
           "id": "sp5547-ch-09-check-03",
-          "prompt": "For a learner with severe or profound disabilities, how often should progress be measured for a student receiving an intensive intervention?",
+          "prompt": "When reviewing repeated progress and implementation data, how often should progress be measured for a student receiving an intensive intervention?",
           "choices": [
             "Only at the annual IEP meeting.",
             "On a fixed schedule unrelated to the skill or intervention intensity.",
@@ -1885,7 +1885,7 @@
         },
         {
           "id": "sp5547-ch-09-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a family finds a progress graph confusing. What is the clearest explanation?",
+          "prompt": "When reviewing repeated progress and implementation data, a family finds a progress graph confusing. What is the clearest explanation?",
           "choices": [
             "Display raw scores without units or dates.",
             "Report only whether the teacher feels encouraged.",
@@ -1905,7 +1905,7 @@
         },
         {
           "id": "sp5547-ch-09-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a student’s answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
+          "prompt": "When reviewing repeated progress and implementation data, a student’s answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
           "choices": [
             "Teach the specific decision or comprehension process revealed by the error pattern and monitor that component.",
             "Repeat practice on the already accurate component only.",
@@ -2025,7 +2025,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-10-check-01",
-          "prompt": "For a learner with severe or profound disabilities, which decision rule is strongest?",
+          "prompt": "When applying legal, ethical, and equity safeguards, which decision rule is strongest?",
           "choices": [
             "If at least four consecutive comparable points fall below the goal line and fidelity is adequate, review and adjust instruction.",
             "Change programs after any single low point.",
@@ -2045,7 +2045,7 @@
         },
         {
           "id": "sp5547-ch-10-check-02",
-          "prompt": "For a learner with severe or profound disabilities, what does FAPE require at a foundational level under IDEA?",
+          "prompt": "When applying legal, ethical, and equity safeguards, what does FAPE require at a foundational level under IDEA?",
           "choices": [
             "Schools guarantee that every student reaches the same achievement level.",
             "Eligible students receive special education and related services at public expense through an appropriately developed and implemented IEP.",
@@ -2065,7 +2065,7 @@
         },
         {
           "id": "sp5547-ch-10-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
+          "prompt": "When applying legal, ethical, and equity safeguards, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
           "choices": [
             "Only families may initiate concern.",
             "Passing grades eliminate any evaluation responsibility.",
@@ -2085,7 +2085,7 @@
         },
         {
           "id": "sp5547-ch-10-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a district proposes changing a student’s placement. What procedural communication is required?",
+          "prompt": "When applying legal, ethical, and equity safeguards, a district proposes changing a student’s placement. What procedural communication is required?",
           "choices": [
             "An informal verbal message after the change occurs.",
             "A public announcement naming the student.",
@@ -2105,7 +2105,7 @@
         },
         {
           "id": "sp5547-ch-10-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
+          "prompt": "When applying legal, ethical, and equity safeguards, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
           "choices": [
             "Protect confidentiality and discuss educational records only through authorized, private channels with people who have a legitimate role.",
             "Share the information because all school employees are entitled to it.",
@@ -2225,7 +2225,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-11-check-01",
-          "prompt": "For a learner with severe or profound disabilities, in effective co-teaching, what is the special educator’s role?",
+          "prompt": "During person-centered collaboration among the learner, family, and school team, what is the special educator’s role?",
           "choices": [
             "Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction.",
             "Act primarily as the general educator’s assistant.",
@@ -2245,7 +2245,7 @@
         },
         {
           "id": "sp5547-ch-11-check-02",
-          "prompt": "For a learner with severe or profound disabilities, how should a special educator work with a paraprofessional?",
+          "prompt": "During person-centered collaboration among the learner, family, and school team, how should a special educator work with a paraprofessional?",
           "choices": [
             "Delegate IEP development and grading entirely.",
             "Provide clear direction, training, boundaries, observation, and feedback while retaining responsibility for instructional decisions.",
@@ -2265,7 +2265,7 @@
         },
         {
           "id": "sp5547-ch-11-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
+          "prompt": "During person-centered collaboration among the learner, family, and school team, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
           "choices": [
             "Dismiss the report because school data are always superior.",
             "End the meeting until the family agrees.",
@@ -2285,7 +2285,7 @@
         },
         {
           "id": "sp5547-ch-11-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
+          "prompt": "During person-centered collaboration among the learner, family, and school team, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
           "choices": [
             "Use the strategy only during therapy sessions.",
             "Modify the recommendation without informing the specialist.",
@@ -2305,7 +2305,7 @@
         },
         {
           "id": "sp5547-ch-11-check-05",
-          "prompt": "For a learner with severe or profound disabilities, how can a student contribute meaningfully to an IEP meeting?",
+          "prompt": "During person-centered collaboration among the learner, family, and school team, how can a student contribute meaningfully to an IEP meeting?",
           "choices": [
             "Teach the student to describe strengths, needs, preferences, goals, and helpful supports using an accessible communication format.",
             "Give the student a scripted statement with no opportunity for choice.",
@@ -2425,7 +2425,7 @@
       "knowledgeChecks": [
         {
           "id": "sp5547-ch-12-check-01",
-          "prompt": "For a learner with severe or profound disabilities, which reflection question is most useful after an instructional unit?",
+          "prompt": "Within a severe-disabilities educator’s professional role, which reflection question is most useful after an instructional unit?",
           "choices": [
             "Which learners met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
             "Did I cover every slide in the presentation?",
@@ -2445,7 +2445,7 @@
         },
         {
           "id": "sp5547-ch-12-check-02",
-          "prompt": "For a learner with severe or profound disabilities, how should a teacher choose professional development?",
+          "prompt": "Within a severe-disabilities educator’s professional role, how should a teacher choose professional development?",
           "choices": [
             "Attend any available session regardless of relevance.",
             "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on student evidence.",
@@ -2465,7 +2465,7 @@
         },
         {
           "id": "sp5547-ch-12-check-03",
-          "prompt": "For a learner with severe or profound disabilities, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
+          "prompt": "Within a severe-disabilities educator’s professional role, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
           "choices": [
             "Promise resources the teacher cannot authorize.",
             "Publicly disclose the student’s records to create pressure.",
@@ -2485,7 +2485,7 @@
         },
         {
           "id": "sp5547-ch-12-check-04",
-          "prompt": "For a learner with severe or profound disabilities, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
+          "prompt": "Within a severe-disabilities educator’s professional role, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
           "choices": [
             "Investigate independently before telling anyone.",
             "Promise secrecy to preserve rapport.",
@@ -2505,7 +2505,7 @@
         },
         {
           "id": "sp5547-ch-12-check-05",
-          "prompt": "For a learner with severe or profound disabilities, a transition team wants an adult-service agency representative to attend an IEP meeting. What safeguard matters?",
+          "prompt": "Within a severe-disabilities educator’s professional role, a transition team wants an adult-service agency representative to attend an IEP meeting. What safeguard matters?",
           "choices": [
             "Obtain the required parent or adult-student consent before inviting an outside agency likely to provide or pay for transition services.",
             "Invite any outside provider without notice because transition is discussed.",
@@ -2533,7 +2533,7 @@
       "chapterId": "sp5547-ch-01",
       "skillId": "development-context-strengths",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a kindergarten teacher notices that one child reaches several language milestones later than classmates. What is the most appropriate first interpretation?",
+      "front": "When interpreting development, context, and variability for a learner with intensive support needs, a kindergarten teacher notices that one child reaches several language milestones later than classmates. What is the most appropriate first interpretation?",
       "back": "Development follows broad patterns, but individual variation requires information from multiple sources and settings before conclusions are drawn.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2549,7 +2549,7 @@
       "chapterId": "sp5547-ch-01",
       "skillId": "development-context-strengths",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student solves multistep problems during small-group instruction but rarely begins the same work during a noisy whole-class period. What should the teacher examine first?",
+      "front": "When interpreting development, context, and variability for a learner with intensive support needs, a student solves multistep problems during small-group instruction but rarely begins the same work during a noisy whole-class period. What should the teacher examine first?",
       "back": "Compare task demands, environmental conditions, supports, and performance across the two contexts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2565,7 +2565,7 @@
       "chapterId": "sp5547-ch-01",
       "skillId": "development-context-strengths",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a teacher wants to understand a learner’s self-regulation needs. Which information is most useful?",
+      "front": "When interpreting development, context, and variability for a learner with intensive support needs, a teacher wants to understand a learner’s self-regulation needs. Which information is most useful?",
       "back": "Observations of triggers, strategies used, recovery, and successful conditions across routines.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2581,7 +2581,7 @@
       "chapterId": "sp5547-ch-01",
       "skillId": "development-context-strengths",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a multilingual learner has difficulty following rapid oral directions in English but demonstrates the task after a peer models it. Which interpretation is best?",
+      "front": "When interpreting development, context, and variability for a learner with intensive support needs, a multilingual learner has difficulty following rapid oral directions in English but demonstrates the task after a peer models it. Which interpretation is best?",
       "back": "Language access may be affecting the demonstration of knowledge, so the team should gather culturally and linguistically appropriate evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2597,7 +2597,7 @@
       "chapterId": "sp5547-ch-01",
       "skillId": "development-context-strengths",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with a disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
+      "front": "When interpreting development, context, and variability for a learner with intensive support needs, a student with a disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
       "back": "Use age-respectful materials while matching the instructional steps and supports to the learner’s current needs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2613,7 +2613,7 @@
       "chapterId": "sp5547-ch-01",
       "skillId": "development-context-strengths",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student performs a social routine only with one familiar adult. Which plan best promotes generalization?",
+      "front": "When interpreting development, context, and variability for a learner with intensive support needs, a student performs a social routine only with one familiar adult. Which plan best promotes generalization?",
       "back": "Practice the same skill with planned variations in people, materials, and natural settings, then fade prompts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2629,8 +2629,8 @@
       "chapterId": "sp5547-ch-02",
       "skillId": "complex-support-profiles",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
-      "back": "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
+      "front": "A learner with severe or profound disabilities uses AAC to select relevant ideas but needs support organizing them in a shared written paragraph. Which response is best?",
+      "back": "Provide an age-respectful model, ensure AAC access, jointly construct an example, use a visual organizer, and fade prompts while preserving the learner’s authorship.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2645,7 +2645,7 @@
       "chapterId": "sp5547-ch-02",
       "skillId": "complex-support-profiles",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
+      "front": "When analyzing an individualized profile with possible co-occurring needs, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
       "back": "Plan a predictable, accessible warning and communication routine while teaching the student how to use it.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2661,7 +2661,7 @@
       "chapterId": "sp5547-ch-02",
       "skillId": "complex-support-profiles",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
+      "front": "When analyzing an individualized profile with possible co-occurring needs, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
       "back": "Executive-function supports are improving task initiation, organization, and monitoring.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2677,8 +2677,8 @@
       "chapterId": "sp5547-ch-02",
       "skillId": "complex-support-profiles",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with an emotional or behavioral disability argues mainly during unpredictable peer-group tasks. What perspective is most useful?",
-      "back": "Examine interactions among the learner, task, peers, expectations, and consequences rather than locating the problem only within the child.",
+      "front": "A learner with severe or profound disabilities shows distress during a noisy group routine but participates in a predictable small group with communication and sensory supports. What perspective is most useful?",
+      "back": "Examine interactions among communication access, sensory conditions, health, task demands, peer structure, supports, and consequences rather than locating the problem only within the learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2693,8 +2693,8 @@
       "chapterId": "sp5547-ch-02",
       "skillId": "complex-support-profiles",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, which information is essential when considering educational needs associated with intellectual disability?",
-      "back": "Information about both intellectual functioning and adaptive behavior across conceptual, social, and practical domains.",
+      "front": "Which evidence is essential when planning age-respectful support for a learner with severe or profound disabilities?",
+      "back": "Integrated evidence about communication, health, sensory and motor access, adaptive and academic skills, preferences, relationships, participation, and performance across settings.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2709,7 +2709,7 @@
       "chapterId": "sp5547-ch-02",
       "skillId": "complex-support-profiles",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
+      "front": "When analyzing an individualized profile with possible co-occurring needs, a student understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
       "back": "Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2725,7 +2725,7 @@
       "chapterId": "sp5547-ch-03",
       "skillId": "adaptive-sensory-health-needs",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
+      "front": "When removing sensory, physical, communication, or health access barriers, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
       "back": "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2741,7 +2741,7 @@
       "chapterId": "sp5547-ch-03",
       "skillId": "adaptive-sensory-health-needs",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
+      "front": "When removing sensory, physical, communication, or health access barriers, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
       "back": "The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2757,7 +2757,7 @@
       "chapterId": "sp5547-ch-03",
       "skillId": "adaptive-sensory-health-needs",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
+      "front": "When removing sensory, physical, communication, or health access barriers, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
       "back": "Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2773,7 +2773,7 @@
       "chapterId": "sp5547-ch-03",
       "skillId": "adaptive-sensory-health-needs",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
+      "front": "When removing sensory, physical, communication, or health access barriers, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
       "back": "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2789,7 +2789,7 @@
       "chapterId": "sp5547-ch-03",
       "skillId": "adaptive-sensory-health-needs",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, which goal best addresses adaptive behavior?",
+      "front": "When removing sensory, physical, communication, or health access barriers, which goal best addresses adaptive behavior?",
       "back": "Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2805,7 +2805,7 @@
       "chapterId": "sp5547-ch-03",
       "skillId": "adaptive-sensory-health-needs",
       "domainId": "development-individualized-needs",
-      "front": "For a learner with severe or profound disabilities, a team is considering text-to-speech for a student who understands content but reads print slowly. What is the best next step?",
+      "front": "When removing sensory, physical, communication, or health access barriers, a team is considering text-to-speech for a student who understands content but reads print slowly. What is the best next step?",
       "back": "Conduct a task-focused trial, teach use of the tool, and compare access and performance data with and without it.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2821,7 +2821,7 @@
       "chapterId": "sp5547-ch-04",
       "skillId": "person-centered-iep-transition",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+      "front": "During person-centered IEP and transition planning, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
       "back": "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2837,7 +2837,7 @@
       "chapterId": "sp5547-ch-04",
       "skillId": "person-centered-iep-transition",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
+      "front": "During person-centered IEP and transition planning, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
       "back": "An accommodation that changes access or response conditions without changing the intended construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2853,7 +2853,7 @@
       "chapterId": "sp5547-ch-04",
       "skillId": "person-centered-iep-transition",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, during IEP development, when should assistive technology be considered?",
+      "front": "During person-centered IEP and transition planning, when should assistive technology be considered?",
       "back": "The team should consider whether assistive technology devices or services are needed for the individual learner.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2869,7 +2869,7 @@
       "chapterId": "sp5547-ch-04",
       "skillId": "person-centered-iep-transition",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, which information must the IEP team consider during development?",
+      "front": "During person-centered IEP and transition planning, which information must the IEP team consider during development?",
       "back": "The learner’s strengths, parent concerns, evaluation results, and academic, developmental, and functional needs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2885,7 +2885,7 @@
       "chapterId": "sp5547-ch-04",
       "skillId": "person-centered-iep-transition",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. What should govern placement?",
+      "front": "During person-centered IEP and transition planning, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. What should govern placement?",
       "back": "The individualized IEP and LRE analysis, including whether education with nondisabled peers can succeed with supplementary aids and services.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2901,7 +2901,7 @@
       "chapterId": "sp5547-ch-04",
       "skillId": "person-centered-iep-transition",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, under the federal IDEA baseline, by when must transition content begin in the IEP unless the team determines an earlier age is appropriate?",
+      "front": "During person-centered IEP and transition planning, under the federal IDEA baseline, by when must transition content begin in the IEP unless the team determines an earlier age is appropriate?",
       "back": "No later than the first IEP in effect when the student turns 16, updated annually, or earlier when appropriate.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2917,7 +2917,7 @@
       "chapterId": "sp5547-ch-05",
       "skillId": "systematic-instruction-access",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a teacher introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
+      "front": "During explicit, systematic instruction for meaningful participation, a teacher introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
       "back": "A clear model-guided practice-independent practice sequence with frequent checks and corrective feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2933,7 +2933,7 @@
       "chapterId": "sp5547-ch-05",
       "skillId": "systematic-instruction-access",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a learner is acquiring a multistep hand-washing routine. What is the purpose of task analysis?",
+      "front": "During explicit, systematic instruction for meaningful participation, a learner is acquiring a multistep hand-washing routine. What is the purpose of task analysis?",
       "back": "To break the complex routine into observable, teachable steps that can be prompted, measured, and chained.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2949,7 +2949,7 @@
       "chapterId": "sp5547-ch-05",
       "skillId": "systematic-instruction-access",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student solves equations accurately with a step card. What should happen next?",
+      "front": "During explicit, systematic instruction for meaningful participation, a student solves equations accurately with a step card. What should happen next?",
       "back": "Gradually fade or simplify the scaffold while monitoring whether independent accuracy is maintained.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2965,7 +2965,7 @@
       "chapterId": "sp5547-ch-05",
       "skillId": "systematic-instruction-access",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, which lesson design best reflects Universal Design for Learning?",
+      "front": "During explicit, systematic instruction for meaningful participation, which lesson design best reflects Universal Design for Learning?",
       "back": "Define a clear goal, anticipate barriers, and offer purposeful options for engagement, representation, and action or expression.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2981,7 +2981,7 @@
       "chapterId": "sp5547-ch-05",
       "skillId": "systematic-instruction-access",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student guesses unfamiliar words from pictures. Which instructional response best targets decoding?",
+      "front": "During explicit, systematic instruction for meaningful participation, a student guesses unfamiliar words from pictures. Which instructional response best targets decoding?",
       "back": "Explicit, cumulative practice connecting phonemes with graphemes and blending them to read words.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2997,7 +2997,7 @@
       "chapterId": "sp5547-ch-05",
       "skillId": "systematic-instruction-access",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student reads accurately but slowly and without phrasing. Which practice is best matched to the need?",
+      "front": "During explicit, systematic instruction for meaningful participation, a student reads accurately but slowly and without phrasing. Which practice is best matched to the need?",
       "back": "Modeled and repeated oral reading of appropriate text with feedback on accuracy, rate, and phrasing.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3013,7 +3013,7 @@
       "chapterId": "sp5547-ch-06",
       "skillId": "positive-environments-intensive-supports",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
+      "front": "When designing a predictable, communication-accessible learning environment, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
       "back": "Teach, model, practice, and visually display a short consistent arrival routine, then acknowledge successful use.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3029,7 +3029,7 @@
       "chapterId": "sp5547-ch-06",
       "skillId": "positive-environments-intensive-supports",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
+      "front": "When designing a predictable, communication-accessible learning environment, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
       "back": "The antecedent task, the observable behavior, and the consequence of escaping or delaying the work.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3045,7 +3045,7 @@
       "chapterId": "sp5547-ch-06",
       "skillId": "positive-environments-intensive-supports",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
+      "front": "When designing a predictable, communication-accessible learning environment, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
       "back": "Teach and reinforce an efficient appropriate way to request attention while adjusting antecedents and consequences that maintain disruption.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3061,7 +3061,7 @@
       "chapterId": "sp5547-ch-06",
       "skillId": "positive-environments-intensive-supports",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, which replacement behavior is best for a student who leaves work to escape confusing directions?",
+      "front": "When designing a predictable, communication-accessible learning environment, which replacement behavior is best for a student who leaves work to escape confusing directions?",
       "back": "Use a taught help card to request clarification or a brief guided start.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3077,7 +3077,7 @@
       "chapterId": "sp5547-ch-06",
       "skillId": "positive-environments-intensive-supports",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
+      "front": "When designing a predictable, communication-accessible learning environment, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
       "back": "It is immediate and behavior-specific, linking the student’s action to the taught expectation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3093,7 +3093,7 @@
       "chapterId": "sp5547-ch-06",
       "skillId": "positive-environments-intensive-supports",
       "domainId": "planning-instruction-environment",
-      "front": "For a learner with severe or profound disabilities, a teacher wants to increase engagement during review. Which change is most likely to help?",
+      "front": "When designing a predictable, communication-accessible learning environment, a teacher wants to increase engagement during review. Which change is most likely to help?",
       "back": "Build frequent, varied opportunities for all students to respond and give brief feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3109,7 +3109,7 @@
       "chapterId": "sp5547-ch-07",
       "skillId": "accessible-assessment-selection",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
+      "front": "When selecting and administering an accessible assessment, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
       "back": "Use the native language or appropriate communication mode and a format most likely to show what the learner knows, unless clearly infeasible.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3125,7 +3125,7 @@
       "chapterId": "sp5547-ch-07",
       "skillId": "accessible-assessment-selection",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, which assessment is most useful for adjusting tomorrow’s instruction?",
+      "front": "When selecting and administering an accessible assessment, which assessment is most useful for adjusting tomorrow’s instruction?",
       "back": "A brief formative task or observation aligned to the taught steps, followed by error analysis.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3141,7 +3141,7 @@
       "chapterId": "sp5547-ch-07",
       "skillId": "accessible-assessment-selection",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a reading assessment is intended to measure comprehension, but a student’s documented motor disability prevents use of the response booklet. What is the best response?",
+      "front": "When selecting and administering an accessible assessment, a reading assessment is intended to measure comprehension, but a student’s documented motor disability prevents use of the response booklet. What is the best response?",
       "back": "Provide an appropriate response accommodation that removes the motor barrier without changing the content construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3157,7 +3157,7 @@
       "chapterId": "sp5547-ch-07",
       "skillId": "accessible-assessment-selection",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, what does a criterion-referenced interpretation show?",
+      "front": "When selecting and administering an accessible assessment, what does a criterion-referenced interpretation show?",
       "back": "Performance relative to specified skills or standards rather than relative standing among peers.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3173,7 +3173,7 @@
       "chapterId": "sp5547-ch-07",
       "skillId": "accessible-assessment-selection",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, which observation definition is most useful for collecting behavior data?",
+      "front": "When selecting and administering an accessible assessment, which observation definition is most useful for collecting behavior data?",
       "back": "“Leaves seat” means both feet cross the desk-area boundary without teacher permission during independent work.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3189,7 +3189,7 @@
       "chapterId": "sp5547-ch-07",
       "skillId": "accessible-assessment-selection",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern? Focus: Accessible Assessment Selection and Administration.",
+      "front": "When selecting and administering an accessible assessment, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern? Focus: Accessible Assessment Selection and Administration.",
       "back": "Use the native language or appropriate communication mode and a format most likely to show what the learner knows, unless clearly infeasible.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3205,7 +3205,7 @@
       "chapterId": "sp5547-ch-08",
       "skillId": "evaluation-eligibility-interpretation",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a general education team sees persistent difficulty and begins a targeted intervention. What is an appropriate prereferral practice?",
+      "front": "During a comprehensive, multidisciplinary evaluation, a general education team sees persistent difficulty and begins a targeted intervention. What is an appropriate prereferral practice?",
       "back": "Define the concern, implement an evidence-based support with adequate intensity, and monitor response using repeated data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3221,7 +3221,7 @@
       "chapterId": "sp5547-ch-08",
       "skillId": "evaluation-eligibility-interpretation",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a school says it will not evaluate a student until every tier of intervention has been completed. What is the problem?",
+      "front": "During a comprehensive, multidisciplinary evaluation, a school says it will not evaluate a student until every tier of intervention has been completed. What is the problem?",
       "back": "Response-to-intervention procedures may not be used to delay or deny a timely evaluation when disability is suspected.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3237,7 +3237,7 @@
       "chapterId": "sp5547-ch-08",
       "skillId": "evaluation-eligibility-interpretation",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, what is the role of parent information in an evaluation?",
+      "front": "During a comprehensive, multidisciplinary evaluation, what is the role of parent information in an evaluation?",
       "back": "Treat it as relevant evidence within the required variety of functional, developmental, and academic information.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3253,7 +3253,7 @@
       "chapterId": "sp5547-ch-08",
       "skillId": "evaluation-eligibility-interpretation",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a student is referred for reading difficulty, but records also show significant hearing and communication concerns. How broad should the evaluation be?",
+      "front": "During a comprehensive, multidisciplinary evaluation, a student is referred for reading difficulty, but records also show significant hearing and communication concerns. How broad should the evaluation be?",
       "back": "Assess all areas related to the suspected disability and conduct a sufficiently comprehensive evaluation of educational needs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3269,7 +3269,7 @@
       "chapterId": "sp5547-ch-08",
       "skillId": "evaluation-eligibility-interpretation",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, why can no single test score determine special education eligibility?",
+      "front": "During a comprehensive, multidisciplinary evaluation, why can no single test score determine special education eligibility?",
       "back": "Integrate multiple technically sound measures, observations, histories, and contextual information through the team decision process.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3285,7 +3285,7 @@
       "chapterId": "sp5547-ch-08",
       "skillId": "evaluation-eligibility-interpretation",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a multilingual learner has had limited access to instruction in English and is referred for SLD. What must the team carefully examine?",
+      "front": "During a comprehensive, multidisciplinary evaluation, a multilingual learner has had limited access to instruction in English and is referred for SLD. What must the team carefully examine?",
       "back": "Whether limited English proficiency or inadequate instruction is the primary explanation, using culturally and linguistically appropriate evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3301,7 +3301,7 @@
       "chapterId": "sp5547-ch-09",
       "skillId": "progress-monitoring-functional-data",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a student’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
+      "front": "When reviewing repeated progress and implementation data, a student’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
       "back": "The trend is below the desired rate of improvement, so implementation and instruction should be reviewed rather than waiting for the annual meeting.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3317,7 +3317,7 @@
       "chapterId": "sp5547-ch-09",
       "skillId": "progress-monitoring-functional-data",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, what is the purpose of a goal line on a progress graph?",
+      "front": "When reviewing repeated progress and implementation data, what is the purpose of a goal line on a progress graph?",
       "back": "The expected rate of improvement needed to move from baseline to the goal.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3333,7 +3333,7 @@
       "chapterId": "sp5547-ch-09",
       "skillId": "progress-monitoring-functional-data",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, how often should progress be measured for a student receiving an intensive intervention?",
+      "front": "When reviewing repeated progress and implementation data, how often should progress be measured for a student receiving an intensive intervention?",
       "back": "Frequently enough with a sensitive, repeatable measure to detect meaningful growth and support timely decisions.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3349,7 +3349,7 @@
       "chapterId": "sp5547-ch-09",
       "skillId": "progress-monitoring-functional-data",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a family finds a progress graph confusing. What is the clearest explanation?",
+      "front": "When reviewing repeated progress and implementation data, a family finds a progress graph confusing. What is the clearest explanation?",
       "back": "Label the skill, baseline, goal, dates, intervention changes, and trend, then explain the educational meaning in plain language.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3365,7 +3365,7 @@
       "chapterId": "sp5547-ch-09",
       "skillId": "progress-monitoring-functional-data",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, a student’s answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
+      "front": "When reviewing repeated progress and implementation data, a student’s answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
       "back": "Teach the specific decision or comprehension process revealed by the error pattern and monitor that component.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3381,7 +3381,7 @@
       "chapterId": "sp5547-ch-09",
       "skillId": "progress-monitoring-functional-data",
       "domainId": "assessment",
-      "front": "For a learner with severe or profound disabilities, outcome data improve only in classrooms where the intervention steps are followed. What does this suggest?",
+      "front": "When reviewing repeated progress and implementation data, outcome data improve only in classrooms where the intervention steps are followed. What does this suggest?",
       "back": "Implementation fidelity may be contributing to different outcomes and must be considered before changing the intervention theory.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3397,7 +3397,7 @@
       "chapterId": "sp5547-ch-10",
       "skillId": "law-ethics-equity-safeguards",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, which decision rule is strongest?",
+      "front": "When applying legal, ethical, and equity safeguards, which decision rule is strongest?",
       "back": "If at least four consecutive comparable points fall below the goal line and fidelity is adequate, review and adjust instruction.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3413,7 +3413,7 @@
       "chapterId": "sp5547-ch-10",
       "skillId": "law-ethics-equity-safeguards",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, what does FAPE require at a foundational level under IDEA?",
+      "front": "When applying legal, ethical, and equity safeguards, what does FAPE require at a foundational level under IDEA?",
       "back": "Eligible students receive special education and related services at public expense through an appropriately developed and implemented IEP.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3429,7 +3429,7 @@
       "chapterId": "sp5547-ch-10",
       "skillId": "law-ethics-equity-safeguards",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
+      "front": "When applying legal, ethical, and equity safeguards, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
       "back": "Child Find requires identification, location, and evaluation of children who may need special education, including those advancing grade to grade.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3445,7 +3445,7 @@
       "chapterId": "sp5547-ch-10",
       "skillId": "law-ethics-equity-safeguards",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a district proposes changing a student’s placement. What procedural communication is required?",
+      "front": "When applying legal, ethical, and equity safeguards, a district proposes changing a student’s placement. What procedural communication is required?",
       "back": "Prior written notice describing the proposed or refused action, the reasons, evidence considered, and other required information.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3461,7 +3461,7 @@
       "chapterId": "sp5547-ch-10",
       "skillId": "law-ethics-equity-safeguards",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
+      "front": "When applying legal, ethical, and equity safeguards, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
       "back": "Protect confidentiality and discuss educational records only through authorized, private channels with people who have a legitimate role.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3477,7 +3477,7 @@
       "chapterId": "sp5547-ch-10",
       "skillId": "law-ethics-equity-safeguards",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, what is a central protection of Section 504 in public schools receiving federal funds?",
+      "front": "When applying legal, ethical, and equity safeguards, what is a central protection of Section 504 in public schools receiving federal funds?",
       "back": "Section 504 prohibits disability discrimination and may require accommodations and related aids or services for equal access.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3493,7 +3493,7 @@
       "chapterId": "sp5547-ch-11",
       "skillId": "family-team-paraprofessional",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, in effective co-teaching, what is the special educator’s role?",
+      "front": "During person-centered collaboration among the learner, family, and school team, what is the special educator’s role?",
       "back": "Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3509,7 +3509,7 @@
       "chapterId": "sp5547-ch-11",
       "skillId": "family-team-paraprofessional",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, how should a special educator work with a paraprofessional?",
+      "front": "During person-centered collaboration among the learner, family, and school team, how should a special educator work with a paraprofessional?",
       "back": "Provide clear direction, training, boundaries, observation, and feedback while retaining responsibility for instructional decisions.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3525,7 +3525,7 @@
       "chapterId": "sp5547-ch-11",
       "skillId": "family-team-paraprofessional",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
+      "front": "During person-centered collaboration among the learner, family, and school team, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
       "back": "Listen, clarify the concern, examine the evidence together, invite home-context information, and identify what additional data or action is needed.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3541,7 +3541,7 @@
       "chapterId": "sp5547-ch-11",
       "skillId": "family-team-paraprofessional",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
+      "front": "During person-centered collaboration among the learner, family, and school team, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
       "back": "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3557,7 +3557,7 @@
       "chapterId": "sp5547-ch-11",
       "skillId": "family-team-paraprofessional",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, how can a student contribute meaningfully to an IEP meeting?",
+      "front": "During person-centered collaboration among the learner, family, and school team, how can a student contribute meaningfully to an IEP meeting?",
       "back": "Teach the student to describe strengths, needs, preferences, goals, and helpful supports using an accessible communication format.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3573,7 +3573,7 @@
       "chapterId": "sp5547-ch-11",
       "skillId": "family-team-paraprofessional",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, two team members disagree about whether an intervention is working. What is the strongest next step?",
+      "front": "During person-centered collaboration among the learner, family, and school team, two team members disagree about whether an intervention is working. What is the strongest next step?",
       "back": "Operationalize the concern, review common data and fidelity, test a feasible adjustment, and schedule a time to evaluate the result.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3589,7 +3589,7 @@
       "chapterId": "sp5547-ch-12",
       "skillId": "professionalism-advocacy-boundaries",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, which reflection question is most useful after an instructional unit?",
+      "front": "Within a severe-disabilities educator’s professional role, which reflection question is most useful after an instructional unit?",
       "back": "Which learners met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3605,7 +3605,7 @@
       "chapterId": "sp5547-ch-12",
       "skillId": "professionalism-advocacy-boundaries",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, how should a teacher choose professional development?",
+      "front": "Within a severe-disabilities educator’s professional role, how should a teacher choose professional development?",
       "back": "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on student evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3621,7 +3621,7 @@
       "chapterId": "sp5547-ch-12",
       "skillId": "professionalism-advocacy-boundaries",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
+      "front": "Within a severe-disabilities educator’s professional role, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
       "back": "Document the educational impact, use established team and administrative channels, propose feasible solutions, and follow up until access is addressed.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3637,7 +3637,7 @@
       "chapterId": "sp5547-ch-12",
       "skillId": "professionalism-advocacy-boundaries",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
+      "front": "Within a severe-disabilities educator’s professional role, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
       "back": "Follow mandatory reporting and school safety procedures promptly, share only with authorized personnel, and do not promise confidentiality that cannot be kept.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3653,7 +3653,7 @@
       "chapterId": "sp5547-ch-12",
       "skillId": "professionalism-advocacy-boundaries",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, a transition team wants an adult-service agency representative to attend an IEP meeting. What safeguard matters?",
+      "front": "Within a severe-disabilities educator’s professional role, a transition team wants an adult-service agency representative to attend an IEP meeting. What safeguard matters?",
       "back": "Obtain the required parent or adult-student consent before inviting an outside agency likely to provide or pay for transition services.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3669,7 +3669,7 @@
       "chapterId": "sp5547-ch-12",
       "skillId": "professionalism-advocacy-boundaries",
       "domainId": "ethical-legal-professional-collaboration",
-      "front": "For a learner with severe or profound disabilities, why should special educators verify current state and local requirements in addition to studying federal baselines?",
+      "front": "Within a severe-disabilities educator’s professional role, why should special educators verify current state and local requirements in addition to studying federal baselines?",
       "back": "Federal law establishes a baseline, while state law, licensure rules, and local policy may add timelines, procedures, or protections.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [

@@ -7,7 +7,7 @@ function loadMeasurementMath() {
   const start = SOURCE.indexOf('  function formatVolume(vol)');
   const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);
   const body = SOURCE.slice(start, end);
-  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, recommendVolumeRepresentation, buildRepresentationConnectionReadiness, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
+  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, recommendVolumeRepresentation, buildRepresentationConnectionReadiness, buildRepresentationSentenceStarter, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
 }
 
 describe('Geometry World measurement model', () => {
@@ -159,13 +159,38 @@ describe('Geometry World measurement model', () => {
     expect(math.objectiveEvidenceFor('Answer every question', { ...base, answered: 2 }).done).toBe(true);
   });
 
+  it('requires saved reasoning for equivalent-representation objectives', () => {
+    const measuredOnly = { measurements: [{}, {}], representationConnections: 0 };
+    expect(math.objectiveEvidenceFor('Compare two representations', measuredOnly)).toMatchObject({
+      done: false,
+      evidence: '0 saved representation connections'
+    });
+    expect(math.objectiveEvidenceFor('Explain equivalent volume representations', { ...measuredOnly, representationConnections: 1 })).toMatchObject({
+      done: true,
+      evidence: '1 saved representation connection'
+    });
+    expect(math.objectiveEvidenceFor('Show volume in two ways', { representationConnections: 2 })).toMatchObject({ done: true, evidence: '2 saved representation connections' });
+    expect(math.objectiveEvidenceFor('Compare two shapes', measuredOnly).done).toBe(true);
+    expect(SOURCE).toContain("event.type === 'representation_connection'");
+  });
+
   it('requires reasoning for prediction objectives', () => {
     const unexplained = { measurements: [{ prediction: 20 }], structureCount: 1 };
     const explained = { measurements: [{ prediction: 20, strategy: 'layers' }], structureCount: 1 };
     expect(math.objectiveEvidenceFor('Make and explain a volume prediction', unexplained).done).toBe(false);
     expect(math.objectiveEvidenceFor('Make and explain a volume prediction', explained)).toMatchObject({ done: true, evidence: '1 explained prediction' });
     expect(math.objectiveEvidenceFor('Revise using evidence', { revisionCompleted: true }).done).toBe(true);
+    expect(math.objectiveEvidenceFor('Revise using evidence', { reflectionsCompleted: 1 }).done).toBe(false);
   });
+
+  it('requires separately saved revision and reflection evidence', () => {
+    expect(math.objectiveEvidenceFor('Reflect on your strategy', { reflectionText: 'Unsaved draft' })).toMatchObject({ done: false, evidence: '0 saved reflections' });
+    expect(math.objectiveEvidenceFor('Reflect on your strategy', { reflectionsCompleted: 1 })).toMatchObject({ done: true, evidence: '1 saved reflection' });
+    expect(math.objectiveEvidenceFor('Revise and reflect using evidence', { revisionCompleted: true, reflectionsCompleted: 0 }).done).toBe(false);
+    expect(math.objectiveEvidenceFor('Revise and reflect using evidence', { revisionCompleted: true, reflectionsCompleted: 1 }).done).toBe(true);
+    expect(SOURCE).toContain("event.type === 'reflection'");
+  });
+
 
   it('builds reflection prompts from the student?s measurement evidence', () => {
     const prompt = math.buildEvidenceReflectionPrompt(
@@ -268,6 +293,22 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('Open recommended view');
   });
 
+  it('shows adaptive guidance before switching and announces representation changes', () => {
+    const recommendationIndex = SOURCE.indexOf("recommendedVolumeRepresentation && el('div'");
+    const connectionIndex = SOURCE.indexOf('volumeRepresentationFromKey && volumeRepresentationFromKey !== activeVolumeRepresentation.key');
+    expect(recommendationIndex).toBeGreaterThan(0);
+    expect(connectionIndex).toBeGreaterThan(recommendationIndex);
+
+    expect(SOURCE).toContain("role: 'note'");
+    expect(SOURCE).toContain("id: 'gw-volume-representation', value: activeVolumeRepresentation.key, className: 'gw-focusable'");
+    expect(SOURCE).toContain("id: 'gw-representation-reason', className: 'gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Open recommended volume view: '");
+    expect(SOURCE).toContain("'aria-describedby': representationSentenceStarter");
+    expect(SOURCE).toContain("announceToSR('Showing equivalent view: '");
+    expect(SOURCE).toContain("announceToSR('Showing recommended view: '");
+    expect(SOURCE).toContain("'aria-live': 'polite'");
+  });
+
 
   it('uses a learner self-check instead of auto-grading representation explanations', () => {
     const blank = math.buildRepresentationConnectionReadiness('', false, false);
@@ -289,16 +330,59 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('I used evidence from the structure or equation.');
     expect(SOURCE).toContain('selfCheck: { invariant: true, evidence: true }');
   });
+
+  it('allows view switching after a representation explanation is saved', () => {
+    const helperStart = SOURCE.indexOf('  function hasUnsavedRepresentationConnection');
+    const helperEnd = SOURCE.indexOf('  function buildRepresentationSentenceStarter', helperStart);
+    const hasUnsavedDraft = new Function(SOURCE.slice(helperStart, helperEnd) + '\nreturn hasUnsavedRepresentationConnection;')();
+
+    expect(hasUnsavedDraft('Both views equal 24.', false)).toBe(true);
+    expect(hasUnsavedDraft('Both views equal 24.', true)).toBe(false);
+    expect(hasUnsavedDraft('   ', false)).toBe(false);
+
+    const guardUses = SOURCE.match(/if \(hasUnsavedRepresentationDraft\)/g) || [];
+    expect(guardUses.length).toBeGreaterThanOrEqual(2);
+    expect(SOURCE).toContain('hasUnsavedRepresentationConnection(volumeRepresentationReason, volumeRepresentationConnectionSaved)');
+  });
+
+  it('fades shape-specific representation sentence starters with independence', () => {
+    const solid = { isComplete: true, occupiedVolume: 24, L: 2, W: 3, H: 4, isSolidPrism: true };
+    const guidedLayers = math.buildRepresentationSentenceStarter({ key: 'layers' }, solid, 'guided');
+    expect(guidedLayers).toContain('One layer has 6 cubic units');
+    expect(guidedLayers).toContain('4 equal layers make 24');
+
+    const supported = math.buildRepresentationSentenceStarter({ key: 'layers' }, solid, 'supported');
+    expect(supported).toBe('Both views show 24 cubic units because one shows ___ while the other shows ___.');
+    expect(math.buildRepresentationSentenceStarter({ key: 'layers' }, solid, 'independent')).toBe('');
+
+    const composite = { isComplete: true, occupiedVolume: 8, boundingVolume: 12, missingVolume: 4, isSolidPrism: false };
+    expect(math.buildRepresentationSentenceStarter({ key: 'bounding_subtraction' }, composite, 'guided'))
+      .toContain('Subtracting 4 empty units leaves 8');
+    expect(math.buildRepresentationSentenceStarter({ key: 'decomposition' }, composite, 'guided'))
+      .toContain('non-overlapping parts');
+
+    const fractional = { isComplete: true, occupiedVolume: 1.5, hasFractions: true };
+    expect(math.buildRepresentationSentenceStarter({ key: 'fraction_composition' }, fractional, 'guided'))
+      .toContain('1 1/2 cubic units');
+    expect(math.buildRepresentationSentenceStarter({ key: 'occupied_units' }, solid, 'guided'))
+      .toContain('Counting the occupied units gives 24');
+
+    expect(math.buildRepresentationSentenceStarter(null, solid, 'guided')).toBe('');
+    expect(math.buildRepresentationSentenceStarter({ key: 'layers' }, { ...solid, isComplete: false }, 'guided')).toBe('');
+    expect(SOURCE).toContain('data-geometry-representation-sentence-starter');
+    expect(SOURCE).toContain("'Sentence starter: '");
+    expect(SOURCE).toContain("scaffoldLevel === 'independent'");
+  });
   it('records representation switching as teacher learning evidence', () => {
     const summary = math.summarizeLearningEvidence([
       { type: 'representation_view', data: { representation: 'layers' } },
       { type: 'representation_view', data: { representation: 'rotated_layers' } },
-      { type: 'representation_view', data: { representation: 'layers' } },
+      { type: 'representation_view', data: { representation: 'layers', source: 'misconception_recommendation', misconception: 'one_layer' } },
       { type: 'representation_connection', data: { from: 'layers', to: 'rotated_layers', text: 'The factors are regrouped but still multiply to 24.' } },
       { type: 'representation_connection', data: { from: 'rotated_layers', to: 'layers', text: 'Both count all 24 cubes in different layer directions.' } },
       { type: 'representation_connection', data: { from: 'layers', to: 'rotated_layers', text: '   ' } }
     ]);
-    expect(summary).toMatchObject({ representationViews: 3, representationConnections: 2 });
+    expect(summary).toMatchObject({ representationViews: 3, targetedRepresentationViews: 1, representationConnections: 2 });
     expect(summary.representationConnectionExamples).toEqual([
       { from: 'layers', to: 'rotated_layers', text: 'The factors are regrouped but still multiply to 24.' },
       { from: 'rotated_layers', to: 'layers', text: 'Both count all 24 cubes in different layer directions.' }
@@ -306,6 +390,9 @@ describe('Geometry World measurement model', () => {
     expect(summary.representations).toEqual([
       { representation: 'layers', count: 2 },
       { representation: 'rotated_layers', count: 1 }
+    ]);
+    expect(summary.targetedRepresentationSupports).toEqual([
+      { code: 'one_layer', label: 'Used one layer as total volume', count: 1 }
     ]);
     expect(SOURCE).toContain('data-geometry-volume-representation');
     expect(SOURCE).toContain("eng.logEvent('representation_view'");
@@ -320,6 +407,9 @@ describe('Geometry World measurement model', () => {
     const earlier = { L: 1, W: 2, H: 3, occupiedVolume: 6, isSolidPrism: true, t: 1 };
     const latest = { L: 2, W: 3, H: 4, occupiedVolume: 24, isSolidPrism: true, t: 2 };
     expect(math.buildRetrievalCheckpoint([earlier, { ...latest, isComplete: false }])).toBeNull();
+    expect(SOURCE).toContain('Targeted views opened');
+    expect(SOURCE).toContain('Targeted representation support used');
+    expect(SOURCE).toContain('targetedRepresentationSupports.length');
 
     const scaling = math.buildRetrievalCheckpoint([earlier, latest]);
     expect(scaling).toMatchObject({ concept: 'scale_height', expected: 8 });
@@ -427,6 +517,20 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('Measurement-Level Evidence');
     expect(SOURCE).toContain('questionDetails: questionDetailsForReport(log)');
     expect(SOURCE).not.toContain('Math.round(q.timestamp)');
+  });
+
+  it('protects unsaved representation explanations from accidental view changes', () => {
+    expect(SOURCE).toContain('var hasUnsavedRepresentationDraft = hasUnsavedRepresentationConnection(volumeRepresentationReason, volumeRepresentationConnectionSaved)');
+    expect(SOURCE).toContain('ev.target.value = activeVolumeRepresentation.key');
+    expect(SOURCE).toContain('Save or discard your explanation draft before switching views.');
+    expect(SOURCE).toContain('Save or discard your explanation draft before opening another view.');
+    expect(SOURCE).toContain("'aria-label': 'Discard unsaved representation explanation'");
+    expect(SOURCE).toContain("announceToSR('Explanation draft discarded.");
+
+    const guardIndex = SOURCE.indexOf('if (hasUnsavedRepresentationDraft)');
+    const switchIndex = SOURCE.indexOf('upd({ volumeRepresentationFromKey: activeVolumeRepresentation.key', guardIndex);
+    expect(guardIndex).toBeGreaterThan(0);
+    expect(switchIndex).toBeGreaterThan(guardIndex);
   });
 
   it('keeps touch HUD layers clear and keyboard focus visible', () => {

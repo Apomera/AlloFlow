@@ -66,7 +66,7 @@ describe('ParaPro native learning library', () => {
       expect(chapter.skillId).toBe(skill.id);
     }
     expect(pack).toMatchObject({
-      version: '0.6.0',
+      version: '0.7.0',
       learningLibraryUrl: './test_prep/parapro_learning_library.json',
       learningLibraryQaUrl: './test_prep/parapro_learning_library_qa.json',
       simulationItemCount: 90,

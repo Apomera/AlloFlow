@@ -1385,7 +1385,7 @@
    "type": "single-choice",
    "domainId": "instruction",
    "difficulty": "application",
-   "prompt": "During explicit literacy intervention for a student with a learning disability, while teaching comprehension with a grade-level text, what supports literacy engagement?",
+   "prompt": "During explicit literacy instruction for a student with a learning disability, what combination of supports best promotes engagement with grade-level text?",
    "choices": [
     "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
     "Offer only prizes for page counts.",
@@ -1542,7 +1542,7 @@
    "type": "single-choice",
    "domainId": "instruction",
    "difficulty": "application",
-   "prompt": "When progress evidence identifies a specific reading barrier, while planning meaning-focused text instruction, a capable student avoids reading because assigned texts feel irrelevant and success is rare. What is the strongest response?",
+   "prompt": "A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which response best supports engagement while preserving meaningful literacy instruction?",
    "choices": [
     "Combine achievable challenge, meaningful choice, culturally responsive texts, explicit success supports, authentic purposes, and feedback that builds agency.",
     "Offer only prizes for page counts.",

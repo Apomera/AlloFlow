@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
@@ -10,6 +11,47 @@ const deployDir = path.join(root, 'prismflow-deploy', 'public', 'test_prep');
 const authoredDir = path.join(__dirname, 'authored');
 const manifestPath = path.join(authoredDir, 'test_prep_independent_additions_manifest.json');
 const waitBuffer = new Int32Array(new SharedArrayBuffer(4));
+const HASH_BOUND_REVIEW_PROFILE = 'hash-bound-independent-cross-review-v1';
+
+function sha256(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+function safeAuthoredFile(name, label) {
+  if (typeof name !== 'string' || path.basename(name) !== name || !/^[a-z0-9_.-]+$/i.test(name)) {
+    throw new Error(label + ': authored manifest paths must be simple file names');
+  }
+  return path.join(authoredDir, name);
+}
+
+function isPassingReviewStatus(value) {
+  return /^pass(?:$|[\s:\u2013\u2014-])/i.test(String(value || '').trim());
+}
+
+function nestedReviewBlockers(value, currentPath = 'review', findings = []) {
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => nestedReviewBlockers(entry, currentPath + '[' + index + ']', findings));
+  } else if (value && typeof value === 'object') {
+    for (const [key, entry] of Object.entries(value)) {
+      const entryPath = currentPath + '.' + key;
+      if (/^(?:blockers?|hardFindings?|openFindings?|unresolved\w*|failures?|errors?)$/i.test(key)) {
+        const blocked = Array.isArray(entry)
+          ? entry.length > 0
+          : typeof entry === 'number'
+            ? entry > 0
+            : typeof entry === 'boolean'
+              ? entry
+              : Boolean(String(entry || '').trim()) && !/^(?:0|none|no|pass|resolved)$/i.test(String(entry).trim());
+        if (blocked) findings.push(entryPath);
+      }
+      if (/status|verdict/i.test(key) && /fail|block|reject|pending|review.required/i.test(String(entry || ''))) {
+        findings.push(entryPath);
+      }
+      nestedReviewBlockers(entry, entryPath, findings);
+    }
+  }
+  return findings;
+}
 
 function writeGeneratedFile(file, data) {
   let error;
@@ -45,6 +87,12 @@ function replaceBinaryMathOperator(value, escapedOperator, token) {
 
 function normalizeMathOperators(value) {
   let normalized = value
+    .replace(/\u2264/g, ' mathoplte ')
+    .replace(/\u2265/g, ' mathopgte ')
+    .replace(/\u2260/g, ' mathopneq ')
+    .replace(/\u00d7/g, ' mathopmul ')
+    .replace(/\u00f7/g, ' mathopdiv ')
+    .replace(/\u2212/g, ' mathopminus ')
     .replace(/<=|≤/g, ' mathoplte ')
     .replace(/>=|≥/g, ' mathopgte ')
     .replace(/!=|≠/g, ' mathopneq ')
@@ -143,44 +191,199 @@ function jaccard(left, right) {
   return overlap / (a.size + b.size - overlap);
 }
 
-function validateAuthoredBatch(pack, batch, items, priorItems) {
+function loadLearningLinks(stem, pack) {
+  const libraryPath = path.join(sourceDir, stem + '_learning_library.json');
+  if (!fs.existsSync(libraryPath)) throw new Error(stem + ': learning library not found');
+  const library = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
+  if (library.packId !== pack.id) throw new Error(stem + ': learning library packId mismatch');
+  const domains = new Set((pack.domains || []).map(domain => domain.id));
+  const skillRows = library.skills || [];
+  const chapterRows = library.chapters || [];
+  const skills = new Map(skillRows.map(skill => [skill.id, skill]));
+  const chapters = new Map(chapterRows.map(chapter => [chapter.id, chapter]));
+  if (!domains.size || !skills.size || !chapters.size) {
+    throw new Error(stem + ': released domain, skill, and chapter inventories are required');
+  }
+  if (skills.size !== skillRows.length || chapters.size !== chapterRows.length) {
+    throw new Error(stem + ': duplicate released skill or chapter IDs');
+  }
+  const references = new Set();
+  const collectReferences = value => {
+    if (Array.isArray(value)) value.forEach(collectReferences);
+    else if (value && typeof value === 'object') Object.values(value).forEach(collectReferences);
+    else if (typeof value === 'string' && validHttpsReference(value)) references.add(value);
+  };
+  collectReferences(pack);
+  collectReferences(library);
+  if (!references.size) throw new Error(stem + ': released reference inventory is empty');
+  return { domains, skills, chapters, references };
+}
+
+function validHttpsReference(value) {
+  try {
+    const parsed = new URL(String(value));
+    return parsed.protocol === 'https:' && !parsed.username && !parsed.password && Boolean(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function validateAuthoredBatch(stem, pack, batch, items, priorItems, strictMetadata) {
   const findings = [];
-  if (items.length !== 100) findings.push(`expected 100 items, found ${items.length}`);
+  const links = loadLearningLinks(stem, pack);
+  if (items.length !== 100) findings.push('expected 100 items, found ' + items.length);
   const expectedDomains = expectedDomainCounts(pack, 100);
   const actualDomains = countBy(items, 'domainId');
-  if (!sameCounts(actualDomains, expectedDomains)) findings.push(`domain counts ${JSON.stringify(actualDomains)} do not match ${JSON.stringify(expectedDomains)}`);
+  if (!sameCounts(actualDomains, expectedDomains)) {
+    findings.push('domain counts ' + JSON.stringify(actualDomains) + ' do not match ' + JSON.stringify(expectedDomains));
+  }
   const positions = [0, 1, 2, 3].map(answerIndex => items.filter(item => item.answerIndex === answerIndex).length);
-  if (positions.some(count => count !== 25)) findings.push(`answer positions must be 25/25/25/25, found ${positions.join('/')}`);
+  if (positions.some(count => count !== 25)) {
+    findings.push('answer positions must be 25/25/25/25, found ' + positions.join('/'));
+  }
   if (pack.id === 'parapro-1755-practice-1') {
     const focus = countBy(items, 'contentFocus');
-    if (!sameCounts(focus, { 'basic-skills-knowledge': 67, 'application-classroom': 33 })) findings.push(`ParaPro content focus must be 67/33, found ${JSON.stringify(focus)}`);
+    if (!sameCounts(focus, { 'basic-skills-knowledge': 67, 'application-classroom': 33 })) {
+      findings.push('ParaPro content focus must be 67/33, found ' + JSON.stringify(focus));
+    }
   }
   const ids = new Set(priorItems.map(item => item.id));
+  const promptKeys = new Set(priorItems.map(item => canonical(item.prompt)));
   const prompts = [...priorItems];
   const kernels = new Set(priorItems.map(contentKernel));
   for (const item of items) {
-    if (!item || typeof item !== 'object') { findings.push('non-object item'); continue; }
-    if (!item.id || ids.has(item.id)) findings.push(`${item.id || '(missing id)'}: duplicate or missing id`);
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      findings.push('non-object item');
+      continue;
+    }
+    const itemId = item.id || '(missing id)';
+    if (!/^[a-z0-9][a-z0-9-]*$/i.test(String(item.id || '')) || ids.has(item.id)) {
+      findings.push(itemId + ': duplicate, missing, or invalid id');
+    }
     ids.add(item.id);
-    if (!item.prompt || normalizedRawText(item.prompt).length < 35) findings.push(`${item.id}: prompt is missing or too short`);
-    if (!Array.isArray(item.choices) || item.choices.length !== 4 || new Set(item.choices.map(normalizedRawChoice)).size !== 4) findings.push(`${item.id}: requires four unique choices`);
-    if (!Number.isInteger(item.answerIndex) || item.answerIndex < 0 || item.answerIndex > 3) findings.push(`${item.id}: invalid answer index`);
-    if (!item.rationale || String(item.rationale).trim().length < 80) findings.push(`${item.id}: rationale must be at least 80 characters`);
-    if (!Array.isArray(item.choiceRationales) || item.choiceRationales.length !== 4 || item.choiceRationales.some(value => String(value || '').trim().length < 20)) findings.push(`${item.id}: four substantive choice rationales required`);
-    if (!Array.isArray(item.references) || !item.references.length || item.references.some(value => !/^https:\/\//.test(String(value)))) findings.push(`${item.id}: at least one HTTPS reference required`);
-    if (!Array.isArray(item.skillIds) || !item.skillIds.length || !Array.isArray(item.chapterIds) || !item.chapterIds.length) findings.push(`${item.id}: skill and chapter links required`);
-    if (item.authorship !== 'assistant-authored-independent' || item.assistantReviewStatus !== 'reviewed-independent-draft' || item.examItemStatus !== 'assistant-reviewed-independent-draft') findings.push(`${item.id}: independent-draft provenance missing`);
+    const promptKey = canonical(item.prompt);
+    if (!item.prompt || normalizedRawText(item.prompt).length < 35) {
+      findings.push(itemId + ': prompt is missing or too short');
+    } else if (promptKeys.has(promptKey)) {
+      findings.push(itemId + ': duplicates an existing normalized prompt');
+    }
+    promptKeys.add(promptKey);
+    if (item.type !== 'single-choice') findings.push(itemId + ': type must be single-choice');
+    if (!Array.isArray(item.choices) || item.choices.length !== 4
+        || item.choices.some(choice => !normalizedRawText(choice))
+        || new Set(item.choices.map(normalizedRawChoice)).size !== 4) {
+      findings.push(itemId + ': requires four unique nonempty choices');
+    }
+    if (!Number.isInteger(item.answerIndex) || item.answerIndex < 0 || item.answerIndex > 3) {
+      findings.push(itemId + ': invalid answer index');
+    }
+    if (!item.rationale || String(item.rationale).trim().length < 80) {
+      findings.push(itemId + ': rationale must be at least 80 characters');
+    }
+    if (!Array.isArray(item.choiceRationales) || item.choiceRationales.length !== 4
+        || item.choiceRationales.some(value => String(value || '').trim().length < 20)) {
+      findings.push(itemId + ': four substantive choice rationales required');
+    }
+    if (!Array.isArray(item.references) || !item.references.length
+        || new Set(item.references).size !== item.references.length
+        || item.references.some(reference => !validHttpsReference(reference))) {
+      findings.push(itemId + ': unique well-formed HTTPS references are required');
+    } else if (item.references.some(reference => !links.references.has(reference))) {
+      findings.push(itemId + ': reference does not resolve in the released pack/library source inventory');
+    }
+    if (!links.domains.has(item.domainId)) findings.push(itemId + ': unknown domainId ' + item.domainId);
+    if (!Array.isArray(item.skillIds) || item.skillIds.length !== 1
+        || !Array.isArray(item.chapterIds) || item.chapterIds.length !== 1) {
+      findings.push(itemId + ': exactly one skill and chapter link required');
+    } else {
+      const skill = links.skills.get(item.skillIds[0]);
+      const chapter = links.chapters.get(item.chapterIds[0]);
+      if (!skill || !chapter || skill.domainId !== item.domainId || chapter.domainId !== item.domainId
+          || skill.chapterId !== chapter.id || chapter.skillId !== skill.id) {
+        findings.push(itemId + ': skill/chapter link does not resolve within the item domain');
+      }
+    }
+    if (!normalizedRawText(item.difficulty) || (strictMetadata && !normalizedRawText(item.cognitiveLevel))) {
+      findings.push(itemId + ': required difficulty or cognitive level is missing');
+    }
+    if (item.authorship !== 'assistant-authored-independent'
+        || item.editorialReviewer !== 'OpenAI Codex'
+        || item.assistantReviewStatus !== 'reviewed-independent-draft'
+        || item.examItemStatus !== 'assistant-reviewed-independent-draft'
+        || item.reviewStatus !== 'assistant-reviewed-independent-draft'
+        || item.qaStatus !== 'pending-integrated-qa'
+        || item.sourceItemId != null) {
+      findings.push(itemId + ': independent-draft provenance missing or source-derived provenance present');
+    }
     const kernel = contentKernel(item);
-    if (kernels.has(kernel)) findings.push(`${item.id}: duplicates an existing normalized content kernel`);
+    if (kernels.has(kernel)) findings.push(itemId + ': duplicates an existing normalized content kernel');
     kernels.add(kernel);
     for (const prior of prompts) {
-      if (jaccard(item.prompt, prior.prompt) > 0.82) { findings.push(`${item.id}: prompt is too similar to ${prior.id}`); break; }
+      if (jaccard(item.prompt, prior.prompt) > 0.82) {
+        findings.push(itemId + ': prompt is too similar to ' + prior.id);
+        break;
+      }
     }
     prompts.push(item);
   }
-  if (findings.length) throw new Error(`${pack.id}/${batch.id}: authored-batch QA failed: ${findings.slice(0, 12).join('; ')}`);
+  if (findings.length) {
+    throw new Error(pack.id + '/' + batch.id + ': authored-batch QA failed: ' + findings.slice(0, 16).join('; '));
+  }
 }
 
+function validateReviewEvidence(stem, pack, batch, batchNumber, fileName, reportFileName, fileBytes, items, strict) {
+  const label = stem + '/' + batch.id;
+  const reportPath = safeAuthoredFile(reportFileName, label);
+  if (!fs.existsSync(reportPath)) throw new Error(label + ': missing cross-review report ' + reportFileName);
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  if (!report || !Number.isInteger(report.itemCount) || report.itemCount !== items.length
+      || !isPassingReviewStatus(report.verdict)
+      || !/OpenAI Codex independent cross-review/i.test(String(report.reviewer || ''))) {
+    throw new Error(label + ': invalid or non-passing cross-review report ' + reportFileName);
+  }
+  if (strict) {
+    const expectedReviewedFile = 'dev-tools/authored/' + fileName;
+    const blockerPaths = nestedReviewBlockers(report);
+    const binding = report.artifactBinding;
+    const checkStatuses = [];
+    const collectStatuses = value => {
+      if (Array.isArray(value)) value.forEach(collectStatuses);
+      else if (value && typeof value === 'object') {
+        for (const [key, entry] of Object.entries(value)) {
+          if (/status/i.test(key)) checkStatuses.push(String(entry || ''));
+          collectStatuses(entry);
+        }
+      }
+    };
+    collectStatuses(report.checks);
+    const lineByLineReview = Object.values(report.checks || {}).find(check =>
+      check && typeof check === 'object' && Array.isArray(check.reviewedItemIds)
+    );
+    const reviewedItemIds = lineByLineReview?.reviewedItemIds;
+    const expectedItemIds = items.map(item => item.id);
+    const integration = report.integration;
+    if (report.reviewedFile !== expectedReviewedFile
+        || report.reviewedAt !== batch.reviewedAt
+        || !Array.isArray(report.blockers) || report.blockers.length
+        || !Array.isArray(report.correctionsMade)
+        || !report.checks || typeof report.checks !== 'object'
+        || !checkStatuses.length || checkStatuses.some(status => !isPassingReviewStatus(status))
+        || blockerPaths.length
+        || !Array.isArray(reviewedItemIds)
+        || JSON.stringify(reviewedItemIds) !== JSON.stringify(expectedItemIds)
+        || lineByLineReview.reviewedItems !== items.length
+        || !binding || binding.algorithm !== 'sha256'
+        || !/^[a-f0-9]{64}$/i.test(String(binding.sha256 || ''))
+        || binding.sha256.toLowerCase() !== sha256(fileBytes)
+        || !integration || integration.packId !== pack.id
+        || integration.batchNumber !== batchNumber
+        || integration.expectedInsertionTier !== 'assistant-authored-independent'
+        || integration.expectedDiagnosticBankSize !== 100) {
+      throw new Error(label + ': hash-bound review evidence failed for ' + reportFileName);
+    }
+  }
+  return report;
+}
 function reviewItem(item, batch, batchNumber) {
   return {
     ...item,
@@ -268,119 +471,224 @@ function updateQa(stem, pack) {
   }
 }
 
-if (!fs.existsSync(manifestPath)) {
-  console.log('No independent-additions manifest found; no changes applied.');
-  process.exit(0);
+function validReviewedDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+  const date = new Date(value + 'T00:00:00.000Z');
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
 }
 
-const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-if (manifest.schemaVersion !== 1 || !manifest.packs || typeof manifest.packs !== 'object') throw new Error('Independent-additions manifest is invalid');
-let updated = 0;
+function validPackVersion(value) {
+  return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(String(value || ''));
+}
 
-for (const [stem, batches] of Object.entries(manifest.packs)) {
-  if (!Array.isArray(batches) || !batches.length) continue;
-  const packPath = path.join(sourceDir, `${stem}_pack.json`);
-  if (!fs.existsSync(packPath)) throw new Error(`${stem}: pack file not found`);
-  const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
-  if (!Array.isArray(pack.items) || pack.items.length !== 500) throw new Error(`${stem}: expected a 500-activity expanded pack before independent additions`);
+function stagePack(stem, pack, batches, authored, batchEvidence) {
   const base = pack.items.slice(0, 200);
-  const existingGuided = pack.items.filter(item => item.examItemStatus === 'not-approved-as-independent-exam-item');
-  if (existingGuided.length < 100) throw new Error(`${stem}: insufficient guided activities for replacement`);
-  const authored = [];
-  for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-    const batch = batches[batchIndex];
-    if (!batch || !batch.id || !/^\d{4}-\d{2}-\d{2}$/.test(String(batch.reviewedAt || '')) || !Array.isArray(batch.files) || !batch.files.length) throw new Error(`${stem}: invalid authored-batch manifest entry`);
-    if (!Array.isArray(batch.reviewReports) || batch.reviewReports.length !== batch.files.length) throw new Error(`${stem}/${batch.id}: one independent cross-review report is required per authored domain file`);
-    const reviewReports = batch.reviewReports.map(file => {
-      const filePath = path.join(authoredDir, file);
-      if (!fs.existsSync(filePath)) throw new Error(`${stem}/${batch.id}: missing cross-review report ${file}`);
-      const report = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      if (!report || !Number.isInteger(report.itemCount) || !/^pass/i.test(String(report.verdict || '')) || !/independent cross-review/i.test(String(report.reviewer || ''))) throw new Error(`${stem}/${batch.id}: invalid or non-passing cross-review report ${file}`);
-      return report;
-    });
-    if (reviewReports.reduce((sum, report) => sum + report.itemCount, 0) !== 100) throw new Error(`${stem}/${batch.id}: cross-review reports must cover exactly 100 items`);
-    const batchItems = batch.files.flatMap(file => {
-      const filePath = path.join(authoredDir, file);
-      if (!fs.existsSync(filePath)) throw new Error(`${stem}/${batch.id}: missing ${file}`);
-      const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      if (!Array.isArray(parsed)) throw new Error(`${file}: expected a JSON array`);
-      return parsed;
-    });
-    validateAuthoredBatch(pack, batch, batchItems, [...base, ...authored, ...existingGuided]);
-    authored.push(...batchItems.map(item => reviewItem(item, batch, 3 + batchIndex)));
-  }
-  if (authored.length % 100 !== 0 || authored.length > 300) throw new Error(`${stem}: independent additions must be complete 100-item batches up to 300 items`);
   const independentItems = [...base, ...authored];
-  const guidedNeeded = 500 - independentItems.length;
-  if (guidedNeeded < 0 || guidedNeeded % 100 !== 0 || existingGuided.length < guidedNeeded) throw new Error(`${stem}: invalid guided replacement count ${guidedNeeded}`);
-  const guided = existingGuided.slice(0, guidedNeeded);
-  const distinctSourceContentKernels = new Set(base.map(contentKernel)).size;
-  const distinctIndependentContentKernels = new Set(independentItems.map(contentKernel)).size;
-  const parallelSourceVariants = base.length - distinctSourceContentKernels;
-  const parallelIndependentVariants = independentItems.length - distinctIndependentContentKernels;
-  const newIndependentItemsNeeded = 500 - distinctIndependentContentKernels;
-  const sourceDiagnosticBatchCount = 2;
-  const assistantAuthoredIndependentBatchCount = authored.length / 100;
-  const independentDiagnosticBatchCount = sourceDiagnosticBatchCount + assistantAuthoredIndependentBatchCount;
-  const guidedReviewBatchCount = guidedNeeded / 100;
-
-  pack.items = [...independentItems, ...guided];
-  pack.sourceQuestionItems = 200;
-  pack.assistantAuthoredIndependentItems = authored.length;
-  pack.independentPracticeItems = independentItems.length;
-  pack.guidedReviewItems = guidedNeeded;
-  pack.sourceDiagnosticBatchCount = sourceDiagnosticBatchCount;
-  pack.assistantAuthoredIndependentBatchCount = assistantAuthoredIndependentBatchCount;
-  pack.independentDiagnosticBatchCount = independentDiagnosticBatchCount;
-  pack.guidedReviewBatchCount = guidedReviewBatchCount;
-  pack.distinctSourceContentKernels = distinctSourceContentKernels;
-  pack.parallelSourceVariants = parallelSourceVariants;
-  pack.distinctIndependentContentKernels = distinctIndependentContentKernels;
-  pack.parallelIndependentVariants = parallelIndependentVariants;
-  pack.newIndependentItemsNeeded = newIndependentItemsNeeded;
-  pack.expansionVersion = 'source-kernel-audit-plus-independent-batches-and-guided-review-v2';
-  pack.assistantReview = {
-    ...(pack.assistantReview || {}),
-    reviewer: 'OpenAI Codex',
-    lastReviewedAt: batches[batches.length - 1].reviewedAt,
-    structurallyReviewedItems: 500,
-    sourceItems: 200,
+  const sourceKernelCount = new Set(base.map(contentKernel)).size;
+  const independentKernelCount = new Set(independentItems.map(contentKernel)).size;
+  const stagedBankCount = independentItems.length / 100;
+  const reviewedAt = batches[batches.length - 1].reviewedAt;
+  const staged = {
+    ...pack,
+    items: independentItems,
+    sections: [
+      ...Array.from({ length: 2 }, (_, index) => ({
+        id: `diagnostic-batch-${index + 1}`,
+        label: `100-item source diagnostic bank ${index + 1}`,
+        kind: 'source-diagnostic',
+        timeMinutes: null,
+      })),
+      ...batches.map((batch, index) => ({
+        id: batch.id,
+        label: batch.label || `Assistant-reviewed independent diagnostic bank ${index + 3}`,
+        kind: 'independent-diagnostic',
+        timeMinutes: null,
+      })),
+    ],
+    sourceQuestionItems: 200,
     assistantAuthoredIndependentItems: authored.length,
     independentPracticeItems: independentItems.length,
-    distinctSourceContentKernels,
-    parallelSourceVariants,
-    distinctIndependentContentKernels,
-    parallelIndependentVariants,
-    guidedReviewItems: guidedNeeded,
-    independentQuestionTarget: 500,
-    newIndependentItemsNeeded,
-    verdict: newIndependentItemsNeeded ? 'reviewed-target-not-met' : 'reviewed-target-met',
-    independentBatchReview: 'blueprint-key-distractor-feedback-originality-citation-balance-and-structural-review-v1',
-    limitation: 'Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only.',
+    guidedReviewItems: 0,
+    sourceDiagnosticBatchCount: 2,
+    assistantAuthoredIndependentBatchCount: authored.length / 100,
+    independentDiagnosticBatchCount: stagedBankCount,
+    guidedReviewBatchCount: 0,
+    learningActivityBankCount: stagedBankCount,
+    diagnosticBatchCount: stagedBankCount,
+    diagnosticBatchCountSemantics: 'validated-pre-expansion-independent-bank-count',
+    distinctSourceContentKernels: sourceKernelCount,
+    parallelSourceVariants: 200 - sourceKernelCount,
+    distinctIndependentContentKernels: independentKernelCount,
+    parallelIndependentVariants: independentItems.length - independentKernelCount,
+    newIndependentItemsNeeded: 500 - independentKernelCount,
+    expansionVersion: 'independent-additions-staged-v1',
+    independentAdditionStaging: {
+      schemaVersion: 1,
+      status: 'validated-awaiting-final-expansion',
+      manifestSchemaVersion: 2,
+      packId: pack.id,
+      packVersion: pack.version,
+      sourceItems: 200,
+      assistantAuthoredIndependentItems: authored.length,
+      independentPracticeItems: independentItems.length,
+      reviewedAt,
+      reviewEvidenceProfile: batches.every(batch => batch.reviewEvidenceProfile === HASH_BOUND_REVIEW_PROFILE)
+        ? HASH_BOUND_REVIEW_PROFILE
+        : 'legacy-parapro-plus-hash-bound-independent-cross-review-v1',
+      batches: batchEvidence,
+    },
   };
-  pack.version = `0.${4 + assistantAuthoredIndependentBatchCount}.0`;
-  pack.shortTitle = 'ParaPro 1755 practice suite';
-  pack.title = String(pack.title || '').replace(/200 Source Questions \+ (?:\d+ Independent Practice Questions \+ )?\d+ Guided Review/gi, `200 Source Questions + ${authored.length} Independent Practice Questions + ${guidedNeeded} Guided Review`);
-  pack.description = String(pack.description || '')
-    .replace(/^Contains 200 original source questions, \d+ assistant-authored independent practice questions, and \d+ source-derived guided-review activities\. The assistant audit found \d+ distinct independent content kernels\.\s*/i, '')
-    .replace(/^Contains 200 source diagnostic questions and 300 source-derived guided-review tasks;[^.]*\.\s*/i, '');
-  pack.description = `Contains 200 original source questions, ${authored.length} assistant-authored independent practice questions, and ${guidedNeeded} source-derived guided-review activities. The assistant audit found ${distinctIndependentContentKernels} distinct independent content kernels. ${pack.description}`;
-  pack.contentReview = `Assistant audit completed: ${independentItems.length} independent-practice items contain ${distinctIndependentContentKernels} distinct content kernels and ${parallelIndependentVariants} parallel variants under the normalized test. ${guidedNeeded} additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target ${newIndependentItemsNeeded ? 'is not met' : 'is met'}.`;
-  pack.bankDisclosure = `This pack has 500 learning activities: 200 original source questions, ${authored.length} assistant-authored independent practice questions, and ${guidedNeeded} source-derived guided-review activities. It currently contains ${distinctIndependentContentKernels} distinct independent content kernels; ${newIndependentItemsNeeded} newly authored independent questions remain to reach 500.`;
-  pack.sections = [
-    ...Array.from({ length: 2 }, (_, index) => ({ id: `diagnostic-batch-${index + 1}`, label: `100-item source diagnostic bank ${index + 1}`, kind: 'source-diagnostic', timeMinutes: null })),
-    ...batches.map((batch, index) => ({ id: batch.id, label: batch.label || `Assistant-reviewed independent diagnostic bank ${index + 3}`, kind: 'independent-diagnostic', timeMinutes: null })),
-    ...Array.from({ length: guidedReviewBatchCount }, (_, index) => ({ id: `guided-review-bank-${index + 1}`, label: `Guided reasoning review bank ${index + 1}`, kind: 'guided-review', timeMinutes: null })),
-  ];
-  if (pack.sections.length !== 5 || new Set(pack.items.map(item => item.id)).size !== 500 || new Set(pack.items.map(item => item.prompt)).size !== 500) throw new Error(`${stem}: final independent-additions inventory is invalid`);
-  const packJson = JSON.stringify(pack, null, 2) + '\n';
-  const itemsJson = JSON.stringify(pack.items, null, 2) + '\n';
-  for (const dir of [sourceDir, deployDir]) {
-    writeGeneratedFile(path.join(dir, `${stem}_pack.json`), packJson);
-    writeGeneratedFile(path.join(dir, `${stem}_items.json`), itemsJson);
-  }
-  updateQa(stem, pack);
-  updated++;
+  delete staged.assistantReview;
+  delete staged.bankDisclosure;
+  return staged;
 }
 
-console.log(`Applied assistant-reviewed independent additions to ${updated} pack${updated === 1 ? '' : 's'}.`);
+function main() {
+  if (!fs.existsSync(manifestPath)) {
+    console.log('No independent-additions manifest found; no changes applied.');
+    return;
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (manifest.schemaVersion !== 2 || !manifest.packs || typeof manifest.packs !== 'object'
+      || Array.isArray(manifest.packs)
+      || !Array.isArray(manifest.legacyReviewEvidencePacks)
+      || JSON.stringify(manifest.legacyReviewEvidencePacks) !== JSON.stringify([])) {
+    throw new Error('Independent-additions manifest is invalid or permits a legacy review profile');
+  }
+
+  const plans = [];
+  const claimedAuthoredFiles = new Set();
+  for (const [stem, batches] of Object.entries(manifest.packs)) {
+    if (/^eppp/i.test(stem)) throw new Error(stem + ': EPPP additions are outside this pipeline');
+    if (!Array.isArray(batches) || !batches.length || batches.length > 3) {
+      throw new Error(stem + ': one to three complete authored batches are required');
+    }
+    const packPath = path.join(sourceDir, stem + '_pack.json');
+    if (!fs.existsSync(packPath)) throw new Error(stem + ': pack file not found');
+    const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
+    if (!Array.isArray(pack.items) || pack.items.length < 200) {
+      throw new Error(stem + ': expected at least 200 released source items before independent additions');
+    }
+    if (!normalizedRawText(pack.title) || !validPackVersion(pack.version)) {
+      throw new Error(stem + ': a nonempty title and semantic release version are required');
+    }
+    const base = pack.items.slice(0, 200);
+    const authored = [];
+    const batchEvidence = [];
+    const legacyReviewEvidence = manifest.legacyReviewEvidencePacks.includes(stem);
+
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex];
+      const expectedBatchNumber = 3 + batchIndex;
+      const label = stem + '/' + String(batch && batch.id);
+      if (!batch || batch.id !== 'independent-diagnostic-batch-' + expectedBatchNumber
+          || !validReviewedDate(batch.reviewedAt)
+          || batch.expectedPackId !== pack.id
+          || !Array.isArray(batch.files) || !batch.files.length
+          || !Array.isArray(batch.reviewReports) || batch.reviewReports.length !== batch.files.length
+          || (!legacyReviewEvidence && batch.reviewEvidenceProfile !== HASH_BOUND_REVIEW_PROFILE)) {
+        throw new Error(stem + ': invalid authored-batch manifest entry');
+      }
+
+      const batchItems = [];
+      const evidenceFiles = [];
+      let reviewedItemCount = 0;
+      for (let fileIndex = 0; fileIndex < batch.files.length; fileIndex++) {
+        const fileName = batch.files[fileIndex];
+        const reportFileName = batch.reviewReports[fileIndex];
+        const filePath = safeAuthoredFile(fileName, label);
+        safeAuthoredFile(reportFileName, label);
+        const claims = [fileName, reportFileName].map(value => String(value).toLowerCase());
+        if (!fileName.endsWith('.json') || !reportFileName.endsWith('.review.json')
+            || claims[0] === claims[1] || claims.some(value => claimedAuthoredFiles.has(value))) {
+          throw new Error(label + ': authored and review files must be unique JSON artifacts');
+        }
+        claims.forEach(value => claimedAuthoredFiles.add(value));
+        if (!fs.existsSync(filePath)) throw new Error(label + ': missing ' + fileName);
+        const fileBytes = fs.readFileSync(filePath);
+        const parsed = JSON.parse(fileBytes);
+        if (!Array.isArray(parsed) || !parsed.length) {
+          throw new Error(fileName + ': expected a nonempty JSON array');
+        }
+        const report = validateReviewEvidence(
+          stem,
+          pack,
+          batch,
+          expectedBatchNumber,
+          fileName,
+          reportFileName,
+          fileBytes,
+          parsed,
+          !legacyReviewEvidence,
+        );
+        reviewedItemCount += report.itemCount;
+        batchItems.push(...parsed);
+        evidenceFiles.push({
+          file: fileName,
+          reviewReport: reportFileName,
+          itemCount: parsed.length,
+          sha256: sha256(fileBytes),
+        });
+      }
+      if (batchItems.length !== 100 || reviewedItemCount !== 100) {
+        throw new Error(label + ': authored files and cross-review reports must each cover exactly 100 items');
+      }
+      validateAuthoredBatch(stem, pack, batch, batchItems, [...base, ...authored], !legacyReviewEvidence);
+      authored.push(...batchItems.map(item => reviewItem(item, batch, expectedBatchNumber)));
+      batchEvidence.push({
+        id: batch.id,
+        reviewedAt: batch.reviewedAt,
+        reviewEvidenceProfile: batch.reviewEvidenceProfile || 'legacy-parapro-cross-review-v1',
+        files: evidenceFiles,
+      });
+    }
+
+    if (authored.length % 100 !== 0 || authored.length > 300) {
+      throw new Error(stem + ': independent additions must be complete 100-item batches up to 300 items');
+    }
+    const staged = stagePack(stem, pack, batches, authored, batchEvidence);
+    const expectedLength = 200 + authored.length;
+    if (staged.items.length !== expectedLength
+        || staged.sections.length !== expectedLength / 100
+        || new Set(staged.items.map(item => item.id)).size !== expectedLength
+        || new Set(staged.items.map(item => canonical(item.prompt))).size !== expectedLength
+        || Array.from({ length: expectedLength / 100 }, (_, bankIndex) =>
+          [0, 1, 2, 3].every(answerIndex =>
+            staged.items.slice(bankIndex * 100, bankIndex * 100 + 100)
+              .filter(item => item.answerIndex === answerIndex).length === 25
+          )
+        ).some(valid => !valid)) {
+      throw new Error(stem + ': staged independent-additions inventory is invalid');
+    }
+    plans.push({ stem, pack: staged });
+  }
+
+  if (process.argv.includes('--check')) {
+    console.log(`Validated independent additions for ${plans.length} pack${plans.length === 1 ? '' : 's'} without writing release files.`);
+    return;
+  }
+
+  // Write only after every manifest entry, artifact, and cross-review has passed.
+  for (const plan of plans) {
+    const packJson = JSON.stringify(plan.pack, null, 2) + '\n';
+    const itemsJson = JSON.stringify(plan.pack.items, null, 2) + '\n';
+    for (const dir of [sourceDir, deployDir]) {
+      writeGeneratedFile(path.join(dir, plan.stem + '_pack.json'), packJson);
+      writeGeneratedFile(path.join(dir, plan.stem + '_items.json'), itemsJson);
+    }
+  }
+  for (const plan of plans) {
+    for (const name of [plan.stem + '_pack.json', plan.stem + '_items.json']) {
+      const sourceFile = path.join(sourceDir, name);
+      const deployFile = path.join(deployDir, name);
+      if (!fs.readFileSync(sourceFile).equals(fs.readFileSync(deployFile))) {
+        throw new Error(plan.stem + ': source/deploy parity failed for ' + name);
+      }
+    }
+  }
+  console.log(`Validated and staged independent additions for ${plans.length} pack${plans.length === 1 ? '' : 's'} before final 500-activity expansion.`);
+}
+
+if (require.main === module) main();
+module.exports = { canonical, contentKernel, normalizeMathOperators, validPackVersion };

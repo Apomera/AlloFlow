@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:45.591Z",
+  "generatedAt": "2026-07-19T05:08:57.104Z",
   "libraryId": "praxis-special-education-early-childhood-5692-learning-library",
   "packId": "praxis-special-education-early-childhood-5692",
   "title": "Praxis Special Education: Early Childhood/Early Intervention (5692) learning library",
@@ -257,7 +257,7 @@
         },
         {
           "id": "se5692-ch-01-check-03",
-          "prompt": "A early childhood special educator wants to understand a young child’s self-regulation needs. Which information is most useful?",
+          "prompt": "An early childhood special educator wants to understand a young child's self-regulation needs. Which information is most useful?",
           "choices": [
             "A single global rating completed months ago.",
             "The disability category without current observations.",
@@ -284,7 +284,7 @@
             "Language access may be affecting the demonstration of knowledge, so the team should gather culturally and linguistically appropriate evidence."
           ],
           "answerIndex": 3,
-          "rationale": "Difference is not disability. The team should distinguish language acquisition and access from disability by using multiple methods, appropriate language supports, and information about performance in the young child’s languages. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Difference is not disability. The team should distinguish language acquisition and access from disability by using multiple methods, appropriate language supports, and information about performance in the young child's languages. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -297,13 +297,13 @@
           "id": "se5692-ch-01-check-05",
           "prompt": "A young child with a disability is embarrassed when an adult uses babyish materials for a functional routine. What principle should guide revision?",
           "choices": [
-            "Use age-respectful materials while matching the instructional steps and supports to the young child’s current needs.",
+            "Use age-respectful materials while matching the instructional steps and supports to the young child's current needs.",
             "Match all materials to developmental level regardless of age.",
             "Stop teaching functional skills until grade-level mastery is reached.",
             "Ask peers to complete the routine for the young child."
           ],
           "answerIndex": 0,
-          "rationale": "Instruction can be individualized without sacrificing dignity. Materials and contexts should be chronological-age respectful, while prompts, task steps, and response modes are adapted to the young child’s present performance. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Instruction can be individualized without sacrificing dignity. Materials and contexts should be chronological-age respectful, while prompts, task steps, and response modes are adapted to the young child's present performance. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -417,7 +417,7 @@
             "Replace instruction with permanent adult completion."
           ],
           "answerIndex": 0,
-          "rationale": "Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the young child’s actual pattern of strengths and needs, not a global assumption. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the young child's actual pattern of strengths and needs, not a global assumption. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -490,7 +490,7 @@
             "Information about both intellectual functioning and adaptive behavior across conceptual, social, and practical domains.",
             "A reading score by itself.",
             "Physical appearance and medical history only.",
-            "The expectations of one inclusive early-learning setting without other contexts."
+            "The expectations of one classroom without other contexts."
           ],
           "answerIndex": 0,
           "rationale": "Intellectual disability involves limitations in intellectual functioning and adaptive behavior. Educational planning therefore considers functional conceptual, social, and practical performance across relevant environments. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
@@ -599,7 +599,7 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-03-check-01",
-          "prompt": "A young child has a documented seizure action plan. During a inclusive early-learning setting seizure, what should staff do first?",
+          "prompt": "A young child has a documented seizure action plan. During a seizure in the program, what should trained staff do first?",
           "choices": [
             "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
             "Create a new response based on what seems convenient.",
@@ -607,7 +607,7 @@
             "Delay action until a family member can be reached."
           ],
           "answerIndex": 0,
-          "rationale": "Health supports in early intervention or school program must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Health support in an early-childhood program or school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -656,15 +656,15 @@
         },
         {
           "id": "se5692-ch-03-check-04",
-          "prompt": "A early intervention or school program places every young child with a particular disability in the same separate inclusive early-learning setting. What is the central problem?",
+          "prompt": "A preschool program automatically places every child with a given disability in a separate class. What is the central IDEA Part B concern?",
           "choices": [
-            "Separate placement is always prohibited.",
-            "Parents alone must select the inclusive early-learning setting without a team process.",
-            "Placement can never change after the initial decision.",
-            "Placement must be individually determined from the IFSP or IEP and LRE requirements, not automatically assigned by category."
+            "IDEA Part B prohibits every separate placement regardless of individual need.",
+            "One parent must select placement without an IEP team decision.",
+            "A preschool placement can never change after the initial decision.",
+            "The IEP team must determine placement individually and educate the child with nondisabled peers to the maximum extent appropriate under LRE requirements."
           ],
           "answerIndex": 3,
-          "rationale": "IDEA requires an individualized placement decision based on the IFSP or IEP and least restrictive environment requirements. A continuum must be available, but no point on it is automatic for a category. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Under IDEA Part B, the IEP team makes an individualized placement decision after developing the IEP and applies least restrictive environment requirements. A continuum must be available, but no setting is automatic for a disability category. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -675,7 +675,7 @@
         },
         {
           "id": "se5692-ch-03-check-05",
-          "prompt": "Fluorescent glare and hallway noise interfere with a young child’s sustained work. Which response is most appropriate?",
+          "prompt": "Fluorescent glare and hallway noise interfere with a young child's sustained work. Which response is most appropriate?",
           "choices": [
             "Document the conditions, provide an individualized environmental support, and monitor whether access and participation improve.",
             "Remove all academic demands whenever the young child is uncomfortable.",
@@ -814,7 +814,7 @@
         },
         {
           "id": "se5692-ch-04-check-02",
-          "prompt": "Which IFSP or IEP goal is measurable?",
+          "prompt": "Which IEP goal is measurable?",
           "choices": [
             "The young child will improve reading fluency.",
             "Given a 150-word instructional-level passage, the young child will read at least 120 correct words per minute on three consecutive weekly probes.",
@@ -834,7 +834,7 @@
         },
         {
           "id": "se5692-ch-04-check-03",
-          "prompt": "An IFSP or IEP contains a measurable goal but no description of how progress will be measured. What is missing?",
+          "prompt": "An IEP contains a measurable goal but no description of how progress will be measured. What is missing?",
           "choices": [
             "A guarantee that the young child will meet the goal.",
             "A comparison with every classmate each week.",
@@ -842,7 +842,7 @@
             "A new disability category for each skill deficit."
           ],
           "answerIndex": 2,
-          "rationale": "IDEA requires the IFSP or IEP to describe how progress toward annual goals will be measured and when periodic reports will be provided. A goal without a monitoring plan is incomplete for decision making. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "IDEA requires the IEP to describe how progress toward annual goals will be measured and when periodic reports will be provided. A goal without a monitoring plan is incomplete for decision making. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -854,7 +854,7 @@
         },
         {
           "id": "se5692-ch-04-check-04",
-          "prompt": "A young child’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+          "prompt": "A young child's goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
           "choices": [
             "Keep the mismatch because services and goals are unrelated sections.",
             "Delete the goal rather than examine the program.",
@@ -862,7 +862,7 @@
             "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal."
           ],
           "answerIndex": 3,
-          "rationale": "IFSP or IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -989,7 +989,7 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-05-check-01",
-          "prompt": "A early childhood special educator introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
+          "prompt": "An early childhood special educator introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
           "choices": [
             "A clear model-guided practice-independent practice sequence with frequent checks and corrective feedback.",
             "Discovery learning with no initial explanation.",
@@ -997,7 +997,7 @@
             "Unstructured repetition of the same worksheet."
           ],
           "answerIndex": 0,
-          "rationale": "Explicit instruction makes the target and thinking visible, sequences examples, elicits frequent responses, provides feedback, and transfers responsibility as young childs demonstrate readiness. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Explicit instruction makes the target and thinking visible, sequences examples, elicits frequent responses, provides feedback, and transfers responsibility as young children demonstrate readiness. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -1016,7 +1016,7 @@
             "To replace instruction with a written test."
           ],
           "answerIndex": 1,
-          "rationale": "Task analysis identifies the component steps and their sequence. The early childhood special educator can then select a chaining approach, teach missing steps, record performance, and fade prompts toward independence. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Task analysis identifies the component steps and their sequence. The educator can then select a chaining approach, teach missing steps, record performance, and fade prompts toward independent participation in the routine. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -1050,7 +1050,7 @@
           "choices": [
             "Create a separate lower goal for every young child before instruction.",
             "Offer many decorative choices unrelated to the goal.",
-            "Wait until young childs fail before considering access.",
+            "Wait until young children fail before considering access.",
             "Define a clear goal, anticipate barriers, and offer purposeful options for engagement, representation, and action or expression."
           ],
           "answerIndex": 3,
@@ -1183,11 +1183,11 @@
           "choices": [
             "Use current learning data and the purpose of the lesson, then regroup as needs and performance change.",
             "Use disability categories as permanent reading groups.",
-            "Group young childs by perceived motivation only.",
+            "Group young children by perceived motivation only.",
             "Keep the same groups all year to avoid new data."
           ],
           "answerIndex": 0,
-          "rationale": "Flexible grouping is purposeful and temporary. Recent performance, task goals, and needed intensity guide membership, and ongoing evidence indicates when young childs should move or the group focus should change. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Flexible grouping is purposeful and temporary. Recent performance, task goals, and needed intensity guide membership, and ongoing evidence indicates when young children should move or the group focus should change. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -1238,9 +1238,9 @@
           "id": "se5692-ch-06-check-04",
           "prompt": "A young child tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
           "choices": [
-            "The young child’s personality type.",
+            "The young child's personality type.",
             "Whether the behavior annoys adults.",
-            "A list of consequences used with other young childs.",
+            "A list of consequences used with other young children.",
             "The antecedent task, the observable behavior, and the consequence of escaping or delaying the work."
           ],
           "answerIndex": 3,
@@ -1369,9 +1369,9 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-07-check-01",
-          "prompt": "A early childhood special educator wants to increase engagement during review. Which change is most likely to help?",
+          "prompt": "An early childhood special educator wants to increase engagement during review. Which change is most likely to help?",
           "choices": [
-            "Build frequent, varied opportunities for all young childs to respond and give brief feedback.",
+            "Build frequent, varied opportunities for all young children to respond and give brief feedback.",
             "Extend the lecture and reduce questions.",
             "Call only on the quickest volunteer.",
             "Assign the review as punishment after class."
@@ -1429,7 +1429,7 @@
           "prompt": "A young child becomes distressed when activities end without warning. Which support is most preventive?",
           "choices": [
             "Deliver consequences after every missed cue without teaching.",
-            "Eliminate all transitions from the early intervention or school program day.",
+            "Eliminate all transitions from the school day.",
             "Ask same-age peers to physically move the young child.",
             "Use a predictable transition cue, visual schedule, brief preview of changes, and explicit practice of the transition routine."
           ],
@@ -1588,8 +1588,8 @@
           "choices": [
             "Face validity alone.",
             "Reliability or consistency of measurement and scoring.",
-            "The young child’s eligibility category.",
-            "The length of the IFSP or IEP."
+            "The young child's eligibility category.",
+            "The length of the IEP."
           ],
           "answerIndex": 1,
           "rationale": "Reliability concerns consistency across occasions, forms, items, or raters as relevant. Large unexplained variation weakens confidence that score changes reflect actual performance rather than measurement error. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
@@ -1784,7 +1784,7 @@
         },
         {
           "id": "se5692-ch-09-check-02",
-          "prompt": "A early intervention or school program says it will not evaluate a young child until every tier of intervention has been completed. What is the problem?",
+          "prompt": "A school says it will not evaluate a young child until every tier of intervention has been completed. What is the problem?",
           "choices": [
             "Intervention is prohibited once an evaluation is considered.",
             "Response-to-intervention procedures may not be used to delay or deny a timely evaluation when disability is suspected.",
@@ -1806,7 +1806,7 @@
           "id": "se5692-ch-09-check-03",
           "prompt": "What is the role of parent information in an evaluation?",
           "choices": [
-            "Exclude it because only early intervention or school program data count.",
+            "Exclude it because only school data count.",
             "Accept it as the sole criterion for eligibility.",
             "Treat it as relevant evidence within the required variety of functional, developmental, and academic information.",
             "Use it only after placement has been decided."
@@ -1959,7 +1959,7 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-10-check-01",
-          "prompt": "A young child’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
+          "prompt": "A young child's weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
           "choices": [
             "The trend is below the desired rate of improvement, so implementation and instruction should be reviewed rather than waiting for the annual meeting.",
             "The most recent one-point increase proves the goal will be met.",
@@ -1999,7 +1999,7 @@
           "id": "se5692-ch-10-check-03",
           "prompt": "How often should progress be measured for a young child receiving an intensive intervention?",
           "choices": [
-            "Only at the annual IFSP or IEP meeting.",
+            "Only at the annual IEP meeting.",
             "On a fixed schedule unrelated to the skill or intervention intensity.",
             "Frequently enough with a sensitive, repeatable measure to detect meaningful growth and support timely decisions.",
             "Every day using a different unvalidated task."
@@ -2035,7 +2035,7 @@
         },
         {
           "id": "se5692-ch-10-check-05",
-          "prompt": "A young child’s answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
+          "prompt": "A young child's answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
           "choices": [
             "Teach the specific decision or comprehension process revealed by the error pattern and monitor that component.",
             "Repeat practice on the already accurate component only.",
@@ -2154,15 +2154,15 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-11-check-01",
-          "prompt": "What does FAPE require at a foundational level under IDEA?",
+          "prompt": "Under IDEA Part B, what does FAPE require for an eligible preschool- or school-age child?",
           "choices": [
-            "Eligible young childs receive special education and related services at public expense through an appropriately developed and implemented IFSP or IEP.",
-            "Schools guarantee that every young child reaches the same achievement level.",
-            "Families must pay for required related services.",
-            "A disability label alone determines a standard program."
+            "Special education and related services are provided at public expense through an appropriately developed and implemented IEP that meets Part B requirements.",
+            "The school guarantees that every child reaches the same achievement level.",
+            "The family pays for related services required by the IEP.",
+            "A disability label alone determines one standard program."
           ],
           "answerIndex": 0,
-          "rationale": "FAPE concerns an individualized public educational program and required services provided without charge under IDEA procedures. It does not promise a specific score or justify a category-based program. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "FAPE is an IDEA Part B requirement for eligible children and is delivered through an appropriately developed and implemented IEP; it does not guarantee a particular score. IDEA Part C separately provides eligible infants and toddlers early-intervention services through an IFSP. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -2174,15 +2174,15 @@
         },
         {
           "id": "se5692-ch-11-check-02",
-          "prompt": "A early intervention or school program suspects a disability in a young child who is passing classes with extensive informal help. What duty remains relevant?",
+          "prompt": "A preschooler participates successfully only because adults provide extensive informal support, and the team suspects a disability. Which IDEA duty remains relevant?",
           "choices": [
-            "Only families may initiate concern.",
-            "Child Find requires identification, location, and evaluation of children who may need special education, including those advancing grade to grade.",
-            "Passing grades eliminate any evaluation responsibility.",
-            "The duty begins only after a young child fails a course."
+            "Only families may initiate a concern about possible eligibility.",
+            "Child Find requires the responsible Part C or Part B agency to identify, locate, and evaluate or assess children who may be eligible; mobility or informal support does not remove that duty.",
+            "Successful participation with extensive informal help eliminates every evaluation or assessment duty.",
+            "The responsible agency may wait until the child fails an age-appropriate activity."
           ],
           "answerIndex": 1,
-          "rationale": "Child Find is an affirmative obligation and is not limited to young childs who are failing or already referred. The early intervention or school program should follow screening, referral, notice, consent, and evaluation procedures as appropriate. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Child Find is an affirmative responsibility under both IDEA Part C and Part B. The responsible lead agency or public agency follows the age-applicable referral, screening, evaluation or assessment, consent, notice, and timeline procedures rather than waiting for failure. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -2194,12 +2194,12 @@
         },
         {
           "id": "se5692-ch-11-check-03",
-          "prompt": "A district proposes changing a young child’s placement. What procedural communication is required?",
+          "prompt": "A district proposes changing a young child's placement. What procedural communication is required?",
           "choices": [
             "An informal verbal message after the change occurs.",
             "A public announcement naming the young child.",
             "Prior written notice describing the proposed or refused action, the reasons, evidence considered, and other required information.",
-            "No explanation when the early intervention or school program believes its choice is correct."
+            "No explanation when the school believes its choice is correct."
           ],
           "answerIndex": 2,
           "rationale": "Prior written notice supports informed participation by documenting what the agency proposes or refuses and why, the records or assessments used, alternatives considered, and available safeguards. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
@@ -2214,11 +2214,11 @@
         },
         {
           "id": "se5692-ch-11-check-04",
-          "prompt": "A early childhood special educator wants to discuss a young child’s IFSP or IEP in a public elevator with a colleague who does not serve the young child. What should the early childhood special educator do?",
+          "prompt": "An early childhood special educator wants to discuss a young child's IEP in a public elevator with a colleague who does not serve the young child. What should the early childhood special educator do?",
           "choices": [
-            "Share the information because all early intervention or school program employees are entitled to it.",
-            "Post the IFSP or IEP summary where substitutes and visitors can read it.",
-            "Remove the young child’s name but include enough details for easy identification.",
+            "Share the information because all school employees are entitled to it.",
+            "Post the IEP summary where substitutes and visitors can read it.",
+            "Remove the young child's name but include enough details for easy identification.",
             "Protect confidentiality and discuss educational records only through authorized, private channels with people who have a legitimate role."
           ],
           "answerIndex": 3,
@@ -2242,7 +2242,7 @@
             "Section 504 is limited to physical access in buildings."
           ],
           "answerIndex": 0,
-          "rationale": "Section 504 is a civil-rights law distinct from IDEA eligibility. It protects qualified young childs from disability discrimination and can require an appropriate plan of access supports. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Section 504 is a civil-rights law distinct from IDEA eligibility. It protects qualified young children from disability discrimination and can require an appropriate plan of access supports. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -2354,15 +2354,15 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-12-check-01",
-          "prompt": "A young child’s occupational therapist recommends a inclusive early-learning setting positioning support. How should the early childhood special educator proceed?",
+          "prompt": "A young child's occupational therapist recommends a classroom positioning support. How should the early childhood special educator proceed?",
           "choices": [
             "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data.",
             "Use the strategy only during therapy sessions.",
             "Modify the recommendation without informing the specialist.",
-            "Ask the specialist to take full responsibility for inclusive early-learning setting learning."
+            "Ask the specialist to take full responsibility for classroom learning."
           ],
           "answerIndex": 0,
-          "rationale": "Related services support educational access. Coordination connects specialist expertise with inclusive early-learning setting routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -2374,7 +2374,7 @@
         },
         {
           "id": "se5692-ch-12-check-02",
-          "prompt": "How can a young child contribute meaningfully to an IFSP or IEP meeting?",
+          "prompt": "How can a young child contribute meaningfully to an IEP meeting?",
           "choices": [
             "Give the young child a scripted statement with no opportunity for choice.",
             "Teach the young child to describe strengths, needs, preferences, goals, and helpful supports using an accessible communication format.",
@@ -2382,7 +2382,7 @@
             "Ask the young child to attend without explaining the meeting."
           ],
           "answerIndex": 1,
-          "rationale": "young child participation supports self-determination when young childs understand the process and can communicate preferences, evaluate supports, and contribute to goals with whatever access tools they need. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
+          "rationale": "Young child participation supports self-determination when young children understand the process and can communicate preferences, evaluate supports, and contribute to goals with whatever access tools they need. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
             "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
@@ -2417,9 +2417,9 @@
           "prompt": "Which reflection question is most useful after an instructional unit?",
           "choices": [
             "Did I cover every slide in the presentation?",
-            "Did young childs appear to like me?",
+            "Did young children appear to like me?",
             "Can I attribute all missed goals to young child motivation?",
-            "Which young childs met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?"
+            "Which young children met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?"
           ],
           "answerIndex": 3,
           "rationale": "Professional reflection links educator actions to observable young child outcomes and implementation evidence. It identifies a specific change to test instead of relying on coverage, popularity, or blame. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
@@ -2434,7 +2434,7 @@
         },
         {
           "id": "se5692-ch-12-check-05",
-          "prompt": "How should a early childhood special educator choose professional development?",
+          "prompt": "How should an early childhood special educator choose professional development?",
           "choices": [
             "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on young child evidence.",
             "Attend any available session regardless of relevance.",
@@ -2492,7 +2492,7 @@
       "chapterId": "se5692-ch-01",
       "skillId": "development-patterns-context",
       "domainId": "child-development-early-learning",
-      "front": "A early childhood special educator wants to understand a young child’s self-regulation needs. Which information is most useful?",
+      "front": "An early childhood special educator wants to understand a young child's self-regulation needs. Which information is most useful?",
       "back": "Observations of triggers, strategies used, recovery, and successful conditions across routines.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2523,7 +2523,7 @@
       "skillId": "development-patterns-context",
       "domainId": "child-development-early-learning",
       "front": "A young child with a disability is embarrassed when an adult uses babyish materials for a functional routine. What principle should guide revision?",
-      "back": "Use age-respectful materials while matching the instructional steps and supports to the young child’s current needs.",
+      "back": "Use age-respectful materials while matching the instructional steps and supports to the young child's current needs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -2642,7 +2642,7 @@
       "chapterId": "se5692-ch-03",
       "skillId": "adaptive-inclusive-access",
       "domainId": "curriculum-planning-instruction",
-      "front": "A young child has a documented seizure action plan. During a inclusive early-learning setting seizure, what should staff do first?",
+      "front": "A young child has a documented seizure action plan. During a seizure in the program, what should trained staff do first?",
       "back": "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2687,8 +2687,8 @@
       "chapterId": "se5692-ch-03",
       "skillId": "adaptive-inclusive-access",
       "domainId": "curriculum-planning-instruction",
-      "front": "A early intervention or school program places every young child with a particular disability in the same separate inclusive early-learning setting. What is the central problem?",
-      "back": "Placement must be individually determined from the IFSP or IEP and LRE requirements, not automatically assigned by category.",
+      "front": "A preschool program automatically places every child with a given disability in a separate class. What is the central IDEA Part B concern?",
+      "back": "The IEP team must determine placement individually and educate the child with nondisabled peers to the maximum extent appropriate under LRE requirements.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -2702,7 +2702,7 @@
       "chapterId": "se5692-ch-03",
       "skillId": "adaptive-inclusive-access",
       "domainId": "curriculum-planning-instruction",
-      "front": "Fluorescent glare and hallway noise interfere with a young child’s sustained work. Which response is most appropriate?",
+      "front": "Fluorescent glare and hallway noise interfere with a young child's sustained work. Which response is most appropriate?",
       "back": "Document the conditions, provide an individualized environmental support, and monitor whether access and participation improve.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2717,7 +2717,7 @@
       "chapterId": "se5692-ch-03",
       "skillId": "adaptive-inclusive-access",
       "domainId": "curriculum-planning-instruction",
-      "front": "A young child has a documented seizure action plan. During a inclusive early-learning setting seizure, what should staff do first?",
+      "front": "A young child has a documented seizure action plan. During a seizure in the program, what should trained staff do first?",
       "back": "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2748,7 +2748,7 @@
       "chapterId": "se5692-ch-04",
       "skillId": "ifsp-iep-individualized-planning",
       "domainId": "curriculum-planning-instruction",
-      "front": "Which IFSP or IEP goal is measurable?",
+      "front": "Which IEP goal is measurable?",
       "back": "Given a 150-word instructional-level passage, the young child will read at least 120 correct words per minute on three consecutive weekly probes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2764,7 +2764,7 @@
       "chapterId": "se5692-ch-04",
       "skillId": "ifsp-iep-individualized-planning",
       "domainId": "curriculum-planning-instruction",
-      "front": "An IFSP or IEP contains a measurable goal but no description of how progress will be measured. What is missing?",
+      "front": "An IEP contains a measurable goal but no description of how progress will be measured. What is missing?",
       "back": "The measurement method and schedule for periodic progress reports.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2780,7 +2780,7 @@
       "chapterId": "se5692-ch-04",
       "skillId": "ifsp-iep-individualized-planning",
       "domainId": "curriculum-planning-instruction",
-      "front": "A young child’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
+      "front": "A young child's goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
       "back": "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2812,7 +2812,7 @@
       "chapterId": "se5692-ch-04",
       "skillId": "ifsp-iep-individualized-planning",
       "domainId": "curriculum-planning-instruction",
-      "front": "During IFSP or IEP development, when should assistive technology be considered?",
+      "front": "During IEP development, when should assistive technology be considered?",
       "back": "The team should consider whether assistive technology devices or services are needed for the individual young child.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -2828,7 +2828,7 @@
       "chapterId": "se5692-ch-05",
       "skillId": "instruction-intervention-routines",
       "domainId": "curriculum-planning-instruction",
-      "front": "A early childhood special educator introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
+      "front": "An early childhood special educator introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
       "back": "A clear model-guided practice-independent practice sequence with frequent checks and corrective feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3008,8 +3008,8 @@
       "chapterId": "se5692-ch-07",
       "skillId": "functional-behavior-evidence",
       "domainId": "assessment",
-      "front": "A early childhood special educator wants to increase engagement during review. Which change is most likely to help?",
-      "back": "Build frequent, varied opportunities for all young childs to respond and give brief feedback.",
+      "front": "An early childhood special educator wants to increase engagement during review. Which change is most likely to help?",
+      "back": "Build frequent, varied opportunities for all young children to respond and give brief feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -3083,8 +3083,8 @@
       "chapterId": "se5692-ch-07",
       "skillId": "functional-behavior-evidence",
       "domainId": "assessment",
-      "front": "A early childhood special educator wants to increase engagement during review. Which change is most likely to help?",
-      "back": "Build frequent, varied opportunities for all young childs to respond and give brief feedback.",
+      "front": "An early childhood special educator wants to increase engagement during review. Which change is most likely to help?",
+      "back": "Build frequent, varied opportunities for all young children to respond and give brief feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -3178,7 +3178,7 @@
       "chapterId": "se5692-ch-08",
       "skillId": "assessment-quality-progress",
       "domainId": "assessment",
-      "front": "A reading assessment is intended to measure comprehension, but a young child’s documented motor disability prevents use of the response booklet. What is the best response?",
+      "front": "A reading assessment is intended to measure comprehension, but a young child's documented motor disability prevents use of the response booklet. What is the best response?",
       "back": "Provide an appropriate response accommodation that removes the motor barrier without changing the content construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3210,7 +3210,7 @@
       "chapterId": "se5692-ch-09",
       "skillId": "evaluation-family-input",
       "domainId": "partnering-collaborating",
-      "front": "A early intervention or school program says it will not evaluate a young child until every tier of intervention has been completed. What is the problem?",
+      "front": "A school says it will not evaluate a young child until every tier of intervention has been completed. What is the problem?",
       "back": "Response-to-intervention procedures may not be used to delay or deny a timely evaluation when disability is suspected.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3290,7 +3290,7 @@
       "chapterId": "se5692-ch-10",
       "skillId": "team-coordination-transitions",
       "domainId": "partnering-collaborating",
-      "front": "A young child’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
+      "front": "A young child's weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
       "back": "The trend is below the desired rate of improvement, so implementation and instruction should be reviewed rather than waiting for the annual meeting.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3350,7 +3350,7 @@
       "chapterId": "se5692-ch-10",
       "skillId": "team-coordination-transitions",
       "domainId": "partnering-collaborating",
-      "front": "A young child’s answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
+      "front": "A young child's answers show accurate computation but frequent errors choosing the operation in word problems. What should instruction address?",
       "back": "Teach the specific decision or comprehension process revealed by the error pattern and monitor that component.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3365,7 +3365,7 @@
       "chapterId": "se5692-ch-10",
       "skillId": "team-coordination-transitions",
       "domainId": "partnering-collaborating",
-      "front": "Outcome data improve only in inclusive early-learning settings where the intervention steps are followed. What does this suggest?",
+      "front": "Outcome data improve only in classrooms where the intervention steps are followed. What does this suggest?",
       "back": "Implementation fidelity may be contributing to different outcomes and must be considered before changing the intervention theory.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3380,8 +3380,8 @@
       "chapterId": "se5692-ch-11",
       "skillId": "rights-ethics-equity",
       "domainId": "legal-ethical-professionalism",
-      "front": "What does FAPE require at a foundational level under IDEA?",
-      "back": "Eligible young childs receive special education and related services at public expense through an appropriately developed and implemented IFSP or IEP.",
+      "front": "Under IDEA Part B, what does FAPE require for an eligible preschool- or school-age child?",
+      "back": "Special education and related services are provided at public expense through an appropriately developed and implemented IEP that meets Part B requirements.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -3396,8 +3396,8 @@
       "chapterId": "se5692-ch-11",
       "skillId": "rights-ethics-equity",
       "domainId": "legal-ethical-professionalism",
-      "front": "A early intervention or school program suspects a disability in a young child who is passing classes with extensive informal help. What duty remains relevant?",
-      "back": "Child Find requires identification, location, and evaluation of children who may need special education, including those advancing grade to grade.",
+      "front": "A preschooler participates successfully only because adults provide extensive informal support, and the team suspects a disability. Which IDEA duty remains relevant?",
+      "back": "Child Find requires the responsible Part C or Part B agency to identify, locate, and evaluate or assess children who may be eligible; mobility or informal support does not remove that duty.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -3412,7 +3412,7 @@
       "chapterId": "se5692-ch-11",
       "skillId": "rights-ethics-equity",
       "domainId": "legal-ethical-professionalism",
-      "front": "A district proposes changing a young child’s placement. What procedural communication is required?",
+      "front": "A district proposes changing a young child's placement. What procedural communication is required?",
       "back": "Prior written notice describing the proposed or refused action, the reasons, evidence considered, and other required information.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3428,7 +3428,7 @@
       "chapterId": "se5692-ch-11",
       "skillId": "rights-ethics-equity",
       "domainId": "legal-ethical-professionalism",
-      "front": "A early childhood special educator wants to discuss a young child’s IFSP or IEP in a public elevator with a colleague who does not serve the young child. What should the early childhood special educator do?",
+      "front": "An early childhood special educator wants to discuss a young child's IEP in a public elevator with a colleague who does not serve the young child. What should the early childhood special educator do?",
       "back": "Protect confidentiality and discuss educational records only through authorized, private channels with people who have a legitimate role.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3476,7 +3476,7 @@
       "chapterId": "se5692-ch-12",
       "skillId": "professional-practice-collaboration",
       "domainId": "legal-ethical-professionalism",
-      "front": "A young child’s occupational therapist recommends a inclusive early-learning setting positioning support. How should the early childhood special educator proceed?",
+      "front": "A young child's occupational therapist recommends a classroom positioning support. How should the early childhood special educator proceed?",
       "back": "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3492,7 +3492,7 @@
       "chapterId": "se5692-ch-12",
       "skillId": "professional-practice-collaboration",
       "domainId": "legal-ethical-professionalism",
-      "front": "How can a young child contribute meaningfully to an IFSP or IEP meeting?",
+      "front": "How can a young child contribute meaningfully to an IEP meeting?",
       "back": "Teach the young child to describe strengths, needs, preferences, goals, and helpful supports using an accessible communication format.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3525,7 +3525,7 @@
       "skillId": "professional-practice-collaboration",
       "domainId": "legal-ethical-professionalism",
       "front": "Which reflection question is most useful after an instructional unit?",
-      "back": "Which young childs met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
+      "back": "Which young children met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -3540,7 +3540,7 @@
       "chapterId": "se5692-ch-12",
       "skillId": "professional-practice-collaboration",
       "domainId": "legal-ethical-professionalism",
-      "front": "How should a early childhood special educator choose professional development?",
+      "front": "How should an early childhood special educator choose professional development?",
       "back": "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on young child evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [

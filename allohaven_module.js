@@ -426,6 +426,7 @@
   // Single key, JSON-serialized state object. Read once on mount,
   // write on every state change.
   var STORAGE_KEY = 'alloflow_allohaven_v1';
+  var CLASSROOM_REWARD_INBOX_KEY = 'alloflow_allohaven_classroom_reward_inbox_v1';
   var STUDENT_PROGRESS_SUMMARY_KEY = 'alloflow_student_progress_summary';
   var STUDENT_ARTIFACTS_KEY = 'alloflow_student_artifacts';
   // STEM Lab's shared persistence key — used to read inherited theme from
@@ -457,6 +458,153 @@
     }
   }
 
+
+  // Live-session recognition arrives through a small local inbox owned by the
+  // core shell. AlloHaven consumes it when opened (or immediately while open),
+  // then records each award in the same append-only earnings ledger as focus,
+  // reflection, and memory rewards. rewardId makes delivery idempotent across
+  // reconnects and repeated session snapshots.
+  function normalizeClassroomReward(reward) {
+    if (!reward || typeof reward !== 'object' || Array.isArray(reward)) return null;
+    var rewardId = String(reward.id || '');
+    var reasonId = String(reward.reasonId || '');
+    var allowedReasons = {
+      ready_to_learn: 1,
+      used_support: 1,
+      reengaged: 1,
+      collaboration: 1,
+      repaired_harm: 1,
+      self_regulation: 1,
+      goal_progress: 1
+    };
+    var amount = Math.floor(Number(reward.amount) || 0);
+    var at = Number(reward.at) || 0;
+    if (!/^[A-Za-z0-9_-]{8,80}$/.test(rewardId)) return null;
+    if (!allowedReasons[reasonId]) return null;
+    if (amount < 1 || amount > 2) return null;
+    if (!isFinite(at) || at < 1) return null;
+    return { id: rewardId, reasonId: reasonId, amount: amount, at: at };
+  }
+
+  function applyClassroomRewards(state, rewards) {
+    var prev = (state && typeof state === 'object') ? state : {};
+    var earnings = Array.isArray(prev.earnings) ? prev.earnings : [];
+    var seen = {};
+    earnings.forEach(function(entry) {
+      var id = entry && entry.metadata && entry.metadata.rewardId;
+      if (id) seen[String(id)] = true;
+    });
+    var applied = [];
+    var nextEarnings = earnings.slice();
+    (Array.isArray(rewards) ? rewards : []).forEach(function(raw) {
+      var reward = normalizeClassroomReward(raw);
+      if (!reward || seen[reward.id]) return;
+      seen[reward.id] = true;
+      applied.push(reward);
+      nextEarnings.push({
+        source: 'classroom-recognition',
+        tokens: reward.amount,
+        date: new Date(reward.at).toISOString(),
+        metadata: {
+          rewardId: reward.id,
+          reasonId: reward.reasonId,
+          delivery: 'live-session'
+        }
+      });
+    });
+    if (!applied.length) return { state: prev, applied: [] };
+    return {
+      state: Object.assign({}, prev, {
+        tokens: (Number(prev.tokens) || 0) + applied.reduce(function(sum, reward) { return sum + reward.amount; }, 0),
+        earnings: nextEarnings
+      }),
+      applied: applied
+    };
+  }
+
+  function consumeClassroomRewardInbox(state) {
+    var rewards = [];
+    try {
+      var raw = localStorage.getItem(CLASSROOM_REWARD_INBOX_KEY);
+      var parsed = raw ? JSON.parse(raw) : [];
+      rewards = Array.isArray(parsed) ? parsed : [];
+    } catch (e) { rewards = []; }
+    var result = applyClassroomRewards(state, rewards);
+    if (rewards.length) {
+      try { localStorage.removeItem(CLASSROOM_REWARD_INBOX_KEY); } catch (e2) {}
+    }
+    return result;
+  }
+
+  function classroomRewardReasonLabel(reasonId) {
+    var labels = {
+      ready_to_learn: 'Ready to learn',
+      used_support: 'Used a support or asked for help',
+      reengaged: 'Returned to learning',
+      collaboration: 'Collaboration',
+      repaired_harm: 'Restorative repair',
+      self_regulation: 'Self-regulation',
+      goal_progress: 'Individual goal progress'
+    };
+    return labels[String(reasonId || '')] || 'Positive progress';
+  }
+
+  function getClassroomRewardCardState(state, cost) {
+    var safeState = (state && typeof state === 'object') ? state : {};
+    var latest = null;
+    (Array.isArray(safeState.earnings) ? safeState.earnings : []).forEach(function(entry) {
+      if (!entry || entry.source !== 'classroom-recognition') return;
+      var rewardId = entry.metadata && entry.metadata.rewardId;
+      if (!rewardId) return;
+      var when = Date.parse(entry.date || '') || 0;
+      var latestWhen = latest ? (Date.parse(latest.date || '') || 0) : -1;
+      if (!latest || when >= latestWhen) latest = entry;
+    });
+    if (!latest) return null;
+    var latestId = String(latest.metadata.rewardId);
+    if (String(safeState.classroomRewardCardDismissedId || '') === latestId) return null;
+    var price = Math.max(1, Math.floor(Number(cost) || 3));
+    var tokens = Math.max(0, Math.floor(Number(safeState.tokens) || 0));
+    return {
+      rewardId: latestId,
+      reasonId: String(latest.metadata.reasonId || ''),
+      reasonLabel: classroomRewardReasonLabel(latest.metadata.reasonId),
+      amount: Math.max(1, Math.floor(Number(latest.tokens) || 1)),
+      date: latest.date || null,
+      cost: price,
+      tokens: tokens,
+      ready: tokens >= price,
+      remaining: Math.max(0, price - tokens)
+    };
+  }
+
+  function getClassroomRecognitionHistory(state, limit) {
+    var safeState = (state && typeof state === 'object') ? state : {};
+    var requested = Math.floor(Number(limit) || 8);
+    var boundedLimit = Math.max(1, Math.min(20, requested));
+    var seen = {};
+    return (Array.isArray(safeState.earnings) ? safeState.earnings : [])
+      .filter(function(entry) {
+        if (!entry || entry.source !== 'classroom-recognition') return false;
+        var rewardId = String((entry.metadata && entry.metadata.rewardId) || '');
+        if (!rewardId || seen[rewardId]) return false;
+        seen[rewardId] = true;
+        return true;
+      })
+      .map(function(entry) {
+        var metadata = entry.metadata || {};
+        return {
+          rewardId: String(metadata.rewardId),
+          reasonId: String(metadata.reasonId || ''),
+          reasonLabel: classroomRewardReasonLabel(metadata.reasonId),
+          amount: Math.max(1, Math.floor(Number(entry.tokens) || 1)),
+          date: entry.date || null,
+          timestamp: Date.parse(entry.date || '') || 0
+        };
+      })
+      .sort(function(a, b) { return b.timestamp - a.timestamp; })
+      .slice(0, boundedLimit);
+  }
   function readStudentProgressSummary() {
     try {
       if (window.__alloflowStudentProgressSummary && typeof window.__alloflowStudentProgressSummary === 'object') {
@@ -531,6 +679,9 @@
       //   tokens, date: ISO, metadata }
     ],
 
+    // Latest classroom-recognition card the student explicitly dismissed or
+    // redeemed. A newer reward id automatically makes the card visible again.
+    classroomRewardCardDismissedId: null,
     // ── Daily reset state ──
     // Resets at calendar-day rollover. Tracks per-day caps + the 3 prompts
     // shown today so they stay stable until midnight.
@@ -11167,6 +11318,11 @@
     // updates one key + writes localStorage. setStateMulti updates many.
     var stateTuple = useState(function() {
       var loaded = loadState();
+      var initialClassroomRewards = consumeClassroomRewardInbox(loaded);
+      loaded = initialClassroomRewards.state;
+      if (initialClassroomRewards.applied.length) {
+        saveState(loaded);
+      }
       // Deep-merge defaults so missing fields don't crash
       var merged = Object.assign({}, DEFAULT_STATE, loaded);
       merged.toastsSeen          = Object.assign({}, DEFAULT_STATE.toastsSeen, loaded.toastsSeen || {});
@@ -11321,6 +11477,34 @@
     useEffect(function() {
       saveState(state);
     }, [state]);
+
+    // If AlloHaven is already open when a teacher recognizes the student,
+    // consume the local inbox immediately. Calling once on mount also closes
+    // the tiny race between initial state hydration and listener attachment.
+    useEffect(function() {
+      function consumePendingClassroomRewards() {
+        setState(function(prev) {
+          var result = consumeClassroomRewardInbox(prev);
+          if (result.applied.length) {
+            var total = result.applied.reduce(function(sum, reward) { return sum + reward.amount; }, 0);
+            var reasonLabels = {
+              ready_to_learn: 'Ready to learn', used_support: 'Used a support',
+              reengaged: 'Returned to learning', collaboration: 'Collaboration',
+              repaired_harm: 'Restorative repair', self_regulation: 'Self-regulation',
+              goal_progress: 'Goal progress'
+            };
+            var latest = result.applied[result.applied.length - 1];
+            setTimeout(function() {
+              addToast('🪙 +' + total + ' classroom recognition · ' + (reasonLabels[latest.reasonId] || 'Positive progress'), 'success');
+            }, 0);
+          }
+          return result.state;
+        });
+      }
+      consumePendingClassroomRewards();
+      window.addEventListener('alloflow-haven-classroom-reward-pending', consumePendingClassroomRewards);
+      return function() { window.removeEventListener('alloflow-haven-classroom-reward-pending', consumePendingClassroomRewards); };
+    }, []);
 
     var setStateField = function(key, value) {
       setState(function(prev) {
@@ -16295,6 +16479,8 @@
           }, '🏛 Walk in 3D')
         ),
         renderQuestPanel(),
+        renderClassroomRewardCard(),
+        renderClassroomRecognitionHistoryLink(),
         renderTodayCard(),
         // Compute responsive row count based on slot count + columns
         // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
@@ -18267,6 +18453,227 @@
     // Quests = optional bonus; today card = next step + progress through
     // the core loop. Visible on a fresh day so students always have a
     // gentle starting point.
+    // Private classroom recognition becomes an optional creative choice, not
+    // a public score. The existing generation modal owns AI safety, drawing,
+    // upload validation, token charging, and refund behavior; this card only
+    // provides a low-friction path into that established flow.
+    function renderClassroomRewardCard() {
+      var card = getClassroomRewardCardState(state, DECORATION_COST);
+      if (!card) return null;
+
+      function dismissCard() {
+        setStateField('classroomRewardCardDismissedId', card.rewardId);
+      }
+
+      function openRewardChooser() {
+        var surface = 'floor';
+        var cellIndex = findFreeSlot(surface);
+        if (cellIndex < 0) {
+          surface = 'wall';
+          cellIndex = findFreeSlot(surface);
+        }
+        if (cellIndex < 0) {
+          addToast('Your current room is full. Move to another unlocked room or rearrange before adding a creative reward.', 'info');
+          return;
+        }
+        setStateMulti({
+          classroomRewardCardDismissedId: card.rewardId,
+          roomMode: 'build'
+        });
+        handleEmptyCellClick(surface, cellIndex);
+      }
+
+      var progressPct = Math.max(0, Math.min(100, Math.round((card.tokens / card.cost) * 100)));
+      return h('section', {
+        role: 'region',
+        'aria-label': 'Private classroom recognition creative reward',
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '9px',
+          padding: '12px 14px',
+          marginTop: '8px',
+          marginBottom: '8px',
+          background: palette.surface,
+          border: '2px solid ' + (palette.success || palette.accent),
+          borderRadius: '12px',
+          boxShadow: '0 5px 16px rgba(15,23,42,0.12)'
+        }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' } },
+          h('div', null,
+            h('div', { style: { color: palette.success || palette.accent, fontSize: '11px', fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } },
+              'Private recognition'),
+            h('h3', { style: { margin: '2px 0 0', color: palette.text, fontSize: '16px', lineHeight: 1.3 } },
+              card.ready ? 'A creative room reward is ready' : 'You are building toward a creative reward')
+          ),
+          h('button', {
+            type: 'button',
+            onClick: dismissCard,
+            'aria-label': 'Dismiss this classroom recognition card',
+            title: 'Not now',
+            style: {
+              flexShrink: 0, border: '1px solid ' + palette.border,
+              borderRadius: '999px', background: 'transparent', color: palette.textDim,
+              width: '30px', height: '30px', cursor: 'pointer', fontWeight: 800
+            }
+          }, '×')
+        ),
+        h('p', { style: { margin: 0, color: palette.textDim, fontSize: '13px', lineHeight: 1.5 } },
+          'Recognized for: ', h('strong', { style: { color: palette.text } }, card.reasonLabel), '. ',
+          card.ready
+            ? 'Use any 3 tokens to choose an AI-generated decoration, make your own drawing, or upload an image.'
+            : 'You have ' + card.tokens + ' of ' + card.cost + ' tokens. Preview the choices now, or keep saving—there is no deadline.'
+        ),
+        h('div', {
+          role: 'progressbar',
+          'aria-label': 'Creative reward token progress',
+          'aria-valuemin': 0,
+          'aria-valuemax': card.cost,
+          'aria-valuenow': Math.min(card.tokens, card.cost),
+          style: { height: '8px', overflow: 'hidden', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '999px' }
+        },
+          h('div', {
+            style: {
+              width: progressPct + '%', height: '100%',
+              background: palette.success || palette.accent,
+              transition: 'width 180ms ease'
+            }
+          })
+        ),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' } },
+          h('button', {
+            type: 'button',
+            onClick: openRewardChooser,
+            'aria-label': card.ready ? 'Choose a creative room reward' : 'Preview creative room reward choices',
+            style: Object.assign({}, primaryBtnStyle(palette), {
+              padding: '7px 14px', borderRadius: '999px', fontSize: '12px'
+            })
+          }, card.ready ? 'Choose reward' : 'Preview choices'),
+          h('button', {
+            type: 'button',
+            onClick: function() { setStateField('activeModal', 'classroom-recognition-history'); },
+            'aria-label': 'View recent private classroom recognition',
+            style: Object.assign({}, secondaryBtnStyle(palette), {
+              padding: '7px 14px', borderRadius: '999px', fontSize: '12px'
+            })
+          }, 'View recent recognition'),
+          h('span', { style: { color: palette.textMute, fontSize: '11px', fontWeight: 700 } },
+            card.ready ? (card.cost + ' tokens per item') : (card.remaining + ' more token' + (card.remaining === 1 ? '' : 's') + ' to create'))
+        )
+      );
+    }
+
+    function renderClassroomRecognitionHistoryLink() {
+      var history = getClassroomRecognitionHistory(state, 8);
+      if (!history.length || getClassroomRewardCardState(state, DECORATION_COST)) return null;
+      return h('section', {
+        role: 'region',
+        'aria-label': 'Private classroom recognition history',
+        style: {
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: '8px', padding: '8px 12px', margin: '8px 0',
+          background: palette.surface, border: '1px solid ' + palette.border,
+          borderRadius: '10px'
+        }
+      },
+        h('span', { style: { color: palette.textDim, fontSize: '12px', fontWeight: 700 } },
+          'Private recognition · ' + history.length + ' recent'),
+        h('button', {
+          type: 'button',
+          onClick: function() { setStateField('activeModal', 'classroom-recognition-history'); },
+          'aria-label': 'View recent private classroom recognition',
+          style: Object.assign({}, secondaryBtnStyle(palette), {
+            padding: '6px 12px', borderRadius: '999px', fontSize: '11px'
+          })
+        }, 'View history')
+      );
+    }
+
+    function renderClassroomRecognitionHistoryModal() {
+      if (state.activeModal !== 'classroom-recognition-history') return null;
+      var history = getClassroomRecognitionHistory(state, 8);
+      function closeHistory() { setStateField('activeModal', null); }
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'ah-classroom-recognition-history-title',
+        onClick: function(e) { if (e.target === e.currentTarget) closeHistory(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.72)', zIndex: 210,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            width: '100%', maxWidth: '520px', maxHeight: '82vh', overflowY: 'auto',
+            background: palette.bg, color: palette.text,
+            border: '2px solid ' + (palette.success || palette.accent),
+            borderRadius: '18px', padding: '22px',
+            boxShadow: '0 28px 70px rgba(0,0,0,0.5)'
+          }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' } },
+            h('div', null,
+              h('div', { style: { color: palette.success || palette.accent, fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                'Private to you'),
+              h('h2', { id: 'ah-classroom-recognition-history-title', style: { margin: '3px 0 0', fontSize: '20px', lineHeight: 1.3 } },
+                'Recent classroom recognition')
+            ),
+            h('button', {
+              type: 'button', onClick: closeHistory,
+              'aria-label': 'Close classroom recognition history',
+              style: {
+                width: '32px', height: '32px', flexShrink: 0, borderRadius: '999px',
+                border: '1px solid ' + palette.border, background: palette.surface,
+                color: palette.textDim, cursor: 'pointer', fontWeight: 900
+              }
+            }, '×')
+          ),
+          h('p', { style: { margin: '10px 0 14px', color: palette.textDim, fontSize: '13px', lineHeight: 1.5 } },
+            'These recognitions are visible only in your AlloHaven. They show the selected reason and tokens—never teacher notes or a public score.'),
+          history.length ? h('ol', {
+            'aria-label': 'Recent classroom recognition events',
+            style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }
+          }, history.map(function(item) {
+            var dateLabel = item.timestamp
+              ? new Date(item.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+              : 'Date unavailable';
+            return h('li', {
+              key: item.rewardId,
+              style: {
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                padding: '10px 12px', background: palette.surface,
+                border: '1px solid ' + palette.border, borderRadius: '10px'
+              }
+            },
+              h('div', null,
+                h('div', { style: { color: palette.text, fontSize: '13px', fontWeight: 800 } }, item.reasonLabel),
+                h('time', { dateTime: item.date || undefined, style: { color: palette.textMute, fontSize: '11px' } }, dateLabel)
+              ),
+              h('span', {
+                'aria-label': item.amount + ' token' + (item.amount === 1 ? '' : 's') + ' earned',
+                style: {
+                  flexShrink: 0, color: palette.text, background: palette.bg,
+                  border: '1px solid ' + palette.border, borderRadius: '999px',
+                  padding: '4px 9px', fontSize: '12px', fontWeight: 900,
+                  fontVariantNumeric: 'tabular-nums'
+                }
+              }, '+' + item.amount + ' token' + (item.amount === 1 ? '' : 's'))
+            );
+          })) : h('p', { style: { color: palette.textDim, fontSize: '13px' } }, 'No classroom recognition has arrived yet.'),
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginTop: '16px' } },
+            h('span', { style: { color: palette.textMute, fontSize: '11px' } }, 'Showing up to 8 recent events.'),
+            h('button', {
+              type: 'button', onClick: closeHistory,
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '7px 16px', borderRadius: '999px', fontSize: '12px' })
+            }, 'Done')
+          )
+        )
+      );
+    }
+
     function renderTodayCard() {
       var plan = getAlloHavenDailyPlan(state);
       var snap = plan.snapshot;
@@ -28587,6 +28994,7 @@
       renderRoom(),
       renderPomodoroOverlay(),
       renderGenerateModal(),
+      renderClassroomRecognitionHistoryModal(),
       renderMemoryModal(),
       renderMemoryOverviewModal(),
       renderVoiceNotesIndexModal(),
@@ -29417,6 +29825,12 @@
     normalizeIdeaText: normalizeIdeaText,
     getLinkedContentIdeaText: getLinkedContentIdeaText,
     buildIdeaSeedFromMemory: buildIdeaSeedFromMemory,
+    normalizeClassroomReward: normalizeClassroomReward,
+    classroomRewardReasonLabel: classroomRewardReasonLabel,
+    getClassroomRewardCardState: getClassroomRewardCardState,
+    getClassroomRecognitionHistory: getClassroomRecognitionHistory,
+    applyClassroomRewards: applyClassroomRewards,
+    consumeClassroomRewardInbox: consumeClassroomRewardInbox,
     ensureIdeaSeedForContent: ensureIdeaSeedForContent,
     waterIdeaSeed: waterIdeaSeed,
     getIdeaGrowthStage: getIdeaGrowthStage,

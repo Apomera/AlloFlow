@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:31.606Z",
+  "generatedAt": "2026-07-19T05:13:13.509Z",
   "libraryId": "parapro-1755-learning-library",
   "packId": "parapro-1755-practice-1",
   "title": "ParaPro learning library",
@@ -11,6 +11,29 @@
     "timeMinutes": 150,
     "note": "Independent timed simulation using original AlloFlow items; not an official ETS form or score."
   },
+  "supplementalSources": [
+    {
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/14",
+      "title": "Improving Reading Comprehension in Kindergarten Through 3rd Grade",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "summary": "Five evidence-rated recommendations address comprehension strategies, text structure, high-quality discussion, purposeful text selection, and an engaging reading context.",
+      "credibility": "An IES/WWC government practice guide developed through expert-panel analysis and systematic evidence review; retain its recommendation-specific evidence ratings when applying it."
+    },
+    {
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/29",
+      "title": "Providing Reading Interventions for Students in Grades 4–9",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "summary": "Evidence-based intervention recommendations cover decoding, fluency, comprehension-building practices, and supported work with challenging text.",
+      "credibility": "An IES/WWC government practice guide developed through expert-panel analysis and systematic evidence review; retain its recommendation-specific evidence ratings when applying it."
+    },
+    {
+      "url": "https://data.census.gov/",
+      "title": "Explore Census Data",
+      "organization": "U.S. Census Bureau, U.S. Department of Commerce",
+      "summary": "The Census Bureau’s centralized data platform supports searches across demographic and economic tables, profiles, maps, and public-use data.",
+      "credibility": "A primary federal statistical source; verify the dataset, year, table, geography, estimates, and margins of error when applicable."
+    }
+  ],
   "summary": {
     "chapters": 12,
     "sections": 48,

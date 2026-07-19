@@ -22,7 +22,7 @@ beforeAll(() => {
 describe('Praxis Special Education: Foundational Knowledge 5355 diagnostic bank', () => {
   it('registers five ready 100-item batches with exact official-domain proportions', () => {
     expect(pack).toBeTruthy();
-    expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 120, simulationTimeMinutes: 120 });
+    expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 120, simulationTimeMinutes: 120, officialSelectedResponseCount: 120, officialTotalTimeMinutes: 120 });
     expect(pack.items).toHaveLength(500);
     expect(pack.sections).toHaveLength(5);
     expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);

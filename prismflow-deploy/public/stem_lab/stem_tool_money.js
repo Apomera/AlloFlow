@@ -3398,8 +3398,8 @@ window.StemLab = window.StemLab || {
               React.createElement('div', { className: 'mt-5 rounded-2xl border border-emerald-300 bg-white p-3 shadow-sm' },
                 React.createElement('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
                   React.createElement('div', null,
-                    React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, __alloT('stem.money.dollar_bill_anti_counterfeit_features', 'Dollar Bill - Anti-counterfeit features')),
-                    React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.money.dollar_lab_summary', 'Open this mini lab when currency security details are the focus.'))
+                    React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, __alloT('stem.money.one_dollar_feature_map', 'U.S. $1 Note - Accurate feature map')),
+                    React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.money.dollar_lab_summary_accurate', 'Explore the front design, identifiers, paper, and genuine security features of the current $1 note.'))
                   ),
                   React.createElement('button', {
                     type: 'button',
@@ -3408,11 +3408,11 @@ window.StemLab = window.StemLab || {
                     className: 'px-3 py-2 rounded-lg text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
                   }, showDollarLab ? __alloT('stem.money.hide_dollar_lab', 'Hide mini lab') : __alloT('stem.money.open_dollar_lab', 'Open mini lab'))
                 ),
-                showDollarLab && React.createElement('div', { className: 'mt-3 rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', aspectRatio: '16/5' } },
+                showDollarLab && React.createElement('div', { className: 'mt-3 rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', height: 'clamp(380px, 70vw, 430px)' } },
                   React.createElement('canvas', {
                     'role': 'img',
                     tabIndex: 0,
-                    'aria-label': __alloT('stem.money.detailed_view_of_a_us_dollar_bill', 'Detailed view of a US dollar bill.'),
+                    'aria-label': __alloT('stem.money.detailed_view_of_a_us_one_dollar_note', 'Detailed educational diagram of the front of a U.S. one-dollar note. Callouts identify raised printing, cotton-linen paper, embedded red and blue fibers, two serial numbers, the Federal Reserve Bank seal, and the Treasury seal. The one-dollar note does not have a watermark, security thread, or color-shifting ink.'),
                     ref: function(cvEl) {
                       if (!cvEl) return;
                       if (cvEl._dbAnim) return;
@@ -3427,61 +3427,99 @@ window.StemLab = window.StemLab || {
                         if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); if (cvEl._dbRO) cvEl._dbRO.disconnect(); return; }
                         var t = (performance.now() - start) / 1000;
                         var features = [
-                          { color: '#fb7185', label: __alloT('stem.money.microprinting', 'Microprinting') },
-                          { color: '#fbbf24', label: __alloT('stem.money.portrait_watermark', 'Portrait watermark') },
-                          { color: '#67e8f9', label: __alloT('stem.money.color_shifting_ink', 'Color-shifting ink') },
-                          { color: '#a855f7', label: __alloT('stem.money.security_thread_uv', 'Security thread (UV)') }
+                          { color: '#fbbf24', label: __alloT('stem.money.raised_printing', 'Raised printing'), detail: __alloT('stem.money.raised_printing_detail', 'Intaglio printing gives a genuine note its distinctive texture.') },
+                          { color: '#a7f3d0', label: __alloT('stem.money.cotton_linen_paper', 'Cotton-linen paper'), detail: __alloT('stem.money.cotton_linen_paper_detail', 'Federal Reserve note paper is 75% cotton and 25% linen.') },
+                          { color: '#fb7185', label: __alloT('stem.money.embedded_fibers', 'Red + blue fibers'), detail: __alloT('stem.money.embedded_fibers_detail', 'Tiny red and blue security fibers are embedded throughout the paper.') },
+                          { color: '#67e8f9', label: __alloT('stem.money.serial_numbers', 'Two serial numbers'), detail: __alloT('stem.money.serial_numbers_detail', 'The same identifying serial number appears twice on the front.') },
+                          { color: '#d1d5db', label: __alloT('stem.money.federal_reserve_bank_seal', 'Federal Reserve seal'), detail: __alloT('stem.money.federal_reserve_bank_seal_detail', 'The black seal identifies the distributing Federal Reserve Bank.') },
+                          { color: '#4ade80', label: __alloT('stem.money.treasury_seal', 'Treasury seal'), detail: __alloT('stem.money.treasury_seal_detail', 'The green seal represents the U.S. Department of the Treasury.') }
                         ];
-                        var blink = Math.floor((t * 0.5) % features.length);
-                        // Only the highlighted feature changes (~every 2s); skip the
-                        // full bill redraw on the frames where it's unchanged.
+                        var blink = Math.floor((t * 0.42) % features.length);
+                        // Only the highlighted feature changes; skip the full redraw
+                        // on frames where the callout is unchanged.
                         if (blink === lastBlink) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
                         lastBlink = blink;
-                        c2.fillStyle = '#022c22';
-                        c2.fillRect(0, 0, W, H);
-                        var bx = W * 0.08;
-                        var by = H * 0.25;
-                        var bw = W * 0.6;
-                        var bh = H * 0.45;
-                        c2.fillStyle = '#d1fae5';
-                        c2.fillRect(bx, by, bw, bh);
-                        c2.strokeStyle = '#047857';
-                        c2.lineWidth = 1.5;
-                        c2.strokeRect(bx, by, bw, bh);
-                        c2.lineWidth = 0.5;
-                        for (var i = 0; i < 30; i++) {
-                          var ox = bx + i * (bw / 30);
-                          c2.beginPath();
-                          c2.moveTo(ox, by);
-                          c2.lineTo(ox + 5, by + 4);
-                          c2.lineTo(ox, by + 8);
-                          c2.stroke();
+                        var compact = W < 620;
+                        var bx = compact ? W * 0.08 : W * 0.045;
+                        var bw = compact ? W * 0.84 : W * 0.62;
+                        var bh = bw / 2.35; // A U.S. note is about 6.14 x 2.61 inches.
+                        var by = compact ? 28 : Math.max(48, (H - bh) * 0.34);
+                        var ink = '#173f34';
+                        var fineInk = 'rgba(23,63,52,0.62)';
+                        var paper = c2.createLinearGradient(bx, by, bx + bw, by + bh);
+                        paper.addColorStop(0, '#edf2e7'); paper.addColorStop(0.5, '#dfe8d8'); paper.addColorStop(1, '#eef3e9');
+                        function fitText(text, x, y, maxWidth, size, weight, align) {
+                          var fitted = size;
+                          c2.textAlign = align || 'left';
+                          do { c2.font = (weight ? weight + ' ' : '') + fitted + 'px sans-serif'; fitted -= 0.5; }
+                          while (c2.measureText(text).width > maxWidth && fitted > 6);
+                          c2.fillText(text, x, y);
                         }
-                        c2.fillStyle = '#047857';
-                        c2.beginPath();
-                        c2.ellipse(bx + bw / 2, by + bh / 2, 16, 22, 0, 0, Math.PI * 2);
-                        c2.fill();
-                        c2.fillStyle = '#d1fae5';
-                        c2.font = 'bold 8px serif';
-                        c2.textAlign = 'center';
-                        c2.fillText('GW', bx + bw / 2, by + bh / 2 + 4);
-                        c2.fillStyle = '#047857';
-                        c2.font = 'bold 22px serif';
-                        c2.fillText('1', bx + 16, by + 22);
-                        c2.fillText('1', bx + bw - 16, by + bh - 8);
-                        features.forEach(function(f, i) {
-                          var sel = i === blink;
-                          c2.fillStyle = f.color;
-                          c2.fillRect(W * 0.73, 28 + i * 18, 8, 8);
-                          c2.fillStyle = sel ? f.color : '#cbd5e1';
-                          c2.font = (sel ? 'bold ' : '') + '10px sans-serif';
-                          c2.textAlign = 'left';
-                          c2.fillText(f.label, W * 0.76, 36 + i * 18);
+                        function drawSeal(x, y, radius, fill, top, center, bottom) {
+                          c2.fillStyle = fill; c2.beginPath(); c2.arc(x, y, radius, 0, Math.PI * 2); c2.fill();
+                          c2.strokeStyle = '#eef3e9'; c2.lineWidth = 1; c2.beginPath(); c2.arc(x, y, radius - 3, 0, Math.PI * 2); c2.stroke();
+                          c2.fillStyle = '#eef3e9'; c2.textAlign = 'center'; c2.font = 'bold ' + Math.max(5, radius * 0.27) + 'px serif'; c2.fillText(top, x, y - radius * 0.28);
+                          c2.font = 'bold ' + (radius * 0.58) + 'px serif'; c2.fillText(center, x, y + radius * 0.2);
+                          c2.font = 'bold ' + Math.max(4, radius * 0.22) + 'px serif'; c2.fillText(bottom, x, y + radius * 0.55);
+                        }
+
+                        c2.fillStyle = '#022c22'; c2.fillRect(0, 0, W, H);
+                        c2.fillStyle = '#a7f3d0'; fitText(__alloT('stem.money.front_educational_illustration', 'FRONT - EDUCATIONAL ILLUSTRATION'), bx, 17, bw, compact ? 10 : 12, 'bold');
+                        c2.fillStyle = paper; c2.fillRect(bx, by, bw, bh);
+                        c2.strokeStyle = ink; c2.lineWidth = 2; c2.strokeRect(bx, by, bw, bh);
+                        c2.strokeStyle = fineInk; c2.lineWidth = 0.8; c2.strokeRect(bx + 5, by + 5, bw - 10, bh - 10); c2.strokeRect(bx + 10, by + 10, bw - 20, bh - 20);
+
+                        // Fine-line guilloche border and embedded security fibers.
+                        for (var i = 0; i < 22; i++) {
+                          var gx = bx + 12 + i * ((bw - 24) / 21);
+                          c2.beginPath(); c2.moveTo(gx, by + 7); c2.quadraticCurveTo(gx + 5, by + 14, gx + 10, by + 7); c2.stroke();
+                          c2.beginPath(); c2.moveTo(gx, by + bh - 7); c2.quadraticCurveTo(gx + 5, by + bh - 14, gx + 10, by + bh - 7); c2.stroke();
+                        }
+                        [[.08,.28,'#dc2626'],[.17,.73,'#2563eb'],[.29,.19,'#dc2626'],[.38,.82,'#2563eb'],[.52,.25,'#2563eb'],[.61,.70,'#dc2626'],[.74,.17,'#2563eb'],[.83,.61,'#dc2626'],[.91,.34,'#2563eb']].forEach(function(fp) {
+                          c2.strokeStyle = fp[2]; c2.lineWidth = 1.1; c2.beginPath(); c2.moveTo(bx + bw * fp[0], by + bh * fp[1]); c2.lineTo(bx + bw * fp[0] + 4, by + bh * fp[1] + 2); c2.stroke();
                         });
-                        c2.fillStyle = 'rgba(0,0,0,0.85)';
-                        c2.fillRect(8, H - 14, W - 16, 12);
-                        c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#86efac'; c2.textAlign = 'center';
-                        c2.fillText('U.S. currency has 30+ security features. Counterfeiters spend more to fake $1 than it is worth.', W / 2, H - 5);
+
+                        // Note typography, identifiers, seals, and a stylized portrait vignette.
+                        var fs = Math.max(6, Math.min(11, bw / 54));
+                        c2.fillStyle = ink; c2.textAlign = 'center'; c2.font = 'bold ' + fs + 'px serif'; c2.fillText('FEDERAL RESERVE NOTE', bx + bw / 2, by + 18);
+                        c2.font = 'bold ' + (fs * 1.12) + 'px serif'; c2.fillText('THE UNITED STATES OF AMERICA', bx + bw / 2, by + 33);
+                        fitText('THIS NOTE IS LEGAL TENDER FOR ALL DEBTS, PUBLIC AND PRIVATE', bx + bw / 2, by + 44, bw * 0.62, fs * 0.72, '', 'center');
+                        var px = bx + bw * 0.5, py = by + bh * 0.54, prx = bw * 0.115, pry = bh * 0.34;
+                        c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); c2.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); c2.stroke();
+                        c2.fillStyle = '#b8c9b2'; c2.beginPath(); c2.arc(px, py - pry * 0.22, pry * 0.25, 0, Math.PI * 2); c2.fill();
+                        c2.beginPath(); c2.ellipse(px, py + pry * 0.34, prx * 0.55, pry * 0.38, 0, Math.PI, Math.PI * 2); c2.fill();
+                        c2.fillStyle = ink; c2.font = 'bold ' + (fs * 0.72) + 'px serif'; c2.fillText('WASHINGTON', px, by + bh - 17);
+                        drawSeal(bx + bw * 0.26, by + bh * 0.55, Math.max(14, bh * 0.18), '#202923', 'FEDERAL', 'B', 'RESERVE');
+                        drawSeal(bx + bw * 0.74, by + bh * 0.55, Math.max(14, bh * 0.18), '#207149', 'TREASURY', '1789', 'SEAL');
+                        c2.fillStyle = '#207149'; c2.textAlign = 'left'; c2.font = 'bold ' + (fs * 1.1) + 'px monospace'; c2.fillText('B 12345678 G', bx + bw * 0.13, by + bh * 0.30); c2.fillText('B 12345678 G', bx + bw * 0.64, by + bh * 0.82);
+                        c2.fillStyle = ink; c2.font = (fs * 0.68) + 'px serif'; c2.fillText('SERIES 2021', bx + bw * 0.67, by + bh * 0.68);
+                        c2.textAlign = 'center'; c2.font = 'bold ' + (fs * 1.15) + 'px serif'; c2.fillText('ONE DOLLAR', bx + bw / 2, by + bh - 6);
+                        c2.font = 'bold ' + Math.max(18, bh * 0.20) + 'px serif'; c2.fillText('1', bx + 19, by + 29); c2.fillText('1', bx + bw - 19, by + 29); c2.fillText('1', bx + 19, by + bh - 10); c2.fillText('1', bx + bw - 19, by + bh - 10);
+
+                        var anchors = [[bx + bw * .5, by + 18],[bx + bw * .4, by + bh * .88],[bx + bw * .17, by + bh * .73],[bx + bw * .2, by + bh * .3],[bx + bw * .26, by + bh * .55],[bx + bw * .74, by + bh * .55]];
+                        anchors.forEach(function(a, ai) {
+                          var selected = ai === blink;
+                          c2.fillStyle = features[ai].color; c2.strokeStyle = selected ? '#fff' : '#064e3b'; c2.lineWidth = selected ? 2.5 : 1;
+                          c2.beginPath(); c2.arc(a[0], a[1], selected ? 8 : 6, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.fillStyle = '#052e2b'; c2.font = 'bold 8px sans-serif'; c2.textAlign = 'center'; c2.fillText(String(ai + 1), a[0], a[1] + 3);
+                        });
+
+                        var panelX = compact ? 10 : W * 0.70;
+                        var labelTop = compact ? by + bh + 20 : 38;
+                        var colW = compact ? W / 2 : W * 0.285;
+                        var rowH = compact ? 32 : Math.max(35, (H - 104) / features.length);
+                        features.forEach(function(f, fi) {
+                          var selected = fi === blink;
+                          var lx = compact ? panelX + (fi % 2) * colW : panelX;
+                          var ly = compact ? labelTop + Math.floor(fi / 2) * rowH : labelTop + fi * rowH;
+                          c2.fillStyle = selected ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.04)'; c2.fillRect(lx, ly - 14, colW - 8, 24);
+                          c2.fillStyle = f.color; c2.beginPath(); c2.arc(lx + 10, ly - 2, 8, 0, Math.PI * 2); c2.fill();
+                          c2.fillStyle = '#052e2b'; c2.font = 'bold 8px sans-serif'; c2.textAlign = 'center'; c2.fillText(String(fi + 1), lx + 10, ly + 1);
+                          c2.fillStyle = selected ? f.color : '#d1fae5'; fitText(f.label, lx + 23, ly + 2, colW - 34, compact ? 9 : 11, selected ? 'bold' : '');
+                        });
+                        c2.fillStyle = 'rgba(0,0,0,.76)'; c2.fillRect(8, H - 50, W - 16, 42);
+                        c2.fillStyle = features[blink].color; fitText(features[blink].label + ': ' + features[blink].detail, W / 2, H - 31, W - 30, compact ? 9 : 11, 'bold', 'center');
+                        c2.fillStyle = '#a7f3d0'; fitText(__alloT('stem.money.one_dollar_no_modern_features', 'Important: the $1 note has no watermark, security thread, or color-shifting ink.'), W / 2, H - 15, W - 30, compact ? 8 : 10, '', 'center');
                         cvEl._dbAnim = requestAnimationFrame(drawDb);
                       }
                       drawDb();

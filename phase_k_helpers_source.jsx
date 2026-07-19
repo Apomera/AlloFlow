@@ -52,8 +52,11 @@ const buildCompactPersonaVoiceInstruction = (speakingChar) => {
 
 const resolvePersonaSpeakingChar = (personaState, activeSpeaker, speakerName) => {
     const isPanelMode = personaState.selectedCharacters && personaState.selectedCharacters.length > 0;
+    const normalizedSpeakerName = String(speakerName || '').trim().toLocaleLowerCase();
     return isPanelMode
-        ? (speakerName && personaState.selectedCharacters.find(c => c.name === speakerName))
+        ? (normalizedSpeakerName && personaState.selectedCharacters.find(c =>
+            String(c?.name || '').trim().toLocaleLowerCase() === normalizedSpeakerName
+          ))
           || personaState.selectedCharacters.find(c => c.voice === activeSpeaker)
         : personaState.selectedCharacter;
 };
@@ -208,8 +211,16 @@ const sanitizeTtsText = (text) => String(text || '')
 // resource answered for sentence 0 of the next. Keying on the spoken text
 // makes stale reuse structurally impossible. Live playback and look-ahead
 // MUST both use this builder (same contract as the tts urlCache key).
-const sequenceBufferKey = (index, voice, spokenText) =>
-    `${index}-${voice}-${String(spokenText || '').slice(0, 160)}`;
+const sequenceBufferKey = (index, voice, spokenText, synthesisIdentity = '') => {
+    const fullText = String(spokenText || '');
+    const fullIdentity = `${fullText}\u241f${String(synthesisIdentity || '')}`;
+    let hash = 2166136261;
+    for (let offset = 0; offset < fullIdentity.length; offset += 1) {
+        hash ^= fullIdentity.charCodeAt(offset);
+        hash = Math.imul(hash, 16777619);
+    }
+    return `${index}-${voice}-${fullIdentity.length}-${(hash >>> 0).toString(36)}`;
+};
 
 const chunkPersonaSentences = (sentences) => {
     const displaySentences = Array.isArray(sentences) ? sentences : [];
@@ -250,8 +261,9 @@ const resolvePersonaMessageVoice = (personaState, messageIndex, selectedVoice, a
     const message = (state.chatHistory || [])[messageIndex];
     const speakerName = message && message.speakerName ? message.speakerName : null;
     const panelCharacters = Array.isArray(state.selectedCharacters) ? state.selectedCharacters : [];
-    let speakingChar = speakerName
-        ? panelCharacters.find(character => character && character.name === speakerName)
+    const normalizedSpeakerName = String(speakerName || '').trim().toLocaleLowerCase();
+    let speakingChar = normalizedSpeakerName
+        ? panelCharacters.find(character => String(character?.name || '').trim().toLocaleLowerCase() === normalizedSpeakerName)
         : state.selectedCharacter;
     if (!speakingChar && panelCharacters.length > 0) speakingChar = panelCharacters[0];
     let voice = speakingChar && speakingChar.voice ? speakingChar.voice : selectedVoice;
@@ -261,6 +273,20 @@ const resolvePersonaMessageVoice = (personaState, messageIndex, selectedVoice, a
         voice = voices[hash % voices.length];
     }
     return { voice: voice || selectedVoice, speakerName, speakingChar };
+};
+
+const resolvePersonaTtsLanguage = (currentUiLanguage, leveledTextLanguage) => {
+    const language = String(currentUiLanguage || leveledTextLanguage || 'English')
+        .replace(/[\u0000-\u001f\u007f]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 80);
+    return language || 'English';
+};
+
+const resolvePersonaTtsSpeed = (voiceSpeed) => {
+    const speed = Number(voiceSpeed);
+    return Number.isFinite(speed) ? Math.max(0.5, Math.min(2, speed)) : 1;
 };
 
 const preparePersonaTtsText = (text, speakingChar, voice, selectedVoice, isCanvasEnv, ttsState) => {
@@ -278,7 +304,7 @@ const preparePersonaTtsText = (text, speakingChar, voice, selectedVoice, isCanva
 const prewarmPersonaMessageAudio = (text, messageIndex, opts) => {
     try {
         const { count = 1, shouldContinue, deps = {} } = opts || {};
-        const { callTTS, splitTextToSentences, getSideBySideContent, selectedVoice, AVAILABLE_VOICES, personaState, _isCanvasEnv, _ttsState } = deps;
+        const { callTTS, splitTextToSentences, getSideBySideContent, selectedVoice, AVAILABLE_VOICES, personaState, currentUiLanguage, leveledTextLanguage, voiceSpeed, _isCanvasEnv, _ttsState } = deps;
         if (typeof callTTS !== 'function' || typeof splitTextToSentences !== 'function' || !text) return 0;
         if (typeof shouldContinue === 'function' && !shouldContinue()) return 0;
         const isTable = paragraph => paragraph.trim().startsWith('|') || paragraph.includes('\n|');
@@ -288,13 +314,15 @@ const prewarmPersonaMessageAudio = (text, messageIndex, opts) => {
             : String(text).split(/\n{2,}/).flatMap(paragraph => isTable(paragraph) ? [] : splitTextToSentences(paragraph));
         const { chunks } = chunkPersonaSentences(sentences);
         const resolved = resolvePersonaMessageVoice(personaState, messageIndex, selectedVoice, AVAILABLE_VOICES);
+        const ttsLanguage = resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage);
+        const ttsSpeed = resolvePersonaTtsSpeed(voiceSpeed);
         if (_kokoroPrewarmSkip.test(String(resolved.voice || ''))) return 0;
         let warmed = 0;
         chunks.slice(0, Math.max(0, count)).forEach(chunk => {
             if (typeof shouldContinue === 'function' && !shouldContinue()) return;
             const prepared = preparePersonaTtsText(chunk, resolved.speakingChar, resolved.voice, selectedVoice, _isCanvasEnv, _ttsState);
             if (!prepared) return;
-            try { Promise.resolve(callTTS(prepared, resolved.voice)).catch(() => {}); warmed++; } catch (_) {}
+            try { Promise.resolve(callTTS(prepared, resolved.voice, ttsSpeed, { language: ttsLanguage })).catch(() => {}); warmed++; } catch (_) {}
         });
         return warmed;
     } catch (_) {
@@ -330,7 +358,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] playSequence fired"); } catch(_) {}
       if (playbackSessionRef.current !== sessionId || index >= sentences.length) {
-          if (playbackSessionRef.current === sessionId) stopPlayback();
+          if (playbackSessionRef.current === sessionId) stopPlayback('ended', contentId, sessionId);
           return;
       }
       setPlaybackState(prev => {
@@ -381,9 +409,16 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               textToSpeak = preparePersonaTtsText(textToSpeak, speakingChar, activeSpeaker, selectedVoice, _isCanvasEnv, _ttsState);
           }
            if (mode !== 'persona') textToSpeak = sanitizeTtsText(textToSpeak);
+          const personaTtsLanguage = mode === 'persona'
+              ? resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage)
+              : null;
+          const personaTtsSpeed = mode === 'persona' ? resolvePersonaTtsSpeed(voiceSpeed) : 1;
+          const personaSynthesisIdentity = mode === 'persona'
+              ? `${personaTtsSpeed}\u241f${personaTtsLanguage}`
+              : '';
           // Key AFTER text finalization so the buffer identity includes the
           // spoken text (see sequenceBufferKey).
-          const bufferKey = sequenceBufferKey(index, currentVoice, textToSpeak);
+          const bufferKey = sequenceBufferKey(index, currentVoice, textToSpeak, personaSynthesisIdentity);
           let audioStoreSentence = textToSpeak;
           let usingStoredReadAloud = false;
           const storedReadAloudUrl = shouldUseReadAloudStore(contentId, mode)
@@ -494,7 +529,12 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                       return;
                   }
               } else {
-                  const promise = callTTS(textToSpeak, currentVoice).then(url => {
+                  const promise = callTTS(
+                      textToSpeak,
+                      currentVoice,
+                      personaTtsSpeed,
+                      mode === 'persona' ? { language: personaTtsLanguage } : 2
+                  ).then(url => {
                       addBlobUrl(url);
                       return url;
                   });
@@ -577,7 +617,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   textToPreload = preparePersonaTtsText(targetText, preloadChar, targetVoice, selectedVoice, _isCanvasEnv, _ttsState);
               }
               if (mode !== 'persona') textToPreload = sanitizeTtsText(textToPreload);
-              const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload);
+              const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload, personaSynthesisIdentity);
               const storedPreloadUrl = isReadAloudStorePlayback
                   ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice)
                   : null;
@@ -597,7 +637,12 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   continue;
               }
               if (!audioBufferRef.current[nextBufferKey]) {
-                  audioBufferRef.current[nextBufferKey] = callTTS(textToPreload, targetVoice)
+                  audioBufferRef.current[nextBufferKey] = callTTS(
+                      textToPreload,
+                      targetVoice,
+                      personaTtsSpeed,
+                      mode === 'persona' ? { language: personaTtsLanguage } : 2
+                  )
                       .then(url => {
                           addBlobUrl(url);
                           return url;
@@ -727,11 +772,11 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
       }
 };
 
-const handleSpeak = async (text, contentId, startIndex = 0, deps) => {
+const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart = false) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] handleSpeak fired"); } catch(_) {}
     const now = Date.now();
-    if (contentId && lastHandleSpeakRef.current &&
+    if (!forceRestart && contentId && lastHandleSpeakRef.current &&
         contentId === lastHandleSpeakRef.current.id &&
         startIndex === lastHandleSpeakRef.current.index &&
         (now - lastHandleSpeakRef.current.time) < 250) {
@@ -755,8 +800,8 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps) => {
     window.speechSynthesis.cancel();
     if (audioRef.current || playingContentId) {
         const wasPlayingThis = playingContentId === contentId;
-        stopPlayback();
-        if (wasPlayingThis && startIndex === 0) {
+        stopPlayback('superseded');
+        if (!forceRestart && wasPlayingThis && startIndex === 0) {
             return;
         }
         if (playbackTimeoutRef.current) {
@@ -1505,6 +1550,7 @@ const executeSaveFile = async (deps) => {
                   xpToNextLevel: adventureState.xpToNextLevel,
                   inventory: adventureState.inventory || [],
                   narrativeLedger: adventureState.narrativeLedger || '',
+                   assistedKnowledge: Array.isArray(adventureState.assistedKnowledge) ? adventureState.assistedKnowledge.slice(-12) : [],
                   stats: adventureState.stats,
                   currentScene: adventureState.currentScene,
                   history: adventureState.history || [],
@@ -2167,7 +2213,12 @@ const handleSaveReflection = async (deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] handleSaveReflection fired"); } catch(_) {}
       const boundedReflectionInput = String(personaReflectionInput || '').trim().slice(0, 4000);
-      if ((!personaState.selectedCharacter && personaState.mode !== 'panel') || !boundedReflectionInput) return;
+      const hasValidPersonaSelection = personaState.mode === 'panel'
+          ? (Array.isArray(personaState.selectedCharacters)
+              && personaState.selectedCharacters.length === 2
+              && personaState.selectedCharacters.every(character => String(character?.name || '').trim()))
+          : Boolean(String(personaState.selectedCharacter?.name || '').trim());
+      if (!hasValidPersonaSelection || !boundedReflectionInput) return;
       const submissionGuard = deps.personaReflectionSubmitRef;
       if (submissionGuard?.current) return;
       const submissionToken = {};
@@ -2178,6 +2229,35 @@ const handleSaveReflection = async (deps) => {
       const reflectionContextToken = reflectionContextTokenRef?.current ?? null;
       const reflectionResourceIdRef = deps.personaReflectionResourceIdRef;
       const reflectionResourceId = String(reflectionResourceIdRef?.current || generatedContent?.id || '');
+      const submissionFingerprintSeed = JSON.stringify({
+          resourceId: reflectionResourceId.slice(0, 240),
+          mode: personaState.mode || 'single',
+          participants: personaState.mode === 'panel'
+              ? personaState.selectedCharacters.map(character => String(character?.name || '').trim().slice(0, 240))
+              : [String(personaState.selectedCharacter?.name || '').trim().slice(0, 240)],
+          transcript: (Array.isArray(personaState.chatHistory) ? personaState.chatHistory : []).slice(-80).map(message => [
+              String(message?.role || '').slice(0, 20),
+              String(message?.speakerName || '').slice(0, 240),
+              String(message?.text || '').slice(0, 6000)
+          ]),
+          reflection: boundedReflectionInput
+      });
+      let submissionFingerprintHash = 2166136261;
+      for (let offset = 0; offset < submissionFingerprintSeed.length; offset += 1) {
+          submissionFingerprintHash ^= submissionFingerprintSeed.charCodeAt(offset);
+          submissionFingerprintHash = Math.imul(submissionFingerprintHash, 16777619);
+      }
+      const reflectionSubmissionFingerprint = `${submissionFingerprintSeed.length}:${(submissionFingerprintHash >>> 0).toString(36)}`;
+      const lastSavedKeyRef = deps.personaReflectionLastSavedKeyRef;
+      const alreadyPersisted = (Array.isArray(history) ? history : []).some(item =>
+          item?.type === 'persona-reflection'
+          && item?.config?.submissionFingerprint === reflectionSubmissionFingerprint
+      );
+      if (lastSavedKeyRef?.current === reflectionSubmissionFingerprint || alreadyPersisted) {
+          if (lastSavedKeyRef) lastSavedKeyRef.current = reflectionSubmissionFingerprint;
+          if (submissionGuard?.current === submissionToken) submissionGuard.current = false;
+          return;
+      }
       const gradingAbortRef = deps.personaReflectionGradeAbortRef;
       try { gradingAbortRef?.current?.controller?.abort(); } catch (_) {}
       const gradingController = typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -2414,6 +2494,7 @@ const handleSaveReflection = async (deps) => {
               config: {
                   personaResourceId: reflectionResourceId || null,
                   reflectionContextToken,
+                  submissionFingerprint: reflectionSubmissionFingerprint,
                   personaSource: boundedPersonaSource,
                   groundingSources: reflectionGrounding.links,
                   groundingSearchQueries: reflectionGrounding.queries,
@@ -2422,6 +2503,7 @@ const handleSaveReflection = async (deps) => {
               }
           };
           if (!reflectionIsCurrent()) return;
+          if (lastSavedKeyRef) lastSavedKeyRef.current = reflectionSubmissionFingerprint;
           setHistory(prev => [...prev, newItem]);
           handleScoreUpdate(totalXP, "Reflection Insight", newItem.id);
           let newlyEarnedBadges = [];

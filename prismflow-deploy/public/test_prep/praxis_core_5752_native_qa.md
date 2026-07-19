@@ -1,6 +1,6 @@
 # Praxis Core Combined (5752) QA report
 
-Generated: 2026-07-17T00:10:40.803Z
+Generated: 2026-07-19T05:09:25.685Z
 
 ## Result
 
@@ -14,4 +14,5 @@ Generated: 2026-07-17T00:10:40.803Z
 
 > This is not ETS approval, independent literacy, writing, mathematics, accessibility, or psychometric validation, field testing, a scaled-score model, official essay scoring, a pass prediction, an admission or licensure decision, or an accommodation decision.
 
-- Assistant audit: 200 source questions contain 106 distinct source content kernels and 94 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.
+
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 107 distinct independent content kernels. 300 additional activities remain guided review only. 393 new independent questions remain to reach 500.

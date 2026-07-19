@@ -36,7 +36,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-mathematics-002",
@@ -75,7 +76,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-003",
@@ -114,7 +116,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-004",
@@ -153,7 +156,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-005",
@@ -192,7 +196,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-006",
@@ -231,7 +236,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-mathematics-007",
@@ -270,7 +276,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-008",
@@ -309,7 +316,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-009",
@@ -348,7 +356,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-010",
@@ -387,7 +396,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-mathematics-011",
@@ -426,7 +436,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-012",
@@ -465,7 +476,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-013",
@@ -504,7 +516,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-014",
@@ -543,7 +556,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-015",
@@ -582,7 +596,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-016",
@@ -621,7 +636,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-017",
@@ -660,7 +676,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-mathematics-018",
@@ -699,7 +716,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-019",
@@ -738,7 +756,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-mathematics-020",
@@ -777,7 +796,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-021",
@@ -816,7 +836,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b3-mathematics-022",
@@ -855,7 +876,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b3-mathematics-023",
@@ -894,7 +916,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-024",
@@ -933,7 +956,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-025",
@@ -972,7 +996,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-026",
@@ -1011,7 +1036,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-027",
@@ -1050,7 +1076,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-028",
@@ -1089,7 +1116,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-029",
@@ -1128,7 +1156,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-030",
@@ -1167,7 +1196,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-031",
@@ -1177,18 +1207,18 @@
     "difficulty": "application",
     "prompt": "A class surveys 24 students about how they travel to school: 9 take the bus, 7 ride in a car, 5 walk, and 3 ride a bicycle. A student makes a bar graph but leaves out the bicycle category. Which support is most appropriate?",
     "choices": [
-      "Accept the graph because the least frequent category does not need to be displayed.",
-      "Have the student make a complete frequency table, verify that the four counts total 24, and add a bicycle bar of height 3 using the graph's labels and scale.",
-      "Change the bicycle count from 3 to 5 so its bar can match the walking bar.",
-      "Remove the category and scale labels so the omitted group is less noticeable."
+      "Combine the 3 bicycle riders with the 5 walkers, draw one bar of height 8, and keep the survey total at 24.",
+      "Make a frequency table, confirm that the four counts total 24, and add a bicycle bar of height 3 using the graph’s scale.",
+      "Keep the three existing bars, change the reported sample size from 24 to 21, and label the graph as complete.",
+      "Add a bicycle bar with the same height as the walking bar so the two active-travel categories appear consistent."
     ],
     "answerIndex": 1,
-    "rationale": "A complete graph must represent every survey category accurately. A frequency table verifies all four counts and the total, while a labeled bar of height 3 restores the omitted bicycle data without changing it.",
+    "rationale": "A complete display must preserve all four survey categories and their recorded frequencies. The table verifies that the counts account for all 24 students, and the added bar represents the bicycle frequency of 3 on the existing scale.",
     "choiceRationales": [
-      "Every recorded category must appear; a small frequency does not justify omitting valid data.",
-      "This is correct because the table checks completeness and the added bar accurately represents the missing category.",
-      "Changing a valid count makes the graph inaccurate rather than correcting the omission.",
-      "Removing labels conceals information needed to interpret the graph and does not restore the missing data."
+      "Combining two recorded categories changes what the survey measured and prevents readers from distinguishing bicycle travel from walking, even though the total remains 24.",
+      "The frequency table checks completeness, and the added bar preserves the bicycle category, its observed count, and the graph’s established scale.",
+      "Reducing the sample size hides three valid responses instead of representing them, so the resulting graph would contradict the original survey data.",
+      "Matching the walking height changes the bicycle count from 3 to 5; visual symmetry cannot replace accurate representation of the observed frequency."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -1206,7 +1236,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-032",
@@ -1245,7 +1276,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b3-mathematics-033",
@@ -1284,6 +1316,7 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-16"
+    "authoredAt": "2026-07-16",
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

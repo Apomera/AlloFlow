@@ -34,4 +34,9 @@ describe('Guided Mode banner accessibility', () => {
     expect(component).toContain('.allo-guided-banner *,.allo-guided-dialog *');
     expect(component).toContain('transition-duration:.01ms !important');
   });
+
+  it('keeps the decorative step ring below modal layers', () => {
+    expect(component).toContain("borderRadius: '18px', pointerEvents: 'none', zIndex: 1");
+    expect(component).not.toMatch(/allo-guided-ring[\s\S]{0,500}zIndex:\s*9000/);
+  });
 });

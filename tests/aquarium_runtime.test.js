@@ -143,7 +143,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var feedIndividual = function (fishId, speciesId)');
     expect(source).toContain('if (currentHunger <= 10)');
     expect(source).toContain('var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05');
-    expect(source).toContain('var careScore = Math.max(0, Math.round(100 - hunger * 0.35 - stress * 0.35 - illnessSeverity * 15))');
+    expect(source).toContain('var careScore = Math.max(0, Math.min(100, Math.round(');
     expect(source).toContain("'aria-expanded': historyExpanded");
     expect(source).toContain('role: "list"');
     expect(source).toContain('role: "listitem"');
@@ -198,4 +198,369 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(contactStart).toBeGreaterThan(exposureStart);
     expect(progressionStart).toBeGreaterThan(contactStart);
   });
+  it('provides scheduled preventive maintenance with bounded service records', () => {
+    expect(source).toContain("var lastWaterChangeTick = typeof d.lastWaterChangeTick === 'number'");
+    expect(source).toContain('var maintenanceLog = Array.isArray(d.maintenanceLog) ? d.maintenanceLog.slice(-12) : []');
+    expect(source).toContain('var maintenanceOverdue = hoursSinceWaterChange >= 168');
+    expect(source).toContain('waterChem.ammonia >= 1 || waterChem.nitrite >= 1 || waterChem.nitrate >= 80');
+    expect(source).toContain('recommendedWaterChangePercent = 50');
+    expect(source).toContain('recommendedWaterChangePercent = 25');
+    expect(source).toContain('var serviceRecord = {');
+    expect(source).toContain('var nextMaintenanceLog = maintenanceLog.concat([serviceRecord]).slice(-12)');
+    expect(source).toContain('lastWaterChangeTick: simTick, maintenanceLog: nextMaintenanceLog');
+    expect(source).toContain('lastWaterChangeTick: 0, maintenanceLog: [], maintenanceHistoryExpanded: false');
+    expect(source).toContain('role: "progressbar"');
+    expect(source).toContain("'aria-controls': \"aquarium-maintenance-history\"");
+    expect(source).toContain('role: "listitem"');
+    expect(source).toContain('"Perform recommended " + recommendedWaterChangePercent + " percent water change"');
+
+    const scheduleStart = source.indexOf('var lastWaterChangeTick =');
+    const waterChangeStart = source.indexOf('var doWaterChange = function (requestedPercent)');
+    const plannerStart = source.indexOf("'aria-label': \"Aquarium maintenance planner\"");
+    expect(waterChangeStart).toBeGreaterThan(scheduleStart);
+    expect(plannerStart).toBeGreaterThan(waterChangeStart);
+  });
+  it('makes equipment upgrades measurable and directly operable', () => {
+    expect(source).toContain('function getTickEquipmentDefinition(type)');
+    expect(source).toContain("var _filterEquipment = getTickEquipmentDefinition('filter')");
+    expect(source).toContain('_filterEquipment.ammoniaReduction * _equipmentOutput.filter');
+    expect(source).toContain('_filterEquipment.nitriteReduction * _equipmentOutput.filter');
+    expect(source).toContain('deltaO2 += _airPumpEquipment.o2Boost * _equipmentOutput.airPump');
+    expect(source).toContain('var lightEff = (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light');
+    expect(source).toContain('pDef.growth * healthFactor * (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light');
+    expect(source).toContain('var effectiveAlgaeMultiplier = 0.2 + (_lightEquipment.algaeMult - 0.2) * _equipmentOutput.light');
+    expect(source).toContain('var heaterCorrectionRate = _equipment.heater > 0 && _equipmentOutput.heater > 0');
+    expect(source).toContain('var tempDrift = (desiredTemp - _waterChem.temp) * heaterCorrectionRate + tempNoise');
+    expect(source).toContain('Aquarium equipment systems');
+    expect(source).toContain('Object.keys(EQUIPMENT_CATALOG).map(function (type)');
+    expect(source).toContain('onClick: function () { buyEquipment(type); }');
+    expect(source).toContain("eventLog: appendTankEvent('\\u2B06\\uFE0F Upgraded '");
+    expect(source).toContain("if (newEquip.filter >= 2 && newEquip.heater >= 2");
+
+    const equipmentStateStart = source.indexOf('var _equipment = Object.assign');
+    const filterEffectStart = source.indexOf('var newAmm = Math.max', equipmentStateStart);
+    const equipmentUiStart = source.indexOf('Aquarium equipment systems');
+    expect(filterEffectStart).toBeGreaterThan(equipmentStateStart);
+    expect(equipmentUiStart).toBeGreaterThan(filterEffectStart);
+  });
+  it('models equipment wear, degraded output, and accessible servicing', () => {
+    expect(source).toContain('var equipmentCondition = {}');
+    expect(source).toContain("equipmentCondition[type] = typeof savedCondition === 'number'");
+    expect(source).toContain('var equipmentNeedsServiceCount = Object.keys(equipmentCondition)');
+    expect(source).toContain('newEquipmentCondition[type] = 100');
+    expect(source).toContain('var serviceEquipment = function (type)');
+    expect(source).toContain('if (currentCondition >= 95)');
+    expect(source).toContain('var _equipmentWearRates = { filter: 0.18, heater: 0.10, light: 0.08, airPump: 0.12 }');
+    expect(source).toContain('_equipmentOutput[type] = _equipmentFaults[type] ? 0 : condition / 100');
+    expect(source).toContain('_nextEquipmentCondition[type] = Math.max(0');
+    expect(source).toContain('equipmentCondition: _nextEquipmentCondition');
+    expect(source).toContain("'aria-label': catalog.name + \" condition\"");
+    expect(source).toContain('equipmentNeedsServiceCount > 0 && React.createElement("span", { role: "status"');
+    expect(source).toContain('condition < 95 && React.createElement("button"');
+    expect(source).toContain('onClick: function () { serviceEquipment(type); }');
+
+    const serviceStart = source.indexOf('var serviceEquipment = function (type)');
+    const tutorialStart = source.indexOf('var advanceTutorial = function ()');
+    expect(serviceStart).toBeGreaterThan(-1);
+    expect(tutorialStart).toBeGreaterThan(serviceStart);
+  });
+
+  it('creates preventable equipment faults with persistent outages and repairs', () => {
+    expect(source).toContain('var equipmentFaults = {}');
+    expect(source).toContain("var savedFault = d.equipmentFaults && d.equipmentFaults[type]");
+    expect(source).toContain('var equipmentFaultCount = Object.keys(equipmentFaults).length');
+    expect(source).toContain('var newEquipmentFaults = Object.assign({}, equipmentFaults)');
+    expect(source).toContain('delete newEquipmentFaults[type]');
+    expect(source).toContain('if (equipmentFaults[type])');
+    expect(source).toContain('var repairEquipment = function (type)');
+    expect(source).toContain('var repairCost = 5 + currentLevel * 5');
+    expect(source).toContain('repairedCondition[type] = 75');
+    expect(source).toContain('coins: coins - repairCost');
+    expect(source).toContain('_equipmentOutput[type] = _equipmentFaults[type] ? 0 : condition / 100');
+    expect(source).toContain('var _equipmentFailureRates = { filter: 0.03, heater: 0.025, light: 0.015, airPump: 0.02 }');
+    expect(source).toContain('if (!isActiveDevice || condition > 15) return');
+    expect(source).toContain("typeof definition.failChance === 'number' ? definition.failChance");
+    expect(source).toContain("_equipmentFaults[type] = { tick: newTick, reason: 'Low-condition failure' }");
+    expect(source).toContain("msg: '\\u26D4 ' + failedCatalog.name + ' failed at '");
+    expect(source).toContain('equipmentFaults: _equipmentFaults');
+    expect(source).toContain('equipmentFaultCount > 0 && React.createElement("span", { role: "alert"');
+    expect(source).toContain('SYSTEM OFFLINE: no output until repaired.');
+    expect(source).toContain('onClick: function () { repairEquipment(type); }');
+
+    const repairStart = source.indexOf('var repairEquipment = function (type)');
+    const tutorialStart = source.indexOf('var advanceTutorial = function ()');
+    expect(repairStart).toBeGreaterThan(-1);
+    expect(tutorialStart).toBeGreaterThan(repairStart);
+  });
+
+  it('provides a persistent evidence-based teaching backbone', () => {
+    expect(source).toContain("id: 'habitat', title: '1. Choose a Habitat'");
+    expect(source).toContain("id: 'cycle', title: '3. Follow the Nitrogen Cycle'");
+    expect(source).toContain("id: 'stabilize', title: '7. Demonstrate Stability'");
+    expect(source).toContain("concept: 'Every aquarium is a controlled ecosystem");
+    expect(source).toContain("objective: 'Run at least three aquarium-hour ticks.'");
+    expect(source).toContain("why: 'Overfeeding is one of the fastest ways");
+    expect(source).toContain("observe: 'Use the chemistry trend and event log");
+    expect(source).not.toContain('Tap the Shop tab to buy new fish and upgrade equipment.');
+
+    expect(source).toContain("var tutorialProgress = d.tutorialProgress && typeof d.tutorialProgress === 'object'");
+    expect(source).toContain('function getTutorialEvidence(stepId)');
+    expect(source).toContain("if (stepId === 'cycle') return { complete: simTick >= 3");
+    expect(source).toContain("if (stepId === 'water') return { complete: maintenanceLog.length > 0");
+    expect(source).toContain("if (stepId === 'equipment') return { complete: d.tutorialEquipmentMaintained === true");
+    expect(source).toContain("if (stepId === 'stabilize') return { complete: perfectWaterTicks >= 5");
+    expect(source).toContain('function recordTutorialLesson(lesson, evidenceLabel)');
+    expect(source).toContain('if (!currentTutorialEvidence.complete)');
+    expect(source).toContain('tutorialProgress: nextProgress');
+    expect((source.match(/tutorialEquipmentMaintained: true/g) || []).length).toBeGreaterThanOrEqual(3);
+
+    expect(source).toContain("'aria-labelledby': \"aquarium-learning-path-title\"");
+    expect(source).toContain("'aria-label': \"Aquarium learning path progress\"");
+    expect(source).toContain('currentTutorialEvidence.complete ? "\\u2705 Evidence ready: "');
+    expect(source).toContain("'aria-controls': \"aquarium-learning-outline\"");
+    expect(source).toContain('onClick: function () { selectTutorialLesson(lessonIndex); }');
+    expect(source).toContain('onClick: resumeTutorial');
+    expect(source).toContain('"Hide learning path"');
+
+    const evidenceStart = source.indexOf('function getTutorialEvidence(stepId)');
+    const handlerStart = source.indexOf('var advanceTutorial = function ()');
+    const interfaceStart = source.indexOf('Guided Aquarium Learning Path');
+    expect(handlerStart).toBeGreaterThan(evidenceStart);
+    expect(interfaceStart).toBeGreaterThan(handlerStart);
+  });
+
+  it('adds a persistent UDL lesson notebook with live evidence capture', () => {
+    expect(source).toContain("predict: 'Predict which chemistry setting will differ most");
+    expect(source).toContain("explain: 'Make a final claim about tank stability");
+    expect(source).toContain("var tutorialNotebook = d.tutorialNotebook && typeof d.tutorialNotebook === 'object'");
+    expect(source).toContain("prediction: typeof savedTutorialNote.prediction === 'string'");
+    expect(source).toContain("function updateTutorialNote(field, value)");
+    expect(source).toContain("['prediction', 'observation', 'explanation'].indexOf(field)");
+    expect(source).toContain("String(value || '').slice(0, 2000)");
+    expect(source).toContain("function captureTutorialObservation()");
+    expect(source).toContain("'NH3 ' + waterChem.ammonia.toFixed(2) + ' ppm'");
+    expect(source).toContain("'O2 ' + waterChem.dissolvedO2.toFixed(1) + ' mg/L'");
+    expect(source).toContain("equipmentFaultCount + ' equipment faults'");
+    expect(source).toContain("updateTutorialNote('observation', combinedObservation)");
+    expect(source).toContain('notebook: {');
+    expect(source).toContain('prediction: !!currentTutorialNote.prediction.trim()');
+
+    expect(source).toContain("'aria-controls': \"aquarium-lesson-notebook\"");
+    expect(source).toContain('Lesson lab notebook');
+    expect(source).toContain('"Predict \\u2192 Observe \\u2192 Explain"');
+    expect(source).toContain('value: currentTutorialNote.prediction');
+    expect(source).toContain('value: currentTutorialNote.observation');
+    expect(source).toContain('value: currentTutorialNote.explanation');
+    expect(source).toContain('maxLength: 2000');
+    expect(source).toContain("onChange: function (event) { updateTutorialNote('prediction', event.target.value); }");
+    expect(source).toContain('onClick: captureTutorialObservation');
+    expect(source).toContain('"Claim: ... Evidence: ... Reasoning: ..."');
+    expect(source).toContain('writing is not required to operate the simulation.');
+
+    const notebookStateStart = source.indexOf('var tutorialNotebook =');
+    const captureStart = source.indexOf('function captureTutorialObservation()');
+    const notebookUiStart = source.indexOf('Lesson lab notebook');
+    expect(captureStart).toBeGreaterThan(notebookStateStart);
+    expect(notebookUiStart).toBeGreaterThan(captureStart);
+  });
+  it('supports selectable planted specimens with nuanced field guides and live learning', () => {
+    expect(source).toContain('var PLANT_PROFILES = {');
+    expect(source).toContain("scientific: 'Microsorum pteropus'");
+    expect(source).toContain("scientific: 'Rhizophora mangle (common aquarium form)'");
+    expect(source).toContain("scientific: 'Chaetomorpha linum complex'");
+    expect(source).toContain('function getPlantProfile(plant)');
+    expect(source).toContain('nativeRange:');
+    expect(source).toContain('lightGuide:');
+    expect(source).toContain('co2Guide:');
+    expect(source).toContain('nutrition:');
+    expect(source).toContain('propagation:');
+    expect(source).toContain('compatibility:');
+    expect(source).toContain('diagnosis:');
+    expect(source).toContain('ecology:');
+    expect(source).toContain('aquascape:');
+    expect(source).toContain('carePlan:');
+
+    expect(source).toContain("var selectedPlantId = typeof d.selectedPlantId === 'string'");
+    expect(source).toContain('var selectedPlantProfile = selectedPlant ? getPlantProfile(selectedPlant) : null');
+    expect(source).toContain("var plantLearningAnswers = d.plantLearningAnswers");
+    expect(source).toContain('var selectedPlantLiveContribution = selectedPlant ? {');
+    expect(source).toContain('oxygenPerHour: selectedPlantPhotosynthesisActive');
+    expect(source).toContain('nightOxygenUse: selectedPlant.o2 * 0.15');
+    expect(source).toContain("selectedPlantCareAlerts.push({ severity: 'danger'");
+    expect(source).toContain("selectedPlantCareAlerts.push({ severity: 'success'");
+    expect(source).toContain('var selectPlant = function (plantId)');
+    expect(source).toContain('var answerPlantLearningCheck = function (answerIndex)');
+    expect(source).toContain('upd(\'plantLearningAnswers\', nextAnswers)');
+    expect(source).toContain('selectedPlantId: plant.id');
+
+    expect(source).toContain("'aria-labelledby': \"aquarium-plant-profile-title\"");
+    expect(source).toContain('"Identity & habitat"');
+    expect(source).toContain('"Light, carbon & nutrition"');
+    expect(source).toContain('"Ecology, compatibility & aquascaping"');
+    expect(source).toContain('"Live specimen contribution"');
+    expect(source).toContain('"Care signals"');
+    expect(source).toContain('"Care reasoning check"');
+    expect(source).toContain('onClick: function () { answerPlantLearningCheck(optionIndex); }');
+    expect(source).toContain('onClick: function () { selectPlant(ps.id); }');
+    expect(source).toContain('onClick: function () { selectPlant(pid); }');
+    expect(source).toContain('tankPlants.map(function (plantId, plantIndex)');
+    expect(source).toContain('onClick: function () { selectPlant(plantId); }');
+    expect(source).toContain("'aria-pressed': selectedPlantId === plantId");
+    expect(source).toContain('tankPlants.length === 0 && (selectedTank ===');
+
+    const profileStart = source.indexOf('var PLANT_PROFILES = {');
+    const liveStateStart = source.indexOf('var selectedPlantLiveContribution =');
+    const handlerStart = source.indexOf('var selectPlant = function (plantId)');
+    const panelStart = source.indexOf('Selected plant field guide and live specimen analysis');
+    const tankPlantStart = source.indexOf('tankPlants.map(function (plantId, plantIndex)');
+    expect(liveStateStart).toBeGreaterThan(profileStart);
+    expect(handlerStart).toBeGreaterThan(liveStateStart);
+    expect(panelStart).toBeGreaterThan(handlerStart);
+    expect(tankPlantStart).toBeGreaterThan(panelStart);
+  });
+
+  it('renders accessible simulation-aware plant diagrams', () => {
+    expect(source).toContain("var selectedPlantPlacementZone = 'midground'");
+    expect(source).toContain("selectedPlantPlacementZone = 'refugium'");
+    expect(source).toContain("selectedPlantPlacementZone = 'surface'");
+    expect(source).toContain("selectedPlantPlacementZone = 'emergent'");
+    expect(source).toContain("selectedPlantPlacementZone = 'foreground'");
+    expect(source).toContain("selectedPlantPlacementZone = 'background'");
+    expect(source).toContain("selectedPlantPlacementZone = 'hardscape'");
+    expect(source).toContain('var selectedPlantLightNeed =');
+    expect(source).toContain('var selectedPlantLightAvailable =');
+    expect(source).toContain('var selectedPlantCarbonAvailable =');
+    expect(source).toContain('var selectedPlantNitrogenAvailable =');
+    expect(source).toContain("resource.status = resource.gap >= 0 ? 'ready'");
+    expect(source).toContain('selectedPlantLimitingResource = selectedPlantResourceDiagram.slice().sort');
+
+    expect(source).toContain('"Aquascape placement map"');
+    expect(source).toContain('selectedPlant.name + " placement diagram. Recommended zone: "');
+    expect(source).toContain('"Plant physiology flow"');
+    expect(source).toContain('selectedPlant.name + " physiology diagram.');
+    expect(source).toContain('"Live limiting-factor diagram"');
+    expect(source).toContain('role: "progressbar"');
+    expect(source).toContain("'aria-valuemin': 0");
+    expect(source).toContain("'aria-valuemax': 100");
+    expect(source).toContain("'aria-valuenow': resource.available");
+    expect(source).toContain('"Available " + resource.available');
+    expect(source).toContain('"Need \\u2502 " + resource.need');
+    expect(source).toContain('these are not laboratory units.');
+
+    const diagramStateStart = source.indexOf("var selectedPlantPlacementZone = 'midground'");
+    const profilePanelStart = source.indexOf('Selected plant field guide and live specimen analysis');
+    const placementStart = source.indexOf('Aquascape placement map');
+    const physiologyStart = source.indexOf('Plant physiology flow');
+    const limitingStart = source.indexOf('Live limiting-factor diagram');
+    const detailStart = source.indexOf('Identity & habitat', placementStart);
+    expect(diagramStateStart).toBeGreaterThan(source.indexOf('var selectedPlantLiveContribution ='));
+    expect(placementStart).toBeGreaterThan(profilePanelStart);
+    expect(physiologyStart).toBeGreaterThan(placementStart);
+    expect(limitingStart).toBeGreaterThan(physiologyStart);
+    expect(detailStart).toBeGreaterThan(limitingStart);
+  });
+
+  it('records closed-loop exchanges and applies environmental vitality pressure', () => {
+    expect(source).toContain("var ecosystemExchangeView = ['live', 'day', 'night', 'net']");
+    expect(source).toContain("var ecosystemFocusType = ['all', 'fish', 'plant', 'bacteria', 'algae', 'water']");
+    expect(source).toContain('var plantO2Produced = 0');
+    expect(source).toContain('var plantCO2Consumed = 0');
+    expect(source).toContain('var plantNightO2Consumed = 0');
+    expect(source).toContain('plantO2Produced += plantO2Flow');
+    expect(source).toContain('plantNightCO2Released += plantNightCO2Flow');
+    expect(source).toContain('var environmentalDiseasePressure = 0');
+    expect(source).toContain('if (newChem.ammonia >= 0.25) environmentalDiseasePressure');
+    expect(source).toContain('if (newChem.nitrite >= 0.1) environmentalDiseasePressure');
+    expect(source).toContain('if (newChem.dissolvedO2 < 5) environmentalDiseasePressure');
+    expect(source).toContain('var environmentStressReasons = []');
+    expect(source).toContain("environmentStressReasons.push('temperature')");
+    expect(source).toContain("environmentStressReasons.push('pH')");
+    expect(source).toContain('if (habitatPlantBiomass > 6) environmentStressDelta -= 2');
+    expect(source).toContain("msg: 'Environmental stress: ' + environmentStressReasons.join(', ')");
+
+    expect(source).toContain('var herbivoreGrazingLoad = finalTankFish.reduce');
+    expect(source).toContain('var algaeGrazed = Math.min(newAlgae, herbivoreGrazingLoad * 0.06)');
+    expect(source).toContain('newAlgae = Math.max(0, newAlgae - algaeGrazed)');
+    expect(source).toContain("exchangeReasons.push('\\uD83D\\uDC1F Grazing organisms consumed '");
+    expect(source).toContain('var ecosystemExchangeSnapshot = {');
+    expect(source).toContain('chemistryDelta: {');
+    expect(source).toContain('reasons: exchangeReasons.slice(0, 8)');
+    expect(source).toContain('lastEcosystemExchange: ecosystemExchangeSnapshot');
+
+    expect(source).toContain('var scheduledPlantDaylight = _simHour >= 6 && _simHour < 20');
+    expect(source).toContain('if (scheduledPlantDaylight && (!_lightsOn || _equipmentOutput.light <= 0))');
+    expect(source).not.toContain("if (!isDaylight && pDef.light === 'high') healthDelta -= 0.5");
+
+    const respirationStart = source.indexOf('// ?? Fish respiration: consume O2, produce CO2');
+    const exchangeSnapshotStart = source.indexOf('var ecosystemExchangeSnapshot = {');
+    const persistenceStart = source.indexOf('lastEcosystemExchange: ecosystemExchangeSnapshot');
+    expect(exchangeSnapshotStart).toBeGreaterThan(respirationStart);
+    expect(persistenceStart).toBeGreaterThan(exchangeSnapshotStart);
+  });
+
+  it('renders a focusable day-night-net ecosystem network with counterfactuals', () => {
+    expect(source).toContain('var ecosystemPlantTotals = {');
+    expect(source).toContain("if (ecosystemExchangeView === 'day')");
+    expect(source).toContain("else if (ecosystemExchangeView === 'night')");
+    expect(source).toContain("else if (ecosystemExchangeView === 'net')");
+    expect(source).toContain("else if (lastEcosystemExchange && !ecosystemFocusId)");
+    expect(source).toContain('var withoutPlantsNextOxygen =');
+    expect(source).toContain('var withoutPlantsNextNitrate =');
+    expect(source).toContain('var withoutFishNextAmmonia =');
+    expect(source).toContain('var ecosystemCausalReasons =');
+
+    expect(source).toContain('"\\uD83C\\uDF0D Living Ecosystem Exchange Network"');
+    expect(source).toContain("'aria-labelledby': \"aquarium-exchange-network-title\"");
+    expect(source).toContain("'aria-label': \"Exchange time view\"");
+    expect(source).toContain("{ id: 'live', label: '\\u25CF Live tick' }");
+    expect(source).toContain("{ id: 'net', label: '\\uD83D\\uDCCA 24h net' }");
+    expect(source).toContain("upd('ecosystemExchangeView', viewOption.id)");
+    expect(source).toContain("'aria-label': \"Focus an ecosystem role\"");
+    expect(source).toContain("updMulti({ ecosystemFocusType: focusOption.id, ecosystemFocusId: null })");
+    expect(source).toContain('Closed-loop aquarium diagram.');
+    expect(source).toContain('"Without these plants next tick"');
+    expect(source).toContain('"Without these organisms next tick"');
+    expect(source).toContain('"Competition & grazing"');
+    expect(source).toContain('"\\uD83D\\uDD0D Why did the ecosystem change?"');
+    expect(source).toContain("role: \"log\", 'aria-live': \"polite\"");
+    expect(source).toContain("updMulti({ selectedPlantId: plant.id, ecosystemFocusType: 'plant', ecosystemFocusId: plant.id })");
+
+    const derivationStart = source.indexOf('var ecosystemPlantTotals = {');
+    const networkStart = source.indexOf('Living Ecosystem Exchange Network');
+    const plantPanelStart = source.indexOf('Plant Management Panel', networkStart);
+    expect(networkStart).toBeGreaterThan(derivationStart);
+    expect(plantPanelStart).toBeGreaterThan(networkStart);
+  });
+
+  it('explains every fish vitality score and traces individuals through the network', () => {
+    expect(source).toContain('var oxygenVitality =');
+    expect(source).toContain('var nitrogenVitality =');
+    expect(source).toContain('var temperatureVitality =');
+    expect(source).toContain('var pHVitality =');
+    expect(source).toContain('var spaceVitality =');
+    expect(source).toContain('var shelterVitality =');
+    expect(source).toContain('var nutritionVitality =');
+    expect(source).toContain('var calmVitality =');
+    expect(source).toContain('var illnessVitality =');
+    expect(source).toContain('var vitalityFactors = [');
+    expect(source).toContain("label: 'O\\u2082'");
+    expect(source).toContain("label: 'Shelter'");
+    expect(source).toContain('oxygenVitality * 0.15 + nitrogenVitality * 0.15');
+    expect(source).toContain('var limitingVitalityFactor = vitalityFactors.slice().sort');
+    expect(source).toContain('"Vitality " + careScore + "/100"');
+    expect(source).toContain('"Why vitality? Limiting: " + limitingVitalityFactor.label');
+    expect(source).toContain("'aria-label': displayName + \" vitality factors\"");
+    expect(source).toContain("updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fishKey })");
+    expect(source).toContain('"Trace " + displayName + " through the ecosystem exchange network"');
+    expect(source).toContain('"\\uD83D\\uDD0E Trace"');
+
+    const factorsStart = source.indexOf('var vitalityFactors = [');
+    const scoreStart = source.indexOf('var careScore = Math.max', factorsStart);
+    const traceStart = source.indexOf('Trace " + displayName', scoreStart);
+    const explanationStart = source.indexOf('Why vitality? Limiting:', traceStart);
+    expect(scoreStart).toBeGreaterThan(factorsStart);
+    expect(traceStart).toBeGreaterThan(scoreStart);
+    expect(explanationStart).toBeGreaterThan(traceStart);
+  });
+
 });

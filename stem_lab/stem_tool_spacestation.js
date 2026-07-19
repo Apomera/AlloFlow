@@ -3,6 +3,7 @@
 //
 // An interactive 3-D map of the International Space Station built from
 // Three.js primitives (every pressurized module clickable), plus:
+//   • Inside: Crew Shift — explore rooms, inspect hotspots, and learn by doing
 //   • A Day Aboard — hour-by-hour astronaut schedule (GMT) with the why
 //   • Systems & Engineering — ECLSS water/air loops, power, thermal,
 //     attitude control, debris shielding, and the microgravity challenges
@@ -77,6 +78,69 @@
       eng: 'Sun-tracking joints slowly rotate the wings all orbit long; giant radiators dump waste heat, because in vacuum you can’t cool anything with a breeze.' }
   ];
 
+  // ── Inside the station: a playable, room-to-room crew shift ──
+  var INTERIOR_ROOMS = [
+    { id: 'harmony', module: 'Harmony', time: '06:30 GMT', icon: '😴', color: '#e879f9', name: 'Crew quarters', zone: 'Wake-up', skill: 'Habitat safety', telemetry: ['CABIN AIRFLOW', '0.4 m/s'],
+      objective: 'Wake, orient yourself, and leave the tiny cabin safe for the next part of the shift.', hint: 'Ask what could drift, block airflow, or be hard to find later.',
+      scene: 'A phone-booth-sized cabin opens onto a bright white tunnel. Laptops, handrails, labels, and soft bags cover every surface — there is no floor or ceiling.',
+      sound: 'Fans hum constantly. That noise means breathable air is moving.',
+      task: 'Stow your sleep station', prompt: 'Your sleeping bag is drifting across the cabin. What should you do before the morning planning call?',
+      choices: [
+        { id: 'loose', label: 'Let it float', feedback: 'It would block the tiny cabin and could drift over an air return. Loose objects become hazards in microgravity.' },
+        { id: 'strap', label: 'Clip it flat to the wall', correct: true, feedback: 'Good stowage. On station, walls and ceilings are equally useful storage surfaces, and every object gets a restraint.' },
+        { id: 'vent', label: 'Stuff it into the vent', feedback: 'The vent must stay clear. Without forced airflow, exhaled CO₂ can collect around a crew member’s face.' }
+      ],
+      lesson: 'In continuous freefall, “down” disappears. Restraints replace shelves, and ventilation replaces natural convection.',
+      discoveries: [['🌬️ Air return', 'Air does not rise or fall here. Fans pull warm, humid, CO₂-rich air through the life-support system.'], ['🟦 Blue handrail', 'Crew use colored rails and labels to agree on an artificial “deck” direction and avoid getting disoriented.']] },
+    { id: 'destiny', module: 'Destiny', time: '08:10 GMT', icon: '🧪', color: '#38bdf8', name: 'Destiny laboratory', zone: 'Research', skill: 'Experimental design', telemetry: ['RACK TEMP', '22.1 °C'],
+      objective: 'Prepare a contained plant experiment that can deliver water without gravity.', hint: 'Look for a force that works inside very small spaces even when nothing falls.',
+      scene: 'Experiment racks line four sides of the lab. A glovebox seals samples away from the cabin, while cables and laptops turn the module into a working laboratory.',
+      sound: 'Rack fans and pumps make the lab sound more like a server room than a spaceship.',
+      task: 'Start a plant-water experiment', prompt: 'A seedling needs a steady supply of water, but droplets will not fall into its roots. Which delivery method should you test?',
+      choices: [
+        { id: 'pour', label: 'Pour from an open cup', feedback: 'The water would cling to the cup, your hand, or form floating blobs. Gravity cannot pull it neatly into the soil.' },
+        { id: 'mist', label: 'Release a cloud of droplets', feedback: 'Free droplets could enter electronics and vents. Experiments must keep water contained.' },
+        { id: 'wick', label: 'Use a porous capillary wick', correct: true, feedback: 'Experiment running. Adhesion and surface tension pull water through tiny pores even without gravity.' }
+      ],
+      lesson: 'Microgravity removes buoyancy and settling, revealing forces that gravity usually hides — especially capillary action and surface tension.',
+      discoveries: [['🧤 Glovebox', 'Sealed gloves let crew handle flames, fluids, or biological samples without releasing them into cabin air.'], ['📦 EXPRESS rack', 'Standard rack connections give hundreds of experiments shared power, cooling, data, and command links.']] },
+    { id: 'tranquility', module: 'Tranquility', time: '13:35 GMT', icon: '🔧', color: '#fbbf24', name: 'Life-support bay', zone: 'Maintenance', skill: 'Systems diagnosis', telemetry: ['CO₂ TREND', 'RISING'],
+      objective: 'Use the symptoms to restore safe circulation without changing unrelated systems.', hint: 'Weak flow plus a healthy fan motor points toward something obstructing the air path.',
+      scene: 'Panels hide pumps, valves, filters, the exercise area, and the station toilet. A caution light reports weak airflow in the cabin loop.',
+      sound: 'A fan’s pitch has dropped — a small change the crew are trained to notice.',
+      task: 'Restore cabin airflow', prompt: 'CO₂ is rising near a sleeping compartment and the fan is pulling less air. What is the best first maintenance action?',
+      choices: [
+        { id: 'off', label: 'Turn the fan off', feedback: 'That would make the invisible CO₂ pocket worse. Forced circulation is essential when warm air cannot rise.' },
+        { id: 'filter', label: 'Inspect and replace the clogged inlet filter', correct: true, feedback: 'Airflow restored. Dust, lint, hair, and crumbs collect on filters because they never settle to a floor.' },
+        { id: 'oxygen', label: 'Add extra oxygen', feedback: 'Oxygen does not remove CO₂ or fix weak airflow. Diagnose the circulation path before changing cabin chemistry.' }
+      ],
+      lesson: 'Maintenance is science in action: observe a symptom, isolate the likely cause, change one thing, and verify the system response.',
+      discoveries: [['♻️ Water panel', 'Condensed breath, sweat, and processed urine rejoin one carefully monitored water loop.'], ['🚽 Waste system', 'Airflow pulls waste away from the body; a normal gravity toilet would not work in freefall.']] },
+    { id: 'unity', module: 'Unity', time: '15:10 GMT', icon: '🫸', color: '#34d399', name: 'Unity node', zone: 'Low-g practice', skill: 'Newton’s laws', telemetry: ['RELATIVE SPEED', '0.00 m/s'],
+      objective: 'Choose an impulse that reaches the cargo slowly enough to stop at the next rail.', hint: 'With almost no drag, the speed you create will remain until another force stops you.',
+      scene: 'Six passageways meet at this busy intersection. A cargo pouch has floated loose just beyond your fingertips.',
+      sound: 'Velcro tears, fans whir, and a crewmate calls “coming through” from the next hatch.',
+      task: 'Retrieve a floating cargo pouch', prompt: 'You are at rest beside a handrail. How should you launch toward the pouch without colliding with the far hatch?',
+      choices: [
+        { id: 'hard', label: 'Kick off hard', feedback: 'You reach it fast but cannot stop — there is almost no drag. You bump the far hatch and send the pouch spinning.' },
+        { id: 'swim', label: 'Swim through the air', feedback: 'Air is far too thin to push against effectively. Astronauts translate by pushing on the station’s structure.' },
+        { id: 'gentle', label: 'Use a gentle fingertip push', correct: true, feedback: 'Clean translation. A tiny push is enough, and you keep one hand ready to brake on the next rail.' }
+      ],
+      lesson: 'Newton’s first law becomes everyday experience: once moving, you keep moving. Good low-g technique is slow, planned, and handrail-to-handrail.',
+      discoveries: [['🟨 Hatch stripe', 'Colored labels mark routes and orientation. In an emergency, everyone must find the same vehicle without a shared sense of down.'], ['📦 Cargo restraint', 'Velcro, clips, bungees, and mesh prevent inventory from turning into a cloud of lost objects.']] },
+    { id: 'cupola', module: 'Cupola', time: '21:25 GMT', icon: '🌍', color: '#818cf8', name: 'Cupola observatory', zone: 'Shift closeout', skill: 'Risk procedure', telemetry: ['NEXT SUNRISE', '41 min'],
+      objective: 'Finish Earth observation and leave the seven windows protected for the night.', hint: 'The correct closeout step protects hardware, not just crew sleep or night vision.',
+      scene: 'Earth fills the seven windows: blue ocean, a razor-thin atmosphere, then a sunset racing toward the station at orbital speed.',
+      sound: 'The fans remain audible, but this small dome feels calmer than the laboratories.',
+      task: 'Secure the Cupola for sleep', prompt: 'Your observation period is over and the Cupola will be unattended. What is the final step?',
+      choices: [
+        { id: 'open', label: 'Leave every window exposed', feedback: 'The view is tempting, but exposed panes face needless micrometeoroid and debris risk when nobody is watching.' },
+        { id: 'shade', label: 'Only dim the cabin lights', feedback: 'That reduces glare but does not protect the fused-silica pressure panes from an impact.' },
+        { id: 'shutters', label: 'Close the external shutters', correct: true, feedback: 'Cupola secure. The metal shutters protect the windows whenever they are not needed for viewing or robotics.' }
+      ],
+      lesson: 'Life aboard mixes wonder with procedure. Even the best view in human history ends with a checklist.',
+      discoveries: [['🪟 Center window', 'At about 80 cm across, it is the largest window ever flown in space and a prime robotics workstation.'], ['🌎 Thin blue line', 'Most of the atmosphere lies within about 16 km of Earth’s surface — visually tiny from a 400 km orbit.']] }
+  ];
   // ── A Day Aboard (typical crew day, station runs on GMT) ──
   var DAY_SCHEDULE = [
     { h: '06:00', icon: '⏰', label: 'Wake-up', what: 'Crew wakes in phone-booth-sized cabins; sleeping bags strapped to the wall.', why: 'With 16 sunrises a day, the body gets no light cues — a strict clock (and adjustable LED lighting) stands in for the Sun.' },
@@ -160,12 +224,13 @@
   window.StemLab.registerTool('spaceStation', {
     icon: '🛰️',
     label: 'Space Station',
-    desc: 'Fly around a clickable 3-D map of the International Space Station, live an astronaut’s day hour by hour, trace the water and air recycling loops, dodge debris, and run real orbital mechanics in the Orbit Lab. NGSS MS-ETS1 engineering design in Earth’s strangest laboratory.',
+    desc: 'Float through the International Space Station and work a crew shift: run research, troubleshoot life support, practice low-g movement, explore a clickable 3-D map, and learn the engineering behind life in orbit. NGSS MS-ETS1 in Earth’s strangest laboratory.',
     color: 'sky',
     category: 'science',
     questHooks: [
       { id: 'iss_module', label: 'Inspect 3 station modules in the 3-D map', icon: '🛰️', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenModules || {}).length >= 3; } },
       { id: 'iss_day', label: 'Walk through an astronaut’s whole day', icon: '👩‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenHours || {}).length >= 6; } },
+      { id: 'iss_inside', label: 'Complete 3 jobs inside the station', icon: '🧑‍🔬', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.interiorDone || {}).filter(function (k) { return !!s.interiorDone[k]; }).length >= 3; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
       { id: 'iss_quiz', label: 'Score 7+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= 7; } },
       { id: 'iss_dock', label: 'Achieve a soft-capture docking', icon: '🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.dockWins || 0) >= 1; } },
@@ -189,7 +254,11 @@
       if (!labToolData || !labToolData.spaceStation) {
         setLabToolData(function (prev) {
           return Object.assign({}, prev, { spaceStation: {
-            tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0,
+            tab: 'interior', selModule: 'zarya', dayIdx: 0, sysIdx: 0,
+            interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
+            interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
+            interiorGuided: true, lowGImpulse: 10, lowGResult: null,
+            researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
             orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false,
             seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0,
             askInput: '', askAnswer: '', askLoading: false
@@ -230,6 +299,9 @@
         return h('style', { dangerouslySetInnerHTML: { __html:
           '.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
           '.iss-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
+          '.iss-interior-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:12px}' +
+          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}' +
+          '@media (max-width:700px){.iss-interior-layout{grid-template-columns:1fr}}' +
           '@media (prefers-reduced-motion: reduce){.iss-root *{animation:none!important;transition:none!important}}'
         } });
       }
@@ -780,8 +852,278 @@
         );
       }
 
+      // ── Interior shift: room exploration + learn-by-doing activities ──
+      function renderInterior() {
+        var roomIdx = INTERIOR_ROOMS.findIndex(function (r) { return r.id === d.interiorRoom; });
+        if (roomIdx < 0) roomIdx = 0;
+        var room = INTERIOR_ROOMS[roomIdx];
+        var done = d.interiorDone || {};
+        var completed = Object.keys(done).filter(function (key) { return !!done[key]; }).length;
+        var visited = Object.assign({}, d.interiorSeen || {}); visited[room.id] = true;
+        var visitedCount = Object.keys(visited).filter(function (key) { return !!visited[key]; }).length;
+        var inspected = d.interiorInspected || {};
+        var inspectedCount = Object.keys(inspected).filter(function (key) { return !!inspected[key]; }).length;
+        var roomDone = !!done[room.id];
+        var guided = d.interiorGuided !== false;
+        var telemetryLabel = room.telemetry[0];
+        var telemetryValue = room.id === 'unity' && d.lowGResult ? Number(d.lowGResult.speed).toFixed(2) + ' m/s' : room.id === 'tranquility' && roomDone ? 'STABLE' : room.telemetry[1];
+        var attemptStats = d.interiorAttempts || {};
+        var totalAttempts = Object.keys(attemptStats).reduce(function (sum, key) { return sum + Number(attemptStats[key] || 0); }, 0);
+        var firstTryCount = Object.keys(done).filter(function (key) { return !!done[key] && attemptStats[key] === 1; }).length;
+        var notesCount = Object.keys(d.interiorNotes || {}).filter(function (key) { return String((d.interiorNotes || {})[key] || '').trim().length > 0; }).length;
+        var nextIncomplete = INTERIOR_ROOMS.findIndex(function (candidate) { return !done[candidate.id]; });
+        var choiceId = (d.interiorChoices || {})[room.id];
+        var pickedChoice = room.choices.find(function (c) { return c.id === choiceId; });
+        var discoveryPrefix = room.id + ':';
+        var selectedDiscovery = String(d.interiorDiscovery || '').indexOf(discoveryPrefix) === 0 ? parseInt(String(d.interiorDiscovery).split(':')[1], 10) : -1;
+
+        function visitRoom(index) {
+          var safe = Math.max(0, Math.min(INTERIOR_ROOMS.length - 1, index));
+          var next = INTERIOR_ROOMS[safe];
+          var seen = Object.assign({}, d.interiorSeen || {}); seen[next.id] = true;
+          upd({ interiorRoom: next.id, interiorSeen: seen, interiorDiscovery: null });
+          announceToSR(next.name + '. ' + next.zone + '.');
+        }
+        function inspectInteriorSpot(index) {
+          var nextInspected = Object.assign({}, inspected); nextInspected[room.id + ':' + index] = true;
+          upd({ interiorDiscovery: discoveryPrefix + index, interiorInspected: nextInspected });
+          announceToSR(room.discoveries[index][0] + '. ' + room.discoveries[index][1]);
+        }
+        function chooseInterior(choice, extra) {
+          var choices = Object.assign({}, d.interiorChoices || {}); choices[room.id] = choice.id;
+          var attemptMap = Object.assign({}, d.interiorAttempts || {});
+          var roomAttempts = roomDone ? (attemptMap[room.id] || 0) : (attemptMap[room.id] || 0) + 1; attemptMap[room.id] = roomAttempts;
+          var patch = Object.assign({ interiorChoices: choices, interiorAttempts: attemptMap }, extra || {});
+          if (choice.correct && !roomDone) {
+            var nextDone = Object.assign({}, done); nextDone[room.id] = true;
+            var quality = roomAttempts === 1 ? 'first try' : roomAttempts + ' attempts';
+            var log = (d.interiorLog || []).slice(); log.push(room.time + ' — ' + room.task + ' complete (' + quality + ')');
+            patch.interiorDone = nextDone; patch.interiorLog = log;
+            if (completed + 1 >= INTERIOR_ROOMS.length) patch.interiorShiftComplete = true;
+            if (typeof awardXP === 'function') { try { awardXP(roomAttempts === 1 ? 4 : 3); } catch (e) {} }
+            if (addToast) addToast(room.icon + ' ' + room.task + ' — complete', 'success');
+          }
+          upd(patch);
+          announceToSR((choice.correct ? 'Task complete. ' : 'Try another approach. ') + choice.feedback);
+        }
+        function sceneArt() {
+          var object = room.id === 'harmony' ?
+            h('g', { className: 'iss-float' }, h('rect', { x: 310, y: 78, width: 105, height: 112, rx: 28, fill: '#5b7ca5', stroke: '#cbd5e1', strokeWidth: 3 }), h('circle', { cx: 362, cy: 101, r: 15, fill: '#e8d8c3' }), h('text', { x: 362, y: 150, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 14 }, 'SLEEP BAG')) :
+            room.id === 'destiny' ? h('g', { className: 'iss-float' }, h('rect', { x: 312, y: 98, width: 100, height: 65, rx: 8, fill: '#172554', stroke: '#7dd3fc', strokeWidth: 3 }), h('path', { d: 'M362 98 C340 76 344 55 362 67 C379 49 387 76 362 98', fill: '#4ade80' }), h('circle', { cx: 382, cy: 120, r: 10, fill: '#38bdf8', opacity: 0.85 })) :
+            room.id === 'tranquility' ? h('g', null, h('rect', { x: 304, y: 72, width: 116, height: 120, rx: 8, fill: '#292524', stroke: '#fbbf24', strokeWidth: 3 }), h('circle', { cx: 362, cy: 124, r: 34, fill: '#111827', stroke: '#94a3b8', strokeWidth: 6 }), [0, 1, 2, 3, 4, 5].map(function (i) { var a = i * Math.PI / 3; return h('line', { key: i, x1: 362, y1: 124, x2: 362 + Math.cos(a) * 27, y2: 124 + Math.sin(a) * 27, stroke: '#64748b', strokeWidth: 5 }); }), h('text', { x: 362, y: 178, textAnchor: 'middle', fill: '#fbbf24', fontSize: 12 }, 'AIRFLOW LOW')) :
+            room.id === 'unity' ? h('g', { className: 'iss-float' }, h('rect', { x: 330, y: 93, width: 70, height: 58, rx: 8, fill: '#8b5e3c', stroke: '#fde68a', strokeWidth: 3 }), h('path', { d: 'M340 93 Q365 70 390 93', fill: 'none', stroke: '#fde68a', strokeWidth: 4 }), h('text', { x: 365, y: 128, textAnchor: 'middle', fill: '#fff7ed', fontSize: 13 }, 'CARGO')) :
+            h('g', null, h('circle', { cx: 362, cy: 124, r: 75, fill: '#2563a8', stroke: '#cbd5e1', strokeWidth: 8 }), h('path', { d: 'M300 132 Q350 82 424 112 Q398 180 320 181 Z', fill: '#e7f5ff', opacity: 0.72 }), h('path', { d: 'M314 145 Q358 105 414 122', fill: 'none', stroke: '#4ade80', strokeWidth: 9, opacity: 0.65 }));
+          return h('svg', { viewBox: '0 0 724 260', role: 'img', 'aria-label': 'Interior view of ' + room.name + '. ' + room.scene, style: { width: '100%', display: 'block', background: '#060b18' } },
+            h('defs', null, h('linearGradient', { id: 'iss-tunnel', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#e2e8f0' }), h('stop', { offset: '48%', stopColor: '#64748b' }), h('stop', { offset: '100%', stopColor: '#1e293b' }))),
+            h('rect', { x: 0, y: 0, width: 724, height: 260, fill: '#050a18' }),
+            h('polygon', { points: '0,18 724,18 610,88 114,88', fill: '#d7dee8', stroke: room.color, strokeWidth: 3 }),
+            h('polygon', { points: '0,242 724,242 610,172 114,172', fill: '#344154', stroke: room.color, strokeWidth: 3 }),
+            h('polygon', { points: '0,18 114,88 114,172 0,242', fill: '#8b98aa' }),
+            h('polygon', { points: '724,18 610,88 610,172 724,242', fill: '#69778b' }),
+            [42, 118, 194, 530, 606, 682].map(function (x, i) { return h('rect', { key: i, x: x, y: i < 3 ? 42 : 190, width: 48, height: 18, rx: 4, fill: '#172033', stroke: '#cbd5e1' }); }),
+            h('rect', { x: 140, y: 34, width: 444, height: 10, rx: 5, fill: '#2563eb' }), h('rect', { x: 140, y: 216, width: 444, height: 10, rx: 5, fill: '#fbbf24' }),
+            object,
+            h('text', { x: 18, y: 252, fill: '#cbd5e1', fontSize: 12 }, room.module + ' • ' + room.time),
+            h('text', { x: 706, y: 252, textAnchor: 'end', fill: room.color, fontSize: 12, fontWeight: 700 }, room.zone.toUpperCase()));
+        }
+        function renderLowGSimulator() {
+          var impulse = Math.max(2, Math.min(22, Number(d.lowGImpulse == null ? 10 : d.lowGImpulse)));
+          var speed = impulse / 70;
+          var travelTime = 2.5 / speed;
+          var result = d.lowGResult;
+          function runTranslation() {
+            var controlled = impulse >= 7 && impulse <= 16;
+            var feedback = controlled ?
+              'Controlled translation. You arrive slowly enough to catch the pouch and brake on the handrail.' :
+              impulse < 7 ? 'Safe but inefficient: the pouch drifts away while you take too long to cross the node. Add a little impulse.' :
+              'Approach too fast. With no drag to slow you, the far handrail arrives before you can control the stop.';
+            chooseInterior({ id: controlled ? 'gentle' : impulse > 16 ? 'hard' : 'slow', correct: controlled, feedback: feedback }, {
+              lowGResult: { impulse: impulse, speed: speed, time: travelTime, success: controlled, feedback: feedback }
+            });
+          }
+          return h('div', { 'data-iss-lowg-sim': 'true', style: { padding: 10, borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px solid #334155' } },
+            h('label', { htmlFor: 'iss-lowg-impulse', style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: TEXT, fontSize: 11.5, fontWeight: 800 } }, h('span', null, 'Push impulse'), h('span', { style: { color: room.color }, 'aria-live': 'polite' }, impulse.toFixed(0) + ' N·s')),
+            h('input', { id: 'iss-lowg-impulse', type: 'range', min: 2, max: 22, step: 1, value: impulse, onChange: function (e) { upd({ lowGImpulse: Number(e.target.value), lowGResult: null }); }, 'aria-describedby': 'iss-lowg-explain', style: { width: '100%', accentColor: room.color, margin: '8px 0 5px' } }),
+            h('div', { style: { position: 'relative', height: 18, borderRadius: 9, background: 'linear-gradient(90deg,#475569 0 25%,#22c55e 25% 70%,#ef4444 70% 100%)', border: '1px solid #64748b' }, 'aria-hidden': 'true' },
+              h('div', { style: { position: 'absolute', left: '25%', top: -4, bottom: -4, width: '45%', border: '1px dashed #bbf7d0', borderRadius: 8 } }),
+              h('div', { className: 'iss-float', style: { position: 'absolute', left: 'calc(' + ((impulse - 2) / 20 * 100).toFixed(1) + '% - 9px)', top: -3, width: 22, height: 22, display: 'grid', placeItems: 'center', borderRadius: '50%', background: '#f8fafc', color: '#0f172a', fontSize: 13, boxShadow: '0 0 0 2px #0f172a' } }, '🧑‍🚀')),
+            h('div', { id: 'iss-lowg-explain', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 } },
+              [['Predicted speed', speed.toFixed(2) + ' m/s'], ['2.5 m travel time', travelTime.toFixed(1) + ' s']].map(function (metric, i) { return h('div', { key: i, style: { padding: 6, borderRadius: 7, background: '#0f172a', border: '1px solid #334155' } }, h('div', { style: { color: SOFT, fontSize: 9, textTransform: 'uppercase' } }, metric[0]), h('strong', { style: { color: '#d1fae5', fontSize: 12 } }, metric[1])); })),
+            h('p', { style: { color: SOFT, fontSize: 10.5, lineHeight: 1.45, margin: '7px 0' } }, 'Model: Δv = impulse ÷ 70 kg. The green band balances useful travel time with a controllable arrival.'),
+            h('button', { type: 'button', onClick: runTranslation, style: { width: '100%', padding: '8px 10px', borderRadius: 8, border: 'none', background: '#10b981', color: '#022c22', fontWeight: 900, fontSize: 11.5, cursor: 'pointer' } }, '🫸 Push off and test'),
+            result ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, color: TEXT, fontSize: 11.5, lineHeight: 1.5, background: result.success ? 'rgba(34,197,94,.12)' : 'rgba(251,191,36,.12)', borderLeft: '3px solid ' + (result.success ? '#22c55e' : '#fbbf24') } }, h('strong', { style: { color: result.success ? '#4ade80' : '#fbbf24' } }, result.success ? 'Controlled arrival: ' : 'Flight result: '), result.feedback) : null
+          );
+        }
+        function renderResearchProcedure() {
+          var step = Math.max(0, Math.min(3, Number(d.researchStep || 0)));
+          var procedure = [
+            ['1', 'Secure the sample', 'Latch the plant chamber inside the glovebox so water and biological material stay contained.'],
+            ['2', 'Prime the wick', 'Inject water into the porous wick until capillary action reaches the root pillow.'],
+            ['3', 'Start camera + baseline', 'Begin time-lapse imaging and record temperature before changing the experiment.']
+          ];
+          function runStep(index) {
+            if (roomDone) return;
+            if (index !== step) {
+              var attemptMap = Object.assign({}, d.interiorAttempts || {}); attemptMap.destiny = (attemptMap.destiny || 0) + 1;
+              upd({ researchFeedback: 'Sequence hold: complete step ' + (step + 1) + ' before moving ahead.', researchErrors: (d.researchErrors || 0) + 1, interiorAttempts: attemptMap });
+              announceToSR('Procedure out of sequence. Complete step ' + (step + 1) + ' first.');
+              return;
+            }
+            var next = step + 1;
+            if (next >= procedure.length) {
+              chooseInterior({ id: 'wick', correct: true, feedback: 'Experiment active. The camera can now reveal how capillary flow reaches roots without gravity-driven drainage.' }, { researchStep: 3, researchFeedback: 'Baseline logged — water front stable, chamber contained, camera recording.' });
+            } else {
+              upd({ researchStep: next, researchFeedback: procedure[index][1] + ' confirmed. Continue to step ' + (next + 1) + '.' });
+              announceToSR(procedure[index][1] + ' complete.');
+            }
+          }
+          return h('div', { 'data-iss-research-procedure': 'true', style: { display: 'grid', gap: 6 } },
+            procedure.map(function (item, i) { var complete = i < step || roomDone; var current = i === step && !roomDone; return h('button', { key: i, type: 'button', disabled: complete, onClick: function () { runStep(i); }, style: { textAlign: 'left', padding: 8, borderRadius: 8, border: '1px solid ' + (complete ? '#22c55e' : current ? room.color : '#475569'), background: complete ? 'rgba(34,197,94,.12)' : current ? room.color + '16' : 'rgba(2,6,23,.35)', color: TEXT, cursor: complete ? 'default' : 'pointer', opacity: !complete && !current ? .72 : 1 } }, h('strong', { style: { color: complete ? '#4ade80' : current ? room.color : SOFT, fontSize: 11.5 } }, (complete ? '✓ ' : item[0] + '. ') + item[1]), h('span', { style: { display: 'block', color: SOFT, fontSize: 10, lineHeight: 1.45, marginTop: 3 } }, item[2])); }),
+            d.researchFeedback ? h('div', { role: 'status', 'aria-live': 'polite', style: { padding: 8, borderRadius: 8, background: roomDone ? 'rgba(34,197,94,.1)' : 'rgba(14,165,233,.08)', borderLeft: '3px solid ' + (roomDone ? '#22c55e' : room.color), color: TEXT, fontSize: 11, lineHeight: 1.5 } }, d.researchFeedback) : null
+          );
+        }
+        function renderMaintenanceConsole() {
+          var sensors = [
+            ['Fan motor current', 'NORMAL', 'The fan motor is powered and drawing its expected current. The motor itself is probably healthy.'],
+            ['Inlet pressure drop', 'HIGH', 'Pressure is much higher before the inlet than after it — evidence that airflow is meeting a blockage.'],
+            ['Cabin CO₂ trend', 'RISING', 'Scrubbing hardware may be healthy, but cabin air is not reaching it quickly enough.']
+          ];
+          var checks = d.maintenanceChecks || {};
+          var checkedCount = sensors.filter(function (_, i) { return !!checks[i]; }).length;
+          var reading = d.maintenanceReading == null ? -1 : Number(d.maintenanceReading);
+          function inspectSensor(index) {
+            var next = Object.assign({}, checks); next[index] = true;
+            upd({ maintenanceChecks: next, maintenanceReading: index });
+            announceToSR(sensors[index][0] + ': ' + sensors[index][1] + '. ' + sensors[index][2]);
+          }
+          return h('div', { 'data-iss-maintenance-console': 'true' },
+            h('div', { role: 'group', 'aria-label': 'Life-support telemetry channels', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(82px,1fr))', gap: 5 } }, sensors.map(function (sensor, i) { var checked = !!checks[i]; return h('button', { key: i, type: 'button', 'aria-pressed': checked, onClick: function () { inspectSensor(i); }, style: { minWidth: 0, padding: 7, borderRadius: 8, textAlign: 'left', border: '1px solid ' + (checked ? room.color : '#475569'), background: checked ? room.color + '16' : 'rgba(2,6,23,.38)', color: TEXT, cursor: 'pointer' } }, h('span', { style: { display: 'block', color: SOFT, fontSize: 8.5, lineHeight: 1.25 } }, (checked ? '✓ ' : '') + sensor[0]), h('strong', { style: { display: 'block', color: sensor[1] === 'NORMAL' ? '#4ade80' : '#fbbf24', fontSize: 11, marginTop: 3 } }, sensor[1])); })),
+            reading >= 0 && sensors[reading] ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 6, padding: 7, borderRadius: 7, background: 'rgba(251,191,36,.08)', color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, h('strong', { style: { color: '#fbbf24' } }, sensors[reading][0] + ': '), sensors[reading][2]) : h('p', { style: { color: SOFT, fontSize: 10, margin: '6px 0 0' } }, 'Inspect at least two channels before commanding maintenance.'),
+            h('div', { role: 'group', 'aria-label': 'Maintenance actions', style: { display: 'grid', gap: 5, marginTop: 8 } }, room.choices.map(function (choice) { var picked = choiceId === choice.id; return h('button', { key: choice.id, type: 'button', disabled: checkedCount < 2 || roomDone, onClick: function () { chooseInterior(choice); }, style: { textAlign: 'left', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (roomDone && choice.correct ? '#22c55e' : picked ? room.color : '#475569'), background: roomDone && choice.correct ? 'rgba(34,197,94,.14)' : picked ? room.color + '16' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 750, cursor: checkedCount < 2 || roomDone ? 'not-allowed' : 'pointer', opacity: checkedCount < 2 ? .45 : roomDone && !choice.correct ? .5 : 1 } }, (roomDone && choice.correct ? '✓ ' : '') + choice.label); })),
+            pickedChoice ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 7, padding: 7, borderRadius: 7, background: pickedChoice.correct ? 'rgba(34,197,94,.1)' : 'rgba(251,191,36,.1)', borderLeft: '3px solid ' + (pickedChoice.correct ? '#22c55e' : '#fbbf24'), color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, pickedChoice.feedback) : null
+          );
+        }
+        function renderCrewNotebook() {
+          var prompts = {
+            harmony: 'What design choice makes an ordinary morning routine different in freefall?',
+            destiny: 'What evidence would show that capillary watering helped the plant?',
+            tranquility: 'Which telemetry reading most strongly supported your diagnosis, and why?',
+            unity: 'How did changing impulse affect arrival speed and travel time?',
+            cupola: 'What procedure protects the view, and what risk does it manage?'
+          };
+          var notes = d.interiorNotes || {};
+          var value = String(notes[room.id] || '');
+          return h('details', { 'data-iss-crew-notebook': room.id, style: { margin: '12px 0', padding: '8px 10px', borderRadius: 10, background: 'rgba(15,23,42,.6)', border: '1px solid #334155' } },
+            h('summary', { style: { color: TEXT, fontSize: 11.5, fontWeight: 850, cursor: 'pointer' } }, '📓 Crew notebook', value.trim() ? h('span', { style: { marginLeft: 7, color: '#4ade80', fontSize: 9.5 } }, '• observation saved') : h('span', { style: { marginLeft: 7, color: SOFT, fontSize: 9.5 } }, '• optional reflection')),
+            h('p', { style: { color: SOFT, fontSize: 10.5, lineHeight: 1.45, margin: '8px 0 5px' } }, prompts[room.id]),
+            h('textarea', { value: value, rows: 2, maxLength: 240, onChange: function (e) { var next = Object.assign({}, notes); next[room.id] = String(e.target.value || '').slice(0, 240); upd({ interiorNotes: next }); }, 'aria-label': 'Crew notebook observation for ' + room.name, placeholder: 'Record an observation, claim, or question…', style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', padding: 8, borderRadius: 8, border: '1px solid #475569', background: '#020617', color: TEXT, fontFamily: 'inherit', fontSize: 11.5, lineHeight: 1.45 } }),
+            h('div', { style: { textAlign: 'right', color: SOFT, fontSize: 9, marginTop: 3 }, 'aria-live': 'polite' }, value.length + ' / 240')
+          );
+        }
+        function renderCabinStow() {
+          var items = [
+            ['bag', '🛏️', 'Sleeping bag', 'Clip flat to the cabin wall', 'A floating bag can block the cabin or drift across the air return.'],
+            ['tablet', '💻', 'Crew tablet', 'Velcro to its charging dock', 'Velcro creates a temporary “shelf” on any surface when gravity cannot hold objects down.'],
+            ['cloth', '🧼', 'Damp washcloth', 'Seal inside the hygiene pouch', 'Free moisture can migrate into electronics, vents, and experiment hardware.']
+          ];
+          var stowed = d.cabinStow || {};
+          var stowedCount = items.filter(function (item) { return !!stowed[item[0]]; }).length;
+          function secureItem(item) {
+            if (roomDone || stowed[item[0]]) return;
+            var next = Object.assign({}, stowed); next[item[0]] = true;
+            var nextCount = items.filter(function (candidate) { return !!next[candidate[0]]; }).length;
+            if (nextCount >= items.length) {
+              chooseInterior({ id: 'strap', correct: true, feedback: 'Cabin stow complete. Every loose item is restrained and the air return remains clear.' }, { cabinStow: next });
+            } else {
+              upd({ cabinStow: next });
+              announceToSR(item[2] + ' secured. ' + nextCount + ' of ' + items.length + ' items stowed.');
+            }
+          }
+          return h('div', { 'data-iss-cabin-stow': 'true' },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', marginBottom: 6 } }, h('strong', { style: { color: TEXT, fontSize: 11 } }, 'Loose-item scan'), h('span', { role: 'status', 'aria-live': 'polite', style: { color: stowedCount === items.length ? '#4ade80' : room.color, fontSize: 10, fontWeight: 800 } }, stowedCount + ' / ' + items.length + ' secured')),
+            h('div', { role: 'group', 'aria-label': 'Cabin items to secure', style: { display: 'grid', gap: 6 } }, items.map(function (item) { var secure = !!stowed[item[0]]; return h('button', { key: item[0], type: 'button', disabled: secure || roomDone, onClick: function () { secureItem(item); }, style: { display: 'grid', gridTemplateColumns: '28px 1fr', gap: 7, textAlign: 'left', padding: 8, borderRadius: 8, border: '1px solid ' + (secure ? '#22c55e' : '#475569'), background: secure ? 'rgba(34,197,94,.12)' : 'rgba(2,6,23,.38)', color: TEXT, cursor: secure || roomDone ? 'default' : 'pointer' } }, h('span', { style: { fontSize: 19 }, 'aria-hidden': 'true' }, secure ? '✓' : item[1]), h('span', null, h('strong', { style: { display: 'block', color: secure ? '#4ade80' : TEXT, fontSize: 11 } }, item[2] + ' — ' + item[3]), h('span', { style: { display: 'block', color: SOFT, fontSize: 9.5, lineHeight: 1.4, marginTop: 2 } }, item[4]))); })),
+            roomDone ? h('div', { role: 'status', style: { marginTop: 7, padding: 7, borderRadius: 7, background: 'rgba(34,197,94,.1)', color: '#bbf7d0', fontSize: 10.5 } }, 'Cabin clear ✓ Air return unobstructed ✓ Morning stow logged') : null
+          );
+        }
+        function renderCupolaObservation() {
+          var targets = {
+            day: { icon: '🌀', label: 'Cloud vortex', mode: 'Daylight • fast shutter', color: '#38bdf8', note: 'Cloud-band rotation reveals the storm’s structure; repeated images let scientists compare its growth and direction.' },
+            aurora: { icon: '🟢', label: 'Aurora curtain', mode: 'Low light • steady camera', color: '#4ade80', note: 'Aurora traces charged particles guided by Earth’s magnetic field into the upper atmosphere.' },
+            night: { icon: '🌃', label: 'City lights', mode: 'Night • long exposure', color: '#fbbf24', note: 'Night imagery maps settlement patterns, power outages, fires, and changes in human activity.' }
+          };
+          var targetId = targets[d.cupolaTarget] ? d.cupolaTarget : 'day';
+          var target = targets[targetId];
+          var captured = !!d.cupolaCaptured;
+          var shutters = !!d.cupolaShutters;
+          function selectTarget(id) {
+            if (roomDone) return;
+            upd({ cupolaTarget: id, cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '' });
+            announceToSR(targets[id].label + ' selected. Imaging mode: ' + targets[id].mode + '.');
+          }
+          function captureTarget() {
+            if (roomDone) return;
+            upd({ cupolaCaptured: true, cupolaObservation: target.note });
+            announceToSR('Image captured. ' + target.note);
+          }
+          function closeObservation() {
+            if (!captured || roomDone) return;
+            chooseInterior({ id: 'shutters', correct: true, feedback: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' }, { cupolaShutters: true, cupolaObservation: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' });
+          }
+          return h('div', { 'data-iss-cupola-observation': 'true' },
+            h('div', { style: { position: 'relative', height: 92, overflow: 'hidden', display: 'grid', placeItems: 'center', borderRadius: 10, background: shutters ? '#334155' : 'radial-gradient(circle at 50% 115%,' + target.color + ',#07101f 68%)', border: '2px solid ' + (shutters ? '#64748b' : target.color) } },
+              shutters ? h('div', { style: { position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg,#334155 0 12px,#475569 12px 15px)' } }) : null,
+              h('div', { className: shutters ? '' : 'iss-float', style: { position: 'relative', zIndex: 1, textAlign: 'center' } }, h('div', { style: { fontSize: 30 }, 'aria-hidden': 'true' }, shutters ? '🛡️' : target.icon), h('strong', { style: { display: 'block', color: shutters ? '#cbd5e1' : '#f8fafc', fontSize: 11 } }, shutters ? 'WINDOW SHUTTERS CLOSED' : target.label))),
+            h('div', { role: 'group', 'aria-label': 'Earth observation targets', style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginTop: 7 } }, Object.keys(targets).map(function (id) { var t = targets[id], active = id === targetId; return h('button', { key: id, type: 'button', disabled: roomDone, 'aria-pressed': active, onClick: function () { selectTarget(id); }, style: { minWidth: 0, padding: 6, borderRadius: 7, border: '1px solid ' + (active ? t.color : '#475569'), background: active ? t.color + '18' : 'rgba(2,6,23,.35)', color: active ? '#f8fafc' : SOFT, fontSize: 9.5, fontWeight: 800, cursor: roomDone ? 'default' : 'pointer' } }, t.icon + ' ' + t.label); })),
+            h('div', { style: { marginTop: 6, padding: 7, borderRadius: 7, background: 'rgba(2,6,23,.4)', border: '1px solid #334155', color: TEXT, fontSize: 10 } }, h('strong', { style: { color: target.color } }, 'Camera plan: '), target.mode),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 7 } },
+              h('button', { type: 'button', disabled: roomDone || shutters, onClick: captureTarget, style: { padding: 8, borderRadius: 8, border: '1px solid ' + target.color, background: captured ? target.color + '20' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 850, cursor: roomDone || shutters ? 'default' : 'pointer' } }, captured ? '✓ Image captured' : '📷 Capture image'),
+              h('button', { type: 'button', disabled: !captured || roomDone, onClick: closeObservation, style: { padding: 8, borderRadius: 8, border: '1px solid ' + (captured ? '#818cf8' : '#475569'), background: captured ? 'rgba(129,140,248,.16)' : 'rgba(2,6,23,.25)', color: captured ? '#e0e7ff' : SOFT, fontSize: 10.5, fontWeight: 850, cursor: captured && !roomDone ? 'pointer' : 'not-allowed', opacity: captured ? 1 : .48 } }, shutters ? '✓ Shutters closed' : '🛡️ Close shutters')),
+            d.cupolaObservation ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 7, padding: 7, borderRadius: 7, background: target.color + '10', borderLeft: '3px solid ' + target.color, color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, h('strong', { style: { color: target.color } }, 'Observation: '), d.cupolaObservation) : null
+          );
+        }
+        return h('div', { 'data-iss-interior': room.id },
+          h('div', { style: { padding: 14, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.16), rgba(99,102,241,0.12))', border: '1px solid #0ea5e9' } },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10, alignItems: 'center' } },
+              h('div', null, h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' } }, __alloT('stem.spacestation.interior_kicker', 'Your crew shift')), h('h3', { style: { margin: '3px 0 2px', color: TEXT, fontSize: 18 } }, __alloT('stem.spacestation.interior_title', 'Float inside. Work like an astronaut.')), h('p', { style: { margin: 0, color: SOFT, fontSize: 12.5 } }, __alloT('stem.spacestation.interior_intro', 'Move through five real station spaces. Inspect what is around you, make a crew decision, and learn the science from the result.'))),
+              h('div', { style: { minWidth: 150, textAlign: 'right' } }, h('strong', { style: { color: completed === INTERIOR_ROOMS.length ? '#4ade80' : '#7dd3fc', fontSize: 15 } }, completed + ' / ' + INTERIOR_ROOMS.length + ' jobs'), h('div', { style: { height: 7, marginTop: 5, borderRadius: 9, overflow: 'hidden', background: '#0f172a', border: '1px solid #334155' } }, h('div', { style: { width: (completed / INTERIOR_ROOMS.length * 100) + '%', height: '100%', background: completed === INTERIOR_ROOMS.length ? '#22c55e' : '#0ea5e9', transition: 'width .25s ease' } }))))),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, margin: '-4px 0 12px' } },
+            h('div', { role: 'status', 'aria-label': 'Crew shift progress', style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              [['🚪', visitedCount + '/5', 'rooms visited'], ['🔎', inspectedCount + '/10', 'details inspected'], ['✓', completed + '/5', 'jobs complete']].map(function (item, i) { return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 5, padding: '5px 8px', borderRadius: 20, background: 'rgba(2,6,23,.42)', border: '1px solid #334155', color: TEXT, fontSize: 10.5 } }, h('span', { 'aria-hidden': 'true' }, item[0]), h('strong', { style: { color: '#7dd3fc' } }, item[1]), h('span', { style: { color: SOFT } }, item[2])); })),
+            h('div', { role: 'group', 'aria-label': 'Learning guidance level', style: { display: 'flex', gap: 4, padding: 3, borderRadius: 9, background: '#0f172a', border: '1px solid #334155' } },
+              [['guided', '🧭 Guided'], ['independent', '🎯 Independent']].map(function (mode) { var active = guided ? mode[0] === 'guided' : mode[0] === 'independent'; return h('button', { key: mode[0], type: 'button', 'aria-pressed': active, onClick: function () { upd({ interiorGuided: mode[0] === 'guided' }); }, style: { padding: '5px 8px', borderRadius: 6, border: 'none', background: active ? '#0ea5e9' : 'transparent', color: active ? '#04121f' : SOFT, fontSize: 10.5, fontWeight: 800, cursor: 'pointer' } }, mode[1]); }))
+          ),          h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.interior_route', 'Interior station route'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 7, marginBottom: 12 } },
+            INTERIOR_ROOMS.map(function (r, i) { var on = r.id === room.id; var finished = !!done[r.id]; var wasVisited = !!visited[r.id]; var roomInspected = [0, 1].filter(function (n) { return !!inspected[r.id + ':' + n]; }).length; return h('button', { key: r.id, type: 'button', 'aria-pressed': on, onClick: function () { visitRoom(i); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '✅' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited • ' + r.zone : r.zone)); })),
+          h('div', { className: 'iss-interior-layout' },
+            h('div', null,
+              h('div', { style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + room.color, background: '#050a18' } }, sceneArt(),
+                room.discoveries.map(function (spot, i) { var on = selectedDiscovery === i; return h('button', { key: i, type: 'button', 'aria-pressed': on, onClick: function () { inspectInteriorSpot(i); }, style: { position: 'absolute', left: i ? '65%' : '6%', top: i ? '16%' : '57%', maxWidth: '29%', padding: '5px 8px', borderRadius: 8, fontSize: 10, fontWeight: 800, cursor: 'pointer', background: on ? room.color : 'rgba(2,6,23,0.88)', color: on ? '#04121f' : '#f8fafc', border: '1px solid ' + room.color } }, (inspected[room.id + ':' + i] ? '✓ ' : '') + spot[0]); })),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 8 } }, h('button', { type: 'button', disabled: roomIdx === 0, onClick: function () { visitRoom(roomIdx - 1); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomIdx ? 'pointer' : 'not-allowed', opacity: roomIdx ? 1 : 0.45 } }, '← Float aft'), h('button', { type: 'button', disabled: roomIdx === INTERIOR_ROOMS.length - 1, onClick: function () { visitRoom(roomIdx + 1); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomIdx < INTERIOR_ROOMS.length - 1 ? 'pointer' : 'not-allowed', opacity: roomIdx < INTERIOR_ROOMS.length - 1 ? 1 : 0.45 } }, 'Float forward →')),
+              h('p', { style: { color: TEXT, fontSize: 12.5, lineHeight: 1.6, margin: '10px 0 4px' } }, room.scene),
+              h('p', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.55, margin: 0 } }, h('strong', { style: { color: room.color } }, '🎧 You notice: '), room.sound),
+              selectedDiscovery >= 0 && room.discoveries[selectedDiscovery] ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 9, padding: 9, borderRadius: 9, background: room.color + '12', borderLeft: '3px solid ' + room.color, color: TEXT, fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: room.color } }, room.discoveries[selectedDiscovery][0] + ': '), room.discoveries[selectedDiscovery][1]) : h('p', { style: { color: SOFT, fontSize: 10.5, margin: '8px 0 0' } }, 'Select the two labeled hotspots to look closer.')),
+            card(room.icon + ' ' + room.task,
+              h('div', null,
+                h('div', { style: { fontSize: 10, color: room.color, fontWeight: 900, letterSpacing: .7, textTransform: 'uppercase', marginBottom: 5 } }, room.time + ' • ' + room.zone),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 } }, h('div', { style: { padding: 6, borderRadius: 7, background: 'rgba(2,6,23,.42)', border: '1px solid #334155' } }, h('div', { style: { color: SOFT, fontSize: 8.5, letterSpacing: .5 } }, telemetryLabel), h('strong', { style: { color: room.color, fontSize: 11.5 } }, telemetryValue)), h('div', { style: { padding: 6, borderRadius: 7, background: 'rgba(2,6,23,.42)', border: '1px solid #334155' } }, h('div', { style: { color: SOFT, fontSize: 8.5, letterSpacing: .5 } }, 'CREW SKILL'), h('strong', { style: { color: TEXT, fontSize: 11.5 } }, room.skill))),
+                h('p', { style: { padding: '7px 8px', borderRadius: 8, background: room.color + '10', borderLeft: '3px solid ' + room.color, fontSize: 11.5, color: TEXT, lineHeight: 1.5, margin: '0 0 8px' } }, h('strong', { style: { color: room.color } }, 'Objective: '), room.objective),
+                h('p', { style: { fontSize: 12.5, color: TEXT, lineHeight: 1.6, margin: '0 0 8px' } }, room.prompt),
+                guided && !roomDone ? h('div', { style: { margin: '0 0 8px', padding: '7px 8px', borderRadius: 8, background: 'rgba(14,165,233,.08)', color: '#bae6fd', fontSize: 10.5, lineHeight: 1.5 } }, h('strong', null, '🧭 Flight hint: '), room.hint) : null,
+                room.id === 'harmony' ? renderCabinStow() : room.id === 'destiny' ? renderResearchProcedure() : room.id === 'tranquility' ? renderMaintenanceConsole() : room.id === 'unity' ? renderLowGSimulator() : room.id === 'cupola' ? renderCupolaObservation() : h('div', { role: 'group', 'aria-label': room.task + ' choices', style: { display: 'grid', gap: 6 } }, room.choices.map(function (choice) { var picked = choiceId === choice.id; var bg = roomDone && choice.correct ? 'rgba(34,197,94,0.16)' : picked ? room.color + '20' : 'rgba(2,6,23,0.35)'; var border = roomDone && choice.correct ? '#22c55e' : picked ? room.color : '#475569'; return h('button', { key: choice.id, type: 'button', disabled: roomDone, onClick: function () { chooseInterior(choice); }, style: { textAlign: 'left', padding: '8px 9px', borderRadius: 8, background: bg, border: '1px solid ' + border, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomDone ? 'default' : 'pointer', opacity: roomDone && !choice.correct ? .55 : 1 } }, (roomDone && choice.correct ? '✅ ' : '') + choice.label); })),
+                ['harmony', 'destiny', 'tranquility', 'unity', 'cupola'].indexOf(room.id) < 0 && pickedChoice ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, color: TEXT, fontSize: 11.5, lineHeight: 1.55, background: pickedChoice.correct ? 'rgba(34,197,94,0.1)' : 'rgba(251,191,36,0.1)', borderLeft: '3px solid ' + (pickedChoice.correct ? '#22c55e' : '#fbbf24') } }, h('strong', { style: { color: pickedChoice.correct ? '#4ade80' : '#fbbf24' } }, pickedChoice.correct ? 'Crew check: ' : 'What happened: '), pickedChoice.feedback) : null,
+                (d.interiorAttempts || {})[room.id] ? h('p', { style: { margin: '7px 0 0', color: SOFT, fontSize: 9.5 } }, 'Crew attempts: ' + (d.interiorAttempts || {})[room.id] + (roomDone && (d.interiorAttempts || {})[room.id] === 1 ? ' • first-try bonus earned' : '')) : null,
+                roomDone ? h('div', { style: { marginTop: 8, paddingTop: 8, borderTop: '1px solid #334155', color: TEXT, fontSize: 11.5, lineHeight: 1.55 } }, h('strong', { style: { color: '#7dd3fc' } }, '🔬 Science you used: '), room.lesson) : null,
+                roomDone && completed < INTERIOR_ROOMS.length && nextIncomplete >= 0 ? h('button', { type: 'button', onClick: function () { visitRoom(nextIncomplete); }, style: { width: '100%', marginTop: 9, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + INTERIOR_ROOMS[nextIncomplete].color, background: INTERIOR_ROOMS[nextIncomplete].color + '18', color: TEXT, fontSize: 11.5, fontWeight: 900, cursor: 'pointer' } }, 'Continue shift → ' + INTERIOR_ROOMS[nextIncomplete].name) : null
+              ), room.color)),
+          renderCrewNotebook(),
+          completed ? card(completed === INTERIOR_ROOMS.length ? '🏁 Shift complete — station secure' : '📋 Crew shift log',
+            h('div', null,
+              h('div', { style: { display: 'grid', gap: 4 } }, (d.interiorLog || []).map(function (entry, i) { return h('div', { key: i, style: { color: TEXT, fontSize: 11.5 } }, '✓ ' + entry); })),
+              completed === INTERIOR_ROOMS.length ? h('div', null, h('p', { style: { color: '#4ade80', fontSize: 12.5, lineHeight: 1.6, margin: '9px 0' } }, 'You completed a full slice of station life: personal routines, research, maintenance, low-g movement, and closeout. The station stays livable because science and careful habits happen all day.'), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(82px,1fr))', gap: 6, margin: '8px 0 10px' } }, [['First try', firstTryCount + '/5'], ['Details', inspectedCount + '/10'], ['Notes', notesCount + '/5'], ['Attempts', totalAttempts + '']].map(function (metric, i) { return h('div', { key: i, style: { padding: 7, borderRadius: 8, textAlign: 'center', background: 'rgba(2,6,23,.42)', border: '1px solid #334155' } }, h('strong', { style: { display: 'block', color: '#4ade80', fontSize: 13 } }, metric[1]), h('span', { style: { color: SOFT, fontSize: 9 } }, metric[0])); })), h('button', { type: 'button', onClick: function () { upd({ interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {}, interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [], interiorShiftComplete: false, lowGImpulse: 10, lowGResult: null, researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '' }); }, style: { padding: '7px 12px', borderRadius: 8, border: '1px solid #22c55e', background: 'rgba(34,197,94,0.12)', color: '#4ade80', fontWeight: 800, fontSize: 11.5, cursor: 'pointer' } }, '↻ Start another shift')) : null
+            ), completed === INTERIOR_ROOMS.length ? '#22c55e' : '#38bdf8') : null);
+      }
       // ── Tabs ──
       var TABS = [
+        { id: 'interior', icon: '🧑‍🚀', label: __alloT('stem.spacestation.tab_interior', 'Inside: Crew Shift') },
         { id: 'map', icon: '🛰️', label: __alloT('stem.spacestation.tab_map', '3-D Station') },
         { id: 'day', icon: '👩‍🚀', label: __alloT('stem.spacestation.tab_day', 'A Day Aboard') },
         { id: 'systems', icon: '⚙️', label: __alloT('stem.spacestation.tab_systems', 'Systems & Challenges') },
@@ -790,12 +1132,13 @@
         { id: 'history', icon: '📜', label: __alloT('stem.spacestation.tab_history', 'History & Future') },
         { id: 'quiz', icon: '🧠', label: __alloT('stem.spacestation.tab_quiz', 'Quiz') }
       ];
-      var tab = d.tab || 'map';
+      var tab = d.tab || 'interior';
 
       function renderMap() {
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
             __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station. Drag to spin it, click any module to inspect it. The lighting sweeps through a full orbit: the station crosses from daylight into Earth’s shadow 16 times a day.')),
+          h('button', { type: 'button', onClick: function () { upd({ tab: 'interior', interiorRoom: d.interiorRoom || 'harmony' }); }, style: { margin: '0 0 10px', padding: '7px 12px', borderRadius: 9, border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🚪 Open the hatch — explore inside'),
           h('div', { style: { position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#050a18' } },
             h('canvas', {
               ref: function (cv) { if (cv) { cv._issWantSel = d.selModule; stationCanvasRef(cv); } },
@@ -1050,6 +1393,7 @@
             }, h('span', { 'aria-hidden': 'true' }, t2.icon + ' '), t2.label);
           })),
         h('div', { id: 'iss-panel', role: 'tabpanel', 'aria-labelledby': 'iss-tab-' + tab, tabIndex: 0 },
+          tab === 'interior' ? renderInterior() :
           tab === 'map' ? renderMap() :
           tab === 'day' ? renderDay() :
           tab === 'systems' ? renderSystems() :

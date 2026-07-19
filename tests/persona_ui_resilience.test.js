@@ -11,9 +11,9 @@ const strings = JSON.parse(read('ui_strings.js'));
 describe('Persona interview UI resilience', () => {
   it('offers recovery for empty and partial single and panel response choices', () => {
     expect(viewSource).toContain('personaState.suggestionsError');
-    expect(viewSource).toContain('generatePersonaFollowUps(personaState.chatHistory, personaState.selectedCharacter, 6)');
+    expect(viewSource).toContain("_retryPersonaChoices('single')");
     expect(viewSource).toContain('personaState.panelSuggestionsError');
-    expect(viewSource).toContain('generatePanelFollowUps(personaState.chatHistory, personaState.selectedCharacters?.[0], personaState.selectedCharacters?.[1])');
+    expect(viewSource).toContain("_retryPersonaChoices('panel')");
     expect(viewSource).toContain("t('persona.retry_choices')");
     expect(viewSource).not.toContain("setPersonaState(function (prev) { return { ...prev, panelSuggestions: [] }; })");
     expect(viewSource).toContain('setPanelChoicePending(true)');
@@ -63,7 +63,7 @@ describe('Persona interview UI resilience', () => {
     expect(viewSource).toContain('handleGeneratePersonaSummary');
     expect(viewSource).toContain('personaState.personaSummaryError');
     expect(viewSource).toContain("t('persona.summary.verification_note')");
-    expect(viewSource).toContain('onClick={handleSavePersonaChat}');
+    expect(viewSource).toContain('onClick={_savePersonaTranscript}');
     expect(viewSource).toContain("event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog]')");
     expect(viewSource).toContain("if (e.key === 'Escape')");
     expect(viewSource).toContain('personaState.personaSummaryError && !personaSummary');
@@ -169,7 +169,7 @@ describe('Persona interview UI resilience', () => {
   it('waits for a completed turn before summary, transcript, or reflection actions', () => {
     expect(viewSource).toContain('summaryLastModelIndex > summaryLastUserIndex');
     expect(viewSource).toContain('var canGeneratePersonaSummary = !personaState.isLoading');
-    expect(viewSource).toContain('disabled={personaState.chatHistory.length === 0 || personaState.isLoading}');
+    expect(viewSource).toContain('disabled={personaState.chatHistory.length === 0 || personaState.isLoading || transcriptSavePending}');
     expect(viewSource).toContain('disabled={!panelConcludeReady || personaState.isLoading || isGeneratingReflectionPrompt}');
     expect(viewSource).toContain('disabled={!singleConcludeReady || personaState.isLoading || isGeneratingReflectionPrompt}');
     expect(viewSource).toContain("t('persona.finish_current_turn')");
@@ -182,7 +182,8 @@ describe('Persona interview UI resilience', () => {
     expect(viewSource).toContain('onClick={_submitPersonaReflection}');
     expect(viewSource).toContain("disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt}");
     expect(viewSource).toContain("t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })");
-    expect(viewSource.split("if (personaDefinitionData && typeof handleSetPersonaDefinitionDataToNull === 'function') handleSetPersonaDefinitionDataToNull();").length - 1).toBe(3);
+    expect(viewSource).toContain('reflectionOpenPendingRef.current');
+    expect(viewSource).toContain('var _openPersonaReflection = function ()');
   });
 
   it('does not submit free responses while an IME composition is being confirmed', () => {
@@ -208,5 +209,42 @@ describe('Persona interview UI resilience', () => {
     expect(viewSource).toContain('max-h-[calc(100dvh-1rem)]');
     expect(personaUiSource).toContain('aria-valuenow={safeScore}');
     expect(personaUiSource).toContain("t('persona.xp_progress', { name: characterName, xp })");
+  });
+
+  it('guards every rapid secondary action before React rerenders', () => {
+    expect(viewSource).toContain('transcriptSavePendingRef.current');
+    expect(viewSource).toContain('transcriptSaveResetTimerRef.current');
+    expect(viewSource.split('onClick={_savePersonaTranscript}').length - 1).toBe(3);
+    expect(viewSource).toContain('topicSparkPendingRef.current');
+    expect(viewSource.split('onClick={_requestPersonaTopicSpark}').length - 1).toBe(4);
+    expect(viewSource).toContain('suggestionsRetryPendingRef.current');
+    expect(viewSource.split("_retryPersonaChoices('panel')").length - 1).toBe(2);
+    expect(viewSource.split("_retryPersonaChoices('single')").length - 1).toBe(2);
+    expect(viewSource).toContain('resumeActionPendingRef.current');
+  });
+
+  it('clears retention-off snapshots and persists same-length state changes', () => {
+    expect(viewSource).toContain('var _clearPersonaSnapshot = function (keyOverride)');
+    expect(viewSource).toContain("ds.remove('persona_sessions', snapshotKeyToClear)");
+    expect(viewSource).toContain('_personaRetentionDays === 0 && _personaSnapshotResourceId && _personaSnapshotStudentId');
+    expect(viewSource).toContain('var _dsPersistenceFingerprint');
+    expect(viewSource).toContain('_dsSuggestionFingerprint, _dsPersistenceFingerprint');
+    expect(viewSource).toContain('matchingCharacters.length === 1 ? matchingCharacters[0] : null');
+  });
+
+  it('bounds long-session rendering without truncating live state', () => {
+    expect(viewSource).toContain('personaChatHistory.length - 160');
+    expect(viewSource).toContain('personaDisplayHistory = personaChatHistory.slice(personaDisplayStartIndex)');
+    expect(viewSource.split("t('persona.older_messages_hidden'").length - 1).toBe(2);
+    expect(strings.persona.older_messages_hidden).toContain('{count}');
+  });
+
+  it('makes Blueprint text entry bounded, IME-safe, and form-safe', () => {
+    expect(personaUiSource).toContain('e.target.value.slice(0, 1200)');
+    expect(personaUiSource).toContain('maxLength={1200}');
+    expect(personaUiSource.split('maxLength={200}').length - 1).toBe(2);
+    expect(personaUiSource.split("e.key === 'Enter' && !e.isComposing").length - 1).toBe(2);
+    const buttons = personaUiSource.match(/<button\b[\s\S]*?>/g) || [];
+    for (const button of buttons) expect(button).toContain('type="button"');
   });
 });

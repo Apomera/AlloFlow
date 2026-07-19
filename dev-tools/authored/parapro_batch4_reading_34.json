@@ -35,7 +35,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-002",
@@ -73,7 +74,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-003",
@@ -111,7 +113,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-004",
@@ -149,7 +152,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-005",
@@ -187,7 +191,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-006",
@@ -225,7 +230,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-007",
@@ -263,7 +269,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-008",
@@ -301,7 +308,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-009",
@@ -339,7 +347,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-010",
@@ -349,18 +358,18 @@
     "difficulty": "developing",
     "prompt": "A student council claims that placing a portable ramp at the auditorium's side entrance improved access for school events. Which evidence most directly supports the claim?",
     "choices": [
-      "The ramp was delivered in a truck painted with the manufacturer's logo.",
-      "Attendance records and visitor surveys show that several wheelchair users entered through the ramped doorway at each of the next four events.",
-      "The auditorium was built many years before the student council was formed.",
-      "Council members discussed three possible colors before ordering the ramp."
+      "A delivery invoice shows that the ramp arrived before the next four events but does not record who used it.",
+      "Entry logs and visitor reports show that wheelchair users entered through the ramp at each of four later events.",
+      "A maintenance log records that staff inspected the ramp after each event and found its surface undamaged.",
+      "A council survey reports that members approved the ramp’s color and location before the event schedule began."
     ],
     "answerIndex": 1,
-    "rationale": "Documented use of the ramp by wheelchair users across multiple events directly demonstrates improved physical access. Delivery, building age, and color decisions provide background but do not show that access changed.",
+    "rationale": "Repeated documented use by wheelchair users directly addresses whether the entrance became more accessible during school events. Delivery, maintenance, and design preferences do not establish that visitors actually gained access.",
     "choiceRationales": [
-      "The truck's appearance has no bearing on whether visitors could use the entrance.",
-      "This evidence records repeated use by people for whom the access feature was intended.",
-      "The auditorium's age does not establish either the former barrier or the ramp's later effect.",
-      "Aesthetic deliberation does not demonstrate that anyone gained access through the doorway."
+      "Delivery establishes that the equipment reached the school, but it does not show that the ramp was installed successfully or used by visitors at an event.",
+      "The logs and reports document repeated use by the people the access feature was intended to serve, directly supporting the claim across several events.",
+      "Inspection records address the ramp’s physical condition rather than whether wheelchair users entered through the doorway during school events.",
+      "Council members’ design preferences explain a selection decision, but they provide no evidence that the completed entrance improved access for visitors."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -377,7 +386,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-011",
@@ -415,7 +425,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-012",
@@ -453,7 +464,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-013",
@@ -491,7 +503,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-014",
@@ -529,7 +542,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-015",
@@ -567,7 +581,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-016",
@@ -605,7 +620,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-017",
@@ -643,7 +659,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-018",
@@ -681,7 +698,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-019",
@@ -719,7 +737,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-020",
@@ -757,7 +776,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-021",
@@ -795,7 +815,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "knowledge-and-understanding"
   },
   {
     "id": "parapro-b4-reading-022",
@@ -833,7 +854,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application"
   },
   {
     "id": "parapro-b4-reading-023",
@@ -871,7 +893,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "analysis-and-evaluation"
   },
   {
     "id": "parapro-b4-reading-024",
@@ -910,7 +933,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-025",
@@ -949,7 +973,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-026",
@@ -988,7 +1013,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-027",
@@ -1027,7 +1053,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-028",
@@ -1066,7 +1093,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-029",
@@ -1105,7 +1133,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-030",
@@ -1115,18 +1144,18 @@
     "difficulty": "advanced",
     "prompt": "A student misinterprets the sentence \"Only after the alarm ended did the custodian unlock the west doors\" to mean that the doors were unlocked during the alarm. Which paraprofessional prompt would best clarify the syntax?",
     "choices": [
-      "Ask the student to alphabetize alarm, custodian, doors, and west.",
-      "Have the student restate the sentence in ordinary order as \"The custodian unlocked the west doors only after the alarm ended\" and identify which event happened first.",
-      "Tell the student to ignore only after because short phrases rarely affect meaning.",
-      "Ask the student to count how many letters appear before the verb unlock."
+      "Ask the student to label custodian as the subject and unlocked as the verb without analyzing the order of events.",
+      "Ask the student to rewrite the sentence as “The custodian unlocked the west doors after the alarm ended” and identify the first event.",
+      "Ask whether the west doors were open after the alarm without deciding whether that was before or after it ended.",
+      "Have the student copy the sentence and circle the words associated with the alarm without restating the event order."
     ],
     "answerIndex": 1,
-    "rationale": "Recasting the inverted sentence into ordinary subject-verb order while preserving only after makes the temporal relationship explicit and asks the student to demonstrate understanding of the event sequence.",
+    "rationale": "Recasting the inverted construction into ordinary subject-verb order while preserving the temporal phrase makes the relationship explicit. Naming the first event then verifies that the student understands the doors were unlocked after the alarm ended.",
     "choiceRationales": [
-      "Alphabetizing selected words does not address how the sentence's grammatical order expresses time.",
-      "This transformation preserves the meaning, exposes the clause relationship, and elicits the correct sequence.",
-      "Removing the signal phrase would erase the very information that determines when the doors were unlocked.",
-      "Letter counting is unrelated to the inversion and temporal meaning that caused the misunderstanding."
+      "Identifying the subject and verb can describe sentence parts, but it leaves the temporal phrase uninterpreted and therefore does not correct the event sequence.",
+      "The rewrite preserves the original meaning in a more familiar order, and identifying the first event requires the student to demonstrate the intended chronology.",
+      "This question focuses on a later door state without requiring comparison of the two events, so the original during-versus-after confusion could remain.",
+      "Copying and circling may direct attention to vocabulary, but it does not require the student to explain how the syntax orders the alarm and unlocking events."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1144,7 +1173,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-031",
@@ -1183,7 +1213,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-032",
@@ -1222,7 +1253,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-033",
@@ -1261,7 +1293,8 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   },
   {
     "id": "parapro-b4-reading-034",
@@ -1300,6 +1333,7 @@
     "examItemStatus": "assistant-reviewed-independent-draft",
     "reviewStatus": "assistant-reviewed-independent-draft",
     "qaStatus": "pending-integrated-qa",
-    "authoredAt": "2026-07-17"
+    "authoredAt": "2026-07-17",
+    "cognitiveLevel": "application-and-analysis"
   }
 ]

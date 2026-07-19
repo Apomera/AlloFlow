@@ -160,6 +160,100 @@ describe('Weather Systems science kernel', () => {
     ], fields);
     expect(best.admin1).toBe('Massachusetts');
   });
+
+  it('returns isolated, immutable 3D analysis-focus layer profiles', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const front = kernel.immersiveFocusProfile('front');
+    expect(front.id).toBe('front');
+    expect(front.layers.airMasses).toBe(true);
+    expect(front.layers.front).toBe(true);
+    expect(front.layers.clouds).toBe(false);
+    expect(front.layers.precipitation).toBe(false);
+    expect(front.layers.wind).toBe(true);
+    front.layers.wind = false;
+    expect(kernel.immersiveFocusProfile('front').layers.wind).toBe(true);
+    expect(kernel.immersiveFocusProfile('unknown').id).toBe('system');
+  });
+it('selects realistic immersive geography profiles for scenarios', () => {
+    const kernel = window.WeatherSystemsKernel;
+    expect(kernel.geographyProfile('mountain', 'coldFront').label).toBe('Mountain valley');
+    expect(kernel.geographyProfile(null, 'winterStorm').id).toBe('coastal');
+    expect(kernel.geographyProfile('unknown', 'summerStorm').id).toBe('urban');
+    const profile = kernel.geographyProfile('coastal', 'fair');
+    profile.label = 'Changed';
+    expect(kernel.geographyProfile('coastal', 'fair').label).toBe('Coastal watershed');
+  });
+
+it('returns a sequenced immersive investigation tour step', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const front = kernel.immersiveTourStep('front');
+    expect(front.index).toBe(1);
+    expect(front.total).toBe(4);
+    expect(front.camera).toBe('front');
+    expect(front.focus).toBe('front');
+    expect(front.nextId).toBe('moisture');
+    expect(front.prompt).toContain('air being lifted');
+    expect(kernel.immersiveTourStep('unknown').id).toBe('scan');
+  });
+
+  it('normalizes geographic metadata and safely resolves the immersive scene mode', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const metadata = kernel.geographicMetadata(43.659123, -70.256789, 'Portland, Maine, United States', {
+      name: 'Portland', admin1: 'Maine', admin2: 'Cumberland', country: 'United States',
+      country_code: 'US', elevation: 18.7
+    });
+    expect(metadata).toEqual(expect.objectContaining({
+      latitude: 43.6591, longitude: -70.2568, locality: 'Portland', admin1: 'Maine',
+      admin2: 'Cumberland', countryCode: 'US', elevation: 19
+    }));
+    const geographic = kernel.geographicViewState({
+      immersiveSceneMode: 'geographic',
+      liveWeather: { label: metadata.label, latitude: metadata.latitude, longitude: metadata.longitude },
+      liveGeography: metadata
+    });
+    expect(geographic.mode).toBe('geographic');
+    expect(geographic.available).toBe(true);
+    expect(geographic.context).toBe('Cumberland, Maine, United States');
+    expect(geographic.elevation).toBe(19);
+    expect(kernel.geographicViewState({ immersiveSceneMode: 'geographic' }).mode).toBe('conceptual');
+    expect(kernel.geographicViewState({ liveWeather: { latitude: 100, longitude: 20 } }).available).toBe(false);
+  });
+
+  it('publishes the approved open geographic source endpoints', () => {
+    const sources = window.WeatherSystemsKernel.geographicMapSources;
+    expect(sources.mapStyle).toBe('https://tiles.openfreemap.org/styles/liberty');
+    expect(sources.terrain).toBe('https://tiles.mapterhorn.com/tilejson.json');
+    expect(sources.mapLibreScript).toContain('maplibre-gl@5.24.0');
+    expect(sources.mapLibreCss).toContain('maplibre-gl@5.24.0');
+  });
+
+  it('builds true-scale geographic study areas and live downwind vectors', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const north = kernel.geographicDestination(-70.2568, 43.6591, 0, 10);
+    expect(north[0]).toBeCloseTo(-70.2568, 3);
+    expect(north[1]).toBeGreaterThan(43.6591);
+    const overlays = kernel.geographicOverlayData({
+      longitude: -70.2568, latitude: 43.6591, windDir: 215, windSpeed: 22.1
+    }, 25);
+    const ring = overlays.studyArea.geometry.coordinates[0];
+    expect(overlays.studyArea.properties.radiusKm).toBe(25);
+    expect(overlays.studyArea.geometry.type).toBe('Polygon');
+    expect(ring).toHaveLength(65);
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
+    expect(overlays.wind.type).toBe('FeatureCollection');
+    expect(overlays.wind.features).toHaveLength(3);
+    expect(overlays.wind.features[0].geometry.type).toBe('LineString');
+    expect(overlays.wind.features[1]).toEqual(expect.objectContaining({ properties: expect.objectContaining({ kind: 'arrow', direction: 35 }) }));
+    expect(overlays.wind.features[1].geometry.type).toBe('Point');
+    expect(overlays.wind.features[2].properties.kind).toBe('endpoint');
+    expect(overlays.downwindBearing).toBe(35);
+    expect(overlays.windDistanceKm).toBe(4);
+    expect(kernel.geographicObservationSummary({
+      label: 'Portland, Maine, United States', condition: 'Thunderstorms', temperature: 28.4,
+      humidity: 74, windDir: 215, windSpeed: 22.1, pressure: 1004.6
+    })).toBe('Portland, Maine, United States | Thunderstorms | 28.4\u00B0C | 74% RH | SW 22.1 km/h wind | 1004.6 hPa');
+  });
+
 });
 
 describe('Weather Systems grade-banded views', () => {
@@ -167,8 +261,17 @@ describe('Weather Systems grade-banded views', () => {
     const html = renderTool('weatherSystems', { weatherSystems: { tab: 'immersive', scenario: 'coldFront' } }, { gradeLevel: '8th Grade' });
     expect(html).toContain('id="weather-tab-immersive"');
     expect(html).toContain('Immersive 3D Weather Space');
+    expect(html).toContain('Atmospheric analysis workspace');
+    expect(html).toContain('high-fidelity atmospheric digital twin');
     expect(html).toContain('data-weather-immersive-lab');
     expect(html).toContain('data-weather-immersive-canvas');
+    expect(html).toContain('data-weather-camera-controls');
+    expect(html).toContain('aria-label="3D camera views"');
+    expect(html).toContain('Front section');
+    expect(html).toContain('data-weather-scene-hud');
+    expect(html).toContain('Rendering quality');
+    expect(html).toContain('High fidelity');
+    expect(html).toContain('Full terrain detail');
     expect(html).toContain('Loading the 3D atmosphere engine');
     expect(html).toContain('Teaching model scene');
     expect(html).toContain('data-weather-live-control');
@@ -182,6 +285,66 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('data-weather-vr-control');
     expect(html).toContain('Check headset and enter VR');
     expect(html).toContain('Educational visualization only');
+  });
+
+  it('isolates professional 3D analysis layers through one accessible focus control', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'immersive',
+        scenario: 'coldFront',
+        immersiveFocus: 'front'
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('Analysis focus');
+    expect(html).toContain('Full atmospheric system');
+    expect(html).toContain('Front dynamics');
+    expect(html).toContain('Moisture and precipitation');
+    expect(html).toContain('Surface observations');
+    expect(html).toContain('data-weather-focus-status');
+    expect(html).toContain('Air masses, the frontal boundary, wind, and stations are isolated.');
+    expect(html).toContain('aria-live="polite"');
+  });
+
+it('renders professional geography controls for the immersive 3D map', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'immersive',
+        scenario: 'winterStorm',
+        immersiveGeography: 'mountain'
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('Conceptual terrain base');
+    expect(html).toContain('id="weather-immersive-geography"');
+    expect(html).toContain('Interior plains');
+    expect(html).toContain('Coastal watershed');
+    expect(html).toContain('Mountain valley');
+    expect(html).toContain('Urban basin');
+    expect(html).toContain('data-weather-geography-status');
+    expect(html).toContain('Ridges and valleys highlight terrain lift');
+    expect(html).toContain('Geography');
+    expect(html).toContain('Terrain map');
+  });
+
+it('renders the immersive guided investigation tour and evidence note', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'immersive',
+        scenario: 'coldFront',
+        immersiveTourStep: 'moisture',
+        immersiveReflection: 'Clouds are building near the boundary.'
+      }
+    }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('data-weather-immersive-tour');
+    expect(html).toContain('data-weather-tour-overlay');
+    expect(html).toContain('Guided investigation');
+    expect(html).toContain('Trace moisture');
+    expect(html).toContain('3D investigation step 3 of 4');
+    expect(html).toContain('How do clouds or precipitation connect to humidity and lift?');
+    expect(html).toContain('Connect cloud cover, particles, and the wind field.');
+    expect(html).toContain('aria-label="Immersive guided investigation steps"');
+    expect(html).toContain('Next investigation step');
+    expect(html).toContain('3D evidence note');
+    expect(html).toContain('Clouds are building near the boundary.');
   });
 
   it('renders optional structured location fields with address autocomplete semantics', () => {
@@ -234,6 +397,98 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('href="https://open-meteo.com/"');
     expect(html).toContain('Coordinates are rounded and stored only with this local lab state.');
     expect(html).toContain('aria-label="Immersive weather layer guide"');
+  });
+
+  it('renders an opt-in open geographic terrain mode with attribution and fallback', () => {
+    const html = renderTool('weatherSystems', {
+      _threeLoaded: true,
+      weatherSystems: {
+        tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live',
+        geographicTerrainExaggeration: 1.35,
+        liveGeography: {
+          label: 'Portland, Maine, United States', locality: 'Portland', admin1: 'Maine',
+          admin2: 'Cumberland', country: 'United States', countryCode: 'US', elevation: 19
+        },
+        liveWeather: {
+          label: 'Portland, Maine, United States', latitude: 43.6591, longitude: -70.2568,
+          observedAt: '2026-07-16T14:00', timezone: 'EDT', temperature: 28.4, humidity: 74,
+          precipitation: 1.2, weatherCode: 95, condition: 'Thunderstorms', cloudCover: 88,
+          pressure: 1004.6, windSpeed: 22.1, windDir: 215, visibility: 8400,
+          source: 'Open-Meteo', sourceUrl: 'https://open-meteo.com/'
+        }
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-scene-mode');
+    expect(html).toContain('aria-label="Immersive scene mode"');
+    expect(html).toContain('Geographic terrain');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('data-weather-geographic-map');
+    expect(html).toContain('Interactive open geographic map and 3D terrain centered on Portland');
+    expect(html).toContain('data-weather-geographic-camera-controls');
+    expect(html).toContain('aria-label="Geographic camera views"');
+    expect(html).toContain('Region');
+    expect(html).toContain('Local');
+    expect(html).toContain('Site');
+    expect(html).toContain('data-weather-geographic-legend');
+    expect(html).toContain('aria-label="Geographic layer legend"');
+    expect(html).toContain('Map legend');
+    expect(html).toContain('Observation site');
+    expect(html).toContain('Study area on');
+    expect(html).toContain('Downwind on');
+    expect(html).toContain('data-weather-geographic-telemetry');
+    expect(html).toContain('Zoom 10.6');
+    expect(html).toContain('Tilt 58');
+    expect(html).toContain('Bearing -18');
+    expect(html).toContain('data-weather-geographic-hud');
+    expect(html).toContain('43.6591, -70.2568 | 19 m elevation');
+    expect(html).toContain('aria-label="Portland, Maine, United States | Thunderstorms | 28.4\u00B0C | 74% RH | SW 22.1 km/h wind | 1004.6 hPa"');
+    expect(html).toContain('Observed wind flows downwind toward NE | 4 km teaching vector');
+    expect(html).toContain('not a forecast footprint');
+    expect(html).toContain('Terrain emphasis');
+    expect(html).toContain('Classroom emphasis (1.35x)');
+    expect(html).toContain('Study-area radius');
+    expect(html).toContain('id="weather-geographic-radius"');
+    expect(html).toContain('10 km radius');
+    expect(html).toContain('data-weather-geographic-layer-controls');
+    expect(html).toContain('aria-label="Geographic overlay visibility"');
+    expect(html).toContain('Study area');
+    expect(html).toContain('Wind vector');
+    expect(html).toContain('Real 3D buildings');
+    expect(html).toContain('street-scale Site view');
+    expect(html).toContain('data-weather-geographic-context');
+    expect(html).toContain('Cumberland, Maine, United States');
+    expect(html).toContain('highlighted true-scale ring');
+    expect(html).toContain('not an administrative boundary');
+    expect(html).toContain('not a forecast path or impact area');
+    expect(html).toContain('Select the observation-site marker to inspect live conditions in place.');
+    expect(html).toContain('Camera telemetry updates after each move.');
+    expect(html).toContain('fullscreen control');
+    expect(html).toContain('data-weather-map-attribution');
+    expect(html).toContain('href="https://openfreemap.org/"');
+    expect(html).toContain('href="https://www.openstreetmap.org/copyright"');
+    expect(html).toContain('href="https://tiles.mapterhorn.com/"');
+    expect(html).toContain('href="https://maplibre.org/"');
+    expect(html).toContain('Open vector map');
+    expect(html).toContain('Published roads, water, places, and boundaries');
+    expect(html).toContain('10 km study area');
+    expect(html).toContain('Downwind vector');
+    expect(html).toContain('3D terrain/buildings');
+    expect(html).toContain('Loading open geographic layers');
+    expect(html).not.toContain('data-weather-camera-controls');
+    expect(html).not.toContain('data-weather-vr-control');
+  });
+
+  it('keeps geographic providers dormant until a valid live location exists', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: { tab: 'immersive', immersiveSceneMode: 'geographic' }
+    }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('data-weather-scene-mode');
+    expect(html).toContain('Geographic terrain');
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('Load a live location below to enable the open geographic map. Nothing loads automatically.');
+    expect(html).not.toContain('data-weather-geographic-map');
+    expect(html).toContain('data-weather-immersive-canvas');
+    expect(html).toContain('data-weather-camera-controls');
   });
 
   it('renders the map lab with observations, model controls, and trend data', () => {

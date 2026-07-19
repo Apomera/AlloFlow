@@ -7998,59 +7998,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // printable. Editable across all dimensions.
   function PersonalLearningProfile(props) {
     if (!R) return null;
-    var data = props.data || { profile: {} };
+    var data = props.data || {};
     var setData = props.setData;
-    var p = data.profile || {};
+    var profile = data.profile || {};
     var pms = R.useState(''); var printMessage = pms[0]; var setPrintMessage = pms[1];
-
-    function update(key, val) {
-      setData({ profile: Object.assign({}, p, (function() { var o = {}; o[key] = val; return o; })()) });
-    }
+    var fts = R.useState(null); var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var FIELDS = [
-      { id: 'name',          label: 'My name (or initials)', icon: '🧑',  placeholder: 'just for the printout', type: 'input' },
-      { id: 'bestTime',      label: 'My best time of day to focus', icon: '🌅', placeholder: 'e.g., "Mornings before noon"', type: 'input' },
-      { id: 'worstTime',     label: 'My hardest time of day', icon: '🌙', placeholder: 'e.g., "After 4pm I\'m wiped"', type: 'input' },
-      { id: 'helps',         label: 'What helps me focus', icon: '✅', placeholder: 'e.g., "Quiet space + my noise-canceling headphones + phone in another room"', type: 'textarea' },
-      { id: 'overwhelms',    label: 'What overwhelms me', icon: '⚠', placeholder: 'e.g., "Long verbal directions + bright fluorescent lights + group projects"', type: 'textarea' },
-      { id: 'strengths',     label: 'What I\'m good at', icon: '💪', placeholder: 'e.g., "Visual thinking, finding patterns, asking questions"', type: 'textarea' },
-      { id: 'growing',       label: 'What I\'m working on', icon: '🌱', placeholder: 'e.g., "Asking for help earlier, not later"', type: 'textarea' },
-      { id: 'helpers',       label: 'Adults who get me', icon: '🤝', placeholder: 'e.g., "Ms. Garcia, my school psych Dr. Pomera, my mom"', type: 'textarea' },
-      { id: 'goals',         label: 'What I want this year', icon: '🎯', placeholder: 'A real one. Could be academic, social, personal.', type: 'textarea' },
-      { id: 'identity',      label: 'Things people should know about how I learn', icon: '💡', placeholder: 'e.g., "I have ADHD. I need to move. Quiet ≠ disengaged for me. I think out loud."', type: 'textarea' }
+      { id: 'name', label: 'Name or initials (optional)', icon: '\ud83e\uddd1', placeholder: 'Use only what you want shown on a printout.', type: 'input' },
+      { id: 'bestTime', label: 'Times when focusing may feel easier', icon: '\ud83c\udf05', placeholder: 'For example: mornings before noon', type: 'input' },
+      { id: 'worstTime', label: 'Times when focusing may feel harder', icon: '\ud83c\udf19', placeholder: 'For example: late afternoon', type: 'input' },
+      { id: 'helps', label: 'Conditions or tools that may help me focus', icon: '\u2705', placeholder: 'For example: a quieter space, movement, captions, or written directions', type: 'textarea' },
+      { id: 'overwhelms', label: 'Conditions that may make learning harder', icon: '\u26a0', placeholder: 'For example: long verbal directions, bright lighting, or several tasks at once', type: 'textarea' },
+      { id: 'strengths', label: 'Strengths I want to name', icon: '\ud83c\udf1f', placeholder: 'For example: visual thinking, finding patterns, or asking questions', type: 'textarea' },
+      { id: 'growing', label: 'Skills or approaches I may want to develop', icon: '\ud83c\udf31', placeholder: 'For example: asking for clarification earlier', type: 'textarea' },
+      { id: 'helpers', label: 'People or roles I may choose to ask for support', icon: '\ud83e\udd1d', placeholder: 'Use roles or general descriptions if you prefer not to store names.', type: 'textarea' },
+      { id: 'goals', label: 'Goals I want to record', icon: '\ud83c\udfaf', placeholder: 'Academic, social, personal, or another kind of goal', type: 'textarea' },
+      { id: 'identity', label: 'Other information I choose to share about how I learn', icon: '\ud83d\udca1', placeholder: 'Include only information you want saved and possibly printed.', type: 'textarea' }
     ];
 
-    function print() {
+    R.useEffect(function() {
+      if (!focusTarget || typeof document === 'undefined') return;
+      var target = document.getElementById(focusTarget);
+      if (target && typeof target.focus === 'function') target.focus();
+      setFocusTarget(null);
+    }, [focusTarget, data.profile]);
+
+    function update(key, value) {
+      var patch = {}; patch[key] = value;
+      setData(Object.assign({}, data, { profile: Object.assign({}, profile, patch) }));
+      if (printMessage) setPrintMessage('');
+    }
+    function printProfile() {
       setPrintMessage('');
-      try { window.print(); } catch (e) { setPrintMessage('The print dialog could not open. Use Ctrl+P on Windows or Command+P on macOS.'); }
+      try {
+        window.print();
+        setPrintMessage('Print dialog requested. Review the destination and included information before printing or saving.');
+        llAnnounce('Print dialog requested. Review the profile before sharing it.');
+      } catch (error) {
+        setPrintMessage('The print dialog could not open. Use Ctrl+P on Windows or Command+P on macOS.');
+        llAnnounce('The print dialog could not open.');
+      }
+    }
+    async function clearProfile() {
+      if (!(await askLearningLabConfirmation('This permanently removes every field from this learning profile in this browser.', {
+        title: 'Clear this learning profile?', confirmText: 'Clear profile'
+      }))) return;
+      setData(Object.assign({}, data, { profile: {} }));
+      setPrintMessage('');
+      setFocusTarget('learning-lab-profile-name');
+      llAnnounce('Learning profile cleared.');
     }
 
+    var hasContent = FIELDS.some(function(field) { return String(profile[field.id] || '').trim().length > 0; });
+
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🪞', 'My Learning Profile', 'A one-page snapshot of how you learn. For YOU first. Sharable with teachers, advisors, or your IEP team.', '#06b6d4'),
-
-      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
-        tkBtn('🖨 Print my profile', print, 'secondary', { minHeight: 44 })
+      tkSectionHeader('\ud83e\ude9e', 'My Learning Profile', 'An optional, editable summary of learning preferences, supports, strengths, and goals.', '#67e8f9', 'learning-lab-profile-heading'),
+      hh('p', { id: 'learning-lab-profile-privacy', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(103,232,249,0.40)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10, lineHeight: 1.6 } }, 'All fields are optional and save automatically in this browser. On a shared device, avoid names, disability information, health details, or other information you would not want another user to see. You decide whether to print or share any part of this profile.'),
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
+        hasContent ? hh('button', { type: 'button', onClick: clearProfile, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(252,165,165,0.55)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Clear profile') : null,
+        hh('button', { type: 'button', onClick: printProfile, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: '#0e7490', border: '1.5px solid #67e8f9', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Print or save profile')
       ),
-      printMessage ? hh('div', { role: 'alert', style: { marginBottom: 10, padding: 10, borderRadius: 8, color: '#fecaca', background: 'rgba(127,29,29,0.35)', border: '1px solid #f87171', fontSize: 11, fontWeight: 700 } }, printMessage) : null,
-
-      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-        FIELDS.map(function(f) {
-          return hh('div', { key: 'f-' + f.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(6,182,212,0.30)', borderLeft: '4px solid #06b6d4' } },
-            hh('label', { htmlFor: 'learning-lab-profile-' + f.id, style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#67e8f9', marginBottom: 6 } }, f.icon + ' ' + f.label),
-            f.type === 'input' ? hh('input', { id: 'learning-lab-profile-' + f.id, type: 'text', value: p[f.id] || '', onChange: function(e) { update(f.id, e.target.value); }, placeholder: f.placeholder, style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } })
-              : hh('textarea', { id: 'learning-lab-profile-' + f.id, value: p[f.id] || '', rows: 3, onChange: function(e) { update(f.id, e.target.value); }, placeholder: f.placeholder, style: { width: '100%', minHeight: 88, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } })
-          );
-        })
+      printMessage ? hh('p', { id: 'learning-lab-profile-print-status', role: 'status', style: { margin: '0 0 10px', padding: 10, borderRadius: 8, color: '#e2e8f0', background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(103,232,249,0.45)', fontSize: 11, fontWeight: 700 } }, printMessage) : null,
+      hh('section', { 'aria-labelledby': 'learning-lab-profile-fields-heading', 'aria-describedby': 'learning-lab-profile-privacy' },
+        hh('h3', { id: 'learning-lab-profile-fields-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#a5f3fc' } }, 'Profile fields'),
+        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          FIELDS.map(function(field) {
+            var common = {
+              id: 'learning-lab-profile-' + field.id, value: profile[field.id] || '', maxLength: field.type === 'input' ? 240 : 4000,
+              'aria-describedby': 'learning-lab-profile-help-' + field.id, autoComplete: 'off',
+              onChange: function(event) { update(field.id, event.target.value); }
+            };
+            return hh('div', { key: 'f-' + field.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(103,232,249,0.40)', borderLeft: '4px solid #67e8f9' } },
+              hh('label', { htmlFor: 'learning-lab-profile-' + field.id, style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#a5f3fc', marginBottom: 4 } }, hh('span', { 'aria-hidden': 'true' }, field.icon + ' '), field.label),
+              hh('p', { id: 'learning-lab-profile-help-' + field.id, style: { margin: '0 0 6px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, field.placeholder),
+              field.type === 'input'
+                ? hh('input', Object.assign({}, common, { type: 'text', style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(103,232,249,0.55)', borderRadius: 6, boxSizing: 'border-box' } }))
+                : hh('textarea', Object.assign({}, common, { rows: 3, style: { width: '100%', minHeight: 88, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(103,232,249,0.55)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }))
+            );
+          })
+        )
       ),
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#06b6d4' } }, '💡 Use this: '),
-        'At the start of each year, hand a copy to teachers or your IEP team. The self-advocacy practice matters as much as the document itself. Update it whenever you learn something new about yourself.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-profile-sharing-heading', style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.40)' } },
+        hh('h3', { id: 'learning-lab-profile-sharing-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#a5f3fc' } }, 'Review before sharing'),
+        hh('p', { style: { margin: 0, fontSize: 10, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'This profile is for your use first. If you choose to share it with a teacher, advisor, support team, family member, or anyone else, review every field and remove anything you do not want included. A profile describes preferences at one point in time; it is not an assessment or a requirement to disclose a diagnosis.')
       )
     );
   }
 
-  // ── Q. PERSONAL REFLECTION PROMPTS LIBRARY (Wave 3) ──
+  // Q. PERSONAL REFLECTION PROMPTS LIBRARY (Wave 3)
   // 30+ metacognitive prompts students can journal on. Each prompt
   // saves an entry that goes into a searchable log. Curated for
   // self-discovery, goal-setting, growth.
@@ -19914,7 +19950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Optional comparison of study approaches using a disclosed heuristic.') },
               { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Optional self-report on task demands and context; not a diagnostic score.') },
               { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Optional reflection using autonomy, competence, and relatedness concepts.') },
-              { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'One-page self-snapshot you control — printable for teachers / IEP.') },
+              { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'Optional private learning-preference summary you control and may print.') },
               { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', '30+ metacognitive prompts across 4 categories. Saves to journal history.') },
               { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.') },
               { id: 'mytkNotes',  icon: '📝', label: __alloT('stem.learning_lab.cornell_notes', 'Cornell Notes'),        desc: __alloT('stem.learning_lab.in_tool_cornell_style_note_taking_with', 'In-tool Cornell-style note-taking with cue column + summary + search.') },

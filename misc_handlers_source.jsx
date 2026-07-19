@@ -270,11 +270,13 @@ const handleFileUpload = async (e, deps) => {
 };
 
 const handleLoadProject = (e, deps) => {
-  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery } = deps;
+  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery, onProjectLoadStart, onProjectLoadComplete } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
+        let projectLifecycleStarted = false;
+        let projectLoadSucceeded = false;
     reader.onload = async (event) => {
         try {
             let rawData = JSON.parse(event.target.result);
@@ -300,6 +302,12 @@ const handleLoadProject = (e, deps) => {
                 if (!_pw) { return; }
                 try { rawData = await window.AlloModules.AlloCrypto.decryptJSON(rawData, _pw); }
                 catch (_e) { if (addToast) addToast(t('save.decrypt_failed') || 'Wrong password, or the file is corrupt.', 'error'); return; }
+            }
+            const lifecycleHistory = Array.isArray(rawData) ? rawData : rawData?.history;
+            if (!Array.isArray(lifecycleHistory)) throw new Error('Project JSON does not contain a history array.');
+            projectLifecycleStarted = true;
+            if (typeof onProjectLoadStart === 'function') {
+                onProjectLoadStart({ rawData, history: lifecycleHistory });
             }
             if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
                 setStudentProgressLog(rawData.progressLog);
@@ -428,6 +436,7 @@ const handleLoadProject = (e, deps) => {
                              xpToNextLevel: snapshot.xpToNextLevel || 100,
                              inventory: snapshot.inventory || [],
                              narrativeLedger: snapshot.narrativeLedger || '',
+                              assistedKnowledge: Array.isArray(snapshot.assistedKnowledge) ? snapshot.assistedKnowledge.filter(Boolean).slice(-12) : [],
                              stats: snapshot.stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] },
                              currentScene: snapshot.currentScene,
                              history: snapshot.history || [],
@@ -687,7 +696,7 @@ const handleLoadProject = (e, deps) => {
                 // host validates the draft envelope against this exact history,
                 // sanitizes imported HTML, and clears any previous-project draft.
                 if (typeof deps.restoreBuilderDraft === 'function') {
-                    deps.restoreBuilderDraft(rawData && rawData.builderDraft, hydratedHistory);
+                    await deps.restoreBuilderDraft(rawData && rawData.builderDraft, hydratedHistory);
                 }
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
@@ -707,6 +716,7 @@ const handleLoadProject = (e, deps) => {
                     setGeneratedContent(null);
                     setActiveView('input');
                 }
+                projectLoadSucceeded = true;
             } else {
                 addToast(t('errors.project_file_invalid') || t('toasts.invalid_project_file') || 'This project file is not valid.', 'error');
 
@@ -715,8 +725,12 @@ const handleLoadProject = (e, deps) => {
             warnLog("Failed to parse project file", err);
             addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
 
+        } finally {
+            if (projectLifecycleStarted && typeof onProjectLoadComplete === 'function') {
+                try { onProjectLoadComplete({ success: projectLoadSucceeded }); } catch (_) {}
+            }
+            if (projectFileInputRef.current) projectFileInputRef.current.value = '';
         }
-        if (projectFileInputRef.current) projectFileInputRef.current.value = '';
     };
     reader.readAsText(file);
 };

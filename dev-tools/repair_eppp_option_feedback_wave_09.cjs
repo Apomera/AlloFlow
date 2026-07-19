@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { revisions, wave08WarningSnapshot } = require('./eppp_option_feedback_wave_09_data.cjs');
+const { revisions, wave08WarningSnapshot, wave09WarningSnapshot } = require('./eppp_option_feedback_wave_09_data.cjs');
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
@@ -75,6 +75,7 @@ if (!Array.isArray(bank) || bank.length !== 1500) throw new Error('Expected the 
 if (Object.keys(revisions).length !== 16) throw new Error('Wave 09 must contain exactly 16 reviewed items.');
 const warningSummaryKeys = ['itemsWithWarnings', 'incorrectOptionsWithWarnings', 'insufficientDetailOptions', 'genericTemplateOptions', 'choiceRestatementOptions', 'fullKeyEchoOptions'];
 if (!wave08WarningSnapshot || warningSummaryKeys.some((key) => !Number.isInteger(wave08WarningSnapshot[key]) || wave08WarningSnapshot[key] < 0)) throw new Error('Wave 09 needs a complete explicit wave-08 warning snapshot.');
+if (!wave09WarningSnapshot || warningSummaryKeys.some((key) => !Number.isInteger(wave09WarningSnapshot[key]) || wave09WarningSnapshot[key] < 0)) throw new Error('Wave 09 needs a complete explicit wave-09 warning snapshot.');
 const baseline = { ...wave08WarningSnapshot };
 const auditItems = [];
 
@@ -149,7 +150,11 @@ for (const domainId of domains) {
   if (auditItems.filter((item) => item.domainId === domainId).length !== 2) throw new Error(domainId + ' must have exactly two reviewed items.');
 }
 
-const after = diagnosticSummary(bank);
+const liveAfter = diagnosticSummary(bank);
+for (const key of warningSummaryKeys) {
+  if (liveAfter[key] > wave09WarningSnapshot[key]) throw new Error('Wave 09 replay increased ' + key + ' beyond its reviewed snapshot.');
+}
+const after = { ...wave09WarningSnapshot };
 const selectedIds = new Set(Object.keys(revisions));
 const selectedWarningsAfter = bank.reduce((total, item) => {
   if (!selectedIds.has(item.id)) return total;

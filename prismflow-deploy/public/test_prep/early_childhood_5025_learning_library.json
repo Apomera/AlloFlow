@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:43.545Z",
+  "generatedAt": "2026-07-19T05:08:53.777Z",
   "libraryId": "praxis-early-childhood-5025-learning-library",
   "packId": "praxis-early-childhood-5025",
   "title": "Praxis Early Childhood Education (5025) learning library",
@@ -1376,7 +1376,7 @@
             "The most important event must always appear first."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for past, present, and future; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A timeline orders events chronologically and can use dated or relative intervals appropriate to the evidence. This directly states the governing concept for past, present, and future; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1396,7 +1396,7 @@
             "Primary sources eliminate the need to compare perspectives."
           ],
           "answerIndex": 1,
-          "rationale": "The correct response represents the central disciplinary idea for primary and secondary sources; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A photograph made during an event can be primary evidence, while a later textbook account is generally secondary. This directly states the governing concept for primary and secondary sources; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1416,7 +1416,7 @@
             "Map color has one universal meaning without a key."
           ],
           "answerIndex": 2,
-          "rationale": "The correct response represents the central disciplinary idea for maps and globes; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A map key explains symbols, a compass rose indicates direction, and scale relates map distance to real distance. This directly states the governing concept for maps and globes; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1436,7 +1436,7 @@
             "Rules and laws organize shared life, protect rights and safety, and carry consequences established by legitimate groups or governments."
           ],
           "answerIndex": 3,
-          "rationale": "The correct response represents the central disciplinary idea for community rules and laws; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Rules and laws organize shared life, protect rights and safety, and carry consequences established by legitimate groups or governments. This directly states the governing concept for community rules and laws; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1456,7 +1456,7 @@
             "A right and a responsibility are identical concepts."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for rights and responsibilities; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A right protects an entitlement or freedom, while a responsibility describes an obligation connected to participation in a community. This directly states the governing concept for rights and responsibilities; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1576,7 +1576,7 @@
             "The roles are permanently assigned at birth."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for producers and consumers; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A producer creates a good or service, while a consumer uses or purchases it; one person can occupy both roles in different situations. This directly states the governing concept for producers and consumers; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1596,7 +1596,7 @@
             "Differences should be ranked from best to worst."
           ],
           "answerIndex": 1,
-          "rationale": "The correct response represents the central disciplinary idea for families and cultural diversity; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Families vary in structure, language, traditions, and roles; accurate study avoids treating one pattern as universal or deficient. This directly states the governing concept for families and cultural diversity; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1616,7 +1616,7 @@
             "Evidence is unnecessary when opinions differ."
           ],
           "answerIndex": 2,
-          "rationale": "The correct response represents the central disciplinary idea for civic decision making; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Groups can identify a shared problem, gather perspectives and evidence, consider alternatives, decide through an agreed process, and evaluate effects. This directly states the governing concept for civic decision making; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1636,7 +1636,7 @@
             "People adapt to, depend on, and modify environments, and those actions can create benefits and costs."
           ],
           "answerIndex": 3,
-          "rationale": "The correct response represents the central disciplinary idea for geographic human-environment interaction; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "People adapt to, depend on, and modify environments, and those actions can create benefits and costs. This directly states the governing concept for geographic human-environment interaction; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1656,7 +1656,7 @@
             "Every public service is managed by the same level."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for local, state, and national government; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Different levels of government have distinct and sometimes shared responsibilities; authority depends on constitutions and laws. This directly states the governing concept for local, state, and national government; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1776,7 +1776,7 @@
             "Observations can never be revised."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for observation and inference; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "An observation records information obtained through senses or tools; an inference is an interpretation based on observations and prior knowledge. This directly states the governing concept for observation and inference; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1796,7 +1796,7 @@
             "One trial always proves a universal rule."
           ],
           "answerIndex": 1,
-          "rationale": "The correct response represents the central disciplinary idea for fair tests and variables; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A fair comparison changes the factor of interest, measures an outcome, and keeps other relevant conditions as consistent as feasible. This directly states the governing concept for fair tests and variables; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1816,7 +1816,7 @@
             "Data should be changed to fit a prediction."
           ],
           "answerIndex": 2,
-          "rationale": "The correct response represents the central disciplinary idea for patterns and evidence; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Repeated observations can reveal patterns, but claims should match the amount, quality, and limits of the evidence. This directly states the governing concept for patterns and evidence; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1836,7 +1836,7 @@
             "Matter has observable properties such as mass, volume, state, texture, color, and temperature; properties can be measured or compared."
           ],
           "answerIndex": 3,
-          "rationale": "The correct response represents the central disciplinary idea for properties of matter; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Matter has observable properties such as mass, volume, state, texture, color, and temperature; properties can be measured or compared. This directly states the governing concept for properties of matter; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1856,7 +1856,7 @@
             "Freezing removes matter."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for changes in matter; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Melting and freezing are physical state changes; forming a new substance with different properties is evidence of chemical change. This directly states the governing concept for changes in matter; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1976,7 +1976,7 @@
             "Deposition removes all sediment."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for Earth materials; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Rocks, soil, sand, and water have observable properties and participate in Earth processes such as weathering, erosion, and deposition. This directly states the governing concept for Earth materials; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -1996,7 +1996,7 @@
             "Climate never varies over time."
           ],
           "answerIndex": 1,
-          "rationale": "The correct response represents the central disciplinary idea for weather and climate; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Weather describes short-term atmospheric conditions; climate describes longer-term patterns for a region. This directly states the governing concept for weather and climate; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2016,7 +2016,7 @@
             "Every location has identical seasons."
           ],
           "answerIndex": 2,
-          "rationale": "The correct response represents the central disciplinary idea for day, night, and seasons; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Earth’s rotation produces day and night; Earth’s tilted axis and revolution around the Sun produce seasonal patterns. This directly states the governing concept for day, night, and seasons; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2036,7 +2036,7 @@
             "Plants generally require light, water, air, nutrients, and suitable conditions; roots, stems, leaves, flowers, fruits, and seeds have related functions."
           ],
           "answerIndex": 3,
-          "rationale": "The correct response represents the central disciplinary idea for plant needs and structures; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Plants generally require light, water, air, nutrients, and suitable conditions; roots, stems, leaves, flowers, fruits, and seeds have related functions. This directly states the governing concept for plant needs and structures; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2056,7 +2056,7 @@
             "A learned behavior is a body structure."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for animal structures and life cycles; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Animals have structures and behaviors that support survival, and life cycles include patterned stages that vary among species. This directly states the governing concept for animal structures and life cycles; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2181,7 +2181,7 @@
             "Children should share drinking containers to build immunity."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for personal hygiene and disease prevention; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Handwashing with soap, respiratory etiquette, vaccination guidance, food safety, and avoiding shared bodily-fluid exposure reduce disease transmission. This directly states the governing concept for personal hygiene and disease prevention; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2202,7 +2202,7 @@
             "All fats must be eliminated."
           ],
           "answerIndex": 1,
-          "rationale": "The correct response represents the central disciplinary idea for nutrition and balanced eating; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "A varied pattern across food groups supplies energy and nutrients; portion, frequency, allergy, culture, and access matter more than labeling foods morally. This directly states the governing concept for nutrition and balanced eating; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2223,7 +2223,7 @@
             "Flexibility and strength are identical."
           ],
           "answerIndex": 2,
-          "rationale": "The correct response represents the central disciplinary idea for physical activity and fitness; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Regular age-appropriate activity supports cardiovascular endurance, strength, flexibility, coordination, and well-being, with rest and hydration. This directly states the governing concept for physical activity and fitness; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2244,7 +2244,7 @@
             "Locomotor skills move the body through space, nonlocomotor skills stabilize or bend in place, and manipulative skills control objects."
           ],
           "answerIndex": 3,
-          "rationale": "The correct response represents the central disciplinary idea for motor development; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Locomotor skills move the body through space, nonlocomotor skills stabilize or bend in place, and manipulative skills control objects. This directly states the governing concept for motor development; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2265,7 +2265,7 @@
             "Only strangers can create unsafe situations."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for body and safety signals; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Children should identify trusted adults, recognize unsafe or uncomfortable situations, use correct body-part language, understand bodily autonomy, and seek help. This directly states the governing concept for body and safety signals; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2391,7 +2391,7 @@
             "Value means monetary price only."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for visual-art elements; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Line, shape, form, color, value, texture, and space are elements artists organize to communicate and create visual relationships. This directly states the governing concept for visual-art elements; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2412,7 +2412,7 @@
             "Copying a model is the only way to learn."
           ],
           "answerIndex": 1,
-          "rationale": "The correct response represents the central disciplinary idea for visual-art processes; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Artists generate ideas, explore materials, create, revise, present, respond, and connect work with context; process and interpretation can have multiple defensible outcomes. This directly states the governing concept for visual-art processes; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2433,7 +2433,7 @@
             "Only memorized scripts count as theater."
           ],
           "answerIndex": 2,
-          "rationale": "The correct response represents the central disciplinary idea for dramatic play and theater; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Theater uses character, action, setting, voice, movement, and collaborative choices to represent experiences and stories. This directly states the governing concept for dramatic play and theater; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2454,7 +2454,7 @@
             "Dance organizes body, action, space, time, and energy; movement can communicate patterns, ideas, and feelings."
           ],
           "answerIndex": 3,
-          "rationale": "The correct response represents the central disciplinary idea for dance elements; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Dance organizes body, action, space, time, and energy; movement can communicate patterns, ideas, and feelings. This directly states the governing concept for dance elements; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2475,7 +2475,7 @@
             "A product matters but process never does."
           ],
           "answerIndex": 0,
-          "rationale": "The correct response represents the central disciplinary idea for creative process; the alternatives confuse chronology, evidence, systems, scale, causation, representation, safety, or disciplinary purpose.",
+          "rationale": "Creating involves imagining, planning, making, revising, and sharing; responding involves observing, interpreting, evaluating with criteria, and connecting. This directly states the governing concept for creative process; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
             "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2769,7 +2769,7 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, when an elementary teacher analyzes decoding evidence, what does a phoneme-analysis error reveal?",
+      "front": "In an early-childhood language and literacy context, a child can blend /m/ /a/ /p/ but cannot segment map. What is the best instructional response?",
       "back": "Explicit supported phoneme segmentation linked to the letters once the oral task is understood.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",

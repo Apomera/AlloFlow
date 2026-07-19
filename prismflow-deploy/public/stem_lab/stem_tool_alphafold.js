@@ -151,6 +151,34 @@
     return lines.join('\n');
   }
 
+  function buildVariantPrompt(payload) {
+    var meta = payload && payload.meta ? payload.meta : {};
+    var variant = payload && payload.variant ? payload.variant : {};
+    var mutations = Array.isArray(variant.mutations) ? variant.mutations.map(function (item) { return safeClip(item, 24); }).slice(0, 12) : [];
+    var details = Array.isArray(variant.mutationDetails) ? variant.mutationDetails.slice(0, 12).map(function (item) {
+      return safeClip(item && item.notation, 24) + ': ' + safeClip(item && item.fromProperty, 60) + ' to ' + safeClip(item && item.toProperty, 60);
+    }) : [];
+    return [
+      'You are a cautious PROTEIN-VARIANT HYPOTHESIS COACH for a K-12 or introductory structural-biology investigation.',
+      'The input is public, synthetic, or teacher-approved classroom material. No raw sequence is provided.',
+      'Do not provide diagnosis, treatment, pathogenicity classification, personal genetic risk, ancestry interpretation, or patient-specific conclusions.',
+      'RULES:',
+      '- Reply with exactly 3 short bullets headed Property change, Possible structural hypotheses, and Best next checks.',
+      '- Discuss plausible effects on packing, charge, flexibility, interfaces, pockets, or local stability only as hypotheses.',
+      '- State that residue position and 3D context matter and that sequence-only reasoning cannot determine the actual effect.',
+      '- Recommend comparing original and variant predictions, local confidence and PAE, site burial or interfaces, trusted references, and experiments where appropriate.',
+      '- Do not claim AlphaFold predicts function, stability, binding, or clinical impact.',
+      'CLASSROOM VARIANT CONTEXT:',
+      'Protein/source: ' + safeClip(meta.name || meta.source || 'classroom protein', 160),
+      'Length: ' + safeClip(variant.proteinLength || meta.length || 'unknown', 40),
+      'Mutations: ' + (mutations.join(', ') || 'none'),
+      'Broad property changes: ' + (details.join('; ') || 'not provided'),
+      'Grade band: ' + safeClip(variant.gradeBand || 'not specified', 80),
+      'Prediction context: ' + safeClip(meta.confidence || 'No variant prediction has been run yet.', 180),
+      'Reply with plain text only.'
+    ].join('\n');
+  }
+
   function buildGuidePrompt(payload) {
     var meta = payload && payload.meta ? payload.meta : {};
     var guide = payload && payload.guide ? payload.guide : {};
@@ -244,7 +272,7 @@
       var openedCount = progress.openedCount || (progress.opened ? 1 : 0);
       var lookupCount = progress.lookupCount || 0;
       var preparedCount = progress.sequencePreparedCount || 0;
-      var guidanceCount = (progress.coachCount || 0) + (progress.guideCount || 0);
+      var guidanceCount = (progress.coachCount || 0) + (progress.guideCount || 0) + (progress.variantAnalysisCount || 0);
       var confidenceBands = [
         { id: 'very-high', color: '#1d4ed8', range: '>90', name: t('stem.alphaFold.confidence_very_high', 'Very high'), detail: t('stem.alphaFold.confidence_very_high_detail', 'The local backbone is predicted with very high confidence. Still compare it with experimental or biological evidence.') },
         { id: 'confident', color: '#38bdf8', range: '70-90', name: t('stem.alphaFold.confidence_confident', 'Confident'), detail: t('stem.alphaFold.confidence_confident_detail', 'The local fold is generally reliable, though side chains and flexible boundaries may need closer inspection.') },
@@ -299,15 +327,17 @@
           if (data.type === 'allocaf-sequence-prepared') { bumpSlice('sequencePreparedCount'); return; }
           var isCoachRequest = data.type === 'allocaf-ai-request';
           var isGuideRequest = data.type === 'allocaf-ai-guide-request';
-          if ((!isCoachRequest && !isGuideRequest) || !data.id) return;
+          var isVariantRequest = data.type === 'allocaf-ai-variant-request';
+          if ((!isCoachRequest && !isGuideRequest && !isVariantRequest) || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
             try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), '*'); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
-          bumpSlice(isGuideRequest ? 'guideCount' : 'coachCount');
+          bumpSlice(isVariantRequest ? 'variantAnalysisCount' : (isGuideRequest ? 'guideCount' : 'coachCount'));
           Promise.resolve().then(function () {
-            return ctx.callGemini(isGuideRequest ? buildGuidePrompt(data) : buildCoachPrompt(data), false, false, 0.7);
+            var prompt = isVariantRequest ? buildVariantPrompt(data) : (isGuideRequest ? buildGuidePrompt(data) : buildCoachPrompt(data));
+            return ctx.callGemini(prompt, false, false, 0.7);
           }).then(function (resp) {
             var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
             respond({ text: String(text || '').slice(0, 1200) });

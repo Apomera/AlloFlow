@@ -3,16 +3,22 @@
   "id": "praxis-school-counselor-5422",
   "title": "Praxis School Counselor (5422) — 200 Source Questions + 300 Guided Review",
   "shortTitle": "School Counselor 5422 diagnostics",
-  "description": "Contains 200 source diagnostic questions and 300 source-derived guided-review tasks; the assistant audit found 100 distinct source content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5422 test currently has 120 selected-response questions in 120 minutes; AlloFlow practice is not an official form or score.",
+  "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 120-question timed simulation. The official 5422 test currently has 120 selected-response questions in 120 minutes; AlloFlow practice is not an official form or score.",
   "credentialOwner": "Educational Testing Service (ETS)",
   "version": "1.0.0",
   "status": "ready",
   "accent": "teal",
-  "contentReview": "Assistant audit completed: the 200 source questions contain 100 distinct content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. The 300 additional activities are assistant-reviewed guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
+  "contentReview": "Assistant audit completed: 200 independent-practice items contain 100 distinct content kernels and 100 parallel variants under the normalized test. 300 additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
   "nativeQaUrl": "./test_prep/school_counselor_5422_native_qa.json",
   "learningLibraryUrl": "./test_prep/school_counselor_5422_learning_library.json",
   "learningLibraryQaUrl": "./test_prep/school_counselor_5422_learning_library_qa.json",
   "simulationItemCount": 120,
+  "simulationDomainCounts": {
+    "define": 30,
+    "deliver": 48,
+    "manage": 24,
+    "assess": 18
+  },
   "simulationTimeMinutes": 120,
   "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or ASCA. The official Praxis School Counselor (5422) test currently has 120 selected-response questions in 120 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, mental-health treatment, legal advice, or substitutes for current federal, state, local, district, crisis, mandated-reporting, and ethical requirements.",
   "domains": [
@@ -42,14 +48,14 @@
     {
       "id": "diagnostic-batch-1",
       "label": "100-item source diagnostic bank 1",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "diagnostic-batch-2",
       "label": "100-item source diagnostic bank 2",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "guided-review-bank-1",
@@ -22902,21 +22908,37 @@
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
     }
   ],
+  "officialSelectedResponseCount": 120,
+  "officialConstructedResponseCount": 0,
+  "officialTotalTimeMinutes": 120,
   "diagnosticBatchCount": 5,
   "diagnosticBatchCountSemantics": "legacy-total-learning-activity-bank-alias",
   "sourceDiagnosticBatchCount": 2,
+  "assistantAuthoredIndependentBatchCount": 0,
+  "independentDiagnosticBatchCount": 2,
   "guidedReviewBatchCount": 3,
   "learningActivityBankCount": 5,
+  "sourceQuestionItems": 200,
+  "assistantAuthoredIndependentItems": 0,
+  "independentPracticeItems": 200,
+  "guidedReviewItems": 300,
   "distinctSourceContentKernels": 100,
   "parallelSourceVariants": 100,
+  "distinctIndependentContentKernels": 100,
+  "parallelIndependentVariants": 100,
   "newIndependentItemsNeeded": 400,
   "expansionVersion": "source-kernel-audit-plus-guided-review-v1",
+  "simulationDomainCountsBasis": "release-declared-selected-response-allocation",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "structurallyReviewedItems": 500,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReviewItems": 300,
     "independentQuestionTarget": 500,
     "newIndependentItemsNeeded": 400,
@@ -22935,8 +22957,8 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "limitation": "Normalized answer-set, rationale, and reference reuse is counted as one content kernel. Source-derived transformations are approved as guided practice, not as independent exam questions. Assistant review is not independent licensed-professional review or psychometric validation."
+    "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities, not 500 independent exam questions: 200 source questions (100 distinct content kernels; 100 parallel variants) plus 300 source-derived guided-review activities. 400 newly authored independent questions are needed to reach the 500-question target.",
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. It currently contains 100 distinct independent content kernels; 400 newly authored independent questions remain to reach 500.",
   "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

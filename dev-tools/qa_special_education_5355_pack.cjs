@@ -39,6 +39,11 @@ if (!Array.isArray(pack.items) || pack.items.length !== 200 || !Array.isArray(so
 if (JSON.stringify(pack.items) !== JSON.stringify(sourceItems)) add(null, 'provenance', 'Pack items do not exactly match the generated item source.');
 if (!Array.isArray(pack.sections) || pack.sections.length !== 2 || pack.sections.some((section, index) => section.id !== 'diagnostic-batch-' + (index + 1) || section.timeMinutes !== null)) add(null, 'blueprint-alignment', 'The release must declare two untimed 100-item diagnostic sections.');
 if (pack.simulationItemCount !== 120 || pack.simulationTimeMinutes !== 120) add(null, 'blueprint-alignment', 'The optional official-length simulation must declare 120 questions and 120 minutes.');
+const expectedSimulationDomainCounts = Object.fromEntries(Object.entries(expectedDomains).map(([domainId, expected]) => [domainId, expected.officialQuestions]));
+if (JSON.stringify(pack.simulationDomainCounts) !== JSON.stringify(expectedSimulationDomainCounts)) add(null, 'blueprint-alignment', 'The optional official-length simulation must preserve the official 32/38/27/23 domain allocation.');
+for (const [domainId, required] of Object.entries(expectedSimulationDomainCounts)) {
+  if (pack.items.filter((item) => item.domainId === domainId && item.examItemStatus !== 'not-approved-as-independent-exam-item').length < required) add(null, 'blueprint-alignment', 'The independent item pool cannot supply the official simulation allocation for ' + domainId + '.');
+}
 if (pack.learningLibraryUrl !== './test_prep/special_education_5355_learning_library.json' || pack.learningLibraryQaUrl !== './test_prep/special_education_5355_learning_library_qa.json') add(null, 'learning-linkage', 'Learning-library URLs are invalid.');
 if (library.libraryId !== 'praxis-special-education-5355-learning-library' || library.packId !== pack.id || (library.skills || []).length !== 12 || (library.chapters || []).length !== 12) add(null, 'learning-linkage', 'Learning-library identity or skill inventory is invalid.');
 if (!/120 selected-response questions in two hours/i.test(pack.disclaimer || '') || !/not official or scaled Praxis scores/i.test(pack.disclaimer || '') || !/federal, state, and local requirements/i.test(pack.disclaimer || '')) add(null, 'provenance', 'The independent-preparation and legal disclaimer is incomplete.');
@@ -104,7 +109,7 @@ const report = {
     meaning: 'A pass confirms exact blueprint allocation, balanced answer positions, unique original prompts, authoritative-source allowlisting, substantive feedback, stable identifiers, and complete learning links.',
     limitation: 'This is not ETS approval, independent expert validation, field testing, psychometric calibration, a scaled-score model, or legal advice.',
   },
-  blueprint: { officialQuestionCount: 120, timeMinutes: 120, selectedResponse: true, categories: Object.fromEntries(Object.entries(expectedDomains).map(([id, entry]) => [id, { questions: entry.officialQuestions, percentage: Math.round(entry.weight * 100) }])) },
+  blueprint: { officialQuestionCount: 120, timeMinutes: 120, selectedResponse: true, simulationDomainCounts: expectedSimulationDomainCounts, categories: Object.fromEntries(Object.entries(expectedDomains).map(([id, entry]) => [id, { questions: entry.officialQuestions, percentage: Math.round(entry.weight * 100) }])) },
   diagnosticBatch: { batchCount: 2, batchSize: 100, categories: Object.fromEntries(Object.entries(expectedDomains).map(([id, entry]) => [id, entry.diagnosticQuestions])), batches: diagnosticBatches },
   summary: { totalItems: reports.length, passedItems, reviewRequiredItems, findings: allFindings.length, status },
   findings,

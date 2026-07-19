@@ -52,6 +52,8 @@ function HistoryPanel(props) {
     isIndependentMode, isParentMode, isSaveActionPulsing, isStorageDisabled, isSyncMode,
     isTeacherMode, isUnitModalOpen, lastSaved, moveItem, movingItemId, newUnitName,
     pendingSync, projectFileInputRef, sanitizeString, setActiveStation, setActiveUnitId,
+    isCanvas = false, canvasRecoverySaveStatus = 'inactive', canvasRecoverySnapshotCount = 0,
+    onOpenDeviceRecovery = (() => {}),
     setEditTitle, setIsCommunityCatalogOpen, setMovingItemId, setNewUnitName,
     setSelHubTab, setShowSelHub, setShowStemLab, setStemLabTab, t, units,
     onVisualizeUnit,
@@ -118,7 +120,39 @@ function HistoryPanel(props) {
                                 <History size={16}/> {isTeacherMode ? t('sidebar.resource_pack_history') : t('sidebar.my_resources')}
                             </h3>
                         <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80">
-                            {isStorageDisabled ? (
+                            {isCanvas && canvasRecoverySaveStatus === 'inactive' ? (
+                                <span className="flex min-h-11 items-center gap-1 text-indigo-200">Live-session device recovery is off</span>
+                            ) : isCanvas ? (
+                                <button type="button"
+                                    onClick={onOpenDeviceRecovery}
+                                    className={'flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ' + (canvasRecoverySaveStatus === 'error' ? 'text-red-200' : (canvasRecoverySaveStatus === 'saved' ? 'text-green-300' : 'text-indigo-200'))}
+                                    title={String(canvasRecoverySnapshotCount) + ' saved ' + (canvasRecoverySnapshotCount === 1 ? 'workspace' : 'workspaces') + ' on this device. Open saved work manager.'}
+                                    aria-label={(canvasRecoverySaveStatus === 'error' ? 'Device save needs attention' : canvasRecoverySaveStatus === 'idle' ? 'Current workspace is not saved yet' : (lastSaved ? 'Saved on this device at ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'On-device saved work')) + '. Open saved work manager.'}
+                                    data-help-key="history_device_storage">
+                                    {(canvasRecoverySaveStatus === 'checking' || canvasRecoverySaveStatus === 'saving' || canvasRecoverySaveStatus === 'restoring') ? (
+                                        <RefreshCw size={10} className="animate-spin" aria-hidden="true" />
+                                    ) : canvasRecoverySaveStatus === 'error' ? (
+                                        <AlertCircle size={10} aria-hidden="true" />
+                                    ) : (
+                                        <Save size={10} aria-hidden="true" />
+                                    )}
+                                    <span>
+                                        {canvasRecoverySaveStatus === 'checking'
+                                            ? 'Checking saved work…'
+                                            : canvasRecoverySaveStatus === 'saving'
+                                                ? 'Saving on this device…'
+                                                : canvasRecoverySaveStatus === 'restoring'
+                                                    ? 'Restoring saved work…'
+                                                    : canvasRecoverySaveStatus === 'error'
+                                                        ? 'Device save needs attention'
+                                                        : canvasRecoverySaveStatus === 'idle'
+                                                            ? (canvasRecoverySnapshotCount > 0 ? 'Current workspace not saved yet' : 'Not saved on this device yet')
+                                                            : lastSaved
+                                                            ? 'Saved on this device · ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                                                            : 'Saved on this device'}
+                                    </span>
+                                </button>
+                            ) : isStorageDisabled ? (
                                 <span className="text-red-200 flex items-center gap-1">
                                     <AlertCircle size={10} /> {t('status.storage_disabled')}
                                 </span>

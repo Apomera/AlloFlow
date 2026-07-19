@@ -23,7 +23,7 @@ describe('Info modal Atlas visualization', () => {
   it('keeps the visualization supplemental and exposes text equivalents', () => {
     expect(source).toContain('<p className="sr-only">{hub.hub} overview: {visual.route.join(\', \')}.</p>');
     expect(source).toContain('aria-hidden="true" className="flex items-center gap-1.5"');
-    expect(source).toContain("aria-label={cat.name + ' tools'}");
+    expect(source).toContain("aria-label={cat.name + ' catalog entries'}");
     expect(source).toContain('role="listitem"');
     expect(source).toContain('focus-visible:ring-indigo-600');
   });
@@ -84,4 +84,39 @@ describe('Info modal Atlas visualization', () => {
     expect(source.match(/aria-controls="atlas-directory-hubs"/g)).toHaveLength(2);
     expect(source).toContain('id="atlas-directory-hubs"');
   });
+
+  it('launches hubs through the shared command palette bridge', () => {
+    expect(source).toContain("launchLabel: 'Open STEM Lab', launchQuery: 'stem lab'");
+    expect(source).toContain('function AtlasTab({ t, onRequestClose })');
+    expect(source).toContain("window.CustomEvent('alloflow:open-command-palette'");
+    expect(source).toContain("detail: { query: safeQuery, source: 'atlas' }");
+    expect(source).toContain("if (typeof onRequestClose === 'function') onRequestClose()");
+    expect(source).toContain('onLaunch={launchHub}');
+    expect(source).toContain('<AtlasTab t={t} onRequestClose={handleSetShowInfoModalToFalse} />');
+    expect(source).toContain("aria-label={visual.launchLabel + ' using the command palette'}");
+  });
+
+
+  it('labels registry-backed and curated index provenance', () => {
+    expect(source.match(/"sourceKind": "registry"/g)).toHaveLength(3);
+    expect(source.match(/"sourceKind": "curated"/g)).toHaveLength(1);
+    expect(source.match(/"sourceKind": "mixed"/g)).toHaveLength(1);
+    expect(source).toContain('function AtlasScopeNote({ hubs })');
+    expect(source).toContain('id="atlas-scope-title"');
+    expect(source).toContain("hub.sourceKind === 'registry'");
+    expect(source).toContain("hub.sourceLabel || 'Curated product index'");
+    expect(source).toContain('<AtlasScopeNote hubs={ATLAS_HUBS} />');
+  });
+
+  it('describes counts as searchable entries rather than unique tools', () => {
+    expect(source).toContain('Counts represent searchable catalog entries—not necessarily unique tools.');
+    expect(source).toContain('{totalEntries} entries / {totalAreas} areas');
+    expect(source).toContain('{hub.total} entries');
+    expect(source).toContain('{countText} entries');
+    expect(source).toContain("' matching catalog entry'");
+    expect(source).toContain('>Catalog directory</h5>');
+    expect(source).not.toContain('A map of everything inside AlloFlow');
+    expect(source).not.toContain('Atlas is the complete live directory');
+  });
+
 });

@@ -45,15 +45,17 @@ describe('Research Hub modal accessibility', () => {
     expect(source).toContain("activeLane ? activeLane.label");
   });
 
-  it('renders the inquiry command center and guided lane cards', () => {
+  it('renders the inquiry command center and rigor-labeled method packs', () => {
     expect(source).toContain('data-research-command="true"');
     expect(source).toContain('aria-label="Inquiry progress"');
     expect(source).toContain('Inquiry command center');
     expect(source).toContain('researchNextMove');
-    expect(source).toContain('data-research-lane={L.id}');
-    expect(source).toContain('Best for explaining phenomena');
-    expect(source).toContain('Best for solving constrained problems');
-    expect(source).toContain('Best for interpreting people and systems');
+    expect(source).toContain('data-research-method-pack={pack.id}');
+    expect(source).toContain('data-research-lane={pack.laneId}');
+    expect(source).toContain('What rigor looks like');
+    expect(source).toContain('Scientific Investigation');
+    expect(source).toContain('Community & Qualitative Inquiry');
+    expect(source).toContain('Creative & Cultural Inquiry');
   });
 
   it('supports student-authored question framing with live non-AI signals', () => {
@@ -82,12 +84,13 @@ describe('Research Hub modal accessibility', () => {
     expect(source).toContain('aria-describedby="research-hub-question-help"');
   });
 
-  it('makes cross-lane journal continuity visible in a Research Backpack', () => {
+  it('makes cross-approach continuity visible in an Inquiry Portfolio', () => {
     expect(source).toContain('data-research-backpack="true"');
-    expect(source).toContain('Research Backpack');
+    expect(source).toContain('data-inquiry-portfolio="true"');
+    expect(source).toContain('Inquiry Portfolio');
     expect(source).toContain('Saved on this device');
-    expect(source).toContain('Journal continuity');
-    expect(source).toContain('Everything here travels with you when you switch research lanes.');
+    expect(source).toContain('Portfolio continuity');
+    expect(source).toContain('Everything here travels with you when you switch inquiry approaches or workspaces.');
     expect(source).toContain('models, concepts, framings');
     expect(source).toContain('documented loop-backs');
   });

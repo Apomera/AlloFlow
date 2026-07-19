@@ -20,10 +20,11 @@ exports[`Research Hub substrate — PER_TOUCHPOINT_CAP > exposes the canonical c
 }
 `;
 
-exports[`Research Hub substrate — emptyJournal v:4 > canonical top-level field set is pinned (snapshot) 1`] = `
+exports[`Research Hub substrate — emptyJournal v:5 > canonical top-level field set is pinned (snapshot) 1`] = `
 [
   "absentVoices",
   "activeLane",
+  "activeMethodPack",
   "activeStage",
   "aiCallCount",
   "aiHistory",
@@ -48,6 +49,7 @@ exports[`Research Hub substrate — emptyJournal v:4 > canonical top-level field
   "humanitiesPlausibleAnswers",
   "humanitiesPosition",
   "loopBacks",
+  "methodPackHistory",
   "modelSnapshots",
   "pendingLoopReturn",
   "positionality",

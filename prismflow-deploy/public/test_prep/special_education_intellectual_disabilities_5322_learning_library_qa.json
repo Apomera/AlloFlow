@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:50.085Z",
+  "generatedAt": "2026-07-19T05:09:27.489Z",
   "libraryId": "praxis-special-education-intellectual-disabilities-5322-learning-library",
   "packId": "praxis-special-education-intellectual-disabilities-5322",
   "standard": {
-    "label": "AlloFlow 5322 source, blueprint, feedback, learning, case-study, safety, dignity, and linkage QA v1",
+    "label": "AlloFlow 5322 source, blueprint, feedback, learning, case-study, safety, dignity, linkage, and foreign-kernel QA v2",
     "limitation": "Not ETS or AAIDD approval; independent intellectual-disabilities educator, self-advocate, family, AAC, assistive-technology, health, transition, legal, cultural-linguistic, and psychometric validation remain pending."
   },
   "summary": {
@@ -22,5 +22,14 @@
     "editorialReviewedSourcePendingMemoryAids": 0,
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "0b95c450bc39afbc1f8424cab78ac7da743088d76dfb7d1902d58d9d56a93afe",
+    "learningLibrarySha256": "08a0ae9b9a923b4e9ee52ffcdff9a4517477306225e892266be2aae1e11e5fb7",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

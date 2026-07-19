@@ -16,7 +16,7 @@ const outputCode =
 if (window.AlloModules && window.AlloModules.AdventureHandlersModule) { console.log('[CDN] AdventureHandlersModule already loaded, skipping'); return; }
 ${source}
 window.AlloModules.AdventureHandlersModule = true;
-console.log('[AdventureHandlers] 5 handlers registered');
+console.log('[AdventureHandlers] 7 handlers registered');
 })();
 `;
 

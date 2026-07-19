@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:47.869Z",
+  "generatedAt": "2026-07-19T05:50:11.936Z",
   "libraryId": "praxis-special-education-learning-disabilities-5383-learning-library",
   "packId": "praxis-special-education-learning-disabilities-5383",
   "standard": {
-    "label": "AlloFlow 5383 source, blueprint, feedback, learning, and linkage QA v1",
+    "label": "AlloFlow 5383 source, blueprint, feedback, learning, source-parity, key-integrity, encoding, and editorial QA v2",
     "limitation": "Not ETS approval; independent learning-disabilities educator, structured-literacy, mathematics-intervention, accessibility, family, legal, cultural-linguistic, and psychometric validation remain pending."
   },
   "summary": {
@@ -21,5 +21,14 @@
     "editorialReviewedSourcePendingMemoryAids": 0,
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "6ee7569f03f7034513f92df8450db44bddfb927398e888a524d14adebda2a61e",
+    "learningLibrarySha256": "ba24cb0e55bb1717f5dc05ef9838424180cb33798583bde96a5fb03c382a3b32",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

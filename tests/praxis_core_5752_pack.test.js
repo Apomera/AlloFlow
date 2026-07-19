@@ -87,6 +87,15 @@ describe('Praxis Core Combined 5752 diagnostic bank', () => {
     expect(pack.simulationNote).toContain('complete official section times total 275 minutes');
   });
 
+  it('keeps paired algebra rationales specific to the equation in each source form', () => {
+    const firstForm = pack.items.find((item) => item.id === 'core5752-b1-089');
+    const secondForm = pack.items.find((item) => item.id === 'core5752-b2-089');
+    expect(firstForm.rationale).toContain('3x = 18');
+    expect(firstForm.rationale).not.toContain('5x = 30');
+    expect(secondForm.rationale).toContain('5x = 30');
+    expect(secondForm.rationale).not.toContain('3x = 18');
+  });
+
   it('publishes zero-finding QA and exact deployment mirrors', () => {
     const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
     const qa = JSON.parse(read('test_prep/praxis_core_5752_native_qa.json'));

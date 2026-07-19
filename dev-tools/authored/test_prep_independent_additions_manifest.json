@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "packs": {
     "parapro": [
       {
         "id": "independent-diagnostic-batch-3",
         "label": "Assistant-reviewed independent diagnostic bank 3",
-        "reviewedAt": "2026-07-16",
+        "reviewedAt": "2026-07-18",
         "files": [
           "parapro_batch3_reading_34.json",
           "parapro_batch3_mathematics_33.json",
@@ -15,12 +15,14 @@
           "parapro_batch3_reading_34.review.json",
           "parapro_batch3_mathematics_33.review.json",
           "parapro_batch3_writing_33.review.json"
-        ]
+        ],
+        "expectedPackId": "parapro-1755-practice-1",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1"
       },
       {
         "id": "independent-diagnostic-batch-4",
         "label": "Assistant-reviewed independent diagnostic bank 4",
-        "reviewedAt": "2026-07-17",
+        "reviewedAt": "2026-07-18",
         "files": [
           "parapro_batch4_reading_34.json",
           "parapro_batch4_mathematics_33.json",
@@ -30,8 +32,88 @@
           "parapro_batch4_reading_34.review.json",
           "parapro_batch4_mathematics_33.review.json",
           "parapro_batch4_writing_33.review.json"
+        ],
+        "expectedPackId": "parapro-1755-practice-1",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1"
+      },
+      {
+        "id": "independent-diagnostic-batch-5",
+        "label": "Assistant-reviewed independent diagnostic bank 5",
+        "reviewedAt": "2026-07-18",
+        "files": [
+          "parapro_batch5_reading_34.json",
+          "parapro_batch5_mathematics_33.json",
+          "parapro_batch5_writing_33.json"
+        ],
+        "reviewReports": [
+          "parapro_batch5_reading_34.review.json",
+          "parapro_batch5_mathematics_33.review.json",
+          "parapro_batch5_writing_33.review.json"
+        ],
+        "expectedPackId": "parapro-1755-practice-1",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1"
+      }
+    ],
+    "early_childhood_5025": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-18",
+        "expectedPackId": "praxis-early-childhood-5025",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          "early_childhood_5025_batch3.json"
+        ],
+        "reviewReports": [
+          "early_childhood_5025_batch3.review.json"
+        ]
+      }
+    ],
+    "audiology_5343": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-18",
+        "expectedPackId": "praxis-audiology-5343",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          "audiology_5343_batch3.json"
+        ],
+        "reviewReports": [
+          "audiology_5343_batch3.review.json"
+        ]
+      }
+    ],
+    "school_librarian_5312": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-19",
+        "expectedPackId": "praxis-school-librarian-5312",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          "school_librarian_5312_batch3.json"
+        ],
+        "reviewReports": [
+          "school_librarian_5312_batch3.review.json"
+        ]
+      }
+    ],
+    "educational_leadership_5412": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-18",
+        "expectedPackId": "praxis-educational-leadership-5412",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          "educational_leadership_5412_batch3.json"
+        ],
+        "reviewReports": [
+          "educational_leadership_5412_batch3.review.json"
         ]
       }
     ]
-  }
+  },
+  "legacyReviewEvidencePacks": []
 }

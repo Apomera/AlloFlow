@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:56.668Z",
+  "generatedAt": "2026-07-19T05:50:09.760Z",
   "packId": "praxis-school-counselor-5422",
   "standard": {
     "label": "AlloFlow independent 5422 source, structure, feedback, originality, safety, and linkage QA v1",
@@ -79,6 +79,8 @@
     ],
     "batchCountSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceBatchCount": 2,
+    "assistantAuthoredIndependentBatchCount": 0,
+    "independentDiagnosticBatchCount": 2,
     "guidedReviewBatchCount": 3,
     "learningActivityBankCount": 5
   },
@@ -89,8 +91,12 @@
     "findings": 0,
     "status": "pass",
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReasoningItems": 300,
     "independentQuestionTarget": 500,
     "newIndependentItemsNeeded": 400,
@@ -100,6 +106,8 @@
     "diagnosticBanks": 5,
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
   },
@@ -10398,14 +10406,27 @@
       ]
     }
   ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
+    "learningLibrarySha256": "620236efa275a94efe12c626e13042430a5eacae9bea3d3690a552251bfb8b03",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  },
   "expansion": {
     "independentQuestionTarget": 500,
     "totalLearningActivities": 500,
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReasoningItems": 300,
     "newIndependentItemsNeeded": 400,
     "structurallyReviewedItems": 500,
@@ -10416,7 +10437,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   }
 }

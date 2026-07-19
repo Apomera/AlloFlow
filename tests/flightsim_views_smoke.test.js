@@ -97,6 +97,23 @@ describe('every view renders real content', () => {
     });
   }
 
+  it('the menu carries the responsive visual layout contract', () => {
+    const html = renderTool('flightSim', { flightSim: { view: 'menu' } });
+    expect(html).toContain('data-flightsim-visual-menu="true"');
+    expect(html).toContain('repeat(auto-fit, minmax(112px, 1fr))');
+  });
+
+  it('the flying view exposes a touch-accessible pause control and live fullscreen state', () => {
+    const html = renderTool('flightSim', { flightSim: { view: 'flying' } });
+    expect(html).toContain('aria-label="Pause flight"');
+    expect(html).toContain('aria-pressed="false"');
+    expect(html).toContain('data-flightsim-flight-deck="true"');
+    expect(html).toContain('data-flightsim-command-rail="true"');
+    expect(html).toContain('skyschool-status-rail');
+    expect(SRC).toContain("sp.results[idx - 1]");
+    expect(SRC).toContain("sprintRef.current.phase === 'result'");
+  });
+
   it('the lesson view exposes the Mark-lesson-complete affordance (dead-quest regression)', () => {
     const html = renderTool('flightSim', { flightSim: { view: 'lesson', selectedLesson: 'lift' } });
     expect(html).toContain('Mark lesson complete');
@@ -109,6 +126,30 @@ describe('every view renders real content', () => {
   it('debrief tolerates a legacy partial shape (maxAlt missing used to throw)', () => {
     const html = renderTool('flightSim', { flightSim: { view: 'debrief', lastDebrief: { flightTime: 60 } } });
     expect(html.length).toBeGreaterThan(300);
+    expect(html).toContain('data-flightsim-debrief="true"');
+    expect(html).toContain('Flight performance score');
+    expect(html).toContain('FLIGHT SCORE');
+    expect(html).toContain('No landing recorded');
+  });
+
+  it('learn view exposes the searchable responsive library contract', () => {
+    const html = renderTool('flightSim', { flightSim: { view: 'learn', learnTopic: 'forces', learnQuery: 'weather' } });
+    expect(html).toContain('data-flightsim-learn-library="true"');
+    expect(html).toContain('aria-label="Search SkySchool Learn topics"');
+    expect(html).toContain('type="search"');
+    expect(html).toContain('data-learn-topic="forces"');
+    expect(html).toContain('skyschool-learn-split');
+  });
+
+  it('quiz view renders progress and normalizes string persisted answer state', () => {
+    const html = renderTool('flightSim', {
+      flightSim: { view: 'quiz', quizIdx: '0', quizPicked: '0', quizScore: '1', quizTotal: '1' },
+    });
+    expect(html).toContain('data-flightsim-quiz-deck="true"');
+    expect(html).toContain('aria-labelledby="skyschool-quiz-question"');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('skyschool-quiz-nav');
   });
 });
 

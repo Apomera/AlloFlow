@@ -1,4 +1,5 @@
 'use strict';
+
 const source = require('../plt_k6_5622/item_content.cjs');
 const refs = [
   'https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf',
@@ -6,15 +7,22 @@ const refs = [
   'https://ccsso.org/resource-library/intasc-model-core-teaching-standards-and-learning-progressions-teachers-10',
   'https://ies.ed.gov/ncee/wwc/PracticeGuides',
 ];
+
 const gradeMap = {
-  kindergarten: 'fifth grade', 'first grade': 'sixth grade', 'first-grade': 'sixth-grade',
-  'second grade': 'seventh grade', 'second-grade': 'seventh-grade', 'third grade': 'eighth grade', 'third-grade': 'eighth-grade',
-  'fourth grade': 'eighth grade', 'fourth-grade': 'eighth-grade', 'fifth grade': 'ninth grade', 'fifth-grade': 'ninth-grade',
+  kindergarten: 'fifth grade',
+  'first grade': 'sixth grade', 'first-grade': 'sixth-grade',
+  'second grade': 'seventh grade', 'second-grade': 'seventh-grade',
+  'third grade': 'eighth grade', 'third-grade': 'eighth-grade',
+  'fourth grade': 'eighth grade', 'fourth-grade': 'eighth-grade',
+  'fifth grade': 'ninth grade', 'fifth-grade': 'ninth-grade',
   'sixth grade': 'ninth grade', 'sixth-grade': 'ninth-grade',
 };
+
 const rewrite = (value) => String(value || '')
-  .replace(/kindergarten|first[- ]grade|second[- ]grade|third[- ]grade|fourth[- ]grade|fifth[- ]grade|sixth[- ]grade/gi, (match) => gradeMap[match.toLowerCase()] || match)
-  .replace(/K[â€“-]6/gi, 'grades 5–9')
+  .replace(/\bgrades?\s+K\s*[-\u2010-\u2015]\s*6\b/gi, 'grades 5\u20139')
+  .replace(/\bK\s*[-\u2010-\u2015]\s*6\b/gi, 'grades 5\u20139')
+  .replace(/kindergarten|first[- ]grade|second[- ]grade|third[- ]grade|fourth[- ]grade|fifth[- ]grade|sixth[- ]grade/gi,
+    (match) => gradeMap[match.toLowerCase()] || match)
   .replace(/elementary/gi, 'middle-grades')
   .replace(/young children/gi, 'early adolescents')
   .replace(/children/gi, 'learners')
@@ -29,7 +37,7 @@ module.exports = source.map((bank, index) => ({
   label: rewrite(bank.label),
   references: refs.slice(),
   questions: bank.questions.map((question, questionIndex) => ({
-    promptA: 'In a grades 5–9 setting, ' + rewrite(question.promptA).replace(/^./, (letter) => letter.toLowerCase()),
+    promptA: 'In a grades 5\u20139 setting, ' + rewrite(question.promptA).replace(/^./, (letter) => letter.toLowerCase()),
     promptB: 'In a parallel middle-grades setting, ' + rewrite(question.promptB).replace(/^./, (letter) => letter.toLowerCase()),
     correct: rewrite(question.correct),
     distractors: question.distractors.map(rewrite),

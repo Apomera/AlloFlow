@@ -2020,7 +2020,7 @@
     "type": "single-choice",
     "domainId": "students-as-learners",
     "difficulty": "application",
-    "prompt": "In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades K–6?",
+    "prompt": "In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades 5–9?",
     "choices": [
       "Use loss of all movement as routine punishment.",
       "Require identical motor performance from every learner.",
@@ -9892,7 +9892,7 @@
     "type": "single-choice",
     "domainId": "students-as-learners",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades K–6?” A candidate selects “Use loss of all movement as routine punishment”. Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades 5–9?” A candidate selects “Use loss of all movement as routine punishment”. Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments.",
       "\"Require identical motor performance from every learner.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
@@ -19492,7 +19492,7 @@
     "type": "single-choice",
     "domainId": "students-as-learners",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades K–6?” A team compares “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” with “Use loss of all movement as routine punishment”. Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: “In a grades 5–9 setting, which recess and classroom plan best recognizes the relationship between physical development and learning in grades 5–9?” A team compares “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” with “Use loss of all movement as routine punishment”. Which evaluation most accurately distinguishes them?",
     "choices": [
       "“Use loss of all movement as routine punishment” is better supported: Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments. In contrast, “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” is not supported: \"Use loss of all movement as routine punishment.\" conflicts with development, evidence, access, ethics, or the educator’s role.",
       "“Require identical motor performance from every learner” is better supported: Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments. In contrast, “Provide safe movement, varied motor demands, accessible participation, appropriate breaks, and observation of individual needs while protecting instructional purpose” is not supported: \"Require identical motor performance from every learner.\" conflicts with development, evidence, access, ethics, or the educator’s role.",

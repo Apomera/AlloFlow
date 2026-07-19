@@ -37,6 +37,12 @@ describe('Time & Schedule Lab', () => {
     expect(pure.time12(0)).toBe('12:00 AM');
     expect(pure.time12(720)).toBe('12:00 PM');
     expect(pure.time24(1439)).toBe('23:59');
+    expect(pure.forwardDuration(1410, 15)).toBe(45);
+    expect(pure.timeWithDay(1410, 15, false)).toBe('12:15 AM next day');
+    const overnightTimeline = pure.scheduleTimeline(pure.schedules.overnight.events);
+    expect(overnightTimeline[1]).toMatchObject({ start: 1410, end: 1455, duration: 45 });
+    expect(overnightTimeline[2]).toMatchObject({ start: 1470, end: 1485, duration: 15 });
+    expect(pure.scheduleTimeLabel(1470, false)).toBe('12:30 AM next day');
     expect(pure.parseTime('9:07 p.m.')).toBe(1267);
     expect(pure.parseDuration('1 h 15 m')).toBe(75);
     expect(pure.parseDuration('1:15')).toBe(75);
@@ -46,7 +52,7 @@ describe('Time & Schedule Lab', () => {
   });
 
   it('enforces the representation requested by conversion questions', () => {
-    loadTool(FILE, ID);
+    const tool = loadTool(FILE, ID);
     const pure = window.TimeSchedulePure;
     expect(pure.checkAnswer('6:40 PM', 'time', 1120, '24')).toMatchObject({
       valid: false, formatOk: false, ok: false,
@@ -63,6 +69,16 @@ describe('Time & Schedule Lab', () => {
     expect(pure.scheduleQuestions(pure.schedules.school)[2]).toMatchObject({
       type: 'time', answerFormat: '24', answer: 685,
     });
+    expect(pure.scheduleQuestions(pure.schedules.overnight)[0]).toMatchObject({
+      type: 'duration', answer: 45,
+    });
+    expect(pure.scheduleQuestions(pure.schedules.overnight)[0].explanation).toContain('next day');
+    const elapsedQuest = tool.questHooks.find((hook) => hook.id === 'elapsed_explorer');
+    const scheduleQuest = tool.questHooks.find((hook) => hook.id === 'schedule_reasoner');
+    const challengeQuest = tool.questHooks.find((hook) => hook.id === 'time_master');
+    expect(elapsedQuest.progress({ elapsedModels: 3, elapsedModelSignatures: {} })).toBe('0/3 models');
+    expect(scheduleQuest.progress({ scheduleSolved: 99, scheduleSolvedKeys: { bogus: true } })).toBe('0/3 solved');
+    expect(challengeQuest.progress({ score: { correct: 99 }, solvedChallenges: { bogus: true } })).toBe('0/5 correct');
   });
 
   it('builds friendly jumps across midnight in both directions', () => {
@@ -110,6 +126,73 @@ describe('Time & Schedule Lab', () => {
     expect(html).toContain('14:15');
     expect(html).toContain('cx="665"');
     expect(html).toContain('cx="55"');
+  });
+
+  it('renders overnight event lengths, gaps, spans, and next-day context', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _timeSchedule: { tab: 'schedule', scheduleKey: 'overnight', scheduleQuestionIndex: 0 },
+    });
+    expect(html).toContain('Overnight Observation');
+    expect(html).toContain('Sky observation');
+    expect(html).toContain('12:15 AM next day');
+    expect(html).toContain('12:30 AM next day');
+    expect(html).toContain('1:00 AM next day');
+    expect(html).toContain('crosses midnight');
+    expect(html).toContain('\uD83C\uDF19 Overnight Observation');
+    expect(html).not.toContain('?? Overnight Observation');
+    expect(html).toContain('45 minutes');
+    expect(html).toContain('3 hours 30 minutes');
+    expect(html).not.toContain('-45');
+  });
+
+  it('bases challenge progress on unique solves, not navigation position', () => {
+    loadTool(FILE, ID);
+    const untouched = renderTool(ID, {
+      _timeSchedule: { tab: 'challenge', challengeIndex: 9, solvedChallenges: {} },
+    });
+    document.body.innerHTML = untouched;
+    let progress = document.querySelector('[role="progressbar"]');
+    expect(progress.getAttribute('aria-valuenow')).toBe('0');
+    expect(progress.getAttribute('aria-valuetext')).toContain('currently viewing challenge 10');
+    expect(progress.firstElementChild.getAttribute('style')).toContain('width:0%');
+
+    const partial = renderTool(ID, {
+      _timeSchedule: { tab: 'challenge', challengeIndex: 9, solvedChallenges: { 0: true, 1: true, bogus: true } },
+    });
+    document.body.innerHTML = partial;
+    progress = document.querySelector('[role="progressbar"]');
+    expect(progress.getAttribute('aria-valuenow')).toBe('2');
+    expect(progress.firstElementChild.getAttribute('style')).toContain('width:20%');
+  });
+
+  it('counts distinct elapsed-time models instead of repeated control events', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({ _timeSchedule: { tab: 'elapsed' } });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const forward = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Count forward');
+    await React.act(async () => { forward.click(); forward.click(); });
+    expect(latest._timeSchedule.elapsedModels).toBe(0);
+
+    const backward = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Count backward');
+    await React.act(async () => { backward.click(); backward.click(); });
+    expect(latest._timeSchedule.elapsedModels).toBe(1);
+    const numberInputs = [...document.querySelectorAll('input[type="number"]')];
+    await enterText(numberInputs[0], '2');
+    await enterText(numberInputs[1], '30');
+    expect(latest._timeSchedule.elapsedModels).toBe(3);
+    expect(Object.keys(latest._timeSchedule.elapsedModelSignatures)).toHaveLength(3);
+    const quest = tool.questHooks.find((hook) => hook.id === 'elapsed_explorer');
+    expect(quest.progress(latest._timeSchedule)).toBe('3/3 models');
+    await React.act(async () => { root.unmount(); });
   });
 
   it('persists unique schedule solves and cannot farm XP after editing', async () => {
@@ -183,5 +266,6 @@ describe('Time & Schedule Lab', () => {
     expect(host).toContain('timeSchedule: true');
     expect(deployedHost).toBe(host);
     expect(app).toContain("'stem_lab/stem_tool_timeschedule.js'");
+    expect(fs.readFileSync('prismflow-deploy/public/stem_lab/stem_tool_timeschedule.js', 'utf8')).toBe(fs.readFileSync(FILE, 'utf8'));
   });
 });

@@ -55,13 +55,17 @@
   }
   function emptyJournal() {
     return {
-      v: 4,
-      // Tier 4 substrate revision; lanes migrate older shapes lazily
+      v: 5,
+      // Inquiry-method substrate revision; older shapes migrate lazily
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: "6_8",
       activeLane: null,
       // 'scientific' | 'engineering' | 'humanities' | null
+      activeMethodPack: null,
+      // specific inquiry approach; several packs can share a lane
+      methodPackHistory: [],
+      // append-only: [{ id, laneId, selectedAt }]
       activeStage: null,
       // lane-specific stage key
       // Cross-lane substrate fields:
@@ -173,7 +177,7 @@
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return emptyJournal();
       var v = parsed.v;
-      if (v !== 1 && v !== 2 && v !== 3 && v !== 4) return emptyJournal();
+      if (v !== 1 && v !== 2 && v !== 3 && v !== 4 && v !== 5) return emptyJournal();
       var fresh = emptyJournal();
       Object.keys(fresh).forEach(function(k) {
         if (parsed[k] === void 0) parsed[k] = fresh[k];
@@ -213,7 +217,7 @@
           }];
         }
       }
-      parsed.v = 4;
+      parsed.v = 5;
       parsed.aiCallCount = 0;
       parsed.sessionStartedAt = Date.now();
       return parsed;
@@ -465,6 +469,96 @@
       _placeholder: true
     }
   ];
+  var METHOD_PACKS = [
+    {
+      id: "scientific_investigation",
+      laneId: "scientific",
+      label: "Scientific Investigation",
+      family: "Empirical inquiry",
+      icon: "\u{1F52C}",
+      color: "#0e7490",
+      border: "#67e8f9",
+      background: "linear-gradient(145deg,#ecfeff,#ffffff)",
+      blurb: "Observe a phenomenon, compare explanations, choose a method, and revise a model as measurable evidence accumulates.",
+      rigor: "Rigor means traceable observations, explicit variables and uncertainty, alternative explanations, and reproducible reasoning.",
+      bestFor: "Explaining patterns and phenomena"
+    },
+    {
+      id: "engineering_design",
+      laneId: "engineering",
+      label: "Engineering Design",
+      family: "Design inquiry",
+      icon: "\u{1F6E0}\uFE0F",
+      color: "#b45309",
+      border: "#fcd34d",
+      background: "linear-gradient(145deg,#fffbeb,#ffffff)",
+      blurb: "Define a need with stakeholders, criteria, and constraints; prototype; test; and document trade-offs and iteration.",
+      rigor: "Rigor means measurable criteria, testable prototypes, transparent trade-offs, failure analysis, and stakeholder accountability.",
+      bestFor: "Solving constrained problems"
+    },
+    {
+      id: "humanistic_interpretation",
+      laneId: "humanities",
+      label: "Humanistic Interpretation",
+      family: "Interpretive inquiry",
+      icon: "\u{1F4DA}",
+      color: "#be123c",
+      border: "#fda4af",
+      background: "linear-gradient(145deg,#fff1f2,#ffffff)",
+      blurb: "Interpret texts, images, events, or cultural artifacts through competing framings while attending to context and positionality.",
+      rigor: "Rigor means close reading, contextualized sources, competing interpretations, warranted claims, and limits stated plainly.",
+      bestFor: "Interpreting meaning, culture, and history"
+    },
+    {
+      id: "community_qualitative",
+      laneId: "humanities",
+      label: "Community & Qualitative Inquiry",
+      family: "Situated inquiry",
+      icon: "\u{1F5E3}\uFE0F",
+      color: "#9d174d",
+      border: "#f9a8d4",
+      background: "linear-gradient(145deg,#fdf2f8,#ffffff)",
+      blurb: "Study lived experience and community perspectives through ethical, contextualized accounts without treating one voice as universal.",
+      rigor: "Rigor means ethical sourcing, transparent selection, discrepant cases, reflexivity, and clear limits on what accounts can establish.",
+      bestFor: "Understanding experiences and perspectives"
+    },
+    {
+      id: "civic_policy",
+      laneId: "humanities",
+      label: "Civic & Policy Inquiry",
+      family: "Public inquiry",
+      icon: "\u{1F3DB}\uFE0F",
+      color: "#6d28d9",
+      border: "#c4b5fd",
+      background: "linear-gradient(145deg,#f5f3ff,#ffffff)",
+      blurb: "Examine a public problem, competing interests, institutional choices, evidence, consequences, and feasible alternatives.",
+      rigor: "Rigor means stakeholder and power analysis, credible evidence, counterarguments, trade-offs, and accountable recommendations.",
+      bestFor: "Reasoning about public choices and consequences"
+    },
+    {
+      id: "creative_cultural",
+      laneId: "humanities",
+      label: "Creative & Cultural Inquiry",
+      family: "Artifact inquiry",
+      icon: "\u{1F3A8}",
+      color: "#c2410c",
+      border: "#fdba74",
+      background: "linear-gradient(145deg,#fff7ed,#ffffff)",
+      blurb: "Investigate how form, medium, audience, context, and cultural position shape what an artifact makes visible or possible.",
+      rigor: "Rigor means attention to form and context, evidence from the artifact, multiple plausible readings, and no mind-reading of creators.",
+      bestFor: "Analyzing art, media, and cultural artifacts"
+    }
+  ];
+  function methodPackById(id) {
+    return METHOD_PACKS.filter(function(pack) {
+      return pack.id === id;
+    })[0] || null;
+  }
+  function defaultMethodPackForLane(laneId) {
+    return METHOD_PACKS.filter(function(pack) {
+      return pack.laneId === laneId;
+    })[0] || null;
+  }
   function resolveLanes() {
     var registered = window.ResearchHub && window.ResearchHub.getLanes ? window.ResearchHub.getLanes() : [];
     var byId = {};
@@ -1592,6 +1686,7 @@
     var activeLane = journal.activeLane ? lanes.filter(function(L) {
       return L.id === journal.activeLane;
     })[0] : null;
+    var activeMethodPack = methodPackById(journal.activeMethodPack);
     var _eduView = useState(false);
     var educatorViewOn = _eduView[0];
     var setEducatorViewOn = _eduView[1];
@@ -1606,7 +1701,7 @@
     var researchProgress = Math.round(researchMilestones.filter(function(step) {
       return step.complete;
     }).length / researchMilestones.length * 100);
-    var researchNextMove = !researchMilestones[0].complete ? "Write a question worth investigating" : !activeLane ? "Choose the lens that best fits your question" : !researchMilestones[1].complete ? "Collect or log your first piece of evidence" : !researchMilestones[2].complete ? "Develop a model, framing, or candidate idea" : !researchMilestones[3].complete ? "Connect evidence to a claim or design decision" : "Revisit an earlier stage and strengthen your reasoning";
+    var researchNextMove = !researchMilestones[0].complete ? "Write a question worth investigating" : !activeLane ? "Choose an inquiry approach that fits what you want to do" : !researchMilestones[1].complete ? "Collect or log your first piece of evidence" : !researchMilestones[2].complete ? "Develop a model, framing, or candidate idea" : !researchMilestones[3].complete ? "Connect evidence to a claim or design decision" : "Revisit an earlier stage and strengthen your reasoning";
     var researchQuestionText = (journal.questionTitle || "").trim();
     var researchQuestionWords = researchQuestionText ? researchQuestionText.split(/\s+/).filter(Boolean).length : 0;
     var researchQuestionSignals = [
@@ -1627,6 +1722,25 @@
         var next = Object.assign({}, prev);
         next.activeLane = laneId;
         next.activeStage = null;
+        next.updatedAt = Date.now();
+        return next;
+      });
+    }, []);
+    var selectMethodPack = useCallback(function(packId) {
+      var pack = methodPackById(packId);
+      if (!pack) return;
+      setJournal(function(prev) {
+        var next = Object.assign({}, prev);
+        var history = Array.isArray(prev.methodPackHistory) ? prev.methodPackHistory.slice() : [];
+        var last = history.length ? history[history.length - 1] : null;
+        if (!last || last.id !== pack.id) {
+          history.push({ id: pack.id, laneId: pack.laneId, selectedAt: Date.now() });
+        }
+        next.activeMethodPack = pack.id;
+        next.methodPackHistory = history;
+        next.activeLane = pack.laneId;
+        next.activeStage = null;
+        next.updatedAt = Date.now();
         return next;
       });
     }, []);
@@ -1718,7 +1832,7 @@
           gap: "12px",
           flexWrap: "wrap",
           borderRadius: "20px 20px 0 0"
-        } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Investigation & Research Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry journal for ") + studentCodename : t("research_hub.modal_subtitle") || "Loop, model, source, and argue your way through a question worth asking."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1771,7 +1885,7 @@
           gap: "14px",
           overflowY: "auto",
           flex: 1
-        } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } }, educatorViewOn ? t("research_hub.educator_view_on") || "Educator view" : activeLane ? activeLane.label : t("research_hub.lane_selector_title") || "Choose an investigation lane"), showExitHint && /* @__PURE__ */ React.createElement("div", { "data-research-exit-hint": "true", role: "status", "aria-live": "polite", style: { display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "12px", border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F4BE}"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", null, "Your Research Hub stayed open."), " Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
+        } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } }, educatorViewOn ? t("research_hub.educator_view_on") || "Educator view" : activeLane ? activeLane.label : t("research_hub.method_selector_title") || "Choose an inquiry approach"), showExitHint && /* @__PURE__ */ React.createElement("div", { "data-research-exit-hint": "true", role: "status", "aria-live": "polite", style: { display: "flex", alignItems: "center", gap: "10px", padding: "9px 12px", borderRadius: "12px", border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F4BE}"), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", null, "Your Research Hub stayed open."), " Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
           setShowExitHint(false);
         }, "aria-label": "Dismiss saved-work reminder", style: { border: "1px solid #bfdbfe", borderRadius: "8px", background: "#fff", color: "#1e40af", padding: "5px 8px", fontSize: "10px", fontWeight: 800, cursor: "pointer" } }, "Got it")), /* @__PURE__ */ React.createElement(
           "section",
@@ -1881,28 +1995,35 @@
           }
         ) : (
           /* Lane selector OR active-lane workspace */
-          !activeLane ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { style: { margin: "4px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, t("research_hub.lane_selector_title") || "Pick a lane to start (or switch any time)"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.55 } }, t("research_hub.lane_selector_help") || "These three lanes share one inquiry journal. Evidence cards, voice notes, and your model history carry across \u2014 so a question that starts as scientific inquiry can finish as a humanities op-ed without losing the work."), researchLaneMatch ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", borderRadius: "14px", border: "1px solid #c7d2fe", background: "linear-gradient(90deg,#eef2ff,#f8fafc)", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "24px" } }, researchLaneMatch.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.8px", color: "#4f46e5" } }, "Possible lens match - based only on words in your question"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "13px", fontWeight: 900, color: "#1e293b" } }, researchLaneMatch.label), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", lineHeight: 1.5, color: "#475569" } }, researchLaneMatch.reason), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "10px", color: "#64748b" } }, "This is not a verdict. Try another lane whenever a different lens reveals something useful.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
-            setActiveLane(researchLaneMatch.id);
-          }, style: { flexShrink: 0, border: 0, borderRadius: "9px", background: "#4f46e5", color: "#fff", padding: "7px 10px", fontSize: "10px", fontWeight: 900, cursor: "pointer" } }, "Try this lens")) : researchQuestionText ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { padding: "10px 12px", borderRadius: "12px", border: "1px solid #e2e8f0", background: "#f8fafc", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "No single lens dominates."), " Choose the lane that matches what you want to do first; your journal will travel with you.") : null, /* @__PURE__ */ React.createElement("div", { style: {
+          !activeLane ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { style: { margin: "4px 0 0", fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, t("research_hub.method_selector_title") || "Choose an inquiry approach (switch any time)"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.55 } }, t("research_hub.lane_selector_help") || "Six approaches open three connected workspaces. Your question, sources, evidence, voice notes, models, framings, and revision history stay together in one Inquiry Portfolio."), researchLaneMatch ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", borderRadius: "14px", border: "1px solid #c7d2fe", background: "linear-gradient(90deg,#eef2ff,#f8fafc)", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "24px" } }, researchLaneMatch.icon), /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 260px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.8px", color: "#4f46e5" } }, "Possible lens match - based only on words in your question"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "13px", fontWeight: 900, color: "#1e293b" } }, researchLaneMatch.label), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", lineHeight: 1.5, color: "#475569" } }, researchLaneMatch.reason), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "10px", color: "#64748b" } }, "This is not a verdict. Try another lane whenever a different lens reveals something useful.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
+            var pack = defaultMethodPackForLane(researchLaneMatch.id);
+            if (pack) selectMethodPack(pack.id);
+          }, style: { flexShrink: 0, border: 0, borderRadius: "9px", background: "#4f46e5", color: "#fff", padding: "7px 10px", fontSize: "10px", fontWeight: 900, cursor: "pointer" } }, "Try this lens")) : researchQuestionText ? /* @__PURE__ */ React.createElement("div", { "data-research-lane-match": "true", style: { padding: "10px 12px", borderRadius: "12px", border: "1px solid #e2e8f0", background: "#f8fafc", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "No single lens dominates."), " Choose the approach that matches what you want to do first; your Inquiry Portfolio will travel with you.") : null, /* @__PURE__ */ React.createElement("div", { style: {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
             gap: "12px"
-          } }, lanes.map(function(L) {
+          } }, METHOD_PACKS.map(function(pack) {
+            var lane = lanes.filter(function(L) {
+              return L.id === pack.laneId;
+            })[0];
+            var selectedBefore = journal.activeMethodPack === pack.id;
             return /* @__PURE__ */ React.createElement(
               "button",
               {
-                key: L.id,
+                key: pack.id,
                 type: "button",
-                "data-research-lane": L.id,
-                "data-help-key": "research_hub_lane_" + L.id,
+                "data-research-method-pack": pack.id,
+                "data-research-lane": pack.laneId,
+                "data-help-key": "research_hub_method_" + pack.id,
                 onClick: function() {
-                  setActiveLane(L.id);
+                  selectMethodPack(pack.id);
                 },
+                "aria-label": "Open " + pack.label + " inquiry approach",
                 style: {
                   padding: "16px",
                   borderRadius: "14px",
-                  border: "1px solid " + (L.id === "scientific" ? "#67e8f9" : L.id === "engineering" ? "#fcd34d" : "#fda4af"),
-                  background: L.id === "scientific" ? "linear-gradient(145deg,#ecfeff,#ffffff)" : L.id === "engineering" ? "linear-gradient(145deg,#fffbeb,#ffffff)" : "linear-gradient(145deg,#fff1f2,#ffffff)",
+                  border: "1px solid " + pack.border,
+                  background: pack.background,
                   textAlign: "left",
                   cursor: "pointer",
                   display: "flex",
@@ -1919,10 +2040,11 @@
                   e.currentTarget.style.boxShadow = "none";
                 }
               },
-              /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "32px" } }, L.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, L.label), researchLaneMatch && researchLaneMatch.id === L.id && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#4f46e5", color: "#fff", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Lens match")), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#64748b" } }, L.tagline))),
-              /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, L.blurb),
-              /* @__PURE__ */ React.createElement("div", { style: { marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 800, color: "#64748b" } }, L.id === "scientific" ? "Best for explaining phenomena" : L.id === "engineering" ? "Best for solving constrained problems" : "Best for interpreting people and systems"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 900, color: L.id === "scientific" ? "#0e7490" : L.id === "engineering" ? "#b45309" : "#be123c" } }, "Open workspace ", "\u2192")),
-              L._placeholder && /* @__PURE__ */ React.createElement("span", { style: {
+              /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "30px" } }, pack.icon), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "14px", fontWeight: 800, color: "#1e293b" } }, pack.label), researchLaneMatch && researchLaneMatch.id === pack.laneId && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#4f46e5", color: "#fff", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Lens match"), selectedBefore && /* @__PURE__ */ React.createElement("span", { style: { borderRadius: "999px", padding: "2px 6px", background: "#dcfce7", color: "#166534", fontSize: "8px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.4px" } }, "Current approach")), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "10px", fontWeight: 800, color: pack.color } }, pack.family))),
+              /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, pack.blurb),
+              /* @__PURE__ */ React.createElement("div", { style: { padding: "8px 9px", borderRadius: "9px", background: "rgba(255,255,255,0.78)", border: "1px solid " + pack.border } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.45px", color: pack.color } }, "What rigor looks like"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "10px", lineHeight: 1.45, color: "#475569" } }, pack.rigor)),
+              /* @__PURE__ */ React.createElement("div", { style: { marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 800, color: "#64748b" } }, pack.bestFor), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", fontWeight: 900, color: pack.color } }, "Open approach ", "\u2192")),
+              lane && lane._placeholder && /* @__PURE__ */ React.createElement("span", { style: {
                 alignSelf: "flex-start",
                 padding: "3px 8px",
                 borderRadius: "999px",
@@ -1972,13 +2094,13 @@
             },
             label: t("research_hub.scratch_voice_label") || "Scratchpad voice note"
           }
-        )), /* @__PURE__ */ React.createElement("details", { "data-research-backpack": "true", style: {
+        )), /* @__PURE__ */ React.createElement("details", { "data-research-backpack": "true", "data-inquiry-portfolio": "true", style: {
           borderRadius: "16px",
           overflow: "hidden",
           border: "1px solid #cbd5e1",
           background: "#ffffff",
           boxShadow: "0 4px 14px rgba(15,23,42,0.05)"
-        } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "12px 14px", listStylePosition: "inside", background: "linear-gradient(90deg,#f8fafc,#eef2ff)" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F392} "), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", fontWeight: 900, color: "#1e293b" } }, t("research_hub.journal_state_summary") || "Research Backpack"), /* @__PURE__ */ React.createElement("span", { "data-research-save-status": "true", role: "status", "aria-live": "polite", style: { marginLeft: "8px", borderRadius: "999px", padding: "3px 7px", background: saveStatus === "saved" ? "#d1fae5" : "#dbeafe", color: saveStatus === "saved" ? "#047857" : "#1d4ed8", fontSize: "9px", fontWeight: 900 } }, saveStatus === "saved" ? "Saved on this device" : "Saving latest changes..."), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "10px", color: "#64748b" } }, researchProgress + "% inquiry progress")), /* @__PURE__ */ React.createElement("div", { style: { padding: "14px", borderTop: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "8px" } }, [
+        } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "12px 14px", listStylePosition: "inside", background: "linear-gradient(90deg,#f8fafc,#eef2ff)" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F392} "), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", fontWeight: 900, color: "#1e293b" } }, t("research_hub.journal_state_summary") || "Inquiry Portfolio"), /* @__PURE__ */ React.createElement("span", { "data-research-save-status": "true", role: "status", "aria-live": "polite", style: { marginLeft: "8px", borderRadius: "999px", padding: "3px 7px", background: saveStatus === "saved" ? "#d1fae5" : "#dbeafe", color: saveStatus === "saved" ? "#047857" : "#1d4ed8", fontSize: "9px", fontWeight: 900 } }, saveStatus === "saved" ? "Saved on this device" : "Saving latest changes..."), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "10px", color: "#64748b" } }, researchProgress + "% inquiry progress")), /* @__PURE__ */ React.createElement("div", { style: { padding: "14px", borderTop: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "8px" } }, [
           { icon: "\u{1F4CC}", label: "Evidence", value: (journal.evidenceCards || []).length, detail: "observations and records" },
           { icon: "\u{1F517}", label: "Sources", value: (journal.sources || []).length, detail: "sources logged" },
           { icon: "\u{1F4A1}", label: "Ideas", value: (journal.modelSnapshots || []).length + (journal.candidateConcepts || []).length + (journal.framings || []).length, detail: "models, concepts, framings" },
@@ -1988,7 +2110,7 @@
           return /* @__PURE__ */ React.createElement("div", { key: item.label, style: { borderRadius: "12px", border: "1px solid #e2e8f0", background: "#f8fafc", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "17px" } }, item.icon), /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "18px", color: "#1e293b" } }, item.value)), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "10px", fontWeight: 900, color: "#334155" } }, item.label), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "1px", fontSize: "9px", color: "#64748b" } }, item.detail));
         })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "10px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #e0e7ff", background: "#eef2ff", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#4f46e5" } }, "Current context"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, (DEV_LEVELS.filter(function(l) {
           return l.key === journal.devLevel;
-        })[0] || { long: journal.devLevel }).long + " reading level - " + (activeLane ? activeLane.label : "No lane selected"))), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #ccfbf1", background: "#f0fdfa", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#0f766e" } }, "Journal continuity"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, "Everything here travels with you when you switch research lanes.")), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #fde68a", background: "#fffbeb", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#b45309" } }, "AI questions"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, (journal.aiCallCount || 0) + " of " + MAX_AI_CALLS_PER_SESSION + " used this session - your authored work is not counted."))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "12px", display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestClearJournal, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "10px", background: "#fff", border: "1px solid #fca5a5", color: "#b91c1c", fontWeight: 800, fontSize: "10px", cursor: "pointer" } }, t("research_hub.journal_reset") || "Reset this inquiry"))))),
+        })[0] || { long: journal.devLevel }).long + " reading level - " + (activeMethodPack ? activeMethodPack.label + " / " : "") + (activeLane ? activeLane.label : "No workspace selected"))), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #ccfbf1", background: "#f0fdfa", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#0f766e" } }, "Portfolio continuity"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, "Everything here travels with you when you switch inquiry approaches or workspaces.")), /* @__PURE__ */ React.createElement("div", { style: { borderRadius: "12px", border: "1px solid #fde68a", background: "#fffbeb", padding: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", fontWeight: 900, textTransform: "uppercase", color: "#b45309" } }, "AI questions"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "11px", color: "#334155" } }, (journal.aiCallCount || 0) + " of " + MAX_AI_CALLS_PER_SESSION + " used this session - your authored work is not counted."))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "12px", display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestClearJournal, style: { minHeight: "44px", padding: "7px 12px", borderRadius: "10px", background: "#fff", border: "1px solid #fca5a5", color: "#b91c1c", fontWeight: 800, fontSize: "10px", cursor: "pointer" } }, t("research_hub.journal_reset") || "Reset this inquiry"))))),
         /* @__PURE__ */ React.createElement("div", { style: {
           padding: "12px 22px",
           borderTop: "1px solid #e2e8f0",
@@ -1999,7 +2121,7 @@
           flexWrap: "wrap",
           fontSize: "11px",
           color: "#64748b"
-        } }, /* @__PURE__ */ React.createElement("span", null, t("research_hub.footer_persistence_note") || "Your inquiry journal is saved on this device. Switching codenames mid-investigation will show prior work \u2014 clear the inquiry above to start fresh."), /* @__PURE__ */ React.createElement("span", { style: { fontStyle: "italic" } }, t("research_hub.footer_tier_note") || "Scientific \xB7 Engineering \xB7 Humanities lanes.")),
+        } }, /* @__PURE__ */ React.createElement("span", null, t("research_hub.footer_persistence_note") || "Your Inquiry Portfolio is saved on this device. Switching codenames mid-investigation will show prior work \u2014 clear the inquiry above to start fresh."), /* @__PURE__ */ React.createElement("span", { style: { fontStyle: "italic" } }, t("research_hub.footer_tier_note") || "Empirical \xB7 design \xB7 interpretive \xB7 qualitative \xB7 civic \xB7 creative inquiry.")),
         showResetConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", style: { position: "fixed", inset: 0, zIndex: 70, background: "rgba(15,23,42,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" } }, /* @__PURE__ */ React.createElement(
           "div",
           {

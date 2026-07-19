@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "id": "test-prep-assistant-review-2026-07-16",
-  "reviewedAt": "2026-07-17",
+  "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex",
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-07-17T17:19:10.246Z",
-    "hash": "b8b5b572d5808835bcfaed59600a019513882b7ae94befb5ddb1ffcc379e873d"
+    "generatedAt": "2026-07-19T05:51:09.151Z",
+    "hash": "43bc066321509c53c5f0dfdd948eab5cd611bf284939268a2a104cf3d4736e1f"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -18,26 +18,30 @@
     "packs": 22,
     "totalLearningActivities": 11000,
     "originalSourceQuestions": 4400,
-    "assistantAuthoredIndependentItems": 200,
-    "independentPracticeItems": 4600,
-    "guidedReviewActivities": 6400,
+    "assistantAuthoredIndependentItems": 700,
+    "independentPracticeItems": 5100,
+    "guidedReviewActivities": 5900,
     "existingItemsQualitativelySampled": 169,
     "newCredentialSpecificReplacementsReviewed": 68,
-    "newIndependentParaProItemsReviewed": 200,
+    "newIndependentParaProItemsReviewed": 700,
     "allActivitiesStructurallyChecked": true,
-    "allGuidedAnswerDerivationsChecked": true
+    "allGuidedAnswerDerivationsChecked": true,
+    "allIndependentItemsWarningScanned": true,
+    "allLearnerVisibleReferencesCataloged": true,
+    "allLearningLinksValidated": true,
+    "epppGuidedQaReport": "./test_prep/non_eppp_eppp_guided_qa_2026-07-18.json"
   },
   "inventory": {
     "originalSourceQuestions": 4400,
-    "distinctSourceContentKernels": 2309,
-    "parallelSourceVariants": 2091,
-    "assistantAuthoredIndependentItems": 200,
-    "independentPracticeItems": 4600,
-    "distinctIndependentContentKernels": 2509,
-    "parallelIndependentVariants": 2091,
-    "guidedReviewActivities": 6400,
+    "distinctSourceContentKernels": 2262,
+    "parallelSourceVariants": 2138,
+    "assistantAuthoredIndependentItems": 700,
+    "independentPracticeItems": 5100,
+    "distinctIndependentContentKernels": 2962,
+    "parallelIndependentVariants": 2138,
+    "guidedReviewActivities": 5900,
     "independentQuestionTarget": 11000,
-    "newIndependentItemsNeeded": 8491
+    "newIndependentItemsNeeded": 8038
   },
   "verdict": {
     "structuralStatus": "pass",
@@ -53,8 +57,8 @@
     "The misconception-correction form repeats the selected response in keyed feedback, creating a lexical matching cue.",
     "The response-and-evidence form repeats the same evidence across all four options, so the task largely asks the learner to reselect the original answer.",
     "The comparison form always presents the source-correct response first in the prompt and commonly includes only two choices that directly evaluate the named pair.",
-    "The original 4,400 source questions contain 2,309 normalized content kernels and 2,091 parallel variants.",
-    "Source mapping remains broad in many packs. The prior cross-pack audit found named title/summary catalog entries for 21 of 65 used URLs; 44 URLs remain uncataloged, and several packs reuse one broad reference bundle across many items."
+    "The original 4,400 source questions contain 2,262 normalized content kernels and 2,138 parallel variants.",
+    "Every learner-visible source now resolves to a catalog entry with a readable title, organization, brief summary, and credibility explanation; broad source-bundle reuse remains an editorial-depth warning rather than a missing-metadata defect."
   ],
   "correctionsCompleted": [
     "Replaced 68 credential-mismatched or mechanically stacked EBD 5372 and Intellectual Disabilities 5322 items with new school-based scenarios and item-specific feedback.",
@@ -63,16 +67,19 @@
     "Corrected four IDEA Part B/Part C, IEP/IFSP, LRE/natural-environment, and payment-rule items using current official IDEA regulations.",
     "Corrected targeted Early Childhood Special Education, Praxis Core, reading, grammar, possessive, quotation, and encoding defects identified during sampling.",
     "Added a durable source-correction pass to both full build pipelines and guarded the legacy 200-item collapse step behind an explicit authorization flag.",
+    "Rebuilt the School Librarian skill/chapter mapper so all 500 activities resolve to released, domain-compatible learning content.",
+    "Expanded the shared reference catalog to cover every source used by pack items and learning libraries, including readable title, organization, summary, and credibility metadata.",
+    "Added a reproducible EPPP-guided QA gate across all 22 non-EPPP packs, with warning diagnostics kept distinct from hard release findings.",
     "Separated guided-review attempt mode from diagnostic analytics and excluded guided activities from smart review, targeted sets, custom quizzes, and saved-question review.",
-    "Added and assistant-reviewed 200 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
+    "Added and assistant-reviewed 700 genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links."
   ],
   "limitations": [
     "Assistant review is not licensed-professional endorsement, independent legal/clinical review, field testing, psychometric calibration, or validation of score interpretations.",
-    "The qualitative review used a stratified 169-item sample of existing activities plus review of all credential-specific replacements and independent additions; it did not simulate examinee response data.",
+    "The review combined full structural and heuristic scans of all activities with a stratified 169-item manual sample, manual priority-docket inspection, and independent group review evidence; it did not simulate examinee response data.",
     "Content-kernel counts detect normalized within-pack reuse. They do not by themselves establish item quality or detect every semantically similar question across different wording."
   ],
   "nextWork": [
-    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 8,491.",
+    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 8,038.",
     "Give each new question a new stimulus or decision, plausible distractors, item-specific feedback, and a source that directly supports the tested principle.",
     "Review and release additions pack by pack in 100-item stages; keep guided-review activities as a separate learning mode.",
     "After authoring, run independent subject-matter and psychometric review if the product will make stronger validity or readiness claims."
@@ -110,18 +117,18 @@
       "title": "Audiology 5343 diagnostics",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 0,
-      "independentPracticeItems": 200,
-      "distinctSourceContentKernels": 100,
-      "parallelSourceVariants": 100,
-      "distinctIndependentContentKernels": 100,
-      "parallelIndependentVariants": 100,
-      "guidedReviewActivities": 300,
+      "assistantAuthoredIndependentItems": 100,
+      "independentPracticeItems": 300,
+      "distinctSourceContentKernels": 104,
+      "parallelSourceVariants": 96,
+      "distinctIndependentContentKernels": 204,
+      "parallelIndependentVariants": 96,
+      "guidedReviewActivities": 200,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 400,
+      "newIndependentItemsNeeded": 296,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "40044e83c9b2cdee32eb46eb4f6ab03c81ab7013c57c18c8e78b1bee08aed4a9",
-      "itemsSha256": "4dc77d3d6236a92f6295fc773b706eec3fb01b6d8afa3624f332c462c0a33502"
+      "packSha256": "de6ca49fcc81caa5fdcdc4c51ee508007da54730378bdbda0adbbb2dc22e87cd",
+      "itemsSha256": "e1520db75fbb9ccc0679a5405da310b016a1979e8ad23dfccb739ec1b518890c"
     },
     {
       "stem": "early_childhood_5025",
@@ -129,18 +136,18 @@
       "title": "Early Childhood Education (5025)",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 0,
-      "independentPracticeItems": 200,
-      "distinctSourceContentKernels": 100,
-      "parallelSourceVariants": 100,
-      "distinctIndependentContentKernels": 100,
-      "parallelIndependentVariants": 100,
-      "guidedReviewActivities": 300,
+      "assistantAuthoredIndependentItems": 100,
+      "independentPracticeItems": 300,
+      "distinctSourceContentKernels": 105,
+      "parallelSourceVariants": 95,
+      "distinctIndependentContentKernels": 205,
+      "parallelIndependentVariants": 95,
+      "guidedReviewActivities": 200,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 400,
+      "newIndependentItemsNeeded": 295,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "fd0bc55d83a425a6291022bb1e540785ac51330b5e1befb70b1015561f401afe",
-      "itemsSha256": "824b417cff051049ab7895e17aa49aec5049e403046838334c30b66772a80afb"
+      "packSha256": "5db85fbba602bf3330f391612a06d68fdc5576ff25a85e88b588c6e65f0a5722",
+      "itemsSha256": "70ab06160b426a21f68851e10ab2dbc862e13f9ae6cca93c474e5c2c2199e175"
     },
     {
       "stem": "educational_leadership_5412",
@@ -148,18 +155,18 @@
       "title": "Educational Leadership (5412)",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 0,
-      "independentPracticeItems": 200,
+      "assistantAuthoredIndependentItems": 100,
+      "independentPracticeItems": 300,
       "distinctSourceContentKernels": 100,
       "parallelSourceVariants": 100,
-      "distinctIndependentContentKernels": 100,
+      "distinctIndependentContentKernels": 200,
       "parallelIndependentVariants": 100,
-      "guidedReviewActivities": 300,
+      "guidedReviewActivities": 200,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 400,
+      "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "b3e3b9f20572efb4a5ce25d97cae9098db95e9649311c9cba3a7f5de248a0a2b",
-      "itemsSha256": "765006cdc1cd072fa35ad024ab7ed29037dbbb3f11a6d9d59b67931aabe08a7f"
+      "packSha256": "1005bf44c2a3702f7a3135ecbd5b4e28323422d3aaced442a88145d3e6ed21f0",
+      "itemsSha256": "2600847a72765ef968488f964ab9d9ce02ec7646ae90e294c264069e7da42ab7"
     },
     {
       "stem": "esol_5362",
@@ -177,27 +184,27 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "a07617e7a0f8284c8a0b2acb17deb2ceac2efba99b3415e3673f1aee9c1fc944",
+      "packSha256": "601390942b28d842f612603137fa1af017c5e465dfa8be65c2ead68e14f1d24c",
       "itemsSha256": "950bd0df473e96bb9fc51d2b284f0c8b2739086a304fc69333cdfc7953b71ab6"
     },
     {
       "stem": "parapro",
       "packId": "parapro-1755-practice-1",
-      "title": "ParaPro 1755 practice suite",
+      "title": "ParaPro diagnostic batches 1-2",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 200,
-      "independentPracticeItems": 400,
+      "assistantAuthoredIndependentItems": 300,
+      "independentPracticeItems": 500,
       "distinctSourceContentKernels": 200,
       "parallelSourceVariants": 0,
-      "distinctIndependentContentKernels": 400,
+      "distinctIndependentContentKernels": 500,
       "parallelIndependentVariants": 0,
-      "guidedReviewActivities": 100,
+      "guidedReviewActivities": 0,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 100,
-      "verdict": "reviewed-target-not-met",
-      "packSha256": "311f76c1bb67211c6749d2100cd4dd70c407e7f51b3505db3193710cc8a1f87e",
-      "itemsSha256": "d4531af9ef890c0fbb87ff5e52f833b702adda9ff399c9f3e55b344ede4d2a9c"
+      "newIndependentItemsNeeded": 0,
+      "verdict": "reviewed-target-met",
+      "packSha256": "d4c74e405f7e5c4392cf0b6c230bf021331c5861515c92aee3f890957791e7f9",
+      "itemsSha256": "9575e400eb50d3275547d948751751e2611dd8036c5905b6f6fcfc7097814b70"
     },
     {
       "stem": "plt_5_9_5623",
@@ -215,8 +222,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "0c7762fa172c7f061dbf79f6f71354cecc3beede81b7d6e8a33c317a50b81663",
-      "itemsSha256": "c3f6ab4ec6b5646398eef0fe094d73e82b6ff6b98d0e5562a090051d2d75bf80"
+      "packSha256": "28364fa6db55c065875c7c0f720aeab84caf4e635ea240b3bfe3f4a5526ed028",
+      "itemsSha256": "9e58713d882788e3bc65475aca7ee2b830e09729be3feeed42c7ba0f0c5a5386"
     },
     {
       "stem": "plt_7_12_5624",
@@ -234,8 +241,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "3ce11c8f36ffc1471f1e8fc0457d4670201cc7e214e5417a132b0941b46091db",
-      "itemsSha256": "13aa2b87dd486a351f5d303c022878a3203909415d5f0160f068308126f14610"
+      "packSha256": "0dbc9532605b17da4fc9a15c0d57605769a6aedda46ea4a8c2532e6be4b6a6c3",
+      "itemsSha256": "cbdd4a7d373e50a1ea8159a0c1e127a58b24f22bed2eb30070a267514b2d9c88"
     },
     {
       "stem": "plt_early_childhood_5621",
@@ -253,8 +260,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "c77b23ebcd8c481fdb7955a8b1e58a5bdc8ab6f3c0f58b802d7e801555b26a33",
-      "itemsSha256": "c4008595f341b324d6ef10156b27acbf6247658d1f1f5ac0957632a342165d82"
+      "packSha256": "e36d1e0568c923a88229c464514c625987c4b19b414dbfa95f1fe2dbcbb47d10",
+      "itemsSha256": "ce35c5c3bc35b4c146653e1cf993cb7c7e909514214f737759660b4c206a2706"
     },
     {
       "stem": "plt_k6_5622",
@@ -272,7 +279,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "2eb1f5504cbb0cd56b9ddd97b9fb907ab87dcd195434e6180a867c1e3f282c65",
+      "packSha256": "d8b616782ce66d3936b3b6cf0c430cc744d96d64561dec583c0f89dbe24c43df",
       "itemsSha256": "fd1eaa11620b8aaacee125956485696aff16cb5bf463589eb2eaadd24787cdac"
     },
     {
@@ -283,16 +290,16 @@
       "sourceQuestions": 200,
       "assistantAuthoredIndependentItems": 0,
       "independentPracticeItems": 200,
-      "distinctSourceContentKernels": 106,
-      "parallelSourceVariants": 94,
-      "distinctIndependentContentKernels": 106,
-      "parallelIndependentVariants": 94,
+      "distinctSourceContentKernels": 107,
+      "parallelSourceVariants": 93,
+      "distinctIndependentContentKernels": 107,
+      "parallelIndependentVariants": 93,
       "guidedReviewActivities": 300,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 394,
+      "newIndependentItemsNeeded": 393,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "6e3c52fdd5dbf903e798ed0363ca3ab24ed5f647979307790c92e399e0c4884a",
-      "itemsSha256": "9484aea5082184391467b49721ef10e161ab13e5634ba3770f851c48647bcc98"
+      "packSha256": "88fbc5121db39de42d881daaf139b1933fb1484a1ef4a26c78bcd97436077e95",
+      "itemsSha256": "8d9bf4072b6f580ec809a28d245939abac72cef918969df004a13c30617223bd"
     },
     {
       "stem": "reading_specialist_5302",
@@ -310,7 +317,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "6a64cfc120ce2e2f4c32935f0ee09a331bca208ca54e8e1627ac390ab5ad5fec",
+      "packSha256": "d769853d2278558a8b9b1aa4a3b67c53904b088064eb1bdf3fa8f7937bc3c3a5",
       "itemsSha256": "5987b9a29610f65bc7f98592698add7319d9c0ea6cb7d99288bde8c6a0b89df4"
     },
     {
@@ -329,7 +336,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "c147a87ce9ebb3044f50c35a2346f5723ce1e002005c31ead162ef197171fb79",
+      "packSha256": "59e500f4adf78256a3ca57af4cfa948e7f537084b9e4d4459dd50344ea17789f",
       "itemsSha256": "c2bbf1ab668b6766e580be4da7c95136edcfc6cf2d3f9c7a4c3b016479f209a7"
     },
     {
@@ -338,18 +345,18 @@
       "title": "School Librarian (5312)",
       "learningActivities": 500,
       "sourceQuestions": 200,
-      "assistantAuthoredIndependentItems": 0,
-      "independentPracticeItems": 200,
+      "assistantAuthoredIndependentItems": 100,
+      "independentPracticeItems": 300,
       "distinctSourceContentKernels": 26,
       "parallelSourceVariants": 174,
-      "distinctIndependentContentKernels": 26,
+      "distinctIndependentContentKernels": 126,
       "parallelIndependentVariants": 174,
-      "guidedReviewActivities": 300,
+      "guidedReviewActivities": 200,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 474,
+      "newIndependentItemsNeeded": 374,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "9d263f7d8474c5902633071c235d8e920241a9b4b67347eec0dbbed2073add32",
-      "itemsSha256": "fdd5ae59bca36bf81c8c4991caa137d5cecfa593f6716ebda5426fdfe034f20f"
+      "packSha256": "18009649a434c94f8ed3304031cfcb3cd2a0904d7eeb971e8372beef70545cae",
+      "itemsSha256": "30ee32ea9f1dc97c1c4f08602ca93c005304f13a86c9c059f127944f1a0f4029"
     },
     {
       "stem": "school_psychologist_5403",
@@ -367,7 +374,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "3905d14706adbf0cf543913f5220f499b8fc2c64df1ed2e948b37ca464b79305",
+      "packSha256": "06d061fd76d3576f89d977b0749652807f102d6471e8c3e8c65cd20e7a9a883b",
       "itemsSha256": "b2d4ae3466532381a66e387f0d2a337fd26b4c32e7529be4306ae655323defa8"
     },
     {
@@ -386,7 +393,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "112d9c8dd63f88d2b7cc1d014b74bb8056a73063a7fa4cedba7a2404d600a1e3",
+      "packSha256": "56c2cd2192ed24f1ba4d69b73ea130c1f4f15c2363464c3755b41f9ba91499b8",
       "itemsSha256": "195d0e545ecd2be443a647646d038b61a1b4d8bdd080cf99b033c819da476042"
     },
     {
@@ -397,16 +404,16 @@
       "sourceQuestions": 200,
       "assistantAuthoredIndependentItems": 0,
       "independentPracticeItems": 200,
-      "distinctSourceContentKernels": 128,
-      "parallelSourceVariants": 72,
-      "distinctIndependentContentKernels": 128,
-      "parallelIndependentVariants": 72,
+      "distinctSourceContentKernels": 103,
+      "parallelSourceVariants": 97,
+      "distinctIndependentContentKernels": 103,
+      "parallelIndependentVariants": 97,
       "guidedReviewActivities": 300,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 372,
+      "newIndependentItemsNeeded": 397,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "9efd40c935bd7218bf61d4a7370b7d8ad651ec648bf5252ffdd8e0d5d1a35c3e",
-      "itemsSha256": "bb70549a71622019e943753b5e666de10f8c27aed81773e7931bf9fec9f1a4e5"
+      "packSha256": "f8bcaef0f31dea49400848a07ee7369600fbc7272d84b338caa8a5978a1de958",
+      "itemsSha256": "d858c5177c26707bb41c5e6a7c9c532de81f57574b2d337c37278199017b8a18"
     },
     {
       "stem": "special_education_early_childhood_5692",
@@ -416,16 +423,16 @@
       "sourceQuestions": 200,
       "assistantAuthoredIndependentItems": 0,
       "independentPracticeItems": 200,
-      "distinctSourceContentKernels": 107,
-      "parallelSourceVariants": 93,
-      "distinctIndependentContentKernels": 107,
-      "parallelIndependentVariants": 93,
+      "distinctSourceContentKernels": 100,
+      "parallelSourceVariants": 100,
+      "distinctIndependentContentKernels": 100,
+      "parallelIndependentVariants": 100,
       "guidedReviewActivities": 300,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 393,
+      "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "61b770bbcb140f4de63878f09a3a23756c940eabe61dca651bf3cf4fc616168b",
-      "itemsSha256": "7ab1f6c849e990e20f84079d662ed7c2b1197625fb7bbedde69688fe547f53f7"
+      "packSha256": "e3873a7b2292375b8f3bfbf5b6bc1b8d9b58ec7a0f6a3dfed9b458d7eab5fbf7",
+      "itemsSha256": "366f8b3da018e6737b404aac9419851afd1a2f59d983b56f07c4c25d56f2c73f"
     },
     {
       "stem": "special_education_intellectual_disabilities_5322",
@@ -435,16 +442,16 @@
       "sourceQuestions": 200,
       "assistantAuthoredIndependentItems": 0,
       "independentPracticeItems": 200,
-      "distinctSourceContentKernels": 128,
-      "parallelSourceVariants": 72,
-      "distinctIndependentContentKernels": 128,
-      "parallelIndependentVariants": 72,
+      "distinctSourceContentKernels": 103,
+      "parallelSourceVariants": 97,
+      "distinctIndependentContentKernels": 103,
+      "parallelIndependentVariants": 97,
       "guidedReviewActivities": 300,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 372,
+      "newIndependentItemsNeeded": 397,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "8d8fcd62882541582e985423d8ddaad2bfb7e41544d31f4f51c3e6097e614a54",
-      "itemsSha256": "95071e1e1e5d6c30fb3f504807193c5ba8f1a403a8afa6c3f389fb9ad39b1241"
+      "packSha256": "0c63a2a0b4f1a7f7f8f6e0a47969a0da1dee6f5f05fb36f9f43381bfd557e043",
+      "itemsSha256": "44e8af7837e9c9751c517c7d998a0f73a9b91baa9d59d63505c4a2b44fbb830b"
     },
     {
       "stem": "special_education_learning_disabilities_5383",
@@ -462,8 +469,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 389,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "831eecd508298f6475595ea410355929a17b3b93653d5bdc3d3d106d51f8bc2b",
-      "itemsSha256": "b8a0b0f0dea6e402731a9703bf7e320b7f55fb29f982078e47e11d17877991fa"
+      "packSha256": "8156264bfa0bcb2dcd5fce2a2444c255b1242b9f5c7bfbb9f7b7744a0bcb6f4f",
+      "itemsSha256": "0d16b3c809c129de76edeb32e7d9a2449f896518f4f02d8343ea8eb6e78f34f8"
     },
     {
       "stem": "special_education_severe_profound_5547",
@@ -481,8 +488,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 397,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "d26f5bae775f606f0708a222466b08908e2ea7eb298d6e3bdfe43a0594a924c3",
-      "itemsSha256": "01a6e8dcc5b4561ec9fd7418e7f91dacc5de92953f0043678f0a57cade363e3a"
+      "packSha256": "225409b089da24c83812761bb9f9363ab15a1f3aeb508314958d6c89a2d1f2af",
+      "itemsSha256": "0069265a03ce123614a4be90406c12ea23950ffc041b696ce9270c7481343eca"
     },
     {
       "stem": "speech_language_pathology_5331",
@@ -500,8 +507,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "0798be55c0e7fd78e27abac7a8e08a21c26c8726b65d61f954db116b6440ef41",
-      "itemsSha256": "087c76720f7a774144ff6342580920c15b5d3ee937c9dbe5912dc52d176d25ed"
+      "packSha256": "48394a5fc151865cfe2187e303a35ed6cb0603f7d4ed093efe61c067b4a57934",
+      "itemsSha256": "51ac18bd027afac2b9858fbcef001c0f5c572be8b060632dc4fc5936f4bfecf6"
     },
     {
       "stem": "teaching_reading_5205",
@@ -519,8 +526,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "b1ae973da3e6f990dffb215b8e1fa5c19b969d962af1ea2da53ef20cc81c4b9a",
-      "itemsSha256": "0e6abe634721edb935c17a1d02c800b873bb7ee4572bdf5f1a3fb92c05086bc8"
+      "packSha256": "977353593927f921823af42ef4c60703586f33f92fa891fb360eddebdcee24de",
+      "itemsSha256": "1a97e412dc0b4caae5631b57070cfaf30bf082c71028fc52e21c40dac1de14c6"
     }
   ]
 }

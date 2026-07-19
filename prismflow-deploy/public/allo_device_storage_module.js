@@ -32,7 +32,7 @@
   }
 
   var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds1-recovery-atomic1';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
@@ -54,6 +54,7 @@
       if (params.ns !== undefined) msg.ns = params.ns;
       if (params.key !== undefined) msg.key = params.key;
       if (params.value !== undefined) msg.value = params.value;
+      if (params.mutation !== undefined) msg.mutation = params.mutation;
       if (params.channel !== undefined) msg.channel = params.channel;
     }
     return msg;
@@ -65,6 +66,160 @@
     var err = new Error(message || code);
     err.code = code;
     return err;
+  }
+  var RECOVERY_NAMESPACE = 'workspace_recovery';
+  var RECOVERY_KEY = 'store_v1';
+  var RECOVERY_VERSION = 1;
+  var RECOVERY_MAX_SNAPSHOTS = 3;
+  var RECOVERY_EPOCH = '1970-01-01T00:00:00.000Z';
+  function recoveryError(code, message) {
+    return storageError(code, message);
+  }
+  function own(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  }
+  function assertRecoveryVersion(value, label) {
+    if (value != null && value !== RECOVERY_VERSION) {
+      throw recoveryError('allo/recovery-version-unsupported',
+        (label || 'Recovery payload') + ' uses unsupported version ' + String(value) + '.');
+    }
+  }
+  function recoveryId(value, label, strict) {
+    if (typeof value === 'string' && value.length > 0 && value.length <= 120) return value;
+    if (strict) throw recoveryError('allo/recovery-mutation-invalid', (label || 'Snapshot') + ' requires a valid id.');
+    return null;
+  }
+  function recoverySavedAt(value, label, strict) {
+    var ms = Date.parse(value || '');
+    if (isFinite(ms)) return new Date(ms).toISOString();
+    if (strict) throw recoveryError('allo/recovery-mutation-invalid', (label || 'Snapshot') + ' requires a valid savedAt.');
+    return null;
+  }
+  function normalizeRecoverySnapshot(candidate, strict) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+      if (strict) throw recoveryError('allo/recovery-mutation-invalid', 'Recovery snapshot must be an object.');
+      return null;
+    }
+    assertRecoveryVersion(candidate.version, 'Recovery snapshot');
+    var id = recoveryId(candidate.id, 'Recovery snapshot', strict);
+    var savedAt = recoverySavedAt(candidate.savedAt, 'Recovery snapshot', strict);
+    if (!id || !savedAt) return null;
+    var snapshot = {};
+    Object.keys(candidate).forEach(function (key) { snapshot[key] = candidate[key]; });
+    snapshot.version = RECOVERY_VERSION;
+    snapshot.id = id;
+    snapshot.savedAt = savedAt;
+    return snapshot;
+  }
+  function putRecoveryTombstone(target, id, removedAt) {
+    Object.defineProperty(target, id, {
+      value: removedAt,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  }
+  function normalizeRecoveryTombstones(candidate) {
+    var tombstones = {};
+    if (Array.isArray(candidate)) {
+      candidate.forEach(function (id) {
+        id = recoveryId(id, 'Recovery tombstone', false);
+        if (id) putRecoveryTombstone(tombstones, id, RECOVERY_EPOCH);
+      });
+      return tombstones;
+    }
+    if (!candidate || typeof candidate !== 'object') return tombstones;
+    Object.keys(candidate).forEach(function (id) {
+      var validId = recoveryId(id, 'Recovery tombstone', false);
+      if (!validId) return;
+      var removedAt = recoverySavedAt(candidate[id], 'Recovery tombstone', false) || RECOVERY_EPOCH;
+      putRecoveryTombstone(tombstones, validId, removedAt);
+    });
+    return tombstones;
+  }
+  function normalizeRecoveryStore(candidate) {
+    if (candidate != null && (typeof candidate !== 'object' || Array.isArray(candidate))) {
+      throw recoveryError('allo/recovery-store-invalid', 'Recovery store must be an object.');
+    }
+    candidate = candidate || {};
+    assertRecoveryVersion(candidate.version, 'Recovery store');
+    var source = Array.isArray(candidate.snapshots)
+      ? candidate.snapshots
+      : (candidate.workspace ? [candidate] : []);
+    var tombstones = normalizeRecoveryTombstones(candidate.removedSnapshotIds);
+    var byId = Object.create(null);
+    source.forEach(function (entry) {
+      var snapshot = normalizeRecoverySnapshot(entry, false);
+      if (!snapshot || own(tombstones, snapshot.id)) return;
+      var previous = byId[snapshot.id];
+      if (!previous || Date.parse(snapshot.savedAt) > Date.parse(previous.savedAt)) byId[snapshot.id] = snapshot;
+    });
+    var snapshots = Object.keys(byId).map(function (id) { return byId[id]; });
+    snapshots.sort(function (a, b) {
+      var byTime = Date.parse(b.savedAt) - Date.parse(a.savedAt);
+      if (byTime) return byTime;
+      return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+    });
+    return {
+      version: RECOVERY_VERSION,
+      legacyMigrationComplete: !!candidate.legacyMigrationComplete,
+      removedSnapshotIds: tombstones,
+      snapshots: snapshots.slice(0, RECOVERY_MAX_SNAPSHOTS)
+    };
+  }
+  function applyRecoveryUpsert(store, snapshot) {
+    if (own(store.removedSnapshotIds, snapshot.id)) {
+      return { store: store, applied: false, reason: 'removed-snapshot' };
+    }
+    var existing = null;
+    for (var i = 0; i < store.snapshots.length; i++) {
+      if (store.snapshots[i].id === snapshot.id) { existing = store.snapshots[i]; break; }
+    }
+    if (existing && Date.parse(snapshot.savedAt) <= Date.parse(existing.savedAt)) {
+      return { store: store, applied: false, reason: 'stale-snapshot' };
+    }
+    store.snapshots = [snapshot].concat(store.snapshots.filter(function (entry) { return entry.id !== snapshot.id; }));
+    store = normalizeRecoveryStore(store);
+    return { store: store, applied: true, reason: 'upserted' };
+  }
+  function applyRecoveryMutation(current, mutation) {
+    if (!mutation || typeof mutation !== 'object' || Array.isArray(mutation)) {
+      throw recoveryError('allo/recovery-mutation-invalid', 'Recovery mutation must be an object.');
+    }
+    assertRecoveryVersion(mutation.version, 'Recovery mutation');
+    assertRecoveryVersion(mutation.schemaVersion, 'Recovery mutation');
+    var action = mutation.action;
+    if (action !== 'upsert' && action !== 'remove' && action !== 'markLegacyMigrated') {
+      throw recoveryError('allo/recovery-mutation-invalid', 'Unknown recovery mutation action: ' + String(action));
+    }
+    var snapshot = null;
+    if (action === 'upsert' || mutation.snapshot != null) {
+      snapshot = normalizeRecoverySnapshot(mutation.snapshot, true);
+    }
+    var snapshotId = null;
+    if (action === 'remove') snapshotId = recoveryId(mutation.snapshotId, 'Recovery remove mutation', true);
+    var store = normalizeRecoveryStore(current);
+    if (action === 'upsert') return applyRecoveryUpsert(store, snapshot);
+    if (action === 'markLegacyMigrated') {
+      if (store.legacyMigrationComplete) return { store: store, applied: false, reason: 'already-migrated' };
+      if (snapshot) store = applyRecoveryUpsert(store, snapshot).store;
+      store.legacyMigrationComplete = true;
+      return { store: normalizeRecoveryStore(store), applied: true, reason: 'legacy-migrated' };
+    }
+    var hadSnapshot = store.snapshots.some(function (entry) { return entry.id === snapshotId; });
+    var hadTombstone = own(store.removedSnapshotIds, snapshotId);
+    store.snapshots = store.snapshots.filter(function (entry) { return entry.id !== snapshotId; });
+    if (!hadTombstone) {
+      var removedAt = recoverySavedAt(mutation.removedAt, 'Recovery remove mutation', false) || new Date().toISOString();
+      putRecoveryTombstone(store.removedSnapshotIds, snapshotId, removedAt);
+    }
+    store.legacyMigrationComplete = true;
+    store = normalizeRecoveryStore(store);
+    return {
+      store: store,
+      applied: hadSnapshot || !hadTombstone,
+      reason: hadSnapshot || !hadTombstone ? 'removed' : 'already-removed'
+    };
   }
   // Mirrors the monolith's _isCanvasEnv hostname heuristic (ANTI ~3403) so
   // consumers can init({}) without plumbing that flag through.
@@ -90,6 +245,9 @@
     this.pending = {};           // id -> {resolve, reject, timer}
     this.seq = 0;
     this.onMessage = null;
+    this.connectPromise = null;
+    this.connectTimer = null;
+    this.connectReject = null;
   }
   BridgeTransport.prototype.alive = function () {
     if (!this.win) return false;
@@ -99,7 +257,8 @@
   BridgeTransport.prototype.connect = function (bridgeUrl) {
     var self = this;
     if (self.ready && self.alive()) return Promise.resolve(self);
-    return new Promise(function (resolve, reject) {
+    if (self.connectPromise) return self.connectPromise;
+    self.connectPromise = new Promise(function (resolve, reject) {
       self.nonce = makeNonce();
       var url = bridgeUrl + '#allo-ds=' + self.nonce;
       if (self.kind === 'popup') {
@@ -121,12 +280,16 @@
         self.win = frame.contentWindow;
       }
       var settled = false;
+      self.connectReject = reject;
       var timer = setTimeout(function () {
         if (settled) return;
         settled = true;
+        self.connectTimer = null;
+        self.connectReject = null;
         self.teardown();
         reject(storageError('allo/bridge-timeout', 'The storage bridge did not answer (offline, blocked, or CSP-denied).'));
       }, CONNECT_TIMEOUT_MS);
+      self.connectTimer = timer;
       self.onMessage = function (event) {
         var msg = event.data;
         if (!msg || msg.allo !== PROTO) return;
@@ -135,6 +298,8 @@
           if (!settled) {
             settled = true;
             clearTimeout(timer);
+            self.connectTimer = null;
+            self.connectReject = null;
             self.ready = true;
             resolve(self);
           }
@@ -150,6 +315,11 @@
         }
       };
       window.addEventListener('message', self.onMessage);
+    });
+    return self.connectPromise.then(function (value) {
+      self.connectPromise = null; return value;
+    }, function (error) {
+      self.connectPromise = null; throw error;
     });
   };
   BridgeTransport.prototype.request = function (op, params) {
@@ -175,6 +345,10 @@
     });
   };
   BridgeTransport.prototype.teardown = function () {
+    var connectReject = this.connectReject;
+    if (this.connectTimer) clearTimeout(this.connectTimer);
+    this.connectTimer = null;
+    this.connectReject = null;
     if (this.onMessage) { window.removeEventListener('message', this.onMessage); this.onMessage = null; }
     Object.keys(this.pending).forEach(function (id) {
       clearTimeout(this.pending[id].timer);
@@ -185,7 +359,9 @@
     if (this.frameEl) { try { this.frameEl.remove(); } catch (_) {} }
     this.win = null;
     this.frameEl = null;
+    this.connectPromise = null;
     this.ready = false;
+    if (connectReject) connectReject(storageError('allo/storage-disconnected', 'Bridge closed before it connected.'));
   };
 
   // ── Direct backend (own-origin IndexedDB; stable-origin surfaces) ──
@@ -216,12 +392,24 @@
           var store = t.objectStore(DIRECT_STORE);
           var k = params && (params.ns + ' ' + params.key);
           var result;
+          var operationError = null;
           if (op === 'get') {
             var g = store.get(k);
             g.onsuccess = function () { result = g.result ? g.result.value : null; };
           } else if (op === 'set') {
             store.put({ k: k, ns: params.ns, key: params.key, value: params.value, updatedAt: new Date().toISOString() });
             result = true;
+          } else if (op === 'mutateRecovery') {
+            var recoveryGet = store.get(k);
+            recoveryGet.onsuccess = function () {
+              try {
+                result = applyRecoveryMutation(recoveryGet.result ? recoveryGet.result.value : null, params.mutation);
+                store.put({ k: k, ns: params.ns, key: params.key, value: result.store, updatedAt: new Date().toISOString() });
+              } catch (error) {
+                operationError = error;
+                try { t.abort(); } catch (_) {}
+              }
+            };
           } else if (op === 'delete') {
             store.delete(k);
             result = true;
@@ -259,7 +447,8 @@
             return;
           }
           t.oncomplete = function () { resolve(result); };
-          t.onerror = function () { reject(t.error || storageError('allo/idb-tx-failed')); };
+          t.onerror = function () { reject(operationError || t.error || storageError('allo/idb-tx-failed')); };
+          t.onabort = function () { reject(operationError || t.error || storageError('allo/idb-tx-failed')); };
         });
       });
     }
@@ -274,6 +463,12 @@
       switch (op) {
         case 'get': return Promise.resolve(key in bucket ? bucket[key] : null);
         case 'set': bucket[key] = params.value; return Promise.resolve(true);
+        case 'mutateRecovery':
+          try {
+            var recoveryResult = applyRecoveryMutation(key in bucket ? bucket[key] : null, params.mutation);
+            bucket[key] = recoveryResult.store;
+            return Promise.resolve(recoveryResult);
+          } catch (error) { return Promise.reject(error); }
         case 'delete': delete bucket[key]; return Promise.resolve(true);
         case 'list': return Promise.resolve(Object.keys(bucket));
         case 'getAll': return Promise.resolve(Object.keys(bucket).map(function (k) { return { key: k, value: bucket[k] }; }));
@@ -293,7 +488,8 @@
     backend: null,
     transport: null,
     bridgeUrl: DEFAULT_BRIDGE_URL,
-    writeQueue: []             // {op, params} queued while a bridge backend is disconnected
+    writeQueue: [],            // {op, params} queued while a bridge backend is disconnected
+    flushPromise: null
   };
 
   function activeBackend() {
@@ -303,27 +499,45 @@
     return null;
   }
   function flushQueue() {
+    if (state.flushPromise) return state.flushPromise;
     var backend = activeBackend();
     if (!backend) return Promise.resolve(0);
     var queued = state.writeQueue.splice(0);
     var chain = Promise.resolve();
+    var applied = 0;
     queued.forEach(function (item) {
       chain = chain.then(function () {
-        return backend.request(item.op, item.params).catch(function () {});
+        return backend.request(item.op, item.params).then(function () { applied += 1; });
       });
     });
-    return chain.then(function () { return queued.length; });
+    state.flushPromise = chain.then(function () {
+      state.flushPromise = null;
+      return queued.length;
+    }, function (error) {
+      // Preserve the failed write and everything after it for a later retry.
+      state.writeQueue = queued.slice(applied).concat(state.writeQueue);
+      state.flushPromise = null;
+      throw error;
+    });
+    return state.flushPromise;
   }
   function guarded(op, params, opts) {
     if (params && params.ns !== undefined && !validateNs(params.ns)) {
       return Promise.reject(storageError('allo/bad-namespace', 'Namespace must match ' + NS_RE));
     }
-    if ((op === 'get' || op === 'set' || op === 'delete') && !validateKey(params.key)) {
+    if ((op === 'get' || op === 'set' || op === 'delete' || op === 'mutateRecovery') && !validateKey(params.key)) {
       return Promise.reject(storageError('allo/bad-key', 'Key must be a 1-512 char string.'));
     }
+    if (op === 'mutateRecovery' && (params.ns !== RECOVERY_NAMESPACE || params.key !== RECOVERY_KEY)) {
+      return Promise.reject(storageError('allo/recovery-target-invalid',
+        'Atomic recovery mutations are restricted to workspace_recovery/store_v1.'));
+    }
     var backend = activeBackend();
-    if (backend) return backend.request(op, params);
-    var isWrite = op === 'set' || op === 'delete' || op === 'clearNamespace';
+    if (backend) {
+      if (state.flushPromise) return state.flushPromise.then(function () { return guarded(op, params, opts); });
+      return backend.request(op, params);
+    }
+    var isWrite = op === 'set' || op === 'delete' || op === 'clearNamespace' || op === 'mutateRecovery';
     if (isWrite && (!opts || opts.queue !== false)) {
       state.writeQueue.push({ op: op, params: params });
       return Promise.resolve({ queued: true });
@@ -378,12 +592,18 @@
     },
     /** Fall back to in-memory for this session (e.g. popup permanently blocked). */
     useMemory: function () {
+      var pendingFlush = state.flushPromise;
       api.disconnect();
       state.backendName = 'memory';
-      return flushQueue().then(function () { return api.status(); });
+      return (pendingFlush ? pendingFlush.catch(function () {}) : Promise.resolve()).then(function () {
+        return flushQueue();
+      }).then(function () { return api.status(); });
     },
     get: function (ns, key) { return guarded('get', { ns: ns, key: key }); },
     set: function (ns, key, value, opts) { return guarded('set', { ns: ns, key: key, value: value }, opts); },
+    mutateRecovery: function (ns, key, mutation, opts) {
+      return guarded('mutateRecovery', { ns: ns, key: key, mutation: mutation }, opts);
+    },
     remove: function (ns, key, opts) { return guarded('delete', { ns: ns, key: key }, opts); },
     list: function (ns) { return guarded('list', { ns: ns }); },
     getAll: function (ns) { return guarded('getAll', { ns: ns }); },
@@ -444,6 +664,8 @@
       isValidResponse: isValidResponse,
       validateNs: validateNs,
       validateKey: validateKey,
+      applyRecoveryMutation: applyRecoveryMutation,
+      normalizeRecoveryStore: normalizeRecoveryStore,
       PROTO: PROTO,
       DEFAULT_BRIDGE_URL: DEFAULT_BRIDGE_URL
     }

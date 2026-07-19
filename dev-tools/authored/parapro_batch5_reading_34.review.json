@@ -1,0 +1,333 @@
+{
+  "reviewedAt": "2026-07-18",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 34,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b5-reading-001",
+      "issue": "The rationale used em dashes that rendered inconsistently in the Windows review console.",
+      "change": "Replaced the em-dash construction with ASCII parentheses while preserving the explanation's meaning."
+    },
+    {
+      "itemId": "parapro-b5-reading-003",
+      "issue": "The original stimulus did not establish that Priya had found the case, so the property-return inference was only weakly supported.",
+      "change": "Rewrote the stimulus to establish an unattended tagged case that Priya leaves unopened and reports to the music office; refined the keyed inference and all feedback to match the complete evidence."
+    },
+    {
+      "itemId": "parapro-b5-reading-013",
+      "issue": "Following equipment directions is listed in the ETS classroom-application foundations-and-tools scope, but the item was labeled basic-skills-knowledge.",
+      "change": "Replaced the item with an original tide-pool primary-purpose passage, preserving answer position A and mapping it to reading-main-evidence/parapro-ch-01."
+    },
+    {
+      "itemId": "parapro-b5-reading-015",
+      "issue": "Analyzing a standalone prefix is an ETS classroom-application foundation, not a passage-based basic Reading skill as labeled.",
+      "change": "Replaced the prefix task with an original context-vocabulary item testing bolstered, preserving answer position C and the inference-vocabulary learning link."
+    },
+    {
+      "itemId": "parapro-b5-reading-017",
+      "issue": "The original synonym-replacement task aligned with the ETS classroom-application foundations-and-tools list rather than the basic Reading label.",
+      "change": "Replaced it with an original desert-beetle main-idea passage, preserving answer position A and remapping it to reading-main-evidence/parapro-ch-01."
+    },
+    {
+      "itemId": "parapro-b5-reading-018",
+      "issue": "The original antonym task aligned with classroom application rather than passage-based basic Reading skills.",
+      "change": "Replaced it with an original evidence item about cooperative nest protection by piping plovers, preserving answer position B and remapping it to reading-main-evidence/parapro-ch-01."
+    },
+    {
+      "itemId": "parapro-b5-reading-019",
+      "issue": "Alphabetizing is explicitly listed by ETS under Reading classroom-application foundations, but the item was labeled basic-skills-knowledge.",
+      "change": "Replaced it with an original two-month trail-counter table interpretation, preserving answer position C and the reading-structure-sources learning link."
+    },
+    {
+      "itemId": "parapro-b5-reading-020",
+      "issue": "The original item tested sentence-level pronoun ambiguity rather than one of the passage-based basic Reading targets represented by its label.",
+      "change": "Replaced it with an original evidence-based inference about protecting a water-damaged library book, preserving answer position D and the inference-vocabulary learning link."
+    },
+    {
+      "itemId": "parapro-b5-reading-021",
+      "issue": "The original compound-word task was a classroom-foundation word-parts target, and the first revision only implied rather than explicitly stated its keyed organizational pattern.",
+      "change": "Replaced it with a coral-reef organization item and made the general claim explicit before its supporting examples, preserving answer position C and remapping it to reading-structure-sources/parapro-ch-03."
+    },
+    {
+      "itemId": "parapro-b5-reading-022",
+      "issue": "The original prefix task was a classroom-application word-parts target despite its basic-skills label.",
+      "change": "Replaced it with an original museum-label primary-purpose passage about the Pine Creek bridge, preserving answer position A and remapping it to reading-main-evidence/parapro-ch-01."
+    },
+    {
+      "itemId": "parapro-b5-reading-024",
+      "issue": "The phrase stretching a consonant blend was less precise than naming the two consonant sounds and blending them into the whole word.",
+      "change": "Reworded the keyed instructional response to model both opening sounds and whole-word blending while preserving the key and teacher-directed scope."
+    },
+    {
+      "itemIds": [
+        "parapro-b5-reading-025",
+        "parapro-b5-reading-026",
+        "parapro-b5-reading-027",
+        "parapro-b5-reading-028",
+        "parapro-b5-reading-029",
+        "parapro-b5-reading-030",
+        "parapro-b5-reading-031",
+        "parapro-b5-reading-032",
+        "parapro-b5-reading-033",
+        "parapro-b5-reading-034"
+      ],
+      "issue": "The draft applied the K-3 foundational-skills guide to every application item, including source credibility, index use, written directions, and prose-graph integration that the guide does not directly address.",
+      "change": "Tailored references by target: retained foundational-skills guidance for decoding, vocabulary, syntax, and fluency; added the relevant K-3 and grades 4-9 comprehension guides for prereading, synthesis, and fluency; and retained only the official ETS blueprint where no cited IES recommendation directly supported the scenario."
+    }
+  ],
+  "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 34,
+      "reviewedItemIds": [
+        "parapro-b5-reading-001",
+        "parapro-b5-reading-002",
+        "parapro-b5-reading-003",
+        "parapro-b5-reading-004",
+        "parapro-b5-reading-005",
+        "parapro-b5-reading-006",
+        "parapro-b5-reading-007",
+        "parapro-b5-reading-008",
+        "parapro-b5-reading-009",
+        "parapro-b5-reading-010",
+        "parapro-b5-reading-011",
+        "parapro-b5-reading-012",
+        "parapro-b5-reading-013",
+        "parapro-b5-reading-014",
+        "parapro-b5-reading-015",
+        "parapro-b5-reading-016",
+        "parapro-b5-reading-017",
+        "parapro-b5-reading-018",
+        "parapro-b5-reading-019",
+        "parapro-b5-reading-020",
+        "parapro-b5-reading-021",
+        "parapro-b5-reading-022",
+        "parapro-b5-reading-023",
+        "parapro-b5-reading-024",
+        "parapro-b5-reading-025",
+        "parapro-b5-reading-026",
+        "parapro-b5-reading-027",
+        "parapro-b5-reading-028",
+        "parapro-b5-reading-029",
+        "parapro-b5-reading-030",
+        "parapro-b5-reading-031",
+        "parapro-b5-reading-032",
+        "parapro-b5-reading-033",
+        "parapro-b5-reading-034"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections: all 34 Reading items passed independent blueprint, key, distractor, feedback, source-fit, accessibility, learning-link, and originality review and are approved for integration as assistant-authored independent ParaPro practice drafts; this is not official ETS endorsement or psychometric validation.",
+  "priorChecks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 34,
+      "reviewedItemIds": [
+        "parapro-b5-reading-001",
+        "parapro-b5-reading-002",
+        "parapro-b5-reading-003",
+        "parapro-b5-reading-004",
+        "parapro-b5-reading-005",
+        "parapro-b5-reading-006",
+        "parapro-b5-reading-007",
+        "parapro-b5-reading-008",
+        "parapro-b5-reading-009",
+        "parapro-b5-reading-010",
+        "parapro-b5-reading-011",
+        "parapro-b5-reading-012",
+        "parapro-b5-reading-013",
+        "parapro-b5-reading-014",
+        "parapro-b5-reading-015",
+        "parapro-b5-reading-016",
+        "parapro-b5-reading-017",
+        "parapro-b5-reading-018",
+        "parapro-b5-reading-019",
+        "parapro-b5-reading-020",
+        "parapro-b5-reading-021",
+        "parapro-b5-reading-022",
+        "parapro-b5-reading-023",
+        "parapro-b5-reading-024",
+        "parapro-b5-reading-025",
+        "parapro-b5-reading-026",
+        "parapro-b5-reading-027",
+        "parapro-b5-reading-028",
+        "parapro-b5-reading-029",
+        "parapro-b5-reading-030",
+        "parapro-b5-reading-031",
+        "parapro-b5-reading-032",
+        "parapro-b5-reading-033",
+        "parapro-b5-reading-034"
+      ],
+      "scope": [
+        "current ETS ParaPro 1755 Reading blueprint fit",
+        "stimulus coherence and internal sufficiency",
+        "independent recomputation or textual verification of every key",
+        "main-idea, evidence, inference, context-vocabulary, organization, fact-opinion, table, and source-integration logic",
+        "four unique and mutually exclusive choices",
+        "distractor plausibility and item-specific misconception targeting",
+        "main rationale and all four option-feedback statements",
+        "source relevance rather than blanket citation presence",
+        "accessibility and plain-text rendering",
+        "teacher-directed paraeducator scope and preservation of student reasoning",
+        "cross-bank and intra-bank originality"
+      ]
+    },
+    "blueprintAlignment": {
+      "status": "pass",
+      "officialBlueprint": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "officialBlueprintVerifiedAtReview": "2026-07-18",
+      "readingSkillsAndKnowledgeTopicsRepresented": [
+        "main ideas, summaries, primary purposes, and supporting details",
+        "passage organization",
+        "word and phrase meaning in context",
+        "evidence-based inference",
+        "fact versus opinion",
+        "tables, charts, and cross-source trends"
+      ],
+      "classroomApplicationTopicsRepresented": [
+        "initial consonant-blend decoding",
+        "prereading activation of relevant background knowledge",
+        "questions that promote synthesis of a main idea",
+        "objective observation of oral-reading accuracy, phrasing, and punctuation",
+        "using glossary features and contextual verification",
+        "source-credibility evaluation",
+        "syntax and pronoun-reference analysis",
+        "multiple-meaning vocabulary in context",
+        "index use",
+        "support for interpreting written directions",
+        "critical integration of prose and graphical information"
+      ],
+      "contentFocusCounts": {
+        "basic-skills-knowledge": 23,
+        "application-classroom": 11
+      },
+      "expectedContentFocusCounts": {
+        "basic-skills-knowledge": 23,
+        "application-classroom": 11
+      },
+      "mislabeledFoundationTasksRemainingInBasicSection": 0
+    },
+    "stimuliKeysAndReadingLogic": {
+      "status": "pass",
+      "stimuliChecked": 34,
+      "keyedAnswersRecomputedOrTextuallyVerified": 34,
+      "unresolvedAmbiguities": 0,
+      "unsupportedInferences": 0,
+      "unresolvedMultipleCorrectChoices": 0,
+      "factOpinionAndCausationDistinctionsChecked": true,
+      "tableAndTrendValuesRecomputed": true
+    },
+    "distractorsAndFeedback": {
+      "status": "pass",
+      "fourRawUniqueChoicesPerItem": true,
+      "choiceRationaleSetsChecked": 34,
+      "minimumMainRationaleCharacters": 175,
+      "minimumChoiceRationaleCharacters": 64,
+      "genericCorrectIncorrectFeedbackRemaining": 0
+    },
+    "answerPositionBalance": {
+      "status": "pass",
+      "countsByZeroBasedIndex": {
+        "0": 9,
+        "1": 9,
+        "2": 8,
+        "3": 8
+      },
+      "expectedCountsByZeroBasedIndex": {
+        "0": 9,
+        "1": 9,
+        "2": 8,
+        "3": 8
+      }
+    },
+    "learningLinks": {
+      "status": "pass",
+      "countsBySkill": {
+        "reading-main-evidence": 9,
+        "reading-inference-vocabulary": 7,
+        "reading-structure-sources": 7,
+        "reading-classroom-support": 11
+      },
+      "validSkillIds": true,
+      "validChapterIds": true,
+      "skillChapterPairsVerified": true
+    },
+    "originality": {
+      "status": "pass",
+      "comparedAgainst": "all 500 current ParaPro pack activities plus the 33 Bank 5 Mathematics and 33 Bank 5 Writing drafts",
+      "priorAndCurrentItemsCompared": 566,
+      "exactPromptOverlaps": 0,
+      "exactChoiceSetOverlaps": 0,
+      "exactNormalizedContentKernelOverlaps": 0,
+      "maximumPromptTokenJaccard": 0.6551724137931034,
+      "maximumSimilarityPair": [
+        "parapro-b5-reading-024",
+        "parapro-b4-reading-024"
+      ],
+      "threshold": 0.82,
+      "intraBatchDistinctNormalizedContentKernels": 34,
+      "maximumIntraBatchPromptTokenJaccard": 0.28125,
+      "maximumIntraBatchSimilarityPair": [
+        "parapro-b5-reading-010",
+        "parapro-b5-reading-002"
+      ]
+    },
+    "accessibilityAndParaeducatorScope": {
+      "status": "pass",
+      "plainTextDependencyChecked": true,
+      "externalImageDependency": false,
+      "nonAsciiBytes": 0,
+      "needlessStereotypesOrSensitiveAssumptions": 0,
+      "applicationItemsRemainTeacherDirected": true,
+      "applicationItemsRequireInstructionalSupportRatherThanDiagnosis": true,
+      "studentReasoningAndOwnershipPreserved": true,
+      "unresolvedOutOfScopeItems": 0
+    },
+    "references": {
+      "status": "pass",
+      "httpsOnly": true,
+      "officialBlueprintPresentOnEveryItem": true,
+      "sourcesUsed": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/14",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/29"
+      ],
+      "sourceFitMethod": "IES guides are cited only on application items whose decoding, fluency, vocabulary, prereading, or comprehension support is directly addressed; ETS alone is retained for blueprint scenarios not directly covered by those instructional guides."
+    },
+    "structure": {
+      "status": "pass",
+      "uniqueIds": 34,
+      "uniquePrompts": 34,
+      "uniqueNormalizedContentKernels": 34,
+      "fourChoiceRationalesPerItem": true,
+      "schemaMatchesBank4": true,
+      "independentDraftProvenancePreserved": true,
+      "utf8Bom": false,
+      "sha256": "e352f889fc74dcd43a43192460e17b606197ea9ac623a4a99fdc34528d42c985",
+      "schemaErrors": 0
+    }
+  },
+  "reviewedFile": "dev-tools/authored/parapro_batch5_reading_34.json",
+  "blockers": [],
+  "sourceSha256": "f206ccb8d822229910d6cbf6008d46b8cb0b1d87f5a82556638cc885ab844888",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "f206ccb8d822229910d6cbf6008d46b8cb0b1d87f5a82556638cc885ab844888"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 5,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
+}

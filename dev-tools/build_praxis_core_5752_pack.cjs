@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const path = require('path');
 const skillBanks = require('./praxis_core_5752/item_content.cjs');
 const root = path.resolve(__dirname, '..');
@@ -38,7 +39,8 @@ function ensure(value, minimum, suffix) {
 
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
-  const rationale = ensure(spec.rationale, 120, 'Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.');
+  const variantRationale = batchNumber === 2 && spec.rationaleB ? spec.rationaleB : spec.rationale;
+  const rationale = ensure(variantRationale, 120, 'Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.');
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
@@ -128,9 +130,9 @@ const pack = {
   nativeQaUrl: './test_prep/praxis_core_5752_native_qa.json',
   learningLibraryUrl: './test_prep/praxis_core_5752_learning_library.json',
   learningLibraryQaUrl: './test_prep/praxis_core_5752_learning_library_qa.json',
-  simulationItemCount: 152, simulationTimeMinutes: 215,
+  simulationItemCount: 152, simulationDomainCounts: {"reading-key-ideas-details":20,"reading-craft-structure-language":16,"reading-integration-knowledge-ideas":20,"writing-text-types-production":10,"writing-language-research":30,"math-number-quantity":20,"math-data-statistics-probability":18,"math-algebra-geometry":18}, simulationDomainCountsBasis: 'fixed-product-allocation-within-official-ranges', simulationTimeMinutes: 215,
   simulationLabel: '152-question combined selected-response pacing simulation',
-  simulationNote: 'The official combined session currently consists of Reading 5713 (56 questions, 85 minutes), Writing 5723 (40 selected-response questions in 40 minutes plus two separately timed 30-minute essays), and Mathematics 5733 (56 questions, 90 minutes). The selected-response section times are 85 minutes reading, 40 minutes writing selected response, and 90 minutes mathematics, for a 215-minute simulation covering 152 questions. Use the separate argumentative and source-based workshops for the two essay sections; the complete official section times total 275 minutes.',
+  simulationNote: "The official combined session has 152 selected-response questions: 85 minutes reading, 40 minutes writing selected response, and 90 minutes mathematics (215 minutes total). This simulation preserves the exact official subject totals. Use the separate argumentative and source-based workshops for the two essay sections; the complete official section times total 275 minutes. AlloFlow uses a stable product allocation for subdomains within the published ETS ranges; it is not an official fixed-form allocation.",
   officialSelectedResponseCount: 152, officialConstructedResponseCount: 2, officialTotalTimeMinutes: 275,
   officialSubtests: [
     { code: '5713', label: 'Reading', questions: 56, timeMinutes: 85 },
@@ -160,7 +162,7 @@ const itemOutput = JSON.stringify(items, null, 2) + '\n';
 const packOutput = JSON.stringify(pack, null, 2) + '\n';
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'praxis_core_5752_items.json'), itemOutput, 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'praxis_core_5752_pack.json'), packOutput, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'praxis_core_5752_items.json'), itemOutput, 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'praxis_core_5752_pack.json'), packOutput, 'utf8');
 }
 console.log('Built Praxis Core 5752: 200 items in two 100-item banks; each bank = 37 reading, 26 writing, 37 mathematics, with 25/25/25/25 answer positions.');

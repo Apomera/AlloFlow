@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const skillBanks = require('./audiology_5343/item_content.cjs');
+const { corrections: sourceReviewCorrections, expectedAnswerIndices: correctionAnswerIndices } = require('./audiology_5343/source_review_corrections.cjs');
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
 const expectedCounts = {
@@ -61,7 +62,15 @@ for (let batchNumber = 1; batchNumber <= 2; batchNumber += 1) {
   for (const skill of skillBanks) for (const spec of skill.questions) { batchPosition += 1; items.push(itemFromSpec(skill, spec, batchNumber, batchPosition)); }
   if (batchPosition !== 100) throw new Error('5343 diagnostic batch ' + batchNumber + ' must contain exactly 100 items.');
 }
-if (items.length !== 200 || new Set(items.map((item) => item.id)).size !== 200) throw new Error('The 5343 bank must contain 200 uniquely identified items.');
+if (Object.keys(sourceReviewCorrections).length !== 10 || Object.keys(correctionAnswerIndices).length !== 10) throw new Error('Audiology source review requires exactly ten key-preserving corrections.');
+for (const [itemId, correction] of Object.entries(sourceReviewCorrections)) {
+  const item = items.find((candidate) => candidate.id === itemId);
+  if (!item) throw new Error('Missing Audiology source-review correction target: ' + itemId);
+  const expectedAnswerIndex = correctionAnswerIndices[itemId];
+  if (item.answerIndex !== expectedAnswerIndex) throw new Error(itemId + ': source-review correction would change the answer key.');
+  Object.assign(item, correction, { qaReviewedAt: '2026-07-18' });
+  if (item.answerIndex !== expectedAnswerIndex) throw new Error(itemId + ': source-review correction changed the answer key.');
+}if (items.length !== 200 || new Set(items.map((item) => item.id)).size !== 200) throw new Error('The 5343 bank must contain 200 uniquely identified items.');
 if (new Set(items.map((item) => item.prompt.toLowerCase().replace(/\s+/g, ' ').trim())).size !== 200) throw new Error('The 5343 bank contains a duplicate prompt.');
 for (let batchIndex = 0; batchIndex < 2; batchIndex += 1) {
   const batch = items.slice(batchIndex * 100, batchIndex * 100 + 100);
@@ -76,7 +85,7 @@ const pack = {
   credentialOwner: 'Educational Testing Service (ETS)', version: '1.0.0', status: 'ready', accent: 'teal',
   contentReview: '200 source-reviewed questions plus 12 chapters, 60 checks, 75 flashcards, and 20 memory aids; independent licensed-audiologist and psychometric review pending',
   nativeQaUrl: './test_prep/audiology_5343_native_qa.json', learningLibraryUrl: './test_prep/audiology_5343_learning_library.json',
-  learningLibraryQaUrl: './test_prep/audiology_5343_learning_library_qa.json', simulationItemCount: 120, simulationTimeMinutes: 120,
+  learningLibraryQaUrl: './test_prep/audiology_5343_learning_library_qa.json', simulationItemCount: 120, simulationDomainCounts: {"foundations-audiology":24,"prevention-screening":12,"assessment":42,"intervention":30,"professional-ethical":12}, simulationTimeMinutes: 120,
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS or ASHA. The official Praxis Audiology (5343) test currently has 120 selected-response questions in 120 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, clinical evaluations, diagnoses, medical or vestibular decisions, device fittings, treatment, legal advice, or substitutes for qualified supervision, urgent medical care, and current federal, state, local, licensure, certification, educational, health-care, privacy, consent, emergency, and reporting requirements.',
   domains: [
     { id: 'foundations-audiology', label: 'Foundations of Audiology', weight: 0.20 },

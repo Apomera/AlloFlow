@@ -13,6 +13,7 @@
 // Logic only — no React render.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import fs from 'node:fs';
 import { setupLane, laneInternals } from './helpers/research_lane_harness.js';
 
 beforeAll(() => setupLane('humanities'));
@@ -147,5 +148,26 @@ describe('Humanities · sourceLateralProbeValidate', () => {
     const res = H().sourceLateralProbeValidate(out, {});
     expect(res.__rejected).toBe(true);
     expect(res.rejectReason).toBe('quoted_text_in_output');
+  });
+});
+
+describe('Humanities · inquiry method guidance', () => {
+  const source = fs.readFileSync('research_lane_humanities_source.jsx', 'utf8');
+
+  it('makes interpretive, qualitative, civic, and creative rigor explicit', () => {
+    expect(source).toContain('data-humanities-method-guide=');
+    expect(source).toContain('humanistic_interpretation');
+    expect(source).toContain('community_qualitative');
+    expect(source).toContain('civic_policy');
+    expect(source).toContain('creative_cultural');
+    expect(source).toContain('Rigor commitments');
+    expect(source).toContain('Competing plausible interpretations');
+    expect(source).toContain('Discrepant cases and absent voices');
+  });
+
+  it('places an explicit consent boundary on community inquiry', () => {
+    expect(source).toContain('Do not collect or upload identifiable interviews, images, or recordings without informed consent');
+    expect(source).toContain('public or teacher-approved accounts');
+    expect(source).toContain('Ethics and limits:');
   });
 });

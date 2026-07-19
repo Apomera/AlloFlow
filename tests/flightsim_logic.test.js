@@ -300,6 +300,19 @@ describe('composeGroundSpeedKts (TAS + wind + jet → GS)', () => {
   });
 });
 
+describe('getSprintScoreSummary (origin is not a quiz stop)', () => {
+  it('uses only flown-to stops as the denominator, allowing a perfect 100%', () => {
+    const route = FS.SPRINT_ROUTES.find((r) => r.id === 'americas');
+    const summary = FS.getSprintScoreSummary(route.places, route.places.length - 1);
+    expect(summary).toEqual({ score: 7, total: 7, pct: 100 });
+  });
+  it('clamps malformed or out-of-range scores safely', () => {
+    expect(FS.getSprintScoreSummary(['origin', 'target'], 99)).toEqual({ score: 1, total: 1, pct: 100 });
+    expect(FS.getSprintScoreSummary(['origin', 'target'], -3)).toEqual({ score: 0, total: 1, pct: 0 });
+    expect(FS.getSprintScoreSummary(null, Number.NaN)).toEqual({ score: 0, total: 0, pct: 0 });
+  });
+});
+
 describe('pushTrackPoint (minimap breadcrumb sampler)', () => {
   it('records the first point and points spaced ≥ minNm', () => {
     const trail = [];

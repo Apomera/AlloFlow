@@ -1094,6 +1094,7 @@ const GROUP_ORDER = ['navigate','live','create','tools','accessibility','display
 const GROUP_LABEL_FALLBACK = { navigate:'Navigate', live:'Live class', create:'Create from this content', tools:'Open a tool', accessibility:'Reading & access', display:'Display & motion', pipeline:'Pipeline results', help:'Help', voice:'Voice' };
 const COMMAND_RECENTS_KEY = 'allo_command_recents_v1';
 const COMMAND_RECENTS_LIMIT = 5;
+const ALLO_COMMAND_PALETTE_OPEN_EVENT = 'alloflow:open-command-palette';
 // context → ctx signal (string boolean-key, OR a function for derived ones like reading).
 const CTX_FLAG = { liveSession:'liveSessionActive', pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', sourceSetup:'sourceSetupOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', researchHub:'researchHubOpen', litLab:'litLabOpen', mindMap:'mindMapOpen', poetTree:'poetTreeOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
@@ -1188,19 +1189,37 @@ const AlloCommandPalette = ({ ctx }) => {
   })();
 
   useEffect(() => {
+    const rememberCurrentFocus = () => {
+      try { prevFocusRef.current = document.activeElement; } catch (_) {}
+    };
     const onKey = (e) => {
       const k = (e.key || '').toLowerCase();
       if (((e.ctrlKey || e.metaKey) && !e.shiftKey && k === 'k') || ((e.ctrlKey || e.metaKey) && e.shiftKey && k === 'p')) {
         e.preventDefault();
         setOpen((v) => {
-          if (!v) { try { prevFocusRef.current = document.activeElement; } catch (_) {} }
+          if (!v) rememberCurrentFocus();
           return !v;
         });
         setQuery(''); setConfirming(null);
       }
     };
+    const onOpenRequest = (event) => {
+      const requested = event && event.detail ? event.detail.query : '';
+      const initialQuery = typeof requested === 'string' ? requested.trim().slice(0, 160) : '';
+      setOpen((wasOpen) => {
+        if (!wasOpen) rememberCurrentFocus();
+        return true;
+      });
+      setQuery(initialQuery);
+      setSel(0);
+      setConfirming(null);
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener(ALLO_COMMAND_PALETTE_OPEN_EVENT, onOpenRequest);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener(ALLO_COMMAND_PALETTE_OPEN_EVENT, onOpenRequest);
+    };
   }, []);
 
   useEffect(() => {

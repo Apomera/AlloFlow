@@ -72,7 +72,7 @@ const pack = {
   credentialOwner: 'Educational Testing Service (ETS)', version: '1.0.0', status: 'ready', accent: 'sky',
   contentReview: '200 source-reviewed questions plus 12 chapters, 60 checks, 75 flashcards, and 20 memory aids; independent school-psychologist and psychometric review pending',
   nativeQaUrl: './test_prep/school_psychologist_5403_native_qa.json', learningLibraryUrl: './test_prep/school_psychologist_5403_learning_library.json',
-  learningLibraryQaUrl: './test_prep/school_psychologist_5403_learning_library_qa.json', simulationItemCount: 125, simulationTimeMinutes: 125,
+  learningLibraryQaUrl: './test_prep/school_psychologist_5403_learning_library_qa.json', simulationItemCount: 125, simulationDomainCounts: {"permeating-practices":40,"student-level-services":28,"systems-level-services":25,"foundations":32}, simulationTimeMinutes: 125,
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ETS or NASP. The official Praxis School Psychologist (5403) test currently has 125 selected-response questions in 125 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, psychological evaluations, diagnoses, mental-health treatment, legal advice, or substitutes for current federal, state, local, district, credential, ethical, crisis, consent, and mandated-reporting requirements.',
   domains: [
     { id: 'permeating-practices', label: 'Professional Practices That Permeate All Aspects of Service Delivery', weight: 0.32 },

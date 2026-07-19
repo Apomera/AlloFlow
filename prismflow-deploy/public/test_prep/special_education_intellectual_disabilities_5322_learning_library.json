@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:49.928Z",
+  "generatedAt": "2026-07-19T05:09:02.972Z",
   "libraryId": "praxis-special-education-intellectual-disabilities-5322-learning-library",
   "packId": "praxis-special-education-intellectual-disabilities-5322",
   "title": "Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) learning library",
@@ -1226,15 +1226,15 @@
       "knowledgeChecks": [
         {
           "id": "id5322-ch-06-check-01",
-          "prompt": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?",
+          "prompt": "A student is studying ecosystems with classmates but cannot independently decode the grade-level article. Which support best preserves substantive participation?",
           "choices": [
-            "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
-            "Ask students to infer the pattern from an unrelated story without guidance.",
-            "Have students memorize definitions only.",
-            "Teach several conflicting exceptions before the common pattern."
+            "Provide an adapted text and read-aloud or symbol supports while retaining the core ecosystem concepts and an accessible way to demonstrate comprehension.",
+            "Assign an unrelated coloring page because the article is difficult.",
+            "Require independent decoding before allowing participation in the science discussion.",
+            "Have a paraprofessional supply every answer without presenting the text."
           ],
           "answerIndex": 0,
-          "rationale": "Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Access supports should reduce the print barrier without replacing the academic construct. Retaining the shared concepts and an independent response mode supports inclusion, presumes competence, and produces meaningful evidence of comprehension.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1246,15 +1246,15 @@
         },
         {
           "id": "id5322-ch-06-check-02",
-          "prompt": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?",
+          "prompt": "A learner recognizes grocery words on flash cards but not on aisle signs or a family shopping list. Which instruction is most likely to make the skill useful?",
           "choices": [
-            "It permanently limits students to one text type.",
-            "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
-            "It measures listening comprehension without print.",
-            "It replaces language-rich read-alouds and knowledge building."
+            "Continue flash-card practice in the same seat until every response is immediate.",
+            "Teach the words within age-respectful shopping routines using varied lists, fonts, locations, and opportunities to communicate a choice or ask for help.",
+            "Replace all print with adult verbal directions during shopping.",
+            "Teach only one store display so the visual context never changes."
           ],
           "answerIndex": 1,
-          "rationale": "Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Authentic practice with varied examples connects word recognition to purposeful action and communication. Programming variation and support fading builds generalization rather than restricting performance to one memorized material set.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1266,15 +1266,15 @@
         },
         {
           "id": "id5322-ch-06-check-03",
-          "prompt": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?",
+          "prompt": "A student is beginning to connect sounds and letters and enjoys shared stories. Which literacy plan is most appropriate?",
           "choices": [
-            "Treat every letter as arbitrary.",
-            "Require visual memorization without sound analysis.",
-            "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
-            "Avoid the word until every exception is taught."
+            "Wait for spontaneous reading because direct instruction may reduce autonomy.",
+            "Teach isolated symbols only and postpone access to stories indefinitely.",
+            "Use explicit, systematic sound-symbol instruction with cumulative review and immediate application in meaningful, age-respectful text.",
+            "Use materials designed for much younger children regardless of student interests."
           ],
           "answerIndex": 2,
-          "rationale": "Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Systematic teaching and cumulative practice address skill acquisition, while meaningful age-respectful text sustains purpose and access to literacy. The plan avoids assuming that current performance limits future learning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1286,15 +1286,15 @@
         },
         {
           "id": "id5322-ch-06-check-04",
-          "prompt": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?",
+          "prompt": "A student can select a new vocabulary symbol during drill but not during class discussion. How should vocabulary instruction change?",
           "choices": [
-            "Counting letters and choosing the shortest pronunciation.",
-            "Using context to replace word analysis.",
-            "Memorizing one pronunciation for every prefix.",
-            "Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks."
+            "Repeat the same picture until it is memorized and call the concept mastered.",
+            "Require speech as the only acceptable demonstration of vocabulary knowledge.",
+            "Introduce many unrelated words at once without checking meaning.",
+            "Teach the concept with multiple examples and nonexamples, connect it to familiar experiences, and elicit receptive and expressive responses through accessible modes."
           ],
           "answerIndex": 3,
-          "rationale": "Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Concept learning requires more than association with one picture. Multiple exemplars, explicit connections, and accessible receptive and expressive responses reveal understanding and support use across instructional contexts.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1306,15 +1306,15 @@
         },
         {
           "id": "id5322-ch-06-check-05",
-          "prompt": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?",
+          "prompt": "A student listens to a short passage and answers accurately by selecting pictures but gives no spoken response. How should the teacher interpret the result?",
           "choices": [
-            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
-            "It is useful only for grammar labels.",
-            "It eliminates the need for phonics.",
-            "It applies only to words of Anglo-Saxon origin."
+            "Accept the established accessible response mode, provide planned wait time, and verify comprehension across several questions and contexts.",
+            "Score every nonspeaking response as incorrect.",
+            "Have an adult point to the answer before the student responds.",
+            "Infer full comprehension from one correct selection and stop collecting data."
           ],
           "answerIndex": 0,
-          "rationale": "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Comprehension should not be confounded with speech production or partner prompting. Accessible responding, adequate processing time, and repeated evidence provide a more valid picture of what the student understands.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1426,15 +1426,15 @@
       "knowledgeChecks": [
         {
           "id": "id5322-ch-07-check-01",
-          "prompt": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?",
+          "prompt": "A student uses AAC to choose a topic but an adult composes the entire message. Which change would make writing more student directed?",
           "choices": [
-            "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
-            "Writing practice automatically fixes every decoding need.",
-            "Reading and writing share no underlying knowledge.",
-            "Composition should begin only after reading is mastered."
+            "Offer an accessible set of generative words and phrases, let the student select and revise the message, and provide only the support needed for the targeted writing step.",
+            "Have the adult write a polished message and ask the student to approve it afterward.",
+            "Restrict the student to copying one sentence chosen by staff.",
+            "Delay all writing until the student can use a standard keyboard independently."
           ],
           "answerIndex": 0,
-          "rationale": "Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Writing instruction should preserve authorship, not merely produce an adult-created product. Accessible generation and revision choices reveal student intent while systematic support can be faded as competence grows.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1446,15 +1446,15 @@
         },
         {
           "id": "id5322-ch-07-check-02",
-          "prompt": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?",
+          "prompt": "During shared writing, a student activates a switch only to copy a teacher-selected sentence. Which redesign best supports expression?",
           "choices": [
-            "Treat total word count as the only writing construct.",
-            "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
-            "Assume limited output means limited knowledge.",
-            "Score handwriting appearance as reading comprehension."
+            "Continue copying because original ideas are unnecessary for writing.",
+            "Elicit the student ideas through an accessible communication mode, visibly incorporate those ideas, and teach a specific composing or editing skill within the shared product.",
+            "Ask peers to decide what the student probably wants to say.",
+            "Remove the student from group writing for separate tracing practice."
           ],
           "answerIndex": 1,
-          "rationale": "Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Shared writing becomes substantive when the learner contributes meaning and receives explicit instruction in the composing process. Accessible authorship maintains inclusion and provides evidence beyond motor copying.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1466,15 +1466,15 @@
         },
         {
           "id": "id5322-ch-07-check-03",
-          "prompt": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?",
+          "prompt": "A transition class is teaching students to complete community forms. Which lesson is most age respectful and useful?",
           "choices": [
-            "Every subject uses identical text conventions.",
-            "Content teachers should avoid literacy instruction.",
-            "Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly.",
-            "Disciplinary literacy means simplifying all texts."
+            "Use worksheets designed for young children because the steps are simpler.",
+            "Have an adult complete every form to prevent mistakes.",
+            "Teach the relevant fields on realistic, privacy-protected forms, use the preferred access method, and fade prompts while checking independent accuracy.",
+            "Practice a signature only and ignore the other information needed for the task."
           ],
           "answerIndex": 2,
-          "rationale": "Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Authentic, age-respectful materials connect writing to self-determination and community participation. Privacy safeguards, accessible entry, and prompt fading build useful independence without reducing the task to imitation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1486,15 +1486,15 @@
         },
         {
           "id": "id5322-ch-07-check-04",
-          "prompt": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?",
+          "prompt": "A student uses a symbol for stop during personal-care instruction, but staff continue the routine because the schedule is tight. What should the educator do?",
           "choices": [
-            "Assume digital familiarity equals critical literacy.",
-            "Ban all hyperlinks without teaching evaluation.",
-            "Judge credibility by visual design alone.",
-            "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention."
+            "Ignore the message so the student learns compliance.",
+            "Remove the symbol from the communication system.",
+            "Require spoken refusal before adults respond.",
+            "Honor the communication promptly, determine the immediate concern, and teach safe ways to negotiate, request help, or resume when appropriate."
           ],
           "answerIndex": 3,
-          "rationale": "Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "A reliable way to refuse, pause, or seek help is fundamental communication and self-determination. Honoring the message establishes its meaning while instruction can address safety, alternatives, and any necessary return to activity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1506,15 +1506,15 @@
         },
         {
           "id": "id5322-ch-07-check-05",
-          "prompt": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?",
+          "prompt": "A student has ideas for a report but cannot spell enough words to produce them conventionally. Which plan best balances access and instruction?",
           "choices": [
-            "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
-            "Every text must use the same difficulty and viewpoint.",
-            "A text set eliminates the need for explicit instruction.",
-            "Students should memorize facts without discussing sources."
+            "Use an accessible composing method such as word prediction, symbols, dictation, or AAC while continuing explicit instruction in selected writing skills.",
+            "Withhold content writing until conventional spelling is mastered.",
+            "Accept only copied sentences because they look accurate.",
+            "Have an adult replace the student ideas with simpler content."
           ],
           "answerIndex": 0,
-          "rationale": "Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Expression should not be blocked by a single transcription barrier. Alternate access permits authentic composition now, while targeted explicit instruction supports continued growth in spelling, language, or motor skills.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1626,15 +1626,15 @@
       "knowledgeChecks": [
         {
           "id": "id5322-ch-08-check-01",
-          "prompt": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, a supply order contains 18 boxes with 24 markers in each box. How many markers are ordered?",
+          "prompt": "A student is planning a purchase with a fixed budget and can use a calculator but needs help deciding which items fit. What should instruction emphasize?",
           "choices": [
-            "432",
-            "42",
-            "192",
-            "442"
+            "Model a budget strategy with prices and a calculator or visual organizer, have the student compare totals and choices, and fade prompts across authentic purchases.",
+            "Remove the calculator and require mental computation before shopping.",
+            "Have an adult select every item and announce the total.",
+            "Practice entering unrelated numbers without making a decision."
           ],
           "answerIndex": 0,
-          "rationale": "Multiplication represents equal groups: 18 times 24 and 27 times 16 both equal 432. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "The instructional target is mathematical reasoning within a meaningful routine, not denial of an appropriate tool. Authentic comparison, accessible representation, and prompt fading build agency and generalizable budget use.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1646,15 +1646,15 @@
         },
         {
           "id": "id5322-ch-08-check-02",
-          "prompt": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, evaluate 3/4 + 5/8 and express the result in simplest form.",
+          "prompt": "A student reads digital times but misses activities when a schedule changes. Which mathematics instruction best addresses the need?",
           "choices": [
-            "1 1/8",
-            "1 3/8",
-            "8/12",
-            "3/8"
+            "Continue matching identical clock cards at a desk only.",
+            "Teach elapsed-time and schedule checking with the actual daily routine, varied times and locations, accessible cues, and practice responding to changes.",
+            "Have an adult direct every transition without showing the time relation.",
+            "Eliminate all schedule changes rather than teach flexibility."
           ],
           "answerIndex": 1,
-          "rationale": "Using eighths, 3/4 + 5/8 = 6/8 + 5/8 = 11/8, and 1 7/8 - 4/8 = 1 3/8. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Time use involves relating clock information to duration, sequence, and action. Varied practice in real routines plus accessible cues supports transfer and reduces dependence on adult transition commands.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1666,15 +1666,15 @@
         },
         {
           "id": "id5322-ch-08-check-03",
-          "prompt": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, a 12.5-meter roll is cut into pieces 0.5 meter long. How many complete pieces result?",
+          "prompt": "A learner names coins accurately but cannot determine change during a café purchase. Which instructional sequence is strongest?",
           "choices": [
-            "6",
-            "15",
-            "25",
-            "250"
+            "Repeat coin naming without connecting it to purchase totals.",
+            "Let the cashier decide whether the change is correct every time.",
+            "Use concrete money or realistic representations, model a change-making strategy, move toward symbolic calculation, and practice with varied authentic transactions.",
+            "Require abstract written algorithms before using any concrete representation."
           ],
           "answerIndex": 2,
-          "rationale": "Division finds how many equal-sized units fit in the total: 12.5 divided by 0.5 and 7.5 divided by 0.3 both equal 25. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Concrete-representational-abstract instruction links money concepts to the actual decision the learner must make. Systematic modeling and varied transactions build accuracy without treating isolated naming as functional mastery.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1686,15 +1686,15 @@
         },
         {
           "id": "id5322-ch-08-check-04",
-          "prompt": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, which value is greatest: -1.2, -1.02, -1.22, or -1.202?",
+          "prompt": "A student is learning to measure ingredients during a culinary routine. What is the safest and most instructionally useful approach?",
           "choices": [
-            "-1.2",
-            "-1.22",
-            "-1.202",
-            "-1.02"
+            "Use hand-over-hand assistance for the entire routine indefinitely.",
+            "Avoid all measurement and have an adult prepare every ingredient.",
+            "Teach measurement separately and allow unsupervised appliance use immediately.",
+            "Analyze the routine, explicitly teach measuring with adapted tools and visual cues, follow the individualized safety plan, and fade assistance using step-level data."
           ],
           "answerIndex": 3,
-          "rationale": "For negative numbers, the value closest to zero is greatest. Writing equal decimal places shows that -1.020 is greater than the other values. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Task analysis can integrate mathematical quantity with safe participation. Accessible tools, explicit teaching, the existing safety plan, and prompt-fading data support both competence and autonomy without exceeding educator scope.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -1706,15 +1706,15 @@
         },
         {
           "id": "id5322-ch-08-check-05",
-          "prompt": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, what is the prime factorization of 360?",
+          "prompt": "A student can count objects to ten but is participating in a grade-level unit comparing data displays. Which plan is most appropriate?",
           "choices": [
-            "2^3 x 3^2 x 5",
-            "2 x 3 x 60",
-            "2^2 x 3^2 x 10",
-            "3^3 x 5"
+            "Teach the needed counting and comparison explicitly while providing an accessible, substantive role in collecting, representing, and interpreting the shared data.",
+            "Replace the unit with unrelated preschool counting sheets.",
+            "Wait for complete mastery of counting before allowing any data work.",
+            "Assign the student to distribute pencils while peers analyze the data."
           ],
           "answerIndex": 0,
-          "rationale": "Since 360 = 8 x 9 x 5, its prime factorization is 2^3 x 3^2 x 5; the correct expression uses primes only. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Foundational and grade-level instruction can occur together. An accessible role in the shared mathematical process preserves ambitious content, while explicit number teaching addresses the prerequisite needed for increasing independence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -3014,8 +3014,8 @@
       "chapterId": "id5322-ch-06",
       "skillId": "functional-literacy-language",
       "domainId": "instruction",
-      "front": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?",
-      "back": "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
+      "front": "A student is studying ecosystems with classmates but cannot independently decode the grade-level article. Which support best preserves substantive participation?",
+      "back": "Provide an adapted text and read-aloud or symbol supports while retaining the core ecosystem concepts and an accessible way to demonstrate comprehension.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3030,8 +3030,8 @@
       "chapterId": "id5322-ch-06",
       "skillId": "functional-literacy-language",
       "domainId": "instruction",
-      "front": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why use decodable text during early phonics application?",
-      "back": "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
+      "front": "A learner recognizes grocery words on flash cards but not on aisle signs or a family shopping list. Which instruction is most likely to make the skill useful?",
+      "back": "Teach the words within age-respectful shopping routines using varied lists, fonts, locations, and opportunities to communicate a choice or ask for help.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3046,8 +3046,8 @@
       "chapterId": "id5322-ch-06",
       "skillId": "functional-literacy-language",
       "domainId": "instruction",
-      "front": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, how should irregular high-frequency words be taught?",
-      "back": "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
+      "front": "A student is beginning to connect sounds and letters and enjoys shared stories. Which literacy plan is most appropriate?",
+      "back": "Use explicit, systematic sound-symbol instruction with cumulative review and immediate application in meaningful, age-respectful text.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3062,8 +3062,8 @@
       "chapterId": "id5322-ch-06",
       "skillId": "functional-literacy-language",
       "domainId": "instruction",
-      "front": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?",
-      "back": "Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks.",
+      "front": "A student can select a new vocabulary symbol during drill but not during class discussion. How should vocabulary instruction change?",
+      "back": "Teach the concept with multiple examples and nonexamples, connect it to familiar experiences, and elicit receptive and expressive responses through accessible modes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3078,8 +3078,8 @@
       "chapterId": "id5322-ch-06",
       "skillId": "functional-literacy-language",
       "domainId": "instruction",
-      "front": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, why teach morphology?",
-      "back": "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
+      "front": "A student listens to a short passage and answers accurately by selecting pictures but gives no spoken response. How should the teacher interpret the result?",
+      "back": "Accept the established accessible response mode, provide planned wait time, and verify comprehension across several questions and contexts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3094,8 +3094,8 @@
       "chapterId": "id5322-ch-06",
       "skillId": "functional-literacy-language",
       "domainId": "instruction",
-      "front": "During explicit literacy instruction for a student with an intellectual disability, during explicit literacy intervention for a student with a learning disability, during systematic K–6 phonics instruction, what is orthographic mapping?",
-      "back": "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
+      "front": "During shared reading, a student uses AAC to contribute a repeated line but partners often read it for the student. Which revision best supports participation?",
+      "back": "Pause at meaningful points, cue naturally, allow adequate response time, and honor the AAC contribution as part of the shared reading.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3110,8 +3110,8 @@
       "chapterId": "id5322-ch-07",
       "skillId": "writing-communication-self-advocacy",
       "domainId": "instruction",
-      "front": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how are reading and writing instruction related?",
-      "back": "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
+      "front": "A student uses AAC to choose a topic but an adult composes the entire message. Which change would make writing more student directed?",
+      "back": "Offer an accessible set of generative words and phrases, let the student select and revise the message, and provide only the support needed for the targeted writing step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3126,8 +3126,8 @@
       "chapterId": "id5322-ch-07",
       "skillId": "writing-communication-self-advocacy",
       "domainId": "instruction",
-      "front": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what should writing assessment distinguish?",
-      "back": "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
+      "front": "During shared writing, a student activates a switch only to copy a teacher-selected sentence. Which redesign best supports expression?",
+      "back": "Elicit the student ideas through an accessible communication mode, visibly incorporate those ideas, and teach a specific composing or editing skill within the shared product.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3142,8 +3142,8 @@
       "chapterId": "id5322-ch-07",
       "skillId": "writing-communication-self-advocacy",
       "domainId": "instruction",
-      "front": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, what is disciplinary literacy?",
-      "back": "Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly.",
+      "front": "A transition class is teaching students to complete community forms. Which lesson is most age respectful and useful?",
+      "back": "Teach the relevant fields on realistic, privacy-protected forms, use the preferred access method, and fade prompts while checking independent accuracy.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3158,8 +3158,8 @@
       "chapterId": "id5322-ch-07",
       "skillId": "writing-communication-self-advocacy",
       "domainId": "instruction",
-      "front": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how should a teacher support digital-text reading?",
-      "back": "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention.",
+      "front": "A student uses a symbol for stop during personal-care instruction, but staff continue the routine because the schedule is tight. What should the educator do?",
+      "back": "Honor the communication promptly, determine the immediate concern, and teach safe ways to negotiate, request help, or resume when appropriate.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3174,8 +3174,8 @@
       "chapterId": "id5322-ch-07",
       "skillId": "writing-communication-self-advocacy",
       "domainId": "instruction",
-      "front": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, why use coherent text sets?",
-      "back": "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
+      "front": "A student has ideas for a report but cannot spell enough words to produce them conventionally. Which plan best balances access and instruction?",
+      "back": "Use an accessible composing method such as word prediction, symbols, dictation, or AAC while continuing explicit instruction in selected writing skills.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3190,8 +3190,8 @@
       "chapterId": "id5322-ch-07",
       "skillId": "writing-communication-self-advocacy",
       "domainId": "instruction",
-      "front": "During explicit writing or communication instruction for a student with an intellectual disability, during explicit written-expression instruction for a student with a learning disability, during elementary writing instruction connected to reading, how can sentence-level instruction support literacy?",
-      "back": "Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts.",
+      "front": "A communication partner asks a question and immediately selects an AAC symbol for the student. What change is most important?",
+      "back": "Ask or create a natural opportunity, wait for the established processing interval, attend to all communication forms, and respond contingently.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3206,8 +3206,8 @@
       "chapterId": "id5322-ch-08",
       "skillId": "functional-mathematics-strategies",
       "domainId": "instruction",
-      "front": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, a supply order contains 18 boxes with 24 markers in each box. How many markers are ordered?",
-      "back": "432",
+      "front": "A student is planning a purchase with a fixed budget and can use a calculator but needs help deciding which items fit. What should instruction emphasize?",
+      "back": "Model a budget strategy with prices and a calculator or visual organizer, have the student compare totals and choices, and fade prompts across authentic purchases.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3222,8 +3222,8 @@
       "chapterId": "id5322-ch-08",
       "skillId": "functional-mathematics-strategies",
       "domainId": "instruction",
-      "front": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, evaluate 3/4 + 5/8 and express the result in simplest form.",
-      "back": "1 3/8",
+      "front": "A student reads digital times but misses activities when a schedule changes. Which mathematics instruction best addresses the need?",
+      "back": "Teach elapsed-time and schedule checking with the actual daily routine, varied times and locations, accessible cues, and practice responding to changes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3238,8 +3238,8 @@
       "chapterId": "id5322-ch-08",
       "skillId": "functional-mathematics-strategies",
       "domainId": "instruction",
-      "front": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, a 12.5-meter roll is cut into pieces 0.5 meter long. How many complete pieces result?",
-      "back": "25",
+      "front": "A learner names coins accurately but cannot determine change during a café purchase. Which instructional sequence is strongest?",
+      "back": "Use concrete money or realistic representations, model a change-making strategy, move toward symbolic calculation, and practice with varied authentic transactions.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3254,8 +3254,8 @@
       "chapterId": "id5322-ch-08",
       "skillId": "functional-mathematics-strategies",
       "domainId": "instruction",
-      "front": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, which value is greatest: -1.2, -1.02, -1.22, or -1.202?",
-      "back": "-1.02",
+      "front": "A student is learning to measure ingredients during a culinary routine. What is the safest and most instructionally useful approach?",
+      "back": "Analyze the routine, explicitly teach measuring with adapted tools and visual cues, follow the individualized safety plan, and fade assistance using step-level data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3270,8 +3270,8 @@
       "chapterId": "id5322-ch-08",
       "skillId": "functional-mathematics-strategies",
       "domainId": "instruction",
-      "front": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, what is the prime factorization of 360?",
-      "back": "2^3 x 3^2 x 5",
+      "front": "A student can count objects to ten but is participating in a grade-level unit comparing data displays. Which plan is most appropriate?",
+      "back": "Teach the needed counting and comparison explicitly while providing an accessible, substantive role in collecting, representing, and interpreting the shared data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
@@ -3286,8 +3286,8 @@
       "chapterId": "id5322-ch-08",
       "skillId": "functional-mathematics-strategies",
       "domainId": "instruction",
-      "front": "While connecting mathematics to authentic routines with representations and task analysis, while diagnosing a student’s mathematics strategy and selecting a worked example, a temperature rises from -7 degrees to 5 degrees. What is the change?",
-      "back": "12",
+      "front": "A learner completes a sorting-and-counting routine only after an adult immediately points to each next step. Which change best reduces prompt dependence?",
+      "back": "Introduce a planned time delay and least-to-more prompting, reinforce independent strategy checks, and record accuracy together with the prompt level.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",

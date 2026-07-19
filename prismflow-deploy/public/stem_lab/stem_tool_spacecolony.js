@@ -228,13 +228,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       socialDelta: socialDelta,
       duration: Math.round(colonyArtifactClamp(rawRule.duration, 3, 6, 4))
     };
-    return {
+    var revision = input.revision && typeof input.revision === 'object' ? {
+      fromName: String(input.revision.fromName || '').slice(0, 80),
+      reliability: String(input.revision.reliability || 'untested').slice(0, 40),
+      changed: String(input.revision.changed || '').slice(0, 220),
+      before: String(input.revision.before || '').slice(0, 160),
+      after: String(input.revision.after || '').slice(0, 160)
+    } : null;
+    var normalized = {
       name: String(input.name || 'Provisional Civic Amendment').slice(0, 80),
       principle: String(input.principle || 'A temporary rule that the colony will evaluate against public outcomes.').slice(0, 320),
       rule: rule,
       explanation: String(input.explanation || 'This amendment makes one visible resource tradeoff and one measurable social consequence.').slice(0, 500),
       enactCostScience: 2 + rule.benefitAmount
     };
+    if (revision) normalized.revision = revision;
+    return normalized;
   }
   function parseColonyCharterAmendment(text) {
     var raw = String(text || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -365,7 +374,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       name: ('Revised ' + amendment.name).slice(0, 80),
       principle: (amendment.principle + ' Revision: ' + revisionNote).slice(0, 320),
       rule: rule,
-      explanation: ('Revision from ' + amendment.name + ': ' + revisionNote + ' Prior result was ' + summary.reliability + ' after ' + summary.appliedTurns + '/' + summary.turnsObserved + ' applied sols.').slice(0, 500)
+      explanation: ('Revision from ' + amendment.name + ': ' + revisionNote + ' Prior result was ' + summary.reliability + ' after ' + summary.appliedTurns + '/' + summary.turnsObserved + ' applied sols.').slice(0, 500),
+      revision: {
+        fromName: amendment.name,
+        reliability: summary.reliability,
+        changed: revisionNote,
+        before: '+' + amendment.rule.benefitAmount + ' ' + amendment.rule.benefitResource + ' / -' + amendment.rule.costAmount + ' ' + amendment.rule.costResource + ' / ' + amendment.rule.duration + ' sols',
+        after: '+' + rule.benefitAmount + ' ' + rule.benefitResource + ' / -' + rule.costAmount + ' ' + rule.costResource + ' / ' + rule.duration + ' sols'
+      }
     });
   }
   window.StemLab.spaceColonyCharterPure = {
@@ -3686,6 +3702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   ),
                   charterProposal ? (function () {
                     var proposalRule = charterProposal.rule || {};
+                    var proposalRevision = charterProposal.revision || null;
                     var stakeholderBriefs = buildColonyCharterStakeholders(charterProposal, { resources: resources, equity: equity, morale: colonyHappiness, terraform: terraform });
                     var charterResponseReady = (d.colonyCharterResponse || '').trim().length >= 25;
                     return React.createElement('div', { className: 'rounded-xl border-2 border-cyan-500 bg-cyan-950/45 p-3' },
@@ -3698,6 +3715,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         React.createElement('div', { className: proposalRule.socialDelta > 0 ? 'text-emerald-300' : 'text-amber-300' }, (proposalRule.socialDelta > 0 ? '+' : '') + proposalRule.socialDelta + ' ' + proposalRule.socialAxis + ' per activation · ' + proposalRule.duration + ' sols')
                       ),
                       React.createElement('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-200' }, charterProposal.explanation),
+                      proposalRevision && React.createElement('div', { className: 'mt-3 rounded-lg border border-emerald-800 bg-emerald-950/25 p-2 text-[11px]' },
+                        React.createElement('div', { className: 'font-black uppercase tracking-wider text-emerald-300' }, 'Evidence-linked revision'),
+                        React.createElement('div', { className: 'mt-1 text-emerald-100' }, 'From ' + (proposalRevision.fromName || 'prior trial') + ' · read: ' + (proposalRevision.reliability || 'untested')),
+                        React.createElement('div', { className: 'mt-1 text-slate-300' }, proposalRevision.changed || 'The next test was adjusted from prior evidence.'),
+                        React.createElement('div', { className: 'mt-1 grid gap-1 md:grid-cols-2' },
+                          React.createElement('div', { className: 'rounded border border-slate-700 bg-slate-950/60 p-1.5' }, 'Before: ' + (proposalRevision.before || 'unrecorded')),
+                          React.createElement('div', { className: 'rounded border border-slate-700 bg-slate-950/60 p-1.5' }, 'After: ' + (proposalRevision.after || 'bounded retest'))
+                        )
+                      ),
                       React.createElement('div', { className: 'mt-3 rounded-lg border border-cyan-800 bg-slate-950/45 p-2' },
                         React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-300' }, 'Council deliberation'),
                         React.createElement('div', { className: 'mt-2 grid gap-1 md:grid-cols-3' }, stakeholderBriefs.map(function (voice) {

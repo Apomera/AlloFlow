@@ -9,6 +9,7 @@ if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
     { id: 'charm', name: 'Luck Charm', cost: 100, description: '+5 to next roll.', effectType: 'modifier', effectValue: 5, icon: '🍀' },
     { id: 'journal', name: "Scholar's Journal", cost: 100, description: 'Double XP next turn.', effectType: 'xp_boost', effectValue: 2, icon: '📔' },
     { id: 'detector', name: 'Metal Detector', cost: 50, description: 'More gold for 3 scenes.', effectType: 'gold_boost', effectValue: 3, icon: '💰' },
+    { id: 'guiding_hand', name: 'Guiding Hand', cost: 125, description: 'A timely intervention resolves the current obstacle and teaches useful knowledge for later scenes. No XP or Gold is awarded.', effectType: 'story_assist', effectValue: 1, icon: '\u{1F91D}' },
   ];
 }
 
@@ -792,8 +793,8 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                         </div>
                         <div className="text-right">
                             <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
-                            <span className="text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
-                                {t(`adventure.effects.${item.effectType}`) || item.effectType}
+                            <span className="inline-block max-w-36 truncate whitespace-nowrap text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700" title={t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}>
+                                {t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>
                         </div>
                     </div>

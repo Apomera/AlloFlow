@@ -7,6 +7,15 @@ const SOLAR_SYSTEM_PATHS = [
 ];
 
 describe('solar system main 3D canvas loop', () => {
+  it('awards gas-sample XP through the module-scoped helper', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain("if (typeof awardStemXP === 'function') awardStemXP('solarSystem', sd.xp);");
+      expect(source).not.toContain("awardXP(sd.xp, 'Gas sample: ' + sd.name);");
+    });
+  });
+
   it('cleans up the main 3D loop, visibility listener, resize observer, and labels', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');

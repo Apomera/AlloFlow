@@ -1,0 +1,645 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-07-18",
+  "reviewer": "OpenAI Codex independent EPPP-guided review",
+  "title": "EPPP-guided independent QA review: non-EPPP group B",
+  "verdict": "pass-with-major-editorial-priorities-and-declared-independent-content-gaps - the corrected final snapshot has zero open hard factual, answer-key, source, scope, linkage, blueprint, provenance, accessibility-boundary, or deployment-parity defects; six packs still need 2,467 new independent question kernels in total, and feedback specificity, clue resistance, and learning-library depth remain material editorial work.",
+  "packs": [
+    {
+      "stem": "parapro",
+      "packId": "parapro-1755-practice-1",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 300,
+      "independentItems": 500,
+      "distinctIndependentContentKernels": 500,
+      "guidedReviewItems": 0,
+      "newIndependentItemsNeededFor500Distinct": 0,
+      "packSha256": "fb919bd8f9ccf584d93d1cbbea6a449dc49c096f77e3d7016cf4cb5e4084fc98",
+      "manualPriorityItemIds": [
+        "parapro-mathematics-application-021",
+        "parapro-writing-application-018",
+        "parapro-b3-reading-016",
+        "parapro-b3-reading-033",
+        "parapro-b3-mathematics-031",
+        "parapro-b3-writing-017",
+        "parapro-b3-writing-019",
+        "parapro-b3-writing-033",
+        "parapro-b4-reading-010",
+        "parapro-b4-reading-030",
+        "parapro-b4-reading-031",
+        "parapro-b4-reading-032",
+        "parapro-b5-reading-010",
+        "parapro-b5-reading-023",
+        "parapro-b5-reading-030",
+        "parapro-b5-mathematics-031",
+        "parapro-b5-writing-026",
+        "parapro-b5-writing-029",
+        "parapro-b5-writing-030",
+        "parapro-b5-writing-031"
+      ]
+    },
+    {
+      "stem": "plt_k6_5622",
+      "packId": "praxis-plt-k6-5622",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "2eb1f5504cbb0cd56b9ddd97b9fb907ab87dcd195434e6180a867c1e3f282c65",
+      "manualPriorityItemIds": [
+        "plt5622-b1-014",
+        "plt5622-b1-061",
+        "plt5622-b1-072",
+        "plt5622-b2-014",
+        "plt5622-b2-061",
+        "plt5622-b2-072"
+      ]
+    },
+    {
+      "stem": "praxis_core_5752",
+      "packId": "praxis-core-5752",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 107,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 393,
+      "packSha256": "b87c11164f16885ca3fb0573edffa75be2e82416a007190c78762a77b960ca57",
+      "manualPriorityItemIds": [
+        "core5752-b1-003",
+        "core5752-b1-004",
+        "core5752-b1-029",
+        "core5752-b1-035",
+        "core5752-b2-029",
+        "core5752-b2-035",
+        "core5752-b1-089",
+        "core5752-b2-089"
+      ]
+    },
+    {
+      "stem": "reading_specialist_5302",
+      "packId": "praxis-reading-specialist-5302",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "6a64cfc120ce2e2f4c32935f0ee09a331bca208ca54e8e1627ac390ab5ad5fec",
+      "manualPriorityItemIds": [
+        "read5302-b1-012",
+        "read5302-b1-021",
+        "read5302-b1-047",
+        "read5302-b2-002",
+        "read5302-b2-027",
+        "read5302-b2-031",
+        "read5302-b2-069"
+      ]
+    },
+    {
+      "stem": "school_counselor_5422",
+      "packId": "praxis-school-counselor-5422",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "c147a87ce9ebb3044f50c35a2346f5723ce1e002005c31ead162ef197171fb79",
+      "manualPriorityItemIds": [
+        "sc5422-b1-013",
+        "sc5422-b1-017",
+        "sc5422-b1-027",
+        "sc5422-b1-071",
+        "sc5422-b2-017"
+      ]
+    },
+    {
+      "stem": "school_librarian_5312",
+      "packId": "praxis-school-librarian-5312",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 26,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 474,
+      "packSha256": "28f33122c166b9690fabd15ee83bc6fc98093e985a35708e6510ecb255cabb54",
+      "manualPriorityItemIds": [
+        "sl5312-b1-003",
+        "sl5312-b1-004",
+        "sl5312-b1-009",
+        "sl5312-b1-011",
+        "sl5312-b1-013",
+        "sl5312-b1-014"
+      ]
+    },
+    {
+      "stem": "school_psychologist_5403",
+      "packId": "praxis-school-psychologist-5403",
+      "learningActivities": 500,
+      "sourceItems": 200,
+      "assistantAuthoredIndependentItems": 0,
+      "independentItems": 200,
+      "distinctIndependentContentKernels": 100,
+      "guidedReviewItems": 300,
+      "newIndependentItemsNeededFor500Distinct": 400,
+      "packSha256": "3905d14706adbf0cf543913f5220f499b8fc2c64df1ed2e948b37ca464b79305",
+      "manualPriorityItemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-003",
+        "sp5403-b1-010",
+        "sp5403-b1-018",
+        "sp5403-b1-088",
+        "sp5403-b2-091"
+      ]
+    }
+  ],
+  "independentItemsReviewed": 1700,
+  "learningActivitiesStructurallyReviewed": 3500,
+  "reviewStandard": {
+    "guideArtifacts": [
+      "test_prep/eppp_native_qa.json",
+      "test_prep/eppp_distractor_quality_diagnostics.json",
+      "test_prep/eppp_option_feedback_diagnostics.json",
+      "test_prep/eppp_native_quality_audit_wave_01.json",
+      "test_prep/eppp_native_quality_audit_wave_02.json",
+      "test_prep/eppp_native_quality_audit_wave_03.json",
+      "test_prep/eppp_learning_library.json",
+      "test_prep/eppp_learning_library_qa.json"
+    ],
+    "epppComparator": {
+      "nativeItems": 1500,
+      "nativeQaStatus": "pass",
+      "nativeChecks": [
+        "authoritative-source",
+        "one-best-answer",
+        "distractor-quality",
+        "natural-language-quality",
+        "text-encoding",
+        "clue-resistance",
+        "rationale-quality",
+        "template-completeness",
+        "option-specific-feedback",
+        "domain-and-accessibility-review",
+        "provenance",
+        "qa-declaration"
+      ],
+      "learningLibrary": {
+        "chapters": 49,
+        "sections": 278,
+        "knowledgeChecks": 109,
+        "flashcards": 415,
+        "memoryAids": 255,
+        "diagrams": 25,
+        "diagramPlacements": 58,
+        "qaStatus": "review-in-progress"
+      },
+      "interpretation": "EPPP supplied the editorial and learning-feature comparison model, not an official validation standard. Its staged review evidence and visual depth exceed these seven libraries, while its learning-library QA itself remains review-in-progress."
+    },
+    "method": "Automated hard-gate inspection covered every one of the 3,500 pack activities, all 1,700 currently independent items, every learning-library activity type, every learner-visible source reference, all native and library QA summaries, and exact source/deploy parity. Manual review adjudicated 58 highest-risk independent items, the corrected algebra knowledge check, simulation boundaries, representative workshops and learning activities, and the most repetitive library content.",
+    "releaseRule": "The verdict may begin with pass only when the final snapshot contains no open hard factual, key, one-best-answer, source, scope, linkage, blueprint, provenance, encoding, boundary, or parity defect. Declared independent-question gaps and screening heuristics remain transparent product/editorial priorities rather than hidden hard failures."
+  },
+  "automatedResults": {
+    "snapshot": {
+      "algorithm": "sha256",
+      "sha256": "8e266e5d4bcea3ca1bcb12f4954167afb673a91ab9d8e5c2f1683176f41b09a1",
+      "meaning": "Hash of the seven reviewed source-pack hashes in pack-stem order."
+    },
+    "regressionTests": {
+      "status": "pass",
+      "testFiles": 13,
+      "tests": 65,
+      "focusedCorrectionTests": {
+        "testFiles": 2,
+        "tests": 12,
+        "status": "pass"
+      },
+      "coverage": "Pack registration, five-bank shape, diagnostic calculations, simulation boundaries, learning-library inventories, learning links, boundary language, corrected equation-specific rationales, generated QA, and deployment mirrors."
+    },
+    "hardGate": {
+      "status": "pass",
+      "openHardFindings": 0,
+      "activitiesChecked": 3500,
+      "independentItemsChecked": 1700,
+      "checks": {
+        "readyFiveBankInventory": "pass",
+        "oneBestAnswerStructure": "pass",
+        "fourDistinctChoices": "pass",
+        "rationaleAndFourOptionFeedbackPresence": "pass",
+        "authoritativeHttpsSourcesAndCatalogCoverage": "pass",
+        "learningSkillChapterDomainLinks": "pass",
+        "reviewTierAndAuthorshipProvenance": "pass",
+        "textEncodingAndAnswerLetterLeakage": "pass",
+        "simulationAndProfessionalScopeBoundaries": "pass",
+        "nativeAndLearningQaStatus": "pass",
+        "sourceDeployParity": "pass",
+        "independentContentAccounting": "pass"
+      },
+      "answerBalance": {
+        "everyPack": [
+          125,
+          125,
+          125,
+          125
+        ],
+        "everyOneHundredItemBank": [
+          25,
+          25,
+          25,
+          25
+        ]
+      },
+      "uniqueIds": 3500,
+      "uniqueNormalizedPrompts": 3500,
+      "invalidKeys": 0,
+      "duplicateChoicesWithinItem": 0,
+      "missingOrShortHardThresholdRationales": 0,
+      "missingOptionFeedbackArrays": 0,
+      "invalidLearningLinks": 0,
+      "invalidReviewTierProvenance": 0,
+      "invalidOrUncatalogedReferences": 0,
+      "encodingDefects": 0
+    },
+    "independentContentAccounting": {
+      "status": "target-met-for-parapro-only",
+      "independentItems": 1700,
+      "distinctIndependentContentKernels": 1033,
+      "guidedReviewActivities": 1800,
+      "independentQuestionTarget": 3500,
+      "newIndependentItemsNeeded": 2467,
+      "perPackGaps": {
+        "parapro": 0,
+        "plt_k6_5622": 400,
+        "praxis_core_5752": 393,
+        "reading_specialist_5302": 400,
+        "school_counselor_5422": 400,
+        "school_librarian_5312": 474,
+        "school_psychologist_5403": 400
+      },
+      "interpretation": "All packs honestly declare their independent/guided composition. ParaPro now meets the 500-distinct target. The other six contain five 100-activity banks but do not yet contain 500 independent question kernels each."
+    },
+    "warningDiagnostics": {
+      "status": "open-editorial-priority",
+      "independentItemsScreened": 1700,
+      "itemsWithOneOrMoreWarnings": 1461,
+      "counts": {
+        "shortPrompt": 24,
+        "severeAnswerLengthClue": 987,
+        "keyStemLexicalLeakage": 621,
+        "asymmetricExtremeDistractors": 62,
+        "incorrectOptionFeedbackDetail": 394,
+        "incorrectOptionChoiceRestatement": 0,
+        "incorrectOptionFullKeyEcho": 6
+      },
+      "perPackWarningItems": {
+        "parapro": 433,
+        "plt_k6_5622": 198,
+        "praxis_core_5752": 77,
+        "reading_specialist_5302": 191,
+        "school_counselor_5422": 168,
+        "school_librarian_5312": 194,
+        "school_psychologist_5403": 200
+      },
+      "severeAnswerLengthClueByPack": {
+        "parapro": 21,
+        "plt_k6_5622": 198,
+        "praxis_core_5752": 50,
+        "reading_specialist_5302": 184,
+        "school_counselor_5422": 142,
+        "school_librarian_5312": 192,
+        "school_psychologist_5403": 200
+      },
+      "interpretation": "These are screening heuristics, not automatic wrong-key findings. Manual priority review found defensible keys, but the near-universal length signal in several packs materially reduces exam-likeness and should be edited."
+    },
+    "optionFeedbackAudit": {
+      "status": "open-major-editorial-priority",
+      "incorrectOptionExplanations": 5100,
+      "startsWithGenericNotTheBestAnswerWrapper": 3600,
+      "containsCompleteOverallRationale": 3567,
+      "underSixteenWords": 831,
+      "underOneHundredCharacters": 862,
+      "interpretation": "Every required feedback field is present and no feedback was found to mark a wrong option as correct. In the six non-ParaPro packs, all 3,600 wrong-option explanations begin with the same generic wrapper, and 3,567 reproduce the complete overall rationale; this falls below the EPPP option-specific-feedback model. ParaPro feedback is choice-specific but often concise, producing 394 item-level detail warnings."
+    },
+    "learningLibraryAudit": {
+      "status": "pass-hard-structure-with-depth-warnings",
+      "totals": {
+        "chapters": 84,
+        "sections": 336,
+        "knowledgeChecks": 420,
+        "flashcards": 525,
+        "memoryAids": 140,
+        "constructedResponseWorkshops": 22,
+        "diagrams": 0,
+        "hardFindings": 0,
+        "knowledgeChecksWithSevereAnswerLengthClue": 288
+      },
+      "workshops": {
+        "plt_k6_5622": 8,
+        "praxis_core_5752": 8,
+        "reading_specialist_5302": 6,
+        "schemaResult": "pass - prompts, stimuli, task parts, planning frames, criteria, pitfalls, sample outlines, sources, and non-scoring boundaries are present"
+      },
+      "schoolLibrarianRepetition": {
+        "sections": 48,
+        "uniqueNormalizedSectionBodies": 26,
+        "flashcards": 75,
+        "uniqueNormalizedFlashcardFronts": 26,
+        "interpretation": "Structurally valid but materially repetitive and well below EPPP-like instructional depth."
+      },
+      "epppDepthGap": "All seven libraries have zero diagrams, compared with 25 EPPP diagrams and 58 placements. A visual should be added only when it materially teaches the content and includes accessible text alternatives."
+    },
+    "referenceCatalogAudit": {
+      "status": "pass-hard-metadata-with-editorial-warnings",
+      "uniqueLearnerVisibleReferences": 54,
+      "catalogedWithTitleOrganizationSummaryAndCredibility": 54,
+      "obviouslyGenericMetadataEntries": 8,
+      "genericExamples": [
+        "https://intensiveintervention.org/tools-charts/overview",
+        "https://www.copyright.gov/circs/circ21.pdf",
+        "https://www.ed.gov/laws-and-policy/individuals-disabilities/section-504",
+        "https://www.nasponline.org/x55315.xml",
+        "https://www.thecorestandards.org/Math/"
+      ],
+      "interpretation": "The catalog no longer exposes a bare DOI or URL, and every entry passes minimum metadata gates. Eight entries still use an obviously generic Resource/diagnostics-style name or fallback summary and should be made source-specific."
+    },
+    "officialBlueprintVerification": [
+      {
+        "stem": "parapro",
+        "officialSource": "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "officialSelectedResponseCount": 90,
+        "officialTotalTimeMinutes": 150,
+        "packSimulation": "90 items / 150 minutes",
+        "alignment": "pass"
+      },
+      {
+        "stem": "plt_k6_5622",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5622.pdf",
+        "officialSelectedResponseCount": 70,
+        "officialConstructedResponseCount": 4,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "70 selected-response items / approximately 70-minute selected-response pacing segment",
+        "alignment": "pass - the separate 50-minute written-response component and four constructed responses are explicitly disclosed; eight workshops provide unscored practice"
+      },
+      {
+        "stem": "praxis_core_5752",
+        "officialSources": [
+          "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+          "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
+          "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
+          "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf"
+        ],
+        "officialSelectedResponseCount": 152,
+        "officialConstructedResponseCount": 2,
+        "officialTotalTimeMinutes": 275,
+        "packSimulation": "152 selected-response items / 215 selected-response minutes",
+        "alignment": "pass - the two separately timed 30-minute essays and 275-minute total are explicitly disclosed; eight workshops provide unscored practice"
+      },
+      {
+        "stem": "reading_specialist_5302",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
+        "officialSelectedResponseCount": 95,
+        "officialConstructedResponseCount": 2,
+        "officialTotalTimeMinutes": 150,
+        "officialFormatNote": "The official assessment may include audio or video material.",
+        "packSimulation": "95 selected-response items / 150-minute practice segment",
+        "alignment": "pass-boundary - shared official timing and separate written-response practice are disclosed; multimedia stimulus practice remains a feature gap"
+      },
+      {
+        "stem": "school_counselor_5422",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 items / 120 minutes",
+        "alignment": "pass"
+      },
+      {
+        "stem": "school_librarian_5312",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5312.pdf",
+        "officialSelectedResponseCount": 120,
+        "officialTotalTimeMinutes": 120,
+        "packSimulation": "120 items / 120 minutes",
+        "alignment": "pass - the pack notes that the official assessment may use multiple selected-response interaction types"
+      },
+      {
+        "stem": "school_psychologist_5403",
+        "officialSource": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
+        "officialSelectedResponseCount": 125,
+        "officialTotalTimeMinutes": 125,
+        "packSimulation": "125 items / 125 minutes",
+        "alignment": "pass"
+      }
+    ],
+    "existingQaAssessment": {
+      "nativeQaReportsPassing": 7,
+      "learningLibraryQaReportsPassing": 7,
+      "disposition": "accepted as supporting evidence only",
+      "reason": "Existing generated QA is strong on counts, schema, source hosts, minimum length, provenance, boundaries, and linkage. It previously missed the School Librarian semantic mapper defect and the Praxis Core cross-equation rationale defect, so this review added durable correction guards and still records feedback specificity, clue resistance, and duplication as open editorial work."
+    },
+    "sourceDeployParity": {
+      "status": "pass",
+      "sevenArtifactKindsPerPack": [
+        "_pack.json",
+        "_items.json",
+        "_native_qa.json",
+        "_native_qa.md",
+        "_learning_library.json",
+        "_learning_library_qa.json",
+        "_learning_library_qa.md"
+      ],
+      "referenceCatalog": "byte-identical",
+      "hubModule": "byte-identical",
+      "comparison": "Exact byte equality between test_prep/source hub artifacts and prismflow-deploy/public mirrors."
+    }
+  },
+  "manualPriorityFindings": {
+    "independentItemsManuallyAdjudicated": 58,
+    "wrongKeysFound": 0,
+    "defensibleKeys": 58,
+    "findings": [
+      {
+        "id": "GB-CLOSED-001",
+        "severity": "hard-linkage",
+        "status": "corrected-and-reverified",
+        "title": "School Librarian item-to-learning links",
+        "evidence": "The pre-correction snapshot exposed 480 incompatible skill/chapter links, beginning with sl5312-b1-002. The durable mapper was rebuilt; the final all-500-item scan reports zero incompatible links, all QA passes, and source/deploy mirrors are exact.",
+        "openImpact": "none"
+      },
+      {
+        "id": "GB-CLOSED-002",
+        "severity": "hard-factual-feedback",
+        "status": "corrected-and-regression-guarded",
+        "title": "Praxis Core algebra rationale imported an unrelated parallel equation",
+        "evidence": "core5752-ch-11-check-01 and the paired source items previously mixed 3x + 7 = 25 with 5x - 12 = 18 in one explanation. The durable content now gives equation-specific substitution-verified rationales, native/library QA assertions reject cross-equation text, both focused test files pass, and the corrected text is present in both hub releases.",
+        "openImpact": "none"
+      },
+      {
+        "id": "GB-OPEN-001",
+        "severity": "major-editorial",
+        "status": "open",
+        "title": "Wrong-option feedback is structurally complete but generic in six packs",
+        "evidence": "All 3,600 wrong-option explanations outside ParaPro start with Not the best answer; 3,567 contain the full overall rationale. Manual samples confirmed that the wrapper often does not diagnose the selected distractor's misconception.",
+        "impact": "The UI provides feedback after every answer, but much of it falls below EPPP-style option-specific remediation."
+      },
+      {
+        "id": "GB-OPEN-002",
+        "severity": "major-editorial",
+        "status": "open",
+        "title": "Answer-length and specificity clues are pervasive",
+        "evidence": "987 of 1,700 independent items trigger the severe answer-length heuristic; every School Psychologist item, 198 PLT items, 192 School Librarian items, and 184 Reading Specialist items trigger it. Manual priority review found defensible keys but repeatedly confirmed a longer, more nuanced key against short or extreme distractors.",
+        "impact": "Test-wise learners can infer answers without demonstrating the intended content knowledge."
+      },
+      {
+        "id": "GB-OPEN-003",
+        "severity": "major-product-gap",
+        "status": "open-and-transparently-declared",
+        "title": "Only ParaPro currently meets the 500-distinct-question target",
+        "evidence": "The seven packs contain 3,500 activities but 1,033 distinct independent content kernels. The other 2,467 needed kernels are honestly recorded as open; guided transformations are not mislabeled as independent questions.",
+        "impact": "The top-level five-bank experience works, but six packs do not yet meet the user's distinct-question product goal."
+      },
+      {
+        "id": "GB-OPEN-004",
+        "severity": "major-editorial",
+        "status": "open",
+        "title": "School Librarian content is unusually repetitive",
+        "evidence": "The 200 independent items reduce to 26 content kernels; its 48 learning sections have 26 unique normalized bodies, and its 75 flashcards have 26 unique normalized fronts.",
+        "impact": "Breadth counts overstate instructional variety and remediation depth."
+      },
+      {
+        "id": "GB-OPEN-005",
+        "severity": "moderate-editorial",
+        "status": "open",
+        "title": "Learning-library key-length clues and EPPP depth gaps remain",
+        "evidence": "288 of 420 knowledge checks trigger the severe key-length heuristic, all seven libraries contain zero diagrams, and the EPPP comparator contains 25 diagrams with 58 placements.",
+        "impact": "The libraries meet structural inventory requirements but do not yet match EPPP's visual and editorial depth."
+      },
+      {
+        "id": "GB-OPEN-006",
+        "severity": "moderate-editorial",
+        "status": "open",
+        "title": "Eight source-catalog entries remain obviously generic",
+        "evidence": "Every one of 54 references has a title, organization, summary, and credibility note, but eight entries still use Resource/diagnostics-style naming or fallback summaries rather than a source-specific learner-facing description.",
+        "impact": "Learners can identify the publisher, but the source overlay is less informative than intended."
+      }
+    ]
+  },
+  "correctionsRecommended": [
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "productTargetBlocking": true,
+      "action": "Author 2,467 genuinely new independent question kernels across PLT K-6 (400), Praxis Core (393), Reading Specialist (400), School Counselor (400), School Librarian (474), and School Psychologist (400). Preserve blueprint balance and never relabel guided transformations as independent questions."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Rewrite the 3,600 generic wrong-option explanations in the six non-ParaPro packs as concise, selected-distractor-specific diagnoses. Review ParaPro's 394 flagged items for whether its concise feedback still names the actual misconception."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Human-edit the 987 independent-item and 288 knowledge-check severe answer-length flags. Make distractors parallel in grammar, specificity, plausibility, and length; remove qualifiers that occur only in the key; rerun the clue diagnostics."
+    },
+    {
+      "priority": "P1",
+      "releaseBlocking": false,
+      "action": "Reauthor the School Librarian source bank and learning library to replace repeated kernels, section bodies, and flashcard fronts with domain-specific cases and misconceptions."
+    },
+    {
+      "priority": "P2",
+      "releaseBlocking": false,
+      "action": "Replace the eight obvious catalog fallback entries with the exact source title and a brief source-specific summary; remove the misleading word diagnostics from official Study Companion titles."
+    },
+    {
+      "priority": "P2",
+      "releaseBlocking": false,
+      "action": "Add selective accessible visuals where they materially teach a concept, and add Reading Specialist multimedia-stimulus practice or a clearer feature-gap note because the official assessment may include audio/video material."
+    },
+    {
+      "priority": "P2",
+      "releaseBlocking": false,
+      "action": "Extend generated QA to reject generic full-rationale feedback wrappers, cross-equation or cross-prompt rationale text, low semantic variety, foreign exam codes, and pervasive clue patterns. Retain the newly added equation-specific Praxis Core guards."
+    },
+    {
+      "priority": "P3",
+      "releaseBlocking": false,
+      "action": "Before making validity, readiness, score, or pass claims, obtain credential-specific subject-matter review, accessibility user testing, field testing, psychometric calibration, and current legal/ethical review where the domain is high stakes."
+    }
+  ],
+  "limitations": [
+    "Automation inspected every one of the 3,500 pack activities and all learning-library structures, but semantic key/content adjudication was risk-based and manually covered 58 independent items rather than every one of the 1,700 independent keys.",
+    "The 1,800 guided activities were structurally checked for derivation, linkage, provenance, feedback presence, and boundaries; they were not each manually adjudicated as independent exam questions because the product correctly labels them guided practice only.",
+    "Key-length, lexical-overlap, prompt-length, and distractor-extremity counts are screening heuristics. They prioritize editing and do not by themselves prove that a key is wrong.",
+    "Official ETS materials were used to verify published counts, formats, and timing on 2026-07-18. Test specifications and jurisdictional requirements can change and should be rechecked before release.",
+    "Reference-catalog checks establish coverage and learner-facing metadata; this review did not independently validate every sentence in every external source or perform a live availability check for all 54 URLs.",
+    "No psychometric calibration, field testing, differential-item-functioning analysis, independent credential-owner approval, or licensed-professional endorsement was performed.",
+    "Some ParaPro Bank 5 mathematics content was authored earlier in this agent lineage. Separate passing cross-review evidence was required by the manifest, but this report is still not an external subject-matter-expert review.",
+    "The EPPP learning library was used as a feature and review-process comparator; its own QA status is review-in-progress, so comparison with EPPP is not equivalent to official approval.",
+    "Source/deploy parity and the snapshot hash describe the workspace immediately after the correction rebuild. Any later content generation requires a fresh parity and QA run."
+  ],
+  "artifactBindings": [
+    {
+      "stem": "parapro",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
+      "learningLibrarySha256": "bb04bcb4372b8b2539dcf215d9c91fe54e5e33b19ea5dc1f36267fc4e557dd24"
+    },
+    {
+      "stem": "plt_k6_5622",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "b7bbe263218d2d0c537c57033807537948067803c0f712a50b466743a754fd2a",
+      "learningLibrarySha256": "6ea195064cf9fabeb5939f215bab91cc2e1d6c8c8cf74934d43637b0da4b3cdb"
+    },
+    {
+      "stem": "praxis_core_5752",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "3fbc133d48a1113a622a21cbee1285098a285b39c73c674fbce79cb13ba4f960",
+      "learningLibrarySha256": "16c0b4fddef5420633f83e1841b8f1fa9090fc84f02d36683a12a36e1e042768"
+    },
+    {
+      "stem": "reading_specialist_5302",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "86f2f7405effae7db189ad13fc564db7c134b13160c1e38c5988c7a0479f73f4",
+      "learningLibrarySha256": "f947a81aad49e98c78288b6bd6b2e002f86f5e0b8e5f9a95679e04760679b2fe"
+    },
+    {
+      "stem": "school_counselor_5422",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
+      "learningLibrarySha256": "620236efa275a94efe12c626e13042430a5eacae9bea3d3690a552251bfb8b03"
+    },
+    {
+      "stem": "school_librarian_5312",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "dee9ed75623dbffb3279d5fe08d5f5d1d27f39353b867c50f872921a4ba05c98",
+      "learningLibrarySha256": "73bc071fdd3ee86b5119783c086bf0fec3b4c9effef919b66f22e79fa0f0c902"
+    },
+    {
+      "stem": "school_psychologist_5403",
+      "algorithm": "sha256",
+      "reviewedAt": "2026-07-18",
+      "sourceItemCount": 200,
+      "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
+      "learningLibrarySha256": "e9f4412b7b599c60644c4d6224f43f2f97dc9939baf4b31240f77e975c9dc11c"
+    }
+  ]
+}

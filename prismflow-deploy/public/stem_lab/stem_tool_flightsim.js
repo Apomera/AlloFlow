@@ -198,6 +198,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   ];
 
   // ── AIRCRAFT DATABASE ──
+  // The first sprint stop is the departure point, so only the remaining
+  // stops generate questions. Centralize this denominator for every UI.
+  var getSprintScoreSummary = function(places, score) {
+    var total = Math.max(0, Array.isArray(places) ? places.length - 1 : 0);
+    var earned = Math.max(0, Math.min(total, Number.isFinite(score) ? score : 0));
+    return { score: earned, total: total, pct: total > 0 ? Math.round(earned / total * 100) : 0 };
+  };
+
   var AIRCRAFT = [
     { id: 'cessna172', name: 'Cessna 172 Skyhawk', icon: '🛩️', desc: 'The most popular training aircraft in the world. Forgiving, stable, perfect for learning.', category: 'Trainer',
       wingArea: 174, weight: 2550, maxThrust: 400, cl0: 0.3, clPerAoa: 0.1, cd0: 0.028, cdK: 0.042,
@@ -9048,6 +9056,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }, []);
 
       var [threeLoaded, setThreeLoaded] = useState(false);
+      var [pausedUi, setPausedUi] = useState(false);
+      var [fullscreenActive, setFullscreenActive] = useState(false);
       var webglCanvasRef = useRef(null);
       var threeSceneRef = useRef(null);
       var threeCameraRef = useRef(null);
@@ -10284,6 +10294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── WCAG: Accessible state narration ──
       var skyA11yRef = useRef(null);
+      var skyAnnounceTimerRef = useRef(null);
       useEffect(function() {
         if (skyA11yRef.current) return;
         var region = document.createElement('div');
@@ -10298,11 +10309,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Null the ref on cleanup — otherwise a re-run (StrictMode double
         // invoke) early-returns on the stale ref and every screen-reader
         // announcement writes into a detached node.
-        return function() { if (region.parentNode) region.parentNode.removeChild(region); skyA11yRef.current = null; };
+        return function() {
+          if (skyAnnounceTimerRef.current) clearTimeout(skyAnnounceTimerRef.current);
+          skyAnnounceTimerRef.current = null;
+          if (region.parentNode) region.parentNode.removeChild(region);
+          skyA11yRef.current = null;
+        };
       }, []);
       var skyAnnounce = function(msg) {
-        if (skyA11yRef.current) { skyA11yRef.current.textContent = ''; setTimeout(function() { skyA11yRef.current.textContent = msg; }, 50); }
+        if (!skyA11yRef.current) return;
+        skyA11yRef.current.textContent = '';
+        if (skyAnnounceTimerRef.current) clearTimeout(skyAnnounceTimerRef.current);
+        skyAnnounceTimerRef.current = setTimeout(function() {
+          if (skyA11yRef.current) skyA11yRef.current.textContent = msg;
+          skyAnnounceTimerRef.current = null;
+        }, 50);
       };
+      var setFlightPaused = function(nextPaused) {
+        pausedRef.current = !!nextPaused;
+        setPausedUi(!!nextPaused);
+        skyAnnounce(nextPaused ? 'Flight paused. Press Space or the Resume button to continue.' : 'Flight resumed.');
+      };
+
+      useEffect(function() {
+        var syncFullscreen = function() { setFullscreenActive(!!document.fullscreenElement); };
+        document.addEventListener('fullscreenchange', syncFullscreen);
+        syncFullscreen();
+        return function() { document.removeEventListener('fullscreenchange', syncFullscreen); };
+      }, []);
 
       // ── WCAG: Reduced motion detection ──
       var skyReducedMotion = useRef(false);
@@ -10368,7 +10402,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       useEffect(function() {
         var onEscKey = function(e) {
           if ((e.key === 'Escape' || e.keyCode === 27) && document.fullscreenElement) {
-            document.exitFullscreen().catch(function() {});
+            try {
+              var exitResult = document.exitFullscreen();
+              if (exitResult && typeof exitResult.catch === 'function') exitResult.catch(function() {});
+            } catch (err) {}
           }
         };
         window.addEventListener('keydown', onEscKey);
@@ -16722,10 +16759,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var extra = {
           butterLanding: landingRef.current.scored && landingRef.current.touchdownFPM < 100,
           isNight: getDayNight(state.lon, time).isNight,
-          discovered: Object.keys(geoDiscoveredRef.current).length,
+          discovered: Object.keys(Object.assign({}, dLive.geoDiscovered || {}, geoDiscoveredRef.current)).length,
           airports: (dLive.visitedAirports || []).length,
           quizScore: geoQuizRef.current.score,
-          perfectSprint: sprintRef.current.phase === 'result' && sprintRef.current.places && sprintRef.current.score === sprintRef.current.places.length - 1 && sprintRef.current.score > 0,
+          perfectSprint: sprintRef.current.phase === 'result' && getSprintScoreSummary(sprintRef.current.places, sprintRef.current.score).total > 0 && getSprintScoreSummary(sprintRef.current.places, sprintRef.current.score).pct === 100,
           oceanCrossing: oceanNmRef.current > 50,
           rescuesCompleted: dLive.rescuesCompleted || 0
         };
@@ -17161,6 +17198,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         };
         timeRef.current = 0;
         flyingRef.current = true;
+        pausedRef.current = false;
+        setPausedUi(false);
+        geoDiscoveredRef.current = {};
         milestoneRef.current.shown = {};
         Physics.SPRINT_MODE = true; // HyperJet exceeds Vne by design
         logRef.current = { startTime: 0, maxAlt: 0, maxSpeed: 0, airports: [], distance: 0, lastLat: 0, lastLon: 0 };
@@ -17280,6 +17320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var drawSprintHUD = function(gfx, W, H, state, time) {
         var sp = sprintRef.current;
         if (!sp.active && sp.phase !== 'result') return;
+        var scoreSummary = getSprintScoreSummary(sp.places, sp.score);
 
         // Timer bar (top)
         var timerPct = sp.timer / sp.maxTime;
@@ -17291,7 +17332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.font = 'bold 13px system-ui'; gfx.fillStyle = '#fff'; gfx.textAlign = 'left';
         gfx.fillText('🚀 HYPERJET  |  ' + sp.route.name + '  |  ' + Math.ceil(sp.timer) + 's', 10, 22);
         gfx.textAlign = 'right'; gfx.fillStyle = '#fbbf24';
-        gfx.fillText('Score: ' + sp.score + '/' + sp.places.length + '  |  🔥 Streak: ' + sp.streak, W - 10, 22);
+        gfx.fillText('Score: ' + scoreSummary.score + '/' + scoreSummary.total + '  |  🔥 Streak: ' + sp.streak, W - 10, 22);
 
         // Progress dots
         var dotY = 42;
@@ -17299,8 +17340,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var dx = 20 + (idx / (sp.places.length - 1)) * (W - 40);
           var done = idx < sp.placeIndex;
           var current = idx === sp.placeIndex;
-          var result = sp.results[idx];
-          gfx.fillStyle = done ? (result && result.correct ? '#4ade80' : '#f87171') : current ? '#fbbf24' : 'rgba(255,255,255,0.2)';
+          var isOrigin = idx === 0;
+          var result = isOrigin ? null : sp.results[idx - 1];
+          gfx.fillStyle = isOrigin ? '#60a5fa' : done ? (result && result.correct ? '#4ade80' : '#f87171') : current ? '#fbbf24' : 'rgba(255,255,255,0.2)';
           gfx.beginPath(); gfx.arc(dx, dotY, current ? 5 : 3, 0, Math.PI * 2); gfx.fill();
           if (current || done) {
             gfx.fillStyle = 'rgba(255,255,255,0.5)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
@@ -17354,10 +17396,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = '#fff'; gfx.font = 'bold 24px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('🚀 SPRINT COMPLETE!', cx, cy);
 
-          var pct = sp.places.length > 0 ? Math.round(sp.score / sp.places.length * 100) : 0;
+          var pct = scoreSummary.pct;
           var grade = pct >= 90 ? '🌟 Geography Expert!' : pct >= 70 ? '✈️ Great Navigator!' : pct >= 50 ? '🗺️ Getting There!' : '📚 Keep Exploring!';
           gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 18px system-ui';
-          gfx.fillText(sp.score + ' / ' + sp.places.length + '  (' + pct + '%)  —  ' + grade, cx, cy + 35);
+          gfx.fillText(scoreSummary.score + ' / ' + scoreSummary.total + '  (' + pct + '%)  —  ' + grade, cx, cy + 35);
 
           gfx.fillStyle = '#94a3b8'; gfx.font = '13px system-ui';
           gfx.fillText('Best streak: 🔥 ' + sp.bestStreak + '  |  Route: ' + sp.route.name, cx, cy + 58);
@@ -17752,6 +17794,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // and last flight's landing score must not leak into this debrief.
         keysRef.current = {};
         pausedRef.current = false;
+        setPausedUi(false);
+        geoDiscoveredRef.current = {};
         landingRef.current = { wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 };
         // Fresh breadcrumb trail + no carried-over traffic from the last flight
         hudRef.current._track = [];
@@ -17834,10 +17878,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // WCAG 2.2.1: Pause support
           var keys = keysRef.current;
-          if (keys[' '] && !sprintRef.current.active) {
+          if ((keys[' '] || keys['spacebar']) && !sprintRef.current.active) {
             keys[' '] = false;
-            pausedRef.current = !pausedRef.current;
-            skyAnnounce(pausedRef.current ? 'Flight paused. Press Space to resume.' : 'Flight resumed.');
+            keys['spacebar'] = false;
+            setFlightPaused(!pausedRef.current);
           }
           // V key: toggle first-person / third-person view
           if (keys['v']) {
@@ -17978,6 +18022,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (keys['escape']) {
             keys['escape'] = false;
             if (quiz.active) { quiz.active = false; quiz._showTime = null; }
+            else if (sprintRef.current.phase === 'result') {
+              sprintRef.current.active = false;
+              Physics.SPRINT_MODE = false;
+              flyingRef.current = false;
+              upd('view', 'menu');
+              return;
+            }
           }
           // Quiz answer keys (1-4)
           ['1','2','3','4'].forEach(function(k, idx) {
@@ -20537,14 +20588,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Close stall horn audio context
           try { if (stallHornRef.current.ctx && stallHornRef.current.ctx.state !== 'closed') stallHornRef.current.ctx.close(); } catch(e) {}
           // Exit fullscreen if active
-          try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+          try { if (document.fullscreenElement && typeof document.exitFullscreen === 'function') document.exitFullscreen(); } catch(e) {}
           disposeThree();
         };
       }, [view]);
 
       // ── MENU VIEW ──
       if (view === 'menu') {
-        return h('div', { style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'var(--allo-stem-canvas, linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%))', borderRadius: '16px', overflow: 'auto', position: 'relative' } },
+        return h('div', { id: 'skyschool-menu', 'data-flightsim-visual-menu': 'true', style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'var(--allo-stem-canvas, radial-gradient(circle at 16% 0%, #164e63 0%, #0c2239 32%, #07111f 100%))', borderRadius: '16px', overflow: 'auto', position: 'relative', scrollbarColor: '#38bdf8 #0f172a' } },
+          h('style', null, '#skyschool-menu button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-menu button:hover{transform:translateY(-1px);filter:brightness(1.07)}#skyschool-menu button:focus-visible,#skyschool-menu select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}'),
           // FAA Part 107 Drone Briefing Modal (gates drone_survey mission)
           d.droneBriefing && h('div', {
             role: 'dialog',
@@ -20805,7 +20857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var estMin = Math.round(dist / cruiseKts * 60);
                 var cruiseAlt = dist > 500 ? 35000 : dist > 100 ? 18000 : 8000;
                 return h('div', null,
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '8px' } },
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: '6px', marginBottom: '8px' } },
                     [['📏 ' + dist + ' nm', 'Distance'], ['🧭 ' + String(hdg).padStart(3, '0') + '°', 'Heading'], ['⏱️ ~' + estMin + ' min', 'Est. Time'], ['🔝 FL' + (cruiseAlt / 100), 'Cruise Alt']].map(function(s) {
                       return h('div', { key: s[1], style: { background: '#1e293b', borderRadius: '4px', padding: '4px', textAlign: 'center' } },
                         h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa' } }, s[0]),
@@ -20832,7 +20884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Aircraft Selection
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.select_aircraft', '🛩️ Select Aircraft')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '6px' } },
               AIRCRAFT.map(function(ac) {
                 var isSelected = selectedAircraft === ac.id;
                 return h('button', { key: ac.id, onClick: function() { upd('aircraft', ac.id); },
@@ -20853,7 +20905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 h('span', { style: { fontSize: '9px', color: '#94a3b8', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
               ),
               h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '6px' } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: '6px', marginBottom: '6px' } },
                 [['Max Speed', Math.round(currentAC.maxSpeed) + ' kts', Math.min(100, currentAC.maxSpeed / 5), '#60a5fa'],
                  ['Ceiling', (currentAC.ceiling / 1000).toFixed(0) + 'K ft', Math.min(100, currentAC.ceiling / 500), '#a78bfa'],
                  ['Range', currentAC.range + ' nm', Math.min(100, currentAC.range / 30), '#4ade80'],
@@ -20876,7 +20928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Departure selector
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.or_choose_a_departure_airport', 'Or choose a departure airport')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' } },
               WAYPOINTS.map(function(wp) {
                 var visited = visitedAirports.indexOf(wp.id) >= 0;
                 // Region flag emojis
@@ -20905,7 +20957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Learn / Quiz / Preflight / Calculator — new interactive modes
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.learn_practice_calculate', '🎓 Learn, Practice, Calculate')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '8px' } },
               [
                 { id: 'learn',      icon: '📚', label: __alloT('stem.flightsim.learn', 'Learn'),       desc: __alloT('stem.flightsim.20_topics_forces_instruments_history_c', '100 topics: forces, instruments, history, careers...'), bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
                 { id: 'quiz',       icon: '🎯', label: __alloT('stem.flightsim.quiz', 'Quiz'),        desc: __alloT('stem.flightsim.test_your_knowledge_with_scoring_strea', 'Test your knowledge with scoring + streaks'),          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
@@ -20929,7 +20981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.aerodynamics_lessons', '📚 Aerodynamics Lessons')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '8px' } },
               Object.keys(LESSONS).map(function(key) {
                 var les = LESSONS[key];
                 return h('button', { key: key, onClick: function() { updMulti({ view: 'lesson', selectedLesson: key }); },
@@ -20994,7 +21046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { style: { padding: '0 24px 24px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.hyperjet_geography_sprint', '🚀 HyperJet Geography Sprint')),
             h('p', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, __alloT('stem.flightsim.fly_at_mach_3_on_autopilot_name_countr', 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' } },
               SPRINT_ROUTES.map(function(route) {
                 return h('button', { key: route.id, onClick: function() { startSprint(route.id); },
                   style: { padding: '10px', borderRadius: '8px', border: '1px solid #334155', background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', color: '#fff', cursor: 'pointer', textAlign: 'left' }
@@ -21074,13 +21126,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (view === 'flying') {
         var flightGlassButton = function(active, accent) {
           var glow = accent || '#38bdf8';
-          return { padding: '6px 10px', borderRadius: '8px', background: active ? 'rgba(15,23,42,0.78)' : 'rgba(2,6,23,0.62)', color: '#fff', border: '1px solid ' + (active ? glow : 'rgba(255,255,255,0.18)'), boxShadow: active ? '0 0 0 1px ' + glow + '33, 0 8px 22px rgba(2,6,23,0.34)' : '0 8px 18px rgba(2,6,23,0.24)', backdropFilter: 'blur(12px)', fontSize: '11px', fontWeight: 800, cursor: 'pointer' };
+          return { minHeight: '34px', padding: '7px 10px', borderRadius: '9px', background: active ? 'linear-gradient(135deg, rgba(15,23,42,0.94), rgba(30,41,59,0.88))' : 'rgba(2,6,23,0.68)', color: '#fff', border: '1px solid ' + (active ? glow : 'rgba(255,255,255,0.2)'), boxShadow: active ? '0 0 0 1px ' + glow + '44, 0 8px 22px rgba(2,6,23,0.42)' : '0 8px 18px rgba(2,6,23,0.3)', backdropFilter: 'blur(14px)', fontSize: '11px', lineHeight: 1.15, fontWeight: 850, letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' };
         };
         var flightBadgeStyle = function(color) {
-          return { padding: '4px 10px', borderRadius: '8px', background: 'rgba(2,6,23,0.58)', color: color, border: '1px solid rgba(148,163,184,0.16)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)', fontSize: '10px', fontWeight: 800, textAlign: 'center' };
+          return { minHeight: '27px', padding: '5px 10px', borderRadius: '999px', background: 'rgba(2,6,23,0.7)', color: color, border: '1px solid ' + color + '44', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)', fontSize: '10px', fontWeight: 850, letterSpacing: '0.02em', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' };
         };
         var activeWeather = (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]);
-        return h('div', { id: 'skyschool-flight-container', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 35%, #0f172a 0%, #020617 70%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(148,163,184,0.22)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04), 0 22px 55px rgba(2,6,23,0.34)' } },
+        return h('div', { id: 'skyschool-flight-container', 'data-flightsim-flight-deck': 'true', 'data-flight-state': pausedUi ? 'paused' : 'active', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 28%, #172554 0%, #071426 48%, #020617 100%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(125,211,252,0.3)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -80px 100px rgba(2,6,23,0.32), 0 24px 60px rgba(2,6,23,0.42)' } },
+          h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-command-rail{top:8px!important;left:8px!important;right:8px!important;max-width:none!important;flex-direction:row!important;flex-wrap:wrap!important}.skyschool-command-rail .skyschool-rail-label{width:100%}.skyschool-command-rail button{flex:1 1 110px;justify-content:center}.skyschool-status-rail{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;max-width:none!important;max-height:42vh!important;overflow:auto!important}}'),
           threeLoaded && h('canvas', {
             ref: webglCanvasRef,
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, display: 'block' }
@@ -21094,13 +21147,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, display: 'block', outline: 'none', background: threeLoaded ? 'transparent' : '#000' },
             onFocus: function() { skyAnnounce('SkySchool flight display focused. Press I for flight status. Space to pause.'); }
           }),
-          h('div', { style: { position: 'absolute', top: '40px', right: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', padding: '7px', borderRadius: '12px', background: 'rgba(2,6,23,0.58)', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 12px 30px rgba(2,6,23,0.32)', backdropFilter: 'blur(14px)', pointerEvents: 'none' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 900, color: '#e0f2fe', letterSpacing: '0.04em', textTransform: 'uppercase' } }, threeLoaded ? '3D terrain active' : 'Canvas cockpit'),
-            h('div', { style: { fontSize: '10px', fontWeight: 800, color: d.thirdPerson ? '#c4b5fd' : '#67e8f9' } }, d.thirdPerson ? 'Chase camera' : 'Cockpit view'),
-            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbbf24' } }, activeWeather.label)
+          h('div', { className: 'skyschool-status-rail', role: 'status', 'aria-label': 'Flight visual status', style: { position: 'absolute', top: '40px', right: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', padding: '8px 10px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.78), rgba(15,23,42,0.64))', border: '1px solid rgba(125,211,252,0.2)', boxShadow: '0 12px 30px rgba(2,6,23,0.38)', backdropFilter: 'blur(14px)', pointerEvents: 'none' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 900, color: '#e0f2fe', letterSpacing: '0.04em', textTransform: 'uppercase' } }, threeLoaded ? '● RENDER · 3D TERRAIN' : '● RENDER · CANVAS'),
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: d.thirdPerson ? '#c4b5fd' : '#67e8f9' } }, d.thirdPerson ? 'VIEW · CHASE CAMERA' : 'VIEW · COCKPIT'),
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbbf24' } }, 'WEATHER · ' + activeWeather.label)
           ),
           // Overlay controls
-          h('div', { style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 10, padding: '7px', borderRadius: '12px', background: 'rgba(2,6,23,0.58)', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 12px 30px rgba(2,6,23,0.32)', backdropFilter: 'blur(14px)' } },
+          h('nav', { className: 'skyschool-command-rail', 'data-flightsim-command-rail': 'true', 'aria-label': 'Flight deck controls', style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 10, maxWidth: '210px', padding: '8px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.82), rgba(15,23,42,0.68))', border: '1px solid rgba(125,211,252,0.22)', boxShadow: '0 14px 34px rgba(2,6,23,0.42)', backdropFilter: 'blur(14px)' } },
+            h('div', { className: 'skyschool-rail-label', style: { padding: '2px 3px 4px', fontSize: '9px', fontWeight: 900, letterSpacing: '0.14em', color: '#bae6fd', textTransform: 'uppercase' } }, 'Flight deck'),
             h('button', { onClick: function() {
               flyingRef.current = false; stopEngineSound(); stopWindSound(); updateStallHorn(false);
               // Generate flight debrief
@@ -21130,13 +21184,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', { onClick: function() {
               var container = document.getElementById('skyschool-flight-container');
               if (!container) return;
-              if (document.fullscreenElement) { document.exitFullscreen(); }
-              else { container.requestFullscreen().catch(function() {}); }
+              try {
+                var fsResult;
+                if (document.fullscreenElement && typeof document.exitFullscreen === 'function') fsResult = document.exitFullscreen();
+                else if (typeof container.requestFullscreen === 'function') fsResult = container.requestFullscreen();
+                else { if (addToast) addToast('Fullscreen is not available in this browser.'); return; }
+                if (fsResult && typeof fsResult.catch === 'function') fsResult.catch(function() { if (addToast) addToast('Fullscreen could not be opened.'); });
+              } catch (err) { if (addToast) addToast('Fullscreen could not be opened.'); }
             },
               'aria-label': __alloT('stem.flightsim.toggle_fullscreen_flight_view', 'Toggle fullscreen flight view'),
-              'aria-pressed': document.fullscreenElement ? 'true' : 'false',
-              style: flightGlassButton(!!document.fullscreenElement, '#22d3ee')
-            }, __alloT('stem.flightsim.fullscreen', '\u26F6 Fullscreen')),
+              'aria-pressed': fullscreenActive,
+              style: flightGlassButton(fullscreenActive, '#22d3ee')
+            }, fullscreenActive ? __alloT('stem.flightsim.exit_fullscreen', '\u26F6 Exit Fullscreen') : __alloT('stem.flightsim.fullscreen', '\u26F6 Fullscreen')),
+            h('button', {
+              onClick: function() { setFlightPaused(!pausedRef.current); },
+              'aria-label': pausedUi ? 'Resume flight' : 'Pause flight',
+              'aria-pressed': pausedUi,
+              style: flightGlassButton(pausedUi, '#fbbf24')
+            }, pausedUi ? '\u25B6 Resume' : '\u23F8 Pause'),
             h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },
               'aria-label': d.thirdPerson ? 'Switch to cockpit view' : 'Switch to third-person view',
               style: flightGlassButton(!!d.thirdPerson, '#818cf8')
@@ -21158,7 +21223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }, '🌤️ ' + (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]).label),
             // Discovery counter
             h('div', { style: flightBadgeStyle('#fbbf24')
-            }, '📍 ' + Object.keys(geoDiscoveredRef.current).length + ' discovered'),
+            }, '📍 ' + Object.keys(geoDiscoveredRef.current).length + ' this flight'),
             h('div', { style: flightBadgeStyle('#60a5fa')
             }, currentAC.icon + ' ' + currentAC.name.split(' ')[0]),
             h('div', { style: flightBadgeStyle('#4ade80')
@@ -21177,6 +21242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             && (flightRef.current.altitude - (flightRef.current.fieldElev || 0)) > 50
             && flightRef.current.vsi < 0
             && !d.landingTutorialDismissed) ? h('div', {
+            className: 'skyschool-tutorial-card',
             style: {
               position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',
               maxWidth: '340px', padding: '16px', borderRadius: '12px',
@@ -21224,6 +21290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ) : null,
           (flightRef.current && flightRef.current.onGround && flightRef.current.speed < 30 && !d.takeoffTutorialDismissed) ? h('div', {
+            className: 'skyschool-tutorial-card',
             style: {
               position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',
               maxWidth: '340px', padding: '16px', borderRadius: '12px',
@@ -21278,6 +21345,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Default-fill: an old/partial saved shape (missing maxAlt etc.) threw
         // TypeError on maxAlt.toLocaleString() and rendered NaN elsewhere.
         var db = Object.assign({ flightTime: 0, distance: 0, maxAlt: 0, maxSpeed: 0, airports: 0, discovered: 0, badges: 0, bestLanding: null, aircraft: '—' }, d.lastDebrief);
+        ['flightTime', 'distance', 'maxAlt', 'maxSpeed', 'airports', 'discovered', 'badges'].forEach(function(key) {
+          var value = Number(db[key]);
+          db[key] = Number.isFinite(value) ? Math.max(0, value) : 0;
+        });
+        if (db.bestLanding != null) {
+          var landingValue = Number(db.bestLanding);
+          db.bestLanding = Number.isFinite(landingValue) && landingValue >= 0 ? landingValue : null;
+        }
         var mins = Math.floor(db.flightTime / 60);
         var secs = db.flightTime % 60;
         var gradeIcon, gradeText, gradeColor, gradeXP;
@@ -21292,6 +21367,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         } else {
           gradeIcon = '\uD83D\uDCDD'; gradeText = 'Quick Hop'; gradeColor = '#94a3b8'; gradeXP = 5;
         }
+        var landingQuality = 'No landing recorded';
+        var landingColor = '#94a3b8';
+        if (db.bestLanding != null && db.bestLanding < 100) { landingQuality = 'Butter landing'; landingColor = '#f9a8d4'; }
+        else if (db.bestLanding != null && db.bestLanding < 200) { landingQuality = 'Smooth landing'; landingColor = '#4ade80'; }
+        else if (db.bestLanding != null && db.bestLanding < 400) { landingQuality = 'Firm landing'; landingColor = '#fbbf24'; }
+        else if (db.bestLanding != null) { landingQuality = 'Hard landing'; landingColor = '#f87171'; }
+        var landingPoints = db.bestLanding == null ? 0 : Math.max(0, Math.min(25, (600 - db.bestLanding) / 500 * 25));
+        var performanceScore = Math.round(Math.min(100,
+          10 + Math.min(25, db.flightTime / 300 * 25) + Math.min(20, db.distance / 200 * 20) +
+          Math.min(10, db.airports / 2 * 10) + Math.min(10, db.discovered / 5 * 10) + landingPoints
+        ));
         // Generate educational tip based on flight data
         var tip = '';
         if (db.maxAlt < 1000 && db.flightTime > 60) tip = '\uD83D\uDCA1 Try climbing higher! At altitude, you can see more terrain and discover landmarks. Use W to pitch up.';
@@ -21302,18 +21388,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         else if (db.bestLanding && db.bestLanding < 100) tip = '\uD83E\uDDC8 Butter landing! (' + db.bestLanding + ' fpm) — you\u2019re a natural. Try a crosswind landing next time!';
         else tip = '\uD83D\uDCA1 Great flying! Try using the Flight Planner on the menu to plan a route between two airports.';
 
-        return h('div', { style: { minHeight: '400px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '24px', color: '#fff', overflow: 'auto' } },
+        return h('div', { id: 'skyschool-debrief', 'data-flightsim-debrief': 'true', style: { minHeight: '400px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 12% 0%, rgba(14,116,144,0.5), transparent 34%), linear-gradient(145deg, #07111f 0%, #10263d 55%, #071827 100%)', borderRadius: '16px', padding: 'clamp(16px, 3vw, 28px)', color: '#fff', overflow: 'auto', scrollbarColor: '#38bdf8 #0f172a' } },
+          h('style', null, '#skyschool-debrief button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-debrief button:hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-debrief button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:560px){#skyschool-debrief .skyschool-debrief-actions{display:grid!important;grid-template-columns:1fr!important}#skyschool-debrief .skyschool-debrief-actions button{width:100%}}'),
           // Grade card header
-          h('div', { style: { textAlign: 'center', marginBottom: '16px', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(59,130,246,0.08))', border: '1px solid rgba(255,255,255,0.08)' } },
-            h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, gradeIcon),
-            h('div', { style: { fontSize: '22px', fontWeight: 900, letterSpacing: '1px' } }, __alloT('stem.flightsim.flight_debrief', 'FLIGHT DEBRIEF')),
-            h('div', { style: { fontSize: '15px', color: gradeColor, fontWeight: 800, marginTop: '6px' } }, gradeText),
-            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
+          h('section', { 'aria-labelledby': 'skyschool-debrief-title', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', alignItems: 'center', gap: '18px', marginBottom: '16px', padding: '18px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(8,47,73,0.68))', border: '1px solid ' + gradeColor + '55', boxShadow: '0 18px 40px rgba(2,6,23,0.34)' } },
+            h('div', { role: 'img', 'aria-label': 'Flight performance score ' + performanceScore + ' out of 100', style: { width: '132px', height: '132px', borderRadius: '50%', padding: '8px', margin: '0 auto', background: 'conic-gradient(' + gradeColor + ' 0 ' + performanceScore + '%, rgba(148,163,184,0.16) ' + performanceScore + '% 100%)', boxShadow: '0 0 0 1px ' + gradeColor + '33, 0 16px 34px rgba(2,6,23,0.42)' } },
+              h('div', { style: { width: '100%', height: '100%', borderRadius: '50%', background: 'radial-gradient(circle at 50% 35%, #172554, #020617 72%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' } },
+                h('div', { style: { fontSize: '28px', lineHeight: 1 } }, gradeIcon),
+                h('div', { style: { fontSize: '28px', fontWeight: 950, color: '#f8fafc', lineHeight: 1.05, marginTop: '4px' } }, performanceScore),
+                h('div', { style: { fontSize: '8px', fontWeight: 900, color: '#94a3b8', letterSpacing: '0.14em' } }, 'FLIGHT SCORE')
+              )
+            ),
+            h('div', null,
+              h('div', { style: { fontSize: '9px', fontWeight: 900, letterSpacing: '0.16em', color: '#7dd3fc', textTransform: 'uppercase', marginBottom: '5px' } }, 'Pilot log complete'),
+              h('h2', { id: 'skyschool-debrief-title', style: { margin: 0, fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 950, letterSpacing: '0.04em' } }, __alloT('stem.flightsim.flight_debrief', 'FLIGHT DEBRIEF')),
+              h('div', { style: { fontSize: '16px', color: gradeColor, fontWeight: 850, marginTop: '7px' } }, gradeText),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' } },
+                h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.24)', color: '#bae6fd', fontSize: '10px', fontWeight: 800 } }, db.aircraft),
+                h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: gradeColor + '18', border: '1px solid ' + gradeColor + '44', color: gradeColor, fontSize: '10px', fontWeight: 850 } }, '+' + gradeXP + ' XP'),
+                h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: landingColor + '18', border: '1px solid ' + landingColor + '44', color: landingColor, fontSize: '10px', fontWeight: 850 } }, landingQuality)
+              )
+            )
           ),
           // Educational tip
-          tip && h('div', { style: { padding: '10px 14px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: '16px', fontSize: '12px', color: '#a5b4fc', lineHeight: 1.5 } }, tip),
+          tip && h('aside', { 'aria-label': 'Next flight coaching tip', style: { padding: '12px 15px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.14), rgba(14,165,233,0.08))', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '4px solid #818cf8', marginBottom: '16px', fontSize: '12px', color: '#c7d2fe', lineHeight: 1.55, boxShadow: '0 10px 24px rgba(2,6,23,0.2)' } }, tip),
           // Stats grid
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '16px' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '8px', marginBottom: '16px' } },
             [['⏱️', mins + ':' + String(secs).padStart(2, '0'), 'Flight Time'],
              ['📏', db.distance + ' nm', 'Distance'],
              ['🏔️', db.maxAlt.toLocaleString() + ' ft', 'Max Altitude'],
@@ -21322,10 +21422,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
              ['📍', db.discovered, 'Places Found'],
              ['🏆', db.badges + '/' + ACHIEVEMENTS.length, 'Achievements'],
              ['🧈', db.bestLanding ? db.bestLanding + ' fpm' : '—', 'Best Landing']
-            ].map(function(stat) {
-              return h('div', { key: stat[2], style: { background: '#0f172a', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #1e293b' } },
-                h('div', { style: { fontSize: '16px' } }, stat[0]),
-                h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' } }, stat[1]),
+            ].map(function(stat, statIndex) {
+              var statColors = ['#22d3ee', '#60a5fa', '#a78bfa', '#fbbf24', '#4ade80', '#fb923c', '#facc15', landingColor];
+              var statColor = statColors[statIndex] || '#60a5fa';
+              return h('div', { key: stat[2], style: { background: 'linear-gradient(145deg, rgba(15,23,42,0.92), rgba(15,35,55,0.82))', borderRadius: '10px', padding: '11px', textAlign: 'center', border: '1px solid ' + statColor + '33', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 20px rgba(2,6,23,0.2)' } },
+                h('div', { style: { fontSize: '17px', filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.35))' } }, stat[0]),
+                h('div', { style: { fontSize: '17px', fontWeight: 900, color: statColor, marginTop: '3px' } }, stat[1]),
                 h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, stat[2])
               );
             })
@@ -21467,7 +21569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Actions
-          h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+          h('div', { className: 'skyschool-debrief-actions', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', paddingTop: '2px' } },
             h('button', { onClick: function() { upd('view', 'menu'); },
               style: { padding: '10px 24px', borderRadius: '8px', border: '1px solid #3b82f6', background: '#1e40af', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.back_to_menu_2', '🏠 Back to Menu')),
@@ -21586,6 +21688,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           { id: 'welcome',   label: __alloT('stem.flightsim.new_pilot_welcome', 'New Pilot Welcome'),        icon: '🎉',  data: NEW_PILOT_WELCOME,       titleKey: null },
         ];
         var activeTopic = LEARN_TOPICS.find(function(t) { return t.id === learnTopic; }) || LEARN_TOPICS[0];
+        var learnQuery = String(d.learnQuery || '').trim().toLowerCase();
+        var visibleLearnTopics = learnQuery ? LEARN_TOPICS.filter(function(t) {
+          return String(t.label).toLowerCase().indexOf(learnQuery) >= 0 || t.id.toLowerCase().indexOf(learnQuery) >= 0;
+        }) : LEARN_TOPICS;
 
         // Renders one entry as a labeled card. Reads all keys except the title key.
         function renderEntryCard(entry, i, titleKey) {
@@ -21593,7 +21699,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (typeof entry === 'string') {
             return h('div', {
               key: i,
-              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '14px 16px', marginBottom: '10px' }
+              className: 'skyschool-learn-card',
+              style: { background: 'linear-gradient(145deg, rgba(15,23,42,0.96), rgba(8,47,73,0.38))', border: '1px solid rgba(56,189,248,0.16)', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px', boxShadow: '0 8px 20px rgba(2,6,23,0.16)' }
             },
               h('div', { style: { fontSize: '14px', color: '#e2e8f0', lineHeight: 1.5 } }, entry)
             );
@@ -21602,7 +21709,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var keys = Object.keys(entry).filter(function(k) { return k !== titleKey; });
           return h('div', {
             key: i,
-            style: { background: 'linear-gradient(135deg, #0f172a, #131c2e)', border: '1px solid #1e293b', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }
+            className: 'skyschool-learn-card',
+            style: { background: 'linear-gradient(145deg, rgba(15,23,42,0.96), rgba(8,47,73,0.38))', border: '1px solid rgba(56,189,248,0.16)', borderRadius: '12px', padding: '15px 17px', marginBottom: '10px', boxShadow: '0 8px 20px rgba(2,6,23,0.16)' }
           },
             h('h4', {
               style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', margin: '0 0 10px 0' }
@@ -21665,27 +21773,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
 
         return h('div', {
-          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }
+          id: 'skyschool-learn', 'data-flightsim-learn-library': 'true',
+          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 8% 0%, rgba(37,99,235,0.38), transparent 30%), linear-gradient(145deg, #07111f, #10263d 58%, #071827)', borderRadius: '16px', padding: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', color: '#fff' }
         },
+          h('style', null, '#skyschool-learn button,#skyschool-learn input{transition:border-color .15s ease,background .15s ease,transform .15s ease}#skyschool-learn button:focus-visible,#skyschool-learn input:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.skyschool-learn-card{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}.skyschool-learn-card:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.35)!important;box-shadow:0 12px 28px rgba(2,6,23,.25)!important}@media(max-width:820px){.skyschool-learn-header{flex-wrap:wrap}.skyschool-learn-search{order:3;width:100%!important}.skyschool-learn-split{flex-direction:column!important}.skyschool-learn-topics{width:auto!important;max-height:190px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:3px}.skyschool-learn-content{min-height:320px}}'),
           // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexShrink: 0 } },
+          h('div', { className: 'skyschool-learn-header', style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexShrink: 0 } },
             h('button', {
               onClick: function() { upd('view', 'menu'); },
               'aria-label': __alloT('stem.flightsim.back_to_menu_3', 'Back to menu'),
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.menu', '← Menu')),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.skyschool_learn', '📚 SkySchool Learn')),
-            h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, LEARN_TOPICS.length + ' topics')
+            h('input', { className: 'skyschool-learn-search', type: 'search', value: d.learnQuery || '', onChange: function(e) { upd('learnQuery', e.target.value); }, placeholder: 'Search aviation topics…', 'aria-label': 'Search SkySchool Learn topics', style: { width: 'min(280px, 36vw)', padding: '9px 12px', borderRadius: '999px', border: '1px solid rgba(125,211,252,0.28)', background: 'rgba(2,6,23,0.68)', color: '#e0f2fe', fontSize: '12px', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' } }),
+            h('div', { style: { padding: '5px 9px', borderRadius: '999px', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', fontSize: '10px', color: '#bae6fd', fontWeight: 800, whiteSpace: 'nowrap' } }, visibleLearnTopics.length + ' / ' + LEARN_TOPICS.length + ' topics')
           ),
 
           // Split pane
-          h('div', { style: { display: 'flex', gap: '12px', flex: 1, minHeight: 0 } },
+          h('div', { className: 'skyschool-learn-split', style: { display: 'flex', gap: '12px', flex: 1, minHeight: 0 } },
             // Sidebar
             h('nav', {
               'aria-label': __alloT('stem.flightsim.learn_topics', 'Learn topics'),
-              style: { width: '230px', flexShrink: 0, overflowY: 'auto', background: 'rgba(15,23,42,0.5)', borderRadius: '12px', padding: '8px', border: '1px solid #1e293b' }
+              className: 'skyschool-learn-topics',
+              style: { width: '250px', flexShrink: 0, overflowY: 'auto', background: 'linear-gradient(160deg, rgba(15,23,42,0.78), rgba(8,47,73,0.34))', borderRadius: '12px', padding: '8px', border: '1px solid rgba(125,211,252,0.16)', scrollbarColor: '#38bdf8 #0f172a' }
             },
-              LEARN_TOPICS.map(function(t) {
+              visibleLearnTopics.length === 0 && h('div', { role: 'status', style: { padding: '14px 10px', color: '#94a3b8', fontSize: '12px', lineHeight: 1.5 } }, 'No topics match “' + (d.learnQuery || '') + '”.'),
+              visibleLearnTopics.map(function(t) {
                 var isActive = t.id === activeTopic.id;
                 return h('button', {
                   key: t.id,
@@ -21711,13 +21824,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // Content
             h('article', {
               'aria-label': activeTopic.label,
-              style: { flex: 1, overflowY: 'auto', background: 'rgba(15,23,42,0.3)', borderRadius: '12px', padding: '20px', border: '1px solid #1e293b' }
+              className: 'skyschool-learn-content',
+              'data-learn-topic': activeTopic.id,
+              style: { flex: 1, overflowY: 'auto', background: 'linear-gradient(155deg, rgba(15,23,42,0.62), rgba(8,47,73,0.2))', borderRadius: '12px', padding: 'clamp(14px, 2.5vw, 22px)', border: '1px solid rgba(125,211,252,0.16)', scrollbarColor: '#38bdf8 #0f172a' }
             },
               h('header', { style: { marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #1e293b' } },
                 h('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' } },
                   h('span', { style: { fontSize: '24px' } }, activeTopic.icon),
                   activeTopic.label
-                )
+                ),
+                h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, (Array.isArray(activeTopic.data) ? activeTopic.data.length : 0) + ' learning cards')
               ),
               activeTopic.data && activeTopic.data.length > 0
                 ? activeTopic.data.map(function(entry, i) { return renderEntryCard(entry, i, activeTopic.titleKey); })
@@ -21731,12 +21847,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // QUIZ VIEW — interactive multiple-choice quiz with scoring
       // ═══════════════════════════════════════════════════════════════
       if (view === 'quiz') {
-        var qIdx = d.quizIdx || 0;
-        var qPicked = d.quizPicked;  // null if not yet picked this question
-        var qScore = d.quizScore || 0;
-        var qTotal = d.quizTotal || 0;
-        var qStreak = d.quizStreak || 0;
-        var qBest = d.quizBest || 0;
+        var qIdxValue = Number(d.quizIdx);
+        var qIdx = Number.isFinite(qIdxValue) ? Math.trunc(qIdxValue) : 0;
+        var qPickedValue = d.quizPicked == null ? null : Number(d.quizPicked);
+        var qPicked = Number.isInteger(qPickedValue) && qPickedValue >= 0 && qPickedValue < 4 ? qPickedValue : null;
+        var qScore = Math.max(0, Number(d.quizScore) || 0);
+        var qTotal = Math.max(0, Number(d.quizTotal) || 0);
+        var qStreak = Math.max(0, Number(d.quizStreak) || 0);
+        var qBest = Math.max(0, Number(d.quizBest) || 0);
         var safeIdx = ((qIdx % FLIGHT_QUIZ.length) + FLIGHT_QUIZ.length) % FLIGHT_QUIZ.length;
         var q = FLIGHT_QUIZ[safeIdx];
         var answered = qPicked != null;
@@ -21776,8 +21894,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
 
         return h('div', {
-          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #122740 50%, #102a3e 100%)', borderRadius: '16px', padding: '20px', overflow: 'auto' }
+          id: 'skyschool-quiz', 'data-flightsim-quiz-deck': 'true',
+          style: { minHeight: '600px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'radial-gradient(circle at 85% 0%, rgba(124,58,237,0.36), transparent 30%), linear-gradient(145deg, #07111f, #172554 58%, #0c1630)', borderRadius: '16px', padding: 'clamp(16px, 3vw, 24px)', overflow: 'auto', color: '#fff', scrollbarColor: '#8b5cf6 #0f172a' }
         },
+          h('style', null, '#skyschool-quiz button{transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}#skyschool-quiz button:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-quiz button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:620px){.skyschool-quiz-nav{display:grid!important;grid-template-columns:1fr!important}.skyschool-quiz-nav>div{display:grid!important;grid-template-columns:1fr 1fr}.skyschool-quiz-nav button{width:100%}}'),
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' } },
             h('button', {
@@ -21788,9 +21908,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#fff', margin: 0, flex: 1 } }, __alloT('stem.flightsim.flight_knowledge_quiz', '🎯 Flight Knowledge Quiz'))
           ),
 
+          h('div', { 'aria-hidden': 'true', style: { height: '5px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(148,163,184,0.14)', marginBottom: '12px' } },
+            h('div', { style: { width: Math.round((safeIdx + 1) / FLIGHT_QUIZ.length * 100) + '%', height: '100%', background: 'linear-gradient(90deg, #22d3ee, #8b5cf6, #ec4899)', boxShadow: '0 0 16px rgba(139,92,246,0.55)', transition: 'width .25s ease' } })
+          ),
           // Scoreboard
           h('div', {
-            style: { display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '14px', background: 'linear-gradient(135deg, #1e3a8a, #1e40af)', borderRadius: '12px', border: '1px solid #3b82f6', marginBottom: '16px' }
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: '8px', padding: '12px', background: 'linear-gradient(135deg, rgba(30,58,138,0.78), rgba(91,33,182,0.58))', borderRadius: '14px', border: '1px solid rgba(167,139,250,0.35)', marginBottom: '16px', boxShadow: '0 14px 30px rgba(2,6,23,0.28)' }
           },
             h('div', { style: { flex: 1, minWidth: '100px' } },
               h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.question', 'Question')),
@@ -21813,8 +21936,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
 
           // Question card
-          h('div', {
-            style: { padding: '22px', background: 'rgba(15,23,42,0.5)', border: '2px solid #1e293b', borderRadius: '14px', marginBottom: '16px' }
+          h('section', {
+            'aria-labelledby': 'skyschool-quiz-question',
+            style: { padding: 'clamp(16px, 3vw, 24px)', background: 'linear-gradient(145deg, rgba(15,23,42,0.9), rgba(30,27,75,0.62))', border: '1px solid rgba(167,139,250,0.28)', borderRadius: '16px', marginBottom: '16px', boxShadow: '0 18px 42px rgba(2,6,23,0.34)' }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' } },
               h('span', {
@@ -21822,7 +21946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }, q.difficulty),
               h('span', { style: { fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, q.topic)
             ),
-            h('h3', { style: { fontSize: '17px', fontWeight: 800, color: '#fff', margin: '0 0 16px 0', lineHeight: 1.4 } }, q.question),
+            h('h3', { id: 'skyschool-quiz-question', style: { fontSize: 'clamp(17px, 2.5vw, 21px)', fontWeight: 850, color: '#fff', margin: '0 0 18px 0', lineHeight: 1.42 } }, q.question),
 
             // Options
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
@@ -21839,6 +21963,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   key: oi,
                   onClick: function() { pickAnswer(oi); },
                   disabled: answered,
+                  'aria-pressed': oi === qPicked,
+                  'aria-label': 'Answer ' + String.fromCharCode(65 + oi) + ': ' + opt,
                   style: {
                     padding: '12px 16px', borderRadius: '10px', border: '2px solid ' + border, background: bg,
                     color: color, fontSize: '13px', fontWeight: 600,
@@ -21847,7 +21973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     transition: 'all 0.15s'
                   }
                 },
-                  h('span', { style: { fontSize: '15px', fontWeight: 800, minWidth: '24px' } }, String.fromCharCode(65 + oi) + '.'),
+                  h('span', { style: { width: '30px', height: '30px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', fontWeight: 900, background: answered && thisCorrect ? '#16a34a' : answered && oi === qPicked ? '#dc2626' : 'rgba(99,102,241,0.2)', border: '1px solid ' + border } }, String.fromCharCode(65 + oi)),
                   h('span', { style: { flex: 1 } }, opt),
                   answered && thisCorrect && h('span', { style: { fontSize: '18px' } }, '✓'),
                   answered && oi === qPicked && !thisCorrect && h('span', { style: { fontSize: '18px' } }, '✗')
@@ -21857,7 +21983,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
             // Feedback
             answered && h('div', {
-              style: { marginTop: '14px', padding: '14px', background: isCorrect ? 'rgba(22,163,74,0.15)' : 'rgba(251,191,36,0.15)', borderRadius: '10px', border: '1px solid ' + (isCorrect ? '#16a34a' : '#fbbf24') }
+              role: 'status', 'aria-live': 'polite',
+              style: { marginTop: '16px', padding: '15px', background: isCorrect ? 'linear-gradient(135deg, rgba(22,163,74,0.2), rgba(5,150,105,0.08))' : 'linear-gradient(135deg, rgba(251,191,36,0.17), rgba(234,88,12,0.08))', borderRadius: '12px', border: '1px solid ' + (isCorrect ? '#16a34a' : '#fbbf24'), borderLeft: '4px solid ' + (isCorrect ? '#4ade80' : '#fbbf24') }
             },
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: isCorrect ? '#86efac' : '#fbbf24', marginBottom: '6px' } },
                 isCorrect ? '✓ Correct!' : '✗ Not quite. The answer was: ' + q.correct
@@ -21866,7 +21993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             ),
 
             // Nav
-            h('div', { style: { display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'space-between' } },
+            h('div', { className: 'skyschool-quiz-nav', style: { display: 'flex', gap: '10px', marginTop: '18px', justifyContent: 'space-between' } },
               h('button', {
                 onClick: function() { updMulti({ quizIdx: safeIdx - 1, quizPicked: null }); },
                 disabled: safeIdx === 0,
@@ -22141,7 +22268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { fontSize: '15px', fontWeight: 900, color: stateMeta.color } }, stateMeta.label),
               h('div', { style: { fontSize: '11px', color: '#475569', marginTop: '4px' } }, stateMeta.desc)
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', marginBottom: '12px' } },
               [
                 { key: 'airspeed', label: __alloT('stem.flightsim.airspeed_kts', 'Airspeed (kts)'), val: iq.airspeed, min: 40, max: 250, step: 5 },
                 { key: 'altitude', label: __alloT('stem.flightsim.altitude_ft', 'Altitude (ft)'),   val: iq.altitude, min: 0,  max: 30000, step: 500 },
@@ -22216,6 +22343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       jetStreamTailwindKts: jetStreamTailwindKts,
       composeGroundSpeedKts: composeGroundSpeedKts,
       pushTrackPoint: pushTrackPoint,
+      getSprintScoreSummary: getSprintScoreSummary,
       WAYPOINTS: WAYPOINTS, LESSONS: LESSONS, GEO_PLACES: GEO_PLACES,
       CHALLENGES: CHALLENGES, SPRINT_ROUTES: SPRINT_ROUTES, AIRCRAFT: AIRCRAFT,
       ACHIEVEMENTS: ACHIEVEMENTS, WORLD_LABELS: WORLD_LABELS,

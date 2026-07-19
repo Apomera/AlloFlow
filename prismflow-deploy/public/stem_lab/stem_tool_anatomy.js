@@ -45,43 +45,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     st.textContent = [
       '.anatomy-tool-shell{--anatomy-accent:#be185d;--anatomy-soft:#fce7f3;color:#0f172a;}',
       '.anatomy-topbar{padding:4px 0;}',
-      '.anatomy-mission{position:relative;overflow:hidden;border-radius:8px;border:1px solid rgba(15,23,42,.12);background:linear-gradient(135deg,#fff 0%,#f8fafc 48%,#ecfeff 100%);box-shadow:0 16px 34px rgba(15,23,42,.08);}',
+      '.anatomy-mission{position:relative;overflow:hidden;border-radius:12px;border:1px solid rgba(15,23,42,.10);background:linear-gradient(135deg,#fff 0%,#f8fafc 58%,var(--anatomy-soft) 160%);box-shadow:0 8px 22px rgba(15,23,42,.06);}',
       '.anatomy-mission:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--anatomy-accent),#0f766e,#f59e0b);}',
-      '.anatomy-mission-inner{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.9fr);gap:14px;padding:18px;}',
+      '.anatomy-mission-inner{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(330px,1fr);gap:16px;padding:14px 16px 13px;}',
       '.anatomy-kicker{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b;}',
-      '.anatomy-mission-title{font-size:22px;line-height:1.08;font-weight:950;color:#0f172a;margin:3px 0 7px;}',
+      '.anatomy-mission-title{font-size:19px;line-height:1.12;font-weight:950;color:#0f172a;margin:2px 0 5px;}',
       '.anatomy-mission-text{font-size:12px;line-height:1.55;color:#475569;max-width:760px;}',
-      '.anatomy-mission-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}',
+      '.anatomy-mission-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}',
       '.anatomy-mission-actions button{border-radius:8px;}',
-      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
-      '.anatomy-metric{border-radius:8px;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.82);padding:9px 10px;box-shadow:0 1px 0 rgba(255,255,255,.9) inset;}',
-      '.anatomy-metric strong{display:block;font-size:18px;line-height:1;font-weight:950;color:#0f172a;}',
+      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
+      '.anatomy-metric{border-radius:8px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.72);padding:7px 8px;}',
+      '.anatomy-metric strong{display:block;font-size:16px;line-height:1;font-weight:950;color:#0f172a;}',
       '.anatomy-metric span{display:block;margin-top:4px;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;}',
-      '.anatomy-challenge-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}',
-      '.anatomy-challenge-chip{height:26px;min-width:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid rgba(245,158,11,.32);background:#fff7ed;font-size:14px;}',
+      '.anatomy-coach{margin-top:7px;border-radius:8px;border:1px solid rgba(124,58,237,.18);background:rgba(245,243,255,.72);padding:8px 9px;}',
+      '.anatomy-coach strong{display:block;font-size:12px;color:#4c1d95;}',
+      '.anatomy-coach p{margin:3px 0 8px;font-size:10px;line-height:1.45;color:#475569;}',
+      '.anatomy-confidence{border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;padding:9px;}',
+      '.anatomy-confidence-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}',
+      '.anatomy-confidence-actions button{min-height:34px;border-radius:8px;}',
+      '.anatomy-study-filters{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;}',
+      '.anatomy-study-filters button{min-height:34px;border-radius:8px;}',
+
+      '.anatomy-challenge-strip{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}',
+      '.anatomy-challenge-chip{height:22px;min-width:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid rgba(245,158,11,.26);background:#fff7ed;font-size:12px;}',
       '.anatomy-challenge-chip[data-done="false"]{opacity:.32;filter:grayscale(1);background:#f8fafc;border-color:#e2e8f0;}',
       '.anatomy-tab-strip,.anatomy-system-rail,.anatomy-layer-bar,.anatomy-controls-bar{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:rgba(248,250,252,.86);padding:8px;}',
       '.anatomy-tab-strip{position:sticky;top:0;z-index:3;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
       '.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button{border-radius:8px;}',
       '.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:36px;}',
       '.anatomy-tool-shell button:focus-visible,.anatomy-tool-shell input:focus-visible,.anatomy-tool-shell canvas:focus-visible{outline:3px solid #7c3aed;outline-offset:2px;}',
-      '.anatomy-system-rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:7px;}',
-      '.anatomy-mode-card{border-radius:8px!important;box-shadow:0 8px 18px rgba(15,23,42,.05);}',
+      '.anatomy-system-rail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;}',
+      '.anatomy-mode-card{border-radius:8px!important;box-shadow:none!important;padding:8px 10px!important;margin-bottom:8px!important;}',
+      '.anatomy-system-button{position:relative;overflow:hidden;text-align:left;padding-bottom:9px!important;}',
+      '.anatomy-system-label{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;}',
+      '.anatomy-system-label>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.anatomy-system-count{font-size:9px;font-weight:900;opacity:.78;white-space:nowrap;}',
+      '.anatomy-system-meter{position:absolute;left:7px;right:7px;bottom:4px;height:2px;border-radius:999px;background:rgba(100,116,139,.18);overflow:hidden;}',
+      '.anatomy-system-meter>span{display:block;height:100%;border-radius:inherit;background:var(--system-accent);transition:width .25s ease;}',
+      '.anatomy-system-button[aria-pressed="true"] .anatomy-system-meter{background:rgba(255,255,255,.28);}',
+      '.anatomy-system-button[aria-pressed="true"] .anatomy-system-meter>span{background:#fff;}',
+      '.anatomy-mode-card .anatomy-mode-icon{font-size:20px!important;}',
       '.anatomy-progress-row{border-radius:8px;border:1px solid rgba(15,23,42,.09);background:#fff;padding:8px 10px;}',
       '.anatomy-workspace{display:grid;grid-template-columns:minmax(310px,392px) minmax(0,1fr);gap:18px;align-items:start;}',
-      '.anatomy-body-shell{position:sticky;top:58px;border-radius:8px;border:1px solid rgba(15,23,42,.12);background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:12px;box-shadow:0 18px 34px rgba(15,23,42,.10);}',
+      '.anatomy-body-shell{position:sticky;top:58px;border-radius:14px;border:1px solid #cbd5e1;border-top:4px solid var(--anatomy-accent);background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:10px 12px 12px;box-shadow:0 16px 36px rgba(15,23,42,.11);}',
       '.anatomy-body-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}',
       '.anatomy-body-header strong{font-size:12px;font-weight:950;color:#0f172a;}',
-      '.anatomy-body-header span{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;}',
-      '.anatomy-canvas{display:block;margin:0 auto;width:min(360px,100%)!important;height:auto!important;border-radius:8px!important;touch-action:manipulation;}',
-      '.anatomy-canvas-help{margin:8px auto 0;max-width:360px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;padding:7px 9px;font-size:10px;line-height:1.45;color:#475569;}',
+      '.anatomy-body-title span{display:block;margin-top:2px;font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;}',
+      '.anatomy-body-badges{display:flex;align-items:flex-end;gap:4px;flex-direction:column;}',
+      '.anatomy-body-badges span{font-size:10px;font-weight:850;color:var(--anatomy-accent);background:var(--anatomy-soft);border-radius:999px;padding:3px 7px;white-space:nowrap;}',
+      '.anatomy-orientation-key{color:#334155!important;background:#e2e8f0!important;}',
+      '.anatomy-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;width:min(360px,100%);margin:0 auto 7px;}',
+      '.anatomy-canvas-toolbar>span{font-size:10px;font-weight:850;color:#475569;white-space:nowrap;}',
+      '.anatomy-canvas-toolbar-group{display:flex;align-items:center;gap:3px;flex-wrap:wrap;justify-content:flex-end;}',
+      '.anatomy-canvas-toolbar button{min-width:32px;min-height:32px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;font-size:11px;font-weight:900;}',
+      '.anatomy-canvas-toolbar button:disabled{opacity:.42;cursor:not-allowed;}',
+      '.anatomy-canvas-frame{position:relative;width:min(360px,100%);aspect-ratio:360/520;margin:0 auto;overflow:hidden;border-radius:10px;}',
+      '.anatomy-canvas{display:block;margin:0;width:100%!important;height:auto!important;border-radius:10px!important;touch-action:manipulation;transform-origin:center center;transition:transform .18s ease;}',
+      '.anatomy-canvas.is-zoomed{touch-action:none;cursor:grab;}',
+      '.anatomy-minimap{position:absolute;right:8px;bottom:8px;width:54px;height:78px;border:1px solid rgba(15,23,42,.3);border-radius:8px;background:rgba(255,255,255,.9);box-shadow:0 4px 12px rgba(15,23,42,.16);pointer-events:none;z-index:2;}',
+      '.anatomy-minimap-body{position:absolute;left:18px;top:7px;width:18px;height:64px;border-radius:45% 45% 38% 38%;background:var(--anatomy-soft);border:1px solid var(--anatomy-accent);opacity:.7;}',
+      '.anatomy-minimap-viewport{position:absolute;border:2px solid var(--anatomy-accent);border-radius:4px;background:rgba(255,255,255,.24);box-sizing:border-box;}',
+      '.anatomy-minimap-selected{position:absolute;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:999px;background:var(--anatomy-accent);box-shadow:0 0 0 2px #fff;}',
+      '.anatomy-minimap-label{position:absolute;left:0;right:0;top:1px;text-align:center;font-size:7px;font-weight:900;color:#475569;letter-spacing:.04em;}',
+      '.anatomy-canvas-help{margin:7px auto 0;max-width:360px;padding:4px 2px 0;font-size:10px;line-height:1.45;color:#64748b;}',
+      '.anatomy-marker-legend{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;max-width:360px;margin:7px auto 0;font-size:9px;font-weight:800;color:#475569;}',
+      '.anatomy-marker-legend-title{font-weight:950;color:#334155;}',
+      '.anatomy-marker-legend-item{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}',
+      '.anatomy-marker-legend-symbol{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;background:var(--anatomy-accent);color:#fff;font-size:10px;font-weight:950;line-height:1;}',
+      '.anatomy-marker-legend-symbol[data-status="unrated"]{background:#64748b;}',
       '.anatomy-side-panel{min-width:0;}',
       '.anatomy-structure-panel{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:#fff;padding:12px;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
       '.anatomy-structure-list{max-height:520px;overflow-y:auto;padding-right:4px;}',
       '.anatomy-structure-list button{border-radius:8px;}',
       '.anatomy-badge-panel,.anatomy-stats-panel{border-radius:8px!important;}',
       '@media (max-width:900px){.anatomy-mission-inner{grid-template-columns:1fr}.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{position:relative;top:auto}.anatomy-tab-strip{position:relative}}',
-      '@media (max-width:560px){.anatomy-mission-inner{padding:14px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{overflow-x:auto;flex-wrap:nowrap!important}.anatomy-tab-strip button{white-space:nowrap}.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:44px}}'
+      '@media (max-width:720px){.anatomy-system-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))}.anatomy-tab-strip>button{width:100%;padding-left:8px;padding-right:8px}.anatomy-tab-strip>span{grid-column:1/-1;margin-left:0!important;text-align:right}}',
+      '@media (forced-colors:active){.anatomy-canvas,.anatomy-minimap,.anatomy-canvas-toolbar button,.anatomy-marker-legend-symbol{forced-color-adjust:auto;border:1px solid CanvasText!important}.anatomy-minimap-viewport{border-color:Highlight!important}.anatomy-minimap-selected{background:Highlight!important;box-shadow:0 0 0 2px Canvas!important}}',
+      '@media (max-width:560px){.anatomy-mission-inner{padding:12px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-mode-card p{display:none}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{grid-template-columns:1fr 1fr}.anatomy-body-header{align-items:flex-start}.anatomy-body-badges{align-items:flex-end}.anatomy-canvas-toolbar{align-items:stretch;flex-direction:column}.anatomy-canvas-toolbar>span{white-space:normal;max-width:none}.anatomy-canvas-toolbar-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:5px}.anatomy-canvas-toolbar button{width:100%;min-width:0;min-height:44px}.anatomy-minimap{right:6px;bottom:6px}.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:44px}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -332,6 +372,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
           Object.keys(value).forEach(function(key) {
             if (typeof value[key] === 'boolean' && allowedIds.indexOf(key) !== -1) result[key] = value[key];
+          });
+          return result;
+        }
+        function safeEnumMap(value, allowedIds, allowedValues) {
+          var result = {};
+          if (!value || typeof value !== 'object' || Array.isArray(value)) return result;
+          Object.keys(value).forEach(function(key) {
+            if (allowedIds.indexOf(key) !== -1 && allowedValues.indexOf(value[key]) !== -1) result[key] = value[key];
           });
           return result;
         }
@@ -675,6 +723,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           }
 
         };
+
+        var knownStructureIds = [];
+        Object.keys(SYSTEMS).forEach(function(systemId) {
+          SYSTEMS[systemId].structures.forEach(function(structure) {
+            if (knownStructureIds.indexOf(structure.id) === -1) knownStructureIds.push(structure.id);
+          });
+        });
 
         // ══════════════════════════════════════
         // FUN FACTS
@@ -1056,6 +1111,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var allStructures = sys.structures;
         var viewFiltered = allStructures.filter(function(s) { return (s.v === 'b' || s.v === (view === 'anterior' ? 'a' : 'p')) && passesComplexity(s); });
         var filtered = searchTerm ? viewFiltered.filter(function(s) { return s.name.toLowerCase().indexOf(searchTerm) >= 0 || s.fn.toLowerCase().indexOf(searchTerm) >= 0; }) : viewFiltered;
+        // Deterministically separate dense marker clusters while preserving each marker's
+        // anatomical anchor. The short leader line drawn below keeps displaced pins honest.
+        var markerLayout = {};
+        var placedMarkers = [];
+        filtered.forEach(function(structure, markerIndex) {
+          var baseX = structure.x * 360;
+          var baseY = structure.y * 520;
+          var markerX = baseX;
+          var markerY = baseY;
+          for (var markerAttempt = 0; markerAttempt < 8; markerAttempt++) {
+            var overlapsMarker = placedMarkers.some(function(placed) {
+              var dx = placed.x - markerX, dy = placed.y - markerY;
+              return Math.sqrt(dx * dx + dy * dy) < 18;
+            });
+            if (!overlapsMarker) break;
+            var markerAngle = ((markerIndex * 137.5) + (markerAttempt * 52)) * Math.PI / 180;
+            var markerDistance = 10 + markerAttempt * 3;
+            markerX = Math.max(12, Math.min(348, baseX + Math.cos(markerAngle) * markerDistance));
+            markerY = Math.max(12, Math.min(508, baseY + Math.sin(markerAngle) * markerDistance));
+          }
+          markerLayout[structure.id] = {
+            x: markerX / 360,
+            y: markerY / 520,
+            baseX: structure.x,
+            baseY: structure.y,
+            displaced: Math.abs(markerX - baseX) > 3 || Math.abs(markerY - baseY) > 3
+          };
+          placedMarkers.push({ x: markerX, y: markerY });
+        });
+        function markerPosition(structure) {
+          return markerLayout[structure.id] || { x: structure.x, y: structure.y, baseX: structure.x, baseY: structure.y, displaced: false };
+        }
         var selectedStructureId = typeof d.selectedStructure === 'string' ? d.selectedStructure : null;
         var sel = selectedStructureId ? viewFiltered.find(function(s) { return s.id === selectedStructureId; }) : null;
 
@@ -1362,22 +1449,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Hover state ──
         var hoverStructure = typeof d._hoverStructure === 'string' ? d._hoverStructure : null;
+        var CANVAS_ZOOM_LEVELS = [1, 1.25, 1.5, 2];
+        var requestedCanvasZoom = Number(d._canvasZoom);
+        var canvasZoom = CANVAS_ZOOM_LEVELS.indexOf(requestedCanvasZoom) >= 0 ? requestedCanvasZoom : 1;
+        var requestedCanvasPanX = Number(d._canvasPanX);
+        var requestedCanvasPanY = Number(d._canvasPanY);
+        function canvasPanLimitForZoom(zoom, axis) {
+          if (zoom <= 1) return 0;
+          return Math.round((axis === 'y' ? 520 : 360) * (zoom - 1) / 2);
+        }
+        function clampCanvasPan(value, zoom, axis) {
+          var limit = canvasPanLimitForZoom(zoom, axis);
+          var numericValue = Number(value) || 0;
+          return Math.max(-limit, Math.min(limit, numericValue));
+        }
+        var canvasPanX = Number.isFinite(requestedCanvasPanX) ? clampCanvasPan(requestedCanvasPanX, canvasZoom, 'x') : 0;
+        var canvasPanY = Number.isFinite(requestedCanvasPanY) ? clampCanvasPan(requestedCanvasPanY, canvasZoom, 'y') : 0;
+        var canvasZoomIndex = CANVAS_ZOOM_LEVELS.indexOf(canvasZoom);
+        var canvasViewStatusParts = ['Zoom ' + Math.round(canvasZoom * 100) + ' percent'];
+        if (canvasPanX !== 0) canvasViewStatusParts.push('diagram moved ' + Math.abs(canvasPanX) + ' pixels ' + (canvasPanX > 0 ? 'right' : 'left'));
+        if (canvasPanY !== 0) canvasViewStatusParts.push('diagram moved ' + Math.abs(canvasPanY) + ' pixels ' + (canvasPanY > 0 ? 'down' : 'up'));
+        var canvasViewStatus = canvasViewStatusParts.join(', ');
+        function setCanvasView(nextZoom, nextPanX, nextPanY) {
+          var safeZoom = CANVAS_ZOOM_LEVELS.indexOf(nextZoom) >= 0 ? nextZoom : 1;
+          updMulti({
+            _canvasZoom: safeZoom,
+            _canvasPanX: clampCanvasPan(nextPanX, safeZoom, 'x'),
+            _canvasPanY: clampCanvasPan(nextPanY, safeZoom, 'y')
+          });
+        }
+        function focusSelectedStructure() {
+          if (!sel) return;
+          var focusZoom = canvasZoom > 1 ? canvasZoom : 1.5;
+          var focusMarker = markerPosition(sel);
+          var focusPanX = (0.5 - focusMarker.x) * 360 * focusZoom;
+          var focusPanY = (0.5 - focusMarker.y) * 520 * focusZoom;
+          setCanvasView(focusZoom, focusPanX, focusPanY);
+        }
+        var minimapViewportWidth = 100 / canvasZoom;
+        var minimapViewportHeight = 100 / canvasZoom;
+        var minimapCenterX = 50 - (canvasPanX / (360 * canvasZoom)) * 100;
+        var minimapCenterY = 50 - (canvasPanY / (520 * canvasZoom)) * 100;
+        var minimapViewportLeft = Math.max(0, Math.min(100 - minimapViewportWidth, minimapCenterX - minimapViewportWidth / 2));
+        var minimapViewportTop = Math.max(0, Math.min(100 - minimapViewportHeight, minimapCenterY - minimapViewportHeight / 2));
+        var minimapSelectedMarker = sel ? markerPosition(sel) : null;
 
         // ══════════════════════════════════════
         // BADGE SYSTEM
         // ══════════════════════════════════════
 
-        var knownStructureIds = [];
-        Object.keys(SYSTEMS).forEach(function(systemId) {
-          SYSTEMS[systemId].structures.forEach(function(structure) {
-            if (knownStructureIds.indexOf(structure.id) === -1) knownStructureIds.push(structure.id);
-          });
-        });
         var badges = safeFlagMap(d._badges, BADGE_DEFS.map(function(badge) { return badge.id; }));
         var totalCorrect = safeNonNegativeNumber(d._totalCorrect, 0, true);
         var streak = safeNonNegativeNumber(d._streak, 0, true);
         var systemsExplored = safeFlagMap(d._systemsExplored, ANATOMY_SYSTEM_IDS);
         var structuresViewed = safeFlagMap(d._structuresViewed, knownStructureIds);
+        var CONFIDENCE_LEVELS = ['practice', 'learning', 'mastered'];
+        var structureConfidence = safeEnumMap(d._structureConfidence, knownStructureIds, CONFIDENCE_LEVELS);
+        var studyFilter = ['all', 'unseen', 'review', 'mastered'].indexOf(d._studyFilter) !== -1 ? d._studyFilter : 'all';
+        var studyFiltered = filtered.filter(function(structure) {
+          if (studyFilter === 'unseen') return !structuresViewed[structure.id];
+          if (studyFilter === 'review') return structureConfidence[structure.id] === 'practice' || structureConfidence[structure.id] === 'learning';
+          if (studyFilter === 'mastered') return structureConfidence[structure.id] === 'mastered';
+          return true;
+        });
+        var currentSystemMasteredCount = viewFiltered.filter(function(structure) { return structureConfidence[structure.id] === 'mastered'; }).length;
+        var currentSystemReviewCount = viewFiltered.filter(function(structure) {
+          return structureConfidence[structure.id] === 'practice' || structureConfidence[structure.id] === 'learning';
+        }).length;
+        function setStructureConfidence(structureId, level) {
+          if (knownStructureIds.indexOf(structureId) === -1 || CONFIDENCE_LEVELS.indexOf(level) === -1) return;
+          var nextConfidence = Object.assign({}, structureConfidence);
+          nextConfidence[structureId] = level;
+          upd('_structureConfidence', nextConfidence);
+          if (typeof announceToSR === 'function') {
+            var confidenceStructure = findStructureContext(structureId, sysKey);
+            var confidenceLabel = level === 'practice' ? 'needs practice' : level === 'learning' ? 'is still being learned' : 'is marked got it';
+            announceToSR((confidenceStructure ? confidenceStructure.structure.name : 'Structure') + ' ' + confidenceLabel + '.');
+          }
+        }
         var layersToggled = safeFlagMap(d._layersToggled, ANATOMY_LAYER_IDS);
         var viewsUsed = safeFlagMap(d._viewsUsed, ['anterior', 'posterior']);
         var searchFinds = safeNonNegativeNumber(d._searchFinds, 0, true);
@@ -1523,7 +1672,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var anatTick = 0;
           var anatomyAlive = true;
           var anatomyMotionReduced = false;
-          try { anatomyMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+          var anatomyMotionQuery = null;
+          try {
+            anatomyMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+            anatomyMotionReduced = !!(anatomyMotionQuery && anatomyMotionQuery.matches);
+          } catch (e) {}
 
           function isAnatomyHidden() {
             return typeof document !== 'undefined' && !!document.hidden;
@@ -1544,6 +1697,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             anatomyAlive = false;
             cancelAnatomyFrame();
             if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onAnatomyVisibilityChange);
+            if (anatomyMotionQuery) {
+              if (typeof anatomyMotionQuery.removeEventListener === 'function') anatomyMotionQuery.removeEventListener('change', onAnatomyMotionPreferenceChange);
+              else if (typeof anatomyMotionQuery.removeListener === 'function') anatomyMotionQuery.removeListener(onAnatomyMotionPreferenceChange);
+            }
             if (window.__alloAnatomyCanvasCleanup === canvas._anatomyCleanup) window.__alloAnatomyCanvasCleanup = null;
             canvas._anatomyCleanup = null;
           }
@@ -1554,10 +1711,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             if (isAnatomyHidden()) cancelAnatomyFrame();
             else { cancelAnatomyFrame(); drawAnatomyFrame(); }
           }
+          function onAnatomyMotionPreferenceChange(event) {
+            anatomyMotionReduced = !!(event && event.matches);
+            cancelAnatomyFrame();
+            if (anatomyAlive && canvas.isConnected && !isAnatomyHidden()) drawAnatomyFrame();
+          }
 
           canvas._anatomyCleanup = cleanupAnatomyCanvas;
           try { window.__alloAnatomyCanvasCleanup = canvas._anatomyCleanup; } catch (e) {}
           if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onAnatomyVisibilityChange);
+          if (anatomyMotionQuery) {
+            if (typeof anatomyMotionQuery.addEventListener === 'function') anatomyMotionQuery.addEventListener('change', onAnatomyMotionPreferenceChange);
+            else if (typeof anatomyMotionQuery.addListener === 'function') anatomyMotionQuery.addListener(onAnatomyMotionPreferenceChange);
+          }
 
           function drawAnatomyFrame() {
             if (!anatomyAlive) return;
@@ -4093,9 +4259,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // ── Structure Markers ──
             filtered.forEach(function(st) {
-              var px = st.x * W, py = st.y * H;
+              var placedMarker = markerPosition(st);
+              var px = placedMarker.x * W, py = placedMarker.y * H;
+              if (placedMarker.displaced) {
+                cCtx.save();
+                cCtx.beginPath();
+                cCtx.moveTo(placedMarker.baseX * W, placedMarker.baseY * H);
+                cCtx.lineTo(px, py);
+                cCtx.strokeStyle = sys.accent + '55'; cCtx.lineWidth = 1; cCtx.stroke();
+                cCtx.restore();
+              }
               var isSel = sel && sel.id === st.id;
-              var r = isSel ? 9 : 5;
+              var isHover = hoverStructure === st.id;
+              var markerConfidence = structureConfidence[st.id] || null;
+              var r = isSel ? 10 : isHover ? 8 : 6;
               if (isSel) {
                 var pulse = 1.0 + Math.sin(anatTick * 0.06) * 0.3;
                 cCtx.save();
@@ -4111,32 +4288,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.fillStyle = sGlow; cCtx.fill();
                 cCtx.restore();
               }
+              if (isHover && !isSel) {
+                cCtx.save();
+                cCtx.beginPath(); cCtx.arc(px, py, r + 4, 0, Math.PI * 2);
+                cCtx.strokeStyle = sys.accent + 'a0'; cCtx.lineWidth = 2; cCtx.stroke();
+                cCtx.restore();
+              }
               var mG = cCtx.createRadialGradient(px - 1, py - 1, 1, px, py, r);
-              mG.addColorStop(0, isSel ? sys.accent + 'cc' : sys.accent + '88');
+              mG.addColorStop(0, isSel ? sys.accent + 'cc' : isHover ? sys.accent + 'bb' : sys.accent + '88');
               mG.addColorStop(1, sys.accent);
               cCtx.beginPath(); cCtx.arc(px, py, r, 0, Math.PI * 2);
               cCtx.fillStyle = mG; cCtx.fill();
-              cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 2; cCtx.stroke();
+              var markerStatusVisible = !spotterActive || spotterFeedback !== null;
+              if (markerConfidence && markerStatusVisible) {
+                var markerStatusSymbol = markerConfidence === 'practice' ? '!' : markerConfidence === 'learning' ? '~' : '✓';
+                cCtx.save();
+                cCtx.font = '900 ' + (markerConfidence === 'mastered' ? 8 : 9) + 'px Inter, system-ui, sans-serif';
+                cCtx.textAlign = 'center';
+                cCtx.textBaseline = 'middle';
+                cCtx.lineJoin = 'round';
+                cCtx.strokeStyle = 'rgba(15,23,42,.7)';
+                cCtx.lineWidth = 2;
+                cCtx.strokeText(markerStatusSymbol, px, py + 0.5);
+                cCtx.fillStyle = '#fff';
+                cCtx.fillText(markerStatusSymbol, px, py + 0.5);
+                cCtx.restore();
+              }
               var showSelectedLabel = !spotterActive || spotterFeedback !== null;
               if (isSel && showSelectedLabel) {
                 cCtx.save();
-                var isRight = px > W * 0.5;
-                var labelX = isRight ? px - 18 : px + 18;
+                var labelOnLeft = px > W * 0.55;
+                var selectedLabel = st.name.length > 26 ? st.name.substring(0, 25).trim() + '...' : st.name;
                 cCtx.font = 'bold 9px Inter, system-ui, sans-serif';
-                var tw = cCtx.measureText(st.name).width;
-                var pillX = isRight ? labelX - tw - 8 : labelX - 4;
+                var tw = cCtx.measureText(selectedLabel).width;
+                var pillW = tw + 12;
+                var pillX = labelOnLeft ? px - pillW - 18 : px + 18;
+                pillX = Math.max(5, Math.min(W - pillW - 5, pillX));
                 var pillY = py - 7;
                 cCtx.beginPath();
-                cCtx.moveTo(px + (isRight ? -r - 2 : r + 2), py);
-                cCtx.lineTo(isRight ? pillX + tw + 8 : pillX, py);
-                cCtx.strokeStyle = sys.accent + '60'; cCtx.lineWidth = 1; cCtx.setLineDash([2, 2]); cCtx.stroke(); cCtx.setLineDash([]);
+                cCtx.moveTo(px + (labelOnLeft ? -r - 2 : r + 2), py);
+                cCtx.lineTo(labelOnLeft ? pillX + pillW : pillX, py);
+                cCtx.strokeStyle = sys.accent + '80'; cCtx.lineWidth = 1.25; cCtx.stroke();
+                cCtx.save(); cCtx.shadowColor = 'rgba(15,23,42,0.22)'; cCtx.shadowBlur = 6; cCtx.shadowOffsetY = 2;
                 cCtx.beginPath();
-                cCtx.roundRect(pillX, pillY, tw + 10, 15, 4);
+                cCtx.roundRect(pillX, pillY, pillW, 16, 5);
                 cCtx.fillStyle = sys.accent; cCtx.fill();
-                cCtx.shadowColor = sys.accent + '40'; cCtx.shadowBlur = 4;
-                cCtx.textAlign = isRight ? 'right' : 'left';
+                cCtx.restore();
+                cCtx.textAlign = 'left';
                 cCtx.fillStyle = '#fff';
-                cCtx.fillText(st.name, isRight ? pillX + tw + 5 : pillX + 5, py + 3);
+                cCtx.fillText(selectedLabel, pillX + 6, py + 3);
                 cCtx.restore();
               }
             });
@@ -4149,7 +4350,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               }
               if (hSt) {
                 cCtx.save();
-                var pinX = hSt.x * W, pinY = hSt.y * H;
+                var hoveredMarker = markerPosition(hSt);
+                var pinX = hoveredMarker.x * W, pinY = hoveredMarker.y * H;
                 // Determine label position (prefer right, fall back to left if near edge)
                 var labelOnRight = pinX < W * 0.65;
                 var offsetX = labelOnRight ? 20 : -20;
@@ -4172,6 +4374,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
                 var htx = labelOnRight ? pinX + offsetX : pinX - offsetX - boxW;
                 var hty = pinY - boxH / 2;
+                if (htx < 4) htx = 4;
+                if (htx + boxW > W - 4) htx = W - boxW - 4;
                 if (hty < 4) hty = 4;
                 if (hty + boxH > H - 4) hty = H - boxH - 4;
 
@@ -4525,12 +4729,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Canvas click handler ──
         var handleClick = function(e) {
+          if (e.currentTarget._anatomySuppressClick) {
+            e.currentTarget._anatomySuppressClick = false;
+            return;
+          }
           var rect = e.target.getBoundingClientRect();
           var cx = (e.clientX - rect.left) / rect.width;
           var cy = (e.clientY - rect.top) / rect.height;
           var closest = null, minD = 0.06;
           filtered.forEach(function(st) {
-            var dist = Math.sqrt(Math.pow(st.x - cx, 2) + Math.pow(st.y - cy, 2));
+            var clickMarker = markerPosition(st);
+            var dist = Math.sqrt(Math.pow(clickMarker.x - cx, 2) + Math.pow(clickMarker.y - cy, 2));
             if (dist < minD) { minD = dist; closest = st; }
           });
           if (closest) {
@@ -4550,12 +4759,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Canvas mousemove handler (hover tooltip) ──
         var handleMouseMove = function(e) {
+          if (e.currentTarget._anatomyDragState) return;
           var rect = e.currentTarget.getBoundingClientRect();
           var cx = (e.clientX - rect.left) / rect.width;
           var cy = (e.clientY - rect.top) / rect.height;
           var closest = null, minD = 0.04;
           filtered.forEach(function(st) {
-            var dist = Math.sqrt(Math.pow(st.x - cx, 2) + Math.pow(st.y - cy, 2));
+            var hoverMarker = markerPosition(st);
+            var dist = Math.sqrt(Math.pow(hoverMarker.x - cx, 2) + Math.pow(hoverMarker.y - cy, 2));
             if (dist < minD) { minD = dist; closest = st; }
           });
           var nextHoverId = closest ? closest.id : null;
@@ -4569,6 +4780,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (!e.currentTarget._anatomyHoverId) return;
           e.currentTarget._anatomyHoverId = null;
           upd('_hoverStructure', null);
+        };
+
+        // Direct manipulation complements the button and keyboard controls. Dragging only
+        // activates while zoomed, previews locally to avoid remounting the animated canvas,
+        // then commits one state update when the gesture ends.
+        var handleCanvasPointerDown = function(e) {
+          if (canvasZoom === 1 || (typeof e.button === 'number' && e.button !== 0)) return;
+          var canvas = e.currentTarget;
+          canvas._anatomyDragState = {
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            startPanX: canvasPanX,
+            startPanY: canvasPanY,
+            nextPanX: canvasPanX,
+            nextPanY: canvasPanY,
+            moved: false
+          };
+          canvas.style.transition = 'none';
+          canvas.style.cursor = 'grabbing';
+          if (typeof canvas.setPointerCapture === 'function') {
+            try { canvas.setPointerCapture(e.pointerId); } catch (captureError) {}
+          }
+        };
+        var handleCanvasPointerMove = function(e) {
+          var canvas = e.currentTarget;
+          var drag = canvas._anatomyDragState;
+          if (!drag || drag.pointerId !== e.pointerId) return;
+          e.preventDefault();
+          var deltaX = e.clientX - drag.startX;
+          var deltaY = e.clientY - drag.startY;
+          drag.nextPanX = clampCanvasPan(drag.startPanX + deltaX, canvasZoom, 'x');
+          drag.nextPanY = clampCanvasPan(drag.startPanY + deltaY, canvasZoom, 'y');
+          if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) drag.moved = true;
+          canvas.style.transform = 'translate(' + drag.nextPanX + 'px,' + drag.nextPanY + 'px) scale(' + canvasZoom + ')';
+        };
+        var finishCanvasPointerGesture = function(e, shouldCommit) {
+          var canvas = e.currentTarget;
+          var drag = canvas._anatomyDragState;
+          if (!drag || drag.pointerId !== e.pointerId) return;
+          canvas._anatomyDragState = null;
+          canvas.style.transition = '';
+          canvas.style.cursor = '';
+          if (typeof canvas.releasePointerCapture === 'function') {
+            try { canvas.releasePointerCapture(e.pointerId); } catch (releaseError) {}
+          }
+          if (drag.moved) canvas._anatomySuppressClick = true;
+          if (shouldCommit && drag.moved) setCanvasView(canvasZoom, drag.nextPanX, drag.nextPanY);
+          else canvas.style.transform = 'translate(' + canvasPanX + 'px,' + canvasPanY + 'px) scale(' + canvasZoom + ')';
+        };
+        var handleCanvasPointerUp = function(e) {
+          finishCanvasPointerGesture(e, true);
+        };
+        var handleCanvasPointerCancel = function(e) {
+          finishCanvasPointerGesture(e, false);
+        };
+        var handleCanvasWheel = function(e) {
+          if (!(e.ctrlKey || e.metaKey)) return;
+          e.preventDefault();
+          var wheelDirection = e.deltaY < 0 ? 1 : -1;
+          var nextZoomIndex = Math.max(0, Math.min(CANVAS_ZOOM_LEVELS.length - 1, canvasZoomIndex + wheelDirection));
+          if (nextZoomIndex === canvasZoomIndex) return;
+          setCanvasView(CANVAS_ZOOM_LEVELS[nextZoomIndex], canvasPanX, canvasPanY);
         };
 
         // ── Snapshot ──
@@ -4645,6 +4919,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           }, '\uD83D\uDD0A');
         };
 
+        function confidenceControls(structureId, label) {
+          var currentConfidence = structureConfidence[structureId] || null;
+          var confidenceOptions = [
+            { id: 'practice', label: 'Need practice', icon: '!', active: 'bg-rose-700 text-white border-rose-700' },
+            { id: 'learning', label: 'Learning', icon: '~', active: 'bg-amber-700 text-white border-amber-700' },
+            { id: 'mastered', label: 'Got it', icon: 'OK', active: 'bg-emerald-700 text-white border-emerald-700' }
+          ];
+          return h('div', { className: 'anatomy-confidence', role: 'group', 'aria-label': 'Learning confidence for ' + label },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('p', { className: 'text-[11px] font-bold text-slate-700' }, 'How well do you know this?'),
+              h('span', { className: 'text-[10px] text-slate-500' }, currentConfidence ? 'Saved to your study plan' : 'Choose after reviewing')
+            ),
+            h('div', { className: 'anatomy-confidence-actions' }, confidenceOptions.map(function(option) {
+              var isActive = currentConfidence === option.id;
+              return h('button', {
+                key: option.id, type: 'button', 'aria-pressed': isActive,
+                onClick: function() { setStructureConfidence(structureId, option.id); },
+                className: 'px-2.5 py-1 text-[11px] font-bold border transition-all active:scale-[0.97] ' +
+                  (isActive ? option.active : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')
+              }, option.icon + ' ' + option.label);
+            }))
+          );
+        }
+
         // ── Progress tracker helper ──
         // Search narrows discovery; it must not change the learning-progress denominator.
         var exploredInSystem = 0;
@@ -4655,21 +4953,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var badgesEarnedCount = Object.keys(badges).length;
         var completedChallengeCount = completedChallenges.length;
         var activeLayerCount = LAYER_DEFS.filter(function(ld) { return isLayerVisible(ld.id); }).length;
+        var selectedConfidenceLabel = sel && structureConfidence[sel.id]
+          ? ({ practice: 'Review', learning: 'Learning', mastered: 'Got it' })[structureConfidence[sel.id]] : 'Unrated';
         var canvasLabel = sys.name + ', ' + view + ' view. ' + activeLayerCount +
           (activeLayerCount === 1 ? ' layer visible. ' : ' layers visible. ') +
-          (sel ? sel.name + ' selected. ' : 'No structure selected. ') +
-          'Use the arrow keys to move through visible structures and Escape to clear the selection.';
+          (sel ? sel.name + ' selected. Study status ' + selectedConfidenceLabel + '. ' : 'No structure selected. ') +
+          (view === 'anterior'
+            ? 'Patient right is on the viewer left; patient left is on the viewer right. '
+            : 'Patient left and right align with the viewer. ') +
+          'Use arrow keys to move through structures, Shift plus arrow keys to pan, plus or minus to zoom, F to focus the selected structure, Home or zero to reset, and Escape to clear selection.';
         var missionPrompt = sel
           ? 'Now studying ' + sel.name + '. Compare its function, location, and clinical note against the model.'
           : gradeIntro;
         var showLegacyChallengeCard = false;
 
         // ── Keyboard navigation handler ──
+        var unseenInSystem = viewFiltered.filter(function(structure) { return !structuresViewed[structure.id]; });
+        var reviewInSystem = viewFiltered.filter(function(structure) {
+          return structureConfidence[structure.id] === 'practice' || structureConfidence[structure.id] === 'learning';
+        });
+        var ratedInSystemCount = viewFiltered.filter(function(structure) { return !!structureConfidence[structure.id]; }).length;
+        var recommendedNextStep;
+        if (!tourCompleted && exploredInSystem < Math.min(3, viewFiltered.length)) {
+          recommendedNextStep = { id: 'tour', title: 'Take the guided tour', detail: 'Build a structure-to-function map before testing recall.', action: 'Start tour' };
+        } else if (reviewInSystem.length > 0) {
+          recommendedNextStep = { id: 'review', title: 'Review ' + reviewInSystem[0].name, detail: currentSystemReviewCount + ' structure' + (currentSystemReviewCount === 1 ? '' : 's') + ' marked for review in this view.', action: 'Review now', structure: reviewInSystem[0] };
+        } else if (unseenInSystem.length > 0) {
+          recommendedNextStep = { id: 'unseen', title: 'Discover ' + unseenInSystem[0].name, detail: unseenInSystem.length + ' structure' + (unseenInSystem.length === 1 ? '' : 's') + ' remain unexplored in this view.', action: 'Open structure', structure: unseenInSystem[0] };
+        } else if (ratedInSystemCount < Math.min(3, viewFiltered.length)) {
+          recommendedNextStep = { id: 'cards', title: 'Check your recall', detail: 'Use flashcards and rate your confidence to build a focused review list.', action: 'Open cards' };
+        } else if (totalCorrect < 5) {
+          recommendedNextStep = { id: 'quiz', title: 'Test what you know', detail: 'Mix function, system, true/false, and clinical recall questions.', action: 'Start quiz' };
+        } else {
+          recommendedNextStep = { id: 'spotter', title: 'Practice visual identification', detail: 'Use the Spotter to transfer recall to the body diagram.', action: 'Open Spotter' };
+        }
+        function runRecommendedNextStep() {
+          if (recommendedNextStep.id === 'tour') { activateAnatomyTab('tour'); return; }
+          if (recommendedNextStep.id === 'review' || recommendedNextStep.id === 'unseen') {
+            updMulti(structureFocusPatch(recommendedNextStep.structure.id, { _activeTab: 'explore', quizMode: false }));
+            announceStructure(recommendedNextStep.structure.id);
+            return;
+          }
+          if (recommendedNextStep.id === 'cards' && flashcardPool.length > 0) {
+            updMulti(structureFocusPatch(flashcardPool[0].id, { _activeTab: 'flashcards', _flashcardIdx: 0, _flashcardFlipped: false }));
+            announceStructure(flashcardPool[0].id);
+            return;
+          }
+          if (recommendedNextStep.id === 'quiz') {
+            updMulti({ _activeTab: 'explore', quizMode: true, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 });
+            return;
+          }
+          activateAnatomyTab('spotter');
+        }
         function handleKeyNav(e) {
           if (activeTab !== 'explore') return;
           // Structure navigation belongs to the focused diagram only. The previous root-level
           // handler also intercepted arrows from tabs, buttons, and sliders.
           if (!e.currentTarget || e.currentTarget.tagName !== 'CANVAS') return;
+          if (e.shiftKey && (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowLeft')) {
+            e.preventDefault();
+            var panStep = 18;
+            var keyboardPanX = canvasPanX + (e.key === 'ArrowRight' ? -panStep : e.key === 'ArrowLeft' ? panStep : 0);
+            var keyboardPanY = canvasPanY + (e.key === 'ArrowDown' ? -panStep : e.key === 'ArrowUp' ? panStep : 0);
+            setCanvasView(canvasZoom, keyboardPanX, keyboardPanY);
+            return;
+          }
+          if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            setCanvasView(CANVAS_ZOOM_LEVELS[Math.min(CANVAS_ZOOM_LEVELS.length - 1, canvasZoomIndex + 1)], canvasPanX, canvasPanY);
+            return;
+          }
+          if (e.key === '-' || e.key === '_') {
+            e.preventDefault();
+            setCanvasView(CANVAS_ZOOM_LEVELS[Math.max(0, canvasZoomIndex - 1)], canvasPanX, canvasPanY);
+            return;
+          }
+          if (e.key === '0') {
+            e.preventDefault(); setCanvasView(1, 0, 0); return;
+          }
+          if (e.key === 'Home') {
+            e.preventDefault(); setCanvasView(1, 0, 0); return;
+          }
+          if (!e.ctrlKey && !e.metaKey && !e.altKey && String(e.key || '').toLowerCase() === 'f' && sel) {
+            e.preventDefault();
+            focusSelectedStructure();
+            return;
+          }
           var navList = filtered;
           if (navList.length === 0) return;
           var curIdx = -1;
@@ -4760,6 +5129,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'anatomy-metric' },
                     h('strong', null, badgesEarnedCount + '/' + BADGE_DEFS.length),
                     h('span', null, t('stem.anatomy.badges', 'Badges'))
+                  ),
+                  h('div', { className: 'anatomy-metric' },
+                    h('strong', null, currentSystemMasteredCount + '/' + viewFiltered.length),
+                    h('span', null, 'Got it in this view')
+                  ),
+                  h('div', { className: 'anatomy-metric' },
+                    h('strong', null, String(currentSystemReviewCount)),
+                    h('span', null, 'To review')
                   )
                 ),
                 h('div', { className: 'anatomy-challenge-strip', 'aria-label': t('stem.anatomy.challenge_progress', 'Challenge progress') },
@@ -4773,6 +5150,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     }, ch.icon);
                   }),
                   h('span', { className: 'text-[11px] font-bold text-amber-700 self-center ml-1' }, researchPoints + ' RP - ' + completedChallengeCount + '/' + ANAT_CHALLENGES.length)
+                ),
+                h('section', { className: 'anatomy-coach', 'aria-label': 'Recommended next study step' },
+                  h('span', { className: 'anatomy-kicker' }, 'Recommended next step'),
+                  h('strong', null, recommendedNextStep.title),
+                  h('p', null, recommendedNextStep.detail),
+                  h('button', { type: 'button', onClick: runRecommendedNextStep,
+                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-violet-700 text-white hover:bg-violet-800 active:scale-[0.97]'
+                  }, recommendedNextStep.action)
                 )
               )
             )
@@ -4783,42 +5168,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('button', { 'aria-label': t('stem.anatomy.explore', 'Explore'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { activateAnatomyTab('explore'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white border border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.explore_2', '\uD83E\uDEC0 Explore')),
             h('button', { 'aria-label': t('stem.anatomy.tour', 'Tour'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { activateAnatomyTab('tour'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white' : 'transition-colors bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white border border-emerald-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.tour_2', '\uD83E\uDDED Tour')),
             h('button', { 'aria-label': t('stem.anatomy.connect', 'Connect'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { activateAnatomyTab('connections'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'transition-colors bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-700 text-white border border-sky-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.connect_2', '\uD83D\uDD17 Connect')),
             h('button', { 'aria-label': t('stem.anatomy.ai_tutor', 'AI Tutor'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { activateAnatomyTab('aiTutor'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'transition-colors bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-700 text-white border border-violet-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.ai_tutor_2', '\uD83E\uDD16 AI Tutor')),
             h('button', { 'aria-label': t('stem.anatomy.spotter', 'Spotter'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { activateAnatomyTab('spotter'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white' : 'transition-colors bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white border border-amber-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.spotter_2', '\uD83C\uDFAF Spotter')),
             h('button', { 'aria-label': t('stem.anatomy.pathways', 'Pathways'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { activateAnatomyTab('pathways'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'transition-colors bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-700 text-white border border-rose-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.pathways_2', '\uD83D\uDEE4 Pathways')),
             h('button', { 'aria-label': t('stem.anatomy.cards', 'Cards'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { activateAnatomyTab('flashcards'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'transition-colors bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white border border-teal-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.cards_2', '\uD83C\uDCCF Cards')),
             h('button', { 'aria-label': t('stem.anatomy.homeostasis_discovery', 'Homeostasis discovery'),
               role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'homeoHunt', tabIndex: activeTab === 'homeoHunt' ? 0 : -1,
               onClick: function() { activateAnatomyTab('homeoHunt'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white' : 'transition-colors bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-600 active:scale-[0.97]')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white border border-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.homeostasis', '\uD83C\uDFE0 Homeostasis')),
             h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
           ),
@@ -4880,7 +5265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
               }
             },
-              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { className: 'anatomy-mode-icon', style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                 h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
@@ -4892,11 +5277,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           h('div', { className: 'anatomy-system-rail mb-3', 'data-anatomy-system-rail': 'true', role: 'group', 'aria-label': 'Body system' },
             Object.keys(SYSTEMS).map(function(key) {
               var s = SYSTEMS[key];
-              return h('button', { key: key, 'aria-pressed': sysKey === key,
+              var systemStructures = s.structures.filter(passesComplexity);
+              var systemExploredCount = systemStructures.filter(function(structure) { return structuresViewed[structure.id]; }).length;
+              var systemProgress = systemStructures.length > 0 ? Math.round((systemExploredCount / systemStructures.length) * 100) : 0;
+              var systemIsActive = sysKey === key;
+              return h('button', { key: key, 'aria-pressed': systemIsActive,
+                'aria-label': s.name + '. ' + systemExploredCount + ' of ' + systemStructures.length + ' structures explored.',
                 onClick: function() { showAnatomySystem(key); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ' + (sysKey === key ? 'text-white shadow-sm' : 'transition-colors bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-400 active:scale-[0.97]'),
-                style: sysKey === key ? { background: s.accent, boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.3), 0 2px 6px ' + s.accent + '30' } : {}
-              }, s.icon + ' ' + s.name);
+                className: 'anatomy-system-button px-3 py-1.5 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ' + (systemIsActive ? 'text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]'),
+                style: systemIsActive ? { '--system-accent': s.accent, background: s.accent, boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.24), 0 4px 10px ' + s.accent + '30' } : { '--system-accent': s.accent }
+              },
+                h('span', { className: 'anatomy-system-label' },
+                  h('span', null, s.icon + ' ' + s.name),
+                  h('span', { className: 'anatomy-system-count', 'aria-hidden': 'true' }, systemExploredCount + '/' + systemStructures.length)
+                ),
+                h('span', { className: 'anatomy-system-meter', 'aria-hidden': 'true' },
+                  h('span', { style: { width: systemProgress + '%' } })
+                )
+              );
             })
           ),
 
@@ -5078,29 +5476,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // Canvas (Always visible)
             h('div', { className: 'anatomy-body-shell', 'data-anatomy-model-shell': 'true', style: { borderColor: sys.accent + '24' } },
               h('div', { className: 'anatomy-body-header' },
-                h('div', null,
+                h('div', { className: 'anatomy-body-title' },
                   h('strong', null, sys.icon + ' ' + sys.name),
                   h('span', null, view.charAt(0).toUpperCase() + view.slice(1) + ' view')
                 ),
-                h('span', { style: { color: sys.accent } }, filtered.length + ' structures')
+                h('div', { className: 'anatomy-body-badges' },
+                  h('span', { style: { color: sys.accent } }, filtered.length + ' structures'),
+                  h('span', {
+                    className: 'anatomy-orientation-key',
+                    'aria-label': view === 'anterior'
+                      ? 'Patient perspective. R appears on the viewer left and L appears on the viewer right.'
+                      : 'Patient perspective. L and R align with the viewer.'
+                  }, 'Patient R / L')
+                )
               ),
-              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': canvasLabel,
-                ref: canvasRef,
-                onClick: handleClick,
-                onKeyDown: handleKeyNav,
-                onMouseMove: handleMouseMove,
-                onMouseLeave: handleMouseLeave,
-                className: 'anatomy-canvas border-2 cursor-crosshair',
-                'data-anatomy-canvas': 'true',
-                style: {
-                  borderColor: sys.accent + '50',
-                  background: 'linear-gradient(135deg,#fdfaf3 0%,#f8f1e6 60%,#f4ebdb 100%)',
-                  boxShadow: '0 4px 16px rgba(15,23,42,0.06), 0 0 18px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)'
-                }
-              }),
-              h('div', { className: 'anatomy-canvas-help', 'data-anatomy-canvas-help': 'true' },
+              h('div', { className: 'anatomy-canvas-toolbar' },
+                h('span', null, view === 'anterior' ? 'Patient right is on your left' : 'Patient left/right align with you'),
+                h('div', { className: 'anatomy-canvas-toolbar-group', role: 'group', 'aria-label': 'Diagram zoom and pan controls' },
+                  h('button', {
+                    type: 'button', 'aria-label': 'Zoom out of anatomy diagram', 'aria-keyshortcuts': '-',
+                    disabled: canvasZoomIndex === 0,
+                    onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.max(0, canvasZoomIndex - 1)], canvasPanX, canvasPanY); }
+                  }, '−'),
+                  h('span', { className: 'text-[10px] font-bold text-slate-600 min-w-[38px] text-center', role: 'status', 'aria-live': 'polite', 'aria-label': canvasViewStatus }, Math.round(canvasZoom * 100) + '%'),
+                  h('button', {
+                    type: 'button', 'aria-label': 'Zoom in on anatomy diagram', 'aria-keyshortcuts': '+',
+                    disabled: canvasZoomIndex === CANVAS_ZOOM_LEVELS.length - 1,
+                    onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.min(CANVAS_ZOOM_LEVELS.length - 1, canvasZoomIndex + 1)], canvasPanX, canvasPanY); }
+                  }, '+'),
+                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram left', disabled: canvasZoom === 1,
+                    onClick: function() { setCanvasView(canvasZoom, canvasPanX + 18, canvasPanY); } }, '←'),
+                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram up', disabled: canvasZoom === 1,
+                    onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY + 18); } }, '↑'),
+                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram down', disabled: canvasZoom === 1,
+                    onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY - 18); } }, '↓'),
+                  h('button', { type: 'button', 'aria-label': 'Pan anatomy diagram right', disabled: canvasZoom === 1,
+                    onClick: function() { setCanvasView(canvasZoom, canvasPanX - 18, canvasPanY); } }, '→'),
+                  h('button', { type: 'button',
+                    'aria-label': sel ? 'Focus anatomy diagram on ' + sel.name : 'Focus anatomy diagram on selected structure',
+                    disabled: !sel, 'aria-keyshortcuts': 'F',
+                    onClick: focusSelectedStructure }, 'Focus'),
+                  h('button', { type: 'button', 'aria-label': 'Reset anatomy diagram view',
+                    disabled: canvasZoom === 1 && canvasPanX === 0 && canvasPanY === 0, 'aria-keyshortcuts': 'Home 0',
+                    onClick: function() { setCanvasView(1, 0, 0); } }, 'Reset')
+                )
+              ),
+              h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true' },
+                h('canvas', { role: 'img', tabIndex: 0, 'aria-label': canvasLabel,
+                  'aria-describedby': 'anatomy-canvas-instructions',
+                  'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight + - 0 Home F Escape',
+                  ref: canvasRef,
+                  onClick: handleClick,
+                  onKeyDown: handleKeyNav,
+                  onMouseMove: handleMouseMove,
+                  onMouseLeave: handleMouseLeave,
+                  onPointerDown: handleCanvasPointerDown,
+                  onPointerMove: handleCanvasPointerMove,
+                  onPointerUp: handleCanvasPointerUp,
+                  onPointerCancel: handleCanvasPointerCancel,
+                  onWheel: handleCanvasWheel,
+                  className: 'anatomy-canvas border-2 ' + (canvasZoom > 1 ? 'is-zoomed' : 'cursor-crosshair'),
+                  'data-anatomy-canvas': 'true',
+                  style: {
+                    borderColor: sys.accent + '50',
+                    background: 'linear-gradient(rgba(148,163,184,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,0.08) 1px,transparent 1px),radial-gradient(circle at 50% 38%,#ffffff 0%,#f8fafc 62%,#eef2f7 100%)',
+                    backgroundSize: '24px 24px,24px 24px,100% 100%',
+                    boxShadow: '0 4px 16px rgba(15,23,42,0.06), 0 0 18px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)',
+                    transform: 'translate(' + canvasPanX + 'px,' + canvasPanY + 'px) scale(' + canvasZoom + ')'
+                  }
+                }),
+                canvasZoom > 1 ? h('div', {
+                  className: 'anatomy-minimap',
+                  'data-anatomy-minimap': 'true',
+                  'aria-hidden': 'true'
+                },
+                  h('span', { className: 'anatomy-minimap-label' }, 'ZOOM'),
+                  h('span', { className: 'anatomy-minimap-body' }),
+                  h('span', {
+                    className: 'anatomy-minimap-viewport',
+                    style: {
+                      left: minimapViewportLeft + '%', top: minimapViewportTop + '%',
+                      width: minimapViewportWidth + '%', height: minimapViewportHeight + '%'
+                    }
+                  }),
+                  minimapSelectedMarker ? h('span', { className: 'anatomy-minimap-selected',
+                    style: { left: (minimapSelectedMarker.x * 100) + '%', top: (minimapSelectedMarker.y * 100) + '%' } }) : null
+                ) : null
+              ),
+              h('div', { id: 'anatomy-canvas-instructions', className: 'anatomy-canvas-help', 'data-anatomy-canvas-help': 'true' },
                 h('strong', { className: 'text-slate-700' }, 'Diagram controls: '),
-                'Select a marker or use arrow keys while the diagram is focused. R/L labels show the patient\'s right and left; Escape clears the selection.'
+                'Select markers with pointer or arrow keys. When zoomed, drag or use Shift + arrows to pan; use +/− or Ctrl + wheel to zoom. Press F to focus the selected structure; Home or 0 resets. R/L always indicates the patient\'s perspective.'
+              ),
+              h('div', { className: 'anatomy-marker-legend', role: 'list', 'aria-label': 'Marker learning status legend' },
+                h('span', { className: 'anatomy-marker-legend-title' }, 'Pin status'),
+                [
+                  { id: 'unrated', symbol: '•', label: 'Unrated' },
+                  { id: 'practice', symbol: '!', label: 'Review' },
+                  { id: 'learning', symbol: '~', label: 'Learning' },
+                  { id: 'mastered', symbol: '✓', label: 'Got it' }
+                ].map(function(statusItem) {
+                  return h('span', { key: statusItem.id, className: 'anatomy-marker-legend-item', role: 'listitem' },
+                    h('span', { className: 'anatomy-marker-legend-symbol', 'data-status': statusItem.id, 'aria-hidden': 'true' }, statusItem.symbol),
+                    statusItem.label
+                  );
+                })
               ),
               // Blood-flow color legend — the circulatory canvas color-codes vessels but never said what the colors mean
               sysKey === 'circulatory' && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', style: { maxWidth: 360 } },
@@ -5245,6 +5724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.detail', 'Detail')),
                           h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, sel.detail)
                         ),
+                        confidenceControls(sel.id, sel.name),
                         // Brain Waves Section
                         sel.brainWaves && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
                           h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase mb-2' }, t('stem.anatomy.brain_wave_types_eeg', '\u26A1 Brain Wave Types (EEG)')),
@@ -5344,34 +5824,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('div', { className: 'flex items-start justify-between gap-3 mb-3' },
                         h('div', null,
                           h('h4', { className: 'text-sm font-black text-slate-900' }, t('stem.anatomy.structures_in_view', 'Structures in view')),
-                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed', role: 'status', 'aria-live': 'polite' }, sys.name + ' - ' + view + ' - ' + filtered.length + ' matching')
+                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed', role: 'status', 'aria-live': 'polite' }, sys.name + ' - ' + view + ' - ' + studyFiltered.length + ' matching')
                         ),
                         h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600' }, exploredInSystem + '/' + viewFiltered.length)
                       ),
+                      h('div', { className: 'anatomy-study-filters', role: 'group', 'aria-label': 'Filter structures by study status' },
+                        [{ id: 'all', label: 'All' }, { id: 'unseen', label: 'Unseen' }, { id: 'review', label: 'Review' }, { id: 'mastered', label: 'Got it' }].map(function(filterOption) {
+                          var filterActive = studyFilter === filterOption.id;
+                          return h('button', { key: filterOption.id, type: 'button', 'aria-pressed': filterActive,
+                            onClick: function() { upd('_studyFilter', filterOption.id); },
+                            className: 'px-2.5 py-1 text-[11px] font-bold border transition-all active:scale-[0.97] ' +
+                              (filterActive ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')
+                          }, filterOption.label);
+                        })
+                      ),
                       h('div', { className: 'anatomy-structure-list space-y-1' },
-                        filtered.length === 0 && h('div', { className: 'rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center', role: 'status' },
-                          h('p', { className: 'text-xs font-bold text-slate-700' }, searchTerm
-                            ? 'No structures match "' + searchValue + '".'
-                            : 'No structures are available in this view at the selected level.'),
-                          h('p', { className: 'mt-1 text-[11px] text-slate-500' }, searchTerm
-                            ? 'Try a broader term or clear the search.'
-                            : 'Switch the body view or choose a more advanced level.'),
+                        studyFiltered.length === 0 && h('div', { className: 'rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center', role: 'status' },
+                          h('p', { className: 'text-xs font-bold text-slate-700' }, searchTerm ? 'No structures match "' + searchValue + '".' : studyFilter !== 'all' ? 'No structures match this study filter.' : 'No structures are available in this view at the selected level.'),
+                          h('p', { className: 'mt-1 text-[11px] text-slate-500' }, searchTerm ? 'Try a broader term or clear the search.' : studyFilter !== 'all' ? 'Choose All, or update confidence after reviewing a structure.' : 'Switch the body view or choose a more advanced level.'),
                           searchTerm ? h('button', {
                             onClick: function() { upd('search', ''); },
                             className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 active:scale-[0.97]'
-                          }, 'Clear search') : h('button', {
+                          }, 'Clear search') : studyFilter !== 'all' ? h('button', {
+                            onClick: function() { upd('_studyFilter', 'all'); },
+                            className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 active:scale-[0.97]'
+                          }, 'Show all structures') : h('button', {
                             onClick: function() { upd('complexity', 3); },
                             className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]'
                           }, 'Show advanced structures')
                         ),
-                        filtered.map(function(st) {
+                        studyFiltered.map(function(st) {
                           return h('button', { key: st.id, 'aria-pressed': selectedStructureId === st.id,
                             onClick: function() { updMulti(selectionPatch(st.id)); announceStructure(st.id); playSound('structureClick'); },
-                            className: 'w-full text-left px-3 py-2 text-xs transition-all hover:shadow-sm ' +
-                              (selectedStructureId === st.id ? 'font-bold border-2' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]'),
+                            className: 'w-full text-left px-3 py-2 text-xs transition-all hover:shadow-sm ' + (selectedStructureId === st.id ? 'font-bold border-2' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]'),
                             style: selectedStructureId === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                           },
-                            h('div', { className: 'font-bold text-slate-800' }, st.name),
+                            h('div', { className: 'flex items-center justify-between gap-2' },
+                              h('span', { className: 'font-bold text-slate-800' }, st.name),
+                              structureConfidence[st.id] ? h('span', { className: 'text-[10px] font-bold text-slate-500' }, structureConfidence[st.id] === 'practice' ? 'Need practice' : structureConfidence[st.id] === 'learning' ? 'Learning' : 'Got it') : null
+                            ),
                             h('div', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
                           );
                         })
@@ -5795,6 +6286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         }, flashcardFlipped ? 'Show structure name' : 'Reveal function')
                       )
                     ),
+                    flashcardFlipped ? confidenceControls(flashcardPool[flashcardIdx % flashcardPool.length].id, flashcardPool[flashcardIdx % flashcardPool.length].name) : null,
                     h('div', { className: 'flex gap-2 justify-between', role: 'toolbar', 'aria-label': 'Flashcard navigation' },
                       h('button', { 'aria-label': t('stem.anatomy.previous_5', 'Previous'),
                         onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; updMulti(structureFocusPatch(flashcardPool[pi].id, { _flashcardIdx: pi, _flashcardFlipped: false })); announceStructure(flashcardPool[pi].id); playSound('guidedStep'); },

@@ -25,4 +25,13 @@ const wave08WarningSnapshot = Object.freeze({
   fullKeyEchoOptions: 1612,
 });
 
-module.exports = { revisions, wave08WarningSnapshot };
+const wave09WarningSnapshot = Object.freeze({
+  itemsWithWarnings: 1421,
+  incorrectOptionsWithWarnings: 4114,
+  insufficientDetailOptions: 1491,
+  genericTemplateOptions: 2558,
+  choiceRestatementOptions: 1839,
+  fullKeyEchoOptions: 1564,
+});
+
+module.exports = { revisions, wave08WarningSnapshot, wave09WarningSnapshot };

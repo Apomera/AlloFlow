@@ -93,7 +93,7 @@ const pack = {
   nativeQaUrl: './test_prep/plt_k6_5622_native_qa.json',
   learningLibraryUrl: './test_prep/plt_k6_5622_learning_library.json',
   learningLibraryQaUrl: './test_prep/plt_k6_5622_learning_library_qa.json',
-  simulationItemCount: 70, simulationTimeMinutes: 70,
+  simulationItemCount: 70, simulationDomainCounts: {"students-as-learners":21,"instructional-process":21,"assessment":14,"professional-development-leadership-community":14}, simulationTimeMinutes: 70,
   simulationLabel: '70-question selected-response pacing simulation',
   simulationNote: 'The official 5622 test currently contains 70 selected-response questions and four constructed-response questions in one 120-minute session. ETS recommends approximately 70 minutes for selected response and 50 minutes for constructed response. This simulation covers the selected-response pacing segment; use the separate case-analysis workshops for written-response practice.',
   officialSelectedResponseCount: 70, officialConstructedResponseCount: 4,

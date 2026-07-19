@@ -115,6 +115,7 @@ describe('STEM tool render goldens (default state)', () => {
         principle: 'Publish resource allocations and reserve a science dividend for public review.',
         rule: { trigger: 'always', benefitResource: 'science', benefitAmount: 1, costResource: 'materials', costAmount: 1, socialAxis: 'equity', socialDelta: 1, duration: 4 },
         explanation: 'A transparent ledger benefits public oversight while imposing a visible material and administrative cost.',
+        revision: { fromName: 'Public Ledger Trial', reliability: 'resource-constrained', changed: 'lowered the operating burden after repeated affordability pauses.', before: '+1 science / -2 materials / 4 sols', after: '+1 science / -1 materials / 4 sols' },
       },
       colonyCharterReviewId: 'charter-old',
       colonyCharterConclusion: 'The public ledger helped some oversight, but the repeated material pauses made the rule too brittle for this phase.',
@@ -224,6 +225,10 @@ describe('STEM tool render goldens (default state)', () => {
     expect(html).toContain('Public amendment draft');
     expect(html).toContain('Open Ledger Compact');
     expect(html).toContain('+1 equity per activation');
+    expect(html).toContain('Evidence-linked revision');
+    expect(html).toContain('From Public Ledger Trial');
+    expect(html).toContain('Before: +1 science / -2 materials / 4 sols');
+    expect(html).toContain('After: +1 science / -1 materials / 4 sols');
     expect(html).toContain('Council deliberation');
     expect(html).toContain('Systems desk');
     expect(html).toContain('Commons assembly');
@@ -313,6 +318,10 @@ describe('Kepler Charter Lab bounded social-engineering contract', () => {
     expect(normalized.explanation).toHaveLength(500);
     expect(normalized.rule).toMatchObject({ trigger: 'always', benefitResource: 'science', benefitAmount: 2, costResource: 'energy', costAmount: 1, socialAxis: 'equity', socialDelta: -1, duration: 6 });
     expect(normalized.enactCostScience).toBe(4);
+    const normalizedRevision = charter.normalize({ name: 'Draft', rule: {}, revision: { fromName: 'x'.repeat(120), reliability: 'resource-constrained', changed: 'z'.repeat(400), before: 'old'.repeat(80), after: 'new'.repeat(80) } });
+    expect(normalizedRevision.revision.fromName).toHaveLength(80);
+    expect(normalizedRevision.revision.changed).toHaveLength(220);
+    expect(normalizedRevision.revision.before).toHaveLength(160);
     expect(charter.parse('not json')).toBeNull();
     expect(charter.buildPrompt('share reserves', 'because public evidence matters', 'Sol 8')).toContain('No scripts, formulas, new triggers, arbitrary state keys, permanent effects, or hidden mechanics');
     const voices = charter.stakeholders(normalized, { resources: { energy: 9, science: 14 }, equity: 55, morale: 68 });
@@ -349,6 +358,7 @@ describe('Kepler Charter Lab bounded social-engineering contract', () => {
     expect(revised.name).toBe('Revised Water Hearings');
     expect(revised.rule).toMatchObject({ costResource: 'water', costAmount: 1, benefitResource: 'science' });
     expect(revised.explanation).toContain('affordability pauses');
+    expect(revised.revision).toMatchObject({ fromName: 'Water Hearings', reliability: 'resource-constrained', before: '+2 science / -2 water / 3 sols', after: '+2 science / -1 water / 3 sols' });
   });
 });
 import { readFileSync as _readFileSync } from 'node:fs';
@@ -446,6 +456,8 @@ describe('STEM invariant · AI-gating sweep stays in force', () => {
     expect(s).toContain('summarizeColonyCharterTrial');
     expect(s).toContain('buildColonyCharterStakeholders');
     expect(s).toContain('reviseColonyCharterFromTrial');
+    expect(s).toContain('Evidence-linked revision');
+    expect(s).toContain('proposalRevision.before');
     expect(s).toContain('colonyCharterResponse');
     expect(s).toContain("source: 'Charter Lab civic trial'");
     expect(s).toContain("'data-spacecolony-charter-lab': 'true'");

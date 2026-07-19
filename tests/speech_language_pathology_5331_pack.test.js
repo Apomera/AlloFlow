@@ -1,7 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
+
+const nodeRequire = createRequire(import.meta.url);
+const { findResponseFormIssue } = nodeRequire('../dev-tools/speech_language_pathology_5331/semantic_response_form_gate.cjs');
 
 let Hub;
 let pack;
@@ -15,7 +19,7 @@ beforeAll(() => {
 describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
   it('registers five ready 100-item batches with the near-equal ETS category blueprint', () => {
     expect(pack).toBeTruthy();
-    expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 132, simulationTimeMinutes: 150 });
+    expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 132, simulationTimeMinutes: 150, officialSelectedResponseCount: 132, officialTotalTimeMinutes: 150 });
     expect(pack.items).toHaveLength(500);
     expect(pack.sections).toHaveLength(5);
     expect(pack.sections.map((section) => section.id)).toEqual(['diagnostic-batch-1', 'diagnostic-batch-2', 'guided-review-bank-1', 'guided-review-bank-2', 'guided-review-bank-3']);
@@ -55,6 +59,33 @@ describe('Praxis Speech-Language Pathology 5331 diagnostic bank', () => {
     }
   });
 
+  it('rejects the seven legacy nonresponsive stem-key forms and accepts both repaired source forms', () => {
+    const suffixes = ['009', '026', '034', '061', '062', '064', '094'];
+    for (const suffix of suffixes) {
+      for (const batch of ['b1', 'b2']) {
+        const item = pack.items.find((entry) => entry.id === 'slp5331-' + batch + '-' + suffix);
+        expect(item).toBeTruthy();
+        expect(findResponseFormIssue(item)).toBe('');
+      }
+    }
+
+    const sourceById = Object.fromEntries(pack.items.slice(0, 200).map((item) => [item.id, item]));
+    const legacyForms = [
+      ['slp5331-b1-009', 'Which finding most clearly distinguishes conductive from sensorineural hearing loss?'],
+      ['slp5331-b1-026', 'Which pattern most strongly suggests language difference rather than disorder?'],
+      ['slp5331-b1-034', 'Which symptom during eating most clearly warrants prompt swallowing-safety evaluation?'],
+      ['slp5331-b1-061', 'When is a videofluoroscopic swallowing study especially useful?'],
+      ['slp5331-b1-062', 'What is a major advantage of fiberoptic endoscopic evaluation of swallowing?', 'FEES, when clinically appropriate and within qualified scope and procedures.'],
+      ['slp5331-b1-064', 'Which finding is most associated with oral-phase swallowing difficulty?'],
+      ['slp5331-b1-094', 'How should a postural swallowing strategy be prescribed?', 'No; use a strategy only when assessment shows benefit for that person and bolus.'],
+    ];
+    for (const [id, prompt, oldKey] of legacyForms) {
+      const item = sourceById[id];
+      const choices = item.choices.slice();
+      if (oldKey) choices[item.answerIndex] = oldKey;
+      expect(findResponseFormIssue({ ...item, prompt, choices })).not.toBe('');
+    }
+  });
   it('builds category and confidence diagnostics without inventing a scaled score or credential result', () => {
     const firstBatch = pack.items.slice(0, 100);
     const answers = Object.fromEntries(firstBatch.map((item) => [item.id, item.answerIndex]));

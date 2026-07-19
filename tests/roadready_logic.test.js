@@ -68,6 +68,16 @@ describe('world-space simulation consistency', () => {
     expect(RR.crossedControlLine(12, 11, 10)).toBe(false);
   });
 
+  it('keeps winter safety markings visible but partially snow-covered', () => {
+    expect(RR.roadMarkingAppearance('clear', 0xffffff, 0.5)).toEqual({
+      color: 0xffffff, opacity: 1, transparent: false, depthWrite: true
+    });
+    const crosswalk = RR.roadMarkingAppearance('snow', 0xf5f5f5, 0.58);
+    const stopBar = RR.roadMarkingAppearance('snow', 0xffffff, 0.78);
+    expect(crosswalk).toMatchObject({ color: 0xe7e9e5, opacity: 0.58, transparent: true, depthWrite: false });
+    expect(stopBar.opacity).toBeGreaterThan(crosswalk.opacity);
+  });
+
   it('uses realistic footprints and oriented rectangles for vehicle contact', () => {
     expect(RR.vehicleFootprint('car')).toEqual({ length: 4.5, width: 1.8 });
     expect(RR.vehicleFootprint('schoolbus')).toEqual({ length: 10, width: 2.5 });
@@ -119,6 +129,103 @@ describe('physical road layouts', () => {
     expect(highway.pavedHalfWidth).toBeCloseTo(10.4);
     expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.highway, 1.2)).toBeCloseTo(11.6);
     expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.residential, 1.2)).toBeCloseTo(5.3);
+  });
+
+  it('keeps curved cross-street coordinates reversible and aligned with travel headings', () => {
+    const pose = RR.crossStreetPose(48, 64, 0.35, 6.5, RR.MAP_SIZE);
+    const worldPoint = RR.crossStreetWorldPoint(pose, 18, 1.5);
+    const localPoint = RR.crossStreetLocalPoint(pose, worldPoint.x, worldPoint.y);
+    expect(localPoint.longitudinal).toBeCloseTo(18, 8);
+    expect(localPoint.lateral).toBeCloseTo(1.5, 8);
+
+    const positiveHeading = RR.crossStreetTravelHeading(pose, 1);
+    const oneMeterAhead = RR.crossStreetWorldPoint(pose, 19, 1.5);
+    expect(oneMeterAhead.x - worldPoint.x).toBeCloseTo(Math.cos(positiveHeading), 8);
+    expect(oneMeterAhead.y - worldPoint.y).toBeCloseTo(Math.sin(positiveHeading), 8);
+  });
+
+  it('grounds cross-street vehicles to terrain instead of extending main-road bank', () => {
+    const world = RR.createScenarioWorld({ id: 'rural', speedLimit: 45 });
+    const chunk = world.getChunk(0);
+    const centerY = chunk.intersectionY;
+    const pose = RR.crossStreetPose(world.spline.centerAt(centerY), centerY,
+      world.spline.headingAt(centerY), 6.5, RR.MAP_SIZE);
+    const farCrossStreet = RR.crossStreetWorldPoint(pose, 40, 0);
+    const surface = RR.roadSurfacePoseAt(world, farCrossStreet.x, farCrossStreet.y);
+    expect(surface.crossStreet).toBe(true);
+    expect(surface.lateralOffset).toBeCloseTo(0, 6);
+    expect(surface.height).toBeCloseTo(world.spline.heightAt(farCrossStreet.y)
+      + RR.roadCrownHeight(0, chunk, pose.width * 0.5), 6);
+  });
+
+  it('models drainage crown consistently on main and divided roads', () => {
+    expect(RR.roadCrownHeight(0, { roadHalfWidth: 3.5 })).toBeCloseTo(0.07, 8);
+    expect(RR.roadCrownHeight(1.5, { roadHalfWidth: 3.5 })).toBeCloseTo(0.04, 8);
+    expect(RR.roadCrownHeight(3.5, { roadHalfWidth: 3.5 })).toBe(0);
+    expect(RR.roadCrownHeight(5, { roadHalfWidth: 3.5 })).toBe(0);
+    expect(RR.roadCrownHeight(0, { roadHalfWidth: 8, isHighway: true })).toBeCloseTo(0.12, 8);
+    const flatWorld = {
+      profile: { roadHalfWidth: 3.5 },
+      spline: { centerAt: () => 48, heightAt: () => 2, headingAt: () => 0 }
+    };
+    expect(RR.roadSurfacePoseAt(flatWorld, 48, 10).height).toBeCloseTo(2.07, 8);
+    expect(RR.roadSurfacePoseAt(flatWorld, 51.5, 10).height).toBeCloseTo(2, 8);
+  });
+
+  it('rasterizes curved intersection pavement under the visible rotated cross street', () => {
+    const world = RR.createScenarioWorld({ id: 'rural', speedLimit: 45 });
+    const chunk = world.getChunk(0);
+    expect(chunk.hasIntersection).toBe(true);
+    const centerY = chunk.intersectionY;
+    const pose = RR.crossStreetPose(world.spline.centerAt(centerY), centerY,
+      world.spline.headingAt(centerY), 6.5, RR.MAP_SIZE);
+    // Exercise the far half of the plane, which can cross a chunk boundary.
+    const visibleRoadPoint = RR.crossStreetWorldPoint(pose, 40, 0);
+    const cellX = Math.round(visibleRoadPoint.x);
+    const cellY = Math.round(visibleRoadPoint.y);
+    const cell = world.getCell(cellX, cellY);
+    expect([0, 3]).toContain(cell);
+    const corridor = RR.crossStreetCorridorAt(world, cellX, cellY, 0);
+    expect(corridor).not.toBeNull();
+    expect(Math.abs(corridor.local.lateral)).toBeLessThanOrEqual(corridor.pose.width / 2);
+  });
+
+  it('does not seed obsolete axis-aligned cross traffic in streamed scenarios', () => {
+    const traffic = RR.spawnTraffic({ id: 'rural', speedLimit: 45, traffic: 'medium' });
+    expect(traffic.some((vehicle) => vehicle.crossStreet)).toBe(false);
+  });
+
+  it('builds smooth lane-to-lane turn paths with correct endpoint tangents', () => {
+    const pose = RR.crossStreetPose(48, 50, 0.25, 6.5, RR.MAP_SIZE);
+    const startHeading = Math.PI / 2 - pose.heading;
+    const path = RR.createIntersectionTurnPath(46.5, 48, startHeading, pose, 1, 'right');
+    const start = RR.intersectionTurnPoint(path, 0);
+    const middle = RR.intersectionTurnPoint(path, 0.5);
+    const end = RR.intersectionTurnPoint(path, 1);
+    expect(start).toMatchObject({ x: 46.5, y: 48, progress: 0 });
+    expect(Number.isFinite(middle.x) && Number.isFinite(middle.y)).toBe(true);
+    expect(end.x).toBeCloseTo(path.p3.x, 8);
+    expect(end.y).toBeCloseTo(path.p3.y, 8);
+    expect(Math.cos(end.heading)).toBeCloseTo(Math.cos(path.endHeading), 6);
+    expect(Math.sin(end.heading)).toBeCloseTo(Math.sin(path.endHeading), 6);
+    expect(path.length).toBeGreaterThan(5);
+  });
+
+  it('projects player stop-line enforcement onto rotated cross streets', () => {
+    const world = RR.createScenarioWorld({ id: 'downtown', speedLimit: 30 });
+    const chunk = world.getChunk(1);
+    const signalY = RR.CHUNK_SIZE + chunk.intersectionY;
+    const signal = { x: world.spline.centerAt(signalY), y: signalY, type: 'light', _chunk: 1 };
+    const pose = RR.crossStreetPose(signal.x, signal.y, world.spline.headingAt(signal.y), 6.5, RR.MAP_SIZE);
+    const direction = chunk.crossStreetOneWayDirection;
+    const carPoint = RR.crossStreetWorldPoint(pose,
+      RR.vehicleStopCenterCoordinate(0, direction, 4.5), direction > 0 ? 1.5 : -1.5);
+    const car = { x: carPoint.x, y: carPoint.y,
+      heading: RR.crossStreetTravelHeading(pose, direction) };
+    const approach = RR.playerControlApproach(world, signal, car, 4.5);
+    expect(approach).toMatchObject({ sameRoad: true, approachGroup: 'cross', travelSign: direction });
+    expect(approach.vehicleCenterCoordinate).toBeCloseTo(approach.stopCenterCoordinate, 6);
+    expect(RR.crossStreetTravelDirection(pose, car.heading)).toBe(direction);
   });
 
   it('places stop bars before crosswalks and stops vehicle fronts behind the bar', () => {
@@ -208,6 +315,10 @@ describe('physical road layouts', () => {
 
     const bounds = RR.workZoneBoundsForChunk(1);
     expect(bounds).toEqual({ startY: 35, endY: 61, playerStopY: 61, opposingStopY: 35 });
+    expect(RR.workZoneStopLineForDirection(bounds, -1)).toBe(61);
+    expect(RR.workZoneStopLineForDirection(bounds, 1)).toBe(35);
+    expect(RR.workZoneStopLineForDirection({ _workZoneStartY: 35, _workZoneEndY: 61 }, -1)).toBe(61);
+    expect(RR.workZoneStopLineForDirection({ _workZoneStartY: 35, _workZoneEndY: 61 }, 1)).toBe(35);
     expect(RR.workZoneConeOffset(0)).toBeCloseTo(-0.4);
     expect(RR.workZoneConeOffset(8)).toBeCloseTo(-2.7);
     expect(RR.flaggerStopsDirection('red', -1)).toBe(true);
@@ -593,6 +704,19 @@ describe('calibrated parking geometry', () => {
   });
 });
 
+describe('intersection conflict handling', () => {
+  it('requires left-turning traffic to wait for a close opposing approach', () => {
+    const signal = { x: 48, y: 50 };
+    const self = { id: 'turner', x: 46.5, y: 56, heading: -Math.PI / 2, speed: 3 };
+    const oncoming = { id: 'oncoming', x: 49.5, y: 43, heading: Math.PI / 2, speed: 5 };
+    const blocked = RR.leftTurnGapState([self, oncoming], self, signal, null);
+    expect(blocked.clear).toBe(false);
+    expect(blocked.blockerId).toBe('oncoming');
+    const clear = RR.leftTurnGapState([self, { ...oncoming, y: 20 }], self, signal, null);
+    expect(clear.clear).toBe(true);
+  });
+});
+
 describe('roundabout traffic and compliance', () => {
   it('spawns dedicated circulating traffic plus an approach vehicle', () => {
     const traffic = RR.spawnRoundaboutTraffic({ id: 'roundabout', traffic: 'medium' });
@@ -846,14 +970,23 @@ describe('spawn placement follows the road curve', () => {
 // ───────────────────── signals, emergencies, wildlife ────────────────
 
 describe('updateSignals', () => {
-  it('cycles green → yellow → red → green on its configured durations', () => {
-    const sig = { type: 'light', state: 'green', timer: 0, greenDur: 8, yellowDur: 3, redDur: 6 };
+  it('cycles both approaches through yellow and all-red clearance', () => {
+    const sig = { type: 'light', state: 'green', timer: 0, greenDur: 8, yellowDur: 3, redDur: 6, allRedDur: 1 };
+    expect(RR.trafficSignalIndication(sig, 'main')).toBe('green');
+    expect(RR.trafficSignalIndication(sig, 'cross')).toBe('red');
+
     RR.updateSignals([sig], 8.1);
-    expect(sig.state).toBe('yellow');
+    expect(sig).toMatchObject({ _phase: 'main_yellow', state: 'yellow', _crossState: 'red' });
     RR.updateSignals([sig], 3.1);
-    expect(sig.state).toBe('red');
-    RR.updateSignals([sig], 6.1);
-    expect(sig.state).toBe('green');
+    expect(sig).toMatchObject({ _phase: 'all_red_to_cross', state: 'red', _crossState: 'red' });
+    RR.updateSignals([sig], 1.0);
+    expect(sig).toMatchObject({ _phase: 'cross_green', state: 'red', _crossState: 'green' });
+    RR.updateSignals([sig], 5.9);
+    expect(sig).toMatchObject({ _phase: 'cross_yellow', state: 'red', _crossState: 'yellow' });
+    RR.updateSignals([sig], 3.0);
+    expect(sig).toMatchObject({ _phase: 'all_red_to_main', state: 'red', _crossState: 'red' });
+    RR.updateSignals([sig], 1.0);
+    expect(sig).toMatchObject({ _phase: 'main_green', state: 'green', _crossState: 'red' });
   });
   it('ignores stop signs', () => {
     const sig = { type: 'stop', state: 'stop' };

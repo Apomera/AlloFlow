@@ -1,0 +1,206 @@
+{
+  "reviewedAt": "2026-07-18",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "reviewedFile": "dev-tools/authored/parapro_batch5_writing_33.json",
+  "reviewedFileSha256": "58a9c854291c1e7a8c3c1fa33f95234d22c0184247723dd3d46860bd83f51b68",
+  "itemCount": 33,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b5-writing-002",
+      "issue": "The prompt explicitly asked candidates to evaluate both \"its\" and \"it's,\" but the original keyed sentence contained two correct instances of \"its\" and no instance of \"it's.\" Although it was the only error-free sentence, it did not demonstrate both forms as directly as the prompt required.",
+      "change": "Revised the keyed choice to \"It's time for the robotics team to test its design.\" and updated the overall and keyed-choice feedback. The item now tests the contraction \"it's\" and the possessive determiner \"its\" unambiguously while preserving answer position B."
+    }
+  ],
+  "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 33,
+      "reviewedItemIds": [
+        "parapro-b5-writing-001",
+        "parapro-b5-writing-002",
+        "parapro-b5-writing-003",
+        "parapro-b5-writing-004",
+        "parapro-b5-writing-005",
+        "parapro-b5-writing-006",
+        "parapro-b5-writing-007",
+        "parapro-b5-writing-008",
+        "parapro-b5-writing-009",
+        "parapro-b5-writing-010",
+        "parapro-b5-writing-011",
+        "parapro-b5-writing-012",
+        "parapro-b5-writing-013",
+        "parapro-b5-writing-014",
+        "parapro-b5-writing-015",
+        "parapro-b5-writing-016",
+        "parapro-b5-writing-017",
+        "parapro-b5-writing-018",
+        "parapro-b5-writing-019",
+        "parapro-b5-writing-020",
+        "parapro-b5-writing-021",
+        "parapro-b5-writing-022",
+        "parapro-b5-writing-023",
+        "parapro-b5-writing-024",
+        "parapro-b5-writing-025",
+        "parapro-b5-writing-026",
+        "parapro-b5-writing-027",
+        "parapro-b5-writing-028",
+        "parapro-b5-writing-029",
+        "parapro-b5-writing-030",
+        "parapro-b5-writing-031",
+        "parapro-b5-writing-032",
+        "parapro-b5-writing-033"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections",
+  "priorChecks": {
+    "currentBlueprintAlignment": {
+      "status": "pass-after-corrections",
+      "officialReference": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "verifiedOn": "2026-07-18",
+      "details": [
+        "All 33 items assess writing knowledge or the application of writing instruction in school settings.",
+        "The bank contains 22 basic-skills-and-knowledge items and 11 classroom-application items, matching the current ETS approximate two-thirds/one-third emphasis.",
+        "The basic items sample agreement, pronoun case and usage, verb tense, punctuation, possessives, spelling, word choice, sentence parts, parts of speech, and sentence-level clarity.",
+        "The application items sample prewriting and organization, reference use, writing forms, editing, punctuation instruction, accessible composition, audience and purpose, peer feedback, paraphrasing, process scaffolding, and progress monitoring."
+      ]
+    },
+    "grammarWritingRuleAccuracy": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "remainingRuleErrors": 0,
+      "details": "Every keyed agreement, case, tense, usage, punctuation, spelling, sentence-part, part-of-speech, transition, sentence-combination, revision, and instructional judgment was checked against its full sentence or classroom context and stated formal-English register."
+    },
+    "keyedAnswerDefensibility": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "remainingMultipleDefensibleKeys": 0,
+      "remainingUnsupportedKeys": 0,
+      "details": "Each key was independently verified against the tested rule or the instructional objective; the its/it's key was revised to demonstrate both forms expressly."
+    },
+    "distractorQuality": {
+      "status": "pass-after-corrections",
+      "itemsReviewed": 33,
+      "choiceCountPerItem": 4,
+      "itemsWithProductionUniqueChoices": 33,
+      "remainingAccidentallyCorrectDistractors": 0,
+      "details": "Distractors represent recognizable agreement, case, tense, punctuation, spelling, transition, process, source-use, access, or paraeducator-role errors and remain distinct after production whitespace and case normalization."
+    },
+    "feedbackAndRationales": {
+      "status": "pass-after-corrections",
+      "itemsWithItemSpecificRationales": 33,
+      "itemsWithFourSubstantiveChoiceRationales": 33,
+      "minimumRationaleCharacters": 105,
+      "minimumChoiceRationaleCharacters": 46,
+      "remainingFeedbackContradictions": 0,
+      "details": "All overall rationales explain the governing rule or instructional principle, and every option has feedback specific to why that response is correct or unsuitable."
+    },
+    "sourceAlignment": {
+      "status": "pass",
+      "allItemsIncludeCurrentEtsStudyCompanion": true,
+      "allItemsIncludeOpenStaxWritingReference": true,
+      "allReferencesUseHttps": true,
+      "validatedReferenceHosts": [
+        "www.ets.org",
+        "openstax.org"
+      ],
+      "details": "The cited sources support the ParaPro writing blueprint and the grammar, editing, organization, reference-use, revision, and composing principles used in the feedback. Invented school scenarios are not represented as source-derived facts."
+    },
+    "promptOriginality": {
+      "status": "pass",
+      "existingPack": "test_prep/parapro_pack.json",
+      "existingWritingActivitiesCompared": 165,
+      "existingSourceDiagnosticWritingPromptsCompared": 66,
+      "bank5ReadingAndMathematicsPromptsCompared": 67,
+      "normalizedExactMatchesToExistingMaterials": 0,
+      "normalizedContentKernelMatches": 0,
+      "normalizedPromptDuplicatesWithinBatch": 0,
+      "nearDuplicateThreshold": 0.82,
+      "nearDuplicateMatches": 0,
+      "maximumPromptJaccardAgainstExistingWriting": 0.625,
+      "maximumPromptJaccardWithinBatch": 0.353,
+      "remainingOverlap": "Recurring blueprint competencies use independently written sentences, scenarios, options, response decisions, and feedback rather than copied ETS samples or recycled item records."
+    },
+    "accessibility": {
+      "status": "pass",
+      "itemsReviewed": 33,
+      "details": [
+        "Prompts use concise school-relevant contexts and do not depend on specialized cultural knowledge.",
+        "No item requires an image, color distinction, audio-only information, or unstated visual layout.",
+        "The low-vision application item implements assigned magnification and an accessible template while preserving the student's composition and revision decisions.",
+        "Language-difference and disability supports are framed around access, instruction, and independence rather than deficit assumptions."
+      ]
+    },
+    "classroomRoleAppropriateness": {
+      "status": "pass",
+      "applicationItemsReviewed": 11,
+      "details": "Classroom supports follow teacher direction, preserve student authorship, scaffold rather than complete work, use approved access tools, and communicate barriers or progress without assigning the paraeducator diagnostic or accommodation-selection authority."
+    },
+    "answerQuota": {
+      "status": "pass",
+      "countsByAnswerIndex": {
+        "0": 8,
+        "1": 8,
+        "2": 8,
+        "3": 9
+      },
+      "expected": {
+        "0": 8,
+        "1": 8,
+        "2": 8,
+        "3": 9
+      }
+    },
+    "contentFocusQuota": {
+      "status": "pass",
+      "counts": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      },
+      "expected": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      }
+    },
+    "difficultyDistribution": {
+      "status": "pass",
+      "counts": {
+        "foundation": 14,
+        "developing": 8,
+        "applied": 11
+      }
+    },
+    "structureAndIntegrationFields": {
+      "status": "pass",
+      "sequentialUniqueIds": true,
+      "singleChoiceItems": 33,
+      "itemsWithFourProductionUniqueChoices": 33,
+      "itemsWithValidAnswerIndex": 33,
+      "itemsWithValidSkillAndChapterLinks": 33,
+      "itemsWithIndependentDraftProvenance": 33,
+      "itemsWithHttpsReferences": 33,
+      "schemaFindings": 0
+    }
+  },
+  "blockers": [],
+  "sourceSha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 5,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
+}

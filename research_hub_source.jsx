@@ -1,5 +1,5 @@
 /**
- * AlloFlow — Investigation & Research Hub (Tier 1: Hub Shell + Substrate)
+ * AlloFlow — Research & Inquiry Hub (Shared Inquiry Portfolio + Method Packs)
  *
  * Three-lane Hub for student inquiry across Scientific Inquiry, Engineering
  * Design, and Humanities & Social Research. Lanes are loaded as plugins via
@@ -123,8 +123,11 @@
   }
 
   // ───────────────────────────────────────────────────────────────────────
-  // Inquiry Journal substrate — the ONE shared object the three lanes write
-  // into. The lanes differ in WHICH facets they emphasize (model snapshots
+  // Inquiry Portfolio substrate — the ONE shared object every inquiry method
+  // writes into. `journal` remains the internal name for backward compatibility
+  // with saved sessions and lane plugins; in the interface it is presented as
+  // a portfolio because it holds evidence, revisions, models, interpretations,
+  // and compositions rather than only chronological notes. The lanes differ in WHICH facets they emphasize (model snapshots
   // vs. constraint matrix vs. positionality vs. claim-evidence-warrant
   // chains) but the journal itself is shared. A student who starts in
   // Scientific Inquiry and finishes by writing a humanities op-ed should
@@ -137,11 +140,13 @@
   // ───────────────────────────────────────────────────────────────────────
   function emptyJournal() {
     return {
-      v: 4,                              // Tier 4 substrate revision; lanes migrate older shapes lazily
+      v: 5,                              // Inquiry-method substrate revision; older shapes migrate lazily
       createdAt: Date.now(),
       updatedAt: Date.now(),
       devLevel: '6_8',
       activeLane: null,                  // 'scientific' | 'engineering' | 'humanities' | null
+      activeMethodPack: null,            // specific inquiry approach; several packs can share a lane
+      methodPackHistory: [],             // append-only: [{ id, laneId, selectedAt }]
       activeStage: null,                 // lane-specific stage key
       // Cross-lane substrate fields:
       questionTitle: '',                 // the inquiry framing in the student's words
@@ -216,12 +221,12 @@
     try {
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return emptyJournal();
-      // Tier-3 migration ladder. Pre-Tier-3 the check was strict-equal to 1,
+      // Migration ladder. Pre-Tier-3 the check was strict-equal to 1,
       // which silently dropped any v:2 save (the actual shape emptyJournal()
-      // returned at Tier 2). Accept v in {1, 2, 3} and migrate forward so
+      // returned at Tier 2). Accept v in {1, 2, 3, 4, 5} and migrate forward so
       // mid-pilot sessions don't lose their inquiry on a deploy.
       var v = parsed.v;
-      if (v !== 1 && v !== 2 && v !== 3 && v !== 4) return emptyJournal();
+      if (v !== 1 && v !== 2 && v !== 3 && v !== 4 && v !== 5) return emptyJournal();
       // Merge defaults so an older shape doesn't crash readers.
       var fresh = emptyJournal();
       Object.keys(fresh).forEach(function (k) {
@@ -266,7 +271,10 @@
           }];
         }
       }
-      parsed.v = 4;
+      // v:1-v:4 → v:5 — method-pack identity is additive. Defaults above
+      // preserve every earlier artifact while giving future selections an
+      // append-only provenance trail.
+      parsed.v = 5;
       // aiCallCount resets per page-load — quota is a per-session anti-spam
       // gate, not anti-cost; documented explicitly so this isn't surprising.
       parsed.aiCallCount = 0;
@@ -446,6 +454,74 @@
       _placeholder: true,
     },
   ];
+
+  // Inquiry approaches are intentionally a layer above lanes. A lane is the
+  // durable workflow implementation; a method pack gives a learner a more
+  // precise intellectual entry point without fragmenting the shared portfolio.
+  var METHOD_PACKS = [
+    {
+      id: 'scientific_investigation', laneId: 'scientific',
+      label: 'Scientific Investigation', family: 'Empirical inquiry',
+      icon: '🔬', color: '#0e7490', border: '#67e8f9',
+      background: 'linear-gradient(145deg,#ecfeff,#ffffff)',
+      blurb: 'Observe a phenomenon, compare explanations, choose a method, and revise a model as measurable evidence accumulates.',
+      rigor: 'Rigor means traceable observations, explicit variables and uncertainty, alternative explanations, and reproducible reasoning.',
+      bestFor: 'Explaining patterns and phenomena',
+    },
+    {
+      id: 'engineering_design', laneId: 'engineering',
+      label: 'Engineering Design', family: 'Design inquiry',
+      icon: '🛠️', color: '#b45309', border: '#fcd34d',
+      background: 'linear-gradient(145deg,#fffbeb,#ffffff)',
+      blurb: 'Define a need with stakeholders, criteria, and constraints; prototype; test; and document trade-offs and iteration.',
+      rigor: 'Rigor means measurable criteria, testable prototypes, transparent trade-offs, failure analysis, and stakeholder accountability.',
+      bestFor: 'Solving constrained problems',
+    },
+    {
+      id: 'humanistic_interpretation', laneId: 'humanities',
+      label: 'Humanistic Interpretation', family: 'Interpretive inquiry',
+      icon: '📚', color: '#be123c', border: '#fda4af',
+      background: 'linear-gradient(145deg,#fff1f2,#ffffff)',
+      blurb: 'Interpret texts, images, events, or cultural artifacts through competing framings while attending to context and positionality.',
+      rigor: 'Rigor means close reading, contextualized sources, competing interpretations, warranted claims, and limits stated plainly.',
+      bestFor: 'Interpreting meaning, culture, and history',
+    },
+    {
+      id: 'community_qualitative', laneId: 'humanities',
+      label: 'Community & Qualitative Inquiry', family: 'Situated inquiry',
+      icon: '🗣️', color: '#9d174d', border: '#f9a8d4',
+      background: 'linear-gradient(145deg,#fdf2f8,#ffffff)',
+      blurb: 'Study lived experience and community perspectives through ethical, contextualized accounts without treating one voice as universal.',
+      rigor: 'Rigor means ethical sourcing, transparent selection, discrepant cases, reflexivity, and clear limits on what accounts can establish.',
+      bestFor: 'Understanding experiences and perspectives',
+    },
+    {
+      id: 'civic_policy', laneId: 'humanities',
+      label: 'Civic & Policy Inquiry', family: 'Public inquiry',
+      icon: '🏛️', color: '#6d28d9', border: '#c4b5fd',
+      background: 'linear-gradient(145deg,#f5f3ff,#ffffff)',
+      blurb: 'Examine a public problem, competing interests, institutional choices, evidence, consequences, and feasible alternatives.',
+      rigor: 'Rigor means stakeholder and power analysis, credible evidence, counterarguments, trade-offs, and accountable recommendations.',
+      bestFor: 'Reasoning about public choices and consequences',
+    },
+    {
+      id: 'creative_cultural', laneId: 'humanities',
+      label: 'Creative & Cultural Inquiry', family: 'Artifact inquiry',
+      icon: '🎨', color: '#c2410c', border: '#fdba74',
+      background: 'linear-gradient(145deg,#fff7ed,#ffffff)',
+      blurb: 'Investigate how form, medium, audience, context, and cultural position shape what an artifact makes visible or possible.',
+      rigor: 'Rigor means attention to form and context, evidence from the artifact, multiple plausible readings, and no mind-reading of creators.',
+      bestFor: 'Analyzing art, media, and cultural artifacts',
+    },
+  ];
+
+  function methodPackById(id) {
+    return METHOD_PACKS.filter(function (pack) { return pack.id === id; })[0] || null;
+  }
+
+  function defaultMethodPackForLane(laneId) {
+    return METHOD_PACKS.filter(function (pack) { return pack.laneId === laneId; })[0] || null;
+  }
 
   function resolveLanes() {
     // Merge: registered lanes (from plugins) take precedence over placeholders.
@@ -1532,6 +1608,7 @@
 
     var lanes = resolveLanes();
     var activeLane = journal.activeLane ? lanes.filter(function (L) { return L.id === journal.activeLane; })[0] : null;
+    var activeMethodPack = methodPackById(journal.activeMethodPack);
     // V2: educator-view toggle. Session-only React state (not journal —
     // a teacher's view preference doesn't need to persist across reloads,
     // and the dashboard reads journal substrate directly so there's no
@@ -1551,7 +1628,7 @@
     var researchNextMove = !researchMilestones[0].complete
       ? 'Write a question worth investigating'
       : !activeLane
-        ? 'Choose the lens that best fits your question'
+        ? 'Choose an inquiry approach that fits what you want to do'
         : !researchMilestones[1].complete
           ? 'Collect or log your first piece of evidence'
           : !researchMilestones[2].complete
@@ -1578,6 +1655,26 @@
         var next = Object.assign({}, prev);
         next.activeLane = laneId;
         next.activeStage = null;
+        next.updatedAt = Date.now();
+        return next;
+      });
+    }, []);
+
+    var selectMethodPack = useCallback(function (packId) {
+      var pack = methodPackById(packId);
+      if (!pack) return;
+      setJournal(function (prev) {
+        var next = Object.assign({}, prev);
+        var history = Array.isArray(prev.methodPackHistory) ? prev.methodPackHistory.slice() : [];
+        var last = history.length ? history[history.length - 1] : null;
+        if (!last || last.id !== pack.id) {
+          history.push({ id: pack.id, laneId: pack.laneId, selectedAt: Date.now() });
+        }
+        next.activeMethodPack = pack.id;
+        next.methodPackHistory = history;
+        next.activeLane = pack.laneId;
+        next.activeStage = null;
+        next.updatedAt = Date.now();
         return next;
       });
     }, []);
@@ -1665,12 +1762,12 @@
               <span aria-hidden="true" style={{ fontSize: '28px' }}>{'\u{1F50D}'}</span>
               <div>
                 <h2 id="research-hub-dialog-title" style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
-                  {t('research_hub.modal_title') || 'Investigation & Research Hub'}
+                  {t('research_hub.modal_title') || 'Research & Inquiry Hub'}
                 </h2>
                 <p id="research-hub-dialog-description" style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.85 }}>
                   {studentCodename
-                    ? (t('research_hub.modal_subtitle_with_codename') || 'Inquiry journal for ') + studentCodename
-                    : (t('research_hub.modal_subtitle') || 'Loop, model, source, and argue your way through a question worth asking.')}
+                    ? (t('research_hub.modal_subtitle_with_codename') || 'Inquiry Portfolio for ') + studentCodename
+                    : (t('research_hub.modal_subtitle') || 'Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio.')}
                 </p>
               </div>
             </div>
@@ -1718,7 +1815,7 @@
             overflowY: 'auto', flex: 1,
           }}>
             <div role="status" aria-live="polite" aria-atomic="true" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
-              {educatorViewOn ? (t('research_hub.educator_view_on') || 'Educator view') : activeLane ? activeLane.label : (t('research_hub.lane_selector_title') || 'Choose an investigation lane')}
+              {educatorViewOn ? (t('research_hub.educator_view_on') || 'Educator view') : activeLane ? activeLane.label : (t('research_hub.method_selector_title') || 'Choose an inquiry approach')}
             </div>
             {showExitHint && (
               <div data-research-exit-hint="true" role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '12px', border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1e3a8a' }}>
@@ -1855,38 +1952,42 @@
             !activeLane ? (
               <React.Fragment>
                 <h3 style={{ margin: '4px 0 0', fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>
-                  {t('research_hub.lane_selector_title') || 'Pick a lane to start (or switch any time)'}
+                  {t('research_hub.method_selector_title') || 'Choose an inquiry approach (switch any time)'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.55 }}>
                   {t('research_hub.lane_selector_help') ||
-                    'These three lanes share one inquiry journal. Evidence cards, voice notes, and your model history carry across — so a question that starts as scientific inquiry can finish as a humanities op-ed without losing the work.'}
+                    'Six approaches open three connected workspaces. Your question, sources, evidence, voice notes, models, framings, and revision history stay together in one Inquiry Portfolio.'}
                 </p>
                 {researchLaneMatch ? (
                   <div data-research-lane-match="true" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px 14px', borderRadius: '14px', border: '1px solid #c7d2fe', background: 'linear-gradient(90deg,#eef2ff,#f8fafc)', flexWrap: 'wrap' }}>
                     <span aria-hidden="true" style={{ fontSize: '24px' }}>{researchLaneMatch.icon}</span>
                     <div style={{ flex: '1 1 260px' }}><div style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#4f46e5' }}>Possible lens match - based only on words in your question</div><div style={{ marginTop: '2px', fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{researchLaneMatch.label}</div><p style={{ margin: '3px 0 0', fontSize: '11px', lineHeight: 1.5, color: '#475569' }}>{researchLaneMatch.reason}</p><p style={{ margin: '3px 0 0', fontSize: '10px', color: '#64748b' }}>This is not a verdict. Try another lane whenever a different lens reveals something useful.</p></div>
-                    <button type="button" onClick={function () { setActiveLane(researchLaneMatch.id); }} style={{ flexShrink: 0, border: 0, borderRadius: '9px', background: '#4f46e5', color: '#fff', padding: '7px 10px', fontSize: '10px', fontWeight: 900, cursor: 'pointer' }}>Try this lens</button>
+                    <button type="button" onClick={function () { var pack = defaultMethodPackForLane(researchLaneMatch.id); if (pack) selectMethodPack(pack.id); }} style={{ flexShrink: 0, border: 0, borderRadius: '9px', background: '#4f46e5', color: '#fff', padding: '7px 10px', fontSize: '10px', fontWeight: 900, cursor: 'pointer' }}>Try this lens</button>
                   </div>
                 ) : researchQuestionText ? (
-                  <div data-research-lane-match="true" style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '11px', color: '#475569' }}><strong>No single lens dominates.</strong> Choose the lane that matches what you want to do first; your journal will travel with you.</div>
+                  <div data-research-lane-match="true" style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '11px', color: '#475569' }}><strong>No single lens dominates.</strong> Choose the approach that matches what you want to do first; your Inquiry Portfolio will travel with you.</div>
                 ) : null}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
                   gap: '12px',
                 }}>
-                  {lanes.map(function (L) {
+                  {METHOD_PACKS.map(function (pack) {
+                    var lane = lanes.filter(function (L) { return L.id === pack.laneId; })[0];
+                    var selectedBefore = journal.activeMethodPack === pack.id;
                     return (
                       <button
-                        key={L.id}
+                        key={pack.id}
                         type="button"
-                        data-research-lane={L.id}
-                        data-help-key={'research_hub_lane_' + L.id}
-                        onClick={function () { setActiveLane(L.id); }}
+                        data-research-method-pack={pack.id}
+                        data-research-lane={pack.laneId}
+                        data-help-key={'research_hub_method_' + pack.id}
+                        onClick={function () { selectMethodPack(pack.id); }}
+                        aria-label={'Open ' + pack.label + ' inquiry approach'}
                         style={{
                           padding: '16px', borderRadius: '14px',
-                          border: '1px solid ' + (L.id === 'scientific' ? '#67e8f9' : L.id === 'engineering' ? '#fcd34d' : '#fda4af'),
-                          background: L.id === 'scientific' ? 'linear-gradient(145deg,#ecfeff,#ffffff)' : L.id === 'engineering' ? 'linear-gradient(145deg,#fffbeb,#ffffff)' : 'linear-gradient(145deg,#fff1f2,#ffffff)',
+                          border: '1px solid ' + pack.border,
+                          background: pack.background,
                           textAlign: 'left', cursor: 'pointer',
                           display: 'flex', flexDirection: 'column', gap: '8px',
                           transition: 'transform 0.15s, box-shadow 0.15s',
@@ -1895,18 +1996,26 @@
                         onMouseLeave={function (e) { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span aria-hidden="true" style={{ fontSize: '32px' }}>{L.icon}</span>
+                          <span aria-hidden="true" style={{ fontSize: '30px' }}>{pack.icon}</span>
                           <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}><h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>{L.label}</h4>{researchLaneMatch && researchLaneMatch.id === L.id && <span style={{ borderRadius: '999px', padding: '2px 6px', background: '#4f46e5', color: '#fff', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Lens match</span>}</div>
-                            <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>{L.tagline}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>{pack.label}</h4>
+                              {researchLaneMatch && researchLaneMatch.id === pack.laneId && <span style={{ borderRadius: '999px', padding: '2px 6px', background: '#4f46e5', color: '#fff', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Lens match</span>}
+                              {selectedBefore && <span style={{ borderRadius: '999px', padding: '2px 6px', background: '#dcfce7', color: '#166534', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Current approach</span>}
+                            </div>
+                            <p style={{ margin: '2px 0 0', fontSize: '10px', fontWeight: 800, color: pack.color }}>{pack.family}</p>
                           </div>
                         </div>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>{L.blurb}</p>
-                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b' }}>{L.id === 'scientific' ? 'Best for explaining phenomena' : L.id === 'engineering' ? 'Best for solving constrained problems' : 'Best for interpreting people and systems'}</span>
-                          <span style={{ fontSize: '10px', fontWeight: 900, color: L.id === 'scientific' ? '#0e7490' : L.id === 'engineering' ? '#b45309' : '#be123c' }}>Open workspace {'→'}</span>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>{pack.blurb}</p>
+                        <div style={{ padding: '8px 9px', borderRadius: '9px', background: 'rgba(255,255,255,0.78)', border: '1px solid ' + pack.border }}>
+                          <div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.45px', color: pack.color }}>What rigor looks like</div>
+                          <div style={{ marginTop: '2px', fontSize: '10px', lineHeight: 1.45, color: '#475569' }}>{pack.rigor}</div>
                         </div>
-                        {L._placeholder && (
+                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b' }}>{pack.bestFor}</span>
+                          <span style={{ fontSize: '10px', fontWeight: 900, color: pack.color }}>Open approach {'→'}</span>
+                        </div>
+                        {lane && lane._placeholder && (
                           <span style={{
                             alignSelf: 'flex-start',
                             padding: '3px 8px', borderRadius: '999px',
@@ -1968,14 +2077,14 @@
               />
             </details>
 
-            <details data-research-backpack="true" style={{
+            <details data-research-backpack="true" data-inquiry-portfolio="true" style={{
               borderRadius: '16px', overflow: 'hidden',
               border: '1px solid #cbd5e1', background: '#ffffff',
               boxShadow: '0 4px 14px rgba(15,23,42,0.05)',
             }}>
               <summary style={{ cursor: 'pointer', padding: '12px 14px', listStylePosition: 'inside', background: 'linear-gradient(90deg,#f8fafc,#eef2ff)' }}>
                 <span aria-hidden="true" style={{ fontSize: '16px' }}>{'🎒 '}</span>
-                <span style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b' }}>{t('research_hub.journal_state_summary') || 'Research Backpack'}</span>
+                <span style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b' }}>{t('research_hub.journal_state_summary') || 'Inquiry Portfolio'}</span>
                 <span data-research-save-status="true" role="status" aria-live="polite" style={{ marginLeft: '8px', borderRadius: '999px', padding: '3px 7px', background: saveStatus === 'saved' ? '#d1fae5' : '#dbeafe', color: saveStatus === 'saved' ? '#047857' : '#1d4ed8', fontSize: '9px', fontWeight: 900 }}>{saveStatus === 'saved' ? 'Saved on this device' : 'Saving latest changes...'}</span>
                 <span style={{ marginLeft: '8px', fontSize: '10px', color: '#64748b' }}>{researchProgress + '% inquiry progress'}</span>
               </summary>
@@ -1992,8 +2101,8 @@
                   })}
                 </div>
                 <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '8px' }}>
-                  <div style={{ borderRadius: '12px', border: '1px solid #e0e7ff', background: '#eef2ff', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#4f46e5' }}>Current context</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>{(DEV_LEVELS.filter(function (l) { return l.key === journal.devLevel; })[0] || { long: journal.devLevel }).long + ' reading level - ' + (activeLane ? activeLane.label : 'No lane selected')}</div></div>
-                  <div style={{ borderRadius: '12px', border: '1px solid #ccfbf1', background: '#f0fdfa', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#0f766e' }}>Journal continuity</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>Everything here travels with you when you switch research lanes.</div></div>
+                  <div style={{ borderRadius: '12px', border: '1px solid #e0e7ff', background: '#eef2ff', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#4f46e5' }}>Current context</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>{(DEV_LEVELS.filter(function (l) { return l.key === journal.devLevel; })[0] || { long: journal.devLevel }).long + ' reading level - ' + (activeMethodPack ? activeMethodPack.label + ' / ' : '') + (activeLane ? activeLane.label : 'No workspace selected')}</div></div>
+                  <div style={{ borderRadius: '12px', border: '1px solid #ccfbf1', background: '#f0fdfa', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#0f766e' }}>Portfolio continuity</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>Everything here travels with you when you switch inquiry approaches or workspaces.</div></div>
                   <div style={{ borderRadius: '12px', border: '1px solid #fde68a', background: '#fffbeb', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#b45309' }}>AI questions</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>{(journal.aiCallCount || 0) + ' of ' + MAX_AI_CALLS_PER_SESSION + ' used this session - your authored work is not counted.'}</div></div>
                 </div>
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -2013,10 +2122,10 @@
           }}>
             <span>
               {t('research_hub.footer_persistence_note') ||
-                'Your inquiry journal is saved on this device. Switching codenames mid-investigation will show prior work — clear the inquiry above to start fresh.'}
+                'Your Inquiry Portfolio is saved on this device. Switching codenames mid-investigation will show prior work — clear the inquiry above to start fresh.'}
             </span>
             <span style={{ fontStyle: 'italic' }}>
-              {t('research_hub.footer_tier_note') || 'Scientific · Engineering · Humanities lanes.'}
+              {t('research_hub.footer_tier_note') || 'Empirical · design · interpretive · qualitative · civic · creative inquiry.'}
             </span>
           </div>
           {showResetConfirm && (

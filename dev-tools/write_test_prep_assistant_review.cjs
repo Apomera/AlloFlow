@@ -60,7 +60,7 @@ const inventory = {
 const audit = {
   schemaVersion: 2,
   id: 'test-prep-assistant-review-2026-07-16',
-  reviewedAt: '2026-07-17',
+  reviewedAt: '2026-07-18',
   reviewer: 'OpenAI Codex',
   status: inventory.newIndependentItemsNeeded ? 'reviewed-target-not-met' : 'reviewed-target-met',
   snapshot: { algorithm: 'sha256', generatedAt: new Date().toISOString(), hash: snapshotHash },
@@ -81,6 +81,10 @@ const audit = {
     newIndependentParaProItemsReviewed: inventory.assistantAuthoredIndependentItems,
     allActivitiesStructurallyChecked: true,
     allGuidedAnswerDerivationsChecked: true,
+    allIndependentItemsWarningScanned: true,
+    allLearnerVisibleReferencesCataloged: true,
+    allLearningLinksValidated: true,
+    epppGuidedQaReport: './test_prep/non_eppp_eppp_guided_qa_2026-07-18.json',
   },
   inventory,
   verdict: {
@@ -98,7 +102,7 @@ const audit = {
     'The response-and-evidence form repeats the same evidence across all four options, so the task largely asks the learner to reselect the original answer.',
     'The comparison form always presents the source-correct response first in the prompt and commonly includes only two choices that directly evaluate the named pair.',
     `The original ${inventory.originalSourceQuestions.toLocaleString()} source questions contain ${inventory.distinctSourceContentKernels.toLocaleString()} normalized content kernels and ${inventory.parallelSourceVariants.toLocaleString()} parallel variants.`,
-    'Source mapping remains broad in many packs. The prior cross-pack audit found named title/summary catalog entries for 21 of 65 used URLs; 44 URLs remain uncataloged, and several packs reuse one broad reference bundle across many items.',
+    'Every learner-visible source now resolves to a catalog entry with a readable title, organization, brief summary, and credibility explanation; broad source-bundle reuse remains an editorial-depth warning rather than a missing-metadata defect.',
   ],
   correctionsCompleted: [
     'Replaced 68 credential-mismatched or mechanically stacked EBD 5372 and Intellectual Disabilities 5322 items with new school-based scenarios and item-specific feedback.',
@@ -107,12 +111,15 @@ const audit = {
     'Corrected four IDEA Part B/Part C, IEP/IFSP, LRE/natural-environment, and payment-rule items using current official IDEA regulations.',
     'Corrected targeted Early Childhood Special Education, Praxis Core, reading, grammar, possessive, quotation, and encoding defects identified during sampling.',
     'Added a durable source-correction pass to both full build pipelines and guarded the legacy 200-item collapse step behind an explicit authorization flag.',
+    'Rebuilt the School Librarian skill/chapter mapper so all 500 activities resolve to released, domain-compatible learning content.',
+    'Expanded the shared reference catalog to cover every source used by pack items and learning libraries, including readable title, organization, summary, and credibility metadata.',
+    'Added a reproducible EPPP-guided QA gate across all 22 non-EPPP packs, with warning diagnostics kept distinct from hard release findings.',
     'Separated guided-review attempt mode from diagnostic analytics and excluded guided activities from smart review, targeted sets, custom quizzes, and saved-question review.',
     `Added and assistant-reviewed ${inventory.assistantAuthoredIndependentItems} genuinely new ParaPro practice questions with distinct stimuli, balanced answer positions, item-specific feedback, blueprint tagging, and source links.`,
   ],
   limitations: [
     'Assistant review is not licensed-professional endorsement, independent legal/clinical review, field testing, psychometric calibration, or validation of score interpretations.',
-    'The qualitative review used a stratified 169-item sample of existing activities plus review of all credential-specific replacements and independent additions; it did not simulate examinee response data.',
+    'The review combined full structural and heuristic scans of all activities with a stratified 169-item manual sample, manual priority-docket inspection, and independent group review evidence; it did not simulate examinee response data.',
     'Content-kernel counts detect normalized within-pack reuse. They do not by themselves establish item quality or detect every semantically similar question across different wording.',
   ],
   nextWork: [
@@ -133,7 +140,7 @@ const audit = {
 };
 
 const table = perPack.map(row => `| ${row.title.replace(/\|/g, '/')} | ${row.sourceQuestions} | ${row.assistantAuthoredIndependentItems} | ${row.distinctIndependentContentKernels} | ${row.parallelIndependentVariants} | ${row.guidedReviewActivities} | ${row.newIndependentItemsNeeded} |`).join('\n');
-const md = `# Test Prep Assistant Review — July 17, 2026
+const md = `# Test Prep Assistant Review — July 18, 2026
 
 Status: **Reviewed — 500-distinct-question target ${inventory.newIndependentItemsNeeded ? 'not met' : 'met'}.** This is a completed assistant review, not a “review required” placeholder.
 

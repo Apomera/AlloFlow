@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:42.762Z",
+  "generatedAt": "2026-07-19T05:09:26.307Z",
   "libraryId": "praxis-teaching-reading-5205-learning-library",
   "packId": "praxis-teaching-reading-5205",
   "standard": {
-    "label": "AlloFlow Teaching Reading 5205 learning-library QA v1",
+    "label": "AlloFlow Teaching Reading 5205 learning-library and credential-role QA v3",
     "limitation": "Not ETS, ILA, IDA, or IES approval; independent elementary literacy, dyslexia, multilingual-family, accessibility, and psychometric validation remain pending. AlloFlow does not provide official constructed-response scoring."
   },
   "summary": {
@@ -21,7 +21,32 @@
     "sourceReviewedMemoryAids": 20,
     "sourceReviewedConstructedResponseWorkshops": 9,
     "editorialReviewedSourcePendingMemoryAids": 0,
+    "credentialRoleIntegrity": {
+      "expectedCredential": "Praxis Teaching Reading: Elementary (5205)",
+      "expectedRole": "K-6 classroom teacher responsible for literacy assessment and instruction within established school processes",
+      "allSourceItemsReviewed": 200,
+      "fullLearningLibraryReviewed": true,
+      "targetSourceItemsReviewed": 26,
+      "additionalCorrectedSourceItemsReviewed": 7,
+      "libraryChecksReviewed": 10,
+      "sourceDerivedFlashcardsReviewed": 11,
+      "targetForeignRoleOccurrences": 0,
+      "classroomResponsibilityMisses": 0,
+      "suiteWideForeignScopeOccurrences": 0,
+      "malformedResponseFormOccurrences": 0,
+      "encodingCorruptionOccurrences": 0,
+      "negativeGates": "pass"
+    },
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "51c325b09b7d291b8035e3bf6c87977aadb49d1b8460e61185f021f4bf18674a",
+    "learningLibrarySha256": "b637fc2a6421ae55d2a140dca21b46b5385e75bb2ecbfd2dd0af90d1a3204d4c",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

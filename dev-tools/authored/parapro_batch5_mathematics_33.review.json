@@ -1,0 +1,311 @@
+{
+  "reviewedAt": "2026-07-18",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 33,
+  "correctionsMade": [
+    {
+      "itemId": "parapro-b5-mathematics-001",
+      "issue": "Two multiplication distractors were not cleanly traceable to the partial-product errors described by their feedback.",
+      "change": "Replaced them with 8,760 and 3,066, the two single-partial-product results, and rewrote the corresponding feedback while preserving answer position A."
+    },
+    {
+      "itemId": "parapro-b5-mathematics-005",
+      "issue": "The generic expression stem collapsed to the same nonmathematical wording as an older item under a punctuation-stripping scan, and the feedback for -5 incorrectly claimed that -7 + 12 equals -5.",
+      "change": "Reframed the expression as a freezer-temperature change, replaced -5 with the correct misconception result 5, replaced the arbitrary -40 distractor with the operation-confusion result -8, and updated the rationale and all feedback without moving answer A."
+    },
+    {
+      "itemId": "parapro-b5-mathematics-008",
+      "issue": "Distributing and combining like terms exceeded the explicit ParaPro list of basic algebra targets used for this review.",
+      "change": "Replaced the task with an original nested-storage exponent model for 3^4 = 81, retained answer position D, and remapped the item to mathematics-number-operations/parapro-ch-05."
+    },
+    {
+      "itemId": "parapro-b5-mathematics-009",
+      "issue": "The draft used a generic two-step equation even though the current ETS content list specifies one-step single-variable linear equations; its generic wording also produced the highest preliminary structural overlap.",
+      "change": "Replaced it with a contextual one-step equation, c + 18 = 47, recalculated the answer as 29, rebuilt all distractors and feedback, and preserved answer position A and the algebra learning link."
+    },
+    {
+      "itemId": "parapro-b5-mathematics-020",
+      "issue": "The feedback for 75 minutes said only that some repeated values were omitted and did not identify the exact frequency error.",
+      "change": "Specified that the 10-minute session was counted once instead of twice and displayed the resulting incorrect computation."
+    },
+    {
+      "itemId": "parapro-b5-mathematics-026",
+      "issue": "The combining-like-terms classroom task depended on the same algebra target removed from the basic section and was outside the strict current ParaPro content list used for review.",
+      "change": "Replaced it with an original 4.07-versus-4.7 place-value misconception and a place-value-chart/hundred-grid scaffold, retained answer position B, and remapped it to mathematics-number-operations/parapro-ch-05."
+    }
+  ],
+  "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 33,
+      "reviewedItemIds": [
+        "parapro-b5-mathematics-001",
+        "parapro-b5-mathematics-002",
+        "parapro-b5-mathematics-003",
+        "parapro-b5-mathematics-004",
+        "parapro-b5-mathematics-005",
+        "parapro-b5-mathematics-006",
+        "parapro-b5-mathematics-007",
+        "parapro-b5-mathematics-008",
+        "parapro-b5-mathematics-009",
+        "parapro-b5-mathematics-010",
+        "parapro-b5-mathematics-011",
+        "parapro-b5-mathematics-012",
+        "parapro-b5-mathematics-013",
+        "parapro-b5-mathematics-014",
+        "parapro-b5-mathematics-015",
+        "parapro-b5-mathematics-016",
+        "parapro-b5-mathematics-017",
+        "parapro-b5-mathematics-018",
+        "parapro-b5-mathematics-019",
+        "parapro-b5-mathematics-020",
+        "parapro-b5-mathematics-021",
+        "parapro-b5-mathematics-022",
+        "parapro-b5-mathematics-023",
+        "parapro-b5-mathematics-024",
+        "parapro-b5-mathematics-025",
+        "parapro-b5-mathematics-026",
+        "parapro-b5-mathematics-027",
+        "parapro-b5-mathematics-028",
+        "parapro-b5-mathematics-029",
+        "parapro-b5-mathematics-030",
+        "parapro-b5-mathematics-031",
+        "parapro-b5-mathematics-032",
+        "parapro-b5-mathematics-033"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections: all 33 Mathematics items passed independent blueprint, key, calculation, unit, distractor, feedback, source, accessibility, linkage, and operator-aware originality review and are approved for integration as assistant-authored independent ParaPro practice drafts; this is not official ETS endorsement or psychometric validation.",
+  "priorChecks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 33,
+      "reviewedItemIds": [
+        "parapro-b5-mathematics-001",
+        "parapro-b5-mathematics-002",
+        "parapro-b5-mathematics-003",
+        "parapro-b5-mathematics-004",
+        "parapro-b5-mathematics-005",
+        "parapro-b5-mathematics-006",
+        "parapro-b5-mathematics-007",
+        "parapro-b5-mathematics-008",
+        "parapro-b5-mathematics-009",
+        "parapro-b5-mathematics-010",
+        "parapro-b5-mathematics-011",
+        "parapro-b5-mathematics-012",
+        "parapro-b5-mathematics-013",
+        "parapro-b5-mathematics-014",
+        "parapro-b5-mathematics-015",
+        "parapro-b5-mathematics-016",
+        "parapro-b5-mathematics-017",
+        "parapro-b5-mathematics-018",
+        "parapro-b5-mathematics-019",
+        "parapro-b5-mathematics-020",
+        "parapro-b5-mathematics-021",
+        "parapro-b5-mathematics-022",
+        "parapro-b5-mathematics-023",
+        "parapro-b5-mathematics-024",
+        "parapro-b5-mathematics-025",
+        "parapro-b5-mathematics-026",
+        "parapro-b5-mathematics-027",
+        "parapro-b5-mathematics-028",
+        "parapro-b5-mathematics-029",
+        "parapro-b5-mathematics-030",
+        "parapro-b5-mathematics-031",
+        "parapro-b5-mathematics-032",
+        "parapro-b5-mathematics-033"
+      ],
+      "scope": [
+        "current ETS ParaPro 1755 Mathematics blueprint fit",
+        "independent recomputation of numerical keys",
+        "verification of geometry, place-value, graph, and instructional reasoning keys",
+        "unit consistency and magnitude checks",
+        "four unique and mutually exclusive choices",
+        "distractor derivations and misconception fidelity",
+        "main rationale and all four option-feedback statements",
+        "source and learning-link alignment",
+        "plain-text mathematical notation and accessibility",
+        "teacher-directed paraeducator scope",
+        "operator-aware cross-bank and intra-bank originality"
+      ]
+    },
+    "blueprintAlignment": {
+      "status": "pass",
+      "officialBlueprint": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "officialBlueprintVerifiedAtReview": "2026-07-18",
+      "mathematicsSkillsAndKnowledgeTopicsRepresented": [
+        "whole-number, fraction, and decimal operations in word problems",
+        "percent and signed-number operations",
+        "unit rates and proportional word problems",
+        "exponents as repeated multiplication",
+        "one-step equations and inequality symbols",
+        "input-output rules and numerical sequences",
+        "angle measure, perimeter, coordinates, measurement conversion, and shape properties",
+        "mean, range, frequency tables, line graphs, plotted points, and trends over time"
+      ],
+      "classroomApplicationTopicsRepresented": [
+        "improper-fraction magnitude",
+        "decimal multiplication and decimal place value",
+        "proportional reasoning",
+        "quadrilateral classification",
+        "protractor and offset-ruler measurement",
+        "median with an even number of values",
+        "comparing graphs with different scales",
+        "interpreting pictograph keys and partial symbols",
+        "planning operations in a multistep word problem"
+      ],
+      "contentFocusCounts": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      },
+      "expectedContentFocusCounts": {
+        "basic-skills-knowledge": 22,
+        "application-classroom": 11
+      },
+      "outOfBlueprintAlgebraTargetsRemaining": 0
+    },
+    "keysAndMathematicalReasoning": {
+      "status": "pass",
+      "directNumericRecomputationAssertions": 20,
+      "directNumericRecomputationPasses": 20,
+      "conceptualAndApplicationKeysIndependentlyVerified": 13,
+      "totalKeysVerified": 33,
+      "unresolvedCalculationErrors": 0,
+      "unresolvedUnitErrors": 0,
+      "unresolvedMultipleCorrectChoices": 0
+    },
+    "distractorsAndFeedback": {
+      "status": "pass",
+      "fourRawUniqueChoicesPerItem": true,
+      "choiceRationaleSetsChecked": 33,
+      "minimumMainRationaleCharacters": 114,
+      "minimumChoiceRationaleCharacters": 61,
+      "distractorsWithIncorrectArithmeticInFeedback": 0,
+      "genericCorrectIncorrectFeedbackRemaining": 0
+    },
+    "answerPositionBalance": {
+      "status": "pass",
+      "countsByZeroBasedIndex": {
+        "0": 8,
+        "1": 8,
+        "2": 9,
+        "3": 8
+      },
+      "expectedCountsByZeroBasedIndex": {
+        "0": 8,
+        "1": 8,
+        "2": 9,
+        "3": 8
+      }
+    },
+    "learningLinks": {
+      "status": "pass",
+      "countsBySkill": {
+        "mathematics-number-operations": 10,
+        "mathematics-ratio-algebra": 7,
+        "mathematics-geometry-measurement": 8,
+        "mathematics-data-support": 8
+      },
+      "validSkillIds": true,
+      "validChapterIds": true,
+      "skillChapterPairsVerified": true
+    },
+    "originality": {
+      "status": "pass",
+      "comparisonMethod": "repository-equivalent operator-aware canonicalization and token Jaccard",
+      "comparedAgainst": "all 500 current ParaPro pack activities plus the 34 corrected Bank 5 Reading and 33 Bank 5 Writing drafts",
+      "priorAndCurrentItemsCompared": 567,
+      "exactPromptOverlaps": 0,
+      "exactChoiceSetOverlaps": 0,
+      "exactNormalizedContentKernelOverlaps": 0,
+      "maximumPromptTokenJaccard": 0.6875,
+      "maximumSimilarityPair": [
+        "parapro-b5-mathematics-005",
+        "parapro-b3-mathematics-006"
+      ],
+      "threshold": 0.82,
+      "intraBatchDistinctNormalizedContentKernels": 33,
+      "maximumIntraBatchPromptTokenJaccard": 0.32142857142857145,
+      "maximumIntraBatchSimilarityPair": [
+        "parapro-b5-mathematics-026",
+        "parapro-b5-mathematics-023"
+      ]
+    },
+    "accessibilityAndParaeducatorScope": {
+      "status": "pass",
+      "externalDiagramDependency": false,
+      "plainTextNotationChecked": true,
+      "unitsIncludedWhereRequired": true,
+      "nonAsciiBytes": 0,
+      "applicationItemsRemainInstructionalRatherThanDiagnostic": true,
+      "applicationItemsPreserveStudentReasoning": true,
+      "unresolvedOutOfScopeItems": 0
+    },
+    "references": {
+      "status": "pass",
+      "httpsOnly": true,
+      "officialBlueprintPresentOnEveryItem": true,
+      "sourcesUsed": [
+        "https://www.ets.org/pdfs/parapro/1755.pdf",
+        "https://openstax.org/details/books/prealgebra-2e/"
+      ],
+      "sourceFit": "The ETS source establishes scope and format; OpenStax Prealgebra 2e supports the arithmetic, algebra, geometry, measurement, and data concepts used in the independent items."
+    },
+    "bank5Integration": {
+      "status": "pass",
+      "totalItems": 100,
+      "domainCounts": {
+        "reading": 34,
+        "mathematics": 33,
+        "writing": 33
+      },
+      "contentFocusCounts": {
+        "basic-skills-knowledge": 67,
+        "application-classroom": 33
+      },
+      "answerPositionCounts": {
+        "0": 25,
+        "1": 25,
+        "2": 25,
+        "3": 25
+      },
+      "uniqueIds": 100,
+      "uniqueNormalizedContentKernels": 100,
+      "integrationErrors": 0
+    },
+    "structure": {
+      "status": "pass",
+      "uniqueIds": 33,
+      "uniquePrompts": 33,
+      "uniqueNormalizedContentKernels": 33,
+      "fourChoiceRationalesPerItem": true,
+      "schemaMatchesBank4": true,
+      "independentDraftProvenancePreserved": true,
+      "utf8Bom": false,
+      "sha256": "2552175b36a7a1fecf58fe51de7794825672c2549730a2ed8fe6e270498031d5",
+      "schemaErrors": 0
+    }
+  },
+  "reviewedFile": "dev-tools/authored/parapro_batch5_mathematics_33.json",
+  "blockers": [],
+  "sourceSha256": "83350346e1ec4d869c78f184f4a4d06480207b465b6b402bd35dc2b6960f939e",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "83350346e1ec4d869c78f184f4a4d06480207b465b6b402bd35dc2b6960f939e"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 5,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
+}

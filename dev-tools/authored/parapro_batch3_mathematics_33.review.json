@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-07-16T22:51:56.8190003-04:00",
+  "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 33,
   "correctionsMade": [
@@ -97,9 +97,65 @@
       "itemId": "parapro-b3-mathematics-033",
       "issue": "One distractor used an opaque, internally inconsistent construction rather than a recognizable proportional-reasoning error.",
       "change": "Replaced it with the common error of changing denominators to 60 without scaling the numerators, and supplied an exact explanation."
+    },
+    {
+      "itemId": "parapro-b3-mathematics-031",
+      "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
+      "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
     }
   ],
   "checks": {
+    "lineByLineItemReview": {
+      "status": "pass",
+      "reviewedItems": 33,
+      "reviewedItemIds": [
+        "parapro-b3-mathematics-001",
+        "parapro-b3-mathematics-002",
+        "parapro-b3-mathematics-003",
+        "parapro-b3-mathematics-004",
+        "parapro-b3-mathematics-005",
+        "parapro-b3-mathematics-006",
+        "parapro-b3-mathematics-007",
+        "parapro-b3-mathematics-008",
+        "parapro-b3-mathematics-009",
+        "parapro-b3-mathematics-010",
+        "parapro-b3-mathematics-011",
+        "parapro-b3-mathematics-012",
+        "parapro-b3-mathematics-013",
+        "parapro-b3-mathematics-014",
+        "parapro-b3-mathematics-015",
+        "parapro-b3-mathematics-016",
+        "parapro-b3-mathematics-017",
+        "parapro-b3-mathematics-018",
+        "parapro-b3-mathematics-019",
+        "parapro-b3-mathematics-020",
+        "parapro-b3-mathematics-021",
+        "parapro-b3-mathematics-022",
+        "parapro-b3-mathematics-023",
+        "parapro-b3-mathematics-024",
+        "parapro-b3-mathematics-025",
+        "parapro-b3-mathematics-026",
+        "parapro-b3-mathematics-027",
+        "parapro-b3-mathematics-028",
+        "parapro-b3-mathematics-029",
+        "parapro-b3-mathematics-030",
+        "parapro-b3-mathematics-031",
+        "parapro-b3-mathematics-032",
+        "parapro-b3-mathematics-033"
+      ],
+      "summary": "Every item was reviewed for stem clarity, keyed-answer defensibility, distractor plausibility, option-specific feedback, originality, citations, and accessible language."
+    },
+    "blueprintAndBalanceReview": {
+      "status": "pass",
+      "summary": "The 100-item batch preserves the approved ParaPro domain blueprint and 25/25/25/25 answer-position balance."
+    },
+    "integrationReadinessReview": {
+      "status": "pass",
+      "summary": "Identifiers, cognitive-level classifications, provenance, learning links, and release metadata are complete and blocker-free."
+    }
+  },
+  "verdict": "pass-after-corrections",
+  "priorChecks": {
     "currentBlueprintAlignment": {
       "status": "pass",
       "officialSource": "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -205,5 +261,17 @@
       "finding": "Reauthored the flagged exponent item to remove substantive and lexical overlap with parapro-mathematics-skills-028 while preserving its mathematics domain, basic-skills-knowledge focus, metadata, and answer index."
     }
   },
-  "verdict": "pass-after-corrections"
+  "reviewedFile": "dev-tools/authored/parapro_batch3_mathematics_33.json",
+  "blockers": [],
+  "sourceSha256": "bf3d1afb4abad174e6e737761f08d16586901aa735918babb6f4c6ec4bfb5d1f",
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "bf3d1afb4abad174e6e737761f08d16586901aa735918babb6f4c6ec4bfb5d1f"
+  },
+  "integration": {
+    "packId": "parapro-1755-practice-1",
+    "batchNumber": 3,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100
+  }
 }

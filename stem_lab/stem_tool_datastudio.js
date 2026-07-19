@@ -48,6 +48,70 @@ window.StemLab = window.StemLab || {
   function datastTone(f,d,tp,v) { var ac = getDatastAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxDatastClick() { datastTone(600, 0.03, "sine", 0.04); }
 
+  function parseDataStudioCSV(text) {
+    var source = String(text == null ? '' : text).replace(/^\uFEFF/, '');
+    if (!source.trim()) return { rows: [], skipped: 0, error: 'The file is empty.' };
+    var firstLine = source.split(/\r?\n/, 1)[0], candidates = [',', '\t', ';'];
+    function unquotedCount(line, delimiter) {
+      var count = 0, quoted = false;
+      for (var c = 0; c < line.length; c++) {
+        if (line[c] === '"') quoted = !quoted;
+        else if (line[c] === delimiter && !quoted) count++;
+      }
+      return count;
+    }
+    var delimiter = candidates.reduce(function(best, candidate) { return unquotedCount(firstLine, candidate) > unquotedCount(firstLine, best) ? candidate : best; }, ',');
+    var records = [], record = [], field = '', quoted = false;
+    for (var i = 0; i < source.length; i++) {
+      var ch = source[i];
+      if (ch === '"') { if (quoted && source[i + 1] === '"') { field += '"'; i++; } else quoted = !quoted; }
+      else if (ch === delimiter && !quoted) { record.push(field); field = ''; }
+      else if ((ch === '\n' || ch === '\r') && !quoted) {
+        if (ch === '\r' && source[i + 1] === '\n') i++;
+        record.push(field); field = '';
+        if (record.some(function(v) { return v.trim() !== ''; })) records.push(record);
+        record = [];
+      } else field += ch;
+    }
+    if (quoted) return { rows: [], skipped: 0, error: 'A quoted field is not closed.' };
+    record.push(field);
+    if (record.some(function(v) { return v.trim() !== ''; })) records.push(record);
+    var headers = (records[0] || []).map(function(value) { return String(value).trim().toLowerCase(); });
+    var labelIndex = headers.indexOf('label'), xIndex = headers.indexOf('x'), yIndex = headers.indexOf('y');
+    if (yIndex < 0) yIndex = headers.indexOf('value');
+    var namedHeader = yIndex >= 0 && (labelIndex >= 0 || xIndex >= 0);
+    var start = namedHeader ? 1 : 0, rows = [], skipped = 0;
+    records.slice(start).forEach(function(parts, rowIndex) {
+      var inferredXY = !namedHeader && parts.length >= 3 && isFinite(Number(String(parts[1]).trim())) && isFinite(Number(String(parts[2]).trim()));
+      var li = namedHeader ? labelIndex : 0, xi = namedHeader ? xIndex : (inferredXY ? 1 : -1), yi = namedHeader ? yIndex : (inferredXY ? 2 : 1);
+      var label = li >= 0 ? String(parts[li] == null ? '' : parts[li]).trim() : 'Point ' + (rowIndex + 1);
+      if (/^'[=+\-@]/.test(label)) label = label.slice(1);
+      if (!label) label = 'Point ' + (rowIndex + 1);
+      var rawY = String(parts[yi] == null ? '' : parts[yi]).trim().replace(/[$,%]/g, ''), value = Number(rawY);
+      var rawX = xi >= 0 ? String(parts[xi] == null ? '' : parts[xi]).trim() : '', x = Number(rawX);
+      if (rawY === '' || !isFinite(value) || (xi >= 0 && (rawX === '' || !isFinite(x)))) { skipped++; return; }
+      var row = { label: label, value: value }; if (xi >= 0) row.x = x;
+      if (rows.length < 500) rows.push(row); else skipped++;
+    });
+    return { rows: rows, skipped: skipped, hasXY: rows.some(function(row) { return isFinite(row.x); }), error: rows.length ? '' : 'No valid data rows were found.' };
+  }
+  function dataStudioCSVCell(value, protectFormula) {
+    var text = String(value == null ? '' : value);
+    if (protectFormula && /^[=+\-@]/.test(text)) text = "'" + text;
+    return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+  }
+  function serializeDataStudioCSV(rows) {
+    var hasXY = rows.some(function(row) { return row.x !== undefined && isFinite(Number(row.x)); });
+    var header = hasXY ? 'Label,X,Y' : 'Label,Value';
+    return header + '\r\n' + rows.map(function(row, i) {
+      var label = dataStudioCSVCell(row.label || ('Point ' + (i + 1)), true);
+      var numericLabel = Number(row.label), fallbackX = String(row.label).trim() !== '' && isFinite(numericLabel) ? numericLabel : i + 1;
+      var xValue = row.x !== undefined && isFinite(Number(row.x)) ? Number(row.x) : fallbackX;
+      return hasXY ? label + ',' + dataStudioCSVCell(xValue, false) + ',' + dataStudioCSVCell(row.value, false)
+        : label + ',' + dataStudioCSVCell(row.value, false);
+    }).join('\r\n');
+  }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-datastudio')) return;
@@ -125,17 +189,16 @@ var d = (labToolData && labToolData._dataStudio) || {};
           }
 
           var updDS = function (key, val) {
-
             setLabToolData(function (prev) {
-
-              var ds = Object.assign({}, (prev && prev._dataStudio) || {});
-
-              ds[key] = val;
-
+              var ds = Object.assign({}, (prev && prev._dataStudio) || {}); ds[key] = val;
               return Object.assign({}, prev, { _dataStudio: ds });
-
             });
-
+          };
+          var updDSMany = function (patch) {
+            setLabToolData(function (prev) {
+              var ds = Object.assign({}, (prev && prev._dataStudio) || {}, patch);
+              return Object.assign({}, prev, { _dataStudio: ds });
+            });
           };
 
           var chartType = d.chartType || 'bar';
@@ -154,21 +217,60 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           ];
 
+          var hasExplicitX = dataRows.some(function(row) { return row.x !== undefined && isFinite(Number(row.x)); });
           var chartTitle = d.chartTitle || 'My Data';
+          var undoStack = Array.isArray(d.undoStack) ? d.undoStack : [];
+          var redoStack = Array.isArray(d.redoStack) ? d.redoStack : [];
+          function currentDataSnapshot() {
+            return { rows: dataRows.map(function(row) { var copy = { label: row.label, value: row.value }; if (row.x !== undefined) copy.x = row.x; return copy; }), chartTitle: chartTitle, filterMin: filterMin, filterMax: filterMax, labelFilter: labelFilter, sortOrder: sortOrder };
+          }
+          function commitDataRows(nextRows, patch, announcement) {
+            updDSMany(Object.assign({}, patch || {}, { dataRows: nextRows, undoStack: undoStack.concat([currentDataSnapshot()]).slice(-20), redoStack: [] }));
+            if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+          }
+          function applyDataSnapshot(snapshot, nextUndo, nextRedo, announcement) {
+            if (!snapshot) return;
+            updDSMany({ dataRows: snapshot.rows || [], chartTitle: snapshot.chartTitle || 'My Data',
+              filterMin: snapshot.filterMin === undefined ? '' : snapshot.filterMin, filterMax: snapshot.filterMax === undefined ? '' : snapshot.filterMax,
+              labelFilter: snapshot.labelFilter || '', sortOrder: snapshot.sortOrder || 'none', undoStack: nextUndo, redoStack: nextRedo });
+            if (typeof announceToSR === 'function') announceToSR(announcement);
+          }
+          function undoDataChange() {
+            if (undoStack.length) applyDataSnapshot(undoStack[undoStack.length - 1], undoStack.slice(0, -1), redoStack.concat([currentDataSnapshot()]).slice(-20), 'Last data change undone.');
+          }
+          function redoDataChange() {
+            if (redoStack.length) applyDataSnapshot(redoStack[redoStack.length - 1], undoStack.concat([currentDataSnapshot()]).slice(-20), redoStack.slice(0, -1), 'Data change redone.');
+          }
 
-          var editRow = d.editRow || { label: '', value: '' };
+          var editRow = d.editRow || { label: '', x: '', value: '' };
+          function buildEditDataRow() {
+            var row = { label: editRow.label, value: Number(editRow.value) };
+            if (editRow.x !== '' && isFinite(Number(editRow.x))) row.x = Number(editRow.x);
+            return row;
+          }
 
           var showStats = d.showStats !== undefined ? d.showStats : true;
 
           var showTrendline = d.showTrendline || false;
 
           var workspaceTab = d.workspaceTab || 'chart';
+          var xAxisLabel = d.xAxisLabel || '';
+          var yAxisLabel = d.yAxisLabel || '';
+          var histogramBins = Math.max(0, Math.min(12, Number(d.histogramBins) || 0));
+          var stdDevMode = d.stdDevMode === 'sample' ? 'sample' : 'population';
+          var palette = ['accessible', 'vibrant', 'monochrome'].indexOf(d.palette) >= 0 ? d.palette : 'accessible';
+          var showDataLabels = d.showDataLabels !== false;
+          var showGridlines = d.showGridlines !== false;
+          var dataSource = d.dataSource || '';
+          var editorPage = Math.max(0, Number(d.editorPage) || 0);
+          var tablePage = Math.max(0, Number(d.tablePage) || 0);
 
           var sortOrder = d.sortOrder || 'none';  // 'none', 'asc', 'desc'
 
           var filterMin = typeof d.filterMin === 'number' ? d.filterMin : '';
 
           var filterMax = typeof d.filterMax === 'number' ? d.filterMax : '';
+          var labelFilter = d.labelFilter || '';
 
 
 
@@ -182,7 +284,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             { id: 'scatter', icon: '⚬', label: t('stem.datastudio.scatter_plot', 'Scatter Plot') },
 
-            { id: 'histogram', icon: '📉', label: t('stem.datastudio.histogram', 'Histogram') }
+            { id: 'histogram', icon: '📉', label: t('stem.datastudio.histogram', 'Histogram') },
+
+            { id: 'box', icon: '▭', label: 'Box Plot' }
 
           ];
 
@@ -205,52 +309,28 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
           // CSV import handler
-
           var handleCSVImport = function (text) {
-
-            try {
-
-              var lines = text.trim().split('\n');
-
-              var rows = [];
-
-              lines.forEach(function (line, idx) {
-
-                var parts = line.split(',').map(function (s) { return s.trim().replace(/^"|"$/g, ''); });
-
-                if (parts.length >= 2) {
-
-                  var val = parseFloat(parts[1]);
-
-                  if (!isNaN(val)) rows.push({ label: parts[0] || ('Row ' + (idx + 1)), value: val });
-
-                }
-
-              });
-
-              if (rows.length > 0) {
-
-                updDS('dataRows', rows);
-
-                if (addToast) addToast('Imported ' + rows.length + ' data points!', 'success');
-
-                if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 5, 'CSV import');
-
-              }
-
-            } catch (e) {
-
-              if (addToast) addToast('CSV import failed. Use format: Label, Value', 'warning');
-
+            var result = parseDataStudioCSV(text);
+            if (result.error) {
+              if (addToast) addToast(result.error + ' Expected two columns: Label, Value.', 'warning');
+              if (typeof announceToSR === 'function') announceToSR('CSV import failed. ' + result.error);
+              return;
             }
-
+            commitDataRows(result.rows, { filterMin: '', filterMax: '', sortOrder: 'none', chartType: result.hasXY ? 'scatter' : chartType, xAxisLabel: result.hasXY ? (xAxisLabel || 'X') : xAxisLabel, yAxisLabel: result.hasXY ? (yAxisLabel || 'Y') : yAxisLabel }, 'Imported data. Undo is available.');
+            var message = 'Imported ' + result.rows.length + ' data points' + (result.skipped ? '; skipped ' + result.skipped + ' invalid row' + (result.skipped === 1 ? '' : 's') : '') + '.';
+            if (addToast) addToast(message, result.skipped ? 'info' : 'success');
+            if (typeof announceToSR === 'function') announceToSR(message);
+            if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 5, 'CSV import');
           };
-
-
 
           // Apply sort and filter
 
           var filteredRows = dataRows;
+
+          if (labelFilter.trim()) {
+            var normalizedLabelFilter = labelFilter.trim().toLowerCase();
+            filteredRows = filteredRows.filter(function(r) { return String(r.label || '').toLowerCase().indexOf(normalizedLabelFilter) >= 0; });
+          }
 
           if (filterMin !== '' && !isNaN(filterMin)) filteredRows = filteredRows.filter(function (r) { return r.value >= filterMin; });
 
@@ -261,6 +341,18 @@ var d = (labToolData && labToolData._dataStudio) || {};
           else if (sortOrder === 'desc') filteredRows = filteredRows.slice().sort(function (a, b) { return b.value - a.value; });
 
           var displayRows = filteredRows;
+          var EDITOR_PAGE_SIZE = 25;
+          var editorPageCount = Math.max(1, Math.ceil(dataRows.length / EDITOR_PAGE_SIZE));
+          editorPage = Math.min(editorPage, editorPageCount - 1);
+          var editorStart = editorPage * EDITOR_PAGE_SIZE;
+          var editorRows = dataRows.slice(editorStart, editorStart + EDITOR_PAGE_SIZE);
+          var TABLE_PAGE_SIZE = 50;
+          var tablePageCount = Math.max(1, Math.ceil(displayRows.length / TABLE_PAGE_SIZE));
+          tablePage = Math.min(tablePage, tablePageCount - 1);
+          var tableStart = tablePage * TABLE_PAGE_SIZE;
+          var tableRows = displayRows.slice(tableStart, tableStart + TABLE_PAGE_SIZE);
+          var descriptionRows = displayRows.slice(0, 100);
+          var effectiveDataLabels = showDataLabels && displayRows.length <= 100;
 
 
 
@@ -283,7 +375,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var minVal = values.length ? Math.min.apply(null, values) : 0;
 
-          var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
+          var sumSquaredDiffs = values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0);
+          var varianceDivisor = stdDevMode === 'sample' && values.length > 1 ? values.length - 1 : values.length;
+          var stdDev = varianceDivisor > 0 ? Math.sqrt(sumSquaredDiffs / varianceDivisor) : 0;
+          var sampleStdDev = values.length > 1 ? Math.sqrt(sumSquaredDiffs / (values.length - 1)) : 0;
+          var standardError = values.length > 1 ? sampleStdDev / Math.sqrt(values.length) : 0;
+          var confidenceLow = mean - 1.96 * standardError, confidenceHigh = mean + 1.96 * standardError;
 
           // Mode
 
@@ -320,38 +417,119 @@ var d = (labToolData && labToolData._dataStudio) || {};
           } else if (sorted.length > 0) { q1 = sorted[0]; q3 = sorted[sorted.length - 1]; iqr = q3 - q1; }
 
           var range = maxVal - minVal;
+          var minRow = displayRows.find(function(row) { return row.value === minVal; });
+          var maxRow = displayRows.find(function(row) { return row.value === maxVal; });
+          var lowerFence = q1 - 1.5 * iqr, upperFence = q3 + 1.5 * iqr;
+          var outliers = iqr > 0 ? displayRows.filter(function(row) { return row.value < lowerFence || row.value > upperFence; }) : [];
+          var nonOutlierValues = sorted.filter(function(value) { return value >= lowerFence && value <= upperFence; });
+          var whiskerMin = nonOutlierValues.length ? nonOutlierValues[0] : minVal;
+          var whiskerMax = nonOutlierValues.length ? nonOutlierValues[nonOutlierValues.length - 1] : maxVal;
+          var trend = calcTrendline(displayRows, chartType === 'scatter');
+          var trendDirection = !trend || Math.abs(trend.slope) < 0.01 ? 'roughly flat' : (trend.slope > 0 ? 'increasing' : 'decreasing');
+          var scatterXs = displayRows.map(getScatterX);
+          var meanX = scatterXs.length ? scatterXs.reduce(function(sum, x) { return sum + x; }, 0) / scatterXs.length : 0;
+          var covarianceSum = 0, xSquaredSum = 0, ySquaredSum = 0;
+          displayRows.forEach(function(row, i) {
+            var dx = scatterXs[i] - meanX, dy = row.value - mean;
+            covarianceSum += dx * dy; xSquaredSum += dx * dx; ySquaredSum += dy * dy;
+          });
+          var pearsonR = xSquaredSum > 0 && ySquaredSum > 0 ? covarianceSum / Math.sqrt(xSquaredSum * ySquaredSum) : null;
+          var duplicateXValues = scatterXs.filter(function(x, i) { return scatterXs.indexOf(x) !== i; });
+          var duplicateXCount = Array.from(new Set(duplicateXValues)).length;
+          var normalizedLabels = dataRows.map(function(row) { return String(row.label || '').trim().toLowerCase(); });
+          var duplicateLabels = normalizedLabels.filter(function(label, i) { return label && normalizedLabels.indexOf(label) !== i; });
+          var duplicateLabelCount = Array.from(new Set(duplicateLabels)).length;
+          var blankLabelCount = normalizedLabels.filter(function(label) { return !label; }).length;
+          var negativeCount = dataRows.filter(function(row) { return row.value < 0; }).length;
+          var zeroCount = dataRows.filter(function(row) { return row.value === 0; }).length;
+          var uniqueValueCount = new Set(dataRows.map(function(row) { return row.value; })).size;
+          var timeLabelPattern = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec|q[1-4]|day\s*\d+|week\s*\d+|month\s*\d+|\d{4})/i;
+          var looksSequential = dataRows.length >= 3 && dataRows.filter(function(row) { return timeLabelPattern.test(String(row.label).trim()); }).length >= Math.ceil(dataRows.length * 0.6);
+          var recommendedChart = hasExplicitX ? 'scatter' : looksSequential ? 'line' : outliers.length > 0 ? 'box' : dataRows.length >= 10 ? 'histogram'
+            : dataRows.length >= 2 && dataRows.length <= 6 && dataRows.every(function(row) { return row.value >= 0; }) && dataRows.reduce(function(sum, row) { return sum + row.value; }, 0) > 0 ? 'pie' : 'bar';
+          var recommendationReason = recommendedChart === 'scatter' ? 'Your dataset includes numeric X and Y values.'
+            : recommendedChart === 'line' ? 'The labels look sequential or time-based.'
+            : recommendedChart === 'box' ? 'A box plot makes the possible outliers and quartiles visible.'
+            : recommendedChart === 'histogram' ? 'A distribution view works well for ten or more values.'
+            : recommendedChart === 'pie' ? 'A small positive dataset can show parts of a whole.'
+            : 'A bar chart makes category comparisons easy.';
+          function applyChartRecommendation() {
+            var used = Object.assign({}, d.chartTypesUsed || {}); used[recommendedChart] = true;
+            updDSMany({ chartType: recommendedChart, chartTypesUsed: used });
+            if (typeof announceToSR === 'function') announceToSR('Chart Coach applied ' + recommendedChart + ' chart.');
+          }
+          function aggregateDuplicateLabels(method) {
+            if (!duplicateLabelCount) { if (addToast) addToast('No duplicate labels to combine.', 'info'); return; }
+            var groups = {}, order = [];
+            dataRows.forEach(function(row, index) {
+              var normalized = String(row.label || '').trim().toLowerCase();
+              var key = normalized || ('__blank_' + index);
+              if (!groups[key]) { groups[key] = { label: row.label, rows: [] }; order.push(key); }
+              groups[key].rows.push(row);
+            });
+            var nextRows = order.map(function(key) {
+              var group = groups[key], rows = group.rows, sum = rows.reduce(function(total, row) { return total + row.value; }, 0);
+              var value = method === 'count' ? rows.length : method === 'mean' ? sum / rows.length : sum;
+              var result = { label: group.label, value: Number(value.toFixed(4)) };
+              var xs = rows.filter(function(row) { return row.x !== undefined && isFinite(Number(row.x)); }).map(function(row) { return Number(row.x); });
+              if (xs.length) result.x = Number((xs.reduce(function(total, x) { return total + x; }, 0) / xs.length).toFixed(4));
+              return result;
+            });
+            var removed = dataRows.length - nextRows.length;
+            commitDataRows(nextRows, { filterMin: '', filterMax: '', labelFilter: '', sortOrder: 'none', editorPage: 0, tablePage: 0 }, 'Combined duplicate labels using ' + method + '. ' + removed + ' repeated row' + (removed === 1 ? '' : 's') + ' merged. Undo is available.');
+            if (addToast) addToast('Combined ' + removed + ' repeated row' + (removed === 1 ? '' : 's') + ' using ' + method + '. Use Undo to restore them.', 'success');
+          }
+
+          function transformData(kind) {
+            var sourceValues = dataRows.map(function(row) { return row.value; });
+            var sourceTotal = sourceValues.reduce(function(sum, value) { return sum + value; }, 0);
+            var sourceMean = sourceValues.length ? sourceTotal / sourceValues.length : 0;
+            var sourceVariance = sourceValues.length ? sourceValues.reduce(function(sum, value) { return sum + Math.pow(value - sourceMean, 2); }, 0) / sourceValues.length : 0;
+            var sourceSD = Math.sqrt(sourceVariance), running = 0, nextRows;
+            if (kind === 'percent') {
+              if (sourceTotal === 0) { if (addToast) addToast('Percent conversion needs a non-zero total.', 'warning'); return; }
+              nextRows = dataRows.map(function(row) { return Object.assign({}, row, { value: Number((row.value / sourceTotal * 100).toFixed(4)) }); });
+            } else if (kind === 'cumulative') {
+              nextRows = dataRows.map(function(row) { running += row.value; return Object.assign({}, row, { value: Number(running.toFixed(4)) }); });
+            } else if (kind === 'zscore') {
+              if (sourceSD === 0) { if (addToast) addToast('Z-scores need values with some variation.', 'warning'); return; }
+              nextRows = dataRows.map(function(row) { return Object.assign({}, row, { value: Number(((row.value - sourceMean) / sourceSD).toFixed(4)) }); });
+            } else return;
+            commitDataRows(nextRows, { filterMin: '', filterMax: '', sortOrder: 'none' }, 'Data transformed. Undo is available.');
+            if (addToast) addToast('Transformation applied. Use Undo to restore the original data.', 'success');
+          }
 
 
 
           // Linear regression for trendline
 
-          function calcTrendline(rows) {
-
-            var n = rows.length;
-
-            if (n < 2) return null;
-
-            var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-
-            rows.forEach(function (r, i) { sumX += i; sumY += r.value; sumXY += i * r.value; sumX2 += i * i; });
-
-            var denom = n * sumX2 - sumX * sumX;
-
-            if (denom === 0) return null;
-
-            var slope = (n * sumXY - sumX * sumY) / denom;
-
-            var intercept = (sumY - slope * sumX) / n;
-
-            return { slope: slope, intercept: intercept };
-
+          function getScatterX(row, index) {
+            if (row && row.x !== undefined && isFinite(Number(row.x))) return Number(row.x);
+            var numericLabel = Number(row && row.label);
+            return row && String(row.label).trim() !== '' && isFinite(numericLabel) ? numericLabel : index + 1;
           }
-
-
+          function calcTrendline(rows, useScatterX) {
+            var n = rows.length;
+            if (n < 2) return null;
+            var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            rows.forEach(function(row, i) {
+              var x = useScatterX ? getScatterX(row, i) : i;
+              sumX += x; sumY += row.value; sumXY += x * row.value; sumX2 += x * x;
+            });
+            var denom = n * sumX2 - sumX * sumX;
+            if (denom === 0) return null;
+            var slope = (n * sumXY - sumX * sumY) / denom, intercept = (sumY - slope * sumX) / n;
+            return { slope: slope, intercept: intercept };
+          }
 
           // Color palette
 
-          var COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#a855f7', '#eab308', '#3b82f6'];
+          var PALETTES = {
+            accessible: ['#2563eb', '#d97706', '#059669', '#dc2626', '#7c3aed', '#0891b2', '#be185d', '#4d7c0f'],
+            vibrant: ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#a855f7', '#eab308', '#3b82f6'],
+            monochrome: isDark || isContrast ? ['#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b'] : ['#0f172a', '#334155', '#64748b', '#94a3b8']
+          };
+          var COLORS = PALETTES[palette];
 
 
 
@@ -423,17 +601,28 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
+            React.createElement("div", { className: "rounded-xl p-3 flex flex-wrap items-center gap-2", role: "region", "aria-label": "Chart Coach recommendation", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "min-w-0 flex-1" },
+                React.createElement("div", { className: "text-xs font-bold", style: { color: _accent } }, "Chart Coach suggests " + ((CHART_TYPES.find(function(type) { return type.id === recommendedChart; }) || { label: recommendedChart }).label)),
+                React.createElement("p", { className: "text-[11px]", style: { color: _muted } }, recommendationReason)
+              ),
+              React.createElement("button", { onClick: applyChartRecommendation, disabled: chartType === recommendedChart, className: "px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50",
+                style: { background: chartType === recommendedChart ? _card : _btnBg, color: chartType === recommendedChart ? _muted : '#fff', border: '1px solid ' + _border },
+                "aria-label": "Apply Chart Coach recommendation" }, chartType === recommendedChart ? "Using suggestion" : "Use this chart")
+            ),
+
             // Chart type selector
 
-            React.createElement("div", { className: "flex gap-2" },
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2", role: "group", "aria-label": "Chart type" },
 
               CHART_TYPES.map(function (ct) {
 
                 return React.createElement("button", { key: ct.id,
 
-                  onClick: function () { if (ct.id !== chartType) { updDS('chartType', ct.id); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
+                  onClick: function () { if (ct.id !== chartType) { var used = Object.assign({}, d.chartTypesUsed || {}); used[ct.id] = true; updDSMany({ chartType: ct.id, chartTypesUsed: used }); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
 
-                  className: "flex-1 p-2 rounded-xl text-center transition-all",
+                  className: "p-2 rounded-xl text-center transition-all",
+                  "aria-pressed": chartType === ct.id,
 
                   style: { background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
 
@@ -459,7 +648,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               onChange: function (e) { updDS('chartTitle', e.target.value); },
 
-              placeholder: t('stem.datastudio.chart_title', "Chart title..."),
+              placeholder: t('stem.datastudio.chart_title', "Chart title..."), "aria-label": "Chart title",
 
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
@@ -472,9 +661,44 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ── SVG Chart Rendering ──
 
+            React.createElement("details", { className: "rounded-xl p-2", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("summary", { className: "text-xs font-bold cursor-pointer", style: { color: _accent } }, "Chart settings"),
+              React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
+                React.createElement("label", { className: "text-[11px] font-bold" }, "Horizontal axis label",
+                  React.createElement("input", { value: xAxisLabel, onChange: function(e) { updDS('xAxisLabel', e.target.value); }, className: "block w-full mt-1 px-2 py-1.5 rounded-lg text-xs", style: { background: _svgBg, border: '1px solid ' + _border, color: _text } })),
+                React.createElement("label", { className: "text-[11px] font-bold" }, "Vertical axis label",
+                  React.createElement("input", { value: yAxisLabel, onChange: function(e) { updDS('yAxisLabel', e.target.value); }, className: "block w-full mt-1 px-2 py-1.5 rounded-lg text-xs", style: { background: _svgBg, border: '1px solid ' + _border, color: _text } }))
+              ),
+              React.createElement("label", { className: "block mt-2 text-[11px] font-bold" }, "Data source",
+                React.createElement("input", { value: dataSource, onChange: function(e) { updDS('dataSource', e.target.value); }, placeholder: "Source, URL, experiment, or citation",
+                  className: "block w-full mt-1 px-2 py-1.5 rounded-lg text-xs", style: { background: _svgBg, border: '1px solid ' + _border, color: _text } })),
+              React.createElement("div", { className: "mt-2", role: "group", "aria-label": "Chart color palette" },
+                React.createElement("span", { className: "text-[11px] font-bold mr-2" }, "Palette:"),
+                ['accessible', 'vibrant', 'monochrome'].map(function(option) {
+                  return React.createElement("button", { key: option, onClick: function() { updDS('palette', option); }, "aria-pressed": palette === option,
+                    className: "mr-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: palette === option ? _btnBg : _svgBg, color: palette === option ? '#fff' : _text, border: '1px solid ' + _border } },
+                    option === 'accessible' ? "Color-safe" : option.charAt(0).toUpperCase() + option.slice(1));
+                })
+              ),
+              React.createElement("div", { className: "flex flex-wrap gap-3 mt-2" },
+                React.createElement("label", { className: "flex items-center gap-1 text-[11px] font-bold" },
+                  React.createElement("input", { type: "checkbox", checked: showDataLabels, onChange: function(e) { updDS('showDataLabels', e.target.checked); } }), "Data labels"),
+                React.createElement("label", { className: "flex items-center gap-1 text-[11px] font-bold" },
+                  React.createElement("input", { type: "checkbox", checked: showGridlines, onChange: function(e) { updDS('showGridlines', e.target.checked); } }), "Gridlines")
+              ),
+              chartType === 'histogram' && React.createElement("label", { className: "block mt-2 text-[11px] font-bold" }, "Histogram bins: " + (histogramBins || 'Auto'),
+                React.createElement("input", { type: "range", min: 0, max: 12, step: 1, value: histogramBins, onChange: function(e) { updDS('histogramBins', Number(e.target.value)); }, className: "block w-full mt-1", "aria-label": "Histogram bins; zero uses automatic binning" }))
+            ),
+
             React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: '1px solid ' + _border } },
 
-              React.createElement("svg", { viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { background: _svgBg, maxHeight: '340px' } },
+              React.createElement("svg", { viewBox: '0 0 ' + W + ' ' + H, className: "w-full", role: "img", "data-datastudio-chart": "true",
+                "aria-label": chartTitle + '. ' + (CHART_TYPES.find(function(ct) { return ct.id === chartType; }) || { label: chartType }).label + ' with ' + displayRows.length + ' data points.',
+                style: { background: _svgBg, maxHeight: '340px' } },
+                React.createElement("title", null, chartTitle),
+                React.createElement("desc", null, (descriptionRows.length ? descriptionRows.map(function(row, i) { return chartType === 'scatter' ? row.label + ': x ' + getScatterX(row, i) + ', y ' + row.value : row.label + ': ' + row.value; }).join('; ') : 'No data points are currently visible.') + (displayRows.length > descriptionRows.length ? '; plus ' + (displayRows.length - descriptionRows.length) + ' additional points available in the data table.' : '') + (dataSource ? ' Source: ' + dataSource + '.' : '')),
+                chartType !== 'pie' && xAxisLabel && React.createElement("text", { x: W / 2, y: H - 7, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 'bold', fill: _muted } }, xAxisLabel),
+                chartType !== 'pie' && yAxisLabel && React.createElement("text", { x: 12, y: H / 2, textAnchor: "middle", transform: "rotate(-90 12 " + (H / 2) + ")", style: { fontSize: '9px', fontWeight: 'bold', fill: _muted } }, yAxisLabel),
 
                 // Title
 
@@ -486,9 +710,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 chartType === 'bar' && displayRows.length > 0 && (() => {
 
-                  var barW = Math.min(40, (W - 2 * pad) / displayRows.length - 4);
-
+                  var barW = Math.max(2, Math.min(40, (W - 2 * pad) / displayRows.length - 4));
                   var gap = (W - 2 * pad) / displayRows.length;
+                  var barScaleMin = Math.min(0, minVal), barScaleMax = Math.max(0, maxVal);
+                  var barScaleRange = barScaleMax - barScaleMin || 1;
+                  var barZeroY = chartTop + (barScaleMax / barScaleRange) * (H - pad - chartTop);
 
                   return React.createElement("g", null,
 
@@ -498,13 +724,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     // X axis
 
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: barZeroY, x2: W - 10, y2: barZeroY, stroke: _muted, strokeWidth: 0.5 }),
 
                     // Y labels
 
                     [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
 
-                      var yVal = Math.round(maxVal * frac);
+                      var yVal = (barScaleMin + barScaleRange * frac).toFixed(Math.abs(barScaleRange) < 5 ? 1 : 0);
 
                       var yPos = (H - pad) - frac * (H - pad - chartTop);
 
@@ -512,7 +738,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
 
-                        React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
+                        showGridlines && React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
 
                       );
 
@@ -522,17 +748,17 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     displayRows.map(function (row, i) {
 
-                      var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - chartTop) : 0;
-
+                      var valueY = chartTop + ((barScaleMax - row.value) / barScaleRange) * (H - pad - chartTop);
+                      var barH = Math.abs(barZeroY - valueY);
                       var x = pad + i * gap + (gap - barW) / 2;
-
-                      var y = (H - pad) - barH;
+                      var y = Math.min(barZeroY, valueY);
+                      var valueLabelY = row.value < 0 ? y + barH + 12 : y - 4;
 
                       return React.createElement("g", { key: 'bar' + i },
 
                         React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
 
-                        React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, row.value),
+                        effectiveDataLabels && React.createElement("text", { x: x + barW / 2, y: valueLabelY, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, row.value),
 
                         React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
 
@@ -548,7 +774,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 // ── Pie Chart ──
 
-                chartType === 'pie' && displayRows.length > 0 && (() => {
+                chartType === 'pie' && displayRows.length > 0 && total > 0 && !values.some(function(v) { return v < 0; }) && (() => {
 
                   var cx = W / 2, cy = (H + 10) / 2, r = Math.min(W, H) / 2.8;
 
@@ -606,7 +832,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         }),
 
-                        pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 5) + ' ' + pct + '%')
+                        effectiveDataLabels && pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 5) + ' ' + pct + '%')
 
                       );
 
@@ -692,7 +918,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("circle", { cx: p.x, cy: p.y, r: 4, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
 
-                        React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
+                        effectiveDataLabels && React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
 
                         React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
 
@@ -709,104 +935,81 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 // ── Scatter Plot ──
 
                 chartType === 'scatter' && displayRows.length > 0 && (() => {
-
-                  var rangeY = maxVal - minVal || 1;
-
-                  var gap = displayRows.length > 1 ? (W - 2 * pad) / (displayRows.length - 1) : 0;
-
-                  var pts = displayRows.map(function (row, i) {
-
-                    var x = displayRows.length === 1 ? W / 2 : pad + i * gap;
-
-                    var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
-
-                    return { x: x, y: y, label: row.label, value: row.value };
-
-                  });
-
-                  // Trendline for scatter
-
+                  var xValues = displayRows.map(getScatterX);
+                  var minX = Math.min.apply(null, xValues), maxX = Math.max.apply(null, xValues);
+                  var xDomainMin = minX === maxX ? minX - 0.5 : minX, xDomainMax = minX === maxX ? maxX + 0.5 : maxX;
+                  var yDomainMin = minVal === maxVal ? minVal - 0.5 : minVal, yDomainMax = minVal === maxVal ? maxVal + 0.5 : maxVal;
+                  var scaleX = function(x) { return pad + ((x - xDomainMin) / (xDomainMax - xDomainMin)) * (W - 2 * pad); };
+                  var scaleY = function(y) { return (H - pad) - ((y - yDomainMin) / (yDomainMax - yDomainMin)) * (H - pad - chartTop); };
+                  var pts = displayRows.map(function(row, i) { return { x: scaleX(xValues[i]), y: scaleY(row.value), rawX: xValues[i], label: row.label, value: row.value }; });
                   var trendEls = [];
-
                   if (showTrendline && displayRows.length >= 2) {
-
-                    var tl = calcTrendline(displayRows);
-
+                    var tl = calcTrendline(displayRows, true);
                     if (tl) {
-
-                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeY) * (H - pad - 28);
-
-                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeY) * (H - pad - 28);
-
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
-
-                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
-
-                      // R² value
-
+                      var yAtMin = tl.slope * minX + tl.intercept, yAtMax = tl.slope * maxX + tl.intercept;
                       var ssRes = 0, ssTot = 0;
-
-                      displayRows.forEach(function (r, i) { var pred = tl.slope * i + tl.intercept; ssRes += Math.pow(r.value - pred, 2); ssTot += Math.pow(r.value - mean, 2); });
-
-                      var rSquared = ssTot > 0 ? (1 - ssRes / ssTot) : 0;
-
-                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: tlY1 + 5, textAnchor: "end", style: { fontSize: '7px', fill: '#ef4444', opacity: 0.7 } }, 'R²=' + rSquared.toFixed(3)));
-
+                      displayRows.forEach(function(row, i) { var pred = tl.slope * xValues[i] + tl.intercept; ssRes += Math.pow(row.value - pred, 2); ssTot += Math.pow(row.value - mean, 2); });
+                      var rSquared = ssTot > 0 ? Math.max(0, 1 - ssRes / ssTot) : 0;
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.8 }));
+                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: chartTop + 10, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(2) + 'x' + (tl.intercept >= 0 ? '+' : '') + tl.intercept.toFixed(2)));
+                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: chartTop + 21, textAnchor: "end", style: { fontSize: '8px', fill: '#ef4444' } }, 'R?=' + rSquared.toFixed(3)));
                     }
-
                   }
-
                   return React.createElement("g", null,
-
-                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-
-                      var yVal = (minVal + rangeY * frac).toFixed(0);
-
-                      var yPos = (H - pad) - frac * (H - pad - 28);
-
-                      return React.createElement("g", { key: 'syl' + i },
-
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
-
-                        React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
-
-                      );
-
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    [0, 0.25, 0.5, 0.75, 1].map(function(frac, i) {
+                      var rawY = yDomainMin + (yDomainMax - yDomainMin) * frac, y = scaleY(rawY);
+                      return React.createElement("g", { key: 'scatter-y-' + i },
+                        React.createElement("text", { x: pad - 5, y: y + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, Number(rawY.toFixed(2))),
+                        showGridlines && React.createElement("line", { x1: pad, y1: y, x2: W - pad, y2: y, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" }));
                     }),
-
+                    [0, 0.25, 0.5, 0.75, 1].map(function(frac, i) {
+                      var rawX = xDomainMin + (xDomainMax - xDomainMin) * frac, x = scaleX(rawX);
+                      return React.createElement("g", { key: 'scatter-x-' + i },
+                        React.createElement("text", { x: x, y: H - pad + 13, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, Number(rawX.toFixed(2))),
+                        React.createElement("line", { x1: x, y1: H - pad, x2: x, y2: H - pad + 4, stroke: _muted }));
+                    }),
                     trendEls,
-
-                    pts.map(function (p, i) {
-
+                    pts.map(function(point, i) {
                       return React.createElement("g", { key: 'sp' + i },
-
-                        React.createElement("circle", { cx: p.x, cy: p.y, r: 5, fill: COLORS[i % COLORS.length], stroke: _svgBg, strokeWidth: 2, opacity: 0.85 }),
-
-                        React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
-
-                        React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
-
-                      );
-
-                    })
-
+                        React.createElement("circle", { cx: point.x, cy: point.y, r: 5, fill: COLORS[i % COLORS.length], stroke: _svgBg, strokeWidth: 2, opacity: 0.9 },
+                          React.createElement("title", null, point.label + ': x ' + point.rawX + ', y ' + point.value)),
+                        effectiveDataLabels && React.createElement("text", { x: point.x, y: point.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, point.label.length > 8 ? point.label.substring(0, 7) + '..' : point.label));
+                    }),
+                    pearsonR !== null && React.createElement("text", { x: pad + 4, y: chartTop + 10, style: { fontSize: '8px', fontWeight: 'bold', fill: _accent } }, 'Pearson r=' + pearsonR.toFixed(3))
                   );
-
                 })(),
 
 
 
-                // ── Histogram ──
+                // Box-and-whisker plot
+                chartType === 'box' && displayRows.length > 0 && (() => {
+                  var domainMin = range === 0 ? minVal - 0.5 : minVal, domainMax = range === 0 ? maxVal + 0.5 : maxVal;
+                  var plotLeft = pad + 12, plotRight = W - 24, plotY = H / 2;
+                  var scaleBox = function(value) { return plotLeft + ((value - domainMin) / (domainMax - domainMin)) * (plotRight - plotLeft); };
+                  var boxTop = plotY - 38, boxHeight = 76;
+                  var tickValues = [minVal, q1, median, q3, maxVal].filter(function(value, i, all) { return all.indexOf(value) === i; });
+                  return React.createElement("g", null,
+                    React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeWidth: 3 }),
+                    React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY - 18, x2: scaleBox(whiskerMin), y2: plotY + 18, stroke: _accent, strokeWidth: 2 }),
+                    React.createElement("line", { x1: scaleBox(whiskerMax), y1: plotY - 18, x2: scaleBox(whiskerMax), y2: plotY + 18, stroke: _accent, strokeWidth: 2 }),
+                    React.createElement("rect", { x: scaleBox(q1), y: boxTop, width: Math.max(1, scaleBox(q3) - scaleBox(q1)), height: boxHeight, rx: 4, fill: _accent, opacity: 0.2, stroke: _accent, strokeWidth: 2 }),
+                    React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: '#ef4444', strokeWidth: 3 }),
+                    outliers.map(function(row, i) { return React.createElement("circle", { key: 'box-outlier-' + i, cx: scaleBox(row.value), cy: plotY, r: 5, fill: '#f59e0b', stroke: _svgBg, strokeWidth: 2 }); }),
+                    React.createElement("line", { x1: plotLeft, y1: H - pad, x2: plotRight, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    tickValues.map(function(value, i) { return React.createElement("g", { key: 'box-tick-' + i },
+                      React.createElement("line", { x1: scaleBox(value), y1: H - pad, x2: scaleBox(value), y2: H - pad + 5, stroke: _muted }),
+                      React.createElement("text", { x: scaleBox(value), y: H - pad + 17, textAnchor: "middle", style: { fontSize: '9px', fill: _muted } }, Number(value.toFixed(2)))); }),
+                    React.createElement("text", { x: W / 2, y: 42, textAnchor: "middle", style: { fontSize: '9px', fill: _muted } }, "Whiskers show non-outlier range; dots mark possible outliers")
+                  );
+                })(),
 
                 chartType === 'histogram' && displayRows.length > 0 && (() => {
 
                   // For histogram, bin the values
 
-                  var numBins = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(values.length))));
+                  var numBins = histogramBins || Math.min(8, Math.max(3, Math.ceil(Math.sqrt(values.length))));
 
                   var range = maxVal - minVal || 1;
 
@@ -846,7 +1049,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
 
-                        bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, bin.count),
+                        effectiveDataLabels && bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, bin.count),
 
                         React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
 
@@ -865,6 +1068,42 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
             // ── Sort / Filter / Trendline Controls ──
+
+            dataSource && React.createElement("p", { className: "px-2 text-[11px]", role: "note", style: { color: _muted } },
+              React.createElement("strong", null, "Source: "), dataSource),
+            showDataLabels && !effectiveDataLabels && React.createElement("p", { className: "px-2 text-[11px]", role: "status", style: { color: isDark ? '#fcd34d' : '#92400e' } },
+              "Data labels are automatically hidden above 100 visible points to keep the chart readable. Filter the data to restore them."),
+
+            React.createElement("details", { className: "rounded-xl p-2 text-xs", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("summary", { className: "font-bold cursor-pointer", style: { color: _accent } }, "View data table (" + displayRows.length + " rows)"),
+              React.createElement("div", { className: "overflow-x-auto mt-2" },
+                React.createElement("table", { className: "w-full text-left" },
+                  React.createElement("caption", { className: "sr-only" }, chartTitle + " chart data"),
+                  React.createElement("thead", null, React.createElement("tr", null,
+                    React.createElement("th", { scope: "col", className: "p-1" }, "Label"),
+                    (chartType === 'scatter' || hasExplicitX) && React.createElement("th", { scope: "col", className: "p-1" }, "X"),
+                    React.createElement("th", { scope: "col", className: "p-1" }, chartType === 'scatter' || hasExplicitX ? "Y" : "Value"))),
+                  React.createElement("tbody", null, tableRows.map(function(row, i) {
+                    var rowIndex = tableStart + i;
+                    return React.createElement("tr", { key: "table-" + rowIndex },
+                      React.createElement("th", { scope: "row", className: "p-1 font-semibold" }, row.label),
+                      (chartType === 'scatter' || hasExplicitX) && React.createElement("td", { className: "p-1 font-mono" }, getScatterX(row, rowIndex)),
+                      React.createElement("td", { className: "p-1 font-mono" }, row.value));
+                  }))
+                )
+              ),
+              tablePageCount > 1 && React.createElement("div", { className: "flex items-center justify-between gap-2 mt-2", role: "group", "aria-label": "Data table pagination" },
+                React.createElement("button", { disabled: tablePage === 0, onClick: function() { updDS('tablePage', Math.max(0, tablePage - 1)); }, className: "px-2 py-1 rounded font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Previous"),
+                React.createElement("span", { className: "font-semibold" }, "Table page " + (tablePage + 1) + " of " + tablePageCount),
+                React.createElement("button", { disabled: tablePage >= tablePageCount - 1, onClick: function() { updDS('tablePage', Math.min(tablePageCount - 1, tablePage + 1)); }, className: "px-2 py-1 rounded font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Next")
+              )
+            ),
+            displayRows.length === 0 && React.createElement("div", { role: "status", className: "rounded-xl p-3 text-sm font-bold text-center",
+              style: { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', color: isDark ? '#fcd34d' : '#92400e' } },
+              dataRows.length ? (filterMin !== '' && filterMax !== '' && filterMin > filterMax ? 'The minimum filter is greater than the maximum. Adjust or clear the filters.' : 'No rows match the current filters. Clear the filters to see your chart.') : 'Add a data point or choose a preset to begin.'),
+            chartType === 'pie' && (total <= 0 || values.some(function(v) { return v < 0; })) && React.createElement("div", { role: "note", className: "rounded-xl p-2 text-xs",
+              style: { background: 'rgba(245,158,11,0.12)', color: isDark ? '#fcd34d' : '#92400e' } },
+              'Pie charts represent parts of a positive whole. Use at least one positive value and remove or filter negative values.'),
 
             React.createElement("div", { className: "flex gap-2 flex-wrap items-center", style: { marginBottom: 4 } },
 
@@ -892,9 +1131,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("span", { className: "text-[11px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
 
+              React.createElement("input", { type: "search", placeholder: "Label contains?", value: labelFilter, "aria-label": "Filter rows by label",
+                onChange: function(e) { updDSMany({ labelFilter: e.target.value, tablePage: 0 }); }, className: "w-28 px-1.5 py-1 rounded-lg text-[11px]",
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' } }),
+
               React.createElement("input", {
 
-                type: "number", placeholder: "Min", value: filterMin,
+                type: "number", placeholder: "Min", value: filterMin, "aria-label": "Minimum value filter",
 
                 onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
@@ -909,7 +1152,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("input", {
 
-                type: "number", placeholder: "Max", value: filterMax,
+                type: "number", placeholder: "Max", value: filterMax, "aria-label": "Maximum value filter",
 
                 onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
@@ -920,9 +1163,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               }),
 
-              (filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": t('stem.datastudio.clear', "Clear"),
+              (labelFilter || filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": t('stem.datastudio.clear', "Clear"),
 
-                onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
+                onClick: function () { updDSMany({ labelFilter: '', filterMin: '', filterMax: '', tablePage: 0 }); },
 
                 className: "px-2 py-1 rounded-lg text-[11px] font-bold",
 
@@ -956,7 +1199,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 return React.createElement("button", { key: i,
 
-                  onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
+                  onClick: function () { commitDataRows(p.data, { chartTitle: p.title, filterMin: '', filterMax: '', sortOrder: 'none' }, 'Preset loaded. Undo is available.'); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
                   className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105",
 
@@ -972,7 +1215,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ── CSV Import ──
 
-            React.createElement("div", { className: "flex gap-2" },
+            React.createElement("div", { className: "flex flex-wrap gap-2" },
 
               React.createElement("button", { "aria-label": t('stem.datastudio.import_csv_data_file', "Import CSV data file"),
 
@@ -1014,7 +1257,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () {
 
-                  var csv = 'Label,Value\n' + dataRows.map(function (r) { return r.label + ',' + r.value; }).join('\n');
+                  var csv = serializeDataStudioCSV(dataRows);
 
                   var blob = new Blob([csv], { type: 'text/csv' });
 
@@ -1022,7 +1265,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   var a = document.createElement('a');
 
-                  a.href = url; a.download = (chartTitle || 'data') + '.csv';
+                  a.href = url; a.download = ((chartTitle || 'data').replace(/[^a-z0-9 _-]/gi, '').trim() || 'data') + '.csv';
 
                   a.click(); URL.revokeObjectURL(url);
 
@@ -1032,7 +1275,34 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
-              }, t('stem.datastudio.export_csv_2', "💾 Export CSV"))
+              }, t('stem.datastudio.export_csv_2', "💾 Export CSV")),
+              React.createElement("button", { "aria-label": "Export chart as SVG", onClick: function() {
+                  var el = document.querySelector('[data-datastudio-chart="true"]');
+                  if (!el || typeof XMLSerializer === 'undefined') { if (addToast) addToast('Chart export is not available.', 'warning'); return; }
+                  var clone = el.cloneNode(true); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                  var blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' });
+                  var url = URL.createObjectURL(blob), a = document.createElement('a');
+                  a.href = url; a.download = (((chartTitle || 'chart').replace(/[^a-z0-9 _-]/gi, '').trim() || 'chart') + '.svg');
+                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+                  if (addToast) addToast('Chart exported as SVG.', 'success');
+                }, className: "px-3 py-2 rounded-xl text-xs font-bold transition-all", style: { background: _card, border: '1px solid ' + _border, color: _accent }
+              }, "Export SVG"),
+              React.createElement("button", { "aria-label": "Export analysis as JSON", onClick: function() {
+                  var report = {
+                    schema: 'alloflow-data-studio-report-v1', title: chartTitle, chartType: chartType,
+                    axes: { x: xAxisLabel, y: yAxisLabel }, source: dataSource, rows: dataRows,
+                    presentation: { palette: palette, dataLabels: showDataLabels, effectiveDataLabels: effectiveDataLabels, gridlines: showGridlines },
+                    visibleRows: displayRows.length, filters: { label: labelFilter, min: filterMin, max: filterMax, sort: sortOrder },
+                    statistics: { count: values.length, sum: total, mean: mean, median: median, standardDeviation: stdDev, standardDeviationMethod: stdDevMode,
+                      minimum: minVal, maximum: maxVal, range: range, q1: q1, q3: q3, iqr: iqr, mode: modeVal,
+                      pearsonR: chartType === 'scatter' ? pearsonR : null },
+                    chartCoach: { recommendation: recommendedChart, reason: recommendationReason }
+                  };
+                  var blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), a = document.createElement('a');
+                  a.href = url; a.download = (((chartTitle || 'analysis').replace(/[^a-z0-9 _-]/gi, '').trim() || 'analysis') + '.json');
+                  a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+                  if (addToast) addToast('Analysis report exported.', 'success');
+                }, className: "px-3 py-2 rounded-xl text-xs font-bold transition-all", style: { background: _card, border: '1px solid ' + _border, color: _accent } }, "Export JSON")
 
             ),
 
@@ -1042,7 +1312,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
 
-              React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📝 Data (" + dataRows.length + " items" + (displayRows.length !== dataRows.length ? ', ' + displayRows.length + ' shown' : '') + ")"),
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("div", { className: "text-xs font-bold", style: { color: _accent } }, "Data (" + dataRows.length + " items" + (displayRows.length !== dataRows.length ? ', ' + displayRows.length + ' shown' : '') + ")"),
+                React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Data change history" },
+                  React.createElement("button", { onClick: undoDataChange, disabled: !undoStack.length, "aria-label": "Undo last structural data change",
+                    title: "Undo imports, presets, additions, removals, or clears", className: "px-2 py-1 rounded text-[11px] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, "Undo"),
+                  React.createElement("button", { onClick: redoDataChange, disabled: !redoStack.length, "aria-label": "Redo structural data change",
+                    className: "px-2 py-1 rounded text-[11px] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, "Redo")
+                )
+              ),
 
               // Add row
 
@@ -1054,7 +1332,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   value: editRow.label,
 
-                  onChange: function (e) { updDS('editRow', { label: e.target.value, value: editRow.value }); },
+                  onChange: function (e) { updDS('editRow', { label: e.target.value, x: editRow.x, value: editRow.value }); },
 
                   className: "flex-1 px-2 py-1.5 rounded-lg text-xs",
 
@@ -1063,21 +1341,29 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }),
 
+                chartType === 'scatter' && React.createElement("input", {
+                  type: "number", placeholder: "X", value: editRow.x,
+                  onChange: function(e) { updDS('editRow', { label: editRow.label, x: e.target.value, value: editRow.value }); },
+                  className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
+                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  "aria-label": "New point X value"
+                }),
+
                 React.createElement("input", {
 
                   type: "number", placeholder: t('stem.datastudio.value', "Value"),
 
                   value: editRow.value,
 
-                  onChange: function (e) { updDS('editRow', { label: editRow.label, value: e.target.value }); },
+                  onChange: function (e) { updDS('editRow', { label: editRow.label, x: editRow.x, value: e.target.value }); },
 
                   onKeyDown: function (e) {
 
                     if (e.key === 'Enter' && editRow.label && editRow.value !== '') {
 
-                      updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
+                      commitDataRows(dataRows.concat([buildEditDataRow()]), {}, 'Data row added.');
 
-                      updDS('editRow', { label: '', value: '' });
+                      updDS('editRow', { label: '', x: '', value: '' });
 
                     }
 
@@ -1096,9 +1382,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     if (editRow.label && editRow.value !== '') {
 
-                      updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
+                      commitDataRows(dataRows.concat([buildEditDataRow()]), {}, 'Data row added.');
 
-                      updDS('editRow', { label: '', value: '' });
+                      updDS('editRow', { label: '', x: '', value: '' });
 
                     }
 
@@ -1116,17 +1402,24 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "max-h-28 overflow-y-auto space-y-1" },
 
-                dataRows.map(function (row, i) {
+                editorRows.map(function (row, pageIndex) {
 
+                  var i = editorStart + pageIndex;
                   return React.createElement("div", { key: i, className: "flex items-center gap-2 py-1 px-2 rounded-lg text-xs", style: { background: _svgBg } },
 
                     React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: COLORS[i % COLORS.length] } }),
 
-                    React.createElement("span", { className: "flex-1 font-bold" }, row.label),
+                    React.createElement("input", { value: row.label, "aria-label": "Label for row " + (i + 1),
+                      onChange: function(e) { var next = dataRows.slice(); next[i] = Object.assign({}, row, { label: e.target.value }); updDS('dataRows', next); },
+                      className: "flex-1 min-w-0 px-1 py-0.5 rounded font-bold", style: { background: 'transparent', border: '1px solid transparent', color: _text } }),
+                    chartType === 'scatter' && React.createElement("input", { type: "number", value: row.x !== undefined ? row.x : getScatterX(row, i), "aria-label": "X value for " + (row.label || ('row ' + (i + 1))),
+                      onChange: function(e) { var next = dataRows.slice(), num = Number(e.target.value); if (isFinite(num)) { next[i] = Object.assign({}, row, { x: num }); updDS('dataRows', next); } },
+                      className: "w-20 px-1 py-0.5 rounded font-mono text-right", style: { background: 'transparent', border: '1px solid transparent', color: _muted } }),
+                    React.createElement("input", { type: "number", value: row.value, "aria-label": "Value for " + (row.label || ('row ' + (i + 1))),
+                      onChange: function(e) { var next = dataRows.slice(), num = Number(e.target.value); if (isFinite(num)) { next[i] = Object.assign({}, row, { value: num }); updDS('dataRows', next); } },
+                      className: "w-24 px-1 py-0.5 rounded font-mono text-right", style: { background: 'transparent', border: '1px solid transparent', color: _muted } }),
 
-                    React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
-
-                    React.createElement("button", { "aria-label": t('stem.datastudio.remove_row', "Remove row") + " " + (row.label || (i + 1)), onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
+                    React.createElement("button", { "aria-label": t('stem.datastudio.remove_row', "Remove row") + " " + (row.label || (i + 1)), onClick: function () { commitDataRows(dataRows.filter(function (_, j) { return j !== i; }), {}, 'Data row removed.'); },
 
                       className: "text-red-400 hover:text-red-600 font-bold text-xs"
 
@@ -1137,18 +1430,23 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 })
 
               ),
+              editorPageCount > 1 && React.createElement("div", { className: "flex items-center justify-between gap-2 mt-2", role: "group", "aria-label": "Data editor pagination" },
+                React.createElement("button", { disabled: editorPage === 0, onClick: function() { updDS('editorPage', Math.max(0, editorPage - 1)); }, className: "px-2 py-1 rounded text-[11px] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Previous"),
+                React.createElement("span", { className: "text-[11px] font-semibold" }, "Page " + (editorPage + 1) + " of " + editorPageCount),
+                React.createElement("button", { disabled: editorPage >= editorPageCount - 1, onClick: function() { updDS('editorPage', Math.min(editorPageCount - 1, editorPage + 1)); }, className: "px-2 py-1 rounded text-[11px] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, "Next")
+              ),
 
               // Clear
 
               dataRows.length > 0 && React.createElement("button", { "aria-label": t('stem.datastudio.clear_all', "Clear All"),
 
-                onClick: function () { updDS('dataRows', []); },
+                onClick: function () { commitDataRows([], {}, 'All data rows cleared. Undo is available.'); },
 
                 className: "mt-2 px-3 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
-              }, t('stem.datastudio.clear_all_2', "🗑 Clear All"))
+              }, t('stem.datastudio.clear_all_2', "🗑 Clear All")),
 
             ),
 
@@ -1158,7 +1456,39 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             workspaceTab === 'analyze' && dataRows.length > 0 && React.createElement(React.Fragment, null,
 
-            showStats && React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+            React.createElement("div", { className: "rounded-xl p-3", role: "region", "aria-label": "Data Preparation", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "text-xs font-bold mb-1", style: { color: _accent } }, "Data Preparation"),
+              React.createElement("p", { className: "text-[11px] mb-2", style: { color: _muted } }, duplicateLabelCount ? duplicateLabelCount + " repeated label group" + (duplicateLabelCount === 1 ? " is" : "s are") + " ready to combine. Labels match without regard to capitalization." : "No repeated label groups detected."),
+              React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Combine duplicate labels" },
+                React.createElement("span", { className: "text-[11px] font-bold", style: { color: _muted } }, "COMBINE BY:"),
+                ['sum', 'mean', 'count'].map(function(method) {
+                  return React.createElement("button", { key: method, disabled: !duplicateLabelCount, onClick: function() { aggregateDuplicateLabels(method); },
+                    className: "px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, method.charAt(0).toUpperCase() + method.slice(1));
+                })
+              )
+            ),
+
+            React.createElement("div", { className: "rounded-xl p-3", role: "region", "aria-label": "Transform Lab", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "text-xs font-bold mb-1", style: { color: _accent } }, "Transform Lab"),
+              React.createElement("p", { className: "text-[11px] mb-2", style: { color: _muted } }, "Transform every row. Each action is undoable."),
+              React.createElement("div", { className: "flex flex-wrap gap-2" },
+                React.createElement("button", { onClick: function() { transformData('percent'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold", style: { border: '1px solid ' + _border, color: _accent } }, "Percent of total"),
+                React.createElement("button", { onClick: function() { transformData('cumulative'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold", style: { border: '1px solid ' + _border, color: _accent } }, "Cumulative total"),
+                React.createElement("button", { onClick: function() { transformData('zscore'); }, disabled: stdDev === 0, className: "px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-40", style: { border: '1px solid ' + _border, color: _accent } }, "Z-scores")
+              )
+            ),
+
+            showStats && React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": "Standard deviation method" },
+              React.createElement("span", { className: "text-[11px] font-bold", style: { color: _muted } }, "STD DEV:"),
+              ['population', 'sample'].map(function(mode) {
+                var active = stdDevMode === mode;
+                return React.createElement("button", { key: mode, onClick: function() { updDS('stdDevMode', mode); }, "aria-pressed": active, disabled: mode === 'sample' && values.length < 2,
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold disabled:opacity-40", style: { background: active ? _btnBg : _card, color: active ? '#fff' : _text, border: '1px solid ' + _border } },
+                  mode === 'population' ? "Population (N)" : "Sample (N-1)");
+              })
+            ),
+
+            showStats && React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2", "aria-label": "Descriptive statistics" },
 
               [
 
@@ -1168,7 +1498,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 { label: t('stem.datastudio.median', 'Median'), val: median.toFixed(1) },
 
-                { label: t('stem.datastudio.std_dev', 'Std Dev'), val: stdDev.toFixed(1) }
+                { label: (stdDevMode === 'sample' ? 'Sample ' : '') + t('stem.datastudio.std_dev', 'Std Dev'), val: stdDev.toFixed(1) }
 
               ].map(function (stat, i) {
 
@@ -1186,7 +1516,38 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
 
 
-            // ── AI Data Story Panel (reading-level aware) ──
+            showStats && React.createElement("div", { className: "rounded-xl p-3 text-xs space-y-1", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "font-bold", style: { color: _accent } }, "Quick insights"),
+              React.createElement("p", null, displayRows.length + " shown of " + dataRows.length + " rows. Range: " + range.toFixed(1) + ". Trend: " + trendDirection + "."),
+              minRow && maxRow && React.createElement("p", null, "Lowest: " + minRow.label + " (" + minVal + "). Highest: " + maxRow.label + " (" + maxVal + ")."),
+              React.createElement("p", null, "Mode: " + modeVal + ". Q1: " + q1.toFixed(1) + ". Q3: " + q3.toFixed(1) + ". IQR: " + iqr.toFixed(1) + "."),
+              chartType === 'scatter' && pearsonR !== null && React.createElement("p", null, "Pearson correlation: r = " + pearsonR.toFixed(3) + ". " + (Math.abs(pearsonR) >= 0.7 ? "Strong" : Math.abs(pearsonR) >= 0.4 ? "Moderate" : "Weak") + " " + (pearsonR >= 0 ? "positive" : "negative") + " linear relationship."),
+              values.length > 1 && React.createElement("p", null, "Approximate 95% confidence interval for the mean: " + confidenceLow.toFixed(1) + " to " + confidenceHigh.toFixed(1) + " (normal approximation)."),
+              React.createElement("p", null, outliers.length ? "Possible outliers: " + outliers.map(function(row) { return row.label + " (" + row.value + ")"; }).join(", ") + "." : "No IQR outliers detected.")
+            ),
+
+            // ?? AI Data Story Panel (reading-level aware) ?? ──
+
+            showStats && React.createElement("div", { className: "rounded-xl p-3 text-xs", role: "region", "aria-label": "Data quality report", style: { background: _card, border: '1px solid ' + _border } },
+              React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                React.createElement("span", { className: "font-bold", style: { color: _accent } }, "Data quality"),
+                typeof callTTS === 'function' && React.createElement("button", { className: "ml-auto px-2 py-1 rounded-lg text-[11px] font-bold", style: { border: '1px solid ' + _border, color: _accent },
+                  onClick: function() { callTTS("Data summary. " + displayRows.length + " rows shown. Mean " + mean.toFixed(1) + ". Median " + median.toFixed(1) + ". Trend " + trendDirection + "." + (chartType === 'scatter' && pearsonR !== null ? " Pearson correlation " + pearsonR.toFixed(3) + "." : "")); }, "aria-label": "Read data summary aloud" }, "Read aloud")
+              ),
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                [
+                  { label: "Duplicate labels", value: duplicateLabelCount, warn: duplicateLabelCount > 0 },
+                  { label: "Blank labels", value: blankLabelCount, warn: blankLabelCount > 0 },
+                  { label: "Negative values", value: negativeCount, warn: negativeCount > 0 && chartType === 'pie' },
+                  { label: chartType === 'scatter' ? "Duplicate X values" : "Unique values", value: chartType === 'scatter' ? duplicateXCount : uniqueValueCount + "/" + dataRows.length, warn: chartType === 'scatter' && duplicateXCount > 0 }
+                ].map(function(item) {
+                  return React.createElement("div", { key: item.label, className: "rounded-lg p-2", style: { background: _svgBg, border: '1px solid ' + (item.warn ? '#f59e0b' : _border) } },
+                    React.createElement("div", { className: "text-[10px] font-bold", style: { color: _muted } }, item.label),
+                    React.createElement("div", { className: "font-mono font-bold", style: { color: item.warn ? '#d97706' : _accent } }, item.value));
+                })
+              ),
+              zeroCount > 0 && React.createElement("p", { className: "mt-2", style: { color: _muted } }, zeroCount + " zero value" + (zeroCount === 1 ? "" : "s") + " found; confirm whether zero means none or missing.")
+            ),
 
             (function () {
 
@@ -1222,7 +1583,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 var levelObj = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
 
-                var dataSummary = dataRows.map(function (r) { return r.label + ': ' + r.value; }).join('; ');
+                var dataSummary = displayRows.map(function (r, i) { return r.label + (chartType === 'scatter' ? ' (x=' + getScatterX(r, i) + ', y=' + r.value + ')' : ': ' + r.value); }).join('; ');
 
                 var chartLabel = (CHART_TYPES.find(function (ct) { return ct.id === chartType; }) || { label: chartType }).label;
 
@@ -1232,9 +1593,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   + 'Chart type: ' + chartLabel + '. Title: "' + chartTitle + '". '
 
-                  + 'Data points (' + dataRows.length + '): ' + dataSummary + '. '
+                  + 'Visible data points (' + displayRows.length + ' of ' + dataRows.length + '): ' + dataSummary + '. '
 
-                  + 'Stats: sum=' + total.toFixed(1) + ', mean=' + mean.toFixed(1) + ', median=' + median.toFixed(1) + ', std dev=' + stdDev.toFixed(1) + '. '
+                  + 'Stats: sum=' + total.toFixed(1) + ', mean=' + mean.toFixed(1) + ', median=' + median.toFixed(1) + ', std dev=' + stdDev.toFixed(1) + (chartType === 'scatter' && pearsonR !== null ? ', Pearson r=' + pearsonR.toFixed(3) : '') + '. '
 
                   + 'In 3 short sentences: (1) What story does this data tell? (2) What pattern or outlier stands out? (3) One interesting question this data raises. '
 
@@ -1294,7 +1655,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     onClick: tellStory,
 
-                    disabled: aiLoading,
+                    disabled: aiLoading || displayRows.length === 0,
 
                     "aria-label": "Generate data story at " + (LEVELS.find(function (L) { return L.id === aiLevel; }) || { label: t('stem.datastudio.grade_5_2', 'Grade 5') }).label + " level",
 

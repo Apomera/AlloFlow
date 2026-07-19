@@ -21,6 +21,7 @@ var ArrowDown = _lazyIcon('ArrowDown');
 var ArrowRight = _lazyIcon('ArrowRight');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var Gamepad2 = _lazyIcon('Gamepad2');
+var GitMerge = _lazyIcon('GitMerge');
 var Layout = _lazyIcon('Layout');
 var List = _lazyIcon('List');
 var ListOrdered = _lazyIcon('ListOrdered');
@@ -198,10 +199,7 @@ const renderOutlineContent = (deps) => {
     const _C = window.AlloModules.CauseEffectSortGame;
     return React.memo((props) => React.createElement(_C, props));
   })() : _GameLoadingFallback;
-  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() {
-    const _C = window.AlloModules.PipelineBuilderGame;
-    return React.memo((props) => React.createElement(_C, props));
-  })() : _GameLoadingFallback;
+  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? window.AlloModules.PipelineBuilderGame : _GameLoadingFallback;
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() {
     const _C = window.AlloModules.TChartSortGame;
     return React.memo((props) => React.createElement(_C, props));
@@ -303,7 +301,11 @@ const renderOutlineContent = (deps) => {
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, item), branch.items_en?.[iIdx] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "(", branch.items_en[iIdx], ")"))))))));
   if (type === "Flow Chart" || type === "Process Flow / Sequence") {
     if (isPipelinePlaying || isInteractivePipeline && !isTeacherMode) {
-      const stepData = branches.map((b) => ({ title: b.title, items: b.items || [] }));
+      const stepData = branches.map((b) => ({
+        title: b.title,
+        items: b.items || [],
+        connectsTo: Array.isArray(b.connectsTo) ? b.connectsTo : void 0
+      }));
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Pipeline Builder encountered an error." }, /* @__PURE__ */ React.createElement(
         PipelineBuilderGame,
         {
@@ -316,6 +318,19 @@ const renderOutlineContent = (deps) => {
         }
       ));
     }
+    const flowTargets = branches.map((branch, branchIndex) => {
+      const explicitTargets = Array.isArray(branch.connectsTo) ? [...new Set(branch.connectsTo.map((target) => Number(target)).filter((target) => Number.isInteger(target) && target >= 0 && target < branches.length && target !== branchIndex))] : [];
+      return explicitTargets.length > 0 ? explicitTargets : branchIndex < branches.length - 1 ? [branchIndex + 1] : [];
+    });
+    const incomingPathCounts = flowTargets.reduce((counts, targets) => {
+      targets.forEach((target) => {
+        counts[target] = (counts[target] || 0) + 1;
+      });
+      return counts;
+    }, {});
+    const hasNonLinearFlow = flowTargets.some(
+      (targets, index) => targets.length > 1 || targets.length === 1 && targets[0] !== index + 1
+    ) || Object.values(incomingPathCounts).some((count) => count > 1);
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -344,7 +359,7 @@ const renderOutlineContent = (deps) => {
                                 animation: flow-march 1.2s linear infinite;
                             }
                         }
-                    `), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full" }), /* @__PURE__ */ React.createElement(
+                    `), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100" }, !hasNonLinearFlow && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full" }), /* @__PURE__ */ React.createElement(
       "div",
       {
         "aria-hidden": "true",
@@ -356,10 +371,12 @@ const renderOutlineContent = (deps) => {
           pointerEvents: "none"
         }
       }
-    ), branches.map((b, i) => {
-      const hasConnectsTo = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
-      const isBranching = hasConnectsTo && b.connectsTo.length > 1;
-      return /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? "border-l-amber-500 ring-2 ring-amber-100" : i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? "bg-amber-500" : i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, isBranching ? "\u2442" : i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" }), isBranching && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 pb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-amber-700 uppercase tracking-wider" }, t("outline.branches_to") || "Branches to:"), b.connectsTo.map((target) => /* @__PURE__ */ React.createElement("span", { key: target, className: "text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full" }, t("outline.step_target", { number: target + 1, title: branches[target]?.title || "?" }) || "Step " + (target + 1) + ": " + (branches[target]?.title || "?"))))));
+    )), branches.map((b, i) => {
+      const targets = flowTargets[i];
+      const isBranching = targets.length > 1;
+      const isMerge = (incomingPathCounts[i] || 0) > 1;
+      const hasExplicitRoute = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
+      return /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, isMerge && /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-teal-800 bg-teal-100 border border-teal-300 px-3 py-1 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 12, "aria-hidden": "true" }), " ", t("outline.paths_merge_here") || "Paths merge here"), i > 0 && flowTargets[i - 1].length === 1 && flowTargets[i - 1][0] === i && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? "border-l-amber-500 ring-2 ring-amber-100" : i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? "bg-amber-500" : i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" }), (isBranching || hasExplicitRoute) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-4 pb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-amber-700 uppercase tracking-wider flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 11, "aria-hidden": "true" }), " ", isBranching ? t("outline.branches_to") || "Branches to:" : t("outline.continues_to") || "Continues to:"), targets.map((target) => /* @__PURE__ */ React.createElement("span", { key: target, className: "text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full" }, t("outline.step_target", { number: target + 1, title: branches[target]?.title || "?" }) || "Step " + (target + 1) + ": " + (branches[target]?.title || "?"))))));
     }), /* @__PURE__ */ React.createElement("div", { className: "px-8 py-3 bg-slate-800 text-white rounded-full font-black text-sm mt-4 z-10 shadow-lg border-4 border-white tracking-widest uppercase" }, t("outline.labels.end"))));
   }
   if (type === "Venn Diagram") {

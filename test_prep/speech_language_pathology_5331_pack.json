@@ -3,17 +3,24 @@
   "id": "praxis-speech-language-pathology-5331",
   "title": "Praxis Speech-Language Pathology (5331) — 200 Source Questions + 300 Guided Review",
   "shortTitle": "Speech-Language Pathology 5331 diagnostics",
-  "description": "Contains 200 source diagnostic questions and 300 source-derived guided-review tasks; the assistant audit found 100 distinct source content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 132-question timed simulation. The official 5331 test currently has 132 selected-response questions in 150 minutes; AlloFlow practice is not an official form or score.",
+  "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 100 distinct independent content kernels. Two independently authored 100-question diagnostic batches linked to a 12-chapter learning library, targeted skill practice, and an optional 132-question timed simulation. The official 5331 test currently has 132 selected-response questions in 150 minutes; AlloFlow practice is not an official form or score.",
   "credentialOwner": "Educational Testing Service (ETS)",
   "version": "1.0.0",
   "status": "ready",
   "accent": "purple",
-  "contentReview": "Assistant audit completed: the 200 source questions contain 100 distinct content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. The 300 additional activities are assistant-reviewed guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
+  "contentReview": "Assistant audit completed: 200 independent-practice items contain 100 distinct content kernels and 100 parallel variants under the normalized test. 300 additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
   "nativeQaUrl": "./test_prep/speech_language_pathology_5331_native_qa.json",
   "learningLibraryUrl": "./test_prep/speech_language_pathology_5331_learning_library.json",
   "learningLibraryQaUrl": "./test_prep/speech_language_pathology_5331_learning_library_qa.json",
   "simulationItemCount": 132,
   "simulationTimeMinutes": 150,
+  "officialSelectedResponseCount": 132,
+  "officialTotalTimeMinutes": 150,
+  "simulationDomainCounts": {
+    "foundations-professional-practice": 44,
+    "screening-assessment-diagnosis": 44,
+    "treatment-planning-evaluation": 44
+  },
   "disclaimer": "Independent preparation material. Not affiliated with or endorsed by ETS or ASHA. The official Praxis Speech-Language Pathology (5331) test currently has 132 selected-response questions in 150 minutes; the 100-item diagnostic batches are not official-length forms. Practice results are not official or scaled Praxis scores, pass predictions, credentials, clinical evaluations, diagnoses, medical or swallowing-safety decisions, treatment, legal advice, or substitutes for qualified supervision and current federal, state, local, licensure, certification, educational, health-care, privacy, consent, emergency, and reporting requirements.",
   "domains": [
     {
@@ -37,14 +44,14 @@
     {
       "id": "diagnostic-batch-1",
       "label": "100-item source diagnostic bank 1",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "diagnostic-batch-2",
       "label": "100-item source diagnostic bank 2",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "guided-review-bank-1",
@@ -375,7 +382,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "application",
-      "prompt": "Which finding most clearly distinguishes conductive from sensorineural hearing loss?",
+      "prompt": "A hearing loss caused by reduced sound transmission through the outer or middle ear is classified as what type?",
       "choices": [
         "Conductive hearing loss.",
         "Central auditory processing disorder by definition.",
@@ -1071,7 +1078,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "application",
-      "prompt": "Which pattern most strongly suggests language difference rather than disorder?",
+      "prompt": "A multilingual child uses forms consistent with the home-language system and learns age-expected patterns across languages. What is the best interpretation?",
       "choices": [
         "Any departure from mainstream English proves disorder.",
         "The pattern may reflect linguistic difference; disorder requires converging evidence of difficulty not explained by language exposure or dialect.",
@@ -1412,7 +1419,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "application",
-      "prompt": "Which symptom during eating most clearly warrants prompt swallowing-safety evaluation?",
+      "prompt": "During eating, a patient repeatedly coughs with liquids and develops a wet vocal quality after swallowing. What is the most appropriate interpretation?",
       "choices": [
         "A normal sign that excludes dysphagia.",
         "Possible airway invasion or impaired clearance requiring timely clinical evaluation and medical or instrumental referral as indicated.",
@@ -2510,9 +2517,9 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "application",
-      "prompt": "When is a videofluoroscopic swallowing study especially useful?",
+      "prompt": "Which instrumental study uses dynamic radiography to examine bolus flow through oral, pharyngeal, and upper-esophageal swallowing events?",
       "choices": [
-        "A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations.",
+        "A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations.",
         "A pure-tone audiogram.",
         "A laryngeal perceptual rating only.",
         "A standardized vocabulary test."
@@ -2549,12 +2556,12 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "application",
-      "prompt": "What is a major advantage of fiberoptic endoscopic evaluation of swallowing?",
+      "prompt": "Which statement accurately identifies a major advantage of FEES?",
       "choices": [
-        "FEES directly displays the oral preparatory phase.",
-        "FEES, when clinically appropriate and within qualified scope and procedures.",
-        "FEES measures hearing thresholds.",
-        "FEES eliminates the need for informed consent."
+        "VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.",
+        "FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate.",
+        "Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.",
+        "FEES directly images the oral preparatory phase and upper esophagus throughout every swallow."
       ],
       "answerIndex": 1,
       "rationale": "FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
@@ -2571,10 +2578,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
         "Correct. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. \"FEES measures hearing thresholds.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. \"FEES eliminates the need for informed consent.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "Not the best answer. \"Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. \"FEES directly images the oral preparatory phase and upper esophagus throughout every swallow.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -2627,7 +2634,7 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "application",
-      "prompt": "Which finding is most associated with oral-phase swallowing difficulty?",
+      "prompt": "Prolonged mastication, poor bolus formation, and oral residue most directly implicate which swallowing phases?",
       "choices": [
         "The esophageal phase only.",
         "Auditory processing.",
@@ -3832,10 +3839,10 @@
       "difficulty": "application",
       "prompt": "How should a postural swallowing strategy be prescribed?",
       "choices": [
-        "Yes, because posture has identical effects for everyone.",
-        "No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects.",
-        "Yes, without explaining the purpose.",
-        "No posture can ever affect swallowing."
+        "Recommend the same posture for every patient because its effects are identical.",
+        "Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects.",
+        "Use the posture without explaining its purpose or checking response.",
+        "Avoid every posture because no postural change can affect swallowing."
       ],
       "answerIndex": 1,
       "rationale": "Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
@@ -3853,10 +3860,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
         "Correct. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. \"Yes, without explaining the purpose.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. \"No posture can ever affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "Not the best answer. \"Use the posture without explaining its purpose or checking response.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. \"Avoid every posture because no postural change can affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
       ],
       "skillIds": [
         "feeding-swallowing-treatment"
@@ -6551,7 +6558,7 @@
       "difficulty": "application",
       "prompt": "Which instrumental method visualizes oral, pharyngeal, and upper-esophageal swallowing events across bolus trials using radiography?",
       "choices": [
-        "A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations.",
+        "A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations.",
         "A pure-tone audiogram.",
         "A laryngeal perceptual rating only.",
         "A standardized vocabulary test."
@@ -6590,10 +6597,10 @@
       "difficulty": "application",
       "prompt": "Which study can assess pharyngeal and laryngeal anatomy, secretions, fatigue, and repeated trials without ionizing radiation?",
       "choices": [
-        "FEES directly displays the oral preparatory phase.",
-        "FEES, when clinically appropriate and within qualified scope and procedures.",
-        "FEES measures hearing thresholds.",
-        "FEES eliminates the need for informed consent."
+        "VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.",
+        "FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate.",
+        "Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.",
+        "FEES directly images the oral preparatory phase and upper esophagus throughout every swallow."
       ],
       "answerIndex": 1,
       "rationale": "FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
@@ -6610,10 +6617,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
         "Correct. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. \"FEES measures hearing thresholds.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. \"FEES eliminates the need for informed consent.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "Not the best answer. \"Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. \"FEES directly images the oral preparatory phase and upper esophagus throughout every swallow.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -7871,10 +7878,10 @@
       "difficulty": "application",
       "prompt": "A chin-down posture helps one patient in an instrumental study. Should it be recommended to every patient?",
       "choices": [
-        "Yes, because posture has identical effects for everyone.",
-        "No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects.",
-        "Yes, without explaining the purpose.",
-        "No posture can ever affect swallowing."
+        "Recommend the same posture for every patient because its effects are identical.",
+        "Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects.",
+        "Use the posture without explaining its purpose or checking response.",
+        "Avoid every posture because no postural change can affect swallowing."
       ],
       "answerIndex": 1,
       "rationale": "Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
@@ -7892,10 +7899,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
         "Correct. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. \"Yes, without explaining the purpose.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. \"No posture can ever affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "Not the best answer. \"Use the posture without explaining its purpose or checking response.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. \"Avoid every posture because no postural change can affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
       ],
       "skillIds": [
         "feeding-swallowing-treatment"
@@ -8549,7 +8556,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “Which finding most clearly distinguishes conductive from sensorineural hearing loss?” A candidate selects “Central auditory processing disorder by definition”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A learner is working through this task: “A hearing loss caused by reduced sound transmission through the outer or middle ear is classified as what type?” A candidate selects “Central auditory processing disorder by definition”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "\"Central auditory processing disorder by definition.\" misses or conflicts with the controlling speech-language pathology principle.",
         "Conductive loss involves sound transmission through the outer or middle ear; sensorineural loss involves cochlear or auditory-nerve function.",
@@ -9449,7 +9456,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “Which pattern most strongly suggests language difference rather than disorder?” A candidate selects “Any departure from mainstream English proves disorder”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A multilingual child uses forms consistent with the home-language system and learns age-expected patterns across languages. A candidate selects “Any departure from mainstream English proves disorder”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "Culturally and linguistically responsive assessment considers all languages, dialects, opportunity, community norms, and response to support.",
         "\"Any departure from mainstream English proves disorder.\" misses or conflicts with the controlling speech-language pathology principle.",
@@ -9886,7 +9893,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “Which symptom during eating most clearly warrants prompt swallowing-safety evaluation?” A candidate selects “A normal sign that excludes dysphagia”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "During eating, a patient repeatedly coughs with liquids and develops a wet vocal quality after swallowing. A candidate selects “A normal sign that excludes dysphagia”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "Cough and wet voice can be warning signs but do not alone determine physiology; silent aspiration is also possible and assessment guides decisions.",
         "\"A normal sign that excludes dysphagia.\" misses or conflicts with the controlling speech-language pathology principle.",
@@ -11308,7 +11315,7 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “When is a videofluoroscopic swallowing study especially useful?” A candidate selects “A pure-tone audiogram”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A learner is working through this task: “Which instrumental study uses dynamic radiography to examine bolus flow through oral, pharyngeal, and upper-esophageal swallowing events?” A candidate selects “A pure-tone audiogram”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "\"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
         "VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
@@ -11316,7 +11323,7 @@
         "\"A standardized vocabulary test.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
       ],
       "answerIndex": 0,
-      "rationale": "The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+      "rationale": "The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -11330,10 +11337,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
+        "Correct. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “A pure-tone audiogram”. \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. This feedback directly evaluates the selected response. “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” remains the source-supported response. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -11359,15 +11366,15 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “What is a major advantage of fiberoptic endoscopic evaluation of swallowing?” A candidate selects “FEES directly displays the oral preparatory phase”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A learner is working through this task: “Which statement accurately identifies a major advantage of FEES?” A candidate selects “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "\"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "\"FEES measures hearing thresholds.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "\"FEES eliminates the need for informed consent.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "\"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "\"Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "\"FEES directly images the oral preparatory phase and upper esophagus throughout every swallow.\" misses or conflicts with the controlling speech-language pathology principle."
       ],
       "answerIndex": 1,
-      "rationale": "The candidate selected “FEES directly displays the oral preparatory phase”. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. This feedback directly evaluates the selected response. “FEES, when clinically appropriate and within qualified scope and procedures” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+      "rationale": "The candidate selected “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -11381,10 +11388,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “FEES directly displays the oral preparatory phase”. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. This feedback directly evaluates the selected response. “FEES, when clinically appropriate and within qualified scope and procedures” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Correct. The candidate selected “FEES directly displays the oral preparatory phase”. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. This feedback directly evaluates the selected response. “FEES, when clinically appropriate and within qualified scope and procedures” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “FEES directly displays the oral preparatory phase”. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. This feedback directly evaluates the selected response. “FEES, when clinically appropriate and within qualified scope and procedures” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “FEES directly displays the oral preparatory phase”. \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. This feedback directly evaluates the selected response. “FEES, when clinically appropriate and within qualified scope and procedures” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Correct. The candidate selected “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” remains the source-supported response. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -11461,7 +11468,7 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “Which finding is most associated with oral-phase swallowing difficulty?” A candidate selects “The esophageal phase only”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A learner is working through this task: “Prolonged mastication, poor bolus formation, and oral residue most directly implicate which swallowing phases?” A candidate selects “The esophageal phase only”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases.",
         "\"Auditory processing.\" misses or conflicts with the controlling speech-language pathology principle. Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases.",
@@ -13024,15 +13031,15 @@
       "type": "single-choice",
       "domainId": "treatment-planning-evaluation",
       "difficulty": "application",
-      "prompt": "A learner is working through this task: “How should a postural swallowing strategy be prescribed?” A candidate selects “Yes, because posture has identical effects for everyone”. Which feedback most directly identifies the problem with that selection?",
+      "prompt": "A learner is working through this task: “How should a postural swallowing strategy be prescribed?” A candidate selects “Recommend the same posture for every patient because its effects are identical”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
         "Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "\"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle.",
-        "\"Yes, without explaining the purpose.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "\"No posture can ever affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "\"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "\"Use the posture without explaining its purpose or checking response.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "\"Avoid every posture because no postural change can affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle."
       ],
       "answerIndex": 1,
-      "rationale": "The candidate selected “Yes, because posture has identical effects for everyone”. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+      "rationale": "The candidate selected “Recommend the same posture for every patient because its effects are identical”. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -13047,10 +13054,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “Yes, because posture has identical effects for everyone”. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Correct. The candidate selected “Yes, because posture has identical effects for everyone”. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “Yes, because posture has identical effects for everyone”. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “Yes, because posture has identical effects for everyone”. \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “Recommend the same posture for every patient because its effects are identical”. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Correct. The candidate selected “Recommend the same posture for every patient because its effects are identical”. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “Recommend the same posture for every patient because its effects are identical”. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “Recommend the same posture for every patient because its effects are identical”. \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle. This feedback directly evaluates the selected response. “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” remains the source-supported response. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
       ],
       "skillIds": [
         "feeding-swallowing-treatment"
@@ -16549,13 +16556,13 @@
       "difficulty": "analysis",
       "prompt": "A learner is working through this task: “Which instrumental method visualizes oral, pharyngeal, and upper-esophageal swallowing events across bolus trials using radiography?” Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "“A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” — VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "“A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” — VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
         "“A pure-tone audiogram” — VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
         "“A laryngeal perceptual rating only” — VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
         "“A standardized vocabulary test” — VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
       ],
       "answerIndex": 0,
-      "rationale": "The evidence statement accurately describes “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+      "rationale": "The evidence statement accurately describes “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -16569,10 +16576,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. The evidence statement accurately describes “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
+        "Correct. The evidence statement accurately describes “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations”. Pairing that same evidence with another response creates a mismatch. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -16600,13 +16607,13 @@
       "difficulty": "analysis",
       "prompt": "A learner is working through this task: “Which study can assess pharyngeal and laryngeal anatomy, secretions, fatigue, and repeated trials without ionizing radiation?” Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "“FEES directly displays the oral preparatory phase” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "“FEES, when clinically appropriate and within qualified scope and procedures” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "“FEES measures hearing thresholds” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "“FEES eliminates the need for informed consent” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "“VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "“FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "“Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "“FEES directly images the oral preparatory phase and upper esophagus throughout every swallow” — FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
       ],
       "answerIndex": 1,
-      "rationale": "The evidence statement accurately describes “FEES, when clinically appropriate and within qualified scope and procedures”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+      "rationale": "The evidence statement accurately describes “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -16620,10 +16627,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “FEES, when clinically appropriate and within qualified scope and procedures”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Correct. The evidence statement accurately describes “FEES, when clinically appropriate and within qualified scope and procedures”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “FEES, when clinically appropriate and within qualified scope and procedures”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “FEES, when clinically appropriate and within qualified scope and procedures”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Correct. The evidence statement accurately describes “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate”. Pairing that same evidence with another response creates a mismatch. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -18265,13 +18272,13 @@
       "difficulty": "analysis",
       "prompt": "A learner is working through this task: “A chin-down posture helps one patient in an instrumental study. Should it be recommended to every patient?” Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "“Yes, because posture has identical effects for everyone” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "“No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "“Yes, without explaining the purpose” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "“No posture can ever affect swallowing” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "“Recommend the same posture for every patient because its effects are identical” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "“Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "“Use the posture without explaining its purpose or checking response” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "“Avoid every posture because no postural change can affect swallowing” — Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
       ],
       "answerIndex": 1,
-      "rationale": "The evidence statement accurately describes “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+      "rationale": "The evidence statement accurately describes “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -18286,10 +18293,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Correct. The evidence statement accurately describes “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Correct. The evidence statement accurately describes “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects”. Pairing that same evidence with another response creates a mismatch. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
       ],
       "skillIds": [
         "feeding-swallowing-treatment"
@@ -19027,7 +19034,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “Which finding most clearly distinguishes conductive from sensorineural hearing loss?” A team compares “Conductive hearing loss” with “Central auditory processing disorder by definition”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A learner is working through this task: “A hearing loss caused by reduced sound transmission through the outer or middle ear is classified as what type?” A team compares “Conductive hearing loss” with “Central auditory processing disorder by definition”. Which evaluation most accurately distinguishes them?",
       "choices": [
         "“Conductive hearing loss” is better supported: Conductive loss involves sound transmission through the outer or middle ear; sensorineural loss involves cochlear or auditory-nerve function. In contrast, “Central auditory processing disorder by definition” is not supported: \"Central auditory processing disorder by definition.\" misses or conflicts with the controlling speech-language pathology principle.",
         "“Central auditory processing disorder by definition” is better supported: Conductive loss involves sound transmission through the outer or middle ear; sensorineural loss involves cochlear or auditory-nerve function. In contrast, “Conductive hearing loss” is not supported: \"Central auditory processing disorder by definition.\" misses or conflicts with the controlling speech-language pathology principle.",
@@ -19927,7 +19934,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “Which pattern most strongly suggests language difference rather than disorder?” A team compares “The pattern may reflect linguistic difference; disorder requires converging evidence of difficulty not explained by language exposure or dialect” with “Any departure from mainstream English proves disorder”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A multilingual child uses forms consistent with the home-language system and learns age-expected patterns across languages. A team compares “The pattern may reflect linguistic difference; disorder requires converging evidence of difficulty not explained by language exposure or dialect” with “Any departure from mainstream English proves disorder”. Which evaluation most accurately distinguishes them?",
       "choices": [
         "“Any departure from mainstream English proves disorder” is better supported: Culturally and linguistically responsive assessment considers all languages, dialects, opportunity, community norms, and response to support. In contrast, “The pattern may reflect linguistic difference; disorder requires converging evidence of difficulty not explained by language exposure or dialect” is not supported: \"Any departure from mainstream English proves disorder.\" misses or conflicts with the controlling speech-language pathology principle.",
         "“The pattern may reflect linguistic difference; disorder requires converging evidence of difficulty not explained by language exposure or dialect” is better supported: Culturally and linguistically responsive assessment considers all languages, dialects, opportunity, community norms, and response to support. In contrast, “Any departure from mainstream English proves disorder” is not supported: \"Any departure from mainstream English proves disorder.\" misses or conflicts with the controlling speech-language pathology principle.",
@@ -20364,7 +20371,7 @@
       "type": "single-choice",
       "domainId": "foundations-professional-practice",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “Which symptom during eating most clearly warrants prompt swallowing-safety evaluation?” A team compares “Possible airway invasion or impaired clearance requiring timely clinical evaluation and medical or instrumental referral as indicated” with “A normal sign that excludes dysphagia”. Which evaluation most accurately distinguishes them?",
+      "prompt": "During eating, a patient repeatedly coughs with liquids and develops a wet vocal quality after swallowing. A team compares “Possible airway invasion or impaired clearance requiring timely clinical evaluation and medical or instrumental referral as indicated” with “A normal sign that excludes dysphagia”. Which evaluation most accurately distinguishes them?",
       "choices": [
         "“A normal sign that excludes dysphagia” is better supported: Cough and wet voice can be warning signs but do not alone determine physiology; silent aspiration is also possible and assessment guides decisions. In contrast, “Possible airway invasion or impaired clearance requiring timely clinical evaluation and medical or instrumental referral as indicated” is not supported: \"A normal sign that excludes dysphagia.\" misses or conflicts with the controlling speech-language pathology principle.",
         "“Possible airway invasion or impaired clearance requiring timely clinical evaluation and medical or instrumental referral as indicated” is better supported: Cough and wet voice can be warning signs but do not alone determine physiology; silent aspiration is also possible and assessment guides decisions. In contrast, “A normal sign that excludes dysphagia” is not supported: \"A normal sign that excludes dysphagia.\" misses or conflicts with the controlling speech-language pathology principle.",
@@ -21786,15 +21793,15 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “When is a videofluoroscopic swallowing study especially useful?” A team compares “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” with “A pure-tone audiogram”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A learner is working through this task: “Which instrumental study uses dynamic radiography to examine bolus flow through oral, pharyngeal, and upper-esophageal swallowing events?” A team compares “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” with “A pure-tone audiogram”. Which evaluation most accurately distinguishes them?",
       "choices": [
-        "“A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A pure-tone audiogram” is not supported: \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "“A pure-tone audiogram” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” is not supported: \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "“A laryngeal perceptual rating only” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” is not supported: \"A laryngeal perceptual rating only.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "“A standardized vocabulary test” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” is not supported: \"A standardized vocabulary test.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
+        "“A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A pure-tone audiogram” is not supported: \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "“A pure-tone audiogram” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” is not supported: \"A pure-tone audiogram.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "“A laryngeal perceptual rating only” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” is not supported: \"A laryngeal perceptual rating only.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "“A standardized vocabulary test” is better supported: VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions. In contrast, “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” is not supported: \"A standardized vocabulary test.\" misses or conflicts with the controlling speech-language pathology principle. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
       ],
       "answerIndex": 0,
-      "rationale": "The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+      "rationale": "The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -21808,10 +21815,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study, when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
+        "Correct. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “A videofluoroscopic swallowing study (VFSS), when clinically indicated and performed with appropriate team and radiation considerations” and the item-specific limitation to “A pure-tone audiogram”. VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -21837,15 +21844,15 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “What is a major advantage of fiberoptic endoscopic evaluation of swallowing?” A team compares “FEES, when clinically appropriate and within qualified scope and procedures” with “FEES directly displays the oral preparatory phase”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A learner is working through this task: “Which statement accurately identifies a major advantage of FEES?” A team compares “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” with “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. Which evaluation most accurately distinguishes them?",
       "choices": [
-        "“FEES directly displays the oral preparatory phase” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES, when clinically appropriate and within qualified scope and procedures” is not supported: \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "“FEES, when clinically appropriate and within qualified scope and procedures” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES directly displays the oral preparatory phase” is not supported: \"FEES directly displays the oral preparatory phase.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "“FEES measures hearing thresholds” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES, when clinically appropriate and within qualified scope and procedures” is not supported: \"FEES measures hearing thresholds.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "“FEES eliminates the need for informed consent” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES, when clinically appropriate and within qualified scope and procedures” is not supported: \"FEES eliminates the need for informed consent.\" misses or conflicts with the controlling speech-language pathology principle. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "“VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” is not supported: \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "“FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation” is not supported: \"VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "“Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” is not supported: \"Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "“FEES directly images the oral preparatory phase and upper esophagus throughout every swallow” is better supported: FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period. In contrast, “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” is not supported: \"FEES directly images the oral preparatory phase and upper esophagus throughout every swallow.\" misses or conflicts with the controlling speech-language pathology principle."
       ],
       "answerIndex": 1,
-      "rationale": "The accurate comparison assigns the affirmative source feedback to “FEES, when clinically appropriate and within qualified scope and procedures” and the item-specific limitation to “FEES directly displays the oral preparatory phase”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+      "rationale": "The accurate comparison assigns the affirmative source feedback to “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” and the item-specific limitation to “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -21859,10 +21866,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “FEES, when clinically appropriate and within qualified scope and procedures” and the item-specific limitation to “FEES directly displays the oral preparatory phase”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Correct. The accurate comparison assigns the affirmative source feedback to “FEES, when clinically appropriate and within qualified scope and procedures” and the item-specific limitation to “FEES directly displays the oral preparatory phase”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “FEES, when clinically appropriate and within qualified scope and procedures” and the item-specific limitation to “FEES directly displays the oral preparatory phase”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “FEES, when clinically appropriate and within qualified scope and procedures” and the item-specific limitation to “FEES directly displays the oral preparatory phase”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” and the item-specific limitation to “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Correct. The accurate comparison assigns the affirmative source feedback to “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” and the item-specific limitation to “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” and the item-specific limitation to “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “FEES can be performed portably and can assess relevant anatomy, secretions, fatigue, and repeated trials without ionizing radiation when clinically appropriate” and the item-specific limitation to “VFSS continuously displays pharyngeal swallowing without a white-out period or ionizing radiation”. FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period."
       ],
       "skillIds": [
         "feeding-swallowing-assessment"
@@ -21939,7 +21946,7 @@
       "type": "single-choice",
       "domainId": "screening-assessment-diagnosis",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “Which finding is most associated with oral-phase swallowing difficulty?” A team compares “The oral preparatory and oral transit phases” with “The esophageal phase only”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A learner is working through this task: “Prolonged mastication, poor bolus formation, and oral residue most directly implicate which swallowing phases?” A team compares “The oral preparatory and oral transit phases” with “The esophageal phase only”. Which evaluation most accurately distinguishes them?",
       "choices": [
         "“The esophageal phase only” is better supported: Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases. In contrast, “The oral preparatory and oral transit phases” is not supported: \"The esophageal phase only.\" misses or conflicts with the controlling speech-language pathology principle. Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases.",
         "“Auditory processing” is better supported: Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases. In contrast, “The oral preparatory and oral transit phases” is not supported: \"Auditory processing.\" misses or conflicts with the controlling speech-language pathology principle. Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases.",
@@ -23502,15 +23509,15 @@
       "type": "single-choice",
       "domainId": "treatment-planning-evaluation",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: “How should a postural swallowing strategy be prescribed?” A team compares “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” with “Yes, because posture has identical effects for everyone”. Which evaluation most accurately distinguishes them?",
+      "prompt": "A learner is working through this task: “How should a postural swallowing strategy be prescribed?” A team compares “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” with “Recommend the same posture for every patient because its effects are identical”. Which evaluation most accurately distinguishes them?",
       "choices": [
-        "“Yes, because posture has identical effects for everyone” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is not supported: \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle.",
-        "“No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “Yes, because posture has identical effects for everyone” is not supported: \"Yes, because posture has identical effects for everyone.\" misses or conflicts with the controlling speech-language pathology principle.",
-        "“Yes, without explaining the purpose” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is not supported: \"Yes, without explaining the purpose.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "“No posture can ever affect swallowing” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is not supported: \"No posture can ever affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "“Recommend the same posture for every patient because its effects are identical” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is not supported: \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "“Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “Recommend the same posture for every patient because its effects are identical” is not supported: \"Recommend the same posture for every patient because its effects are identical.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "“Use the posture without explaining its purpose or checking response” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is not supported: \"Use the posture without explaining its purpose or checking response.\" misses or conflicts with the controlling speech-language pathology principle.",
+        "“Avoid every posture because no postural change can affect swallowing” is better supported: Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential. In contrast, “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” is not supported: \"Avoid every posture because no postural change can affect swallowing.\" misses or conflicts with the controlling speech-language pathology principle."
       ],
       "answerIndex": 1,
-      "rationale": "The accurate comparison assigns the affirmative source feedback to “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Yes, because posture has identical effects for everyone”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+      "rationale": "The accurate comparison assigns the affirmative source feedback to “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Recommend the same posture for every patient because its effects are identical”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
         "https://www.asha.org/practice-portal/clinical-topics/pediatric-feeding-and-swallowing/",
@@ -23525,10 +23532,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Yes, because posture has identical effects for everyone”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Correct. The accurate comparison assigns the affirmative source feedback to “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Yes, because posture has identical effects for everyone”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Yes, because posture has identical effects for everyone”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “No; use a strategy only when assessment shows benefit for that person and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Yes, because posture has identical effects for everyone”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Recommend the same posture for every patient because its effects are identical”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Correct. The accurate comparison assigns the affirmative source feedback to “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Recommend the same posture for every patient because its effects are identical”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Recommend the same posture for every patient because its effects are identical”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “Use a strategy only when assessment shows benefit for that individual and bolus, teach it accurately, and monitor safety, efficiency, adherence, and unintended effects” and the item-specific limitation to “Recommend the same posture for every patient because its effects are identical”. Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential."
       ],
       "skillIds": [
         "feeding-swallowing-treatment"
@@ -23862,21 +23869,35 @@
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
     }
   ],
+  "officialConstructedResponseCount": 0,
   "diagnosticBatchCount": 5,
   "diagnosticBatchCountSemantics": "legacy-total-learning-activity-bank-alias",
   "sourceDiagnosticBatchCount": 2,
+  "assistantAuthoredIndependentBatchCount": 0,
+  "independentDiagnosticBatchCount": 2,
   "guidedReviewBatchCount": 3,
   "learningActivityBankCount": 5,
+  "sourceQuestionItems": 200,
+  "assistantAuthoredIndependentItems": 0,
+  "independentPracticeItems": 200,
+  "guidedReviewItems": 300,
   "distinctSourceContentKernels": 100,
   "parallelSourceVariants": 100,
+  "distinctIndependentContentKernels": 100,
+  "parallelIndependentVariants": 100,
   "newIndependentItemsNeeded": 400,
   "expansionVersion": "source-kernel-audit-plus-guided-review-v1",
+  "simulationDomainCountsBasis": "release-declared-selected-response-allocation",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "structurallyReviewedItems": 500,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReviewItems": 300,
     "independentQuestionTarget": 500,
     "newIndependentItemsNeeded": 400,
@@ -23895,8 +23916,8 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "limitation": "Normalized answer-set, rationale, and reference reuse is counted as one content kernel. Source-derived transformations are approved as guided practice, not as independent exam questions. Assistant review is not independent licensed-professional review or psychometric validation."
+    "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities, not 500 independent exam questions: 200 source questions (100 distinct content kernels; 100 parallel variants) plus 300 source-derived guided-review activities. 400 newly authored independent questions are needed to reach the 500-question target.",
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. It currently contains 100 distinct independent content kernels; 400 newly authored independent questions remain to reach 500.",
   "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

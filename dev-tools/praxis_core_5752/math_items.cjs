@@ -43,7 +43,16 @@ const statisticsProbability = [
 ];
 
 const algebraFunctions = [
-  q('Solve 3x + 7 = 25.', 'Solve 5x - 12 = 18.', 'x = 6', ['x = 4', 'x = 8', 'x = 10'], 'Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6.'),
+  {
+    ...q(
+      'Solve 3x + 7 = 25.',
+      'Solve 5x - 12 = 18.',
+      'x = 6',
+      ['x = 4', 'x = 8', 'x = 10'],
+      'Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.'
+    ),
+    rationaleB: 'Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.',
+  },
   q('Simplify 4(2x - 3) + 5.', 'Simplify 2(4x + 1) - 9.', '8x - 7', ['8x - 12', '6x - 7', '8x + 7'], 'Distribute and combine constants: 8x - 12 + 5 and 8x + 2 - 9 both simplify to 8x - 7.'),
   q('A plan charges $12 plus $4 per month. Which expression gives the cost after m months?', 'A service charges $12 plus $4 per visit. Which expression gives the cost after v visits?', '12 + 4m', ['16m', '12m + 4', '48m'], 'The fixed charge is the constant 12 and the repeated charge is 4 times the number of months or visits.'),
   q('If f(x) = 2x^2 - 3, what is f(3)?', 'If g(x) = 3x^2 - 3, what is g(sqrt(6))?', '15', ['3', '9', '33'], 'Substitution gives 2(3^2) - 3 = 18 - 3 = 15; the paired form also gives 3(6) - 3 = 15.'),

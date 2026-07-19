@@ -111,8 +111,8 @@
       return { status: 'submitted', rawText: response.answer.text || '' };
     }
 
-    if (itemType === 'sequence-sense' || itemType === 'relation-mismatch') {
-      // Student's local component already computed deterministic status
+    if (itemType === 'sequence-sense' || itemType === 'relation-mismatch' || itemType === 'multi-select' || itemType === 'answer-evidence' || itemType === 'numeric-response') {
+      // The student component computes these structured formats deterministically.
       return {
         status: response.answer.status || 'submitted',
         score: response.answer.score,
@@ -221,6 +221,9 @@
         else if (typeof a.text === 'string') answerSummary = a.text;
         else if (qType === 'sequence-sense') answerSummary = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
         else if (qType === 'relation-mismatch') answerSummary = (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
+        else if (qType === 'multi-select') answerSummary = Array.isArray(a.selectedTexts) ? a.selectedTexts.join('; ') : '';
+        else if (qType === 'answer-evidence') answerSummary = (a.answerText ? 'Answer: ' + a.answerText : '') + (a.evidenceText ? ' · Evidence: ' + a.evidenceText : '');
+        else if (qType === 'numeric-response') answerSummary = typeof a.text === 'string' ? a.text : (typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '');
         else { try { answerSummary = JSON.stringify(a); } catch (e) { answerSummary = ''; } }
       }
       row.byQuestion[g.questionIdx] = Object.assign({}, g.grade, {
@@ -396,6 +399,9 @@
         else if (typeof a.text === 'string') answerSummary = a.text;
         else if (qType === 'sequence-sense') answerSummary = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
         else if (qType === 'relation-mismatch') answerSummary = (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
+        else if (qType === 'multi-select') answerSummary = Array.isArray(a.selectedTexts) ? a.selectedTexts.join('; ') : '';
+        else if (qType === 'answer-evidence') answerSummary = (a.answerText ? 'Answer: ' + a.answerText : '') + (a.evidenceText ? ' · Evidence: ' + a.evidenceText : '');
+        else if (qType === 'numeric-response') answerSummary = typeof a.text === 'string' ? a.text : (typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '');
         else { try { answerSummary = JSON.stringify(a); } catch (e) { answerSummary = ''; } }
       }
       bar.byStudent.push({

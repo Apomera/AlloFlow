@@ -1855,9 +1855,97 @@ describe('RoadReady rules-of-road content', () => {
       expect(catalog.passing_a_stopped_school_bus_in_maine_).not.toContain('Multiple violations');
     }
   });
+
+  it.each(ROADREADY_FILES)('%s clears visual props from rotated and cross-chunk intersections', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function crossStreetCorridorAt(world, worldX, worldY, clearance)');
+    expect(src).toContain('if (crossStreetCorridorAt(this, worldX, worldY, 0)) return 0');
+    expect(src).toContain('var visualCrossStreetClearanceAt = function(renderX, renderZ, padding)');
+    expect(src).toContain('var cellVal = iw.getCell(cx, ci * CHUNK_SIZE + cy)');
+    expect(src).toContain('if (visualCrossStreetClearanceAt(ambX, ambZ, 0.8)) continue');
+    expect(src).toContain('if (visualCrossStreetClearanceAt(slX, slZ, 0.8)) return');
+    expect(src).toContain('Short rail segments preserve deliberate openings at cross');
+    expect(src).not.toContain('if (hasIntersection && Math.abs(by - intersectionY) < 5) continue');
+    expect(src).not.toContain('if (hasIntersection && Math.abs(ty - intersectionY) <= CLEARANCE_BUFFER + 1) continue');
+  });
+
+  it.each(ROADREADY_FILES)('%s preserves readable, weathered safety paint on winter roads', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function roadMarkingAppearance(weather, dryColor, snowOpacity)');
+    expect(src).toContain('roadMarkingAppearance(scn.weather, 0xf5f5f5, 0.58)');
+    expect(src).toContain('roadMarkingAppearance(scn.weather, 0xffffff, 0.78)');
+    expect(src).toContain('var crossStopBarMat = new T.MeshBasicMaterial');
+    expect(src).toContain('var stopLine = new T.Mesh(new T.PlaneGeometry(stopLineWidth, 0.3), stopBarMat)');
+    expect(src).toContain('var crossStopBar = new T.Mesh(new T.PlaneGeometry(0.3, crossStopWidth), crossStopBarMat)');
+    expect(src).not.toContain("if (chunk.hasIntersection && scn.weather !== 'snow')");
+    expect(src).not.toContain("if (scn.weather !== 'snow') {");
+  });
+});
+
+describe('RoadReady intersection-rule invariants', () => {
+  it.each(ROADREADY_FILES)('%s enforces controls and priority on both road axes', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function playerControlApproach(world, signal, car, vehicleLength)');
+    expect(src).toContain("approachGroup: 'cross'");
+    expect(src).toContain("trafficSignalIndication(s, approach.approachGroup) === 'red'");
+    expect(src).toContain('var activeOneWayViolation = playerCrossCorridor ? !!crossRequiredDirection : activeOneWay.enabled');
+    expect(src).toContain('function leftTurnGapState(traffic, self, signal, playerCar)');
+    expect(src).toContain("t._turnIntent === 'left'");
+    expect(src).toContain('function createIntersectionTurnPath(startX, startY, startHeading, crossPose, crossDirection, turnIntent)');
+    expect(src).toContain('function intersectionTurnPoint(path, progress)');
+    expect(src).toContain('pathSpeed * dt / Math.max(1, t._turnPath ? t._turnPath.length : 1)');
+    expect(src).not.toContain('t.heading += dhT * (1 - Math.exp(-dt / 0.4))');
+    expect(src).toContain('arrivalQ.push({ vehicleId: t.id, arrivedAt: timeRef.current })');
+    expect(src).toContain('t._rollDecisions[crossStopKey] === undefined');
+    expect(src).not.toContain('arrivalQ.push({ carIdx: idx');
+    expect(src).not.toContain('Math.random() < pers.rollsStops * 0.05');
+  });
+});
+
+describe('RoadReady cross-street elevation invariants', () => {
+  it.each(ROADREADY_FILES)('%s grounds cross-street pavement and vehicles to one surface model', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('var corridor = crossStreetCorridorAt(world, x, y, 0)');
+    expect(src).toContain('crossStreet: true');
+    expect(src).toContain('var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, crossWidth, 24, 2)');
+    expect(src).toContain('crossRoadPositions.setY(crvi, crossLocalSurfaceHeight(crvx, crvz) + 0.013)');
+    expect(src).toContain('crossLocalSurfaceHeight(edgeLocalX, edgeLocalZ) + 0.018');
+    expect(src).toContain('crossLocalSurfaceHeight(cdx, 0) + 0.019');
+    expect(src).not.toContain('var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, crossWidth);');
+  });
 });
 
 describe('RoadReady visual geometry invariants', () => {
+  it.each(ROADREADY_FILES)('%s gives every legal signalized approach visible heads and safe phase clearance', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function trafficSignalIndication(signal, approachGroup)');
+    expect(src).toContain("s._phase = 'all_red_to_cross'");
+    expect(src).toContain("s._phase = 'cross_yellow'");
+    expect(src).toContain("s._phase = 'all_red_to_main'");
+    expect(src).toContain('var poleLocalX = roadHalfW + 0.7');
+    expect(src).toContain('var poleLocalZ = -(crossWidth * 0.5 + 0.55)');
+    expect(src).toContain('var mainHeadLaneCenters = chunk.oneWay');
+    expect(src).toContain('var addPostMountedSignalHead = function(headSpec)');
+    expect(src).toContain('var signalCrossDirections = chunk.crossStreetOneWayDirection');
+    expect(src).toContain("approachGroup: 'cross'");
+    expect(src).toContain("trafficSignalIndication(signalAtCrosswalk, 'cross') === 'green'");
+    expect(src).not.toContain('var poleLocalX = 4.5');
+    expect(src).not.toContain("var psWalk = (psSigEntry.state === 'red')");
+  });
+
+  it.each(ROADREADY_FILES)('%s renders and enforces bidirectional alternating work-zone flaggers', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function workZoneStopLineForDirection(boundsOrSignal, forwardSign)');
+    expect(src).toContain('{ local: 29, forwardSign: -1, lateral: 1 }');
+    expect(src).toContain('{ local: 3, forwardSign: 1, lateral: -1 }');
+    expect(src).toContain('s3.flaggerPaddlesByChunk[ci].push({');
+    expect(src).toContain('forwardSign: wzFlagSpec.forwardSign');
+    expect(src).toContain('flaggerStopsDirection(sigEntry.state, paddle.forwardSign || -1)');
+    expect(src).toContain('workZoneStopLineForDirection(signal, travelSign)');
+    expect(src).toContain('flaggerStopsDirection(s.state, approach.travelSign)');
+    expect(src).not.toContain("var stopShown = sigEntry.state !== 'green'");
+  });
+
   it.each(ROADREADY_FILES)('%s keeps streamed stop controls aligned with visible crosswalk geometry', (relPath) => {
     const src = readRoadReady(relPath);
     expect(src).toContain('function intersectionStopLineCoordinate(intersectionCenter, travelSign)');
@@ -1867,7 +1955,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('var crossApproachDirections = chunk.crossStreetOneWayDirection');
     expect(src).toContain('var activeControl = null');
     expect(src).toContain('var aiFrontOverhang = vehicleFootprint(t.type).length * 0.5 + 0.25');
-    expect(src).toContain('var playerFrontY = car.y + playerTravelSign * playerLength * 0.5');
+    expect(src).toContain('var approach = playerControlApproach(world, s, car, playerLength)');
     expect(src).toContain('var pedCrosswalkY = worldY + crosswalkSide * RR_INTERSECTION_CROSSWALK_OFFSET');
     expect(src).not.toContain('var stopLineOff = cwOffset < 0 ? 1.3 : -1.3');
     expect(src).not.toContain('var sbZ = cwCtrZ - 1.5');
@@ -1879,7 +1967,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('oneWay: true, oneWayDirection: -1, oneWayLanes: 2');
     expect(src).toContain('function oneWayRoadLayoutFor(profileOrChunk)');
     expect(src).toContain('if (chunk.oneWay && approachDirection !== chunk.oneWayDirection) return');
-    expect(src).toContain('color: chunk.crossStreetOneWayDirection ? 0xffffff : 0xfacc15');
+    expect(src).toContain('chunk.crossStreetOneWayDirection ? 0xffffff : 0xfacc15, 0.58');
     expect(src).toContain("owCtx.fillText('ONE WAY', 192, 52)");
     expect(src).toContain('var crossDirections = sigChunk.crossStreetOneWayDirection');
     expect(src).toContain('var requiredCrossDir = turnChunkForIntent.crossStreetOneWayDirection');
@@ -1911,5 +1999,20 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).not.toContain('var upX = upCx + upSide * 5.2');
     expect(src).not.toContain('snPile.position.set(snX, snHeight / 2, snZ)');
     expect(src).not.toContain('var pudSide = weatherRng() < 0.5 ? -1 : 1');
+  });
+
+  it.each(ROADREADY_FILES)('%s renders and samples a shared crowned road cross-section', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function roadCrownHeight(lateralOffset, profileOrChunk, halfWidthOverride)');
+    expect(src).toContain('var ribbonVerts = new Float32Array(ribbonRows * 3 * 3)');
+    expect(src).toContain('var ribbonIdx = new Uint16Array((ribbonRows - 1) * 12)');
+    expect(src).toContain('roadCrownHeight(x_offset, iw.profile || chunk, roadHalfW)');
+    expect(src).toContain('roadCrownHeight(corridor.local.lateral,');
+    expect(src).toContain('var markRoadSurfaceHeightAt = function(worldZ, lateralOffset)');
+    expect(src).toContain('var sheen = new T.Mesh(roadGeo, sheenMat)');
+    expect(src).toContain('markRoadSurfaceHeightAt(pZ, pSide) + 0.013');
+    expect(src).toContain('crossLocalSurfaceHeight(crossStopX, crossStopLateral) + 0.022');
+    expect(src).not.toContain('new T.PlaneGeometry(roadHalfW * 2 * 0.95, CHUNK_SIZE)');
+    expect(src).not.toContain('var ribbonVerts = new Float32Array(ribbonRows * 2 * 3)');
   });
 });

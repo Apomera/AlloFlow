@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:40.685Z",
+  "generatedAt": "2026-07-19T05:09:25.558Z",
   "libraryId": "praxis-core-5752-learning-library",
   "packId": "praxis-core-5752",
   "standard": {
@@ -24,5 +24,14 @@
     "editorialReviewedSourcePendingMemoryAids": 0,
     "findings": [],
     "status": "pass"
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "3fbc133d48a1113a622a21cbee1285098a285b39c73c674fbce79cb13ba4f960",
+    "learningLibrarySha256": "16c0b4fddef5420633f83e1841b8f1fa9090fc84f02d36683a12a36e1e042768",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

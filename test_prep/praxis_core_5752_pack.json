@@ -3,19 +3,30 @@
   "id": "praxis-core-5752",
   "title": "Praxis Core Academic Skills for Educators: Combined (5752) - 200 Source Questions + 300 Guided Review",
   "shortTitle": "Praxis Core (5752)",
-  "description": "Contains 200 source diagnostic questions and 300 source-derived guided-review tasks; the assistant audit found 106 distinct source content kernels. Two independent 100-question diagnostic banks spanning Reading 5713, Writing 5723, and Mathematics 5733, linked to a 12-chapter learning library, essay workshops, targeted practice, diagnostics, and a full 152-question selected-response pacing simulation.",
+  "description": "Contains 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. The assistant audit found 107 distinct independent content kernels. Two independent 100-question diagnostic banks spanning Reading 5713, Writing 5723, and Mathematics 5733, linked to a 12-chapter learning library, essay workshops, targeted practice, diagnostics, and a full 152-question selected-response pacing simulation.",
   "credentialOwner": "Educational Testing Service (ETS)",
   "version": "1.0.0",
   "status": "ready",
   "accent": "cyan",
-  "contentReview": "Assistant audit completed: the 200 source questions contain 106 distinct content kernels and 94 parallel variants under the normalized answer-set/rationale/reference test. The 300 additional activities are assistant-reviewed guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
+  "contentReview": "Assistant audit completed: 200 independent-practice items contain 107 distinct content kernels and 93 parallel variants under the normalized test. 300 additional activities are guided reasoning transformations, not independent exam questions. The 500-distinct-question target is not met.",
   "nativeQaUrl": "./test_prep/praxis_core_5752_native_qa.json",
   "learningLibraryUrl": "./test_prep/praxis_core_5752_learning_library.json",
   "learningLibraryQaUrl": "./test_prep/praxis_core_5752_learning_library_qa.json",
   "simulationItemCount": 152,
+  "simulationDomainCounts": {
+    "reading-key-ideas-details": 20,
+    "reading-craft-structure-language": 16,
+    "reading-integration-knowledge-ideas": 20,
+    "writing-text-types-production": 10,
+    "writing-language-research": 30,
+    "math-number-quantity": 20,
+    "math-data-statistics-probability": 18,
+    "math-algebra-geometry": 18
+  },
+  "simulationDomainCountsBasis": "fixed-product-allocation-within-official-ranges",
   "simulationTimeMinutes": 215,
   "simulationLabel": "152-question combined selected-response pacing simulation",
-  "simulationNote": "The official combined session currently consists of Reading 5713 (56 questions, 85 minutes), Writing 5723 (40 selected-response questions in 40 minutes plus two separately timed 30-minute essays), and Mathematics 5733 (56 questions, 90 minutes). The selected-response section times are 85 minutes reading, 40 minutes writing selected response, and 90 minutes mathematics, for a 215-minute simulation covering 152 questions. Use the separate argumentative and source-based workshops for the two essay sections; the complete official section times total 275 minutes.",
+  "simulationNote": "The official combined session has 152 selected-response questions: 85 minutes reading, 40 minutes writing selected response, and 90 minutes mathematics (215 minutes total). This simulation preserves the exact official subject totals. Use the separate argumentative and source-based workshops for the two essay sections; the complete official section times total 275 minutes. AlloFlow uses a stable product allocation for subdomains within the published ETS ranges; it is not an official fixed-form allocation.",
   "officialSelectedResponseCount": 152,
   "officialConstructedResponseCount": 2,
   "officialTotalTimeMinutes": 275,
@@ -89,14 +100,14 @@
     {
       "id": "diagnostic-batch-1",
       "label": "100-item source diagnostic bank 1",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "diagnostic-batch-2",
       "label": "100-item source diagnostic bank 2",
-      "timeMinutes": null,
-      "kind": "source-diagnostic"
+      "kind": "source-diagnostic",
+      "timeMinutes": null
     },
     {
       "id": "guided-review-bank-1",
@@ -3475,7 +3486,7 @@
         "x = 10"
       ],
       "answerIndex": 0,
-      "rationale": "Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
+      "rationale": "Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
         "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -3488,10 +3499,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. \"x = 8\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. \"x = 10\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions."
+        "Correct. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. \"x = 8\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. \"x = 10\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25."
       ],
       "skillIds": [
         "math-algebra-functions"
@@ -6667,7 +6678,7 @@
         "x = 10"
       ],
       "answerIndex": 0,
-      "rationale": "Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
+      "rationale": "Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
         "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -6680,10 +6691,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. \"x = 8\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. \"x = 10\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions."
+        "Correct. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "Not the best answer. \"x = 4\" does not satisfy the complete task. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "Not the best answer. \"x = 8\" does not satisfy the complete task. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "Not the best answer. \"x = 10\" does not satisfy the complete task. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18."
       ],
       "skillIds": [
         "math-algebra-functions"
@@ -12125,13 +12136,13 @@
       "difficulty": "application",
       "prompt": "Solve 3x + 7 = 25. A candidate selects “x = 4”. Which feedback most directly identifies the problem with that selection?",
       "choices": [
-        "\"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6.",
-        "Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question.",
-        "\"x = 8\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6.",
-        "\"x = 10\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6."
+        "\"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "\"x = 8\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "\"x = 10\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25."
       ],
       "answerIndex": 0,
-      "rationale": "The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
+      "rationale": "The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
         "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -12144,10 +12155,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions."
+        "Correct. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. This feedback evaluates a different response rather than the candidate response named in the prompt. The candidate selected “x = 4”. \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. This feedback directly evaluates the selected response. “x = 6” remains the source-supported response. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25."
       ],
       "skillIds": [
         "math-algebra-functions"
@@ -16325,13 +16336,13 @@
       "difficulty": "analysis",
       "prompt": "Solve 5x - 12 = 18. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "“x = 6” — Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question.",
-        "“x = 4” — Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question.",
-        "“x = 8” — Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question.",
-        "“x = 10” — Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question."
+        "“x = 6” — Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "“x = 4” — Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "“x = 8” — Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "“x = 10” — Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18."
       ],
       "answerIndex": 0,
-      "rationale": "The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
+      "rationale": "The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
         "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -16344,10 +16355,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions."
+        "Correct. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes “x = 6”. Pairing that same evidence with another response creates a mismatch. Add 12 to both sides to get 5x = 30, then divide both sides by 5 to get x = 6. Substitution verifies the solution because 5(6) - 12 = 18."
       ],
       "skillIds": [
         "math-algebra-functions"
@@ -22125,13 +22136,13 @@
       "difficulty": "analysis",
       "prompt": "Solve 3x + 7 = 25. A team compares “x = 6” with “x = 4”. Which evaluation most accurately distinguishes them?",
       "choices": [
-        "“x = 6” is better supported: Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question. In contrast, “x = 4” is not supported: \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6.",
-        "“x = 4” is better supported: Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question. In contrast, “x = 6” is not supported: \"x = 4\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6.",
-        "“x = 8” is better supported: Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question. In contrast, “x = 6” is not supported: \"x = 8\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6.",
-        "“x = 10” is better supported: Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question. In contrast, “x = 6” is not supported: \"x = 10\" does not satisfy the complete task. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6."
+        "“x = 6” is better supported: Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. In contrast, “x = 4” is not supported: \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "“x = 4” is better supported: Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. In contrast, “x = 6” is not supported: \"x = 4\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "“x = 8” is better supported: Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. In contrast, “x = 6” is not supported: \"x = 8\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "“x = 10” is better supported: Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25. In contrast, “x = 6” is not supported: \"x = 10\" does not satisfy the complete task. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25."
       ],
       "answerIndex": 0,
-      "rationale": "The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
+      "rationale": "The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
         "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -22144,10 +22155,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-14",
       "choiceRationales": [
-        "Correct. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.",
-        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Undo the constant and divide by the coefficient: 3x = 18 or 5x = 30, so x = 6. Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions."
+        "Correct. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
+        "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to “x = 6” and the item-specific limitation to “x = 4”. Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25."
       ],
       "skillIds": [
         "math-algebra-functions"
@@ -22722,21 +22733,33 @@
   "diagnosticBatchCount": 5,
   "diagnosticBatchCountSemantics": "legacy-total-learning-activity-bank-alias",
   "sourceDiagnosticBatchCount": 2,
+  "assistantAuthoredIndependentBatchCount": 0,
+  "independentDiagnosticBatchCount": 2,
   "guidedReviewBatchCount": 3,
   "learningActivityBankCount": 5,
-  "distinctSourceContentKernels": 106,
-  "parallelSourceVariants": 94,
-  "newIndependentItemsNeeded": 394,
+  "sourceQuestionItems": 200,
+  "assistantAuthoredIndependentItems": 0,
+  "independentPracticeItems": 200,
+  "guidedReviewItems": 300,
+  "distinctSourceContentKernels": 107,
+  "parallelSourceVariants": 93,
+  "distinctIndependentContentKernels": 107,
+  "parallelIndependentVariants": 93,
+  "newIndependentItemsNeeded": 393,
   "expansionVersion": "source-kernel-audit-plus-guided-review-v1",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "structurallyReviewedItems": 500,
     "sourceItems": 200,
-    "distinctSourceContentKernels": 106,
-    "parallelSourceVariants": 94,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctSourceContentKernels": 107,
+    "parallelSourceVariants": 93,
+    "distinctIndependentContentKernels": 107,
+    "parallelIndependentVariants": 93,
     "guidedReviewItems": 300,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 394,
+    "newIndependentItemsNeeded": 393,
     "verdict": "reviewed-target-not-met",
     "categories": [
       "source alignment",
@@ -22752,8 +22775,8 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "limitation": "Normalized answer-set, rationale, and reference reuse is counted as one content kernel. Source-derived transformations are approved as guided practice, not as independent exam questions. Assistant review is not independent licensed-professional review or psychometric validation."
+    "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities, not 500 independent exam questions: 200 source questions (106 distinct content kernels; 94 parallel variants) plus 300 source-derived guided-review activities. 394 newly authored independent questions are needed to reach the 500-question target.",
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 0 assistant-authored independent practice questions, and 300 source-derived guided-review activities. It currently contains 107 distinct independent content kernels; 393 newly authored independent questions remain to reach 500.",
   "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
 }

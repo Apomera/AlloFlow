@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T00:10:56.982Z",
+  "generatedAt": "2026-07-19T05:50:10.214Z",
   "packId": "praxis-special-education-behavior-emotional-5372",
   "standard": {
-    "label": "AlloFlow 5372 source, blueprint, feedback, learning, safety, and linkage QA v1",
+    "label": "AlloFlow 5372 source, blueprint, feedback, learning, safety, linkage, and foreign-kernel QA v2",
     "limitation": "Not ETS approval; independent EBD educator, behavior analyst, school mental-health, trauma-aware practice, family, legal, cultural-linguistic, crisis-safety, and psychometric validation remain pending."
   },
   "summary": {
@@ -12,19 +12,34 @@
     "findings": [],
     "status": "pass",
     "sourceItems": 200,
-    "distinctSourceContentKernels": 128,
-    "parallelSourceVariants": 72,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctSourceContentKernels": 103,
+    "parallelSourceVariants": 97,
+    "distinctIndependentContentKernels": 103,
+    "parallelIndependentVariants": 97,
     "guidedReasoningItems": 300,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 372,
+    "newIndependentItemsNeeded": 397,
     "structuralStatus": "pass",
     "contentDistinctnessStatus": "target-not-met",
     "assistantReviewVerdict": "reviewed-target-not-met",
     "diagnosticBanks": 5,
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "ce141b69d479623372f33b397c4bfa757a32725d3e0d9de86a947ffdb983e7fe",
+    "learningLibrarySha256": "23c7cbfca02b17cbe3df0dbbf5c1c0dee80fa46e28b34ae482ec88ee0e166702",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {
     "independentQuestionTarget": 500,
@@ -32,10 +47,14 @@
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
-    "distinctSourceContentKernels": 128,
-    "parallelSourceVariants": 72,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctSourceContentKernels": 103,
+    "parallelSourceVariants": 97,
+    "distinctIndependentContentKernels": 103,
+    "parallelIndependentVariants": 97,
     "guidedReasoningItems": 300,
-    "newIndependentItemsNeeded": 372,
+    "newIndependentItemsNeeded": 397,
     "structurallyReviewedItems": 500,
     "reviewer": "OpenAI Codex",
     "examItemReview": "reviewed-target-not-met",
@@ -44,7 +63,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   }
 }

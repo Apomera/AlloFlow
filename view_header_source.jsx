@@ -153,6 +153,28 @@ function HeaderBar(props) {
   const isLocalVoiceMode = ai?._ttsProvider === 'local'
     || (ai?._ttsProvider !== 'gemini' && ai?._ttsProvider !== 'browser' && (ai?.backend === 'ollama' || ai?.backend === 'localai' || ai?.backend === 'lmstudio'));
   const canUseKokoroVoicePicker = _isCanvasEnv || isDesktopBundledApp;
+  const readThisPageTitle = t('read_this_page.title') || 'Read This Page';
+  const readThisPagePanelLabel = t('read_this_page.panel_aria') || (readThisPageTitle + ' panel');
+  const closeLabel = t('common.close') || 'Close';
+  const notebookLabel = t('cmd.open_notebook') || 'Open my notebook';
+  const personalAIConnectLabel = t('header.personal_ai_connect') || 'Connect personal AI';
+  const personalAIConnectedLabel = t('header.personal_ai_connected') || 'Personal AI connected';
+  const personalAIReadyLabel = t('header.personal_ai_ready') || 'AI ready';
+  const personalAIDisconnectLabel = t('header.personal_ai_disconnect') || 'Disconnect personal AI';
+  const personalAIDisconnectDetail = t('header.personal_ai_disconnect_detail') || 'Disconnect personal AI and erase the key from this browser tab';
+  const readingThemeLabelKeys = {
+    default: 'reading_theme_default', warm: 'reading_theme_warm', sepia: 'reading_theme_sepia',
+    dark: 'reading_theme_dark', highContrast: 'reading_theme_contrast', blue: 'reading_theme_blue',
+    green: 'reading_theme_green', rose: 'reading_theme_rose', dyslexia: 'reading_theme_easy_read'
+  };
+  const readingThemeFallbackLabels = {
+    default: 'Default', warm: 'Warm', sepia: 'Sepia', dark: 'Dark', highContrast: 'Contrast',
+    blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read'
+  };
+  const selectedReadingThemeKey = readingThemeLabelKeys[readingTheme] || readingThemeLabelKeys.default;
+  const selectedReadingThemeLabel = t('header.' + selectedReadingThemeKey)
+    || readingThemeFallbackLabels[readingTheme]
+    || readingThemeFallbackLabels.default;
 
   return (
       <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
@@ -219,13 +241,19 @@ function HeaderBar(props) {
                         </div>
                     </button>
                     <div id="tour-header-settings" className={`relative z-[60] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
-                        <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`} />
+                        <GlobalMuteButton
+                            className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`}
+                            muteLabel={t('a11y.mute_all_audio') || 'Mute all audio'}
+                            unmuteLabel={t('a11y.unmute_all_audio') || 'Unmute all audio'}
+                            muteTitle={t('a11y.mute_all_audio_title') || 'Mute all audio'}
+                            unmuteTitle={t('a11y.unmute_all_audio_title') || 'Unmute all audio'}
+                        />
                         <button type="button"
                             onClick={() => setShowReadThisPage(prev => !prev)}
                             data-help-key="read_this_page_toggle"
                             className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${showReadThisPage || focusNarrationEnabled ? 'ring-2 ring-purple-400 !bg-purple-600 !text-white shadow-[0_0_10px_rgba(147,51,234,0.5)]' : ''} ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`}
-                            title={showReadThisPage ? 'Close Read This Page' : 'Read This Page — hear page content and UI narration'}
-                            aria-label={showReadThisPage ? 'Close Read This Page panel' : 'Open Read This Page — audio narration of current content'}
+                            title={showReadThisPage ? (closeLabel + ': ' + readThisPageTitle) : readThisPageTitle}
+                            aria-label={showReadThisPage ? (closeLabel + ': ' + readThisPagePanelLabel) : readThisPagePanelLabel}
                         >
                             <Ear size={18} aria-hidden="true" className={showReadThisPage ? 'animate-pulse' : ''} />
                         </button>
@@ -338,24 +366,24 @@ function HeaderBar(props) {
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className={`text-xs font-bold flex items-center gap-1 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
-                                                    <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{readingTheme === 'default' ? 'Default' : readingTheme}</span>
+                                                    <span className="text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{selectedReadingThemeLabel}</span>
                                                 </div>
                                                 <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
-                                                        { id: 'default', label: 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
-                                                        { id: 'warm', label: 'Warm', bg: '#fef3c7', fg: '#5c4033', border: '#fde68a', emoji: '☀️' },
-                                                        { id: 'sepia', label: 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
-                                                        { id: 'dark', label: 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
-                                                        { id: 'highContrast', label: 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
-                                                        { id: 'blue', label: 'Blue', bg: '#d6eaf8', fg: '#1b2631', border: '#85c1e9', emoji: '💧' },
-                                                        { id: 'green', label: 'Green', bg: '#e8f5e9', fg: '#1b5e20', border: '#81c784', emoji: '🌿' },
-                                                        { id: 'rose', label: 'Rose', bg: '#fce4ec', fg: '#880e4f', border: '#f48fb1', emoji: '🌸' },
-                                                        { id: 'dyslexia', label: 'Easy Read', bg: '#faf8ef', fg: '#1e293b', border: '#e8e0c8', emoji: '🔤' },
+                                                        { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
+                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fef3c7', fg: '#5c4033', border: '#fde68a', emoji: '☀️' },
+                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
+                                                        { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
+                                                        { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
+                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#d6eaf8', fg: '#1b2631', border: '#85c1e9', emoji: '💧' },
+                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#e8f5e9', fg: '#1b5e20', border: '#81c784', emoji: '🌿' },
+                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#fce4ec', fg: '#880e4f', border: '#f48fb1', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#faf8ef', fg: '#1e293b', border: '#e8e0c8', emoji: '🔤' },
                                                     ].map(function(th) {
                                                         var isActive = readingTheme === th.id;
                                                         return <button type="button" key={th.id}
-                                                            role="radio" aria-checked={isActive} aria-label={th.label + ' theme'}
+                                                            role="radio" aria-checked={isActive} aria-label={th.label}
                                                             onClick={() => setReadingTheme(th.id)}
                                                             title={th.label}
                                                             className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'ring-2 ring-indigo-500 ring-offset-1 scale-105' : 'hover:scale-105'}`}
@@ -622,8 +650,8 @@ function HeaderBar(props) {
                                         onClick={() => setShowNotebook(true)}
                                         data-help-key="header_open_notebook"
                                         className="p-2 rounded-xl transition-all flex items-center gap-1.5 hover:bg-white/10 text-white/80 hover:text-white"
-                                        title={`Open my notebook (${notebookEntryCount} ${notebookEntryCount === 1 ? 'entry' : 'entries'})`}
-                                        aria-label={`Open my notebook, ${notebookEntryCount} ${notebookEntryCount === 1 ? 'entry' : 'entries'}`}
+                                        title={`${notebookLabel} (${notebookEntryCount})`}
+                                        aria-label={`${notebookLabel} (${notebookEntryCount})`}
                                     >
                                         <BookOpen size={20} />
                                         <span className="text-[10px] font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center">{notebookEntryCount}</span>
@@ -638,11 +666,11 @@ function HeaderBar(props) {
                           onClick={() => setShowAIBackendModal(true)}
                           data-help-key='header_student_ai_setup'
                           className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? 'bg-emerald-600 text-white border-emerald-300' : 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50'}`}
-                          title={window.__alloStudentAiConfigured ? 'Personal AI connected for this session' : 'Connect your own AI provider for this session'}
-                          aria-label={window.__alloStudentAiConfigured ? 'Personal AI connected' : 'Set up personal AI'}
+                          title={window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel}
+                          aria-label={window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel}
                         >
                           <Unplug size={14} aria-hidden='true' />
-                          <span className='hidden lg:inline'>{window.__alloStudentAiConfigured ? 'AI ready' : 'Set up AI'}</span>
+                          <span className='hidden lg:inline'>{window.__alloStudentAiConfigured ? personalAIReadyLabel : personalAIConnectLabel}</span>
                         </button>
                         )}
                         {!isTeacherMode && window.__alloStudentAiSetupAllowed && window.__alloStudentAiConfigured && (
@@ -650,11 +678,11 @@ function HeaderBar(props) {
                           onClick={() => { if (typeof window.__alloDisconnectStudentAi === 'function') window.__alloDisconnectStudentAi(); }}
                           data-help-key='header_student_ai_disconnect'
                           className='px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border bg-slate-900/40 text-white border-white/30 hover:bg-rose-700'
-                          title='Disconnect personal AI and erase the key from this browser tab'
-                          aria-label='Disconnect personal AI and erase session key'
+                          title={personalAIDisconnectDetail}
+                          aria-label={personalAIDisconnectLabel}
                         >
                           <X size={14} aria-hidden='true' />
-                          <span className='hidden xl:inline'>Disconnect AI</span>
+                          <span className='hidden xl:inline'>{personalAIDisconnectLabel}</span>
                         </button>
                         )}
                         {isTeacherMode && (

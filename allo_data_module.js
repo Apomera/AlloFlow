@@ -637,7 +637,7 @@ const ADVENTURE_SHOP_ITEMS = [
     id: 'hint',
     name: 'Oracle Whisper',
     cost: 75,
-    description: 'Rewinds your previous turn so you can choose again.',
+    description: 'Rewinds the previous turn so you can choose again.',
     effectType: 'hint',
     effectValue: 1,
     icon: '🔮',
@@ -668,6 +668,15 @@ const ADVENTURE_SHOP_ITEMS = [
     effectType: 'gold_boost',
     effectValue: 3,
     icon: '💰',
+  },
+  {
+    id: 'guiding_hand',
+    name: 'Guiding Hand',
+    cost: 125,
+    description: 'A timely intervention resolves the current obstacle and teaches useful knowledge for later scenes. Assisted turns award no XP or Gold.',
+    effectType: 'story_assist',
+    effectValue: 1,
+    icon: '\u{1F91D}',
   }
 ];
 

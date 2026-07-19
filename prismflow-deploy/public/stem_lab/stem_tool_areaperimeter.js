@@ -37,6 +37,16 @@
     return (data && data._areaPerimeter) || data || {};
   }
 
+  var AREA_MODE_IDS = ['explore', 'compare', 'composite', 'investigate', 'challenge'];
+  var AREA_TARGET_IDS = ['12', '18', '24', '30', '36'];
+  var AREA_METHOD_IDS = ['add', 'subtract'];
+  var AREA_CHALLENGE_IDS = Array.from({ length: 10 }, function(_, index) { return String(index); });
+
+  function countAllowed(map, allowedIds) {
+    map = map || {};
+    return allowedIds.filter(function(id) { return !!map[id]; }).length;
+  }
+
   function clampInteger(value, min, max) {
     value = Number(value);
     if (!isFinite(value)) value = min;
@@ -119,29 +129,29 @@
         id: 'measurement_tour',
         label: 'Explore all 5 lab modes',
         icon: '\uD83E\uDDED',
-        check: function(data) { return Object.keys(questData(data).modeVisits || {}).length >= 5; },
-        progress: function(data) { return Math.min(Object.keys(questData(data).modeVisits || {}).length, 5) + '/5 modes'; }
+        check: function(data) { return countAllowed(questData(data).modeVisits, AREA_MODE_IDS) >= 5; },
+        progress: function(data) { return countAllowed(questData(data).modeVisits, AREA_MODE_IDS) + '/5 modes'; }
       },
       {
         id: 'challenge_five',
         label: 'Solve 5 deterministic challenges',
         icon: '\uD83C\uDFC5',
-        check: function(data) { return ((questData(data).score || {}).correct || 0) >= 5; },
-        progress: function(data) { return Math.min(((questData(data).score || {}).correct || 0), 5) + '/5 solved'; }
+        check: function(data) { return countAllowed(questData(data).solvedChallenges, AREA_CHALLENGE_IDS) >= 5; },
+        progress: function(data) { return Math.min(countAllowed(questData(data).solvedChallenges, AREA_CHALLENGE_IDS), 5) + '/5 solved'; }
       },
       {
         id: 'same_area_three',
         label: 'Investigate 3 target areas',
         icon: '\uD83D\uDD0E',
-        check: function(data) { return Object.keys(questData(data).targetsExplored || {}).length >= 3; },
-        progress: function(data) { return Math.min(Object.keys(questData(data).targetsExplored || {}).length, 3) + '/3 areas'; }
+        check: function(data) { return countAllowed(questData(data).targetsExplored, AREA_TARGET_IDS) >= 3; },
+        progress: function(data) { return Math.min(countAllowed(questData(data).targetsExplored, AREA_TARGET_IDS), 3) + '/3 areas'; }
       },
       {
         id: 'decomposition_duo',
         label: 'Use both composite-shape strategies',
         icon: '\u2702\uFE0F',
-        check: function(data) { return Object.keys(questData(data).compositeMethods || {}).length >= 2; },
-        progress: function(data) { return Math.min(Object.keys(questData(data).compositeMethods || {}).length, 2) + '/2 strategies'; }
+        check: function(data) { return countAllowed(questData(data).compositeMethods, AREA_METHOD_IDS) >= 2; },
+        progress: function(data) { return countAllowed(questData(data).compositeMethods, AREA_METHOD_IDS) + '/2 strategies'; }
       }
     ],
 
@@ -180,8 +190,10 @@
         if (typeof setToolData !== 'function') return;
         setToolData(function(previous) {
           previous = previous || {};
+          var current = previous._areaPerimeter || {};
+          var changes = typeof next === 'function' ? next(current) : next;
           return Object.assign({}, previous, {
-            _areaPerimeter: Object.assign({}, previous._areaPerimeter || {}, next)
+            _areaPerimeter: Object.assign({}, current, changes || {})
           });
         });
       }
@@ -539,14 +551,17 @@
         var svgHeight = 38 + pairs.length * rowHeight;
         var shapes = [];
         var minP = Math.min.apply(null, pairs.map(function(pair) { return pair.p; }));
+        var maxWidth = Math.max.apply(null, pairs.map(function(pair) { return pair.w; }));
+        var maxHeight = Math.max.apply(null, pairs.map(function(pair) { return pair.h; }));
+        var sharedUnit = Math.min(350 / maxWidth, 54 / maxHeight, 25);
         pairs.forEach(function(pair, index) {
-          var unit = Math.min(350 / pair.w, 54 / pair.h, 25);
+          var unit = sharedUnit;
           var w = pair.w * unit;
           var hgt = pair.h * unit;
           var y = 28 + index * rowHeight + (56 - hgt) / 2;
           shapes.push(h('g', { key: pair.w + 'x' + pair.h }, [
             h('text', { key: 'name', x: 18, y: 28 + index * rowHeight + 32, fill: COLORS.text, fontSize: 16, fontWeight: 800 }, pair.w + ' \u00D7 ' + pair.h),
-            h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, fill: pair.p === minP ? (isDark ? '#14532d' : '#dcfce7') : COLORS.tileSoft, stroke: pair.p === minP ? COLORS.green : COLORS.teal, strokeWidth: 3 }),
+            h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: pair.p === minP ? (isDark ? '#14532d' : '#dcfce7') : COLORS.tileSoft, stroke: pair.p === minP ? COLORS.green : COLORS.teal, strokeWidth: 3 }),
             h('text', { key: 'p', x: 500, y: 28 + index * rowHeight + 32, fill: pair.p === minP ? COLORS.green : COLORS.muted, fontSize: 15, fontWeight: 700 }, 'P = ' + pair.p + (pair.p === minP ? ' (least)' : ''))
           ]));
         });
@@ -582,11 +597,12 @@
           elements.push(h('text', { key: 'al', x: 165, y: 245, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.w + ' \u00D7 ' + challenge.h));
           elements.push(h('text', { key: 'bl', x: 455, y: 245, textAnchor: 'middle', fill: COLORS.text, fontSize: 17 }, challenge.w2 + ' \u00D7 ' + challenge.h2));
         } else {
-          var drawW = Math.min(330, challenge.w * 32);
-          var drawH = Math.min(170, challenge.h * 25);
+          var rectangleScale = Math.min(330 / challenge.w, 170 / challenge.h);
+          var drawW = challenge.w * rectangleScale;
+          var drawH = challenge.h * rectangleScale;
           var dx = (640 - drawW) / 2;
           var dy = 55 + (170 - drawH) / 2;
-          elements.push(h('rect', { key: 'r', x: dx, y: dy, width: drawW, height: drawH, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }));
+          elements.push(h('rect', { key: 'r', x: dx, y: dy, width: drawW, height: drawH, 'data-challenge-shape': 'rectangle', 'data-square-unit': rectangleScale, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }));
           elements.push(h('text', { key: 'w', x: 320, y: dy + drawH + 27, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, challenge.missingAxis === 'w' || challenge.missing === 'side' ? '?' : challenge.w));
           elements.push(h('text', { key: 'h', x: dx - 25, y: dy + drawH / 2, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800, transform: 'rotate(-90 ' + (dx - 25) + ' ' + (dy + drawH / 2) + ')' }, challenge.missingAxis === 'h' || challenge.missing === 'side' ? '?' : challenge.h));
         }
@@ -768,6 +784,10 @@
         var challenge = CHALLENGES[challengeIndex];
         var feedback = state.feedback;
         var solvedMap = state.solvedChallenges || {};
+        var challengeSolved = !!solvedMap[challengeIndex];
+        var submitLocked = challengeSolved;
+        var displayedAnswer = challengeSolved ? String(challenge.answer) : answer;
+        if (challengeSolved && !feedback) feedback = { correct: true, text: 'Solved previously. ' + challenge.explanation };
 
         function moveChallenge(direction) {
           var nextIndex = (challengeIndex + direction + CHALLENGES.length) % CHALLENGES.length;
@@ -777,32 +797,38 @@
 
         function submit(event) {
           if (event && typeof event.preventDefault === 'function') event.preventDefault();
+          if (submitLocked) return;
           var numeric = Number(answer);
           if (answer.trim() === '' || !isFinite(numeric)) {
             patch({ feedback: { correct: false, text: 'Enter a number before checking.' } });
             return;
           }
           var correct = isCorrectNumericAnswer(answer, challenge.answer);
-          var attempts = (score.attempts || 0) + 1;
           if (correct) {
+            submitLocked = true;
             var firstSolve = !solvedMap[challengeIndex];
-            var nextSolved = Object.assign({}, solvedMap);
-            nextSolved[challengeIndex] = true;
-            var nextCorrect = (score.correct || 0) + (firstSolve ? 1 : 0);
-            var nextStreak = firstSolve ? (state.streak || 0) + 1 : (state.streak || 0);
-            patch({
-              score: { correct: nextCorrect, attempts: attempts },
-              solvedChallenges: nextSolved,
-              streak: nextStreak,
-              bestStreak: Math.max(state.bestStreak || 0, nextStreak),
-              feedback: { correct: true, text: 'Correct! ' + challenge.explanation }
+            patch(function(current) {
+              var nextSolved = Object.assign({}, current.solvedChallenges || {});
+              nextSolved[challengeIndex] = true;
+              var currentScore = current.score || { correct: 0, attempts: 0 };
+              var nextStreak = firstSolve ? (current.streak || 0) + 1 : (current.streak || 0);
+              return {
+                score: { correct: countAllowed(nextSolved, AREA_CHALLENGE_IDS), attempts: (currentScore.attempts || 0) + 1 },
+                solvedChallenges: nextSolved,
+                streak: nextStreak,
+                bestStreak: Math.max(current.bestStreak || 0, nextStreak),
+                feedback: { correct: true, text: 'Correct! ' + challenge.explanation }
+              };
             });
             if (firstSolve) {
               awardXP('areaPerimeter', 5, 'Area & Perimeter challenge');
-              addToast('\u2705 Correct! ' + challenge.answer + ' ' + challenge.unit, 'success');
+              addToast('Correct! ' + challenge.answer + ' ' + challenge.unit, 'success');
             }
           } else {
-            patch({ score: { correct: score.correct || 0, attempts: attempts }, streak: 0, feedback: { correct: false, text: 'Not yet. Check whether the problem asks for inside space, outside distance, or a missing side.' } });
+            patch(function(current) {
+              var currentScore = current.score || { correct: 0, attempts: 0 };
+              return { score: { correct: currentScore.correct || 0, attempts: (currentScore.attempts || 0) + 1 }, streak: 0, feedback: { correct: false, text: 'Not yet. Check whether the problem asks for inside space, outside distance, or a missing side.' } };
+            });
           }
         }
 
@@ -824,13 +850,13 @@
               h('label', { key: 'label', htmlFor: 'ap-answer', style: { color: COLORS.text, fontWeight: 800, flex: '1 1 210px' } }, [
                 h('span', { key: 'text', style: { display: 'block', marginBottom: '6px' } }, 'Your answer (' + challenge.unit + ')'),
                 h('input', {
-                  key: 'input', id: 'ap-answer', type: 'number', inputMode: 'decimal', value: answer,
+                  key: 'input', id: 'ap-answer', type: 'number', inputMode: 'decimal', value: displayedAnswer, disabled: challengeSolved,
                   onChange: function(event) { patch({ answer: event.target.value, feedback: null }); },
                   style: { width: '100%', boxSizing: 'border-box', padding: '11px 12px', borderRadius: '10px', border: '2px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.text, fontSize: '1rem' },
                   'aria-describedby': feedback ? 'ap-feedback' : undefined
                 })
               ]),
-              actionButton('Check answer', null, { type: 'submit', primary: true }),
+              actionButton(challengeSolved ? 'Solved' : 'Check answer', null, { type: 'submit', primary: true, disabled: challengeSolved }),
               actionButton(state.showHint ? 'Hide hint' : 'Show hint', function() { patch({ showHint: !state.showHint }); }, {})
             ]),
             state.showHint ? h('p', { key: 'hint', style: { padding: '12px', borderRadius: '10px', background: isDark ? '#422006' : '#fffbeb', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? '#a16207' : '#fcd34d') } }, challenge.kind === 'composite' ? 'Find the whole rectangle, then subtract the missing corner.' : challenge.find.indexOf('Perimeter') >= 0 ? 'Trace the entire outside boundary and add every side.' : challenge.find.indexOf('Missing') >= 0 || challenge.find.indexOf('Side') >= 0 ? 'Work backward from the area or perimeter formula.' : 'Area counts square units inside; perimeter counts unit lengths around.') : null,
@@ -840,7 +866,7 @@
             }, feedback.text) : null,
             h('div', { key: 'nav', style: { display: 'flex', justifyContent: 'space-between', gap: '9px', flexWrap: 'wrap', marginTop: '16px' } }, [
               actionButton('\u2190 Previous', function() { moveChallenge(-1); }, { compact: true }),
-              h('span', { key: 'progress', style: { alignSelf: 'center', color: COLORS.muted, fontSize: '0.9rem' } }, Object.keys(solvedMap).length + ' of ' + CHALLENGES.length + ' unique challenges complete'),
+              h('span', { key: 'progress', style: { alignSelf: 'center', color: COLORS.muted, fontSize: '0.9rem' } }, countAllowed(solvedMap, AREA_CHALLENGE_IDS) + ' of ' + CHALLENGES.length + ' unique challenges complete'),
               actionButton('Next \u2192', function() { moveChallenge(1); }, { compact: true, primary: !!feedback && feedback.correct })
             ])
           ], { key: 'challenge' }),

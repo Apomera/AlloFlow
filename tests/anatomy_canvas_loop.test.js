@@ -18,7 +18,12 @@ describe('anatomy canvas animation loop', () => {
       expect(source).toContain('function cleanupAnatomyCanvas()');
       expect(source).toContain('canvas._anatomyCleanup = null;');
 
-      expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+      expect(source).toContain("window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null");
+      expect(source).toContain('function onAnatomyMotionPreferenceChange(event)');
+      expect(source).toContain("anatomyMotionQuery.addEventListener('change', onAnatomyMotionPreferenceChange)");
+      expect(source).toContain("anatomyMotionQuery.removeEventListener('change', onAnatomyMotionPreferenceChange)");
+      expect(source).toContain('anatomyMotionReduced = !!(event && event.matches);');
+      expect(source).toContain('if (anatomyAlive && canvas.isConnected && !isAnatomyHidden()) drawAnatomyFrame();');
       expect(source).toContain('function isAnatomyHidden()');
       expect(source).toContain('function cancelAnatomyFrame()');
       expect(source).toContain('function scheduleAnatomyFrame()');

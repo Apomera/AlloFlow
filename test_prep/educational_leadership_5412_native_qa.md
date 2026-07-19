@@ -1,6 +1,6 @@
 # Praxis Educational Leadership (5412) QA report
 
-Generated: 2026-07-17T00:10:38.833Z
+Generated: 2026-07-19T05:09:25.204Z
 
 ## Result
 
@@ -13,4 +13,5 @@ Generated: 2026-07-17T00:10:38.833Z
 
 > This is not ETS or NPBEA approval, independent practicing-school-leader validation, field testing, psychometric calibration, a scaled-score model, legal or personnel advice, an employment or licensure decision, or an emergency directive.
 
-- Assistant audit: 200 source questions contain 100 distinct source content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. Three additional 100-item banks are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.
+
+- Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 200 distinct independent content kernels. 200 additional activities remain guided review only. 300 new independent questions remain to reach 500.

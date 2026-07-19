@@ -5122,6 +5122,11 @@ window.StemLab = window.StemLab || {
   }
 
   // ══════════════════════════════════════════════════════════════════
+  // The tool renderer runs again for every lab-state update. Keep the WebGL
+  // component type stable so unrelated controls do not unmount the canvas and
+  // create a fresh renderer/animation loop on every click.
+  var DinoFieldStation3DStable = null;
+
   window.StemLab.registerTool('dinoLab', {
     name: 'Dino Lab',
     icon: '🦕',
@@ -5308,9 +5313,29 @@ window.StemLab = window.StemLab || {
         { id: 'glossary', label: t('stem.dinolab.glossary', 'Glossary'), icon: '📖' },
         { id: 'classroom', label: t('stem.dinolab.classroom', 'Classroom'), icon: '🍎' }
       ];
-      var tabBar = el('div', { role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb) {
+      if (!TABS.some(function (tb) { return tb.id === tab; })) tab = 'explore';
+      function focusTabAt(index) {
+        var next = TABS[modIndex(index, TABS.length)];
+        upd('tab', next.id);
+        announceToSR(next.label + ' tab');
+        if (typeof document !== 'undefined') {
+          var nextNode = document.getElementById('dinotab-' + next.id);
+          if (nextNode && nextNode.focus) nextNode.focus();
+        }
+      }
+      function handleTabKeyDown(event, index) {
+        var nextIndex = null;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = index + 1;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = index - 1;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = TABS.length - 1;
+        if (nextIndex == null) return;
+        event.preventDefault();
+        focusTabAt(nextIndex);
+      }
+      var tabBar = el('div', { className: 'dinolab-tablist', role: 'tablist', 'aria-label': t('stem.dinolab.dino_lab_sections', 'Dino Lab sections'), 'aria-orientation': 'horizontal', style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + T.border, background: T.deeper } }, TABS.map(function (tb, tabIndex) {
         var active = tab === tb.id;
-        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
+        return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
 
       function renderDetail(dn) {
@@ -5365,10 +5390,10 @@ window.StemLab = window.StemLab || {
         continents.forEach(function (c) { continentPills.push(pill(filterContinent === c, c, function () { upd('filterContinent', c); }, 'c_' + c.replace(/\W/g, ''))); });
         var controls = el('div', { style: { marginBottom: 12 } },
           el('input', { type: 'text', value: query, placeholder: t('stem.dinolab.search_by_name_meaning_clade_or_place', 'Search by name, meaning, clade, or place...'), 'aria-label': t('stem.dinolab.search_dinosaurs', 'Search dinosaurs'), onChange: function (e) { upd('query', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }),
-          el('div', { style: { marginBottom: 6 } }, periodPills),
-          el('div', { style: { marginBottom: 6 } }, dietPills),
-          el('div', { style: { marginBottom: 6 } }, continentPills),
-          el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
+          el('div', { role: 'group', 'aria-label': 'Filter by geological period', style: { marginBottom: 6 } }, periodPills),
+          el('div', { role: 'group', 'aria-label': 'Filter by diet', style: { marginBottom: 6 } }, dietPills),
+          el('div', { role: 'group', 'aria-label': 'Filter by location', style: { marginBottom: 6 } }, continentPills),
+          el('div', { role: 'group', 'aria-label': 'Sort dinosaurs', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } }, el('span', { 'aria-hidden': 'true', style: { fontSize: 12, color: T.soft } }, 'Sort:'), pill(sortBy === 'name', 'A to Z', function () { upd('sortBy', 'name'); }, 's_name'), pill(sortBy === 'time', 'Oldest first', function () { upd('sortBy', 'time'); }, 's_time'), pill(sortBy === 'length', 'Longest', function () { upd('sortBy', 'length'); }, 's_len'), pill(sortBy === 'weight', 'Heaviest', function () { upd('sortBy', 'weight'); }, 's_wt'), el('button', { key: 'surprise', onClick: function () { var n = (d.surpriseN || 0) + 1; var pick = DINOS[(n * 48271) % DINOS.length]; var ns = {}; for (var sk in seen) { ns[sk] = seen[sk]; } ns[pick.id] = true; upd({ selected: pick.id, seen: ns, surpriseN: n }); announceToSR('Surprise: ' + pick.common); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: 'transparent', color: T.text } }, '🎲 Surprise me'), el('span', { style: { marginLeft: 'auto', fontSize: 12, color: T.soft } }, list.length + ' of ' + DINOS.length))
         );
         var grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 } }, list.map(function (dn) {
           return el('button', { key: dn.id, onClick: function () { markSeen(dn.id); }, 'aria-label': 'Open ' + dn.common, style: { textAlign: 'left', cursor: 'pointer', background: T.panel, border: '1px solid ' + (selected === dn.id ? '#22c55e' : T.border), borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.30)', padding: 12, color: T.text, position: 'relative' } },
@@ -5380,7 +5405,7 @@ window.StemLab = window.StemLab || {
           );
         }));
         var detail = selected ? renderDetail(byId(selected)) : el('div', { style: { color: T.soft, fontSize: 13, padding: '20px 4px' } }, 'Pick a dinosaur to see its full file, including what we are still unsure about.');
-        return el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 } }, el('div', null, controls, grid), el('div', null, detail));
+        return el('div', { className: 'dinolab-explore-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 } }, el('div', null, controls, grid), el('div', null, detail));
       }
 
       function renderTimeline() {
@@ -5576,7 +5601,12 @@ window.StemLab = window.StemLab || {
       function DinoFieldStation3D(props) {
         var canvasRef = React.useRef(null);
         var statusRef = React.useRef(null);
+        var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35 });
+        var autoRotateRef = React.useRef(props.autoRotate);
+        var readySpeciesRef = React.useRef(null);
         var canvasFocusState = React.useState(false), canvasFocused = canvasFocusState[0], setCanvasFocused = canvasFocusState[1];
+        autoRotateRef.current = props.autoRotate;
+        if (yawRef.current.speciesId !== props.species.id) yawRef.current = { speciesId: props.species.id, value: -0.35 };
 
         React.useEffect(function () {
           var canvas = canvasRef.current;
@@ -5632,7 +5662,7 @@ window.StemLab = window.StemLab || {
             var isTheropod = group === 'theropod';
             var bodyColor = props.dietColor || '#38bdf8';
             var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-            var yaw = -0.35;
+            var yaw = yawRef.current.value;
             var dragging = false;
             var lastX = 0;
 
@@ -5647,6 +5677,7 @@ window.StemLab = window.StemLab || {
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
             scene.add(new THREE.AmbientLight(0xffffff, 0.52));
+            scene.add(new THREE.HemisphereLight(0x9ddcff, 0x3a2418, 0.42));
             var sun = new THREE.DirectionalLight(0xfff4df, 0.95);
             sun.position.set(-8, 14, 10);
             sun.castShadow = true;
@@ -5695,6 +5726,7 @@ window.StemLab = window.StemLab || {
             var jointMat = new THREE.MeshPhongMaterial({ color: 0xfacc15, shininess: 32 });
             var bodyMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.32, shininess: 25, side: THREE.DoubleSide });
             var headMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.44, shininess: 30 });
+            var anatomyAccentMat = new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), transparent: true, opacity: 0.68, shininess: 38, side: THREE.DoubleSide });
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
             var loggedRingMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
@@ -5763,6 +5795,18 @@ window.StemLab = window.StemLab || {
               mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
               mesh.renderOrder = 2;
               scene.add(mesh);
+              return mesh;
+            }
+            function addAccentCone(base, tip, radius, mat) {
+              if (!props.showBody) return null;
+              var dir = new THREE.Vector3().subVectors(tip, base);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, dist, 10), mat || anatomyAccentMat);
+              mesh.position.copy(base).add(tip).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              model.add(mesh);
               return mesh;
             }
             function addModelCylinder(a, b, radius, mat, order) {
@@ -5858,6 +5902,28 @@ window.StemLab = window.StemLab || {
             addSceneCylinder(vec(snout.x, 0.05, rulerZ), vec(tail.x, 0.05, rulerZ), rulerR, rulerMat);
             addSceneCylinder(vec(snout.x, 0.05, rulerZ - 0.22), vec(snout.x, 0.05, rulerZ + 0.22), rulerR, rulerMat);
             addSceneCylinder(vec(tail.x, 0.05, rulerZ - 0.22), vec(tail.x, 0.05, rulerZ + 0.22), rulerR, rulerMat);
+            var rulerSpan = Math.max(0.1, tail.x - snout.x);
+            var rulerTicks = Math.min(40, Math.max(1, Math.floor(rulerSpan)));
+            for (var rt = 0; rt <= rulerTicks; rt++) {
+              var tickX = snout.x + Math.min(rulerSpan, rt);
+              var tickHalf = rt % 5 === 0 ? 0.20 : 0.11;
+              addSceneCylinder(vec(tickX, 0.052, rulerZ - tickHalf), vec(tickX, 0.052, rulerZ + tickHalf), Math.max(0.008, rulerR * 0.66), rulerMat);
+            }
+            var surveyPostMat = new THREE.MeshPhongMaterial({ color: 0xf8fafc, shininess: 24 });
+            var surveyRopeMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+            var surveyHalfX = Math.max(4.6, len * 0.56);
+            var surveyHalfZ = Math.max(2.5, bodyDepth * 3.3);
+            var surveyCorners = [
+              vec(-surveyHalfX, 0, -surveyHalfZ),
+              vec(surveyHalfX, 0, -surveyHalfZ),
+              vec(surveyHalfX, 0, surveyHalfZ),
+              vec(-surveyHalfX, 0, surveyHalfZ)
+            ];
+            surveyCorners.forEach(function (corner, cornerIndex) {
+              addSceneCylinder(corner, vec(corner.x, 0.46, corner.z), Math.max(0.025, ht * 0.007), surveyPostMat);
+              var nextCorner = surveyCorners[(cornerIndex + 1) % surveyCorners.length];
+              addSceneCylinder(vec(corner.x, 0.38, corner.z), vec(nextCorner.x, 0.38, nextCorner.z), Math.max(0.010, ht * 0.003), surveyRopeMat);
+            });
 
             addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
             addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)), Math.max(0.12, ht * 0.055), Math.max(0.10, ht * 0.050)), headMat);
@@ -5867,6 +5933,43 @@ window.StemLab = window.StemLab || {
               tailMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().subVectors(tail, hip).normalize());
               tailMesh.castShadow = true;
               model.add(tailMesh);
+
+              var cladeName = String(dn.clade || '');
+              if (/Ceratops/i.test(cladeName)) {
+                var frillCenter = head.clone().add(vec(len * 0.025, ht * 0.035, 0));
+                addEllipsoid(frillCenter, vec(Math.max(0.06, len * 0.014), Math.max(0.22, ht * 0.15), Math.max(0.20, bodyDepth * 0.92)), anatomyAccentMat);
+                [-1, 1].forEach(function (side) {
+                  var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * bodyDepth * 0.30));
+                  addAccentCone(hornBase, hornBase.clone().add(vec(-Math.max(0.28, len * 0.055), Math.max(0.12, ht * 0.055), side * bodyDepth * 0.10)), Math.max(0.035, ht * 0.014));
+                });
+              } else if (/Stegosaur/i.test(cladeName)) {
+                for (var plateIndex = 0; plateIndex < 7; plateIndex++) {
+                  var plateT = plateIndex / 6;
+                  var plateX = shoulder.x + (hip.x - shoulder.x + len * 0.16) * plateT;
+                  var plateHeight = Math.max(0.20, bodyHeight * (0.70 + Math.sin(plateT * Math.PI) * 0.72));
+                  var plate = addAccentCone(vec(plateX, bodyCenter.y + bodyHeight * 0.72, 0), vec(plateX, bodyCenter.y + bodyHeight * 0.72 + plateHeight, 0), Math.max(0.10, bodyDepth * 0.34));
+                  if (plate) plate.scale.z = 0.30;
+                }
+              } else if (/Spinosaur/i.test(cladeName)) {
+                for (var sailIndex = 0; sailIndex < 9; sailIndex++) {
+                  var sailT = sailIndex / 8;
+                  var sailX = shoulder.x + (hip.x - shoulder.x) * sailT;
+                  var sailHeight = Math.max(0.18, ht * (0.10 + Math.sin(sailT * Math.PI) * 0.16));
+                  addAccentCone(vec(sailX, bodyCenter.y + bodyHeight * 0.58, 0), vec(sailX, bodyCenter.y + bodyHeight * 0.58 + sailHeight, 0), Math.max(0.025, ht * 0.010));
+                }
+              } else if (/Ankylosaur/i.test(cladeName)) {
+                for (var armorIndex = 0; armorIndex < 8; armorIndex++) {
+                  var armorT = armorIndex / 7;
+                  var armorX = shoulder.x + (hip.x - shoulder.x) * armorT;
+                  [-1, 1].forEach(function (side) {
+                    addEllipsoid(vec(armorX, bodyCenter.y + bodyHeight * 0.62, side * bodyDepth * 0.56), vec(Math.max(0.07, len * 0.012), Math.max(0.045, ht * 0.018), Math.max(0.05, bodyDepth * 0.16)), anatomyAccentMat);
+                  });
+                }
+                addEllipsoid(tail.clone(), vec(Math.max(0.18, len * 0.032), Math.max(0.10, ht * 0.040), Math.max(0.13, bodyDepth * 0.52)), anatomyAccentMat);
+              } else if (/Hadrosaur|Lambeosaur/i.test(cladeName)) {
+                var crestBase = head.clone().add(vec(len * 0.012, ht * 0.045, 0));
+                addAccentCone(crestBase, crestBase.clone().add(vec(Math.max(0.24, len * 0.050), Math.max(0.18, ht * 0.090), 0)), Math.max(0.06, ht * 0.024));
+              }
             }
 
             addBone(tail, hip, Math.max(0.035, ht * 0.012));
@@ -6112,16 +6215,16 @@ window.StemLab = window.StemLab || {
             }
 
             function pointerDown(ev) { try { canvas.focus(); } catch (e) {} dragging = true; lastX = ev.clientX || 0; canvas.setPointerCapture && canvas.setPointerCapture(ev.pointerId); }
-            function pointerMove(ev) { if (!dragging) return; var x = ev.clientX || 0; yaw += (x - lastX) * 0.009; lastX = x; }
+            function pointerMove(ev) { if (!dragging) return; var x = ev.clientX || 0; yaw += (x - lastX) * 0.009; yawRef.current.value = yaw; lastX = x; }
             function pointerUp(ev) { dragging = false; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
             function keyDown(ev) {
               var key = ev.key;
               if (key === 'ArrowLeft' || key === 'a' || key === 'A') {
-                ev.preventDefault(); yaw -= Math.PI / 12; setStatus('Reconstruction rotated left.');
+                ev.preventDefault(); yaw -= Math.PI / 12; yawRef.current.value = yaw; setStatus('Reconstruction rotated left.');
               } else if (key === 'ArrowRight' || key === 'd' || key === 'D') {
-                ev.preventDefault(); yaw += Math.PI / 12; setStatus('Reconstruction rotated right.');
+                ev.preventDefault(); yaw += Math.PI / 12; yawRef.current.value = yaw; setStatus('Reconstruction rotated right.');
               } else if (key === 'Home') {
-                ev.preventDefault(); yaw = -0.35; setStatus('Reconstruction returned to its starting view.');
+                ev.preventDefault(); yaw = -0.35; yawRef.current.value = yaw; setStatus('Reconstruction returned to its starting view.');
               }
             }
             canvas.addEventListener('pointerdown', pointerDown);
@@ -6137,12 +6240,15 @@ window.StemLab = window.StemLab || {
               canvas.removeEventListener('keydown', keyDown);
             });
 
-            setStatus('3D reconstruction loaded. Drag, or use the left and right arrow keys, to rotate it.');
+            var sameSpeciesRefresh = readySpeciesRef.current === props.species.id;
+            setStatus(sameSpeciesRefresh ? '3D evidence view updated. Camera angle preserved.' : '3D reconstruction loaded. Drag, or use the left and right arrow keys, to rotate it.');
+            readySpeciesRef.current = props.species.id;
             function animate() {
               if (!alive) return;
               frame = window.requestAnimationFrame(animate);
               if (model) {
-                if (!dragging && !reducedMotion && props.autoRotate !== false) yaw += 0.0035;
+                if (!dragging && !reducedMotion && autoRotateRef.current !== false) yaw += 0.0035;
+                yawRef.current.value = yaw;
                 model.rotation.y = yaw;
                 if (!reducedMotion && scanPulse) {
                   var pulse = 1 + Math.sin(performance.now() * 0.006) * 0.10;
@@ -6177,7 +6283,7 @@ window.StemLab = window.StemLab || {
             disposeObject(scene);
             if (renderer && renderer.dispose) renderer.dispose();
           };
-        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.autoRotate, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
+        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
 
         function readoutChip(text, color) {
           return el('span', { key: text, style: { padding: '5px 8px', borderRadius: 999, background: 'rgba(15,23,42,0.82)', border: '1px solid ' + color, color: '#e2e8f0', fontSize: 11, fontWeight: 800, boxShadow: '0 2px 8px rgba(0,0,0,0.22)' } }, text);
@@ -6205,6 +6311,8 @@ window.StemLab = window.StemLab || {
           el('div', { id: statusId, ref: statusRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', left: 10, bottom: 10, right: 10, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         );
       }
+
+      if (!DinoFieldStation3DStable) DinoFieldStation3DStable = DinoFieldStation3D;
 
       function renderField3D() {
         var fieldId = d.field3dSelected || selected || 'tyrannosaurus';
@@ -6609,6 +6717,7 @@ window.StemLab = window.StemLab || {
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Visual key'),
           keyItem('#f8fafc', 'Skeleton proxy', 'White rods and joints show the inferred bone layout.'),
           keyItem(dColor(dn.diet), 'Body inference', 'Translucent color shows estimated soft tissue volume.'),
+          keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, plates, sails, armor, or crests appear for supported clades. They are diagram cues, not specimen scans.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
           keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),
           keyItem('#22c55e', 'Logged anchor', 'Green rings show evidence points already recorded in the observation log.'),
@@ -6664,7 +6773,7 @@ window.StemLab = window.StemLab || {
                 el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin')
               ),
               presetStrip,
-              el(DinoFieldStation3D, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3DStable, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
               el('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } }, taskCards)
             ),
             el('div', { key: 'side' },
@@ -6792,9 +6901,10 @@ window.StemLab = window.StemLab || {
           el('div', { key: 'q', style: { fontSize: 14, margin: '8px 0' } }, 'Which group does ', el('strong', null, target.common), ' belong to?'),
           el('div', { key: 'opts', style: { display: 'flex', flexDirection: 'column', gap: 6 } }, groups.map(function (g) {
             var isCorrect = sAnswered && g.id === target.group, isWrongPick = sAnswered && g.id === sPicked && g.id !== target.group;
-            return el('button', { key: g.id, onClick: function () { pickGroup(g.id); }, disabled: sAnswered, style: { textAlign: 'left', padding: '8px 12px', borderRadius: 8, cursor: sAnswered ? 'default' : 'pointer', border: '1px solid ' + (isCorrect ? '#22c55e' : (isWrongPick ? '#ef4444' : T.border)), background: isCorrect ? 'rgba(34,197,94,0.18)' : (isWrongPick ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text, fontSize: 12.5 } }, g.label);
+            var groupState = isCorrect ? 'correct answer' : (isWrongPick ? 'selected incorrect answer' : (sAnswered ? 'not selected' : 'available answer'));
+            return el('button', { key: g.id, onClick: function () { pickGroup(g.id); }, 'aria-disabled': sAnswered ? 'true' : 'false', 'aria-pressed': sPicked === g.id ? 'true' : 'false', 'aria-label': g.label + ', ' + groupState, style: { textAlign: 'left', padding: '8px 12px', borderRadius: 8, cursor: sAnswered ? 'default' : 'pointer', border: '1px solid ' + (isCorrect ? '#22c55e' : (isWrongPick ? '#ef4444' : T.border)), background: isCorrect ? 'rgba(34,197,94,0.18)' : (isWrongPick ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text, fontSize: 12.5 } }, g.label);
           })),
-          sAnswered ? el('div', { key: 'fb', style: { marginTop: 8 } }, el('div', { style: { fontSize: 12.5, color: T.soft, marginBottom: 6 } }, (sPicked === target.group ? '✅ Correct. ' : '❌ Not quite. ') + target.common + ' is a ' + (GROUP_LABEL[target.group] || target.group) + '.'), el('button', { onClick: nextSort, style: { fontSize: 12.5, fontWeight: 700, padding: '6px 14px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next →')) : null
+          sAnswered ? el('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8 } }, el('div', { style: { fontSize: 12.5, color: T.soft, marginBottom: 6 } }, (sPicked === target.group ? '✅ Correct. ' : '❌ Not quite. ') + target.common + ' is a ' + (GROUP_LABEL[target.group] || target.group) + '.'), el('button', { onClick: nextSort, style: { fontSize: 12.5, fontWeight: 700, padding: '6px 14px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next →')) : null
         ], { marginBottom: 14 });
         return el('div', null, sectionTitle('🌳', 'The dinosaur family tree', 'Two great branches split early: the "lizard-hipped" Saurischia and the "bird-hipped" Ornithischia.'), activity, panel(tree));
       }
@@ -6845,11 +6955,12 @@ window.StemLab = window.StemLab || {
         function restart() { upd({ quizIdx: 0, quizPicked: null, quizAnswered: false, quizCorrect: 0, quizDone: 0 }); }
         var options = q.options.map(function (opt, i) {
           var isCorrect = answered && i === q.answer, isWrongPick = answered && i === picked && i !== q.answer;
-          return el('button', { key: i, onClick: function () { pick(i); }, disabled: answered, style: { display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, padding: '10px 14px', borderRadius: 10, cursor: answered ? 'default' : 'pointer', fontSize: 13.5, border: '1px solid ' + (isCorrect ? '#22c55e' : (isWrongPick ? '#ef4444' : T.border)), background: isCorrect ? 'rgba(34,197,94,0.18)' : (isWrongPick ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text } }, (answered && isCorrect ? '✅ ' : (isWrongPick ? '❌ ' : '')) + opt);
+          var optionState = isCorrect ? 'correct answer' : (isWrongPick ? 'selected incorrect answer' : (picked === i ? 'selected answer' : (answered ? 'not selected' : 'available answer')));
+          return el('button', { key: i, onClick: function () { pick(i); }, 'aria-disabled': answered ? 'true' : 'false', 'aria-pressed': picked === i ? 'true' : 'false', 'aria-label': opt + ', ' + optionState, style: { display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, padding: '10px 14px', borderRadius: 10, cursor: answered ? 'default' : 'pointer', fontSize: 13.5, border: '1px solid ' + (isCorrect ? '#22c55e' : (isWrongPick ? '#ef4444' : T.border)), background: isCorrect ? 'rgba(34,197,94,0.18)' : (isWrongPick ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text } }, (answered && isCorrect ? '\u2705 ' : (isWrongPick ? '\u274C ' : '')) + opt);
         });
         var pct = doneCount > 0 ? Math.round((correctCount / doneCount) * 100) : 0;
         return el('div', null, sectionTitle('🧠', 'Dino quiz', 'One question at a time. Read the explanation after each, that is where the learning is.'),
-          panel([el('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 } }, el('span', { style: { fontSize: 12, color: T.soft } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length), el('span', { style: { fontSize: 12, fontWeight: 700, color: T.text } }, 'Score: ' + correctCount + '/' + doneCount + (doneCount ? ' (' + pct + '%)' : ''))), el('div', { key: 'q', style: { fontSize: 15.5, fontWeight: 700, marginBottom: 12, lineHeight: 1.45 } }, q.q), el('div', { key: 'opts' }, options), answered ? panel([el('div', { key: 'x', style: { fontSize: 12.5, lineHeight: 1.55 } }, el('strong', { style: { color: T.text } }, picked === q.answer ? '✅ Correct. ' : '➡️ Good try. '), q.explain)], { marginTop: 4, marginBottom: 10, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.30)' }) : null, el('div', { key: 'nav', style: { display: 'flex', gap: 8 } }, answered ? el('button', { onClick: next, style: { flex: 1, fontSize: 13.5, fontWeight: 700, padding: '10px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next question →') : null, el('button', { onClick: restart, style: { fontSize: 12.5, fontWeight: 600, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, 'Restart'))])
+          panel([el('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 } }, el('span', { style: { fontSize: 12, color: T.soft } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length), el('span', { style: { fontSize: 12, fontWeight: 700, color: T.text } }, 'Score: ' + correctCount + '/' + doneCount + (doneCount ? ' (' + pct + '%)' : ''))), el('div', { key: 'q', style: { fontSize: 15.5, fontWeight: 700, marginBottom: 12, lineHeight: 1.45 } }, q.q), el('div', { key: 'opts' }, options), answered ? el('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, panel([el('div', { key: 'x', style: { fontSize: 12.5, lineHeight: 1.55 } }, el('strong', { style: { color: T.text } }, picked === q.answer ? '\u2705 Correct. ' : '\u27A1\uFE0F Good try. '), q.explain)], { marginTop: 4, marginBottom: 10, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.30)' })) : null, el('div', { key: 'nav', style: { display: 'flex', gap: 8 } }, answered ? el('button', { onClick: next, style: { flex: 1, fontSize: 13.5, fontWeight: 700, padding: '10px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next question →') : null, el('button', { onClick: restart, style: { fontSize: 12.5, fontWeight: 600, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, 'Restart'))])
         );
       }
 
@@ -7008,7 +7119,7 @@ window.StemLab = window.StemLab || {
               el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
               el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: '#f1f5f9' } }, 'Choose a fossil investigation path.'),
               el('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } }, 'Dino Lab has a large catalog. This panel turns it into a guided starting point while keeping every section available above.'),
-              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
+              el('div', { className: 'dinolab-mission-stats', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
                 [
                   ['Species opened', seenCount + '/' + DINOS.length, '#86efac'],
                   ['Quiz correct', quizCount + '/5', '#facc15'],
@@ -7040,7 +7151,10 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
+      var accessibilityStyles = '.dinolab-root button:focus-visible,.dinolab-root input:focus-visible,.dinolab-root select:focus-visible,.dinolab-root textarea:focus-visible,.dinolab-root [tabindex]:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px;box-shadow:0 0 0 5px #0f766e!important}' +
+        '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}}' +
+        '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important}}';
+      return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });
 })();

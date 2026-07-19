@@ -47,6 +47,7 @@ const makeReflectionHarness = (overrides = {}) => {
     },
     personaReflectionInput: 'I connected the interview to the lesson evidence and explained how the idea applies today.',
     personaReflectionSubmitRef: { current: false },
+    personaReflectionLastSavedKeyRef: { current: null },
     personaReflectionIdentityRef: { current: 'resource-1:1' },
     personaReflectionContextTokenRef: { current: 1 },
     personaReflectionResourceIdRef: { current: 'resource-1' },
@@ -231,6 +232,28 @@ describe('Persona runtime deep-dive fixes', () => {
     }
   });
 
+  it('makes identical reflection persistence idempotent and validates panel membership', async () => {
+    const harness = makeReflectionHarness();
+    await PhaseKHelpers.handleSaveReflection(harness.deps);
+    await PhaseKHelpers.handleSaveReflection(harness.deps);
+    expect(harness.getHistory()).toHaveLength(1);
+    expect(harness.deps.handleScoreUpdate).toHaveBeenCalledTimes(1);
+    expect(harness.getHistory()[0].config.submissionFingerprint).toMatch(/^\d+:[a-z0-9]+$/);
+
+    const invalidPanel = makeReflectionHarness({
+      personaState: {
+        mode: 'panel',
+        selectedCharacter: null,
+        selectedCharacters: [{ name: 'Only one participant' }],
+        chatHistory: [{ role: 'model', speakerName: 'Only one participant', text: 'Reply.' }],
+        earnedBadges: [],
+      },
+    });
+    await PhaseKHelpers.handleSaveReflection(invalidPanel.deps);
+    expect(invalidPanel.deps.callGemini).not.toHaveBeenCalled();
+    expect(invalidPanel.getHistory()).toHaveLength(0);
+  });
+
   it('uses a persistent, generation-scoped auto-read queue with latest-only enable semantics', () => {
     expect(appSource).toContain('const personaTtsQueueRef = useRef([])');
     expect(appSource).toContain('const processPersonaTtsQueue = async () =>');
@@ -245,6 +268,13 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(appSource).toContain('const personaTtsVoiceSignature = JSON.stringify({');
     expect(appSource).toContain("window.addEventListener('alloflow-mute-changed', handlePersonaMuteChange)");
     expect(appSource).toContain('personaAutoReadEpoch, personaTtsVoiceSignature');
+    expect(appSource).toContain('const personaTtsQueuedMessageKeysRef = useRef(new Set())');
+    expect(appSource).toContain('const personaTtsHistoryKeysRef = useRef([])');
+    expect(appSource).toContain('event?.detail?.playbackSessionId === expectedPlaybackSessionId');
+    expect(appSource).toContain("const reason = String(event?.detail?.reason || 'manual')");
+    expect(appSource).toContain("handleSpeak(entry.msg.text, contentId, 0, true)");
+    expect(appSource).toContain('historyKeys[index] !== previousHistoryKeys[index]');
+    expect(appSource).toContain('!isPersonaChatOpen ||');
   });
 
   it('cancels and bounds reflection-question work and normalizes object responses', () => {
@@ -327,5 +357,7 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(phaseKSource).toContain('if (transcriptCharCount + entryCost > 120000) break');
     expect(phaseKSource).toContain(').slice(0, 160000)');
     expect(phaseKSource).toContain('transcriptTruncated: transcriptEntries.length < transcriptMessages.length');
+    expect(phaseKSource).toContain('submissionFingerprint: reflectionSubmissionFingerprint');
+    expect(phaseKSource).toContain("personaState.selectedCharacters.length === 2");
   });
 });

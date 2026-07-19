@@ -204,7 +204,9 @@ const renderOutlineContent = (deps) => {
     React.createElement('div', { className: 'text-sm font-bold text-slate-500' }, (t('common.loading') || 'Loading the activity…'))
   );
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
-  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
+  // Use the registered component itself. Creating a wrapper here changes the
+  // component type on every host render and remounts (resets) the whole game.
+  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? window.AlloModules.PipelineBuilderGame : _GameLoadingFallback;
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
   const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? (function() { const _C = window.AlloModules.ConceptMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
   const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() { const _C = window.AlloModules.OutlineSortGame; return React.memo((props) => React.createElement(_C, props)); })() : _GameLoadingFallback;
@@ -320,7 +322,11 @@ const renderOutlineContent = (deps) => {
         if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
             // ── Pipeline Builder game rendering ──
             if (isPipelinePlaying || (isInteractivePipeline && !isTeacherMode)) {
-                const stepData = branches.map(b => ({ title: b.title, items: b.items || [] }));
+                const stepData = branches.map(b => ({
+                    title: b.title,
+                    items: b.items || [],
+                    connectsTo: Array.isArray(b.connectsTo) ? b.connectsTo : undefined,
+                }));
                 return (
                     <ErrorBoundary fallbackMessage="Pipeline Builder encountered an error.">
                         <PipelineBuilderGame
@@ -334,6 +340,23 @@ const renderOutlineContent = (deps) => {
                     </ErrorBoundary>
                 );
             }
+            const flowTargets = branches.map((branch, branchIndex) => {
+                const explicitTargets = Array.isArray(branch.connectsTo)
+                    ? [...new Set(branch.connectsTo
+                        .map(target => Number(target))
+                        .filter(target => Number.isInteger(target) && target >= 0 && target < branches.length && target !== branchIndex))]
+                    : [];
+                return explicitTargets.length > 0
+                    ? explicitTargets
+                    : (branchIndex < branches.length - 1 ? [branchIndex + 1] : []);
+            });
+            const incomingPathCounts = flowTargets.reduce((counts, targets) => {
+                targets.forEach(target => { counts[target] = (counts[target] || 0) + 1; });
+                return counts;
+            }, {});
+            const hasNonLinearFlow = flowTargets.some((targets, index) =>
+                targets.length > 1 || (targets.length === 1 && targets[0] !== index + 1)
+            ) || Object.values(incomingPathCounts).some(count => count > 1);
             return (
                 <div className="max-w-3xl mx-auto">
                     {showGameButton && (
@@ -368,36 +391,47 @@ const renderOutlineContent = (deps) => {
                         }
                     `}</style>
                     <div className="flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100">
-                        <div className="absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full"></div>
-                        <div
-                            aria-hidden="true"
-                            className="flow-spine-marching absolute left-1/2 top-4 bottom-4 w-1 -translate-x-1/2 z-0 rounded-full opacity-60"
-                            style={{
-                                backgroundImage: 'repeating-linear-gradient(to bottom, #6366f1 0, #6366f1 8px, transparent 8px, transparent 16px)',
-                                backgroundSize: '100% 16px',
-                                backgroundRepeat: 'repeat-y',
-                                pointerEvents: 'none'
-                            }}
-                        ></div>
+                        {!hasNonLinearFlow && (
+                            <>
+                                <div className="absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full"></div>
+                                <div
+                                    aria-hidden="true"
+                                    className="flow-spine-marching absolute left-1/2 top-4 bottom-4 w-1 -translate-x-1/2 z-0 rounded-full opacity-60"
+                                    style={{
+                                        backgroundImage: 'repeating-linear-gradient(to bottom, #6366f1 0, #6366f1 8px, transparent 8px, transparent 16px)',
+                                        backgroundSize: '100% 16px',
+                                        backgroundRepeat: 'repeat-y',
+                                        pointerEvents: 'none'
+                                    }}
+                                ></div>
+                            </>
+                        )}
                         {branches.map((b, i) => {
-                            const hasConnectsTo = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
-                            const isBranching = hasConnectsTo && b.connectsTo.length > 1;
+                            const targets = flowTargets[i];
+                            const isBranching = targets.length > 1;
+                            const isMerge = (incomingPathCounts[i] || 0) > 1;
+                            const hasExplicitRoute = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
                             return (
                             <div key={i} className="relative w-full flex flex-col items-center group">
-                                {i > 0 && (
+                                {isMerge && (
+                                    <div className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-teal-800 bg-teal-100 border border-teal-300 px-3 py-1 rounded-full">
+                                        <GitMerge size={12} aria-hidden="true" /> {t('outline.paths_merge_here') || 'Paths merge here'}
+                                    </div>
+                                )}
+                                {i > 0 && flowTargets[i - 1].length === 1 && flowTargets[i - 1][0] === i && (
                                     <div className="absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm">
                                         <ArrowDown size={20} strokeWidth={3} />
                                     </div>
                                 )}
                                 <div className={`w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? 'border-l-amber-500 ring-2 ring-amber-100' : i % 2 === 0 ? 'border-l-indigo-500' : 'border-l-purple-500'} hover:shadow-xl hover:ring-2 hover:ring-indigo-100`}>
                                     <div className={`absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? 'bg-amber-500' : i % 2 === 0 ? 'bg-indigo-500' : 'bg-purple-500'}`}>
-                                        {isBranching ? '⑂' : i + 1}
+                                        {i + 1}
                                     </div>
                                     <BranchItem branch={b} bIdx={i} colorClass="bg-white border-none shadow-none" />
-                                    {isBranching && (
+                                    {(isBranching || hasExplicitRoute) && (
                                         <div className="flex items-center gap-2 px-4 pb-2 flex-wrap">
-                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">{t('outline.branches_to') || 'Branches to:'}</span>
-                                            {b.connectsTo.map((target) => (
+                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider flex items-center gap-1"><GitMerge size={11} aria-hidden="true" /> {isBranching ? (t('outline.branches_to') || 'Branches to:') : (t('outline.continues_to') || 'Continues to:')}</span>
+                                            {targets.map((target) => (
                                                 <span key={target} className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
                                                     {t('outline.step_target', { number: target + 1, title: branches[target]?.title || '?' }) || ('Step ' + (target + 1) + ': ' + (branches[target]?.title || '?'))}
                                                 </span>

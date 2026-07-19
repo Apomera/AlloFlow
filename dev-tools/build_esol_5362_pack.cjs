@@ -129,7 +129,7 @@ const pack = {
   nativeQaUrl: './test_prep/esol_5362_native_qa.json',
   learningLibraryUrl: './test_prep/esol_5362_learning_library.json',
   learningLibraryQaUrl: './test_prep/esol_5362_learning_library_qa.json',
-  simulationItemCount: 120, simulationTimeMinutes: 120,
+  simulationItemCount: 120, simulationDomainCounts: {"foundations-linguistics":22,"foundations-language-learning":26,"planning-implementing-instruction":28,"assessment-evaluation":18,"culture":13,"professionalism-advocacy":13}, simulationTimeMinutes: 120,
   simulationLabel: '120-question ESOL pacing simulation',
   simulationNote: 'The official 5362 test currently contains 120 selected-response questions in 120 minutes and may include audio questions and select-more-than-one formats. This simulation uses 120 original text-based single-choice items with the exact official category counts. Use the separate transcript, prosody, and classroom-analysis workshops for applied listening practice; AlloFlow does not reproduce ETS recordings or its exact delivery interface.',
   officialSelectedResponseCount: 120, officialConstructedResponseCount: 0, officialTotalTimeMinutes: 120,

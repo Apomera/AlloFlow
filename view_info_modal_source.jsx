@@ -1,18 +1,17 @@
 /**
  * AlloFlow — Info Modal Module
  *
- * Two-tab modal: "About" (UDL approach, AlloFlow acronym, links, wizard reset,
- * Ko-fi support button) and "Features" (categorized feature catalog with
- * icon-mapped tiles).
+ * Five-tab modal: About, Atlas, Features, Privacy, and Open Source. Includes
+ * keyboard-accessible navigation, live catalog data, guided workflows, privacy
+ * data paths, and dependency attribution.
  *
  * Extracted from AlloFlowANTI.txt lines 21436-21610 (May 2026) — the largest
  * single block in the modal sweep.
  *
  * Required props:
- *   handleSetInfoModalTabToAbout    — switch tabs
- *   handleSetInfoModalTabToFeatures — switch tabs
+ *   handleSetInfoModalTabToAbout / Atlas / Features / Privacy / OpenSource — switch tabs
  *   handleSetShowInfoModalToFalse   — close handler
- *   infoModalTab                    — 'about' | 'features'
+ *   infoModalTab                    — 'about' | 'atlas' | 'features' | 'privacy' | 'opensource'
  *   safeRemoveItem                  — localStorage helper (for wizard reset)
  *   setShowInfoModal                — direct setter (used in wizard-reset flow)
  *   setShowWizard                   — opens the onboarding wizard
@@ -48,7 +47,7 @@ const OSS_CREDITS = [
       { name: 'Tesseract.js', use: 'OCR of scanned handouts', license: 'Apache-2.0', url: 'https://tesseract.projectnaptha.com' },
       { name: 'veraPDF', use: 'PDF/UA-1 conformance checks', license: 'GPLv3+ / MPLv2', url: 'https://verapdf.org',
         featured: 8,
-        blurb: 'Independently validates every accessible PDF we build against the PDF/UA-1 (ISO 14289-1) standard — the same conformance engine trusted by national libraries and archives.',
+        blurb: 'Can validate PDF output against PDF/UA-1 (ISO 14289-1). AlloFlow reports the available results and withholds a conformance claim when the checks do not support one.',
         site: 'https://verapdf.org', repo: 'https://github.com/veraPDF/veraPDF-library' },
       { name: 'Apache PDFBox', use: 'PDF parsing inside veraPDF', license: 'Apache-2.0', url: 'https://pdfbox.apache.org' },
       { name: 'CheerpJ', use: 'runs the veraPDF engine in the browser', license: 'free for this use (LeaningTech)', url: 'https://leaningtech.com/cheerpj/' },
@@ -56,7 +55,7 @@ const OSS_CREDITS = [
       { name: 'IBM Equal Access (accessibility-checker-engine)', use: 'second accessibility checker', license: 'Apache-2.0', url: 'https://github.com/IBMa/equal-access' },
       { name: 'DOMPurify', use: 'HTML sanitizing (safety)', license: 'Apache-2.0 / MPL-2.0', url: 'https://github.com/cure53/DOMPurify' },
       { name: 'Harper', use: 'grammar & spelling checks', license: 'Apache-2.0', url: 'https://writewithharper.com' },
-      { name: 'Free Dictionary API (dictionaryapi.dev)', use: 'authoritative word definitions, pronunciation & synonyms shown beside the AI in the Define popup — a non-AI second source, cached so looked-up words keep working offline', license: 'API free / no key; data CC BY-SA (Wiktionary)', url: 'https://dictionaryapi.dev',
+      { name: 'Free Dictionary API (dictionaryapi.dev)', use: 'independent dictionary definitions, pronunciation & synonyms shown beside the AI in the Define popup — a non-AI second source, cached so looked-up words keep working offline', license: 'API free / no key; data CC BY-SA (Wiktionary)', url: 'https://dictionaryapi.dev',
         featured: 6, owner: 'meetDeveloper · data from Wiktionary',
         blurb: 'Puts a real dictionary entry — definition, pronunciation, and synonyms drawn from Wiktionary — right next to AlloFlow’s AI explanation, so a grade-leveled definition can be triangulated against an authoritative one. Words a class looks up are cached and keep working offline.',
         site: 'https://dictionaryapi.dev', repo: 'https://github.com/meetDeveloper/freeDictionaryAPI' },
@@ -256,13 +255,13 @@ function FeaturedCard({ item }) {
       <p className="text-xs text-slate-600 leading-relaxed flex-1">{item.blurb}</p>
       <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
         {item.site && (
-          <a href={item.site} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-2.5 py-1 transition-colors">
-            <ExternalLink size={12} /> Website
+          <a href={item.site} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-3 py-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+            <ExternalLink size={12} aria-hidden="true" /> Website
           </a>
         )}
         {item.repo && (
-          <a href={item.repo} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg px-2.5 py-1 transition-colors">
-            <Code size={12} /> Source
+          <a href={item.repo} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg px-3 py-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+            <Code size={12} aria-hidden="true" /> Source
           </a>
         )}
       </div>
@@ -294,7 +293,7 @@ function OpenSourceTab({ t }) {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {MEDIA_SOURCE_GUIDE.map((item) => (
-            <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300">
+            <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
               <span className="flex items-start justify-between gap-2">
                 <strong className="text-xs text-slate-800">{item.name}</strong>
                 <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">{item.status}</span>
@@ -318,9 +317,9 @@ function OpenSourceTab({ t }) {
       </div>
 
       <details className="bg-slate-50 rounded-xl border border-slate-200 group">
-        <summary className="cursor-pointer select-none px-4 py-3 font-bold text-slate-700 text-sm flex items-center gap-2 hover:text-indigo-700">
-          <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform">▸</span>
-          {t('about.oss_full_list_header') || 'Every library we bundle'} ({OSS_TOTAL})
+        <summary className="min-h-11 cursor-pointer select-none px-4 py-3 font-bold text-slate-700 text-sm flex items-center gap-2 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
+          <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform motion-reduce:transition-none">▸</span>
+          {t('about.oss_full_list_header') || 'Libraries and open resources we integrate'} ({OSS_TOTAL})
         </summary>
         <div className="px-4 pb-4 pt-1 space-y-4">
           {OSS_CREDITS.map((section) => (
@@ -333,7 +332,7 @@ function OpenSourceTab({ t }) {
                       href={item.site || item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0"
+                      className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                     >
                       {item.name}
                     </a>
@@ -349,7 +348,7 @@ function OpenSourceTab({ t }) {
       </details>
 
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.oss_credits_footer') || 'AI features also use Google’s Gemini API, a hosted service (not bundled software). Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know.'}
+        {t('about.oss_credits_footer') || 'Hosted AI features use the provider configured in AI settings (such as Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint); those services are not bundled software. Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know.'}
       </p>
     </div>
   );
@@ -365,6 +364,8 @@ const ATLAS_HUBS = [
     "hub": "Documents & Literacy",
     "icon": "📄",
     "total": 8,
+    "sourceKind": "curated",
+    "sourceLabel": "Curated index of core literacy surfaces",
     "categories": [
       {
         "name": "Core literacy tools",
@@ -384,7 +385,9 @@ const ATLAS_HUBS = [
   {
     "hub": "STEM Lab",
     "icon": "🔬",
-    "total": 118,
+    "sourceKind": "registry",
+    "sourceLabel": "Generated from the STEM Lab registry",
+    "total": 120,
     "categories": [
       {
         "name": "Math Fundamentals",
@@ -420,10 +423,12 @@ const ATLAS_HUBS = [
           "Cell Simulator",
           "Solar System",
           "Moon Mission",
+          "Space Station",
           "Galaxy Explorer",
           "Universe Time-Lapse",
           "Rocks & Minerals",
           "Water Cycle",
+          "Weather Systems & Forecasting",
           "Rock Cycle",
           "Ecosystem",
           "Companion Planting Lab",
@@ -473,7 +478,8 @@ const ATLAS_HUBS = [
         "tools": [
           "Music Synthesizer",
           "Art & Design Studio",
-          "Architecture Studio"
+          "Architecture Studio",
+          "Free Forms"
         ]
       },
       {
@@ -577,10 +583,9 @@ const ATLAS_HUBS = [
           "AppLab: AI App Generator",
           "Access Lens",
           "Data Lab",
+          "AlphaFold Explorer",
           "Sim Shelf",
-          "Circuit Shelf",
-          "Molecule Shelf",
-          "Timeline Studio",
+          "Particle Lab 3D",
           "Zoom Gallery"
         ]
       }
@@ -589,7 +594,9 @@ const ATLAS_HUBS = [
   {
     "hub": "SEL Hub",
     "icon": "🧠",
-    "total": 70,
+    "sourceKind": "registry",
+    "sourceLabel": "Generated from the SEL Hub registry",
+    "total": 69,
     "categories": [
       {
         "name": "Self-Awareness",
@@ -711,6 +718,8 @@ const ATLAS_HUBS = [
     "hub": "Research Hub",
     "icon": "🔎",
     "total": 3,
+    "sourceKind": "registry",
+    "sourceLabel": "Generated from the inquiry-lane registry",
     "categories": [
       {
         "name": "Inquiry lanes",
@@ -725,7 +734,9 @@ const ATLAS_HUBS = [
   {
     "hub": "Studios & Surfaces",
     "icon": "🎬",
-    "total": 32,
+    "total": 40,
+    "sourceKind": "mixed",
+    "sourceLabel": "Command palette plus curated top-level launchers",
     "categories": [
       {
         "name": "Open from anywhere",
@@ -740,23 +751,31 @@ const ATLAS_HUBS = [
           "Dynamic Assessment",
           "Educator Hub",
           "Family Bridge",
+          "Find the right book",
+          "Free Forms",
           "Go to the dashboard",
           "Guided Mode",
           "Interview Mode",
           "Learning Hub",
+          "Lingua Practice",
+          "Lit Lab",
           "LitLab",
           "Lumen (data canvas)",
           "Memory Palace",
           "Open Groove Studio",
+          "Poet Tree",
           "PoetTree",
           "Read this page to me",
           "Reading Library",
           "Report Writer",
+          "Research Hub",
           "SEL Hub",
           "STEM Lab",
           "StoryForge",
           "Symbol Studio",
+          "Test Prep Hub",
           "Throughline",
+          "Timeline Studio",
           "Video Studio",
           "Visual Organizer",
           "Whiteboard",
@@ -773,11 +792,11 @@ const ATLAS_HUBS = [
 // generated. These short routes describe each hub without pretending every tool
 // has a strict prerequisite relationship.
 const ATLAS_HUB_VISUALS = {
-  'Documents & Literacy': { eyebrow: 'Learning-resource flow', description: 'Turn source material into clear, supported, accessible resources.', route: ['Source', 'Adapt', 'Support', 'Share'], surface: 'from-indigo-50 to-violet-50', border: 'border-indigo-200', accent: 'bg-indigo-600', text: 'text-indigo-900' },
-  'STEM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-600', text: 'text-sky-900' },
-  'SEL Hub': { eyebrow: 'Growth map', description: 'Connect understanding yourself with caring for others and community.', route: ['Self', 'Regulate', 'Relate', 'Contribute'], surface: 'from-rose-50 to-orange-50', border: 'border-rose-200', accent: 'bg-rose-600', text: 'text-rose-900' },
-  'Research Hub': { eyebrow: 'Inquiry cycle', description: 'Follow an idea from a strong question to evidence-based communication.', route: ['Question', 'Investigate', 'Make sense', 'Share'], surface: 'from-amber-50 to-yellow-50', border: 'border-amber-200', accent: 'bg-amber-600', text: 'text-amber-900' },
-  'Studios & Surfaces': { eyebrow: 'Creative toolkit', description: 'Open flexible spaces for making, organizing, presenting, and reflecting.', route: ['Create', 'Organize', 'Present', 'Reflect'], surface: 'from-fuchsia-50 to-purple-50', border: 'border-fuchsia-200', accent: 'bg-fuchsia-600', text: 'text-fuchsia-900' },
+  'Documents & Literacy': { eyebrow: 'Learning-resource flow', description: 'Turn source material into clear, supported, accessible resources.', route: ['Source', 'Adapt', 'Support', 'Share'], surface: 'from-indigo-50 to-violet-50', border: 'border-indigo-200', accent: 'bg-indigo-600', text: 'text-indigo-900', launchLabel: 'Open Document Builder', launchQuery: 'document builder' },
+  'STEM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-600', text: 'text-sky-900', launchLabel: 'Open STEM Lab', launchQuery: 'stem lab' },
+  'SEL Hub': { eyebrow: 'Growth map', description: 'Connect understanding yourself with caring for others and community.', route: ['Self', 'Regulate', 'Relate', 'Contribute'], surface: 'from-rose-50 to-orange-50', border: 'border-rose-200', accent: 'bg-rose-600', text: 'text-rose-900', launchLabel: 'Open SEL Hub', launchQuery: 'sel hub' },
+  'Research Hub': { eyebrow: 'Inquiry cycle', description: 'Follow an idea from a strong question to evidence-based communication.', route: ['Question', 'Investigate', 'Make sense', 'Share'], surface: 'from-amber-50 to-yellow-50', border: 'border-amber-200', accent: 'bg-amber-600', text: 'text-amber-900', launchLabel: 'Open Research Hub', launchQuery: 'research hub' },
+  'Studios & Surfaces': { eyebrow: 'Creative toolkit', description: 'Open flexible spaces for making, organizing, presenting, and reflecting.', route: ['Create', 'Organize', 'Present', 'Reflect'], surface: 'from-fuchsia-50 to-purple-50', border: 'border-fuchsia-200', accent: 'bg-fuchsia-600', text: 'text-fuchsia-900', launchLabel: 'Open Educator Hub', launchQuery: 'educator hub' },
 };
 
 const ATLAS_DEFAULT_VISUAL = {
@@ -822,7 +841,7 @@ function getAtlasAreaDescription(areaName, toolCount) {
     ['open from anywhere', 'Launch flexible studios and supports from across the app.'],
   ];
   const match = descriptions.find(([keyword]) => area.includes(keyword));
-  return match ? match[1] : 'Explore ' + toolCount + ' tools and learning experiences in this area.';
+  return match ? match[1] : 'Explore ' + toolCount + ' catalog entries and learning experiences in this area.';
 }
 
 function getAtlasAreaLens(areaName) {
@@ -966,13 +985,13 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
             </span>
           </span>
           <span className="shrink-0 text-[10px] font-bold text-slate-500 bg-white border border-slate-200 rounded-full px-1.5 py-0.5">
-            {countText}
+            {countText} entries
           </span>
         </span>
       </summary>
       <div className="px-3 pb-3 pt-1 border-t border-slate-200/80">
-        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2">Tools in this area</p>
-        <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' tools'}>
+        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2">Catalog entries in this area</p>
+        <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' catalog entries'}>
           {cat.tools.map((tool, i) => (
             <span role="listitem" key={tool + i} className="text-[10px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
               <AtlasHighlight text={tool} query={query} />
@@ -984,12 +1003,12 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
   );
 }
 
-// One hub: its semantic route followed by richer area cards and the complete
-// generated tool directory. Large hubs remain collapsed until requested.
-function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query }) {
+// One hub: its semantic route followed by richer area cards and the generated
+// catalog directory. Large hubs remain collapsed until requested.
+function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLaunch }) {
   const catCount = hub.categories ? hub.categories.length : 0;
   const visual = ATLAS_HUB_VISUALS[hub.hub] || ATLAS_DEFAULT_VISUAL;
-  const resultLabel = hub.total + (hub.total === 1 ? ' match' : ' matches');
+  const resultLabel = hub.total + (hub.total === 1 ? ' matching entry' : ' matching entries');
   return (
     <details
       id={atlasHubId(hub.hub)}
@@ -1003,14 +1022,31 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query }) {
         <span className="min-w-0 flex-1">
           <span className="font-bold text-slate-800 text-sm block"><AtlasHighlight text={hub.hub} query={query} /></span>
           <span className="text-[11px] text-slate-500 font-normal leading-snug block mt-0.5"><AtlasHighlight text={visual.description} query={query} /></span>
+          <span className="text-[9px] font-bold text-slate-400 leading-snug block mt-1"><AtlasHighlight text={hub.sourceLabel || 'Curated product index'} query={query} /></span>
         </span>
         <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">
-          {isFiltered ? resultLabel : hub.total + (catCount > 1 ? ' / ' + catCount + ' areas' : '')}
+          {isFiltered ? resultLabel : hub.total + ' entries' + (catCount > 1 ? ' / ' + catCount + ' areas' : '')}
         </span>
-        <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform text-xs">&gt;</span>
+        <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform motion-reduce:transition-none text-xs">&gt;</span>
       </summary>
       <div className="px-4 pb-4 pt-0 space-y-4">
         <AtlasHubRoute hub={hub} visual={visual} />
+        {visual.launchQuery && onLaunch && (
+          <div className={'flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border ' + visual.border + ' bg-white p-3 shadow-sm'}>
+            <div>
+              <p className="text-xs font-black text-slate-800">Continue into the live workspace</p>
+              <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">Uses the shared command palette so mode, permissions, and panel stacking stay respected.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onLaunch(visual.launchQuery)}
+              aria-label={visual.launchLabel + ' using the command palette'}
+              className={'min-h-11 shrink-0 rounded-lg px-4 py-2 text-xs font-black text-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 ' + visual.accent}
+            >
+              {visual.launchLabel} <span aria-hidden="true">&rarr;</span>
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {(hub.categories || []).map((cat, index) => {
             const areaIndex = Number.isInteger(cat.atlasIndex) ? cat.atlasIndex : index;
@@ -1037,7 +1073,7 @@ function AtlasLandscape({ hubs, onChooseHub }) {
       <div className="relative z-10 text-center">
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Whole-app overview</p>
         <h5 id="atlas-landscape-title" className="text-sm font-black text-slate-900 mt-0.5">Choose a region of AlloFlow</h5>
-        <p className="text-[11px] text-slate-500 mt-1">Each region opens into areas, then the complete tool directory.</p>
+        <p className="text-[11px] text-slate-500 mt-1">Each region opens into areas, then searchable catalog entries.</p>
         <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1.5 mt-3 shadow-sm">
           <span aria-hidden="true">+</span>
           <span className="text-xs font-black tracking-wide">AlloFlow</span>
@@ -1058,23 +1094,56 @@ function AtlasLandscape({ hubs, onChooseHub }) {
               key={hub.hub}
               type="button"
               aria-controls={atlasHubId(hub.hub)}
-              aria-label={hub.hub + ': ' + hub.total + ' tools across ' + catCount + ' ' + (catCount === 1 ? 'area' : 'areas') + '. Open directory.'}
+              aria-label={hub.hub + ': ' + hub.total + ' catalog entries across ' + catCount + ' ' + (catCount === 1 ? 'area' : 'areas') + '. ' + (hub.sourceLabel || 'Curated product index') + '. Open directory.'}
               onClick={() => onChooseHub(hub.hub)}
-              className={'min-h-11 text-left rounded-xl border ' + visual.border + ' bg-gradient-to-br ' + visual.surface + ' p-3 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (isLastOdd ? 'sm:col-span-2 sm:w-[calc(50%-0.3125rem)] sm:justify-self-center' : '')}
+              className={'min-h-11 text-left rounded-xl border ' + visual.border + ' bg-gradient-to-br ' + visual.surface + ' p-3 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (isLastOdd ? 'sm:col-span-2 sm:w-[calc(50%-0.3125rem)] sm:justify-self-center' : '')}
             >
               <span className="flex items-start gap-2.5">
                 <span className="text-xl leading-none" aria-hidden="true">{hub.icon}</span>
                 <span className="min-w-0 flex-1">
                   <span className={'block text-xs font-black ' + visual.text}>{hub.hub}</span>
                   <span className="block text-[10px] leading-snug text-slate-600 mt-0.5">{visual.eyebrow}</span>
+                  <span className="block text-[9px] font-bold text-slate-500 mt-1">{hub.sourceKind === 'registry' ? 'Registry-backed' : 'Curated / mixed index'}</span>
                 </span>
-                <span className="shrink-0 text-[10px] font-black text-slate-600 bg-white/80 rounded-full px-1.5 py-0.5 border border-white">{hub.total}</span>
+                <span className="shrink-0 text-[10px] font-black text-slate-600 bg-white/80 rounded-full px-1.5 py-0.5 border border-white">{hub.total} entries</span>
               </span>
             </button>
           );
         })}
       </div>
     </section>
+  );
+}
+
+function AtlasScopeNote({ hubs }) {
+  const registryHubs = hubs.filter((hub) => hub.sourceKind === 'registry');
+  const curatedHubs = hubs.filter((hub) => hub.sourceKind !== 'registry');
+
+  return (
+    <aside aria-labelledby="atlas-scope-title" className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+        <div>
+          <h5 id="atlas-scope-title" className="text-xs font-black text-slate-800">How this map stays trustworthy</h5>
+          <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">The map labels automated registry data separately from indexes that require editorial review.</p>
+        </div>
+        <span className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-500">
+          {registryHubs.length} registry-backed / {curatedHubs.length} curated or mixed
+        </span>
+      </div>
+      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+        <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 p-3">
+          <dt className="text-[10px] font-black text-emerald-800">Registry-backed</dt>
+          <dd className="text-[10px] leading-relaxed text-slate-600 mt-0.5">{registryHubs.map((hub) => hub.hub).join(' • ')}</dd>
+        </div>
+        <div className="rounded-lg border border-amber-100 bg-amber-50/70 p-3">
+          <dt className="text-[10px] font-black text-amber-800">Curated or mixed</dt>
+          <dd className="text-[10px] leading-relaxed text-slate-600 mt-0.5">{curatedHubs.map((hub) => hub.hub).join(' • ')}</dd>
+        </div>
+      </dl>
+      <p className="text-[10px] leading-relaxed text-slate-500 mt-2">
+        Counts represent searchable catalog entries—not necessarily unique tools. A surface can appear in more than one product grouping.
+      </p>
+    </aside>
   );
 }
 
@@ -1142,7 +1211,7 @@ function AtlasJourneys({ onChooseHub }) {
 
 // The Atlas tab combines a compact visual landscape with the canonical,
 // generated directory. The map never becomes the only way to reach content.
-function AtlasTab({ t }) {
+function AtlasTab({ t, onRequestClose }) {
   const firstHub = ATLAS_HUBS[0]?.hub;
   const [openHubs, setOpenHubs] = React.useState(() => new Set(firstHub ? [firstHub] : []));
   const [atlasQuery, setAtlasQuery] = React.useState('');
@@ -1151,10 +1220,10 @@ function AtlasTab({ t }) {
   const normalizedQuery = atlasQuery.trim();
   const isSearching = normalizedQuery.length > 0;
   const visibleHubs = React.useMemo(() => filterAtlasHubs(normalizedQuery), [normalizedQuery]);
-  const totalTools = React.useMemo(() => ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0), []);
+  const totalEntries = React.useMemo(() => ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0), []);
   const totalAreas = React.useMemo(() => ATLAS_HUBS.reduce((sum, hub) => sum + (hub.categories || []).length, 0), []);
   const resultStats = React.useMemo(() => ({
-    tools: visibleHubs.reduce((sum, hub) => sum + hub.total, 0),
+    entries: visibleHubs.reduce((sum, hub) => sum + hub.total, 0),
     areas: visibleHubs.reduce((sum, hub) => sum + (hub.categories || []).length, 0),
   }), [visibleHubs]);
 
@@ -1210,6 +1279,19 @@ function AtlasTab({ t }) {
     });
   };
 
+  const launchHub = (query) => {
+    const safeQuery = String(query || '').trim().slice(0, 160);
+    if (!safeQuery) return;
+    if (typeof onRequestClose === 'function') onRequestClose();
+    window.requestAnimationFrame(() => {
+      try {
+        window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette', {
+          detail: { query: safeQuery, source: 'atlas' },
+        }));
+      } catch (_) {}
+    });
+  };
+
   const clearSearch = () => setAtlasQuery('');
 
   const expandVisibleHubs = () => {
@@ -1236,7 +1318,7 @@ function AtlasTab({ t }) {
           {t('about.atlas_title') || 'The AlloFlow Atlas'}
         </h4>
         <p className="text-sm leading-relaxed text-slate-700">
-          {t('about.atlas_intro') || 'A map of everything inside AlloFlow, by hub. Choose a region for its visual guide, areas, and complete tool directory.'}
+          {t('about.atlas_intro') || 'A structured map of AlloFlow’s cataloged hubs and launch surfaces. Choose a region for its visual guide, areas, searchable entries, and source notes.'}
         </p>
       </div>
 
@@ -1262,6 +1344,7 @@ function AtlasTab({ t }) {
       {atlasView === 'overview' ? (
         <>
           <AtlasLandscape hubs={ATLAS_HUBS} onChooseHub={chooseHub} />
+          <AtlasScopeNote hubs={ATLAS_HUBS} />
           <AtlasJourneys onChooseHub={chooseHub} />
           <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 text-center">
             <p className="text-xs text-slate-600">Ready to find a specific area or tool?</p>
@@ -1283,7 +1366,7 @@ function AtlasTab({ t }) {
                 <p className="text-[10px] text-slate-500 mt-0.5">Search hub names, area purposes, or individual tools.</p>
               </div>
               <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
-                {totalTools} tools / {totalAreas} areas
+                {totalEntries} entries / {totalAreas} areas
               </span>
             </div>
             <div className="relative">
@@ -1317,15 +1400,15 @@ function AtlasTab({ t }) {
             </div>
             <p id="atlas-search-status" role="status" aria-live="polite" className="text-[10px] text-slate-500 mt-2">
               {isSearching
-                ? (resultStats.tools
-                  ? resultStats.tools + (resultStats.tools === 1 ? ' matching tool' : ' matching tools') + ' across ' + resultStats.areas + (resultStats.areas === 1 ? ' area.' : ' areas.')
+                ? (resultStats.entries
+                  ? resultStats.entries + (resultStats.entries === 1 ? ' matching catalog entry' : ' matching catalog entries') + ' across ' + resultStats.areas + (resultStats.areas === 1 ? ' area.' : ' areas.')
                   : 'No Atlas matches found.')
-                : 'Browse the full directory or search to narrow it.'}
+                : 'Browse the current directory or search to narrow it.'}
             </p>
           </section>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-            <h5 id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Complete directory</h5>
+            <h5 id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Catalog directory</h5>
             <div role="group" aria-label="Atlas hub visibility" className="flex flex-wrap gap-1.5">
               <button
                 type="button"
@@ -1358,6 +1441,7 @@ function AtlasTab({ t }) {
                     cardRef={(node) => { hubRefs.current[hub.hub] = node; }}
                     isFiltered={isSearching}
                     query={normalizedQuery}
+                    onLaunch={launchHub}
                   />
                 ))}
               </div>
@@ -1380,7 +1464,7 @@ function AtlasTab({ t }) {
       )}
 
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.atlas_footer') || 'This directory is generated from AlloFlow\'s live tool catalogs, so counts and names stay current. New tools appear here automatically as they ship.'}
+        {t('about.atlas_footer') || 'Registry-backed sections are generated from current catalogs; curated and mixed sections are labeled in the map. Counts are searchable catalog entries, not unique-tool totals. An automated freshness check flags generated-data drift.'}
       </p>
     </div>
   );
@@ -1394,101 +1478,111 @@ function PrivacyTab({ t }) {
   const ShieldCheck = window.ShieldCheck || noop;
   const Wifi = window.Wifi || noop;
   const Cloud = window.Cloud || noop;
+  const Database = window.Database || window.HardDrive || noop;
+
+  const dataPaths = [
+    {
+      icon: Wifi,
+      tone: 'emerald',
+      title: 'Authoring & saved work',
+      body: (
+        <>
+          Core authoring and saved activities use this device&apos;s browser storage by default. Optional cloud history changes that location. In embedded or temporary browser environments, local storage may not persist, so downloaded project files remain the portable copy.
+        </>
+      ),
+    },
+    {
+      icon: Database,
+      tone: 'blue',
+      title: 'Class sharing & submissions',
+      body: (
+        <>
+          The location depends on the transport selected for the session: Desktop LAN and local preview keep session traffic on the device or local network; Firebase demo or bring-your-own Firebase uses the configured Firebase project; Class Mailbox sends packs and submission JSON through the teacher&apos;s Apps Script and stores submissions in the teacher-owned Google Drive until the teacher deletes them. A district server applies only when separately deployed and configured.
+        </>
+      ),
+    },
+    {
+      icon: Cloud,
+      tone: 'amber',
+      title: 'AI, speech & media',
+      body: (
+        <>
+          Local engines can process text and optional speech on the device after their models are downloaded. Hosted providers—such as Gemini, OpenAI, Claude, or a custom OpenAI-compatible endpoint—receive the prompt and only the text, image, or audio needed for the feature. The configured provider&apos;s terms, retention, logging, and age/use rules apply.
+        </>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-4 text-slate-700">
       <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
         <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
-          <ShieldCheck size={18} />
+          <ShieldCheck size={18} aria-hidden="true" />
           {t('about.privacy_title') || 'Privacy & student data'}
         </h4>
         <p className="text-sm leading-relaxed text-slate-700">
-          {t('about.privacy_intro') || 'AlloFlow is built to support FERPA-conscious classrooms. Here is where data goes so your school can make its own determination.'}
+          {t('about.privacy_intro') || 'AlloFlow is designed for privacy-conscious classroom use. Data location depends on the storage, session transport, and AI provider you choose; this map helps your school review each path.'}
         </p>
       </div>
 
-      <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
-        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
-          <Wifi size={16} className="text-emerald-600" /> Stays on your device by default
-        </h5>
-        <p className="text-xs text-slate-600 leading-relaxed">
-          Student work — documents, saved activities, and progress — is stored locally on your device (in your browser), not on an AlloFlow server. Two features are the exception, and both are opt-in: a teacher can turn on <strong>cloud sync</strong> to back up their own history to Google Firebase, and <strong>live class sessions</strong> sync session state to Firebase while a session is running. No AlloFlow account or student login is required to use the tools.
-        </p>
-      </div>
-
-      <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
-        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
-          <ShieldCheck size={16} className="text-emerald-600" /> Fully on-device: the School Box
-        </h5>
-        <p className="text-xs text-slate-600 leading-relaxed">
-          The offline <strong>School Box</strong> desktop app runs text-to-speech, speech-to-text, and its AI model entirely on the machine — so nothing has to leave the building. (The models download once during setup, then work offline.)
-        </p>
-      </div>
-
-      <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-100">
-        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
-          <Cloud size={16} className="text-amber-600" /> When you use online AI: Google&apos;s Gemini
-        </h5>
-        <p className="text-xs text-slate-600 leading-relaxed mb-3">
-          AlloFlow has no AI server of its own. When you use an online AI feature (leveling, translation, tutors, or image/audio analysis), the request goes to <strong>Google&apos;s Gemini</strong> to generate the result. AI runs only when you choose it — never silently — and what&apos;s sent is the relevant text, plus an image (e.g. a scanned page) or a short audio clip for a few features. <strong>How that data is governed depends on how you&apos;re running AlloFlow:</strong>
-        </p>
-
-        <div className="bg-white/70 rounded-lg border border-amber-100 p-3 mb-2">
-          <p className="text-xs font-bold text-slate-800 mb-1">Inside Gemini Canvas (the usual way)</p>
-          <p className="text-xs text-slate-600 leading-relaxed mb-1.5">
-            Google&apos;s Canvas environment supplies the key automatically — you never enter one — and the request runs under your signed-in Google account, so the data is governed by <strong>your account type</strong>:
-          </p>
-          <ul className="space-y-1.5 text-xs text-slate-600 list-none">
-            <li className="flex items-start gap-2"><span className="text-emerald-600 font-bold shrink-0">•</span><span>A <strong>Google Workspace for Education</strong> account whose institution has enabled Gemini as a core service (under its Google Workspace terms / DPA): the Gemini app — Canvas included — carries enterprise protections. Prompts and files <strong>aren&apos;t used to train Google&apos;s models and aren&apos;t reviewed by humans</strong>, and Google acts as a FERPA &ldquo;School Official.&rdquo; Confirm your edition and coverage with your Workspace admin.</span></li>
-            <li className="flex items-start gap-2"><span className="text-amber-600 font-bold shrink-0">•</span><span>A <strong>personal</strong> Google account: consumer Gemini terms apply and data may be retained or reviewed per those terms — <strong>not appropriate for student data</strong>.</span></li>
-          </ul>
+      <section aria-labelledby="privacy-data-paths-heading">
+        <h5 id="privacy-data-paths-heading" className="font-bold text-slate-800 text-sm mb-2">Where information can go</h5>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {dataPaths.map(({ icon: Icon, tone, title, body }) => (
+            <div key={title} className={`rounded-xl border p-4 ${tone === 'emerald' ? 'bg-emerald-50/60 border-emerald-100' : tone === 'blue' ? 'bg-blue-50/60 border-blue-100' : 'bg-amber-50/60 border-amber-100'}`}>
+              <h6 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+                <Icon size={16} className={tone === 'emerald' ? 'text-emerald-600' : tone === 'blue' ? 'text-blue-600' : 'text-amber-600'} aria-hidden="true" />
+                {title}
+              </h6>
+              <p className="text-xs text-slate-600 leading-relaxed">{body}</p>
+            </div>
+          ))}
         </div>
+      </section>
 
-        <div className="bg-white/70 rounded-lg border border-amber-100 p-3">
-          <p className="text-xs font-bold text-slate-800 mb-1">Self-hosted web app or the Desktop School Box (your own key)</p>
-          <p className="text-xs text-slate-600 leading-relaxed mb-1.5">
-            The Desktop School Box runs AI on-device by default. If instead you add your own Gemini API key for cloud features (also how a self-hosted web copy works), the data is governed by the <strong>key&apos;s tier</strong>:
-          </p>
-          <ul className="space-y-1.5 text-xs text-slate-600 list-none">
-            <li className="flex items-start gap-2"><span className="text-emerald-600 font-bold shrink-0">•</span><span>A <strong>paid</strong> key (billed Google Cloud project): prompts and responses are <strong>not</strong> used to improve Google&apos;s products; enterprise protections, with optional zero-data-retention.</span></li>
-            <li className="flex items-start gap-2"><span className="text-amber-600 font-bold shrink-0">•</span><span>A <strong>free / unpaid</strong> key: Google may use the data to improve its products and human reviewers may read it; its terms say don&apos;t submit personal info — <strong>not appropriate for student data</strong>.</span></li>
-          </ul>
-          <p className="text-xs text-slate-600 leading-relaxed mt-2 pt-2 border-t border-amber-100/70">
-            For student data, a paid key alone isn&apos;t enough for FERPA — paid stops the training, but the key also has to belong to your <strong>school or district&apos;s own Google account under a Data Processing Addendum</strong> (so Google is acting as your institution&apos;s processor, its FERPA &ldquo;School Official&rdquo;), not a teacher&apos;s personal key. That can be a Workspace for Education account or the district&apos;s own Google Cloud project — it doesn&apos;t have to be an <em>Education</em> account specifically, but it does have to be the <em>institution&apos;s</em>.
-          </p>
+      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <h5 className="font-bold text-slate-800 text-sm mb-2">Choose the data path deliberately</h5>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+          <div className="rounded-lg bg-white border border-slate-200 p-3">
+            <strong className="block text-slate-800 mb-1">For fully local operation</strong>
+            Select a local AI engine and a Desktop LAN or local-preview session. Finish model downloads before going offline, and leave external search, cloud sync, hosted media, and cloud AI features off.
+          </div>
+          <div className="rounded-lg bg-white border border-slate-200 p-3">
+            <strong className="block text-slate-800 mb-1">When using hosted services</strong>
+            Use an institution-approved account, endpoint, project, and data-processing agreement where required. A paid plan alone does not establish school approval or legal compliance.
+          </div>
         </div>
-
-        <p className="text-xs text-slate-600 leading-relaxed mt-2">
-          <strong>Either way, avoid typing student names or identifying details into prompts you don&apos;t need to.</strong>
-        </p>
       </div>
 
       <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-        <h5 className="font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2">
-          <span aria-hidden="true">✅</span> Before using online AI with student data, check with your IT / district
+        <h5 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
+          <span aria-hidden="true">✓</span> Before using student information
         </h5>
-        <ul className="space-y-1.5 text-xs text-slate-700 list-none mb-2.5">
-          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">1.</span><span>Have staff sign in with <strong>Google Workspace for Education</strong> accounts — not personal Google accounts — when using AI in Canvas.</span></li>
-          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">2.</span><span>Confirm your district has <strong>enabled Gemini as a core service</strong> and accepted the Google Workspace terms / <strong>DPA</strong> that cover it (your Workspace admin can verify Canvas is included).</span></li>
-          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">3.</span><span>For the self-hosted web or Desktop version, use a paid Gemini API key from the <strong>district&apos;s own Google account under your DPA</strong> — not a personal key (free <em>or</em> paid).</span></li>
-        </ul>
+        <ol className="space-y-1.5 text-xs text-slate-700 list-none mb-3">
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">1.</span><span>Open AI settings and identify the active provider and endpoint: local or hosted.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">2.</span><span>Open class-session settings and identify the transport, storage location, access controls, and deletion/retention process.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">3.</span><span>Confirm institutional approval, provider age/use restrictions, and applicable agreements with your privacy or IT administrator.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">4.</span><span>Minimize names and other identifying details, then review generated output before sharing it.</span></li>
+        </ol>
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium">
-          <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Gemini API terms &amp; data use ↗</a>
-          <a href="https://cloud.google.com/security/compliance/ferpa" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Google Cloud &amp; FERPA ↗</a>
-          <a href="https://edu.google.com/intl/ALL_us/ai/gemini-for-education/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Gemini for Education ↗</a>
+          <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Gemini API terms ↗</a>
+          <a href="https://edu.google.com/ai/gemini-for-education/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Gemini for Education ↗</a>
+          <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">OpenAI API data controls ↗</a>
+          <a href="https://privacy.anthropic.com/en/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Anthropic privacy center ↗</a>
         </div>
       </div>
 
       <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-        <h5 className="font-bold text-slate-800 text-sm mb-1.5">Our commitments</h5>
+        <h5 className="font-bold text-slate-800 text-sm mb-1.5">AlloFlow commitments</h5>
         <ul className="space-y-1.5 text-xs text-slate-700 list-none">
-          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>AlloFlow itself doesn&apos;t sell data, show ads, or build advertising profiles, and adds no analytics or tracking scripts.</span></li>
-          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>No AlloFlow account or student login is required to use the tools.</span></li>
-          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>For fully in-building data handling, use the offline School Box.</span></li>
+          <li className="flex items-start gap-2"><span aria-hidden="true" className="text-indigo-500 font-bold shrink-0">✓</span><span>AlloFlow does not sell data, show ads, or build advertising profiles, and it does not add advertising-analytics or profiling scripts.</span></li>
+          <li className="flex items-start gap-2"><span aria-hidden="true" className="text-indigo-500 font-bold shrink-0">✓</span><span>No separate AlloFlow username and password is required for core tools; an optional session transport may create temporary technical credentials.</span></li>
+          <li className="flex items-start gap-2"><span aria-hidden="true" className="text-indigo-500 font-bold shrink-0">✓</span><span>Third-party providers may keep operational or abuse-prevention logs under their own policies, so review the current terms for every service you enable.</span></li>
         </ul>
       </div>
 
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.privacy_footer') || 'This is a plain-language summary, not legal advice, and does not describe Google’s services on Google’s behalf. Your district remains responsible for its own FERPA determination and any agreements with Google. Questions? Get in touch.'}
+        {t('about.privacy_footer') || 'This is a plain-language product summary, not legal advice or a compliance certification. Your institution remains responsible for its FERPA and privacy determinations, provider agreements, configuration, consent, retention, and deletion practices. Provider terms can change; review the linked current policies.'}
       </p>
     </div>
   );
@@ -1504,13 +1598,13 @@ function AccessibilityNote({ t }) {
         {t('about.a11y_title') || 'Accessibility'}
       </h5>
       <p className="text-xs text-slate-600 leading-relaxed mb-2">
-        {t('about.a11y_intro') || 'Accessibility isn’t a feature here — it’s the whole point. AlloFlow is designed toward WCAG 2.1 AA (a target, not a certification). We run automated accessibility checks with axe-core on the interface, and axe-core plus IBM Equal Access on the documents we generate, then independently validate the exported PDFs against PDF/UA-1 (ISO 14289-1) with veraPDF.'}
+        {t('about.a11y_intro') || 'Accessibility isn’t a feature here — it’s the whole point. AlloFlow is designed toward WCAG 2.2 AA (a target, not a certification). Automated axe-core and IBM Equal Access checks are available in relevant interface and document workflows. The PDF pipeline can run veraPDF validation against PDF/UA-1 (ISO 14289-1); AlloFlow withholds a conformance claim unless the available checks support it.'}
       </p>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700 list-none">
-        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Dyslexia-friendly &amp; low-vision font options (OpenDyslexic, Atkinson Hyperlegible, Lexend)</span></li>
-        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Text-to-speech and read-aloud throughout</span></li>
-        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Keyboard navigation and screen-reader labels</span></li>
-        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Braille (.brf) export — Grade 1, with contracted UEB Grade 2 where available — plus tagged PDF/UA export</span></li>
+        <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Dyslexia-friendly &amp; low-vision font options (OpenDyslexic, Atkinson Hyperlegible, Lexend)</span></li>
+        <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Text-to-speech and read-aloud across core reading and content views</span></li>
+        <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Keyboard navigation and screen-reader labels</span></li>
+        <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Braille (.brf) export — Grade 1, with contracted UEB Grade 2 where available — plus tagged PDF/UA export</span></li>
       </ul>
       <p className="text-[10px] text-slate-400 leading-relaxed mt-2">
         {t('about.a11y_footer') || 'Found a barrier? Tell us — accessibility bugs jump the queue.'}
@@ -1544,8 +1638,6 @@ function InfoModal({
   const RefreshCw = window.RefreshCw || noop;
   const Sparkles = window.Sparkles || noop;
   const Users = window.Users || noop;
-  const Play = window.Play || noop;
-  const Video = window.Video || window.Film || noop;
   const ArrowLeft = window.ArrowLeft || noop;
   // Feature-tab icon map
   const Search = window.Search || noop;
@@ -1572,8 +1664,8 @@ function InfoModal({
   const FileQuestion = window.FileQuestion || noop;
   const MessageCircleQuestion = window.MessageCircleQuestion || noop;
 
-  const [activeVideo, setActiveVideo] = React.useState('teacher');
   const [selectedFeature, setSelectedFeature] = React.useState(null);
+  const [featureQuery, setFeatureQuery] = React.useState('');
   const featureBackRef = React.useRef(null);
   const featureReturnFocusRef = React.useRef(null);
   const featureDetailsWereOpenRef = React.useRef(false);
@@ -1589,11 +1681,23 @@ function InfoModal({
 
   const closeFeatureDetails = () => setSelectedFeature(null);
 
+  const openCommandPaletteFromInfo = (query = '', source = 'about') => {
+    const safeQuery = String(query || '').trim().slice(0, 160);
+    handleSetShowInfoModalToFalse();
+    window.requestAnimationFrame(() => {
+      try {
+        window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette', {
+          detail: { query: safeQuery, source },
+        }));
+      } catch (_) {}
+    });
+  };
+
   React.useEffect(() => {
     if (selectedFeature) {
       featureDetailsWereOpenRef.current = true;
       const frame = window.requestAnimationFrame(() => featureBackRef.current?.focus());
-      return () => window.cancelAnimationFrame(frame);
+  return () => window.cancelAnimationFrame(frame);
     }
     if (!featureDetailsWereOpenRef.current) return undefined;
     featureDetailsWereOpenRef.current = false;
@@ -1605,28 +1709,75 @@ function InfoModal({
   }, [selectedFeature]);
 
   const dialogRef = React.useRef(null);
+  const tabListRef = React.useRef(null);
+  const panelRef = React.useRef(null);
+  const closeHandlerRef = React.useRef(handleSetShowInfoModalToFalse);
+  closeHandlerRef.current = handleSetShowInfoModalToFalse;
+
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
+
     const previousFocus = document.activeElement;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const body = document.body;
+    const previousBodyOverflow = body?.style.overflow || '';
+    if (body) body.style.overflow = 'hidden';
+
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== dialog) {
+        if (ancestor.matches?.('details:not([open])')) {
+          const directSummary = ancestor.querySelector(':scope > summary');
+          if (element !== directSummary) return false;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      return true;
+    });
+
     (getFocusable()[0] || dialog).focus();
+
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); handleSetShowInfoModalToFalse(); return; }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeHandlerRef.current?.();
+        return;
+      }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
-      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     dialog.addEventListener('keydown', onKeyDown);
     return () => {
       dialog.removeEventListener('keydown', onKeyDown);
+      if (body) body.style.overflow = previousBodyOverflow;
       if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, [handleSetShowInfoModalToFalse]);
+  }, []);
+
+  React.useEffect(() => {
+    const panel = panelRef.current;
+    if (panel) panel.scrollTop = 0;
+    const activeTab = tabListRef.current?.querySelector('[role="tab"][aria-selected="true"]');
+    activeTab?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [infoModalTab, selectedFeature]);
 
   const handleTabKeyDown = (event) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -1656,51 +1807,78 @@ function InfoModal({
     slate: 'bg-slate-50 border-slate-200 text-slate-700',
   };
 
+  const featuresList = t('about.features_list', { returnObjects: true });
+  const rawFeatureItems = Array.isArray(featuresList?.items) ? featuresList.items : [];
+  const stemCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === 'STEM Lab')?.total || 0;
+  const selCatalogCount = ATLAS_HUBS.find((hub) => hub.hub === 'SEL Hub')?.total || 0;
+  const featureCatalogItems = rawFeatureItems.map((feature) => {
+    if (feature?.icon === 'Layers' && feature?.category === 'platform') {
+      return { ...feature, desc: `Explore ${stemCatalogCount} current STEM catalog entries across math, science, computing, engineering, life skills, and creative design.` };
+    }
+    if (feature?.icon === 'Heart' && feature?.category === 'activities') {
+      return { ...feature, desc: `Explore ${selCatalogCount} current SEL catalog entries across CASEL competencies, identity, civic learning, hope, relationships, and wellbeing.` };
+    }
+    return feature;
+  });
+  const normalizedFeatureQuery = featureQuery.trim().toLocaleLowerCase();
+  const visibleFeatureItems = normalizedFeatureQuery
+    ? featureCatalogItems.filter((feature) => {
+        const categoryName = featuresList?.categories?.[feature.category] || feature.category || '';
+        return [feature.title, feature.desc, categoryName].some((value) => String(value || '').toLocaleLowerCase().includes(normalizedFeatureQuery));
+      })
+    : featureCatalogItems;
+
   return (
-    <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse}>
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="info-modal-title" onClick={e => e.stopPropagation()}>
-        <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
-          <h3 id="info-modal-title" className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
-          <button onClick={handleSetShowInfoModalToFalse} className="p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
+    <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" onClick={handleSetShowInfoModalToFalse}>
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="info-modal-title" aria-describedby="info-modal-description" onClick={e => e.stopPropagation()}>
+        <p id="info-modal-description" className="sr-only">Explore AlloFlow’s approach, catalog map, guided workflows, privacy data paths, and open-source credits.</p>
+        <div className="bg-indigo-700 px-4 py-3 sm:p-4 text-white flex justify-between items-center gap-3 shrink-0">
+          <h3 id="info-modal-title" className="min-w-0 font-bold text-lg leading-tight flex items-center gap-2"><Layers size={20} className="shrink-0" aria-hidden="true"/> {t('about.title')}</h3>
+          <button type="button" onClick={handleSetShowInfoModalToFalse} className="min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
         </div>
-        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto" role="tablist" aria-label={t('about.title')}>
+        <div ref={tabListRef} className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-2" role="tablist" aria-orientation="horizontal" aria-label={t('about.title')}>
           <button
+            type="button"
             id="info-tab-about" role="tab" aria-selected={infoModalTab === 'about'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'about' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToAbout}
-            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`shrink-0 sm:flex-1 min-w-[7rem] sm:min-w-0 min-h-11 whitespace-nowrap px-3 py-3 text-sm font-bold transition-colors motion-reduce:transition-none border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_about')}
           </button>
           <button
+            type="button"
             id="info-tab-atlas" role="tab" aria-selected={infoModalTab === 'atlas'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'atlas' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToAtlas}
-            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'atlas' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`shrink-0 sm:flex-1 min-w-[7rem] sm:min-w-0 min-h-11 whitespace-nowrap px-3 py-3 text-sm font-bold transition-colors motion-reduce:transition-none border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 ${infoModalTab === 'atlas' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_atlas') || 'Atlas'}
           </button>
           <button
+            type="button"
             id="info-tab-features" role="tab" aria-selected={infoModalTab === 'features'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'features' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToFeatures}
-            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`shrink-0 sm:flex-1 min-w-[7rem] sm:min-w-0 min-h-11 whitespace-nowrap px-3 py-3 text-sm font-bold transition-colors motion-reduce:transition-none border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_features')}
           </button>
           <button
+            type="button"
             id="info-tab-privacy" role="tab" aria-selected={infoModalTab === 'privacy'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'privacy' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToPrivacy}
-            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'privacy' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`shrink-0 sm:flex-1 min-w-[7rem] sm:min-w-0 min-h-11 whitespace-nowrap px-3 py-3 text-sm font-bold transition-colors motion-reduce:transition-none border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 ${infoModalTab === 'privacy' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_privacy') || 'Privacy'}
           </button>
           <button
+            type="button"
             id="info-tab-opensource" role="tab" aria-selected={infoModalTab === 'opensource'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'opensource' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToOpenSource}
-            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`shrink-0 sm:flex-1 min-w-[7rem] sm:min-w-0 min-h-11 whitespace-nowrap px-3 py-3 text-sm font-bold transition-colors motion-reduce:transition-none border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_opensource') || 'Open Source'}
           </button>
         </div>
-        <div id="info-modal-panel" role="tabpanel" aria-labelledby={`info-tab-${infoModalTab}`} tabIndex={0} className="p-6 overflow-y-auto custom-scrollbar focus:outline-none">
+        <div ref={panelRef} id="info-modal-panel" role="tabpanel" aria-labelledby={`info-tab-${infoModalTab}`} tabIndex={0} className="flex-1 min-h-0 p-4 sm:p-6 overflow-y-auto overscroll-contain custom-scrollbar focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
           {infoModalTab === 'about' ? (
             <div className="space-y-4 text-slate-700">
               <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
@@ -1717,42 +1895,36 @@ function InfoModal({
                 </ul>
               </div>
 
-              {/* Video Walkthrough Player Section */}
-              <div className="bg-slate-900 rounded-xl p-4 border border-slate-700 text-white mt-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
-                  <h5 className="font-bold text-sm flex items-center gap-2">
-                    <Video size={16} className="text-indigo-400 shrink-0"/> Video Walkthroughs
-                  </h5>
-                  <div className="flex bg-slate-800 rounded-lg p-0.5 text-xs self-stretch sm:self-auto">
-                    <button
-                      onClick={() => setActiveVideo('teacher')}
-                      className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors ${activeVideo === 'teacher' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                    >
-                      Teacher Guide
-                    </button>
-                    <button
-                      onClick={() => setActiveVideo('family')}
-                      className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors ${activeVideo === 'family' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
-                    >
-                      Family Guide
-                    </button>
+              {/* In-app quick start — replaces unbundled video assets with live navigation. */}
+              <section className="bg-slate-900 rounded-xl p-4 border border-slate-700 text-white mt-4" aria-labelledby="about-start-heading">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-3">
+                  <div>
+                    <h5 id="about-start-heading" className="font-bold text-sm">Start here</h5>
+                    <p className="text-xs text-slate-300 mt-0.5">Use the live product map and guided workflows—nothing here can drift into a broken walkthrough.</p>
                   </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+                    {ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0)} current catalog entries
+                  </span>
                 </div>
-                <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-slate-800 relative">
-                  <video
-                    key={activeVideo}
-                    src={activeVideo === 'teacher' ? '/alloflow_intro_teacher.mp4' : '/alloflow_intro_family.mp4'}
-                    controls
-                    className="w-full h-full object-contain"
-                    preload="metadata"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button type="button" onClick={handleSetInfoModalTabToAtlas} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <span className="flex items-center gap-2 text-sm font-bold"><Layers size={16} className="text-indigo-300" aria-hidden="true" /> Map the platform</span>
+                    <span className="block text-[11px] text-slate-300 mt-1">Explore major regions, area maps, searchable entries, and source notes.</span>
+                  </button>
+                  <button type="button" onClick={handleSetInfoModalTabToFeatures} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <span className="flex items-center gap-2 text-sm font-bold"><Sparkles size={16} className="text-indigo-300" aria-hidden="true" /> Browse guided workflows</span>
+                    <span className="block text-[11px] text-slate-300 mt-1">See inputs, processing steps, outputs, and practical tips.</span>
+                  </button>
+                  <button type="button" onClick={handleSetInfoModalTabToPrivacy} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <span className="flex items-center gap-2 text-sm font-bold"><ShieldCheck size={16} className="text-indigo-300" aria-hidden="true" /> Review data paths</span>
+                    <span className="block text-[11px] text-slate-300 mt-1">Compare local, classroom-session, and hosted-service choices.</span>
+                  </button>
+                  <button type="button" onClick={() => openCommandPaletteFromInfo('', 'about')} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <span className="flex items-center gap-2 text-sm font-bold"><Search size={16} className="text-indigo-300" aria-hidden="true" /> Find any tool</span>
+                    <span className="block text-[11px] text-slate-300 mt-1">Open the command palette and search the live app.</span>
+                  </button>
                 </div>
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                  {activeVideo === 'teacher'
-                    ? "Learn how educators can use AlloFlow's automated differentiation engine, custom rubrics, and multimodal lesson packs to personalize instruction."
-                    : "Discover how families learn together using interactive Choose-Your-Own-Adventure roleplays, vocabulary pictionary, and gamified challenges."}
-                </p>
-              </div>
+              </section>
 
               <div>
                 <h4 className="font-bold text-indigo-900 mb-1">{t('about.what_is_udl')}</h4>
@@ -1770,7 +1942,7 @@ function InfoModal({
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="bg-emerald-100 p-1.5 rounded-lg text-emerald-700 shrink-0">
-                          <BookOpen size={18} />
+                          <BookOpen size={18} aria-hidden="true" />
                         </div>
                         <h5 className="font-bold text-slate-800 text-sm">{t('about.rep_title') || "Representation:"}</h5>
                       </div>
@@ -1779,20 +1951,20 @@ function InfoModal({
                       </p>
                       <ul className="space-y-1.5 text-[11px] text-slate-700 pl-1 list-none">
                         <li className="flex items-start gap-1.5">
-                          <span className="text-emerald-600 font-bold shrink-0">✓</span>
-                          <span><strong>Leveled Texts:</strong> Adjust reading level K-12</span>
+                          <span aria-hidden="true" className="text-emerald-600 font-bold shrink-0">✓</span>
+                          <span><strong>Leveled Texts:</strong> Adjust complexity from kindergarten through college</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-emerald-600 font-bold shrink-0">✓</span>
-                          <span><strong>Translation:</strong> Side-by-side (10+ languages)</span>
+                          <span aria-hidden="true" className="text-emerald-600 font-bold shrink-0">✓</span>
+                          <span><strong>Translation:</strong> Side-by-side multilingual views</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-emerald-600 font-bold shrink-0">✓</span>
                           <span><strong>Immersive Reader:</strong> Font focus & dyslexia mode</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-emerald-600 font-bold shrink-0">✓</span>
-                          <span><strong>Audio Narration:</strong> High-quality text-to-speech</span>
+                          <span aria-hidden="true" className="text-emerald-600 font-bold shrink-0">✓</span>
+                          <span><strong>Read-aloud:</strong> Text-to-speech in supported reading views</span>
                         </li>
                       </ul>
                     </div>
@@ -1806,7 +1978,7 @@ function InfoModal({
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="bg-teal-100 p-1.5 rounded-lg text-teal-700 shrink-0">
-                          <CheckSquare size={18} />
+                          <CheckSquare size={18} aria-hidden="true" />
                         </div>
                         <h5 className="font-bold text-slate-800 text-sm">{t('about.action_title') || "Action & Expression:"}</h5>
                       </div>
@@ -1815,19 +1987,19 @@ function InfoModal({
                       </p>
                       <ul className="space-y-1.5 text-[11px] text-slate-700 pl-1 list-none">
                         <li className="flex items-start gap-1.5">
-                          <span className="text-teal-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span>
                           <span><strong>Interactive Games:</strong> Sorting, matching, puzzles</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-teal-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span>
                           <span><strong>Writing Scaffolds:</strong> Sentence frames & starters</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-teal-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span>
                           <span><strong>Rubric Builder:</strong> Co-created dynamic criteria</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-teal-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span>
                           <span><strong>Oral Fluency:</strong> Audio record with WCPM checks</span>
                         </li>
                       </ul>
@@ -1842,7 +2014,7 @@ function InfoModal({
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="bg-amber-100 p-1.5 rounded-lg text-amber-700 shrink-0">
-                          <Heart size={18} />
+                          <Heart size={18} aria-hidden="true" />
                         </div>
                         <h5 className="font-bold text-slate-800 text-sm">{t('about.engage_title') || "Engagement:"}</h5>
                       </div>
@@ -1851,19 +2023,19 @@ function InfoModal({
                       </p>
                       <ul className="space-y-1.5 text-[11px] text-slate-700 pl-1 list-none">
                         <li className="flex items-start gap-1.5">
-                          <span className="text-amber-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-amber-600 font-bold shrink-0">✓</span>
                           <span><strong>Adventure Mode:</strong> DM roleplay simulations</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-amber-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-amber-600 font-bold shrink-0">✓</span>
                           <span><strong>Interviews:</strong> Chat with historical figures</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-amber-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-amber-600 font-bold shrink-0">✓</span>
                           <span><strong>Interest-weaving:</strong> Embed student interests</span>
                         </li>
                         <li className="flex items-start gap-1.5">
-                          <span className="text-amber-600 font-bold shrink-0">✓</span>
+                          <span aria-hidden="true" className="text-amber-600 font-bold shrink-0">✓</span>
                           <span><strong>Socratic Tutor:</strong> Scaffolding chatbot guides</span>
                         </li>
                       </ul>
@@ -1877,34 +2049,35 @@ function InfoModal({
               <div className="bg-slate-50 p-3 rounded border border-slate-400 text-xs text-slate-600 italic text-center space-y-2">
                 <p>{t('about.ai_guide_tip')}</p>
                 <div className="border-t border-slate-200 pt-2">
-                  <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 transition-colors">
-                    {t('about.cast_link_text')} <ArrowRight size={10}/>
+                  <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer" className="min-h-11 rounded-lg px-3 py-2 text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                    {t('about.cast_link_text')} <ArrowRight size={10} aria-hidden="true"/>
                   </a>
                 </div>
                 <div className="border-t border-slate-200 pt-2 mt-2">
                   <button
+                    type="button"
                     aria-label={t('common.refresh')}
                     onClick={() => {
                       safeRemoveItem('allo_wizard_completed');
                       setShowWizard(true);
                       setShowInfoModal(false);
                     }}
-                    className="text-slate-600 hover:text-indigo-600 font-bold transition-colors flex items-center justify-center gap-1 mx-auto"
+                    className="min-h-11 rounded-lg px-3 py-2 text-slate-600 hover:text-indigo-600 font-bold transition-colors motion-reduce:transition-none flex items-center justify-center gap-1 mx-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                   >
-                    <RefreshCw size={10} /> {t('about.reset_wizard')}
+                    <RefreshCw size={10} aria-hidden="true" /> {t('about.reset_wizard')}
                   </button>
                 </div>
               </div>
               <AccessibilityNote t={t} />
             </div>
           ) : infoModalTab === 'atlas' ? (
-            <AtlasTab t={t} />
+            <AtlasTab t={t} onRequestClose={handleSetShowInfoModalToFalse} />
           ) : infoModalTab === 'privacy' ? (
             <PrivacyTab t={t} />
           ) : infoModalTab === 'opensource' ? (
             <OpenSourceTab t={t} />
           ) : selectedFeature ? (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700">
+            <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700">
               {/* Back Button */}
               <button
                 ref={featureBackRef}
@@ -1928,7 +2101,7 @@ function InfoModal({
                       'Mic': Mic, 'Download': Download, 'Clock': Clock,
                       'Gamepad2': Gamepad2, 'Ear': Ear, 'FileQuestion': FileQuestion,
                       'MessageCircleQuestion': MessageCircleQuestion, 'Users': Users
-                    }[selectedFeature.icon] || Sparkles, { size: 24 })}
+                    }[selectedFeature.icon] || Sparkles, { size: 24, 'aria-hidden': true })}
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider opacity-75 block">
@@ -1940,10 +2113,18 @@ function InfoModal({
                 <p className="text-sm leading-relaxed opacity-95 mt-2">{selectedFeature.desc}</p>
               </div>
 
+              <button
+                type="button"
+                onClick={() => openCommandPaletteFromInfo(selectedFeature.title, 'feature-guide')}
+                className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+              >
+                <Search size={16} aria-hidden="true" /> Find this in AlloFlow
+              </button>
+
               {/* Visual Flowchart */}
               <div className="space-y-3">
                 <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                  <Sparkles size={16} className="text-indigo-500"/> Tool Integration Flowchart
+                  <Sparkles size={16} className="text-indigo-500" aria-hidden="true"/> How this workflow fits
                 </h5>
                 
                 {(() => {
@@ -1964,14 +2145,14 @@ function InfoModal({
                         </div>
 
                         {/* Arrow 1 */}
-                        <div className="flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
+                        <div aria-hidden="true" className="flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
                           ➔
                         </div>
 
                         {/* AlloFlow Engine Block */}
                         <div className="flex-1 bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm">
                           <h6 className="font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            ⚙️ AlloFlow AI Engine
+                            ⚙️ AlloFlow workflow
                           </h6>
                            <ul className="space-y-1.5 text-xs text-indigo-900 list-disc pl-4">
                              {fDetails.engine.map((item, idx) => (
@@ -1981,7 +2162,7 @@ function InfoModal({
                         </div>
 
                         {/* Arrow 2 */}
-                        <div className="flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
+                        <div aria-hidden="true" className="flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
                           ➔
                         </div>
 
@@ -2015,7 +2196,7 @@ function InfoModal({
 
                       {/* Pro Tip Box */}
                       <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 flex gap-2.5">
-                        <span className="text-xl leading-none select-none">💡</span>
+                        <span aria-hidden="true" className="text-xl leading-none select-none">💡</span>
                         <div>
                           <strong className="text-xs uppercase tracking-wider font-extrabold block mb-0.5">Pro Tip</strong>
                           <p className="text-xs leading-relaxed">{fDetails.proTip}</p>
@@ -2027,11 +2208,53 @@ function InfoModal({
               </div>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-6">
+              <section className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4" aria-labelledby="feature-guide-heading">
+                <div>
+                  <h4 id="feature-guide-heading" className="font-bold text-indigo-900">Feature Guide</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                    {featureCatalogItems.length} curated workflow guides are available in the current interface language. Atlas is the broader current product map of {ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0)} catalog entries.
+                  </p>
+                </div>
+                <button type="button" onClick={handleSetInfoModalTabToAtlas} className="min-h-11 mt-3 sm:mt-0 shrink-0 inline-flex items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+                  <Layers size={15} aria-hidden="true" /> Open complete Atlas
+                </button>
+              </section>
+
+              <div role="search" aria-label="Search the Feature Guide" className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <label htmlFor="feature-guide-search" className="block text-xs font-bold text-slate-700 mb-1.5">Search guided workflows</label>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
+                    <input
+                      id="feature-guide-search"
+                      type="search"
+                      value={featureQuery}
+                      onChange={(event) => setFeatureQuery(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape' && featureQuery) {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          setFeatureQuery('');
+                        }
+                      }}
+                      placeholder="Search by feature, category, or purpose…"
+                      className="w-full min-h-11 rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  {featureQuery && (
+                    <button type="button" onClick={() => setFeatureQuery('')} className="min-h-11 rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <p role="status" aria-live="polite" className="text-[11px] text-slate-500 mt-1.5">
+                  Showing {visibleFeatureItems.length} of {featureCatalogItems.length} guides
+                </p>
+              </div>
+
               {['creation', 'activities', 'assessment', 'platform'].map(catKey => {
-                const featuresList = t('about.features_list', { returnObjects: true });
-                const allItems = featuresList?.items || [];
-                const categoryItems = allItems.filter(i => i.category === catKey);
+                const categoryItems = visibleFeatureItems.filter((item) => item.category === catKey);
                 const categoryTitle = featuresList?.categories?.[catKey] || catKey;
                 if (categoryItems.length === 0) return null;
                 return (
@@ -2056,7 +2279,7 @@ function InfoModal({
                         return (
                           <button
                             type="button"
-                            key={idx}
+                            key={feature.title || idx}
                             onClick={(event) => openFeatureDetails(feature, categoryTitle, event.currentTarget)}
                             className={`w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`}
                           >
@@ -2071,8 +2294,19 @@ function InfoModal({
                   </div>
                 );
               })}
+
+              {visibleFeatureItems.length === 0 && (
+                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                  <p className="text-sm font-bold text-slate-700">No guided workflows match “{featureQuery.trim()}”.</p>
+                  <p className="text-xs text-slate-500 mt-1">Clear the search or use Atlas for the complete directory.</p>
+                  <button type="button" onClick={() => setFeatureQuery('')} className="min-h-11 mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+                    Clear search
+                  </button>
+                </div>
+              )}
+
               <div className="bg-indigo-50 p-3 rounded border border-indigo-100 text-xs text-indigo-800 mt-2">
-                <strong>{t('tips.pro_tip_label')}</strong> Use the <span className="font-bold"><Users size={12} className="inline"/> {t('profiles.title')}</span> feature to save settings (Grade, Language, Interests) for different groups.
+                <strong>{t('tips.pro_tip_label')}</strong> Use the <span className="font-bold"><Users size={12} className="inline" aria-hidden="true"/> {t('profiles.title')}</span> feature to save settings (Grade, Language, Interests) for different groups.
               </div>
             </div>
           )}
@@ -2084,7 +2318,7 @@ function InfoModal({
 
 /**
  * Helper function containing flowchart, inputs/outputs, and pro-tips
- * details for all 24 AlloFlow tools.
+ * details for the current curated Feature Guide entries.
  */
 function getFeatureDetails(title) {
   const details = {
@@ -2099,7 +2333,7 @@ function getFeatureDetails(title) {
       inputs: ["Passage text / Topic", "Target Grade Level (K-12 / College)", "Optional student interest", "Target language selection"],
       engine: ["Lexile-aligned content simplification", "Socio-cultural interest weaving", "Side-by-side translation alignment"],
       outputs: ["Simplified reading passage", "Multilingual side-by-side view", "Interest-themed analogies"],
-      customizations: ["Select Grade Level (K-12)", "Weave custom interest (e.g. sports, gaming)", "Target language"],
+      customizations: ["Select complexity level (K-12 / College)", "Weave custom interest (e.g. sports, gaming)", "Target language"],
       proTip: "Use interest weaving to make highly abstract topics (like physics) relate directly to student hobbies."
     },
     "Lesson Plan": {
@@ -2300,14 +2534,14 @@ function getFeatureDetails(title) {
     },
     "SEL Hub": {
       inputs: ["Student situation / context", "Optional teacher facilitation prompts"],
-      engine: ["32-tool registry across CASEL competencies + Civic & Hope", "Multi-turn role-play rehearsal in 5 tools", "Defense-in-depth safety pipeline (pre-flight regex + 2 AI assessors + 1 confirmation)", "Auto-routing of safety flags to staff"],
+      engine: ["Live catalog across CASEL competencies, Civic, Hope, and additional practice areas", "Multi-turn role-play rehearsal in 5 tools", "Defense-in-depth safety pipeline (pre-flight regex + 2 AI assessors + 1 confirmation)", "Auto-routing of safety flags to staff"],
       outputs: ["Interactive SEL activities + journals", "Safety-flagged escalations to staff", "Generated role-play scenes with break-character coach", "End-of-session reflection prompts"],
-      customizations: ["Tool selection from 32 options", "Safety threshold tuning", "Teacher visibility settings", "Custom scenarios"],
+      customizations: ["Tool selection from the current catalog", "Safety threshold tuning", "Teacher visibility settings", "Custom scenarios"],
       proTip: "The safety pipeline filters concerning free-text BEFORE any AI sees it — students get private rehearsal space while staff still receive alerts on real-risk content."
     },
     "BehaviorLens": {
       inputs: ["Natural-language observation OR structured ABC entry", "Student profile / referral context", "Intervention history"],
-      engine: ["Quick-Fill AI structures observations into Antecedent–Behavior–Consequence", "Function hypothesis generation", "IOA calculator with 5 reliability methods", "Preference assessment matrices (MSWO, Paired, Free Operant)"],
+      engine: ["Quick-Fill AI structures observations into Antecedent–Behavior–Consequence", "Function hypothesis generation", "IOA calculator with 6 reliability methods", "Preference assessment matrices (MSWO, Paired, Free Operant)"],
       outputs: ["Structured ABC log", "Function hypothesis report", "Frequency / interval / scatterplot charts", "Intervention plan templates (DRO, token economy, FCT, BIP, de-escalation)", "Restorative-language transformations"],
       customizations: ["Person-first language toggle", "Restorative-language pass", "Template library selection", "One-click export to Report Writer"],
       proTip: "Use Quick-Fill to type observations naturally — the AI auto-structures them, saving 5–10 minutes per ABC entry over manual coding."
@@ -2336,9 +2570,9 @@ function getFeatureDetails(title) {
     "PDF Accessibility": {
       inputs: ["PDF / image / DOCX / PPTX file", "Optional teacher remediation prompt", "Brand / theme preferences"],
       engine: ["Up to 10-auditor triangulated AI audit with stakeholder-perspective variants (screen-reader user, Section 508, JAWS/NVDA tester, etc.)", "Statistical agreement analysis (ICC-like + Cronbach-like, honestly named as pragmatic hybrids)", "Vision API remediation pass + surgical AI fixes + deterministic WCAG closures (form labels, complex tables, ARIA, lang)", "axe-core 4.10 verification + Tesseract.js OCR fallback for scanned/encrypted PDFs", "Self-healing auto-fix loop with regression-revert and SEM-based plateau detection"],
-      outputs: ["WCAG-AA remediated HTML", "Accessible PDF export", "Audio version", "Audit report card with auditor agreement scores", "Diff view (original vs remediated)"],
+      outputs: ["Reviewable remediated HTML", "Tagged PDF export with available validation results", "Audio version", "Audit report card with auditor agreement scores", "Diff view (original vs remediated)"],
       customizations: ["Theme + brand colors", "Image alt-text generation", "Batch upload mode", "Re-run specific auditor passes"],
-      proTip: "Batch-upload your district's worksheet library overnight — the pipeline produces WCAG-AA versions while you sleep."
+      proTip: "Use the audit and diff views to review each remediation before publishing; automated checks do not replace keyboard, screen-reader, and human content review."
     },
     "Symbol Studio": {
       inputs: ["Vocabulary list / target concept", "Student communication profile", "Board layout preference"],
@@ -2348,10 +2582,10 @@ function getFeatureDetails(title) {
       proTip: "Word Garden's wish-seed button (💫) captures the moment a student reaches for a word that isn't on their board — invaluable data for next-board planning."
     },
     "STEM Lab": {
-      inputs: ["Tool selection from 115+ simulations across 16 subject areas", "Optional grade + standards filters"],
-      engine: ["Dynamically lazy-loaded per-tool plugin (Cloudflare Pages CDN)", "Per-tool state persistence", "Theme-aware rendering shell"],
+      inputs: ["Tool selection from the live STEM catalog across 16 subject areas", "Optional grade + standards filters"],
+      engine: ["Dynamically lazy-loaded per-tool module", "Per-tool state persistence where supported", "Theme-aware rendering shell"],
       outputs: ["Interactive math labs (Fraction Lab, Algebra Solver, Geometry Sandbox, Calculus Visualizer, Graphing Calculator)", "Life science (Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Dissection Lab, Ecosystem, Dino Lab)", "Earth/Space (Plate Tectonics, Solar System, Moon Mission, Universe Time-Lapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration Lab)", "Open-source shelves (Data Lab, Sim Shelf, Circuit Shelf, Molecule Shelf, Zoom Gallery, Timeline Studio)", "CS, life-skills/CTE, creative design, and social-studies tools"],
-      customizations: ["115+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
+      customizations: ["Tool-specific configurations", "Some tools support multi-student saved worlds", "Print/export where supported"],
       proTip: "Open STEM Lab from the Educator Hub and search by keyword — the catalog filters to tools matching your current lesson topic in real time."
     },
     "DBQ Generator": {
@@ -2406,7 +2640,7 @@ function getFeatureDetails(title) {
     "Whiteboard": {
       inputs: ["A blank canvas or an imported image"],
       engine: ["Excalidraw infinite canvas", "Hand-drawn-style shapes", "Export to image"],
-      outputs: ["Diagrams, sketches, and brainstorms", "Exportable board images", "Shared visual space"],
+      outputs: ["Diagrams, sketches, and brainstorms", "Exportable board images", "Private device-local visual workspace"],
       customizations: ["Shapes, arrows, freehand, and text", "Color and stroke styles", "Export selection or full board"],
       proTip: "Sketch a concept map live while you teach, then export the board as an image and drop it straight into a lesson pack."
     },

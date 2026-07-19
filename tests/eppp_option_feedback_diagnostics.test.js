@@ -21,6 +21,18 @@ describe('EPPP incorrect-option feedback diagnostics', () => {
     expect(report.previousWave).toEqual(report.waves['eppp-native-quality-wave-06']);
     expect(report.latestWave).toEqual(report.waves['eppp-option-feedback-wave-07']);
     expect(report.activeWave).toEqual(report.waves['eppp-option-feedback-wave-08']);
+    expect(report.mostRecentWave).toEqual(report.waves['eppp-option-feedback-wave-10']);
+    expect(report.latestReviewWave).toBe('eppp-option-feedback-wave-10');
+    expect(report.summary).toMatchObject({
+      itemsWithWarnings: 1405,
+      incorrectOptionsWithWarnings: 4066,
+      insufficientDetailOptions: 1481,
+      genericTemplateOptions: 2522,
+      choiceRestatementOptions: 1809,
+      fullKeyEchoOptions: 1538,
+      wave10IncorrectOptions: 48,
+      wave10OptionsWithWarnings: 0,
+    });
   });
 
   it('confirms all 24 wave-05 incorrect explanations clear the feedback heuristics', () => {
@@ -30,6 +42,16 @@ describe('EPPP incorrect-option feedback diagnostics', () => {
     expect(wave.status).toBe('pass');
     expect(wave.findings).toEqual([]);
     expect(wave.incorrectOptions).toBe(24);
+    expect(wave.optionsWithWarnings).toBe(0);
+  });
+
+  it('confirms all 48 wave-10 incorrect explanations clear the feedback heuristics', () => {
+    const report = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+    const wave = report.waves['eppp-option-feedback-wave-10'];
+    expect(wave.ids).toHaveLength(16);
+    expect(wave.status).toBe('pass');
+    expect(wave.findings).toEqual([]);
+    expect(wave.incorrectOptions).toBe(48);
     expect(wave.optionsWithWarnings).toBe(0);
   });
 });

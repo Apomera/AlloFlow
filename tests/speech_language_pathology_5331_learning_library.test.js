@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
+const nodeRequire = createRequire(import.meta.url);
+const { findResponseFormIssue } = nodeRequire('../dev-tools/speech_language_pathology_5331/semantic_response_form_gate.cjs');
 const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
 const library = JSON.parse(read('test_prep/speech_language_pathology_5331_learning_library.json'));
 const pack = JSON.parse(read('test_prep/speech_language_pathology_5331_pack.json'));
@@ -32,6 +35,20 @@ describe('Praxis Speech-Language Pathology 5331 native learning library', () => 
     }
   });
 
+  it('keeps the four source-propagated swallowing checks semantically responsive', () => {
+    const sourceIdByCheck = new Map([
+      ['slp5331-ch-08-check-02', 'slp5331-b1-061'],
+      ['slp5331-ch-08-check-03', 'slp5331-b1-062'],
+      ['slp5331-ch-08-check-05', 'slp5331-b1-064'],
+      ['slp5331-ch-12-check-02', 'slp5331-b1-094'],
+    ]);
+    const checks = library.chapters.flatMap((chapter) => chapter.knowledgeChecks);
+    for (const [checkId, sourceId] of sourceIdByCheck) {
+      const check = checks.find((entry) => entry.id === checkId);
+      expect(check).toBeTruthy();
+      expect(findResponseFormIssue({ ...check, id: sourceId })).toBe('');
+    }
+  });
   it('links all 200 questions to exactly one category-compatible skill and chapter', () => {
     const skillById = Object.fromEntries(library.skills.map((skill) => [skill.id, skill]));
     const chapterById = Object.fromEntries(library.chapters.map((chapter) => [chapter.id, chapter]));

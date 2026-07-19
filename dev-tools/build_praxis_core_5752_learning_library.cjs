@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const path = require('path');
 const itemBanks = require('./praxis_core_5752/item_content.cjs');
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs, workshops: workshopSpecs } = require('./praxis_core_5752/learning_content.cjs');
@@ -111,6 +112,6 @@ for (const target of [
   path.join(root, 'prismflow-deploy', 'public', 'test_prep', 'praxis_core_5752_learning_library.json'),
 ]) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, output, 'utf8');
+  writeGeneratedFile(target, output, 'utf8');
 }
 console.log('Built Praxis Core 5752 learning library: 12 chapters, 48 sections, 60 checks, 75 flashcards, 20 memory aids, and 8 essay workshops.');

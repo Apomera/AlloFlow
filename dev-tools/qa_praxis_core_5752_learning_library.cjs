@@ -42,6 +42,8 @@ for (const workshop of library.constructedResponseWorkshops || []) {
 
 const taskTypes = (library.constructedResponseWorkshops || []).reduce((counts, workshop) => { counts[workshop.taskType] = (counts[workshop.taskType] || 0) + 1; return counts; }, {});
 if (taskTypes['Argumentative Essay'] !== 4 || taskTypes['Informative/Explanatory Source-Based Essay'] !== 4) add('workshop-balance', 'The library must include four argumentative and four source-based workshops.');
+const equationCheck = (library.chapters || []).flatMap((chapter) => chapter.knowledgeChecks || []).find((check) => check.id === 'core5752-ch-11-check-01');
+if (!equationCheck || !/3x = 18/i.test(equationCheck.rationale || '') || /5x = 30/i.test(equationCheck.rationale || '')) add('check-accuracy', 'The 3x + 7 = 25 knowledge check must explain only its own equation.', 'core5752-ch-11-check-01');
 const packSkillIds = new Set(pack.items.flatMap((item) => item.skillIds || []));
 const packChapterIds = new Set(pack.items.flatMap((item) => item.chapterIds || []));
 if (packSkillIds.size !== 12 || packChapterIds.size !== 12 || [...packSkillIds].some((id) => !skillById.has(id)) || [...packChapterIds].some((id) => !chapterById.has(id))) add('pack-linkage', 'Pack does not link across all 12 skills and chapters.');
