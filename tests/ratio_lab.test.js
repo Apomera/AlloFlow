@@ -47,10 +47,40 @@ describe('Ratios, Rates & Proportions Lab', () => {
       valid: false, proportional: false,
     });
 
+    expect(pure.percentSegmentFills(35)).toEqual([1, 1, 1, 0.5, 0, 0, 0, 0, 0, 0]);
+    expect(pure.percentSegmentFills(24.5)).toEqual([1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0]);
+    expect(pure.percentTapeModel(235)).toMatchObject({
+      percent: 235,
+      wholeCount: 2,
+      remainderPercent: 35,
+      totalTapeCount: 3,
+      hiddenWholeCount: 0,
+    });
+    expect(pure.percentTapeModel(235).tapes.map((tape) => tape.percent)).toEqual([100, 100, 35]);
+    expect(pure.percentTapeSummary(pure.percentTapeModel(235))).toBe('235% equals 2 complete wholes plus 35% of another whole.');
+
     const explorer = tool.questHooks.find((hook) => hook.id === 'ratio_explorer');
     const challenger = tool.questHooks.find((hook) => hook.id === 'ratio_challenger');
     expect(explorer.progress({ modesVisited: { ratioTable: true, bogus: true } })).toBe('1/5 modes');
     expect(challenger.progress({ solvedChallenges: { bogus: true } })).toBe('0/5 solved');
+  });
+
+  it('renders exact fractional percent fills and multiple wholes above 100%', () => {
+    loadTool(FILE, ID);
+    const fractional = renderTool(ID, { _ratioLab: { mode: 'percent', percentValue: 24.5, percentWhole: 80 } });
+    expect(fractional).toContain('24.5% fills 24.5% of one whole');
+    expect(fractional).toContain('data-tape-percent="24.5"');
+    expect(fractional).toContain('data-fill-fraction="0.45"');
+    expect(fractional).toContain('The next section is 45% filled, representing 4.5% of the whole');
+    expect(fractional).not.toContain('rounded up visually');
+
+    const multiWhole = renderTool(ID, { _ratioLab: { mode: 'percent', percentValue: 235, percentWhole: 80 } });
+    expect(multiWhole).toContain('235% equals 2 complete wholes plus 35% of another whole');
+    expect(multiWhole).toContain('data-percent-tape-count="3"');
+    expect(multiWhole.match(/data-percent-tape="/g)).toHaveLength(3);
+    expect(multiWhole).toContain('Whole 3 percent tape: 35% filled');
+    expect(multiWhole).toContain('data-fill-fraction="0.5"');
+    expect(multiWhole).toContain('aria-labelledby="ratio-percent-tape-title-2 ratio-percent-tape-desc-2"');
   });
 
   it('renders all five representations without degraded output', () => {

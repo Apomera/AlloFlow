@@ -40,11 +40,28 @@
   var AREA_MODE_IDS = ['explore', 'compare', 'composite', 'investigate', 'challenge'];
   var AREA_TARGET_IDS = ['12', '18', '24', '30', '36'];
   var AREA_METHOD_IDS = ['add', 'subtract'];
-  var AREA_CHALLENGE_IDS = Array.from({ length: 10 }, function(_, index) { return String(index); });
+  var AREA_CHALLENGE_IDS = [
+    'garden-area', 'frame-perimeter', 'missing-length', 'missing-width-perimeter',
+    'l-shape-area', 'equal-area-perimeters', 'missing-width-area', 'rug-trim',
+    'square-side', 'corner-cut-area'
+  ];
 
   function countAllowed(map, allowedIds) {
     map = map || {};
     return allowedIds.filter(function(id) { return !!map[id]; }).length;
+  }
+
+  function normalizeChallengeProgress(map) {
+    map = map || {};
+    var normalized = {};
+    AREA_CHALLENGE_IDS.forEach(function(id, index) {
+      if (map[id] || map[String(index)]) normalized[id] = true;
+    });
+    return normalized;
+  }
+
+  function challengeProgressCount(map) {
+    return countAllowed(normalizeChallengeProgress(map), AREA_CHALLENGE_IDS);
   }
 
   function clampInteger(value, min, max) {
@@ -108,7 +125,10 @@
     rectangleMetrics: rectangleMetrics,
     compositeMetrics: compositeMetrics,
     factorPairs: factorPairs,
-    isCorrectNumericAnswer: isCorrectNumericAnswer
+    isCorrectNumericAnswer: isCorrectNumericAnswer,
+    normalizeChallengeProgress: normalizeChallengeProgress,
+    challengeProgressCount: challengeProgressCount,
+    challengeIds: Object.freeze(AREA_CHALLENGE_IDS.slice())
   });
 
   window.StemLab.registerTool('areaPerimeter', {
@@ -136,8 +156,8 @@
         id: 'challenge_five',
         label: 'Solve 5 deterministic challenges',
         icon: '\uD83C\uDFC5',
-        check: function(data) { return countAllowed(questData(data).solvedChallenges, AREA_CHALLENGE_IDS) >= 5; },
-        progress: function(data) { return Math.min(countAllowed(questData(data).solvedChallenges, AREA_CHALLENGE_IDS), 5) + '/5 solved'; }
+        check: function(data) { return challengeProgressCount(questData(data).solvedChallenges) >= 5; },
+        progress: function(data) { return Math.min(challengeProgressCount(questData(data).solvedChallenges), 5) + '/5 solved'; }
       },
       {
         id: 'same_area_three',
@@ -216,7 +236,6 @@
       var challengeIndex = 0;
       var answer = state.answer == null ? '' : String(state.answer);
       var revealedTiles = state.revealedTiles || {};
-      var score = state.score || { correct: 0, attempts: 0 };
 
       var rectangle = rectangleMetrics(width, height);
       var comparison = rectangleMetrics(compareWidth, compareHeight);
@@ -248,18 +267,21 @@
       if (!MODES.some(function(item) { return item.id === mode; })) mode = 'explore';
 
       var CHALLENGES = [
-        { prompt: 'A rectangular garden is 7 m long and 4 m wide. What is its area?', answer: 28, unit: 'm\u00B2', kind: 'rect', w: 7, h: 4, find: 'Area', explanation: 'Area = length \u00D7 width = 7 \u00D7 4 = 28 m\u00B2.' },
-        { prompt: 'A picture frame is 9 cm long and 3 cm wide. What is its perimeter?', answer: 24, unit: 'cm', kind: 'rect', w: 9, h: 3, find: 'Perimeter', explanation: 'Perimeter = 2(9 + 3) = 24 cm.' },
-        { prompt: 'A rectangle has area 48 ft\u00B2 and width 6 ft. What is its missing length?', answer: 8, unit: 'ft', kind: 'missing', w: 6, h: 8, missing: 'length', missingAxis: 'h', find: 'Missing length', explanation: 'Missing length = area \u00F7 width = 48 \u00F7 6 = 8 ft.' },
-        { prompt: 'A rectangle has perimeter 30 yd and length 9 yd. What is its missing width?', answer: 6, unit: 'yd', kind: 'missing', w: 9, h: 6, missing: 'width', missingAxis: 'h', find: 'Missing width', explanation: '30 = 2(9 + w), so 15 = 9 + w and w = 6 yd.' },
-        { prompt: 'An L-shape starts as a 10 by 8 rectangle. A 4 by 3 corner is removed. What is the remaining area?', answer: 68, unit: 'units\u00B2', kind: 'composite', outerW: 10, outerH: 8, cutW: 4, cutH: 3, find: 'Composite area', explanation: 'Whole area 10 \u00D7 8 = 80. Removed area 4 \u00D7 3 = 12. Remaining area = 80 - 12 = 68 units\u00B2.' },
-        { prompt: 'Rectangles 3 by 8 and 4 by 6 have equal area. How much greater is the first perimeter?', answer: 2, unit: 'units', kind: 'compare', w: 3, h: 8, w2: 4, h2: 6, find: 'Perimeter difference', explanation: 'Their perimeters are 22 and 20 units, so the first is 2 units greater.' },
-        { prompt: 'A rectangle has area 63 in\u00B2 and height 7 in. What is its width?', answer: 9, unit: 'in', kind: 'missing', w: 9, h: 7, missing: 'width', missingAxis: 'w', find: 'Missing width', explanation: 'Width = area \u00F7 height = 63 \u00F7 7 = 9 in.' },
-        { prompt: 'A rug is 5 ft by 11 ft. How many feet of trim go around its edge?', answer: 32, unit: 'ft', kind: 'rect', w: 11, h: 5, find: 'Perimeter', explanation: 'Trim follows the perimeter: 2(11 + 5) = 32 ft.' },
-        { prompt: 'A square playground has perimeter 36 m. What is the length of one side?', answer: 9, unit: 'm', kind: 'missing', w: 9, h: 9, missing: 'side', find: 'Side length', explanation: 'A square has four equal sides, so 36 \u00F7 4 = 9 m.' },
-        { prompt: 'A 12 by 7 rectangle loses a 5 by 2 corner. What area remains?', answer: 74, unit: 'units\u00B2', kind: 'composite', outerW: 12, outerH: 7, cutW: 5, cutH: 2, find: 'Composite area', explanation: 'Whole area 84 minus removed area 10 leaves 74 units\u00B2.' }
+        { id: 'garden-area', difficulty: 'foundations', prompt: 'A rectangular garden is 7 m long and 4 m wide. What is its area?', answer: 28, unit: 'm\u00B2', kind: 'rect', w: 7, h: 4, find: 'Area', explanation: 'Area = length \u00D7 width = 7 \u00D7 4 = 28 m\u00B2.' },
+        { id: 'frame-perimeter', difficulty: 'foundations', prompt: 'A picture frame is 9 cm long and 3 cm wide. What is its perimeter?', answer: 24, unit: 'cm', kind: 'rect', w: 9, h: 3, find: 'Perimeter', explanation: 'Perimeter = 2(9 + 3) = 24 cm.' },
+        { id: 'missing-length', difficulty: 'reasoning', prompt: 'A rectangle has area 48 ft\u00B2 and width 6 ft. What is its missing length?', answer: 8, unit: 'ft', kind: 'missing', w: 6, h: 8, missing: 'length', missingAxis: 'h', find: 'Missing length', explanation: 'Missing length = area \u00F7 width = 48 \u00F7 6 = 8 ft.' },
+        { id: 'missing-width-perimeter', difficulty: 'reasoning', prompt: 'A rectangle has perimeter 30 yd and length 9 yd. What is its missing width?', answer: 6, unit: 'yd', kind: 'missing', w: 9, h: 6, missing: 'width', missingAxis: 'h', find: 'Missing width', explanation: '30 = 2(9 + w), so 15 = 9 + w and w = 6 yd.' },
+        { id: 'l-shape-area', difficulty: 'stretch', prompt: 'An L-shape starts as a 10 by 8 rectangle. A 4 by 3 corner is removed. What is the remaining area?', answer: 68, unit: 'units\u00B2', kind: 'composite', outerW: 10, outerH: 8, cutW: 4, cutH: 3, find: 'Composite area', explanation: 'Whole area 10 \u00D7 8 = 80. Removed area 4 \u00D7 3 = 12. Remaining area = 80 - 12 = 68 units\u00B2.' },
+        { id: 'equal-area-perimeters', difficulty: 'stretch', prompt: 'Rectangles 3 by 8 and 4 by 6 have equal area. How much greater is the first perimeter?', answer: 2, unit: 'units', kind: 'compare', w: 3, h: 8, w2: 4, h2: 6, find: 'Perimeter difference', explanation: 'Their perimeters are 22 and 20 units, so the first is 2 units greater.' },
+        { id: 'missing-width-area', difficulty: 'reasoning', prompt: 'A rectangle has area 63 in\u00B2 and height 7 in. What is its width?', answer: 9, unit: 'in', kind: 'missing', w: 9, h: 7, missing: 'width', missingAxis: 'w', find: 'Missing width', explanation: 'Width = area \u00F7 height = 63 \u00F7 7 = 9 in.' },
+        { id: 'rug-trim', difficulty: 'foundations', prompt: 'A rug is 5 ft by 11 ft. How many feet of trim go around its edge?', answer: 32, unit: 'ft', kind: 'rect', w: 11, h: 5, find: 'Perimeter', explanation: 'Trim follows the perimeter: 2(11 + 5) = 32 ft.' },
+        { id: 'square-side', difficulty: 'reasoning', prompt: 'A square playground has perimeter 36 m. What is the length of one side?', answer: 9, unit: 'm', kind: 'missing', w: 9, h: 9, missing: 'side', find: 'Side length', explanation: 'A square has four equal sides, so 36 \u00F7 4 = 9 m.' },
+        { id: 'corner-cut-area', difficulty: 'stretch', prompt: 'A 12 by 7 rectangle loses a 5 by 2 corner. What area remains?', answer: 74, unit: 'units\u00B2', kind: 'composite', outerW: 12, outerH: 7, cutW: 5, cutH: 2, find: 'Composite area', explanation: 'Whole area 84 minus removed area 10 leaves 74 units\u00B2.' }
       ];
-      challengeIndex = clamp(state.challengeIndex == null ? 0 : state.challengeIndex, 0, CHALLENGES.length - 1);
+      var requestedChallengeIndex = clamp(state.challengeIndex == null ? 0 : state.challengeIndex, 0, CHALLENGES.length - 1);
+      var requestedChallengeId = typeof state.challengeId === 'string' ? state.challengeId : '';
+      var stableChallengeIndex = CHALLENGES.findIndex(function(item) { return item.id === requestedChallengeId; });
+      challengeIndex = stableChallengeIndex >= 0 ? stableChallengeIndex : requestedChallengeIndex;
 
       function panel(children, extra) {
         return h('section', Object.assign({
@@ -579,7 +601,7 @@
 
       function challengeSvg(challenge) {
         var elements = [
-          h('title', { key: 'title', id: 'ap-challenge-title' }, 'Diagram for challenge ' + (challengeIndex + 1)),
+          h('title', { key: 'title', id: 'ap-challenge-title' }, challenge.find + ' diagram'),
           h('desc', { key: 'desc', id: 'ap-challenge-desc' }, challenge.prompt)
         ];
         if (challenge.kind === 'composite') {
@@ -781,18 +803,54 @@
       }
 
       function challengeView() {
+        var difficulty = ['foundations', 'reasoning', 'stretch'].indexOf(state.challengeDifficulty) >= 0 ? state.challengeDifficulty : 'all';
+        var difficultyOptions = [
+          { id: 'all', label: 'All levels' },
+          { id: 'foundations', label: 'Foundations' },
+          { id: 'reasoning', label: 'Reasoning' },
+          { id: 'stretch', label: 'Stretch' }
+        ];
+        var visibleIndexes = CHALLENGES.map(function(item, index) { return item.difficulty === difficulty || difficulty === 'all' ? index : -1; }).filter(function(index) { return index >= 0; });
+        if (visibleIndexes.indexOf(challengeIndex) < 0) challengeIndex = visibleIndexes[0];
         var challenge = CHALLENGES[challengeIndex];
+        var challengePosition = visibleIndexes.indexOf(challengeIndex);
         var feedback = state.feedback;
-        var solvedMap = state.solvedChallenges || {};
-        var challengeSolved = !!solvedMap[challengeIndex];
+        var solvedMap = normalizeChallengeProgress(state.solvedChallenges);
+        var missedMap = normalizeChallengeProgress(state.missedChallenges);
+        var challengeSolved = !!solvedMap[challenge.id];
         var submitLocked = challengeSolved;
         var displayedAnswer = challengeSolved ? String(challenge.answer) : answer;
+        var missedIndexes = CHALLENGES.map(function(item, index) { return missedMap[item.id] && !solvedMap[item.id] ? index : -1; }).filter(function(index) { return index >= 0; });
+        var missedCount = missedIndexes.length;
         if (challengeSolved && !feedback) feedback = { correct: true, text: 'Solved previously. ' + challenge.explanation };
 
+        function selectChallenge(nextIndex, nextDifficulty, message) {
+          var nextChallenge = CHALLENGES[nextIndex];
+          patch({ challengeIndex: nextIndex, challengeId: nextChallenge.id, challengeDifficulty: nextDifficulty, answer: '', feedback: null, showHint: false });
+          speak(message || ('Challenge ' + (nextIndex + 1) + ' of ' + CHALLENGES.length + '.'));
+        }
+
         function moveChallenge(direction) {
-          var nextIndex = (challengeIndex + direction + CHALLENGES.length) % CHALLENGES.length;
-          patch({ challengeIndex: nextIndex, answer: '', feedback: null, showHint: false });
-          speak('Challenge ' + (nextIndex + 1) + ' of ' + CHALLENGES.length + '.');
+          var position = visibleIndexes.indexOf(challengeIndex);
+          var nextPosition = (position + direction + visibleIndexes.length) % visibleIndexes.length;
+          var nextIndex = visibleIndexes[nextPosition];
+          selectChallenge(nextIndex, difficulty, 'Challenge ' + (nextPosition + 1) + ' of ' + visibleIndexes.length + ' in this practice focus.');
+        }
+
+        function setDifficulty(nextDifficulty) {
+          if (nextDifficulty === difficulty) return;
+          var eligible = CHALLENGES.map(function(item, index) { return nextDifficulty === 'all' || item.difficulty === nextDifficulty ? index : -1; }).filter(function(index) { return index >= 0; });
+          var nextIndex = eligible.find(function(index) { return !solvedMap[CHALLENGES[index].id]; });
+          if (nextIndex == null) nextIndex = eligible[0];
+          var option = difficultyOptions.find(function(item) { return item.id === nextDifficulty; });
+          selectChallenge(nextIndex, nextDifficulty, (option ? option.label : 'Practice') + ' practice selected.');
+        }
+
+        function retryMissed() {
+          if (!missedIndexes.length) return;
+          var currentMissedPosition = missedIndexes.indexOf(challengeIndex);
+          var nextIndex = missedIndexes[currentMissedPosition < 0 ? 0 : (currentMissedPosition + 1) % missedIndexes.length];
+          selectChallenge(nextIndex, 'all', 'Retrying missed challenge: ' + CHALLENGES[nextIndex].find + '.');
         }
 
         function submit(event) {
@@ -806,15 +864,18 @@
           var correct = isCorrectNumericAnswer(answer, challenge.answer);
           if (correct) {
             submitLocked = true;
-            var firstSolve = !solvedMap[challengeIndex];
+            var firstSolve = !solvedMap[challenge.id];
             patch(function(current) {
-              var nextSolved = Object.assign({}, current.solvedChallenges || {});
-              nextSolved[challengeIndex] = true;
+              var nextSolved = normalizeChallengeProgress(current.solvedChallenges);
+              var nextMissed = normalizeChallengeProgress(current.missedChallenges);
+              nextSolved[challenge.id] = true;
+              delete nextMissed[challenge.id];
               var currentScore = current.score || { correct: 0, attempts: 0 };
               var nextStreak = firstSolve ? (current.streak || 0) + 1 : (current.streak || 0);
               return {
-                score: { correct: countAllowed(nextSolved, AREA_CHALLENGE_IDS), attempts: (currentScore.attempts || 0) + 1 },
+                score: { correct: challengeProgressCount(nextSolved), attempts: (currentScore.attempts || 0) + 1 },
                 solvedChallenges: nextSolved,
+                missedChallenges: nextMissed,
                 streak: nextStreak,
                 bestStreak: Math.max(current.bestStreak || 0, nextStreak),
                 feedback: { correct: true, text: 'Correct! ' + challenge.explanation }
@@ -827,7 +888,9 @@
           } else {
             patch(function(current) {
               var currentScore = current.score || { correct: 0, attempts: 0 };
-              return { score: { correct: currentScore.correct || 0, attempts: (currentScore.attempts || 0) + 1 }, streak: 0, feedback: { correct: false, text: 'Not yet. Check whether the problem asks for inside space, outside distance, or a missing side.' } };
+              var nextMissed = normalizeChallengeProgress(current.missedChallenges);
+              nextMissed[challenge.id] = true;
+              return { score: { correct: challengeProgressCount(current.solvedChallenges), attempts: (currentScore.attempts || 0) + 1 }, missedChallenges: nextMissed, streak: 0, feedback: { correct: false, text: 'Not yet. This challenge is saved for retry. Check whether the problem asks for inside space, outside distance, or a missing side.' } };
             });
           }
         }
@@ -836,14 +899,18 @@
           panel([
             h('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', alignItems: 'center' } }, [
               h('div', { key: 'label' }, [
-                h('div', { key: 'eyebrow', style: { color: COLORS.tealDark, fontWeight: 850, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Deterministic set \u2022 Challenge ' + (challengeIndex + 1) + ' of ' + CHALLENGES.length),
+                h('div', { key: 'eyebrow', style: { color: COLORS.tealDark, fontWeight: 850, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Deterministic set \u2022 ' + challenge.difficulty + ' \u2022 Challenge ' + (challengePosition + 1) + ' of ' + visibleIndexes.length),
                 h('h2', { key: 'h', style: { color: COLORS.text, fontSize: '1.3rem', margin: '5px 0 0' } }, challenge.find)
               ]),
               h('div', { key: 'score', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
-                h('span', { key: 'correct', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.green, fontWeight: 800, border: '1px solid ' + COLORS.border } }, (score.correct || 0) + ' solved'),
-                h('span', { key: 'streak', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.amber, fontWeight: 800, border: '1px solid ' + COLORS.border } }, '\uD83D\uDD25 ' + (state.streak || 0) + ' streak')
+                h('span', { key: 'correct', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.green, fontWeight: 800, border: '1px solid ' + COLORS.border } }, challengeProgressCount(solvedMap) + ' solved'),
+                h('span', { key: 'streak', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.amber, fontWeight: 800, border: '1px solid ' + COLORS.border } }, '\uD83D\uDD25 ' + (state.streak || 0) + ' streak'),
+                missedCount ? h('span', { key: 'missed', style: { padding: '7px 11px', borderRadius: '999px', background: COLORS.panelAlt, color: COLORS.red, fontWeight: 800, border: '1px solid ' + COLORS.border } }, missedCount + ' to retry') : null
               ])
             ]),
+            h('div', { key: 'difficulty', role: 'group', 'aria-label': 'Challenge practice focus', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' } }, difficultyOptions.map(function(item) {
+              return actionButton(item.label, function() { setDifficulty(item.id); }, { key: 'difficulty-' + item.id, compact: true, pressed: difficulty === item.id, primary: difficulty === item.id });
+            })),
             h('p', { key: 'prompt', style: { color: COLORS.text, fontSize: '1.08rem', lineHeight: 1.55, fontWeight: 650, margin: '18px 0 8px' } }, challenge.prompt),
             challengeSvg(challenge),
             h('form', { key: 'form', onSubmit: submit, style: { display: 'flex', gap: '9px', alignItems: 'flex-end', flexWrap: 'wrap', marginTop: '8px' } }, [
@@ -866,10 +933,11 @@
             }, feedback.text) : null,
             h('div', { key: 'nav', style: { display: 'flex', justifyContent: 'space-between', gap: '9px', flexWrap: 'wrap', marginTop: '16px' } }, [
               actionButton('\u2190 Previous', function() { moveChallenge(-1); }, { compact: true }),
-              h('span', { key: 'progress', style: { alignSelf: 'center', color: COLORS.muted, fontSize: '0.9rem' } }, countAllowed(solvedMap, AREA_CHALLENGE_IDS) + ' of ' + CHALLENGES.length + ' unique challenges complete'),
+              missedCount ? actionButton('Retry missed (' + missedCount + ')', retryMissed, { key: 'retry-missed', compact: true, primary: true }) : null,
+              h('span', { key: 'progress', style: { alignSelf: 'center', color: COLORS.muted, fontSize: '0.9rem' } }, challengeProgressCount(solvedMap) + ' of ' + CHALLENGES.length + ' unique challenges complete'),
               actionButton('Next \u2192', function() { moveChallenge(1); }, { compact: true, primary: !!feedback && feedback.correct })
             ])
-          ], { key: 'challenge' }),
+          ], { key: 'challenge', 'data-challenge-id': challenge.id, 'data-challenge-difficulty': challenge.difficulty }),
           panel([
             h('h3', { key: 'h', style: { color: COLORS.text, fontSize: '1.05rem', margin: '0 0 8px' } }, 'Problem translation'),
             h('div', { key: 'table', style: { overflowX: 'auto' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', color: COLORS.text, minWidth: '420px' } }, [
@@ -905,7 +973,7 @@
               ])
             ]),
             h('div', { key: 'quick', style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
-              h('span', { key: 'solved', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.green, fontWeight: 800 } }, ((score || {}).correct || 0) + ' solved'),
+              h('span', { key: 'solved', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.green, fontWeight: 800 } }, challengeProgressCount(state.solvedChallenges) + ' solved'),
               h('span', { key: 'best', style: { padding: '7px 11px', borderRadius: '999px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.amber, fontWeight: 800 } }, 'Best streak ' + (state.bestStreak || 0))
             ])
           ]),

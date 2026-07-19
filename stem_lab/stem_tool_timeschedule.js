@@ -200,39 +200,39 @@
     ];
   }
   var CHALLENGES = [
-    { kind: 'read', title: 'Read the clock', prompt: 'What time does this clock show?',
+    { id: 'read-clock-0735', difficulty: 'foundation', kind: 'read', title: 'Read the clock', prompt: 'What time does this clock show?',
       type: 'time', answer: 455, clock: 455,
       explanation: 'The minute hand shows 35 minutes and the hour hand is between 7 and 8: 7:35.' },
-    { kind: 'elapsed', title: 'Count forward',
+    { id: 'elapsed-workshop-end', difficulty: 'foundation', kind: 'elapsed', title: 'Count forward',
       prompt: 'A workshop begins at 9:45 AM and lasts 1 hour 30 minutes. When does it end?',
       type: 'time', answer: 675,
       explanation: '9:45 + 15 minutes = 10:00; then 1 hour 15 minutes more = 11:15 AM.' },
-    { kind: 'interval', title: 'Find the interval',
+    { id: 'interval-1320-1455', difficulty: 'practice', kind: 'interval', title: 'Find the interval',
       prompt: 'How many minutes pass from 13:20 to 14:55?', type: 'duration', answer: 95,
       explanation: '13:20 → 14:20 is 60 minutes; then 35 more minutes. Total: 95.' },
-    { kind: 'convert', title: 'Convert to 24-hour time',
+    { id: 'convert-1840-24h', difficulty: 'foundation', kind: 'convert', title: 'Convert to 24-hour time',
       prompt: 'Write 6:40 PM in 24-hour time.', type: 'time', answerFormat: '24', answer: 1120,
       explanation: 'For a PM hour other than 12, add 12. 6 + 12 = 18, so the time is 18:40.' },
-    { kind: 'convert', title: 'Convert to 12-hour time',
+    { id: 'convert-0015-12h', difficulty: 'foundation', kind: 'convert', title: 'Convert to 12-hour time',
       prompt: 'Write 00:15 in 12-hour time.', type: 'time', answerFormat: '12', answer: 15,
       explanation: 'Hour 00 is midnight, so 00:15 is 12:15 AM.' },
-    { kind: 'schedule', title: 'Travel time',
+    { id: 'schedule-bus-ride', difficulty: 'practice', kind: 'schedule', title: 'Travel time',
       prompt: 'A bus leaves at 7:28 AM and arrives at 8:06 AM. How many minutes is the ride?',
       type: 'duration', answer: 38,
       explanation: '7:28 → 8:00 is 32 minutes; then 6 more minutes. Total: 38.' },
-    { kind: 'elapsed', title: 'Work backward',
+    { id: 'elapsed-practice-start', difficulty: 'practice', kind: 'elapsed', title: 'Work backward',
       prompt: 'Practice ends at 3:10 PM and lasts 55 minutes. When did it begin?',
       type: 'time', answer: 855,
       explanation: 'Count back 10 minutes to 3:00 PM, then 45 more to 2:15 PM.' },
-    { kind: 'overnight', title: 'Cross midnight',
+    { id: 'overnight-movie-end', difficulty: 'stretch', kind: 'overnight', title: 'Cross midnight',
       prompt: 'A movie starts at 11:35 PM and lasts 50 minutes. When does it end?',
       type: 'time', answer: 25,
       explanation: '25 minutes reaches midnight and 25 remain. It ends at 12:25 AM next day.' },
-    { kind: 'interval', title: 'Bridge noon',
+    { id: 'interval-noon-bridge', difficulty: 'stretch', kind: 'interval', title: 'Bridge noon',
       prompt: 'How many minutes pass from 10:50 AM to 1:05 PM?',
       type: 'duration', answer: 135,
       explanation: '10:50 → noon is 70 minutes; noon → 1:05 is 65. Total: 135.' },
-    { kind: 'convert', title: 'Convert precisely',
+    { id: 'convert-2107-12h', difficulty: 'stretch', kind: 'convert', title: 'Convert precisely',
       prompt: 'Write 21:07 in 12-hour time.', type: 'time', answerFormat: '12', answer: 1267,
       explanation: '21 − 12 = 9, so 21:07 is 9:07 PM.' }
   ];
@@ -243,17 +243,50 @@
       SCHEDULE_QUESTION_IDS.push(scheduleKey + ':' + index);
     });
   });
-  var TIME_CHALLENGE_IDS = CHALLENGES.map(function(_, index) { return String(index); });
+  var LEGACY_INDEX_TO_CHALLENGE_ID = CHALLENGES.map(function(challenge) { return challenge.id; });
+  var TIME_CHALLENGE_IDS = CHALLENGES.map(function(challenge) { return challenge.id; });
+  var CHALLENGE_DIFFICULTIES = [
+    { id: 'all', label: 'All levels' },
+    { id: 'foundation', label: 'Foundation' },
+    { id: 'practice', label: 'Practice' },
+    { id: 'stretch', label: 'Stretch' }
+  ];
 
   function countKnownKeys(map, allowedIds) {
     map = map || {};
     return allowedIds.filter(function(id) { return !!map[id]; }).length;
   }
+  function normalizeChallengeMap(map) {
+    var normalized = {};
+    map = map || {};
+    Object.keys(map).forEach(function(key) {
+      if (!map[key]) return;
+      var id = TIME_CHALLENGE_IDS.indexOf(key) >= 0 ? key : null;
+      if (!id && /^\d+$/.test(key)) id = LEGACY_INDEX_TO_CHALLENGE_ID[Number(key)] || null;
+      if (id) normalized[id] = true;
+    });
+    return normalized;
+  }
+  function challengesForDifficulty(difficulty) {
+    var known = CHALLENGE_DIFFICULTIES.some(function(item) { return item.id === difficulty; });
+    if (!known || difficulty === 'all') return CHALLENGES.slice();
+    return CHALLENGES.filter(function(challenge) { return challenge.difficulty === difficulty; });
+  }
+  function challengeById(id) {
+    return CHALLENGES.filter(function(challenge) { return challenge.id === id; })[0] || null;
+  }
+  function challengeMissedIds(data, difficulty) {
+    var missed = normalizeChallengeMap(data && data.missedChallenges);
+    var solved = normalizeChallengeMap(data && data.solvedChallenges);
+    return challengesForDifficulty(difficulty).filter(function(challenge) {
+      return missed[challenge.id] && !solved[challenge.id];
+    }).map(function(challenge) { return challenge.id; });
+  }
   function scheduleSolvedCount(data) {
     return countKnownKeys(data && data.scheduleSolvedKeys, SCHEDULE_QUESTION_IDS);
   }
   function timeChallengeSolvedCount(data) {
-    return countKnownKeys(data && data.solvedChallenges, TIME_CHALLENGE_IDS);
+    return countKnownKeys(normalizeChallengeMap(data && data.solvedChallenges), TIME_CHALLENGE_IDS);
   }
 
   window.TimeSchedulePure = Object.freeze({
@@ -275,6 +308,10 @@
     makeJumps: makeJumps,
     indexFor: indexFor,
     scheduleQuestions: scheduleQuestions,
+    normalizeChallengeMap: normalizeChallengeMap,
+    challengesForDifficulty: challengesForDifficulty,
+    challengeMissedIds: challengeMissedIds,
+    challengeDifficulties: CHALLENGE_DIFFICULTIES,
     schedules: SCHEDULES,
     challenges: CHALLENGES
   });
@@ -334,8 +371,28 @@
       var schedule = SCHEDULES[scheduleKey], sqs = scheduleQuestions(schedule);
       var sqIndex = indexFor(d.scheduleQuestionIndex, sqs.length);
       var sq = sqs[sqIndex];
-      var chIndex = indexFor(d.challengeIndex, CHALLENGES.length);
-      var challenge = CHALLENGES[chIndex];
+      var challengeDifficulty = CHALLENGE_DIFFICULTIES.some(function(item) {
+        return item.id === d.challengeDifficulty;
+      }) ? d.challengeDifficulty : 'all';
+      var difficultyChallenges = challengesForDifficulty(challengeDifficulty);
+      var retryChallengeIds = challengeMissedIds(d, challengeDifficulty);
+      var retryResultId = d.challengePracticeMode === 'retry' && d.challengeFeedback &&
+        d.challengeFeedback.ok ? d.challengeFeedback.challengeId : null;
+      var retryMode = d.challengePracticeMode === 'retry' && (retryChallengeIds.length > 0 || !!retryResultId);
+      var challengeList = retryMode ? retryChallengeIds.map(challengeById).filter(Boolean) : difficultyChallenges;
+      if (retryResultId && retryChallengeIds.indexOf(retryResultId) < 0) {
+        var retryResultChallenge = challengeById(retryResultId);
+        if (retryResultChallenge && difficultyChallenges.indexOf(retryResultChallenge) >= 0) {
+          challengeList.unshift(retryResultChallenge);
+        }
+      }
+      var legacyChallenge = CHALLENGES[indexFor(d.challengeIndex, CHALLENGES.length)];
+      var requestedChallengeId = d.challengeId || (legacyChallenge && legacyChallenge.id);
+      var challengePosition = challengeList.findIndex(function(item) { return item.id === requestedChallengeId; });
+      if (challengePosition < 0) challengePosition = 0;
+      var challenge = challengeList[challengePosition];
+      var challengeId = challenge.id;
+      var chIndex = CHALLENGES.indexOf(challenge);
       var score = Object.assign({ correct: 0, total: 0 }, d.score || {}, { correct: timeChallengeSolvedCount(d) });
 
       function setTab(id) {
@@ -702,9 +759,41 @@
       }
       function challengeView() {
         var feedback = d.challengeFeedback;
-        var solvedChallengeKey = String(chIndex);
-        var alreadySolvedChallenge = !!(d.solvedChallenges || {})[solvedChallengeKey];
-        var locked = alreadySolvedChallenge || !!(feedback && feedback.ok && feedback.index === chIndex);
+        if (feedback && feedback.challengeId && feedback.challengeId !== challengeId) feedback = null;
+        if (feedback && !feedback.challengeId && feedback.index != null && feedback.index !== chIndex) feedback = null;
+        var solvedChallenges = normalizeChallengeMap(d.solvedChallenges);
+        var alreadySolvedChallenge = !!solvedChallenges[challengeId];
+        var locked = alreadySolvedChallenge || !!(feedback && feedback.ok &&
+          (feedback.challengeId === challengeId || feedback.index === chIndex));
+        var missedChallengeIds = challengeMissedIds(d, challengeDifficulty);
+        var selectedDifficulty = CHALLENGE_DIFFICULTIES.filter(function(item) {
+          return item.id === challengeDifficulty;
+        })[0];
+        function recordMiss(message, countAttempt) {
+          upd(function (current) {
+            var solved = normalizeChallengeMap(current.solvedChallenges);
+            var missed = normalizeChallengeMap(current.missedChallenges);
+            var attempts = Object.assign({}, current.challengeAttempts || {});
+            attempts[challengeId] = (attempts[challengeId] || 0) + 1;
+            if (!solved[challengeId]) missed[challengeId] = true;
+            var patch = {
+              challengeFeedback: { ok: false, challengeId: challengeId, message: message },
+              solvedChallenges: solved,
+              missedChallenges: missed,
+              challengeAttempts: attempts
+            };
+            if (countAttempt) {
+              var currentScore = current.score || { correct: 0, total: 0 };
+              var types = Object.assign({}, current.challengeTypesUsed || {});
+              types[challenge.kind] = true;
+              patch.score = { correct: countKnownKeys(solved, TIME_CHALLENGE_IDS),
+                total: (currentScore.total || 0) + 1 };
+              patch.streak = 0;
+              patch.challengeTypesUsed = types;
+            }
+            return patch;
+          });
+        }
         function check() {
           if (locked) return;
           var result = checkAnswer(d.challengeAnswer || '', challenge.type, challenge.answer, challenge.answerFormat);
@@ -713,22 +802,26 @@
               challenge.answerFormat === '12' ? 'Use 12-hour form with AM or PM.' :
               challenge.type === 'time' ? 'Enter a time such as 18:40 or 6:40 PM.' :
               'Enter minutes or a duration such as 2 h 15 m.';
-            upd({ challengeFeedback: { ok: false, index: chIndex, message: formatMessage } });
+            recordMiss(formatMessage, false);
             return;
           }
           if (result.ok) {
             locked = true;
             upd(function (current) {
-              var solved = Object.assign({}, current.solvedChallenges || {});
-              var firstSolve = !solved[solvedChallengeKey];
-              solved[solvedChallengeKey] = true;
+              var solved = normalizeChallengeMap(current.solvedChallenges);
+              var missed = normalizeChallengeMap(current.missedChallenges);
+              var attempts = Object.assign({}, current.challengeAttempts || {});
+              var firstSolve = !solved[challengeId];
+              solved[challengeId] = true;
+              delete missed[challengeId];
+              attempts[challengeId] = (attempts[challengeId] || 0) + 1;
               var currentScore = current.score || { correct: 0, total: 0 };
               var streak = firstSolve ? (current.streak || 0) + 1 : (current.streak || 0);
               var types = Object.assign({}, current.challengeTypesUsed || {});
               types[challenge.kind] = true;
-              return { challengeFeedback: { ok: true, index: chIndex,
+              return { challengeFeedback: { ok: true, challengeId: challengeId,
                 message: challenge.explanation },
-                solvedChallenges: solved,
+                solvedChallenges: solved, missedChallenges: missed, challengeAttempts: attempts,
                 score: { correct: countKnownKeys(solved, TIME_CHALLENGE_IDS),
                   total: (currentScore.total || 0) + 1 },
                 streak: streak, bestStreak: Math.max(current.bestStreak || 0, streak),
@@ -737,45 +830,102 @@
             if (!alreadySolvedChallenge) award('timeSchedule', 5, 'time challenge');
             alreadySolvedChallenge = true;
           } else {
-            upd(function (current) {
-              var currentScore = current.score || { correct: 0, total: 0 };
-              var types = Object.assign({}, current.challengeTypesUsed || {});
-              types[challenge.kind] = true;
-              return { challengeFeedback: { ok: false, index: chIndex,
-                message: 'Not yet. Use a clock, timeline, or minutes after midnight.' },
-                score: { correct: currentScore.correct || 0, total: (currentScore.total || 0) + 1 },
-                streak: 0, challengeTypesUsed: types };
-            });
+            recordMiss('Not yet. Use a clock, timeline, or minutes after midnight.', true);
           }
         }
+        function moveChallenge(direction) {
+          var retryIds = challengeMissedIds(d, challengeDifficulty);
+          if (d.challengePracticeMode === 'retry' && feedback && feedback.ok) {
+            if (retryIds.length) {
+              var retryTarget = direction < 0 ? retryIds[retryIds.length - 1] : retryIds[0];
+              upd({ challengeId: retryTarget, challengeAnswer: '', challengeFeedback: null });
+              announce('Moving to another missed challenge.');
+              return;
+            }
+            var completedAt = difficultyChallenges.findIndex(function(item) { return item.id === challengeId; });
+            var completedTarget = difficultyChallenges[(completedAt + direction + difficultyChallenges.length) % difficultyChallenges.length];
+            upd({ challengePracticeMode: 'all', challengeId: completedTarget.id,
+              challengeAnswer: '', challengeFeedback: null });
+            announce('Retry set complete. Returning to all challenges.');
+            return;
+          }
+          var pool = d.challengePracticeMode === 'retry' && retryIds.length ?
+            retryIds.map(challengeById).filter(Boolean) : difficultyChallenges;
+          var at = pool.findIndex(function(item) { return item.id === challengeId; });
+          if (at < 0) at = 0;
+          var target = pool[(at + direction + pool.length) % pool.length];
+          upd({ challengeId: target.id, challengeAnswer: '', challengeFeedback: null });
+          announce((direction < 0 ? 'Previous' : 'Next') + ' challenge opened.');
+        }
+        function chooseDifficulty(nextDifficulty) {
+          var pool = challengesForDifficulty(nextDifficulty);
+          upd({ challengeDifficulty: nextDifficulty, challengePracticeMode: 'all',
+            challengeId: pool[0].id, challengeAnswer: '', challengeFeedback: null });
+          var label = CHALLENGE_DIFFICULTIES.filter(function(item) { return item.id === nextDifficulty; })[0];
+          announce((label ? label.label : 'All levels') + ' challenges selected.');
+        }
+        function beginRetry() {
+          var ids = challengeMissedIds(d, challengeDifficulty);
+          if (!ids.length) return;
+          upd({ challengePracticeMode: 'retry', challengeId: ids[0],
+            challengeAnswer: '', challengeFeedback: null });
+          announce('Retrying ' + ids.length + (ids.length === 1 ? ' missed challenge.' : ' missed challenges.'));
+        }
+        function showAllChallenges() {
+          var target = difficultyChallenges.some(function(item) { return item.id === challengeId; }) ?
+            challengeId : difficultyChallenges[0].id;
+          upd({ challengePracticeMode: 'all', challengeId: target,
+            challengeAnswer: '', challengeFeedback: null });
+          announce('All challenges shown.');
+        }
         var accuracy = score.total ? Math.round((score.correct || 0) / score.total * 100) : 0;
-        var solvedChallengeCount = Object.keys(d.solvedChallenges || {}).filter(function(key) {
-          var index = Number(key);
-          return !!d.solvedChallenges[key] && Number.isInteger(index) && index >= 0 && index < CHALLENGES.length;
-        }).length;
+        var solvedChallengeCount = timeChallengeSolvedCount(d);
+        var attemptCount = Number((d.challengeAttempts || {})[challengeId]) || 0;
         return h('section', { className: 'space-y-4',
           'aria-labelledby': 'ts-challenge-heading' },
           heading('ts-challenge-heading', 'Challenge Lab',
-            'A deterministic mixed set: clock reading, intervals, schedules, midnight, and conversions.'),
-          h('div', { className: 'flex gap-2 text-xs font-bold justify-end' },
+            'A stable, deterministic practice set with difficulty bands and a focused retry-missed queue.'),
+          h('div', { className: 'rounded-2xl border border-indigo-200 bg-indigo-50/70 p-3 flex flex-col md:flex-row md:items-end gap-3' },
+            h('label', { className: 'block text-xs font-black text-indigo-950 flex-1' },
+              'Difficulty',
+              h('select', { value: challengeDifficulty, onChange: function(event) { chooseDifficulty(event.target.value); },
+                className: 'mt-1 block w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold' },
+                CHALLENGE_DIFFICULTIES.map(function(item) {
+                  return h('option', { key: item.id, value: item.id }, item.label);
+                }))),
+            h('div', { role: 'group', 'aria-label': 'Challenge practice mode', className: 'flex flex-wrap gap-2' },
+              h('button', { type: 'button', onClick: showAllChallenges,
+                'aria-pressed': d.challengePracticeMode !== 'retry',
+                className: 'rounded-lg border border-indigo-300 px-3 py-2 text-xs font-black ' +
+                  (d.challengePracticeMode !== 'retry' ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-800') },
+                'All challenges'),
+              h('button', { type: 'button', onClick: beginRetry, disabled: !missedChallengeIds.length,
+                'aria-pressed': d.challengePracticeMode === 'retry',
+                className: 'rounded-lg border border-rose-300 px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-50 ' +
+                  (d.challengePracticeMode === 'retry' ? 'bg-rose-700 text-white' : 'bg-white text-rose-800') },
+                'Retry missed (' + missedChallengeIds.length + ')'))),
+          h('div', { className: 'flex flex-wrap gap-2 text-xs font-bold justify-end' },
             h('span', { className: 'rounded-lg bg-emerald-100 text-emerald-800 px-3 py-2' },
-              '✓ ' + (score.correct || 0) + '/' + (score.total || 0)),
+              '\u2713 ' + (score.correct || 0) + '/' + (score.total || 0)),
             h('span', { className: 'rounded-lg bg-orange-100 text-orange-800 px-3 py-2' },
-              '🔥 ' + (d.streak || 0)),
-            h('span', { className: 'rounded-lg bg-sky-100 text-sky-800 px-3 py-2' }, accuracy + '%')),
+              '\uD83D\uDD25 ' + (d.streak || 0)),
+            h('span', { className: 'rounded-lg bg-sky-100 text-sky-800 px-3 py-2' }, accuracy + '%'),
+            h('span', { className: 'rounded-lg bg-violet-100 text-violet-800 px-3 py-2' },
+              'Attempts here: ' + attemptCount)),
           h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', role: 'progressbar',
             'aria-label': 'Challenge set progress', 'aria-valuemin': 0,
             'aria-valuemax': CHALLENGES.length, 'aria-valuenow': solvedChallengeCount,
-            'aria-valuetext': solvedChallengeCount + ' of ' + CHALLENGES.length + ' solved; currently viewing challenge ' + (chIndex + 1) },
+            'aria-valuetext': solvedChallengeCount + ' of ' + CHALLENGES.length + ' solved; currently viewing challenge ' +
+              (challengePosition + 1) + ' of ' + challengeList.length + ' in ' + selectedDifficulty.label },
             h('div', { className: 'h-full bg-gradient-to-r from-sky-500 to-indigo-600',
               style: { width: (solvedChallengeCount / CHALLENGES.length * 100) + '%' } })),
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-4' },
             h('div', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50 to-white p-4 flex items-center justify-center min-h-[280px]' },
-              challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + chIndex, true) :
+              challenge.clock != null ? analog(challenge.clock, 'ts-challenge-clock-' + challengeId, true) :
                 h('div', { className: 'text-center max-w-xs' },
                   h('div', { className: 'text-7xl', 'aria-hidden': 'true' },
-                    challenge.kind === 'convert' ? '🔄' : challenge.kind === 'schedule' ? '🚌' :
-                    challenge.kind === 'overnight' ? '🌙' : challenge.kind === 'interval' ? '↔️' : '⏱️'),
+                    challenge.kind === 'convert' ? '\uD83D\uDD04' : challenge.kind === 'schedule' ? '\uD83D\uDE8C' :
+                    challenge.kind === 'overnight' ? '\uD83C\uDF19' : challenge.kind === 'interval' ? '\u2194\uFE0F' : '\u23F1\uFE0F'),
                   h('p', { className: 'mt-4 text-xs font-black uppercase tracking-widest text-indigo-700' },
                     challenge.kind + ' reasoning'),
                   h('p', { className: 'text-sm text-slate-600 mt-2' },
@@ -783,14 +933,15 @@
             h('div', { className: 'rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4 shadow-sm' },
               h('div', null,
                 h('p', { className: 'text-[10px] font-black uppercase tracking-[.18em] text-indigo-600' },
-                  'Challenge ' + (chIndex + 1) + ' of ' + CHALLENGES.length + ' · ' + challenge.title),
+                  'Challenge ' + (challengePosition + 1) + ' of ' + challengeList.length + ' \u00B7 ' +
+                    selectedDifficulty.label + ' / ' + challenge.difficulty + ' \u00B7 ' + challenge.title),
                 h('h4', { className: 'text-xl sm:text-2xl font-black mt-2 leading-snug' }, challenge.prompt)),
               h('label', { className: 'block text-xs font-black text-slate-700' },
                 challenge.type === 'time' ? (challenge.answerFormat === '24' ? 'Your time (24-hour)' :
                   challenge.answerFormat === '12' ? 'Your time (12-hour)' : 'Your time') : 'Your elapsed time',
                 h('input', { type: 'text', value: d.challengeAnswer || '', disabled: !!locked,
-                  onChange: function (e) { upd({ challengeAnswer: e.target.value, challengeFeedback: null }); },
-                  onKeyDown: function (e) { if (e.key === 'Enter') check(); },
+                  onChange: function (event) { upd({ challengeAnswer: event.target.value, challengeFeedback: null }); },
+                  onKeyDown: function (event) { if (event.key === 'Enter') check(); },
                   placeholder: challenge.answerFormat === '24' ? 'Example: 18:40' :
                     challenge.answerFormat === '12' ? 'Example: 9:07 PM' :
                     challenge.type === 'time' ? 'Example: 2:15 PM or 14:15' :
@@ -802,19 +953,20 @@
                   challenge.answerFormat === '12' ? 'Include AM or PM.' :
                   'You may use either 12-hour or 24-hour time.'),
               h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function() { moveChallenge(-1); },
+                  className: 'rounded-xl border border-indigo-300 bg-white px-4 py-3 text-sm font-black text-indigo-800' },
+                  'Previous'),
                 h('button', { type: 'button', disabled: !!locked, onClick: check,
                   className: 'flex-1 min-w-[140px] rounded-xl bg-indigo-600 px-4 py-3 text-sm font-black text-white disabled:opacity-50' },
-                  locked ? 'Correct ✓' : 'Check answer'),
-                h('button', { type: 'button', onClick: function () {
-                  upd({ challengeIndex: (chIndex + 1) % CHALLENGES.length,
-                    challengeAnswer: '', challengeFeedback: null });
-                }, className: 'rounded-xl border border-indigo-300 bg-indigo-50 px-5 py-3 text-sm font-black text-indigo-800' },
+                  locked ? 'Correct \u2713' : 'Check answer'),
+                h('button', { type: 'button', onClick: function() { moveChallenge(1); },
+                  className: 'rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-800' },
                   'Next challenge')),
               feedback && h('div', { role: 'status', 'aria-live': 'polite',
                 className: 'rounded-xl border p-4 text-sm ' +
                   (feedback.ok ? 'border-emerald-300 bg-emerald-50 text-emerald-900' :
                     'border-rose-300 bg-rose-50 text-rose-900') },
-                h('p', { className: 'font-black' }, feedback.ok ? '✓ Correct' : 'Keep reasoning'),
+                h('p', { className: 'font-black' }, feedback.ok ? '\u2713 Correct' : 'Keep reasoning'),
                 h('p', { className: 'mt-1' }, feedback.message)),
               h('details', { className: 'rounded-xl border border-sky-200 bg-sky-50 p-3' },
                 h('summary', { className: 'cursor-pointer text-xs font-black text-sky-900' },

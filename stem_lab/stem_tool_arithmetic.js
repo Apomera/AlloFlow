@@ -77,7 +77,9 @@
     { id: 'w1', op: 'add', story: 'A library has 248 graphic novels and receives 175 more. How many does it have now?', a: 248, b: 175, answer: 423, unit: 'graphic novels' },
     { id: 'w2', op: 'subtract', story: 'A trail is 950 meters long. Maya has walked 385 meters. How many meters remain?', a: 950, b: 385, answer: 565, unit: 'meters' },
     { id: 'w3', op: 'multiply', story: 'There are 18 tables with 24 science kits at each table. How many kits are there?', a: 18, b: 24, answer: 432, unit: 'kits' },
-    { id: 'w4', op: 'divide', story: 'A teacher shares 157 markers equally among 12 groups. How many markers does each group receive, and how many remain?', a: 157, b: 12, answer: 13, remainder: 1, unit: 'markers per group' }
+    { id: 'w4', op: 'divide', divisionContext: 'report-remainder', story: 'A teacher shares 157 markers equally among 12 groups. How many markers does each group receive, and how many remain?', a: 157, b: 12, answer: 13, remainder: 1, unit: 'markers per group' },
+    { id: 'full-teams', op: 'divide', divisionContext: 'discard-remainder', story: 'Sixty-seven students form teams of 8. How many complete teams can enter the tournament?', a: 67, b: 8, answer: 8, remainder: 3, unit: 'complete teams' },
+    { id: 'supply-boxes', op: 'divide', divisionContext: 'round-up', story: 'A science club must pack 67 samples into boxes that hold 8 samples each. How many boxes are needed so every sample is packed?', a: 67, b: 8, answer: 9, remainder: 3, unit: 'boxes' }
   ];
 
   var TAB_IDS = ['learn', 'practice', 'errors', 'apply'];
@@ -88,6 +90,65 @@
   function countSolved(map, allowedIds) {
     var ids = allowedIds || Object.keys(map || {});
     return ids.filter(function (id) { return !!(map || {})[id]; }).length;
+  }
+
+  function wordProblemById(id) {
+    return WORD_PROBLEMS.filter(function (problem) { return problem.id === id; })[0] || null;
+  }
+
+  function wordProblemFromState(data) {
+    var selected = wordProblemById(data && data.wordProblemId);
+    if (selected) return selected;
+    var legacyCandidates = data && OPERATIONS[data.operation]
+      ? WORD_PROBLEMS.filter(function (problem) { return problem.op === data.operation; })
+      : WORD_PROBLEMS;
+    var legacyIndex = clampInt(data && data.wordIndex, 0, legacyCandidates.length - 1, 0);
+    return legacyCandidates[legacyIndex];
+  }
+
+  function expectedWordResponse(problem) {
+    var result = calculate(problem.op, problem.a, problem.b);
+    if (problem.op !== 'divide') {
+      return { answer: result.answer, remainder: 0, requiresRemainder: false, divisionContext: null };
+    }
+    var context = problem.divisionContext || 'report-remainder';
+    if (context === 'round-up') {
+      return { answer: result.answer + (result.remainder ? 1 : 0), remainder: 0, requiresRemainder: false, divisionContext: context };
+    }
+    return {
+      answer: result.answer,
+      remainder: context === 'report-remainder' ? result.remainder : 0,
+      requiresRemainder: context === 'report-remainder',
+      divisionContext: context
+    };
+  }
+
+  function missedWordProblemIds(data) {
+    var missed = (data && data.wordMissedCases) || {};
+    var solved = (data && data.wordSolvedCases) || {};
+    return WORD_IDS.filter(function (id) { return !!missed[id] && !solved[id]; });
+  }
+
+  function nextWordProblemId(currentId, allowedIds) {
+    var allowed = allowedIds || WORD_IDS;
+    var pool = WORD_IDS.filter(function (id) { return allowed.indexOf(id) >= 0; });
+    if (!pool.length) return wordProblemById(currentId) ? currentId : WORD_IDS[0];
+    var currentIndex = pool.indexOf(currentId);
+    return pool[currentIndex < 0 ? 0 : (currentIndex + 1) % pool.length];
+  }
+
+  function wordResultExplanation(problem) {
+    var expected = expectedWordResponse(problem);
+    if (problem.op !== 'divide') return strategySteps(problem.op, problem.a, problem.b).join(' ');
+    var raw = calculate('divide', problem.a, problem.b);
+    var equation = problem.a + ' = ' + problem.b + ' \u00d7 ' + raw.answer + ' + ' + raw.remainder + '. ';
+    if (expected.divisionContext === 'round-up') {
+      return equation + raw.answer + ' boxes fill completely, and the ' + raw.remainder + ' remaining item' + (raw.remainder === 1 ? '' : 's') + ' require one more. The context answer is ' + expected.answer + '.';
+    }
+    if (expected.divisionContext === 'discard-remainder') {
+      return equation + 'Only complete groups count, so the context answer is ' + expected.answer + '; the ' + raw.remainder + ' left over do not make another complete group.';
+    }
+    return equation + 'Report both parts: ' + expected.answer + ' in each group with ' + expected.remainder + ' left over.';
   }
 
   function clampInt(value, min, max, fallback) {
@@ -219,6 +280,10 @@
     estimateFor: estimateFor,
     estimatePlan: estimatePlan,
     assessEstimate: assessEstimate,
+    expectedWordResponse: expectedWordResponse,
+    missedWordProblemIds: missedWordProblemIds,
+    nextWordProblemId: nextWordProblemId,
+    wordResultExplanation: wordResultExplanation,
     practice: PRACTICE.slice(),
     errors: ERROR_CASES.slice(),
     wordProblems: WORD_PROBLEMS.slice()
@@ -267,8 +332,13 @@
       var problem = candidates[practiceIndex % candidates.length];
       var errorIndex = clampInt(d.errorIndex, 0, ERROR_CASES.length - 1, 0);
       var errorCase = ERROR_CASES[errorIndex];
-      var wordCandidates = WORD_PROBLEMS.filter(function (p) { return p.op === operation; });
-      var wordProblem = wordCandidates[clampInt(d.wordIndex, 0, Math.max(0, wordCandidates.length - 1), 0) % wordCandidates.length];
+      var wordProblem = wordProblemFromState(d);
+      var wordProblemIndex = WORD_IDS.indexOf(wordProblem.id);
+      var wordExpected = expectedWordResponse(wordProblem);
+      var selectedWordOperation = OPERATIONS[d.wordOperation] ? d.wordOperation : null;
+      var wordAnswerInput = d.wordAnswer == null ? '' : String(d.wordAnswer);
+      var wordRemainderInput = d.wordRemainder == null ? '' : String(d.wordRemainder);
+      var wordMissedIds = missedWordProblemIds(d);
       var practiceEstimateInput = d.estimateInput == null ? '' : String(d.estimateInput);
       var practiceAnswerInput = d.answerInput == null ? '' : String(d.answerInput);
       var practiceRemainderInput = d.remainderInput == null ? '' : String(d.remainderInput);
@@ -343,16 +413,67 @@
       var wordCheckPending = false;
       function checkWord() {
         if (wordCheckPending || (d.wordSolvedCases && d.wordSolvedCases[wordProblem.id])) return;
-        var correct = Number(d.wordAnswer) === wordProblem.answer && Number(d.wordRemainder || 0) === (wordProblem.remainder || 0);
+        wordCheckPending = true;
+        var operationCorrect = selectedWordOperation === wordProblem.op;
+        var answerCorrect = Number(wordAnswerInput) === wordExpected.answer;
+        var remainderCorrect = !wordExpected.requiresRemainder || Number(wordRemainderInput) === wordExpected.remainder;
+        var correct = operationCorrect && answerCorrect && remainderCorrect;
+        var feedback = correct ? 'correct' : !operationCorrect ? 'operation' : answerCorrect ? 'remainder' : 'try';
         var firstSolve = correct && !(d.wordSolvedCases && d.wordSolvedCases[wordProblem.id]);
-        if (correct) wordCheckPending = true;
         update(function (current) {
           var solved = Object.assign({}, current.wordSolvedCases || {});
-          if (correct) solved[wordProblem.id] = true;
-          return { wordFeedback: correct ? 'correct' : 'try', wordSolvedCases: solved, wordSolved: countSolved(solved, WORD_IDS) };
+          var missed = Object.assign({}, current.wordMissedCases || {});
+          var attempts = Object.assign({}, current.wordAttempts || {});
+          var used = Object.assign({}, current.operationsUsed || {});
+          attempts[wordProblem.id] = (attempts[wordProblem.id] || 0) + 1;
+          if (correct) {
+            solved[wordProblem.id] = true;
+            delete missed[wordProblem.id];
+            used[wordProblem.op] = true;
+          } else {
+            missed[wordProblem.id] = true;
+          }
+          return {
+            wordProblemId: wordProblem.id,
+            wordIndex: wordProblemIndex,
+            wordFeedback: feedback,
+            wordSolvedCases: solved,
+            wordMissedCases: missed,
+            wordAttempts: attempts,
+            wordSolved: countSolved(solved, WORD_IDS),
+            operationsUsed: used
+          };
         });
         if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 3, 'Arithmetic word problem');
-        announce(correct ? 'Correct. Include the unit in your explanation.' : 'Not yet. Decide what is known, what is unknown, and which operation connects them.');
+        announce(correct ? 'Correct. The operation and context answer both fit the story.' : !operationCorrect ? 'Reconsider which operation represents the relationship in the story.' : 'The operation fits. Recheck how the context changes the numerical result.');
+      }
+
+      function chooseWordOperation(op) {
+        update({ wordProblemId: wordProblem.id, wordIndex: wordProblemIndex, wordOperation: op, wordFeedback: null });
+        announce(OPERATIONS[op].label + ' chosen for this story.');
+      }
+
+      function moveToWord(id) {
+        var nextId = wordProblemById(id) ? id : WORD_IDS[0];
+        update({
+          wordProblemId: nextId,
+          wordIndex: WORD_IDS.indexOf(nextId),
+          wordOperation: null,
+          wordAnswer: '',
+          wordRemainder: '',
+          wordFeedback: null,
+          showWordPlan: false
+        });
+      }
+
+      function nextWord() {
+        moveToWord(nextWordProblemId(wordProblem.id, WORD_IDS));
+      }
+
+      function retryMissedWords() {
+        if (!wordMissedIds.length) return;
+        moveToWord(nextWordProblemId(wordProblem.id, wordMissedIds));
+        announce('Opening a missed story for another try.');
       }
 
       function readCurrent() {
@@ -531,22 +652,93 @@
 
       function renderApply() {
         var wordSolved = !!(d.wordSolvedCases && d.wordSolvedCases[wordProblem.id]);
+        var activeWordOperation = wordSolved ? wordProblem.op : selectedWordOperation;
+        var displayedWordAnswer = wordSolved ? String(wordExpected.answer) : wordAnswerInput;
+        var displayedWordRemainder = wordSolved && wordExpected.requiresRemainder ? String(wordExpected.remainder) : wordRemainderInput;
+        var visibleWordFeedback = d.wordFeedback || (wordSolved ? 'correct' : null);
+        var wordAccent = activeWordOperation ? OPERATIONS[activeWordOperation].color : '#334155';
+        var wordSoft = activeWordOperation ? OPERATIONS[activeWordOperation].soft : (isDark ? '#334155' : '#f1f5f9');
+        var retryMessage = visibleWordFeedback === 'operation'
+          ? 'That operation does not represent the relationship yet. Ask whether the story joins, separates, repeats equal groups, or finds how many groups fit.'
+          : visibleWordFeedback === 'remainder'
+            ? 'The whole-number answer is right. Re-read what the story asks you to do with the amount left over.'
+            : 'The operation fits. Recheck the calculation and decide whether the context uses a quotient, a remainder, or one more group.';
         return h(React.Fragment, null,
-          h('div', null, h('h2', { className: 'text-base font-black' }, 'Apply it in context'), h('p', { className: 'text-xs', style: { color: muted } }, 'Name the unknown, choose an operation, estimate, solve, and label the answer.')),
-          h('div', { className: 'rounded-xl p-4', style: { background: card, border: '1px solid ' + border } }, h('p', { className: 'text-sm font-semibold leading-relaxed' }, wordProblem.story)),
-          h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Quotient' : 'Answer', h('input', { type: 'number', value: d.wordAnswer || '', onChange: function (e) { update({ wordAnswer: e.target.value, wordFeedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-          operation === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, value: d.wordRemainder || '', onChange: function (e) { update({ wordRemainder: e.target.value, wordFeedback: null }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-          h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { type: 'button', onClick: checkWord, disabled: d.wordAnswer === '' || wordSolved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, wordSolved ? 'Solved' : 'Check response'),
-            h('button', { onClick: function () { update({ showWordPlan: !d.showWordPlan }); }, 'aria-expanded': !!d.showWordPlan, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: opMeta.color, border: '1px solid ' + opMeta.color } }, 'Planning scaffold')
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+            h('div', null, h('h2', { className: 'text-base font-black' }, 'Apply it in context'), h('p', { className: 'text-xs', style: { color: muted } }, 'Choose the operation from the story, then interpret the result in context.')),
+            h('div', { className: 'flex flex-wrap gap-2 text-xs font-bold' },
+              h('span', { className: 'rounded-full px-3 py-1', style: { background: wordSoft, color: isDark && !activeWordOperation ? '#f8fafc' : '#0f172a' } }, 'Scenario ' + (wordProblemIndex + 1) + '/' + WORD_PROBLEMS.length),
+              h('span', { className: 'rounded-full px-3 py-1', style: { background: '#dcfce7', color: '#166534' } }, countSolved(d.wordSolvedCases, WORD_IDS) + ' solved'),
+              h('span', { className: 'rounded-full px-3 py-1', style: { background: wordMissedIds.length ? '#fef3c7' : '#e2e8f0', color: wordMissedIds.length ? '#92400e' : '#334155' } }, wordMissedIds.length + ' to retry')
+            )
           ),
-          d.showWordPlan && h('ol', { className: 'rounded-xl p-3 text-sm space-y-1', style: { background: opMeta.soft, color: '#0f172a' } },
+          h('div', { className: 'rounded-xl p-4', 'data-word-problem-id': wordProblem.id, style: { background: card, border: '1px solid ' + border } },
+            h('p', { className: 'text-sm font-semibold leading-relaxed' }, wordProblem.story)
+          ),
+          h('fieldset', { className: 'rounded-xl p-3', style: { border: '1px solid ' + border } },
+            h('legend', { className: 'px-1 text-xs font-black' }, 'Choose an operation for this story'),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'group', 'aria-label': 'Operation for the current story' },
+              Object.keys(OPERATIONS).map(function (op) {
+                var meta = OPERATIONS[op];
+                var selected = activeWordOperation === op;
+                return h('button', {
+                  key: op,
+                  type: 'button',
+                  disabled: wordSolved,
+                  'data-word-operation': op,
+                  'aria-pressed': selected,
+                  onClick: function () { chooseWordOperation(op); },
+                  className: 'rounded-lg px-3 py-2 text-xs font-black',
+                  style: { background: selected ? meta.color : card, color: selected ? '#fff' : text, border: '2px solid ' + meta.color }
+                }, meta.symbol + ' ' + meta.label);
+              })
+            )
+          ),
+          h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+            h('label', { className: 'text-xs font-bold' }, 'Context answer', h('input', {
+              type: 'number',
+              value: displayedWordAnswer,
+              disabled: wordSolved,
+              onChange: function (e) { update({ wordProblemId: wordProblem.id, wordIndex: wordProblemIndex, wordAnswer: e.target.value, wordFeedback: null }); },
+              className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono',
+              style: { background: card, color: text, border: '1px solid ' + border }
+            }), h('span', { className: 'mt-1 block font-normal', style: { color: muted } }, 'Unit: ' + wordProblem.unit)),
+            wordExpected.requiresRemainder && h('label', { className: 'text-xs font-bold' }, 'Amount left over', h('input', {
+              type: 'number',
+              min: 0,
+              max: wordProblem.b - 1,
+              value: displayedWordRemainder,
+              disabled: wordSolved,
+              onChange: function (e) { update({ wordProblemId: wordProblem.id, wordIndex: wordProblemIndex, wordRemainder: e.target.value, wordFeedback: null }); },
+              className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono',
+              style: { background: card, color: text, border: '1px solid ' + border }
+            }))
+          ),
+          h('div', { className: 'flex flex-wrap gap-2' },
+            h('button', {
+              type: 'button',
+              onClick: checkWord,
+              disabled: !selectedWordOperation || wordAnswerInput === '' || (wordExpected.requiresRemainder && wordRemainderInput === '') || wordSolved,
+              className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40',
+              style: { background: wordAccent }
+            }, wordSolved ? 'Solved' : 'Check response'),
+            h('button', { type: 'button', onClick: function () { update({ showWordPlan: !d.showWordPlan }); }, 'aria-expanded': !!d.showWordPlan, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + wordAccent } }, d.showWordPlan ? 'Hide planning scaffold' : 'Planning scaffold'),
+            h('button', { type: 'button', onClick: nextWord, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, 'Next scenario'),
+            h('button', { type: 'button', onClick: retryMissedWords, disabled: !wordMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, 'Retry missed (' + wordMissedIds.length + ')')
+          ),
+          d.showWordPlan && h('ol', { className: 'rounded-xl p-3 text-sm space-y-1', style: { background: wordSoft, color: isDark && !activeWordOperation ? '#f8fafc' : '#0f172a' } },
             h('li', null, '1. Known: ' + wordProblem.a + ' and ' + wordProblem.b + '.'),
             h('li', null, '2. Unknown: ' + wordProblem.unit + '.'),
-            h('li', null, '3. Operation: ' + OPERATIONS[wordProblem.op].label + '.'),
-            h('li', null, '4. Check: estimate before accepting the exact result.')
+            h('li', null, '3. Relationship: are quantities joined, separated, repeated in equal groups, or grouped by size?'),
+            h('li', null, '4. Your operation choice: ' + (activeWordOperation ? OPERATIONS[activeWordOperation].label : 'not chosen yet') + '.'),
+            h('li', null, '5. Context check: decide what the story means when an amount is left over.')
           ),
-          feedbackBox(d.wordFeedback, 'Correct. The unit completes the mathematical answer: ' + wordProblem.unit + '.', 'Not yet. Use the planning scaffold and check whether the answer size fits the story.', d.wordFeedback === 'correct' ? strategySteps(wordProblem.op, wordProblem.a, wordProblem.b).join(' ') : null)
+          feedbackBox(
+            visibleWordFeedback,
+            'Correct. ' + OPERATIONS[wordProblem.op].label + ' models the story, and the answer is ' + wordExpected.answer + (wordExpected.requiresRemainder ? ' with ' + wordExpected.remainder + ' left over' : '') + ' ' + wordProblem.unit + '.',
+            retryMessage,
+            visibleWordFeedback === 'correct' ? wordResultExplanation(wordProblem) : null
+          )
         );
       }
 
@@ -564,8 +756,8 @@
             h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-blue-100' }, 'Concrete \u2192 visual \u2192 symbolic'), h('h1', { className: 'text-xl sm:text-2xl font-black' }, '\ud83e\uddee Arithmetic Strategy Studio'), h('p', { className: 'mt-1 text-sm text-blue-50' }, 'Build meaning first, compare strategies, and use estimation to check every result.'))
           )
         ),
-        renderOperationPicker(),
-        h('div', { className: 'flex flex-wrap items-center gap-2' },
+        tab !== 'apply' && renderOperationPicker(),
+        tab !== 'apply' && h('div', { className: 'flex flex-wrap items-center gap-2' },
           h('span', { className: 'text-xs font-bold', style: { color: muted } }, 'NUMBER RANGE:'),
           [1, 2, 3].map(function (n) { return h('button', { key: n, onClick: function () { update({ level: n, practiceIndex: 0, feedback: null }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? 'Foundations' : n === 2 ? 'Multi-digit' : 'Challenge'); })
         ),

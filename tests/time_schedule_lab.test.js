@@ -81,6 +81,36 @@ describe('Time & Schedule Lab', () => {
     expect(challengeQuest.progress({ score: { correct: 99 }, solvedChallenges: { bogus: true } })).toBe('0/5 correct');
   });
 
+  it('uses stable challenge IDs, migrates legacy saves, and exposes deterministic difficulty bands', () => {
+    loadTool(FILE, ID);
+    const pure = window.TimeSchedulePure;
+    const ids = pure.challenges.map((challenge) => challenge.id);
+    expect(new Set(ids).size).toBe(pure.challenges.length);
+    expect(pure.challenges.every((challenge) => ['foundation', 'practice', 'stretch'].includes(challenge.difficulty))).toBe(true);
+    expect(pure.challengesForDifficulty('stretch').map((challenge) => challenge.id)).toEqual([
+      'overnight-movie-end', 'interval-noon-bridge', 'convert-2107-12h',
+    ]);
+    expect(pure.normalizeChallengeMap({
+      3: true, 9: true, 'convert-1840-24h': true, bogus: true,
+    })).toEqual({
+      'convert-1840-24h': true, 'convert-2107-12h': true,
+    });
+    expect(pure.challengeMissedIds({
+      missedChallenges: { 3: true, 'interval-noon-bridge': true },
+      solvedChallenges: { 'convert-1840-24h': true },
+    }, 'all')).toEqual(['interval-noon-bridge']);
+
+    const html = renderTool(ID, {
+      _timeSchedule: {
+        tab: 'challenge', challengeDifficulty: 'stretch',
+        challengeId: 'overnight-movie-end', challengeIndex: 0,
+      },
+    });
+    expect(html).toContain('Challenge 1 of 3');
+    expect(html).toContain('Stretch / stretch');
+    expect(html).toContain('A movie starts at 11:35 PM');
+  });
+
   it('builds friendly jumps across midnight in both directions', () => {
     loadTool(FILE, ID);
     const pure = window.TimeSchedulePure;
@@ -252,9 +282,62 @@ describe('Time & Schedule Lab', () => {
     const input = document.querySelector('input[type="text"]');
     await enterText(input, '18:40');
     await React.act(async () => { check.click(); });
-    expect(latest._timeSchedule.solvedChallenges['3']).toBe(true);
+    expect(latest._timeSchedule.solvedChallenges['convert-1840-24h']).toBe(true);
+    expect(latest._timeSchedule.solvedChallenges['3']).toBeUndefined();
+    expect(latest._timeSchedule.missedChallenges['convert-1840-24h']).toBeUndefined();
+    expect(latest._timeSchedule.challengeAttempts['convert-1840-24h']).toBe(2);
     expect(latest._timeSchedule.score).toEqual({ correct: 1, total: 1 });
     expect(awardXP).toHaveBeenCalledWith('timeSchedule', 5, 'time challenge');
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('builds a stable retry-missed queue and awards XP only when the missed challenge is solved', async () => {
+    const tool = loadTool(FILE, ID);
+    const awardXP = vi.fn();
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _timeSchedule: {
+          tab: 'challenge', challengeId: 'interval-1320-1455', challengeAnswer: '90',
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    let check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); });
+    expect(latest._timeSchedule.missedChallenges['interval-1320-1455']).toBe(true);
+    expect(latest._timeSchedule.challengeAttempts['interval-1320-1455']).toBe(1);
+    expect(latest._timeSchedule.score).toEqual({ correct: 0, total: 1 });
+    expect(awardXP).not.toHaveBeenCalled();
+
+    const next = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Next challenge');
+    await React.act(async () => { next.click(); });
+    expect(latest._timeSchedule.challengeId).not.toBe('interval-1320-1455');
+    const retry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Retry missed (1)');
+    await React.act(async () => { retry.click(); });
+    expect(latest._timeSchedule.challengePracticeMode).toBe('retry');
+    expect(latest._timeSchedule.challengeId).toBe('interval-1320-1455');
+
+    const input = document.querySelector('input[type="text"]');
+    await enterText(input, '95');
+    check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); check.click(); });
+    expect(latest._timeSchedule.solvedChallenges['interval-1320-1455']).toBe(true);
+    expect(latest._timeSchedule.missedChallenges['interval-1320-1455']).toBeUndefined();
+    expect(latest._timeSchedule.challengeAttempts['interval-1320-1455']).toBe(2);
+    expect(latest._timeSchedule.score).toEqual({ correct: 1, total: 2 });
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    expect(document.body.textContent).toContain('Retry missed (0)');
+
+    const finishRetry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Next challenge');
+    await React.act(async () => { finishRetry.click(); });
+    expect(latest._timeSchedule.challengePracticeMode).toBe('all');
+    expect(latest._timeSchedule.challengeId).toBe('convert-1840-24h');
     await React.act(async () => { root.unmount(); });
   });
 

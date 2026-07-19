@@ -128,6 +128,56 @@
     return String(Object.is(rounded, -0) ? 0 : rounded);
   }
 
+  function percentSegmentFills(tapePercent) {
+    var bounded = clamp(finiteNumber(tapePercent, 0), 0, 100);
+    var fills = [];
+    for (var segment = 0; segment < 10; segment++) {
+      fills.push(roundTo(clamp((bounded - segment * 10) / 10, 0, 1), 6));
+    }
+    return fills;
+  }
+
+  function percentTapeModel(value, maxTapes) {
+    var percent = Math.max(0, finiteNumber(value, 0));
+    var visibleLimit = clamp(Math.floor(finiteNumber(maxTapes, 6)), 1, 12);
+    var wholeCount = Math.floor(percent / 100);
+    var remainderPercent = roundTo(percent - wholeCount * 100, 6);
+    if (nearlyEqual(remainderPercent, 100)) {
+      wholeCount += 1;
+      remainderPercent = 0;
+    } else if (nearlyEqual(remainderPercent, 0)) {
+      remainderPercent = 0;
+    }
+
+    var reserveForPartial = remainderPercent > 0 ? 1 : 0;
+    var visibleWholeCount = Math.min(wholeCount, visibleLimit - reserveForPartial);
+    var tapes = [];
+    for (var wholeIndex = 0; wholeIndex < visibleWholeCount; wholeIndex++) {
+      tapes.push({ percent: 100, fills: percentSegmentFills(100), complete: true });
+    }
+    if (remainderPercent > 0) {
+      tapes.push({ percent: remainderPercent, fills: percentSegmentFills(remainderPercent), complete: false });
+    }
+    if (!tapes.length) tapes.push({ percent: 0, fills: percentSegmentFills(0), complete: false });
+
+    return {
+      percent: percent,
+      wholeCount: wholeCount,
+      remainderPercent: remainderPercent,
+      totalTapeCount: Math.max(1, wholeCount + reserveForPartial),
+      hiddenWholeCount: Math.max(0, wholeCount - visibleWholeCount),
+      tapes: tapes
+    };
+  }
+
+  function percentTapeSummary(model) {
+    var percentLabel = formatNumber(model.percent) + '%';
+    if (model.percent === 0) return percentLabel + ' fills none of the whole.';
+    if (model.wholeCount === 0) return percentLabel + ' fills ' + formatNumber(model.remainderPercent) + '% of one whole.';
+    if (model.remainderPercent === 0) return percentLabel + ' equals ' + model.wholeCount + ' complete ' + (model.wholeCount === 1 ? 'whole.' : 'wholes.');
+    return percentLabel + ' equals ' + model.wholeCount + ' complete ' + (model.wholeCount === 1 ? 'whole' : 'wholes') + ' plus ' + formatNumber(model.remainderPercent) + '% of another whole.';
+  }
+
   function gcd(a, b) {
     a = Math.abs(Math.round(a));
     b = Math.abs(Math.round(b));
@@ -212,6 +262,9 @@
     parsePairs: parsePairs,
     parsePairInput: parsePairInput,
     analyzeProportionalPairs: analyzeProportionalPairs,
+    percentSegmentFills: percentSegmentFills,
+    percentTapeModel: percentTapeModel,
+    percentTapeSummary: percentTapeSummary,
     challengeIsCorrect: challengeIsCorrect,
     challenges: CHALLENGES
   };
@@ -501,9 +554,65 @@
           resultLabel = 'Part';
         }
         var tapePercent = kind === 'findPercent' ? (result == null ? 0 : result) : percent;
-        var filledSegments = clamp(Math.ceil(tapePercent / 10), 0, 10);
-        var segments = [];
-        for (var i = 0; i < 10; i++) segments.push(i);
+        var tapeModel = percentTapeModel(tapePercent, 6);
+        var tapeSummary = result == null
+          ? (kind === 'findPercent' ? 'The percent is not defined when the whole is zero. Enter a positive whole to build the tape.' : 'The whole is not defined when the percent is zero. Enter a positive percent to build the tape.')
+          : percentTapeSummary(tapeModel);
+
+        function renderPercentTape(tape, tapeIndex) {
+          var wholeNumber = tape.complete ? tapeIndex + 1 : tapeModel.wholeCount + 1;
+          var titleId = 'ratio-percent-tape-title-' + tapeIndex;
+          var descId = 'ratio-percent-tape-desc-' + tapeIndex;
+          var fullSegments = tape.fills.filter(function(fill) { return fill === 1; }).length;
+          var partialSegment = tape.fills.filter(function(fill) { return fill > 0 && fill < 1; })[0];
+          var description = 'Ten equal sections each represent 10% of one whole. ' + fullSegments + ' sections are completely filled.';
+          if (partialSegment != null) {
+            description += ' The next section is ' + formatNumber(partialSegment * 100) + '% filled, representing ' + formatNumber(partialSegment * 10) + '% of the whole.';
+          }
+          if (!fullSegments && partialSegment == null) description += ' No sections are filled.';
+
+          return h('div', {
+            key: 'percent-tape-' + tapeIndex,
+            className: 'rounded-lg p-3 space-y-2',
+            style: { background: soft, border: '1px solid ' + border },
+            'data-percent-tape': tapeIndex + 1,
+            'data-tape-percent': formatNumber(tape.percent)
+          },
+            h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 text-xs' },
+              h('strong', null, 'Whole ' + wholeNumber),
+              h('span', { style: { color: muted } }, formatNumber(tape.percent) + '% filled')
+            ),
+            h('svg', {
+              viewBox: '0 0 500 62',
+              className: 'w-full min-h-[62px]',
+              role: 'img',
+              'aria-labelledby': titleId + ' ' + descId,
+              'data-tape-percent': formatNumber(tape.percent),
+              preserveAspectRatio: 'xMidYMid meet'
+            },
+              h('title', { id: titleId }, 'Whole ' + wholeNumber + ' percent tape: ' + formatNumber(tape.percent) + '% filled'),
+              h('desc', { id: descId }, description),
+              tape.fills.map(function(fill, segmentIndex) {
+                var x = segmentIndex * 50 + 1;
+                return h('g', { key: 'percent-segment-' + segmentIndex, 'data-percent-segment': segmentIndex + 1 },
+                  h('rect', { x: x, y: 8, width: 48, height: 32, rx: 2, fill: soft }),
+                  fill > 0 && h('rect', {
+                    x: x,
+                    y: 8,
+                    width: roundTo(48 * fill, 3),
+                    height: 32,
+                    rx: fill === 1 ? 2 : 0,
+                    fill: accentStrong,
+                    'data-fill-fraction': formatNumber(fill, 6),
+                    'aria-hidden': 'true'
+                  }),
+                  h('rect', { x: x, y: 8, width: 48, height: 32, rx: 2, fill: 'none', stroke: border, strokeWidth: 1.5, 'aria-hidden': 'true' }),
+                  h('text', { x: x + 24, y: 55, textAnchor: 'middle', fontSize: 8, fontWeight: '700', fill: muted, 'aria-hidden': 'true' }, (segmentIndex + 1) * 10 + '%')
+                );
+              })
+            )
+          );
+        }
 
         return h('div', { className: 'grid lg:grid-cols-[280px_1fr] gap-4' },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
@@ -527,12 +636,11 @@
               ),
               h('code', { className: 'rounded-lg px-3 py-2 text-xs', style: { background: soft, border: '1px solid ' + border } }, formula)
             ),
-            h('div', { role: 'img', 'aria-label': 'Percent tape showing approximately ' + formatNumber(tapePercent) + ' percent', className: 'space-y-2' },
-              h('div', { className: 'grid grid-cols-10 gap-1' }, segments.map(function(segment) {
-                var filled = segment < filledSegments;
-                return h('div', { key: segment, className: 'h-12 rounded-sm flex items-center justify-center text-[10px] font-bold', style: { background: filled ? accentStrong : soft, color: filled ? accentText : muted, border: '1px solid ' + border } }, (segment + 1) * 10 + '%');
-              })),
-              h('p', { className: 'text-xs', style: { color: muted } }, tapePercent > 100 ? 'The tape fills at 100%; the result extends beyond one whole.' : 'Each section represents 10% of one whole. Partial tens are rounded up visually; use the exact result above.')
+            h('div', { className: 'space-y-3', 'data-percent-tape-total': formatNumber(tapeModel.percent), 'data-percent-tape-count': tapeModel.totalTapeCount },
+              h('p', { id: 'ratio-percent-tape-summary', className: 'text-sm font-semibold', style: { color: text } }, tapeSummary),
+              h('p', { id: 'ratio-percent-tape-key', className: 'text-xs', style: { color: muted } }, 'Each outlined section is exactly 10% of one whole. A partially filled section shows the exact fraction of that 10% section.'),
+              h('div', { className: 'space-y-3', 'aria-describedby': 'ratio-percent-tape-summary ratio-percent-tape-key' }, tapeModel.tapes.map(renderPercentTape)),
+              tapeModel.hiddenWholeCount > 0 && h('p', { className: 'text-xs font-semibold', style: { color: muted }, role: 'note' }, 'Showing ' + (tapeModel.tapes.length - (tapeModel.remainderPercent > 0 ? 1 : 0)) + ' complete whole tapes; ' + tapeModel.hiddenWholeCount + ' additional complete ' + (tapeModel.hiddenWholeCount === 1 ? 'whole is' : 'wholes are') + ' summarized above.')
             )
           )
         );

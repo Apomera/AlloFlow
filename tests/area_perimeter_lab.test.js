@@ -35,6 +35,13 @@ describe('Area & Perimeter Lab', () => {
     expect(pure.factorPairs(Infinity)).toEqual([]);
     expect(pure.isCorrectNumericAnswer('', 28)).toBe(false);
     expect(pure.isCorrectNumericAnswer('28', 28)).toBe(true);
+    expect(pure.challengeIds).toHaveLength(10);
+    expect(pure.challengeIds[0]).toBe('garden-area');
+    expect(pure.normalizeChallengeProgress({ 0: true, 'frame-perimeter': true, bogus: true })).toEqual({
+      'garden-area': true,
+      'frame-perimeter': true,
+    });
+    expect(pure.challengeProgressCount({ 0: true, 'garden-area': true, 4: true })).toBe(2);
     const modeQuest = tool.questHooks.find((hook) => hook.id === 'measurement_tour');
     const challengeQuest = tool.questHooks.find((hook) => hook.id === 'challenge_five');
     expect(modeQuest.progress({ modeVisits: { explore: true, bogus: true } })).toBe('1/5 modes');
@@ -137,7 +144,8 @@ describe('Area & Perimeter Lab', () => {
     const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
     expect(check).toBeTruthy();
     await React.act(async () => { check.click(); check.click(); });
-    expect(latest._areaPerimeter.solvedChallenges['0']).toBe(true);
+    expect(latest._areaPerimeter.solvedChallenges['garden-area']).toBe(true);
+    expect(latest._areaPerimeter.solvedChallenges['0']).toBeUndefined();
     expect(latest._areaPerimeter.score).toEqual({ correct: 1, attempts: 1 });
     expect(awardXP).toHaveBeenCalledWith('areaPerimeter', 5, 'Area & Perimeter challenge');
     expect(awardXP).toHaveBeenCalledTimes(1);
@@ -158,6 +166,43 @@ describe('Area & Perimeter Lab', () => {
     expect(document.body.textContent).toContain('Solved previously. Area = length');
     await React.act(async () => { root.unmount(); });
   });
+  it('focuses challenge difficulty and saves missed work by stable identity', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _areaPerimeter: { mode: 'challenge', challengeIndex: 0, answer: '27' },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    expect(document.querySelector('[data-challenge-id=garden-area]')).toBeTruthy();
+
+    const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); });
+    expect(latest._areaPerimeter.missedChallenges).toEqual({ 'garden-area': true });
+    expect(document.body.textContent).toContain('saved for retry');
+
+    const retry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Retry missed (1)');
+    expect(retry).toBeTruthy();
+    await React.act(async () => { retry.click(); });
+    expect(latest._areaPerimeter.challengeId).toBe('garden-area');
+    expect(latest._areaPerimeter.answer).toBe('');
+
+    const stretch = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Stretch');
+    await React.act(async () => { stretch.click(); });
+    expect(latest._areaPerimeter.challengeDifficulty).toBe('stretch');
+    expect(latest._areaPerimeter.challengeId).toBe('l-shape-area');
+    expect(latest._areaPerimeter.challengeIndex).toBe(4);
+    expect(document.querySelector('[data-challenge-id=l-shape-area]')).toBeTruthy();
+    expect(document.body.textContent).toContain('An L-shape starts');
+    await React.act(async () => { root.unmount(); });
+  });
+
   it('is wired into the host catalog, plugin allowlist, lazy loader, and deployment mirrors', () => {
     const host = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
     const deployedHost = fs.readFileSync('prismflow-deploy/public/stem_lab/stem_lab_module.js', 'utf8');

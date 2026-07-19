@@ -44,6 +44,22 @@ describe('Arithmetic Strategy Studio', () => {
     expect(pure.estimateFor('divide', 53, 5)).toBe(10);
     expect(pure.assessEstimate('add', 27, 35, '', 60).status).toBe('missing');
     expect(pure.assessEstimate('add', 27, 35, 999, 60).reasonable).toBe(false);
+
+    const wordIds = pure.wordProblems.map((problem) => problem.id);
+    expect(wordIds).toEqual(['w1', 'w2', 'w3', 'w4', 'full-teams', 'supply-boxes']);
+    expect(new Set(wordIds).size).toBe(wordIds.length);
+    expect(pure.nextWordProblemId('w1', wordIds)).toBe('w2');
+    expect(pure.missedWordProblemIds({
+      wordMissedCases: { w1: true, 'full-teams': true, bogus: true },
+      wordSolvedCases: { w1: true },
+    })).toEqual(['full-teams']);
+    expect(pure.expectedWordResponse(pure.wordProblems.find((problem) => problem.id === 'w4')))
+      .toEqual({ answer: 13, remainder: 1, requiresRemainder: true, divisionContext: 'report-remainder' });
+    expect(pure.expectedWordResponse(pure.wordProblems.find((problem) => problem.id === 'full-teams')))
+      .toEqual({ answer: 8, remainder: 0, requiresRemainder: false, divisionContext: 'discard-remainder' });
+    expect(pure.expectedWordResponse(pure.wordProblems.find((problem) => problem.id === 'supply-boxes')))
+      .toEqual({ answer: 9, remainder: 0, requiresRemainder: false, divisionContext: 'round-up' });
+
     const practiceQuest = tool.questHooks.find((hook) => hook.id === 'practice_5');
     const errorQuest = tool.questHooks.find((hook) => hook.id === 'error_detective');
     expect(practiceQuest.progress({ practiceSolved: { bogus: true } })).toBe('0/5 correct');
@@ -218,6 +234,124 @@ describe('Arithmetic Strategy Studio', () => {
     expect(latest._arithmeticStudio.attempts).toBe(1);
     expect(latest._arithmeticStudio.correct).toBe(1);
     expect(Object.keys(latest._arithmeticStudio.practiceSolved)).toEqual(['a1']);
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('makes operation choice part of application reasoning without disclosing the answer', async () => {
+    const tool = loadTool(FILE, ID);
+    const awardXP = vi.fn();
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _arithmeticStudio: { tab: 'apply', wordProblemId: 'w1' },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    expect(document.querySelector('[data-word-problem-id="w1"]')).toBeTruthy();
+    expect(document.body.textContent).not.toContain('Operation: Addition');
+    expect(document.querySelectorAll('[data-word-operation][aria-pressed="true"]')).toHaveLength(0);
+    let check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check response');
+    expect(check.disabled).toBe(true);
+
+    const addition = document.querySelector('[data-word-operation="add"]');
+    await React.act(async () => { addition.click(); });
+    await enterNumber(document.querySelector('input[type="number"]'), '423');
+    check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check response');
+    await React.act(async () => { check.click(); check.click(); });
+
+    expect(latest._arithmeticStudio).toMatchObject({
+      wordProblemId: 'w1',
+      wordOperation: 'add',
+      wordSolved: 1,
+      operationsUsed: { add: true },
+    });
+    expect(latest._arithmeticStudio.wordAttempts.w1).toBe(1);
+    expect(latest._arithmeticStudio.wordSolvedCases.w1).toBe(true);
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    expect(document.body.textContent).toContain('Addition models the story');
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('restores and locks canonical values when a solved story is revisited', () => {
+    loadTool(FILE, ID);
+    document.body.innerHTML = renderTool(ID, {
+      _arithmeticStudio: {
+        tab: 'apply', wordProblemId: 'w4', wordSolvedCases: { w4: true },
+        wordOperation: null, wordAnswer: '', wordRemainder: '',
+      },
+    });
+
+    const divide = document.querySelector('[data-word-operation=divide]');
+    expect(divide.getAttribute('aria-pressed')).toBe('true');
+    expect(divide.disabled).toBe(true);
+    const inputs = [...document.querySelectorAll('input[type=number]')];
+    expect(inputs.map((input) => input.value)).toEqual(['13', '1']);
+    expect(inputs.every((input) => input.disabled)).toBe(true);
+    expect(document.body.textContent).toContain('Division models the story');
+  });
+
+  it('interprets report, discard, and round-up division contexts distinctly', () => {
+    loadTool(FILE, ID);
+    const report = renderTool(ID, { _arithmeticStudio: { tab: 'apply', wordProblemId: 'w4' } });
+    const legacyReport = renderTool(ID, { _arithmeticStudio: { tab: 'apply', operation: 'divide', wordIndex: 0 } });
+    const discard = renderTool(ID, { _arithmeticStudio: { tab: 'apply', wordProblemId: 'full-teams' } });
+    const roundUp = renderTool(ID, { _arithmeticStudio: { tab: 'apply', wordProblemId: 'supply-boxes' } });
+
+    expect(report).toContain('Amount left over');
+    expect(report).toContain('markers per group');
+    expect(legacyReport).toContain('data-word-problem-id="w4"');
+    expect(discard).toContain('complete teams');
+    expect(discard).not.toContain('Amount left over');
+    expect(roundUp).toContain('How many boxes are needed');
+    expect(roundUp).not.toContain('Amount left over');
+  });
+
+  it('tracks missed application stories and clears them through retry-missed', async () => {
+    const tool = loadTool(FILE, ID);
+    const awardXP = vi.fn();
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _arithmeticStudio: { tab: 'apply', wordProblemId: 'w1' },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const subtraction = document.querySelector('[data-word-operation="subtract"]');
+    await React.act(async () => { subtraction.click(); });
+    await enterNumber(document.querySelector('input[type="number"]'), '423');
+    let check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check response');
+    await React.act(async () => { check.click(); });
+
+    expect(latest._arithmeticStudio.wordFeedback).toBe('operation');
+    expect(latest._arithmeticStudio.wordMissedCases.w1).toBe(true);
+    expect(document.body.textContent).toContain('Retry missed (1)');
+
+    let retry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Retry missed (1)');
+    await React.act(async () => { retry.click(); });
+    expect(latest._arithmeticStudio).toMatchObject({ wordProblemId: 'w1', wordOperation: null, wordAnswer: '' });
+
+    const addition = document.querySelector('[data-word-operation="add"]');
+    await React.act(async () => { addition.click(); });
+    await enterNumber(document.querySelector('input[type="number"]'), '423');
+    check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check response');
+    await React.act(async () => { check.click(); });
+
+    expect(latest._arithmeticStudio.wordSolvedCases.w1).toBe(true);
+    expect(latest._arithmeticStudio.wordAttempts.w1).toBe(2);
+    expect(latest._arithmeticStudio.wordMissedCases.w1).toBeUndefined();
+    retry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Retry missed (0)');
+    expect(retry.disabled).toBe(true);
     expect(awardXP).toHaveBeenCalledTimes(1);
     await React.act(async () => { root.unmount(); });
   });
