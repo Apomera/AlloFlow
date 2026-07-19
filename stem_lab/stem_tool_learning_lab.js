@@ -8295,12 +8295,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var sn = R.useState(null);                    var selectedNode = sn[0]; var setSelectedNode = sn[1];
     var ts = R.useState('');                      var newTitle = ts[0];  var setNewTitle = ts[1];
     var tes = R.useState('');                     var titleError = tes[0]; var setTitleError = tes[1];
+    var pfs = R.useState('');                     var pendingFocusId = pfs[0]; var setPendingFocusId = pfs[1];
 
     var COLORS = ['#d8b4fe', '#6ee7b7', '#fca5a5', '#fde68a', '#93c5fd', '#67e8f9', '#fdba74', '#f9a8d4'];
 
-    function focusId(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, data]);
+
+    function focusId(id) { setPendingFocusId(id); }
     function getMap() {
       return (data.maps || []).filter(function(map) { return map.id === activeMap; })[0];
     }
@@ -8602,13 +8609,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var qs = R.useState('');                       var search = qs[0]; var setSearch = qs[1];
     var es = R.useState('');                       var formError = es[0]; var setFormError = es[1];
 
+    var pfs = R.useState('');                      var pendingFocusId = pfs[0]; var setPendingFocusId = pfs[1];
+
     var EMPTY_NOTE = { title: '', cue: '', main: '', summary: '' };
     var notebooks = data.notebooks && data.notebooks.length ? data.notebooks : ['General'];
     var notes = data.notes || [];
 
-    function focusId(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, data]);
+
+    function focusId(id) { setPendingFocusId(id); }
     function resetEditor() {
       setActiveNote(null);
       setForm(Object.assign({}, EMPTY_NOTE));
