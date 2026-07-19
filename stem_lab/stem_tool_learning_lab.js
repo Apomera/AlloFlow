@@ -12976,7 +12976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // sentence; then review with self-quizzes and mastery tracking.
   function PersonalVocabBuilder(props) {
     if (!R) return null;
-    var data = props.data || { lists: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { lists: [] };
     var setData = props.setData;
     var vs = R.useState('lists'); var view = vs[0]; var setView = vs[1];
     var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
@@ -12986,10 +12986,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var les = R.useState(''); var listError = les[0]; var setListError = les[1];
     var wes = R.useState({ word: '', definition: '' }); var wordErrors = wes[0]; var setWordErrors = wes[1];
     var qs = R.useState(null); var quizState = qs[0]; var setQuizState = qs[1];
+    var pf = R.useState(''); var pendingFocusId = pf[0]; var setPendingFocusId = pf[1];
+    var rawLists = Array.isArray(data.lists) ? data.lists : [];
 
-    function focusById(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
+    function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+    function textValue(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); }
+    function wordsOf(list) { return (list && Array.isArray(list.words) ? list.words : []).filter(isRecord); }
     function createList() {
       var name = newListName.trim();
       if (!name) {
@@ -12998,7 +13009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var list = { id: tkId(), name: name, words: [], createdAt: todayISO() };
-      setData(Object.assign({}, data, { lists: [list].concat(data.lists || []) }));
+      setData(Object.assign({}, data, { lists: [list].concat(rawLists) }));
       setActiveId(list.id);
       setNewListName('');
       setListError('');
@@ -13006,18 +13017,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       llAnnounce('Vocabulary list created: ' + list.name + '.');
       focusById('learning-lab-vocab-list-heading');
     }
-    function getList() { return (data.lists || []).filter(function(list) { return list.id === activeId; })[0]; }
+    function getList() { return rawLists.filter(function(list) { return isRecord(list) && list.id === activeId; })[0]; }
     function updateList(patch) {
       setData(Object.assign({}, data, {
-        lists: (data.lists || []).map(function(list) { return list.id === activeId ? Object.assign({}, list, patch) : list; })
+        lists: rawLists.map(function(list) { return isRecord(list) && list.id === activeId ? Object.assign({}, list, patch) : list; })
       }));
     }
     async function removeList(id) {
-      var list = (data.lists || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (list ? ' "' + list.name + '" and all its words' : ' this vocabulary list') + '.', {
+      var list = rawLists.filter(function(item) { return isRecord(item) && item.id === id; })[0];
+      var listName = list ? textValue(list.name).trim() : '';
+      if (!(await askLearningLabConfirmation('This permanently removes' + (listName ? ' "' + listName + '" and all its words' : ' this vocabulary list and all its words') + '.', {
         title: 'Delete this vocabulary list?', confirmText: 'Delete list'
       }))) return;
-      setData(Object.assign({}, data, { lists: (data.lists || []).filter(function(item) { return item.id !== id; }) }));
+      setData(Object.assign({}, data, { lists: rawLists.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
       llAnnounce('Vocabulary list deleted.');
       focusById('learning-lab-vocab-new-list');
     }
@@ -13034,7 +13046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var list = getList();
       if (!list) return;
       var word = { id: tkId(), word: form.word.trim(), definition: form.definition.trim(), sentence: form.sentence.trim(), mastery: 0 };
-      updateList({ words: (list.words || []).concat([word]) });
+      updateList({ words: wordsOf(list).concat([word]) });
       setForm({ word: '', definition: '', sentence: '' });
       setWordErrors({ word: '', definition: '' });
       llAnnounce('Vocabulary word added: ' + word.word + '.');
@@ -13043,11 +13055,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     async function removeWord(wordId) {
       var list = getList();
       if (!list) return;
-      var word = (list.words || []).filter(function(item) { return item.id === wordId; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes the word' + (word ? ' "' + word.word + '"' : '') + '.', {
+      var word = wordsOf(list).filter(function(item) { return item.id === wordId; })[0];
+      var wordText = word ? textValue(word.word).trim() : '';
+      if (!(await askLearningLabConfirmation('This permanently removes the word' + (wordText ? ' "' + wordText + '"' : '') + '.', {
         title: 'Delete this vocabulary word?', confirmText: 'Delete word'
       }))) return;
-      updateList({ words: (list.words || []).filter(function(item) { return item.id !== wordId; }) });
+      updateList({ words: wordsOf(list).filter(function(item) { return item.id !== wordId; }) });
       llAnnounce('Vocabulary word deleted.');
       focusById('learning-lab-vocab-word');
     }
@@ -13055,11 +13068,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var list = getList();
       if (!list) return;
       var mastery = Math.max(0, Math.min(5, Number(value) || 0));
-      updateList({ words: (list.words || []).map(function(word) { return word.id === wordId ? Object.assign({}, word, { mastery: mastery }) : word; }) });
+      updateList({ words: wordsOf(list).map(function(word) { return word.id === wordId ? Object.assign({}, word, { mastery: mastery }) : word; }) });
     }
     function startQuiz() {
       var list = getList();
-      var eligibleWords = list ? (list.words || []).filter(function(word) { return word.word && word.definition; }) : [];
+      var eligibleWords = list ? wordsOf(list).filter(function(word) { return textValue(word.word).trim() && textValue(word.definition).trim(); }) : [];
       if (eligibleWords.length === 0) {
         llAnnounce('Add a word and definition before starting a quiz.');
         return;
@@ -13110,21 +13123,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-vocab-open-' + previousId);
     }
 
-    var lists = data.lists || [];
+    var listedLists = rawLists.filter(isRecord);
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(59,130,246,0.55)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', marginBottom: 4 };
     var hiddenLabelStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
 
     if (view === 'quiz' && quizState) {
-      var quizWord = quizState.words[quizState.idx];
+      var quizWord = quizState.words[quizState.idx] || {};
       return hh('div', { style: { padding: 14 } },
         tkSectionHeader('🔤', 'Vocabulary quiz', 'Word ' + (quizState.idx + 1) + ' of ' + quizState.words.length + ' · score ' + quizState.score, '#3b82f6'),
         hh('section', { 'aria-labelledby': 'learning-lab-vocab-quiz-question', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(59,130,246,0.20), rgba(15,23,42,0.7))', border: '2px solid #3b82f6', marginBottom: 14, textAlign: 'center', minHeight: 160 } },
-          hh('h2', { id: 'learning-lab-vocab-quiz-question', tabIndex: -1, style: { fontSize: 28, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 12px' } }, quizWord.word),
+          hh('h2', { id: 'learning-lab-vocab-quiz-question', tabIndex: -1, style: { fontSize: 28, fontWeight: 900, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 12px' } }, textValue(quizWord.word)),
           quizState.showAns ? hh('div', { id: 'learning-lab-vocab-quiz-answer', role: 'region', 'aria-labelledby': 'learning-lab-vocab-quiz-answer-heading' },
             hh('h3', { id: 'learning-lab-vocab-quiz-answer-heading', tabIndex: -1, style: { fontSize: 12, color: '#93c5fd', margin: '0 0 5px' } }, 'Definition'),
-            hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 8px' } }, quizWord.definition),
-            quizWord.sentence ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: 0 } }, 'Example: “' + quizWord.sentence + '”') : null
+            hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 8px' } }, textValue(quizWord.definition)),
+            textValue(quizWord.sentence).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: 0 } }, 'Example: “' + textValue(quizWord.sentence).trim() + '”') : null
           ) : null
         ),
         quizState.showAns ? hh('div', { role: 'group', 'aria-label': 'Rate your vocabulary recall', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 } },
@@ -13142,10 +13155,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (view === 'words' && activeId) {
       var activeList = getList();
       if (!activeList) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This vocabulary list is not available. Return to the list menu and choose another.');
-      var words = activeList.words || [];
+      var words = wordsOf(activeList);
+      var activeListName = textValue(activeList.name).trim() || 'Untitled list';
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🔤', activeList.name, words.length + (words.length === 1 ? ' word' : ' words'), '#3b82f6'),
-        hh('h2', { id: 'learning-lab-vocab-list-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Vocabulary list: ' + activeList.name),
+        tkSectionHeader('🔤', activeListName, words.length + (words.length === 1 ? ' word' : ' words'), '#3b82f6'),
+        hh('h2', { id: 'learning-lab-vocab-list-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Vocabulary list: ' + activeListName),
         hh('div', { role: 'group', 'aria-label': 'Vocabulary list actions', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
           hh('button', { type: 'button', onClick: backToLists, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← All lists'),
           words.length > 0 ? hh('button', { id: 'learning-lab-vocab-start-quiz', type: 'button', onClick: startQuiz, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #bfdbfe', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start quiz') : null
@@ -13171,12 +13185,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               return hh('li', { key: 'w-' + word.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #3b82f6' } },
                 hh('article', { 'aria-labelledby': 'learning-lab-vocab-word-heading-' + word.id },
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
-                    hh('h3', { id: 'learning-lab-vocab-word-heading-' + word.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, word.word),
-                    hh('button', { type: 'button', 'aria-label': 'Delete vocabulary word: ' + word.word, onClick: function() { removeWord(word.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                    hh('h3', { id: 'learning-lab-vocab-word-heading-' + word.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, textValue(word.word).trim() || 'Untitled word'),
+                    hh('button', { type: 'button', 'aria-label': 'Delete vocabulary word: ' + (textValue(word.word).trim() || 'Untitled word'), onClick: function() { removeWord(word.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                   ),
-                  hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 4px' } }, word.definition),
-                  word.sentence ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: '4px 0' } }, 'Example: “' + word.sentence + '”') : null,
-                  hh('div', { 'aria-label': 'Mastery ' + mastery + ' of 5', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Mastery: ' + mastery + ' of 5 ', hh('span', { 'aria-hidden': 'true' }, '★'.repeat(mastery) + '☆'.repeat(5 - mastery)))
+                  hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '0 0 4px' } }, textValue(word.definition)),
+                  textValue(word.sentence).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: '4px 0' } }, 'Example: “' + textValue(word.sentence).trim() + '”') : null,
+                  hh('div', { 'aria-label': 'Mastery ' + mastery + ' of 5', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Mastery: ' + mastery + ' of 5 ', hh('span', { 'aria-hidden': 'true' }, '★'.repeat(mastery) + '☆'.repeat(5 - mastery)))
                 )
               );
             })
@@ -13186,6 +13200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🔤', 'Vocabulary Builder', 'Create subject-specific vocabulary lists and practice them with self-quizzes.', '#3b82f6'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'Lists, words, quiz results, and mastery ratings are saved only in your Personal Toolkit and are not shared with or sent to anyone. Quiz scores and mastery stars are self-ratings to guide your own practice, not grades.'),
       tkCard('#3b82f6',
         hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); createList(); }, 'aria-labelledby': 'learning-lab-vocab-new-heading' },
           hh('h3', { id: 'learning-lab-vocab-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#93c5fd', margin: '0 0 8px' } }, 'New vocabulary list'),
@@ -13199,17 +13214,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           )
         )
       ),
-      lists.length === 0 ? tkEmptyState('🔤', 'No vocabulary lists yet.', null, null)
+      listedLists.length === 0 ? tkEmptyState('🔤', 'No vocabulary lists yet.', null, null)
       : hh('ul', { 'aria-label': 'Vocabulary lists', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
-          lists.map(function(list) {
+          listedLists.map(function(list) {
+            var listName = textValue(list.name).trim() || 'Untitled list';
             return hh('li', { key: 'vl-' + list.id, style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(59,130,246,0.45)', borderLeft: '4px solid #3b82f6' } },
               hh('article', { 'aria-labelledby': 'learning-lab-vocab-list-name-' + list.id },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
-                  hh('h3', { id: 'learning-lab-vocab-list-name-' + list.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🔤 '), list.name),
-                  hh('button', { type: 'button', 'aria-label': 'Delete vocabulary list: ' + list.name, onClick: function() { removeList(list.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                  hh('h3', { id: 'learning-lab-vocab-list-name-' + list.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🔤 '), listName),
+                  hh('button', { type: 'button', 'aria-label': 'Delete vocabulary list: ' + listName, onClick: function() { removeList(list.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                 ),
-                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, (list.words || []).length + ((list.words || []).length === 1 ? ' word' : ' words')),
-                hh('button', { id: 'learning-lab-vocab-open-' + list.id, type: 'button', 'aria-label': 'Open vocabulary list: ' + list.name, onClick: function() { openList(list.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #bfdbfe', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open list')
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, wordsOf(list).length + (wordsOf(list).length === 1 ? ' word' : ' words')),
+                hh('button', { id: 'learning-lab-vocab-open-' + list.id, type: 'button', 'aria-label': 'Open vocabulary list: ' + listName, onClick: function() { openList(list.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #bfdbfe', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open list')
               )
             );
           })
@@ -20541,7 +20557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkDec',      icon: '⚖️', label: 'Decision Maker',       color: '#9333ea', desc: 'Structured options × criteria × weights',
         stat: (Array.isArray((data.mytkDec || {}).decisions) ? (data.mytkDec || {}).decisions.length : 0) + ' decisions', cta: 'Make a decision' },
       { id: 'mytkVocab',    icon: '🔤', label: 'Vocab Builder',        color: '#3b82f6', desc: 'Subject vocab lists with self-quiz',
-        stat: ((data.mytkVocab || {}).lists || []).length + ' lists', cta: 'Build vocab' },
+        stat: (Array.isArray((data.mytkVocab || {}).lists) ? (data.mytkVocab || {}).lists.length : 0) + ' lists', cta: 'Build vocab' },
       { id: 'mytkPalace',   icon: '🏛', label: 'Memory Palace',        color: '#a855f7', desc: 'Method of loci — ancient + research-supported',
         stat: ((data.mytkPalace || {}).palaces || []).length + ' palaces', cta: 'Build a palace' },
       { id: 'mytkRoster',   icon: '🎒', label: 'My Class Roster',      color: '#3b82f6', desc: 'Classes, teachers, periods, rooms, friends',

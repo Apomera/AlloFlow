@@ -44,9 +44,30 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('preserves unrelated section data for create, update, and deletion', () => {
-    expect(vocab).toContain("setData(Object.assign({}, data, { lists: [list].concat(data.lists || []) }))");
+    expect(vocab).toContain("setData(Object.assign({}, data, { lists: [list].concat(rawLists) }))");
     expect(vocab).toContain("setData(Object.assign({}, data, {");
-    expect(vocab).toContain("setData(Object.assign({}, data, { lists: (data.lists || []).filter");
+    expect(vocab).toContain("setData(Object.assign({}, data, { lists: rawLists.filter");
+  });
+
+  it('handles malformed legacy vocabulary data without crashing', () => {
+    expect(vocab).toContain('var rawLists = Array.isArray(data.lists) ? data.lists : [];');
+    expect(vocab).toContain("function wordsOf(list) { return (list && Array.isArray(list.words) ? list.words : []).filter(isRecord); }");
+    expect(vocab).toContain('var listedLists = rawLists.filter(isRecord);');
+    expect(vocab).toContain("textValue(list.name).trim() || 'Untitled list'");
+    expect(vocab).toContain("textValue(word.word).trim() || 'Untitled word'");
+    expect(source).toContain("stat: (Array.isArray((data.mytkVocab || {}).lists) ? (data.mytkVocab || {}).lists.length : 0) + ' lists'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(vocab).toContain('if (!pendingFocusId) return;');
+    expect(vocab).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(vocab).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(vocab).not.toContain('setTimeout');
+  });
+
+  it('explains local-only saving and frames self-ratings as non-grades', () => {
+    expect(vocab).toContain('saved only in your Personal Toolkit and are not shared with or sent to anyone');
+    expect(vocab).toContain('Quiz scores and mastery stars are self-ratings to guide your own practice, not grades.');
   });
 
   it('confirms list and word deletion in app dialogs', () => {
@@ -56,8 +77,8 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('uses separate open and delete controls instead of nested interaction', () => {
-    expect(vocab).toContain("'aria-label': 'Delete vocabulary list: ' + list.name");
-    expect(vocab).toContain("'aria-label': 'Open vocabulary list: ' + list.name");
+    expect(vocab).toContain("'aria-label': 'Delete vocabulary list: ' + listName");
+    expect(vocab).toContain("'aria-label': 'Open vocabulary list: ' + listName");
     expect(vocab).not.toContain('e.stopPropagation()');
   });
 
@@ -99,7 +120,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('only quizzes words with both a term and definition', () => {
-    expect(vocab).toContain("filter(function(word) { return word.word && word.definition; })");
+    expect(vocab).toContain("filter(function(word) { return textValue(word.word).trim() && textValue(word.definition).trim(); })");
     expect(vocab).toContain("llAnnounce('Add a word and definition before starting a quiz.')");
   });
 
@@ -117,7 +138,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('provides named 44-pixel controls and fields', () => {
-    expect(vocab).toContain("'aria-label': 'Delete vocabulary word: ' + word.word");
+    expect(vocab).toContain("'aria-label': 'Delete vocabulary word: ' + (textValue(word.word).trim() || 'Untitled word')");
     expect(vocab).toContain('minWidth: 44, minHeight: 44');
     expect(vocab).toContain("minHeight: 44, padding: '9px 14px'");
     expect(vocab).toContain("width: '100%', minHeight: 44");
