@@ -26,9 +26,34 @@ describe('Learning Lab Decision Maker accessibility', () => {
   });
 
   it('preserves unrelated section data for create, update, and deletion', () => {
-    expect(decision).toContain("setData(Object.assign({}, data, { decisions: [decision].concat(data.decisions || []) }))");
+    expect(decision).toContain("setData(Object.assign({}, data, { decisions: [decision].concat(rawDecisions) }))");
     expect(decision).toContain("setData(Object.assign({}, data, {");
-    expect(decision).toContain("setData(Object.assign({}, data, { decisions: (data.decisions || []).filter");
+    expect(decision).toContain("setData(Object.assign({}, data, { decisions: rawDecisions.filter");
+  });
+
+  it('handles malformed legacy decision data without crashing', () => {
+    expect(decision).toContain('var rawDecisions = Array.isArray(data.decisions) ? data.decisions : [];');
+    expect(decision).toContain("function optionsOf(decision) { return (decision && Array.isArray(decision.options) ? decision.options : []).filter(isRecord); }");
+    expect(decision).toContain("function criteriaOf(decision) { return (decision && Array.isArray(decision.criteria) ? decision.criteria : []).filter(isRecord); }");
+    expect(decision).toContain('var listedDecisions = rawDecisions.filter(isRecord);');
+    expect(decision).toContain("textValue(decision.title).trim() || 'Untitled decision'");
+    expect(decision).toContain("var namedOptions = allOptions.filter(function(option) { return textValue(option.name).trim(); });");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(decision).toContain('if (!pendingFocusId) return;');
+    expect(decision).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(decision).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(decision).not.toContain('setTimeout');
+  });
+
+  it('explains local-only saving without external communication', () => {
+    expect(decision).toContain('Decisions you create here are saved only in your Personal Toolkit and are not shared with or sent to anyone.');
+  });
+
+  it('guards relative dates and catalog counts against malformed values', () => {
+    expect(source).toContain("if (d === null || !Number.isFinite(d)) return 'date not recorded';");
+    expect(source).toContain("stat: (Array.isArray((data.mytkDec || {}).decisions) ? (data.mytkDec || {}).decisions.length : 0) + ' decisions'");
   });
 
   it('confirms decision, option, and criterion deletion in app dialogs', () => {
@@ -53,8 +78,8 @@ describe('Learning Lab Decision Maker accessibility', () => {
   });
 
   it('keeps the minimum viable option and criterion structure', () => {
-    expect(decision).toContain('disabled: activeDecision.options.length <= 2');
-    expect(decision).toContain('disabled: activeDecision.criteria.length <= 1');
+    expect(decision).toContain('disabled: allOptions.length <= 2');
+    expect(decision).toContain('disabled: allCriteria.length <= 1');
     expect(decision).toContain('A decision must keep at least two options.');
     expect(decision).toContain('A decision must keep at least one criterion.');
   });
@@ -66,7 +91,7 @@ describe('Learning Lab Decision Maker accessibility', () => {
 
   it('removes stale scores when structure is deleted', () => {
     expect(decision).toContain("if (key.indexOf(option.id + '|') !== 0) scores[key]");
-    expect(decision).toContain("if (key.slice(-(criterion.id.length + 1)) !== '|' + criterion.id) scores[key]");
+    expect(decision).toContain("if (key.slice(-(String(criterion.id).length + 1)) !== '|' + criterion.id) scores[key]");
   });
 
   it('uses a captioned scoring table with scoped headers', () => {
