@@ -72,6 +72,24 @@ describe('Learning Lab Personal Crisis Plan accessibility', () => {
     expect(plan).toContain('use a device and account you trust');
   });
 
+  it('states that saving never sends or shares the plan', () => {
+    expect(plan).toContain('Saving does not send your plan to anyone or notify a teacher, school, counselor, or family member');
+    expect(plan).toContain('sharing it is always your choice');
+  });
+
+  it('handles malformed legacy plan data without crashing or leaking values', () => {
+    expect(plan).toContain("var data = props.data && typeof props.data === 'object' ? props.data : { plan: {} };");
+    expect(plan).toContain("var p = data.plan && typeof data.plan === 'object' && !Array.isArray(data.plan) ? data.plan : {};");
+    expect(plan).toContain("function fieldText(value) { return typeof value === 'string' ? value : ''; }");
+    expect(plan).toContain('value: fieldText(p[s.id])');
+  });
+
+  it('attributes the safety-planning approach without shouting or shorthand', () => {
+    expect(plan).toContain('Based on the Stanley and Brown (2012) Safety Planning Intervention.');
+    expect(plan).not.toContain('YOUR');
+    expect(plan).not.toContain('Stanley + Brown');
+  });
+
   it('announces a completed automatic save when a field loses focus', () => {
     expect(plan).toContain("onBlur: function() { llAnnounce(s.label + ' saved automatically.'); }");
     expect(plan).not.toContain('llAnnounce(event.target.value');

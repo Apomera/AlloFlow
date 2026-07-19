@@ -13793,9 +13793,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Stanley + Brown 2012 safety planning intervention. Saves locally.
   function PersonalCrisisPlan(props) {
     if (!R) return null;
-    var data = props.data || { plan: {} };
+    var data = props.data && typeof props.data === 'object' ? props.data : { plan: {} };
     var setData = props.setData;
-    var p = data.plan || {};
+    var p = data.plan && typeof data.plan === 'object' && !Array.isArray(data.plan) ? data.plan : {};
+    function fieldText(value) { return typeof value === 'string' ? value : ''; }
     function update(key, val) {
       var patch = {}; patch[key] = val;
       setData(Object.assign({}, data, { plan: Object.assign({}, p, patch) }));
@@ -13819,7 +13820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var textareaStyle = { boxSizing: 'border-box', width: '100%', minHeight: 96, padding: '10px', borderRadius: 8, border: '1px solid rgba(226,232,240,0.55)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit', lineHeight: 1.5, resize: 'vertical' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🛡', 'My Crisis Plan', 'Stanley + Brown 2012 Safety Planning Intervention. Build YOUR plan. Refer to it on hard days.', '#ef4444'),
+      tkSectionHeader('🛡', 'My Crisis Plan', 'Based on the Stanley and Brown (2012) Safety Planning Intervention. Build your own plan when you are calm, and refer to it on hard days.', '#ef4444'),
 
       hh('section', { 'aria-labelledby': 'learning-lab-crisis-help-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(127,29,29,0.55)', border: '2px solid #fca5a5', marginBottom: 14 } },
         hh('h3', { id: 'learning-lab-crisis-help-heading', style: { fontSize: 14, color: '#fff', fontWeight: 900, margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '🚨 '), 'If you are in crisis right now'),
@@ -13831,12 +13832,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           hh('li', null, hh('a', { href: 'sms:741741', 'aria-label': 'Text HOME to Crisis Text Line at 741741', style: resourceLinkStyle }, 'Text HOME to 741741')),
           hh('li', null, hh('a', { href: 'tel:911', 'aria-label': 'Call 911 for immediate danger', style: resourceLinkStyle }, 'Immediate danger: call 911'))
         ),
-        hh('p', { style: { fontSize: 11, color: '#fee2e2', lineHeight: 1.5, margin: '10px 0 0' } }, 'United States resources. Crisis services are available 24 hours a day, 7 days a week. Calling or texting may use your device’s phone or messaging app.')
+        hh('p', { style: { fontSize: 12, color: '#fee2e2', lineHeight: 1.5, margin: '10px 0 0' } }, 'United States resources. Crisis services are available 24 hours a day, 7 days a week. Calling or texting may use your device’s phone or messaging app.')
       ),
 
       hh('section', { 'aria-labelledby': 'learning-lab-crisis-plan-heading' },
         hh('h3', { id: 'learning-lab-crisis-plan-heading', style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 4px' } }, 'Build your six-step plan'),
-        hh('p', { id: 'learning-lab-crisis-save-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Your entries save automatically in this browser. Because this plan may contain private contact and safety information, use a device and account you trust.'),
+        hh('p', { id: 'learning-lab-crisis-save-note', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 12px' } }, 'Your entries save automatically in this browser. Saving does not send your plan to anyone or notify a teacher, school, counselor, or family member; sharing it is always your choice. Because this plan may contain private contact and safety information, use a device and account you trust.'),
         hh('ol', { 'aria-label': 'Six-step personal crisis plan', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
           STEPS.map(function(s) {
             var fieldId = 'learning-lab-crisis-' + s.id;
@@ -13845,14 +13846,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               hh('h4', { style: { margin: '0 0 4px' } },
                 hh('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.textColor } }, hh('span', { 'aria-hidden': 'true' }, s.icon + ' '), s.label)
               ),
-              hh('p', { id: promptId, style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, margin: '0 0 8px' } }, s.prompt),
-              hh('textarea', { id: fieldId, value: p[s.id] || '', rows: 4, maxLength: 4000, 'aria-describedby': promptId + ' learning-lab-crisis-save-note', onChange: function(event) { update(s.id, event.target.value); }, onBlur: function() { llAnnounce(s.label + ' saved automatically.'); }, 'data-ll-focusable': true, style: textareaStyle })
+              hh('p', { id: promptId, style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.5, margin: '0 0 8px' } }, s.prompt),
+              hh('textarea', { id: fieldId, value: fieldText(p[s.id]), rows: 4, maxLength: 4000, 'aria-describedby': promptId + ' learning-lab-crisis-save-note', onChange: function(event) { update(s.id, event.target.value); }, onBlur: function() { llAnnounce(s.label + ' saved automatically.'); }, 'data-ll-focusable': true, style: textareaStyle })
             );
           })
         )
       ),
 
-      hh('aside', { 'aria-labelledby': 'learning-lab-crisis-evidence-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(127,29,29,0.35)', border: '1px solid #fca5a5', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-crisis-evidence-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(127,29,29,0.35)', border: '1px solid #fca5a5', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
         hh('h3', { id: 'learning-lab-crisis-evidence-heading', style: { color: '#fecaca', fontSize: 12, margin: '0 0 4px' } }, hh('span', { 'aria-hidden': 'true' }, '🎓 '), 'Why write a safety plan?'),
         hh('p', { style: { margin: 0 } }, 'Writing this plan when you are calm can make it easier to use during a hard moment. Consider sharing your plan with someone safe, such as a parent, counselor, or trusted friend. This tool does not replace professional care or emergency services.')
       )
@@ -20579,7 +20580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkRoster || {}).classes || []).length + ' classes', cta: 'Track classes' },
       { id: 'mytkQuote',    icon: '💭', label: 'Quote Collector',      color: '#fbbf24', desc: 'Save quotes that matter — your personal library',
         stat: ((data.mytkQuote || {}).quotes || []).length + ' quotes', cta: 'Collect quotes' },
-      { id: 'mytkCrisis',   icon: '🛡', label: 'My Crisis Plan',       color: '#ef4444', desc: 'Stanley + Brown safety plan you control',
+      { id: 'mytkCrisis',   icon: '🛡', label: 'My Crisis Plan',       color: '#ef4444', desc: 'A private safety plan you control',
         stat: 'plan ready', cta: 'Build my plan' },
       { id: 'mytkIdent',    icon: '🪞', label: 'My Identity Map',      color: '#a855f7', desc: '8-dimension self-snapshot (Erikson identity work)',
         stat: 'evolving', cta: 'Map identity' },
@@ -20892,7 +20893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkPalace', icon: '🏛', label: __alloT('stem.learning_lab.memory_palace', 'Memory Palace'),        desc: __alloT('stem.learning_lab.method_of_loci_attach_memorized_items_', 'Method of loci — attach memorized items to locations in a familiar place.') },
               { id: 'mytkRoster', icon: '🎒', label: __alloT('stem.learning_lab.my_class_roster', 'My Class Roster'),      desc: __alloT('stem.learning_lab.classes_teachers_periods_rooms_friends', 'Classes + teachers + periods + rooms + friends-in-class.') },
               { id: 'mytkQuote',  icon: '💭', label: __alloT('stem.learning_lab.quote_collector', 'Quote Collector'),      desc: __alloT('stem.learning_lab.save_lines_from_books_classes_anywhere', 'Save lines from books + classes + anywhere. Personal library.') },
-              { id: 'mytkCrisis', icon: '🛡', label: __alloT('stem.learning_lab.my_crisis_plan', 'My Crisis Plan'),       desc: __alloT('stem.learning_lab.stanley_brown_2012_safety_planning_int', 'Stanley + Brown 2012 Safety Planning Intervention. Build your plan when calm.') },
+              { id: 'mytkCrisis', icon: '🛡', label: __alloT('stem.learning_lab.my_crisis_plan', 'My Crisis Plan'),       desc: __alloT('stem.learning_lab.stanley_brown_2012_safety_planning_int', 'A private six-step safety plan, based on the Stanley and Brown (2012) Safety Planning Intervention. Build it when calm.') },
               { id: 'mytkIdent',  icon: '🪞', label: __alloT('stem.learning_lab.my_identity_map', 'My Identity Map'),      desc: __alloT('stem.learning_lab.8_dimension_self_snapshot_for_identity', '8-dimension self-snapshot for identity work (Erikson 1968).') },
               { id: 'mytkCareer', icon: '🎯', label: __alloT('stem.learning_lab.career_explorer', 'Career Explorer'),      desc: __alloT('stem.learning_lab.5_question_interest_inventory_18_curat', '5-question interest inventory → 18+ curated career paths with save-for-later.') },
               { id: 'mytkMood',   icon: '🌈', label: __alloT('stem.learning_lab.mood_tracker', 'Mood Tracker'),         desc: __alloT('stem.learning_lab.daily_mood_energy_sliders_14_day_trend', 'Daily mood + energy sliders + 14-day trend visualization.') },
