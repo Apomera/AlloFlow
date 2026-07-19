@@ -8842,6 +8842,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ns = R.useState(''); var newText = ns[0]; var setNewText = ns[1];
     var es = R.useState(''); var itemError = es[0]; var setItemError = es[1];
 
+    function focusId(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
     function addCustom(text) {
       if (!text.trim()) {
         setItemError('Enter an item before adding it.');
@@ -8854,6 +8857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setNewText('');
       setItemError('');
       llAnnounce('Agenda item added: ' + text.trim() + '.');
+      focusId('learning-lab-agenda-item');
     }
     function toggleCustom(id) {
       var changed = null;
@@ -8868,13 +8872,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     async function removeCustom(id) {
       var item = todayItems.filter(function(it) { return it.id === id; })[0];
+      if (!item) return;
       if (!(await askLearningLabConfirmation('This permanently removes' + (item ? ' "' + item.text + '"' : ' this item') + ' from today\'s agenda.', {
         title: 'Delete this agenda item?', confirmText: 'Delete item'
       }))) return;
       var customToday = Object.assign({}, data.customToday || {});
       customToday[today] = (customToday[today] || []).filter(function(it) { return it.id !== id; });
       setData(Object.assign({}, data, { customToday: customToday }));
-      llAnnounce('Agenda item deleted.');
+      llAnnounce('Agenda item deleted: ' + item.text + '.');
+      focusId(todayItems.length > 1 ? 'learning-lab-agenda-extra-heading' : 'learning-lab-agenda-item');
     }
 
     function dailyScore() {
@@ -8899,16 +8905,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📋', 'Today — ' + dayName(), 'One screen view of what you set yourself up to do today. Pulled from your other toolkit tools.', '#10b981'),
+      tkSectionHeader('📋', 'Today', 'A read-only summary of study blocks, habits, goals, and tasks, plus extra items you can manage here.', '#6ee7b7', 'learning-lab-daily-agenda-heading'),
+      hh('p', { style: { margin: '0 0 6px', color: '#d1fae5', fontSize: 12 } }, hh('time', { dateTime: today }, dayName())),
+      hh('p', { id: 'learning-lab-agenda-guidance', style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5 } }, 'Study blocks, habits, goals, and tasks come from their toolkit sections and are read-only here. The completion snapshot below counts only habit check-ins and extra agenda items.'),
+      hh('p', { id: 'learning-lab-agenda-privacy', style: { margin: '0 0 12px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5 } }, 'Extra items are saved with your Learning Lab data. Avoid sensitive personal information and delete items you no longer need.'),
 
-      hh('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Today\'s done rate: ' + score.pct + ' percent. ' + score.done + ' of ' + score.total + ' planned items.', style: {
+      hh('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Completion snapshot: ' + score.pct + ' percent. ' + score.done + ' of ' + score.total + ' habit check-ins and extra items complete.', style: {
         padding: 18, borderRadius: 14, marginBottom: 14, textAlign: 'center',
         background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))',
-        border: '1px solid rgba(16,185,129,0.40)'
+        border: '1px solid rgba(110,231,183,0.45)'
       } },
-        hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Today\'s done-rate'),
-        hh('div', { style: { fontSize: 40, fontWeight: 900, color: '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, score.pct + '%'),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } }, score.done + ' of ' + score.total + ' planned items')
+        hh('div', { style: { fontSize: 11, color: '#d1fae5', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, 'Habit + extra-item completion snapshot'),
+        hh('div', { style: { fontSize: 40, fontWeight: 900, color: '#6ee7b7', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, score.total ? score.pct + '%' : '—'),
+        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6 } }, score.total ? score.done + ' of ' + score.total + ' complete' : 'No habit check-ins or extra items to count yet')
       ),
 
       todayBlocks.length > 0 ? tkCard('#3b82f6',
@@ -8935,9 +8944,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             habits.map(function(h) {
               var done = (habitLogs[h.id] || []).indexOf(today) >= 0;
               return hh('li', { key: 'th-' + h.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
-                hh('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #10b981', background: done ? '#10b981' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, done ? '✓' : ''),
-                hh('span', { style: { fontSize: 11, color: done ? '#94a3b8' : '#e2e8f0', textDecoration: done ? 'line-through' : 'none' } }, h.icon + ' ' + h.name),
-                hh('span', { style: srOnlyStyle }, done ? 'Completed' : 'Not completed')
+                hh('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid #6ee7b7', background: done ? '#6ee7b7' : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, done ? '✓' : ''),
+                hh('span', { style: { flex: 1, fontSize: 11, color: done ? '#cbd5e1' : '#e2e8f0', textDecoration: done ? 'line-through' : 'none' } }, hh('span', { 'aria-hidden': 'true' }, h.icon + ' '), h.name),
+                hh('span', { style: { fontSize: 10, color: done ? '#a7f3d0' : '#cbd5e1', fontWeight: 700 } }, done ? 'Completed' : 'Not completed')
               );
             })
           )
@@ -8982,22 +8991,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#fbbf24',
         hh('section', { 'aria-labelledby': 'learning-lab-agenda-extra-heading' },
           hh('h3', { id: 'learning-lab-agenda-extra-heading', style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', margin: '0 0 8px' } }, '⭐ Today\'s extra items'),
-          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addCustom(newText); }, style: { marginBottom: 10 } },
+          hh('form', { 'aria-labelledby': 'learning-lab-agenda-extra-heading', noValidate: true, onSubmit: function(event) { event.preventDefault(); addCustom(newText); }, style: { marginBottom: 10 } },
             hh('label', { htmlFor: 'learning-lab-agenda-item', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, 'New agenda item'),
             hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              hh('input', { id: 'learning-lab-agenda-item', type: 'text', value: newText, maxLength: 160, 'aria-invalid': itemError ? 'true' : undefined, 'aria-describedby': itemError ? 'learning-lab-agenda-item-error' : undefined, placeholder: 'e.g., Call Mom about appointment', onChange: function(event) { setNewText(event.target.value); if (itemError) setItemError(''); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', flex: '1 1 14rem', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' } }),
-              tkBtn('Add item', function() { addCustom(newText); }, 'primary', { minHeight: 44, padding: '8px 14px' })
+              hh('input', { id: 'learning-lab-agenda-item', type: 'text', value: newText, maxLength: 160, 'aria-invalid': itemError ? 'true' : undefined, 'aria-describedby': 'learning-lab-agenda-privacy' + (itemError ? ' learning-lab-agenda-item-error' : ''), placeholder: 'e.g., Call Mom about appointment', onChange: function(event) { setNewText(event.target.value); if (itemError) setItemError(''); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', flex: '1 1 14rem', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'rgba(2,6,23,0.55)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' } }),
+              hh('button', { type: 'submit', style: { minHeight: 44, padding: '8px 14px' } }, 'Add item')
             ),
-            hh('div', { id: 'learning-lab-agenda-item-error', role: 'alert', style: { minHeight: itemError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginTop: itemError ? 4 : 0 } }, itemError)
+            itemError ? hh('div', { id: 'learning-lab-agenda-item-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, marginTop: 4 } }, itemError) : null
           ),
           todayItems.length === 0 ? hh('div', { role: 'status', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic', textAlign: 'center', padding: 8 } }, 'No extra items added yet.')
           : hh('ul', { style: Object.assign({}, listStyle, { gap: 4 }) },
               todayItems.map(function(it) {
                 return hh('li', { key: 'tc-' + it.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(2,6,23,0.4)' } },
-                  hh('button', { type: 'button', role: 'checkbox', 'aria-checked': it.done ? 'true' : 'false', 'aria-label': (it.done ? 'Mark incomplete: ' : 'Mark complete: ') + it.text, onClick: function() { toggleCustom(it.id); }, 'data-ll-focusable': true,
-                    style: { minWidth: 44, minHeight: 44, borderRadius: 6, border: '1.5px solid #fbbf24', background: it.done ? '#fbbf24' : 'transparent', color: it.done ? '#0f172a' : '#fbbf24', fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
-                  }, it.done ? '✓' : ''),
-                  hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.65 : 1 } }, it.text),
+                  hh('input', { type: 'checkbox', checked: !!it.done, 'aria-label': (it.done ? 'Mark incomplete: ' : 'Mark complete: ') + it.text, onChange: function() { toggleCustom(it.id); }, 'data-ll-focusable': true,
+                    style: { width: 44, height: 44, margin: 0, accentColor: '#fbbf24', cursor: 'pointer', flexShrink: 0 }
+                  }),
+                  hh('div', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? 0.8 : 1, overflowWrap: 'anywhere' } }, it.text),
                   hh('button', { type: 'button', 'aria-label': 'Delete agenda item: ' + it.text, onClick: function() { removeCustom(it.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
                 );
               })
