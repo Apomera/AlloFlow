@@ -7836,125 +7836,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Deci + Ryan Self-Determination Theory.
   function PersonalMotivationAudit(props) {
     if (!R) return null;
-    var data = props.data || { audits: [] };
+    var data = props.data || {};
     var setData = props.setData;
-    var fs = R.useState({ activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' });
-    var form = fs[0]; var setForm = fs[1];
-    var ves = R.useState(''); var formError = ves[0]; var setFormError = ves[1];
+    var emptyForm = { activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(''); var formError = es[0]; var setFormError = es[1];
+    var fts = R.useState(null); var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var DIMENSIONS = [
-      { id: 'autonomy',     label: 'Autonomy',     icon: '🎯', color: '#a855f7', help: 'Do I feel like I have choice / agency in this?' },
-      { id: 'competence',   label: 'Competence',   icon: '💪', color: '#10b981', help: 'Do I feel capable of growing / succeeding at this?' },
-      { id: 'relatedness',  label: 'Relatedness',  icon: '🤝', color: '#ef4444', help: 'Do I feel connected to others through this activity?' }
+      { id: 'autonomy', label: 'Sense of choice', theoryLabel: 'Autonomy', icon: '\ud83c\udfaf', color: '#d8b4fe', help: 'How much choice or agency do you currently experience in this activity?' },
+      { id: 'competence', label: 'Sense of capability', theoryLabel: 'Competence', icon: '\ud83c\udf31', color: '#6ee7b7', help: 'How capable of learning or making progress do you currently feel?' },
+      { id: 'relatedness', label: 'Sense of connection', theoryLabel: 'Relatedness', icon: '\ud83e\udd1d', color: '#fca5a5', help: 'How connected or supported do you currently feel in relation to this activity?' }
     ];
-    var BOOST_SUGGESTIONS = {
+    var OPTIONAL_IDEAS = {
       autonomy: [
-        'Pick ONE small element of this activity you DO control. Vary that.',
-        'Ask your teacher / supervisor: "Is there flexibility on X?" Negotiate even tiny choices.',
-        'Reframe: even if you didn\'t pick the activity, you\'re picking HOW to engage with it.',
-        'If truly forced + no flexibility: notice that this is a temporary structural constraint, not a permanent identity.'
+        'Identify one part you can choose, if any.',
+        'Ask whether options or flexibility are available for one specific part.',
+        'Choose how much time or attention you want to give the activity within your current constraints.'
       ],
       competence: [
-        'Find ONE concrete skill in this domain you can practice in 10 min today.',
-        'Track 1 small win per session. Visible progress is what builds competence.',
-        'Get feedback on something specific (not "is this good?" — "is THIS section clear?").',
-        'Compare to your past self, not to peers. The slope is what matters, not the absolute level.'
+        'Break one skill into a smaller practice step.',
+        'Request feedback on one specific part if a supportive person is available.',
+        'Record evidence of progress only if that feels useful.'
       ],
       relatedness: [
-        'Find ONE person in this activity who matters to you. Even a 5-min conversation helps.',
-        'Join a study group or peer feedback pair on this material.',
-        'Ask someone what they think of the topic — interest + connection are linked.',
-        'If isolation is the structural issue: this is what the relatedness gap looks like. Worth flagging to a supportive adult.'
+        'Consider whether working with a peer or group would help.',
+        'Ask a trusted person for support or perspective if you want to.',
+        'Consider whether another setting or communication method would feel more supportive.'
       ]
     };
 
-    function save() {
-      if (!form.activity.trim()) { setFormError('Activity name is required.'); setTimeout(function() { var target = document.getElementById('learning-lab-motivation-activity'); if (target) target.focus(); }, 0); return; }
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ audits: [entry].concat(data.audits || []) });
-      setForm({ activity: '', autonomy: 5, competence: 5, relatedness: 5, notes: '' });
-      setFormError('');
-      llAnnounce('Motivation audit saved.');
-    }
-    function remove(id) { setData({ audits: (data.audits || []).filter(function(e) { return e.id !== id; }) }); }
+    R.useEffect(function() {
+      if (!focusTarget || typeof document === 'undefined') return;
+      var target = document.getElementById(focusTarget);
+      if (target && typeof target.focus === 'function') target.focus();
+      setFocusTarget(null);
+    }, [focusTarget, data.audits]);
 
-    var weakest = DIMENSIONS.reduce(function(min, d) { return form[d.id] < form[min.id] ? d : min; }, DIMENSIONS[0]);
-    var total = form.autonomy + form.competence + form.relatedness;
+    function updateForm(patch) {
+      setForm(Object.assign({}, form, patch));
+      if (formError) setFormError('');
+    }
+    function save(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var activity = String(form.activity || '').trim();
+      if (!activity) {
+        setFormError('Enter an activity or context before saving.');
+        setFocusTarget('learning-lab-motivation-activity');
+        llAnnounce('An activity or context is required.');
+        return;
+      }
+      var entry = {
+        id: tkId(), date: todayISO(), activity: activity,
+        autonomy: Number(form.autonomy), competence: Number(form.competence), relatedness: Number(form.relatedness),
+        notes: String(form.notes || '').trim()
+      };
+      setData(Object.assign({}, data, { audits: [entry].concat(data.audits || []) }));
+      setForm(Object.assign({}, emptyForm));
+      setFormError('');
+      setFocusTarget('learning-lab-motivation-history-heading');
+      llAnnounce('Motivation reflection saved.');
+    }
+    async function remove(entry) {
+      if (!(await askLearningLabConfirmation('This permanently removes the saved reflection for “' + entry.activity + '”.', {
+        title: 'Delete this motivation reflection?', confirmText: 'Delete reflection'
+      }))) return;
+      var remaining = (data.audits || []).filter(function(candidate) { return candidate.id !== entry.id; });
+      setData(Object.assign({}, data, { audits: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-motivation-history-heading' : 'learning-lab-motivation-activity');
+      llAnnounce('Motivation reflection deleted.');
+    }
+
+    var lowestScore = Math.min(form.autonomy, form.competence, form.relatedness);
+    var lowestDimensions = DIMENSIONS.filter(function(dimension) { return form[dimension.id] === lowestScore; });
     var audits = data.audits || [];
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🌟', 'Motivation Audit', 'Self-Determination Theory (Deci + Ryan): motivation is built from autonomy, competence, and relatedness. Check yours for any activity.', '#ec4899'),
-
-      tkCard('#ec4899',
-        hh('div', null,
-          hh('label', { htmlFor: 'learning-lab-motivation-activity', style: { fontSize: 10, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'What activity are you auditing? (required)'),
-          hh('input', { id: 'learning-lab-motivation-activity', type: 'text', value: form.activity, required: true, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-motivation-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { activity: e.target.value })); setFormError(''); }, placeholder: 'e.g., "AP Chemistry class" or "Cross-country practice"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
-          formError ? hh('div', { id: 'learning-lab-motivation-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 16 } }, formError) : null,
-
-          // 3 dimension sliders
-          DIMENSIONS.map(function(dim) {
-            return hh('div', { key: 'dim-' + dim.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 10 } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+      tkSectionHeader('\ud83c\udf1f', 'Motivation Reflection', 'An optional self-reflection using autonomy, competence, and relatedness concepts from Self-Determination Theory.', '#f9a8d4', 'learning-lab-motivation-heading'),
+      hh('p', { id: 'learning-lab-motivation-privacy', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(249,168,212,0.40)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10, lineHeight: 1.6 } }, 'Responses save in this browser. On a shared device, avoid details you would not want another user to see. Ratings are personal snapshots, not judgments about ability or character.'),
+      tkCard('#f9a8d4',
+        hh('form', { 'aria-labelledby': 'learning-lab-motivation-form-heading', 'aria-describedby': 'learning-lab-motivation-privacy learning-lab-motivation-scale-help', onSubmit: save },
+          hh('h3', { id: 'learning-lab-motivation-form-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#fbcfe8' } }, 'Reflection details'),
+          hh('label', { htmlFor: 'learning-lab-motivation-activity', style: { fontSize: 11, fontWeight: 800, color: '#fbcfe8', display: 'block', marginBottom: 4 } }, 'Activity or context'),
+          hh('input', { id: 'learning-lab-motivation-activity', type: 'text', value: form.activity, required: true, maxLength: 240,
+            'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-motivation-error' : 'learning-lab-motivation-activity-help',
+            onChange: function(event) { updateForm({ activity: event.target.value }); }, placeholder: 'For example: Chemistry class or team practice',
+            style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 4, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(249,168,212,0.60)', borderRadius: 6, boxSizing: 'border-box' }
+          }),
+          hh('p', { id: 'learning-lab-motivation-activity-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Use a general description if you prefer not to store identifying details.'),
+          formError ? hh('p', { id: 'learning-lab-motivation-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 12px' } }, formError) : null,
+          hh('p', { id: 'learning-lab-motivation-scale-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'For each subjective rating, 0 means not at all and 10 means very much. The ratings are not added into a diagnostic or motivation score.'),
+          DIMENSIONS.map(function(dimension) {
+            return hh('div', { key: 'dim-' + dimension.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dimension.color, marginBottom: 10 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                 hh('div', null,
-                  hh('label', { htmlFor: 'learning-lab-motivation-' + dim.id, style: { fontSize: 12, color: dim.color, marginRight: 8, fontWeight: 800 } }, dim.icon + ' ' + dim.label),
-                  hh('span', { id: 'learning-lab-motivation-help-' + dim.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, dim.help)
+                  hh('label', { htmlFor: 'learning-lab-motivation-' + dimension.id, style: { fontSize: 12, color: dimension.color, marginRight: 8, fontWeight: 800 } }, hh('span', { 'aria-hidden': 'true' }, dimension.icon + ' '), dimension.label),
+                  hh('span', { id: 'learning-lab-motivation-help-' + dimension.id, style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 2 } }, dimension.help)
                 ),
-                hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[dim.id] + '/10')
+                hh('strong', { style: { fontSize: 14, color: dimension.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[dimension.id] + ' out of 10')
               ),
-              hh('input', { id: 'learning-lab-motivation-' + dim.id, type: 'range', min: 0, max: 10, step: 1, value: form[dim.id], 'aria-describedby': 'learning-lab-motivation-help-' + dim.id, 'aria-valuetext': form[dim.id] + ' out of 10',
-                onChange: function(e) { setForm(Object.assign({}, form, (function() { var o = {}; o[dim.id] = parseInt(e.target.value, 10); return o; })())); },
-                style: { width: '100%', minHeight: 44, accentColor: dim.color }
+              hh('input', { id: 'learning-lab-motivation-' + dimension.id, type: 'range', min: 0, max: 10, step: 1, value: form[dimension.id],
+                'aria-describedby': 'learning-lab-motivation-help-' + dimension.id + ' learning-lab-motivation-scale-help', 'aria-valuetext': form[dimension.id] + ' out of 10',
+                onChange: function(event) { var patch = {}; patch[dimension.id] = parseInt(event.target.value, 10); updateForm(patch); },
+                style: { width: '100%', minHeight: 44, accentColor: dimension.color }
               })
             );
           }),
-
-          hh('label', { htmlFor: 'learning-lab-motivation-notes', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#f472b6', marginBottom: 4 } }, 'Notes (optional)'),
-          hh('textarea', { id: 'learning-lab-motivation-notes', value: form.notes, rows: 2, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, style: { width: '100%', minHeight: 72, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }),
-          tkBtn('💾 Save audit', save, 'primary', { minHeight: 44 })
+          hh('label', { htmlFor: 'learning-lab-motivation-notes', style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#fbcfe8', marginBottom: 4 } }, 'Notes (optional)'),
+          hh('textarea', { id: 'learning-lab-motivation-notes', value: form.notes, rows: 3, maxLength: 2000, 'aria-describedby': 'learning-lab-motivation-notes-help',
+            onChange: function(event) { updateForm({ notes: event.target.value }); }, placeholder: 'Record only what is useful to you.',
+            style: { width: '100%', minHeight: 88, padding: '10px 12px', marginBottom: 4, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(249,168,212,0.60)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+          }),
+          hh('p', { id: 'learning-lab-motivation-notes-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Maximum 2,000 characters. Avoid sensitive details on a shared device.'),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #f9a8d4', background: '#9d174d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save reflection')
         )
       ),
-
-      // Adaptive suggestions for weakest dimension
-      form.activity ? hh('section', { 'aria-labelledby': 'learning-lab-motivation-suggestion-title', style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, ' + weakest.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + weakest.color + '40', borderLeft: '4px solid ' + weakest.color, marginBottom: 12 } },
-        hh('h3', { id: 'learning-lab-motivation-suggestion-title', style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: weakest.color } }, '🎯 To boost your weakest: ' + weakest.label),
-        hh('ul', { style: { margin: 0, paddingLeft: 18, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
-          BOOST_SUGGESTIONS[weakest.id].map(function(s, i) {
-            return hh('li', { key: 's-' + i, style: { marginBottom: 4 } }, s);
-          })
-        )
+      String(form.activity || '').trim() ? hh('section', { 'aria-labelledby': 'learning-lab-motivation-suggestion-title', style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(249,168,212,0.45)', marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-motivation-suggestion-title', style: { margin: '0 0 5px', fontSize: 13, color: '#fbcfe8' } }, lowestDimensions.length > 1 ? 'Optional ideas related to the lowest current ratings' : 'Optional ideas related to the lowest current rating'),
+        hh('p', { id: 'learning-lab-motivation-suggestion-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'These generic ideas are not personalized recommendations. Skip anything that does not fit your situation, access needs, or safety.'),
+        lowestDimensions.map(function(dimension) {
+          return hh('section', { key: dimension.id, 'aria-labelledby': 'learning-lab-motivation-ideas-' + dimension.id, style: { marginBottom: 10 } },
+            hh('h4', { id: 'learning-lab-motivation-ideas-' + dimension.id, style: { margin: '0 0 4px', fontSize: 11, color: dimension.color } }, dimension.theoryLabel + ': ' + form[dimension.id] + ' out of 10'),
+            hh('ul', { style: { margin: 0, paddingLeft: 20, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10, lineHeight: 1.7 } },
+              OPTIONAL_IDEAS[dimension.id].map(function(idea, index) { return hh('li', { key: index, style: { marginBottom: 3 } }, idea); })
+            )
+          );
+        })
       ) : null,
-
-      // History
-      audits.length > 0 ? hh('div', null,
-        hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📚 Past audits'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          audits.slice(0, 10).map(function(a) {
-            var tot = a.autonomy + a.competence + a.relatedness;
-            return hh('div', { key: 'a-' + a.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #ec4899' } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('strong', { style: { fontSize: 12, color: '#f472b6' } }, a.activity),
-                hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, a.date),
-                  hh('button', { type: 'button', 'aria-label': 'Delete motivation audit: ' + a.activity, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the motivation audit for "' + a.activity + '".', { title: 'Delete this motivation audit?', confirmText: 'Delete audit' })) remove(a.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
+      audits.length ? hh('section', { 'aria-labelledby': 'learning-lab-motivation-history-heading' },
+        hh('h3', { id: 'learning-lab-motivation-history-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#fbcfe8' } }, 'Saved motivation reflections'),
+        hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 } },
+          audits.slice(0, 10).map(function(entry) {
+            return hh('li', { key: 'a-' + entry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(249,168,212,0.35)', borderLeft: '3px solid #f9a8d4' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                hh('div', null,
+                  hh('h4', { style: { margin: 0, fontSize: 12, color: '#fbcfe8', overflowWrap: 'anywhere' } }, entry.activity),
+                  hh('p', { style: { margin: '3px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Saved ', hh('time', { dateTime: entry.date }, entry.date), ' (', relDate(entry.date), ')')
+                ),
+                hh('button', { type: 'button', 'aria-label': 'Delete motivation reflection: ' + entry.activity, onClick: function() { remove(entry); },
+                  style: { minWidth: 44, minHeight: 44, padding: 8, background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(252,165,165,0.55)', borderRadius: 6, color: '#fecaca', fontSize: 11, cursor: 'pointer' }
+                }, 'Delete')
               ),
-              hh('div', { role: 'img', 'aria-label': 'Autonomy ' + a.autonomy + ', competence ' + a.competence + ', relatedness ' + a.relatedness + ', total ' + tot + ' out of 30', style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                '🎯 A:' + a.autonomy + ' · 💪 C:' + a.competence + ' · 🤝 R:' + a.relatedness + ' = ' + tot + '/30'
-              )
+              hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6, margin: '8px 0 0' } },
+                DIMENSIONS.map(function(dimension) { return hh('div', { key: dimension.id }, hh('dt', { style: { fontSize: 9, color: '#cbd5e1' } }, dimension.label), hh('dd', { style: { margin: '2px 0 0', fontSize: 10, color: dimension.color, fontWeight: 800 } }, entry[dimension.id] + ' out of 10')); })
+              ),
+              entry.notes ? hh('p', { style: { margin: '8px 0 0', fontSize: 10, color: '#e2e8f0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, entry.notes) : null
             );
           })
         )
       ) : null,
-
-      // Citation
-      hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.30)', fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#ec4899' } }, '📚 Source: '),
-        'Deci + Ryan (2000). "The What and Why of Goal Pursuits." ', hh('em', null, 'Psychological Inquiry'), ', 11(4), 227-268. Self-Determination Theory has the largest accumulated evidence of any motivation framework in education research. Activities high on all three (autonomy + competence + relatedness) sustain motivation; deficits in any one predict disengagement.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-motivation-evidence-heading', style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.40)' } },
+        hh('h3', { id: 'learning-lab-motivation-evidence-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#fbcfe8' } }, 'Evidence and limits'),
+        hh('p', { style: { margin: 0, fontSize: 10, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Self-Determination Theory discusses autonomy, competence, and relatedness as psychological needs associated with motivation and well-being (Ryan & Deci, 2000). Effects and interpretations vary across people and contexts. These author-created ratings are not a validated questionnaire, diagnosis, prediction of disengagement, or guarantee that an idea will increase motivation.')
       )
     );
   }
 
-  // ── P. PERSONAL LEARNING PROFILE (Wave 3) ──
+  // P. PERSONAL LEARNING PROFILE (Wave 3)
   // Student-discovered profile: what helps me focus, what overwhelms me,
   // my best time of day, my accommodations, my goals identity. One-page
   // printable. Editable across all dimensions.
@@ -19875,7 +19913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkReflect',icon: '📔', label: __alloT('stem.learning_lab.weekly_reflection', 'Weekly Reflection'),    desc: __alloT('stem.learning_lab.5_prompt_structured_journal_zimmerman_', 'Optional structured journal for reviewing a week and planning next steps.') },
               { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Optional comparison of study approaches using a disclosed heuristic.') },
               { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Optional self-report on task demands and context; not a diagnostic score.') },
-              { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Self-Determination Theory check (autonomy / competence / relatedness).') },
+              { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Optional reflection using autonomy, competence, and relatedness concepts.') },
               { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'One-page self-snapshot you control — printable for teachers / IEP.') },
               { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', '30+ metacognitive prompts across 4 categories. Saves to journal history.') },
               { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.') },
