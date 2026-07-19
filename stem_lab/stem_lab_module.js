@@ -3604,6 +3604,12 @@
                 color: 'sky', ready: true
               },
               {
+                // @tool coasterLab
+                id: 'coasterLab', icon: '🎢', label: 'Coaster Lab',
+                desc: 'Design a roller coaster in full 3D, predict its speeds and g-forces with real physics, pass the certification inspection, and ride onboard with checkpoint questions.',
+                color: 'amber', ready: true
+              },
+              {
                 // @tool galaxy
                 id: 'galaxy', icon: '\uD83C\uDF0C', label: t('stem.tools_menu.galaxy_explorer'),
                 desc: 'Fly through a 3D Milky Way. Discover star types, nebulae, and black holes.',
@@ -5426,7 +5432,7 @@
             // Art & Music
             artStudio: true, creative: true, gameStudio: true, freeForms: true,
             // Earth & Space
-            astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true, spaceStation: true,
+            astronomy: true, coasterLab: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true, spaceStation: true,
             // Data & Logic
             behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
