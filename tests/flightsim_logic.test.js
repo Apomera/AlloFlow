@@ -365,6 +365,26 @@ describe('nearestRealCities', () => {
   });
 });
 
+describe('stepQualityTier (adaptive quality governor)', () => {
+  it('steps down one tier at a time when frames are slow', () => {
+    expect(FS.stepQualityTier(0, 50)).toBe(1);
+    expect(FS.stepQualityTier(1, 50)).toBe(2);
+  });
+  it('never leaves the 0-2 range', () => {
+    expect(FS.stepQualityTier(2, 200)).toBe(2);
+    expect(FS.stepQualityTier(0, 5)).toBe(0);
+  });
+  it('steps back up when there is clear headroom', () => {
+    expect(FS.stepQualityTier(2, 20)).toBe(1);
+    expect(FS.stepQualityTier(1, 20)).toBe(0);
+  });
+  it('holds inside the dead band (no flapping at ~30 fps)', () => {
+    expect(FS.stepQualityTier(0, 33)).toBe(0);
+    expect(FS.stepQualityTier(1, 33)).toBe(1);
+    expect(FS.stepQualityTier(2, 33)).toBe(2);
+  });
+});
+
 describe('isWaterMask (Natural Earth 0.1° land/water mask)', () => {
   it('knows the continents', () => {
     expect(FS.isWaterMask(38, -98)).toBe(false);    // Kansas

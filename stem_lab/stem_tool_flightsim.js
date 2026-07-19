@@ -614,6 +614,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     return 150 * proximity * altRamp;
   }
 
+  // ── ADAPTIVE QUALITY tier stepping ──
+  // Tier 0 = full visuals, 1 = reduced (glint off, fewer clouds/balloons),
+  // 2 = minimal (water animation + sky life off). Called with a rolling
+  // average frame time every couple of seconds; the wide dead band
+  // (42 ms down / 24 ms up) plus the slow evaluation cadence stops the
+  // tier from flapping on momentary spikes. Pure — exported to the suite.
+  function stepQualityTier(tier, avgFrameMs) {
+    if (avgFrameMs > 42 && tier < 2) return tier + 1;
+    if (avgFrameMs < 24 && tier > 0) return tier - 1;
+    return tier;
+  }
+
   // ── GROUND-TRACK TRAIL sampler ──
   // Appends a breadcrumb when the aircraft has moved ≥ minNm since the last
   // point, or after maxGapSec regardless (slow flight still leaves a trail);
@@ -9608,6 +9620,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var flyingRef = useRef(false);
       var timeRef = useRef(0);
       var pausedRef = useRef(false);
+      // Adaptive-quality governor state: rolling frame-time accumulator +
+      // current tier (0 full / 1 reduced / 2 minimal). See stepQualityTier.
+      var qualityRef = useRef({ tier: 0, sum: 0, n: 0 });
       // Smoothed horizon Y position. The raw expression
       // (H*0.55 + vsi*0.05 + ctrl.pitch*3) jumps instantly when the player
       // pulls up at rotation (ctrl.pitch is the raw control input, which can
@@ -9630,6 +9645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             timeRef: timeRef,
             pausedRef: pausedRef,
             flyingRef: flyingRef,
+            qualityRef: qualityRef,
             getWeatherRef: function() { return weatherRef; }
           };
         }
@@ -10560,7 +10576,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
 
         var playerLoc = geodeticToLocal(state.lat, state.lon, state.altitude);
-        
+        // Adaptive-quality tier — read ONCE at the top: several blocks below
+        // (clouds run before the water block) gate on it, and a mid-function
+        // declaration left the earlier blocks reading hoisted undefined.
+        var qTier = qualityRef.current.tier;
+
         var selectedAC = d.aircraft || 'cessna172';
         if (!resources.aircraft || resources.aircraft.userData.type !== selectedAC) {
           if (resources.aircraft) scene.remove(resources.aircraft);
@@ -10645,6 +10665,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // player is looking at (single-step toroidal wrap per frame).
           var wxNow3 = (weatherRef.current && weatherRef.current.type) || 'clear';
           var cloudN = wxNow3 === 'clear' ? 8 : wxNow3 === 'breezy' ? 12 : wxNow3 === 'gusty' ? 14 : wxNow3 === 'stormy' ? 22 : 24;
+          if (qTier === 1) cloudN = Math.min(cloudN, 10);
+          else if (qTier >= 2) cloudN = Math.min(cloudN, 6);
           var dnB2 = dayNight.brightness != null ? dayNight.brightness : 1;
           var cloudTint = wxNow3 === 'stormy' ? 0.45 : 1; // storm decks read darker
           var cloudHalf = 60000;
@@ -10701,11 +10723,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // whose bearing-from-camera aligns with the sun azimuth get a warm
         // highlight, sharpened by a high power and faded as the sun climbs.
         var wMesh = terrainMeshRef.current;
-        if (wMesh && wMesh.userData.waterIdx && wMesh.userData.waterIdx.length) {
+        if (qTier < 2 && wMesh && wMesh.userData.waterIdx && wMesh.userData.waterIdx.length) {
           var wIdx = wMesh.userData.waterIdx;
           var wAttr = wMesh.geometry.attributes.color;
           var wT = timeRef.current;
-          var glintOn = sunElev > 0.01;
+          var glintOn = qTier === 0 && sunElev > 0.01; // glint is the priciest part — reduced tier keeps shimmer only
           var glintStr = glintOn ? Math.max(0, Math.min(1, 1.3 - sunElev * 2)) : 0;
           var gAzX = Math.cos(sunTh), gAzZ = Math.sin(sunTh);
           for (var wv = 0; wv < wIdx.length; wv++) {
@@ -10742,6 +10764,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // like distant nav lights.
           for (var aj2 = 0; aj2 < resources.ambientJets.length; aj2++) {
             var jet = resources.ambientJets[aj2];
+            jet.visible = qTier < 2;
+            if (!jet.visible) continue;
             var jSpd = 0.006 + aj2 * 0.0025;
             var jAng = lifeT * jSpd + aj2 * 2.1;
             var jRad = 42000 + aj2 * 16000;
@@ -10757,7 +10781,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (resources.balloons) {
           // Balloons wrap toroidally in a ±22k ft square, bobbing gently.
           // Grounded (invisible) at night and above the balloon layer.
-          var balVisible = lifeDark < 0.5 && state.altitude < 12000;
+          var balVisible = qTier < 2 && lifeDark < 0.5 && state.altitude < 12000;
+          if (qTier === 1) balVisible = balVisible && state.altitude < 8000; // reduced: only when close enough to matter
           for (var hb2 = 0; hb2 < resources.balloons.length; hb2++) {
             var bal2 = resources.balloons[hb2];
             bal2.visible = balVisible;
@@ -10772,7 +10797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
         if (resources.birdFlocks) {
           // Bird Vs live low in the biosphere: day only, below 6,000 ft.
-          var birdVisible = lifeDark < 0.4 && state.altitude < 6000;
+          var birdVisible = qTier < 2 && lifeDark < 0.4 && state.altitude < 6000;
           for (var bf2 = 0; bf2 < resources.birdFlocks.length; bf2++) {
             var flock2 = resources.birdFlocks[bf2];
             flock2.visible = birdVisible;
@@ -10793,7 +10818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           resources.ownContrail = new THREE.Mesh(new THREE.BoxGeometry(70, 70, 9000), ocMat);
           scene.add(resources.ownContrail);
         }
-        var ocOn = d.thirdPerson && state.altitude > 25000;
+        var ocOn = qTier < 2 && d.thirdPerson && state.altitude > 25000;
         resources.ownContrail.visible = !!ocOn;
         if (ocOn) {
           var ocBehind = new THREE.Vector3(-Math.sin(headingRad), 0, Math.cos(headingRad));
@@ -18795,10 +18820,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         setPausedUi(false);
         geoDiscoveredRef.current = {};
         landingRef.current = { wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 };
-        // Fresh breadcrumb trail + no carried-over traffic/city cue
+        // Fresh breadcrumb trail + no carried-over traffic/city cue; the
+        // quality governor re-measures each flight from full visuals.
         hudRef.current._track = [];
         hudRef.current._xtraffic = null;
         hudRef.current._cityCue = null;
+        qualityRef.current = { tier: 0, sum: 0, n: 0 };
         hoistAccumRef.current = 0;
         capAccumRef.current = 0;
         // Reset quiz state for fresh flight
@@ -18871,6 +18898,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var nowTs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
           var dt = lastTs ? Math.min(0.1, Math.max(0.001, (nowTs - lastTs) / 1000)) : 1 / 60;
           lastTs = nowTs;
+          // ── Adaptive quality governor ── rolling frame-time average,
+          // evaluated every ~2.5 s. On slow devices (Chromebooks) the tier
+          // steps up and the render loop sheds its costliest cosmetics
+          // (water animation, sky life, cloud census) before the sim ever
+          // feels laggy; it steps back down when headroom returns.
+          var qg = qualityRef.current;
+          qg.sum += dt * 1000; qg.n++;
+          if (qg.sum > 2500 && qg.n > 10) {
+            // The FIRST window after entering the sim is contaminated by
+            // startup cost (THREE init, texture builds, terrain fill) and
+            // reliably reads slow — discard it instead of flashing into ECO
+            // on machines that are actually fine.
+            if (qg.warmed) qg.tier = stepQualityTier(qg.tier, qg.sum / qg.n);
+            else qg.warmed = true;
+            qg.sum = 0; qg.n = 0;
+          }
           // Per-frame control gains/decays below were tuned assuming a 30 fps
           // step; dtScale keeps control feel refresh-rate independent.
           var dtScale = dt * 30;
@@ -20412,6 +20455,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (ap2.spd) apStatus += 'SPD ' + ap2.tgtSpd + 'kt  ';
             apStatus += '(B=off, manual input=disengage)';
             gfx.fillText(apStatus, W / 2, 43);
+          }
+
+          // ECO badge — honest signal that the adaptive-quality governor has
+          // shed visuals on this device (tier 1 = ECO, tier 2 = ECO+). Sits
+          // at the far right of the status bar row.
+          if (qualityRef.current.tier > 0) {
+            // Left of the heading tape — the top-right corner is covered by
+            // the RENDER/VIEW/WEATHER DOM panel, which hid the first cut.
+            var ecoX = W / 2 - 158;
+            gfx.fillStyle = 'rgba(20,83,45,0.85)';
+            gfx.beginPath(); gfx.roundRect(ecoX, 36, 44, 15, 4); gfx.fill();
+            gfx.fillStyle = '#86efac'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+            gfx.fillText(qualityRef.current.tier >= 2 ? 'ECO+' : 'ECO', ecoX + 22, 44);
+            gfx.textBaseline = 'alphabetic';
           }
 
           // Approaching-city pill (Natural Earth) — names the skyline the
@@ -23381,6 +23438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       REAL_CITIES: REAL_CITIES,
       nearestRealCities: nearestRealCities,
       isWaterMask: isWaterMask,
+      stepQualityTier: stepQualityTier,
       getSprintScoreSummary: getSprintScoreSummary,
       WAYPOINTS: WAYPOINTS, LESSONS: LESSONS, GEO_PLACES: GEO_PLACES,
       CHALLENGES: CHALLENGES, SPRINT_ROUTES: SPRINT_ROUTES, AIRCRAFT: AIRCRAFT,
