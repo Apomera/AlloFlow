@@ -8,6 +8,9 @@ const read = (relativePath) => fs.readFileSync(resolve(root, relativePath), 'utf
 const json = (relativePath) => JSON.parse(read(relativePath));
 const paddedChoiceText = 'Under the conditions in the question, the best response is ';
 const wordCount = (value) => String(value).trim().split(/\s+/).filter(Boolean).length;
+const supersedingReviewWaveById = new Map([
+  ['eppp-v3-professional-030', 'eppp-native-quality-wave-06'],
+]);
 
 describe('EPPP native quality repair wave 02', () => {
   it('records completion of the entire 113-item deep-rewrite queue', () => {
@@ -37,7 +40,9 @@ describe('EPPP native quality repair wave 02', () => {
       const item = byId.get(id);
       expect(item, id).toBeTruthy();
       expect(item.wordingReviewStatus, id).toBe('editorial-deep-rewrite-pass');
-      expect(item.wordingReviewWave, id).toBe('eppp-native-quality-wave-02');
+      expect(item.wordingReviewWave, id).toBe(
+        supersedingReviewWaveById.get(id) || 'eppp-native-quality-wave-02',
+      );
       expect(item.choices, id).toHaveLength(4);
       expect(new Set(item.choices.map((choice) => choice.toLowerCase())), id).toHaveLength(4);
       expect(item.choiceRationales, id).toHaveLength(4);

@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-05",
+  "reviewedAt": "2026-07-18",
+  "scope": "Eight priority-docket rewrites replacing cue-heavy, redundant, or direct-recall items with source-checked application and analysis scenarios using adjacent-concept distractors.",
+  "challengeCriteria": [
+    "scenario-based application or analysis",
+    "three plausible adjacent-concept distractors",
+    "no extreme cue words",
+    "no aggregate response options",
+    "one defensible best answer",
+    "option-specific teaching feedback"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "advancedItems": 8,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "aggregateResponseOptionsAdded": 0,
+    "optionSpecificExplanations": 32,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-intervention-002",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "intervention-ipt-role-transition-formulation",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "bereavement-versus-transition",
+        "role-dispute-versus-transition",
+        "traitlike-deficits-versus-recent-change"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v3-intervention-066",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "intervention-ipt-termination-phase",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "late-new-focus",
+        "theory-substitution",
+        "automatic-extension"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v3-intervention-010",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "intervention-pe-components-and-avoidance-function",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "distress-elimination-before-exposure",
+        "function-mismatched-exposure",
+        "imaginal-only-plan"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v2-professional-050",
+      "domainId": "professional",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-avoiding-harm-risk-minimization",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "distress-equals-ethical-harm",
+        "consent-waives-monitoring",
+        "benefit-justifies-unbounded-risk"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v2-professional-045",
+      "domainId": "professional",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-standard-3-04b-torture-facilitation",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "consultant-role-exception",
+        "authority-exception",
+        "harm-reduction-rationalization"
+      ],
+      "sourceCount": 2
+    },
+    {
+      "id": "eppp-b024-professional-1",
+      "domainId": "professional",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-standard-1-02-ethics-law-conflict",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "law-erases-ethics",
+        "code-as-legal-authority",
+        "automatic-withdrawal"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-031",
+      "domainId": "cognitive-affective",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "cognitive-transfer-appropriate-processing-experiment",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "depth-always-dominates",
+        "generic-engagement-equivalence",
+        "context-reinstatement-confusion"
+      ],
+      "sourceCount": 1
+    },
+    {
+      "id": "eppp-v2-assessment-059",
+      "domainId": "assessment",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "assessment-rpas-r-optimized-administration",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "unrestricted-more-is-better",
+        "content-standardization-confusion",
+        "posthoc-qualitative-correction"
+      ],
+      "sourceCount": 2
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

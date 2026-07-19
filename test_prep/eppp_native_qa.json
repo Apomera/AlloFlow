@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-16T18:05:53.172Z",
+  "generatedAt": "2026-07-19T02:09:29.884Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -1712,8 +1712,8 @@
       ],
       "findings": [],
       "references": [
-        "https://aasm.org/new-guideline-supports-behavioral-psychological-treatments-for-insomnia/",
-        "https://doi.org/10.1146/annurev-clinpsy-042709-141220"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7853203/",
+        "https://doi.org/10.1146/annurev.clinpsy.3.022806.091516"
       ]
     },
     {
@@ -1775,7 +1775,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/h0025238"
+        "https://dictionary.apa.org/flooding",
+        "https://dictionary.apa.org/systematic-desensitization"
       ]
     },
     {
@@ -3945,7 +3946,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/ethics/"
       ]
     },
     {
@@ -4007,7 +4009,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/practice/guidelines/telepsychology-revisions.pdf"
+        "https://www.apa.org/about/policy/telepsychology-revisions"
       ]
     },
     {
@@ -4131,7 +4133,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.4088/JCP.tv17016ah4c"
+        "https://doi.org/10.1177/0706743719828968"
       ]
     },
     {
@@ -4441,7 +4443,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/0882-7974.7.3.331"
+        "https://doi.org/10.1037/0882-7974.7.3.331",
+        "https://doi.org/10.1037/0003-066X.54.3.165"
       ]
     },
     {
@@ -5433,7 +5436,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0001-6918(67)90011-X"
+        "https://doi.org/10.1016/0001-6918(67)90011-X",
+        "https://doi.org/10.1037/h0046743"
       ]
     },
     {
@@ -5495,7 +5499,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1038/nn1326"
+        "https://doi.org/10.1038/nn1326",
+        "https://www.ncbi.nlm.nih.gov/books/NBK279070/"
       ]
     },
     {
@@ -5557,7 +5562,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/0033-2909.101.2.171"
+        "https://doi.org/10.1037/0033-2909.101.2.171",
+        "https://doi.org/10.1073/pnas.1718793115"
       ]
     },
     {
@@ -6302,7 +6308,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1126/science.149.3681.269"
+        "https://doi.org/10.1126/science.149.3681.269",
+        "https://doi.org/10.1016/0022-1031(66)90077-1"
       ]
     },
     {
@@ -7294,7 +7301,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/h0076486"
+        "https://doi.org/10.1037/0033-2909.130.5.711"
       ]
     },
     {
@@ -7604,7 +7611,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.ets.org/Media/Research/pdf/RM-12-12.pdf"
+        "https://www.ets.org/Media/Research/pdf/RM-12-12.pdf",
+        "https://doi.org/10.1002/j.2333-8504.1995.tb01668.x"
       ]
     },
     {
@@ -8534,7 +8542,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.ets.org/pdfs/about/best-practices-validity-fairness-ela.pdf"
+        "https://www.ets.org/pdfs/about/best-practices-validity-fairness-ela.pdf",
+        "https://doi.org/10.1111/j.1745-3992.1991.tb00195.x"
       ]
     },
     {
@@ -8782,7 +8791,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/0033-2909.86.3.638"
+        "https://doi.org/10.1037/0033-2909.86.3.638",
+        "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-13"
       ]
     },
     {
@@ -8844,7 +8854,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1007/BF02310555"
+        "https://doi.org/10.1007/BF02310555",
+        "https://doi.org/10.1007/s11336-008-9101-0"
       ]
     },
     {
@@ -24347,7 +24358,7 @@
       ],
       "findings": [],
       "references": [
-        "https://dictionary.apa.org/dialectical-behavior-therapy"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2963469/"
       ]
     },
     {
@@ -36065,7 +36076,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://doi.org/10.1016/S0022-5371(77)80016-9"
       ]
     },
     {
@@ -36561,7 +36572,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://doi.org/10.1016/S0022-5371(77)80016-9"
       ]
     },
     {
@@ -41087,7 +41098,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination"
+        "https://doi.org/10.1002/ejsp.2420010202",
+        "https://doi.org/10.2307/2786796"
       ]
     },
     {
@@ -43753,7 +43765,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+        "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0",
+        "https://pubmed.ncbi.nlm.nih.gov/10989620/"
       ]
     },
     {
@@ -45303,7 +45316,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://www.ets.org/Media/Research/pdf/RM-20-06.pdf"
       ]
     },
     {
@@ -46605,7 +46618,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "https://www.ets.org/content/dam/ets-india/pdfs/gre/gre-reliability-standard-error-measurement.pdf"
       ]
     },
     {
@@ -48651,7 +48665,8 @@
       ],
       "findings": [],
       "references": [
-        "https://r-pas.org/Home/About"
+        "https://r-pas.org/Home/About",
+        "https://pubmed.ncbi.nlm.nih.gov/31633395/"
       ]
     },
     {
@@ -49891,7 +49906,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-2-types-of-treatment"
+        "https://www.ptsd.va.gov/professional/continuing_ed/CPT_Manual.asp"
       ]
     },
     {
@@ -58509,7 +58524,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/monitor/2016/10/apa-news"
       ]
     },
     {
@@ -69297,7 +69313,8 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/0022-3514.69.5.797"
+        "https://pubmed.ncbi.nlm.nih.gov/7473032/",
+        "https://doi.org/10.1371/journal.pone.0267699"
       ]
     },
     {
@@ -79465,7 +79482,9 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://dictionary.apa.org/luria-nebraska-neuropsychological-battery",
+        "https://www.sciencedirect.com/topics/medicine-and-dentistry/luria-nebraska-neuropsychological-battery",
+        "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf"
       ]
     },
     {
@@ -81387,7 +81406,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://academic.oup.com/book/1328"
       ]
     },
     {
@@ -81883,7 +81902,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://www.ptsd.va.gov/disaster_events/for_providers/providers_pe_invivo.asp"
       ]
     },
     {
@@ -82379,7 +82398,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://www.thebowencenter.org/differentiation-of-self"
       ]
     },
     {
@@ -85355,7 +85374,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC1414693/"
       ]
     },
     {

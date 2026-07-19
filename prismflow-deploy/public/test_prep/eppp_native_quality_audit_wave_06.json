@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-06",
+  "reviewedAt": "2026-07-18",
+  "scope": "Eight dual-docket rewrites addressing challenge-quality warnings and weak incorrect-option explanations with source-checked advanced scenarios.",
+  "correctedAccuracyIssues": [
+    "SEM is a precision estimate used with a confidence multiplier, not itself a score interval.",
+    "The conventional SEM confidence interval is presented with its normal-error model assumptions rather than as an unconditional probability claim.",
+    "Gilligan care reasoning is not characterized as inherently female or justice reasoning as inherently male.",
+    "Stereotype threat is framed as a conditional situational interaction rather than a universal group effect or single-mediator claim.",
+    "Realistic conflict and social identity are treated as distinguishable but potentially co-occurring mechanisms."
+  ],
+  "challengeCriteria": [
+    "advanced scenario-based application or analysis",
+    "three plausible adjacent-concept distractors",
+    "no extreme cue words",
+    "no aggregate response options",
+    "one defensible best answer",
+    "option-specific teaching feedback"
+  ],
+  "feedbackCriteria": [
+    "at least 100 characters",
+    "no stock rejection template",
+    "no distractor restatement",
+    "no full-key echo",
+    "specific misconception and corrective distinction"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "advancedItems": 8,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "aggregateResponseOptionsAdded": 0,
+    "optionSpecificExplanations": 32,
+    "detailedIncorrectOptionExplanations": 24,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-assessment-026",
+      "domainId": "assessment",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "assessment-sem-confidence-interval-calculation",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "one-sem-coverage-confusion",
+        "three-sem-overcoverage",
+        "ninety-percent-multiplier-confusion"
+      ],
+      "sourceCount": 2,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-039",
+      "domainId": "cognitive-affective",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "cognitive-transfer-appropriate-processing-interaction",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "depth-dominates-test-demands",
+        "exposure-equates-processing",
+        "physical-context-substitution"
+      ],
+      "sourceCount": 1,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v2-lifespan-040",
+      "domainId": "lifespan",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "lifespan-gilligan-care-reasoning-application",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "approval-seeking-confusion",
+        "justice-rule-substitution",
+        "instrumental-exchange-confusion"
+      ],
+      "sourceCount": 2,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v3-social-cultural-002",
+      "domainId": "social-cultural",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "social-stereotype-threat-experimental-interaction",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "behavioral-confirmation",
+        "stable-internalization",
+        "stereotype-lift"
+      ],
+      "sourceCount": 2,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v2-social-cultural-047",
+      "domainId": "social-cultural",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "social-realistic-conflict-increment-over-identity-baseline",
+      "cognitiveProcess": "analysis",
+      "distractorDesign": [
+        "identity-baseline-versus-scarcity-change",
+        "relative-deprivation",
+        "symbolic-threat"
+      ],
+      "sourceCount": 2,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v2-intervention-006",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "intervention-cpt-assimilated-stuck-point-response",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "arousal-as-truth-test",
+        "thought-suppression",
+        "reassurance-instead-of-socratic-examination"
+      ],
+      "sourceCount": 1,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v3-professional-030",
+      "domainId": "professional",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-standard-9-11-test-material-security",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "test-data-material-confusion",
+        "restricted-channel-equals-authorization",
+        "paraphrase-equals-permission"
+      ],
+      "sourceCount": 1,
+      "incorrectOptionExplanations": 3
+    },
+    {
+      "id": "eppp-v2-professional-073",
+      "domainId": "professional",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "keyPositionPreserved": true,
+      "learningObjectiveId": "professional-standard-1-03-organizational-demand-conflict",
+      "cognitiveProcess": "application",
+      "distractorDesign": [
+        "organizational-liability-transfer",
+        "private-documentation-as-resolution",
+        "automatic-resignation"
+      ],
+      "sourceCount": 1,
+      "incorrectOptionExplanations": 3
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

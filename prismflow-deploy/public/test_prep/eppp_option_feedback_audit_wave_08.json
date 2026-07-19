@@ -1,0 +1,387 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-option-feedback-wave-08",
+  "reviewedAt": "2026-07-18",
+  "scope": "Two source-checked questions per EPPP domain, replacing generic incorrect-option feedback and refining conspicuously weak distractors or source alignment where the explanation audit exposed them.",
+  "feedbackCriteria": [
+    "at least 100 characters and 16 words",
+    "names the actual neighboring concept or misconception",
+    "explains when that concept would apply",
+    "contrasts the option with the stem",
+    "does not restate the distractor, paste the overall rationale, append the full key, or use a stock rejection template"
+  ],
+  "sourceCorrections": [
+    "Replaced a malformed tardive-dyskinesia DOI with a valid peer-reviewed systematic review.",
+    "Added a conditional-probability DIF source, a primary Flynn-reversal study, and the direct future-time formulation of socioemotional selectivity theory.",
+    "Added current Cochrane missing-evidence guidance and a direct experimental social-facilitation source.",
+    "Aligned the construct-validity stem with the different-method emphasis of the cited multitrait-multimethod framework."
+  ],
+  "challengeCorrections": [
+    "Replaced unrelated VTA distractors with the mesocortical, nigrostriatal, and tuberoinfundibular dopamine pathways.",
+    "Replaced three Flynn-effect giveaway claims with aging, retest, and renorming confusions.",
+    "Replaced three Principle A giveaway claims with accurate neighboring APA General Principles.",
+    "Removed absolute cue wording from DIF, Garcia-Koelling, publication-bias, socioemotional-selectivity, and social-facilitation alternatives.",
+    "Changed the Asch key from ally to dissenter so breaking unanimity is not confused with supporting the participant."
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "reviewedItems": 16,
+    "domainsCovered": 8,
+    "detailedIncorrectOptionExplanations": 48,
+    "keyPositionsPreserved": 16,
+    "selectedOptionsWithWarningsAfter": 0,
+    "choicesRefined": 24,
+    "challengeRefinedItems": 12,
+    "promptsRefined": 2,
+    "rationalesRefined": 1,
+    "itemsWithStrengthenedReferences": 6,
+    "bankWarningsBefore": {
+      "itemsWithWarnings": 1453,
+      "incorrectOptionsWithWarnings": 4210,
+      "insufficientDetailOptions": 1491,
+      "genericTemplateOptions": 2654,
+      "choiceRestatementOptions": 1935,
+      "fullKeyEchoOptions": 1660
+    },
+    "bankWarningsAfter": {
+      "itemsWithWarnings": 1437,
+      "incorrectOptionsWithWarnings": 4162,
+      "insufficientDetailOptions": 1491,
+      "genericTemplateOptions": 2606,
+      "choiceRestatementOptions": 1887,
+      "fullKeyEchoOptions": 1612
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b007-assessment-2",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The ETS sources define differential item functioning through conditional response differences between groups matched on the measured ability and distinguish a statistical flag from proof of bias.",
+      "feedbackDesign": [
+        "overall-item-difficulty",
+        "pooled-item-discrimination",
+        "response-format"
+      ],
+      "qualityFlags": [
+        "The item remains a foundation-level definition; a later scenario rewrite could distinguish raw group difficulty differences from conditional DIF after matching."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 2,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b005-assessment-1",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Flynn directly documented secular cohort gains across nations, while the added primary Norwegian cohort study supports the rationale qualification that the direction has reversed in some settings.",
+      "feedbackDesign": [
+        "within-person-aging-trajectory",
+        "practice-or-retest-effect",
+        "renorming-artifact"
+      ],
+      "qualityFlags": [
+        "Wave 08 replaces three absolute giveaway distractors with plausible aging, retest, and renorming confusions."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 3,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b003-biological-2",
+      "domainId": "biological",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The Wise review directly links mesolimbic dopamine and the VTA-to-nucleus-accumbens projection with learned motivational significance, reinforcement, and motivated responding.",
+      "feedbackDesign": [
+        "mesocortical-executive-pathway",
+        "nigrostriatal-motor-pathway",
+        "tuberoinfundibular-endocrine-pathway"
+      ],
+      "qualityFlags": [
+        "Wave 08 replaces unrelated sensory and spinal distractors with three neighboring dopamine pathways."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 3,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b004-biological-2",
+      "domainId": "biological",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The replacement systematic review supports tardive dyskinesia as a persistent hyperkinetic syndrome associated primarily with chronic exposure to antipsychotic and other dopamine-receptor-blocking drugs.",
+      "feedbackDesign": [
+        "ssri-adverse-effects",
+        "benzodiazepine-effects-and-withdrawal",
+        "nsaid-toxicities"
+      ],
+      "qualityFlags": [
+        "Wave 08 replaces a malformed, nonresolving JCP DOI with a valid systematic-review DOI."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 0,
+      "promptRefined": true,
+      "rationaleRefined": false,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b002-cognitive-1",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The original Garcia and Koelling experiment supports preferential flavor-illness and audiovisual-shock learning and directly contradicts an equipotentiality account of cue-consequence conditioning.",
+      "feedbackDesign": [
+        "extinction-procedure",
+        "equipotentiality-assumption",
+        "strict-temporal-contiguity"
+      ],
+      "qualityFlags": [
+        "Wave 08 removes two conspicuous absolute distractors while retaining the adjacent extinction, equipotentiality, and delay misconceptions."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 4,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b002-cognitive-2",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The primary cold-water study supports disproportionate influence of the most intense and final moments on retrospective evaluation, along with comparatively weak weighting of total duration.",
+      "feedbackDesign": [
+        "primacy-and-temporal-integration",
+        "average-intensity-and-duration",
+        "event-segmentation"
+      ],
+      "qualityFlags": [],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 0,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b002-intervention-2",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Rogers's original 1957 article explicitly identifies therapist congruence, unconditional positive regard, and empathic understanding among six conditions for constructive personality change.",
+      "feedbackDesign": [
+        "psychoanalytic-technique",
+        "behavioral-procedures",
+        "directive-influence-strategies"
+      ],
+      "qualityFlags": [],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 0,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b003-intervention-1",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The cited peer-reviewed common-factors review explicitly treats the alliance, empathy, expectations, and other relational or contextual elements as contributors shared across therapy orientations.",
+      "feedbackDesign": [
+        "cbt-exposure-techniques",
+        "psychoanalytic-techniques",
+        "operant-contingency-methods"
+      ],
+      "qualityFlags": [],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 0,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b003-lifespan-2",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The current WHO fact sheet defines preterm as live birth before 37 completed weeks and distinguishes extremely, very, and moderate-to-late preterm gestational subgroups.",
+      "feedbackDesign": [
+        "extremely-preterm-threshold",
+        "very-preterm-threshold",
+        "nonstandard-thirty-five-week-cutoff"
+      ],
+      "qualityFlags": [],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 0,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b004-lifespan-1",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The original study supports selective narrowing toward close partners, and the added theory article directly ties emotionally meaningful goals to perceived limited time rather than chronological age alone.",
+      "feedbackDesign": [
+        "network-expansion",
+        "future-oriented-information-seeking",
+        "withdrawal-from-intimacy"
+      ],
+      "qualityFlags": [
+        "Wave 08 removes an implausible complete-independence absolute while preserving withdrawal from intimacy as the misconception."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 2,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b002-professional-1",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The operative APA Ethics Code identifies beneficence and nonmaleficence as General Principle A and separately defines fidelity, integrity, and respect for rights and dignity.",
+      "feedbackDesign": [
+        "principle-c-integrity",
+        "principle-e-rights-and-dignity",
+        "principle-b-fidelity-and-responsibility"
+      ],
+      "qualityFlags": [
+        "Wave 08 replaces three giveaway claims with plausible statements drawn from neighboring APA General Principles."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 3,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b002-professional-2",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "APA Ethics Code Standard 10.01 currently enumerates the nature and anticipated course of therapy, fees, third-party involvement, and limits of confidentiality for informed consent as early as feasible.",
+      "feedbackDesign": [
+        "useful-but-nonenumerated-intake-information",
+        "diagnosis-record-access",
+        "payer-logistics-only"
+      ],
+      "qualityFlags": [],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 1,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b007-research-1",
+      "domainId": "research",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Campbell and Fiske directly support convergent and discriminant evidence through a multitrait-multimethod pattern; the added different-method wording improves alignment without claiming complete construct validation.",
+      "feedbackDesign": [
+        "reliability-evidence",
+        "causal-design-safeguards",
+        "diagnostic-classification-accuracy"
+      ],
+      "qualityFlags": [
+        "Wave 08 adds different-method wording to align the stem more closely with the cited multitrait-multimethod framework."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 0,
+      "promptRefined": true,
+      "rationaleRefined": false,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b008-research-1",
+      "domainId": "research",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Rosenthal supports the file-drawer problem, while the current Cochrane Handbook directly describes missing evidence selected by result significance, magnitude, or direction and methods to reduce it.",
+      "feedbackDesign": [
+        "preregistration-mitigation",
+        "effect-estimate-reporting",
+        "unpublished-evidence-search"
+      ],
+      "qualityFlags": [
+        "Wave 08 removes an absolute cue from the preregistration distractor and adds current evidence-synthesis guidance."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 2,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b004-social-2",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Asch's original conformity experiments support the central role of majority unanimity and show that a dissenter can reduce pressure without necessarily endorsing the participant's answer.",
+      "feedbackDesign": [
+        "unanimous-majority",
+        "response-order",
+        "majority-size-plateau"
+      ],
+      "qualityFlags": [
+        "Wave 08 replaces ally with dissenter so the key does not imply that the nonconforming group member supported the participant."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 2,
+      "promptRefined": false,
+      "rationaleRefined": true,
+      "referencesStrengthened": false
+    },
+    {
+      "id": "eppp-b006-social-1",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Zajonc's theory and the added direct experiment support audience-related amplification of dominant responses, helping mastered performance while impairing novel or difficult performance.",
+      "feedbackDesign": [
+        "uniform-improvement",
+        "reversed-task-interaction",
+        "explicit-feedback-requirement"
+      ],
+      "qualityFlags": [
+        "Wave 08 replaces a universal-improvement cue and an only-with-feedback cue with more plausible claims."
+      ],
+      "incorrectOptionExplanations": 3,
+      "choicesRefined": 2,
+      "promptRefined": false,
+      "rationaleRefined": false,
+      "referencesStrengthened": true
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

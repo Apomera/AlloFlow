@@ -1,0 +1,430 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-option-feedback-wave-09",
+  "reviewedAt": "2026-07-18",
+  "scope": "Two source-checked questions per EPPP domain, replacing generic incorrect-option feedback and refining conspicuously weak distractors or source alignment where the explanation audit exposed them.",
+  "feedbackCriteria": [
+    "at least 100 characters and 16 words",
+    "names the actual neighboring concept or misconception",
+    "explains when that concept would apply",
+    "contrasts the option with the stem",
+    "does not restate the distractor, paste the overall rationale, append the full key, or use a stock rejection template"
+  ],
+  "sourceCorrections": [
+    "Added complete learner-facing publication names, summaries, organizations, and credibility explanations for every reviewed citation.",
+    "Supplemented score-interval interpretation with an NCME instructional source and alpha interpretation with a modern Psychometrika methodological review.",
+    "Added foundational fluid-intelligence and current HPG-axis references, replaced the self-serving-bias source with a 266-study meta-analysis, and moved telepsychology to APA's stable final-guidelines page.",
+    "Corrected APA Standard 2.06 so consultation or assistance precedes a proportionate determination about limiting, suspending, or terminating affected duties."
+  ],
+  "challengeCorrections": [
+    "Reframed all 16 foundation prompts as intermediate application or interpretation questions with plausible neighboring-concept distractors.",
+    "Replaced a duplicate alpha definition with a two-factor-versus-alpha interpretation and converted the Hawthorne item to an observation-reactivity vignette.",
+    "Tempered PKU outcome claims, repaired the Festinger prompt grammar, and replaced scrambled endocrine alternatives with valid neighboring axes.",
+    "Removed answer-word leakage and extreme-cue alternatives while preserving every expected answer position."
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "reviewedItems": 16,
+    "domainsCovered": 8,
+    "detailedIncorrectOptionExplanations": 48,
+    "keyPositionsPreserved": 16,
+    "selectedOptionsWithWarningsAfter": 0,
+    "choicesRefined": 64,
+    "challengeRefinedItems": 16,
+    "promptsRefined": 16,
+    "rationalesRefined": 16,
+    "difficultyRefinedItems": 16,
+    "itemsWithStrengthenedReferences": 16,
+    "bankWarningsBefore": {
+      "itemsWithWarnings": 1437,
+      "incorrectOptionsWithWarnings": 4162,
+      "insufficientDetailOptions": 1491,
+      "genericTemplateOptions": 2606,
+      "choiceRestatementOptions": 1887,
+      "fullKeyEchoOptions": 1612
+    },
+    "bankWarningsAfter": {
+      "itemsWithWarnings": 1421,
+      "incorrectOptionsWithWarnings": 4114,
+      "insufficientDetailOptions": 1491,
+      "genericTemplateOptions": 2558,
+      "choiceRestatementOptions": 1839,
+      "fullKeyEchoOptions": 1564
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b004-assessment-2",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Hunsley and Meyer directly define incremental validity as prediction or explanation added beyond information already available, supporting the preserved key and the applied model-comparison rewrite. The construct is stable, and the DOI remains an appropriate primary methodological citation.",
+      "feedbackDesign": [
+        "administrative-feasibility",
+        "internal-score-consistency",
+        "missing-data-completeness"
+      ],
+      "qualityFlags": [
+        "Rewrites a cued definition as an applied comparison-model decision while preserving the verified answer position.",
+        "Uses feasibility, internal-score consistency, and data completeness as plausible neighboring qualities rather than unrelated foils."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b008-assessment-1",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The ETS guideline states that the standard error of measurement estimates score accuracy and supports confidence intervals around obtained scores, while Harvill directly explains how SEM-based score bands communicate uncertainty in individual-score interpretation. Together they support the key without treating one realized interval as proof.",
+      "feedbackDesign": [
+        "future-score-prediction-interval",
+        "population-mean-sampling-interval",
+        "unidimensionality-evidence"
+      ],
+      "qualityFlags": [
+        "Replaces absolute giveaway claims with neighboring interval, sampling, and internal-structure interpretations.",
+        "Adds a direct NCME measurement source to the existing authoritative ETS guidance and avoids overstating confidence-interval certainty."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b008-research-2",
+      "domainId": "research",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Cronbach's foundational article supports alpha's item-covariance and split-half basis, while Sijtsma demonstrates that a high alpha does not establish unidimensionality and can coexist with correlated dimensions. The rewrite preserves the key while replacing a duplicated definition with an interpretation problem.",
+      "feedbackDesign": [
+        "alpha-versus-factor-model-evidence",
+        "correlated-factor-covariance",
+        "internal-structure-versus-criterion-evidence"
+      ],
+      "qualityFlags": [
+        "Reauthors a near-duplicate alpha definition as an applied conflict between a coefficient and factor-analytic evidence.",
+        "Adds a peer-reviewed methodological caution so the explanation does not equate high alpha with unidimensionality or criterion validity."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b009-research-1",
+      "domainId": "research",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "McCambridge, Witton, and Elbourne directly review behavior changes associated with awareness of research participation or observation and conclude that the evidence is heterogeneous across conditions, mechanisms, and magnitudes. The applied rewrite therefore preserves both the key and the existing rationale's caution.",
+      "feedbackDesign": [
+        "observer-expectancy-bias",
+        "practice-effect",
+        "regression-to-the-mean"
+      ],
+      "qualityFlags": [
+        "Replaces a terminology-recall stem with an applied observation-reactivity scenario while preserving the verified answer position.",
+        "Uses observer expectancy, practice effects, and regression to the mean as plausible neighboring research artifacts."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b005-biological-1",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Miyake and colleagues directly tested mental-set shifting, working-memory updating and monitoring, and inhibition of prepotent responses as correlated but separable latent executive functions.",
+      "feedbackDesign": [
+        "broader-executive-task-abilities",
+        "general-performance-constraints",
+        "long-term-memory-processes"
+      ],
+      "qualityFlags": [
+        "Wave 09 replaces unrelated textbook triads with neighboring executive, performance, and memory constructs that require operation-to-model discrimination.",
+        "The construct can be taught in neuropsychology, although its domain placement is less specifically biological than the surrounding items."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b006-biological-1",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The 2025 GeneReviews revision supports prompt, lifelong, individually monitored phenylalanine restriction with medical-food supplementation and notes that late neurocognitive injury may be irreversible.",
+      "feedbackDesign": [
+        "delayed-metabolic-treatment",
+        "nutritionally-incomplete-restriction",
+        "supportive-enrichment-without-metabolic-control"
+      ],
+      "qualityFlags": [
+        "Wave 09 replaces biologically impossible and unsafe giveaway options with delayed treatment, incomplete nutrition, and supportive-care misconceptions.",
+        "The revised rationale tempers the former prevention claim because people treated from birth may retain modest measurable neurocognitive differences."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b003-cognitive-1",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Festinger and Carlsmith's original experiment reported greater favorable attitude change after the smaller incentive and interpreted it through insufficient external justification and dissonance reduction.",
+      "feedbackDesign": [
+        "arousal-misattribution",
+        "demand-characteristics",
+        "operant-punishment"
+      ],
+      "qualityFlags": [
+        "Wave 09 fixes the missing relative clause in the original prompt and explicitly frames dissonance as the investigators' proposed account.",
+        "The revised distractors use neighboring social-cognitive and learning explanations rather than unrelated memory decay or social facilitation claims."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b003-cognitive-2",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Rozin and Royzman directly define negative potency as stronger psychological influence of a negative entity than an equivalent positive entity and distinguish it from other negativity manifestations.",
+      "feedbackDesign": [
+        "mood-congruent-memory",
+        "loss-aversion",
+        "confirmation-bias"
+      ],
+      "qualityFlags": [
+        "Wave 09 replaces a definition-only prompt and conspicuous equal-weighting cue with a matched-valence social-evaluation vignette.",
+        "The alternatives name nearby mechanisms and require the learner to identify the missing mood, reference-point, or prior-belief conditions."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b005-lifespan-1",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Cattell's foundational study and Horn and Cattell's age-comparison study support distinguishing fluid relational reasoning from crystallized knowledge, processing speed, and associative memory performance.",
+      "feedbackDesign": [
+        "crystallized-verbal-knowledge",
+        "processing-speed",
+        "paired-associate-memory"
+      ],
+      "qualityFlags": [
+        "Wave 09 replaces three plainly crystallized examples with plausible processing-speed and learning-memory alternatives.",
+        "The added Cattell primary paper aligns more directly with the construct distinction than the existing age-differences article alone."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b005-lifespan-2",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The puberty review and current Endotext chapter support increasing pulsatile hypothalamic GnRH activity, anterior-pituitary LH and FSH secretion, and downstream gonadal endocrine and gametogenic functions.",
+      "feedbackDesign": [
+        "hpa-stress-axis",
+        "somatotropic-growth-axis",
+        "hpt-thyroid-axis"
+      ],
+      "qualityFlags": [
+        "Wave 09 replaces physiologically scrambled giveaway distractors with three valid neighboring hypothalamic-pituitary endocrine axes.",
+        "The added Endotext chapter directly verifies the complete GnRH-to-gonadotropin-to-gonad sequence and its pubertal relevance."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b003-intervention-2",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Sue, Arredondo, and McDavis directly organize multicultural counseling competence around counselor self-awareness, understanding client worldviews, and culturally appropriate intervention strategies; the revised item applies that framework without treating demographic membership as an individual formulation.",
+      "feedbackDesign": [
+        "demographic-protocol-essentialism",
+        "reactive-common-factors-universalism",
+        "shifted-cultural-learning-responsibility"
+      ],
+      "qualityFlags": [
+        "Replaces three overtly incompetent alternatives with plausible partial approaches involving protocol selection, common factors, and reliance on client education.",
+        "Uses an application vignette and preserves individual assessment rather than inferring worldview from demographic membership."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b004-intervention-1",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Shedler's peer-reviewed synthesis describes attention to affect, avoidance, recurring themes, interpersonal relations, past experience, and the therapy relationship as characteristic emphases of contemporary psychodynamic technique rather than techniques unique to that orientation.",
+      "feedbackDesign": [
+        "contingency-management-substitution",
+        "person-centered-nondirectivity",
+        "cognitive-restructuring-substitution"
+      ],
+      "qualityFlags": [
+        "Replaces definition-level strawmen with plausible behavioral, person-centered, and cognitive interventions.",
+        "Qualifies lateness as possible avoidance so the question tests exploration rather than unsupported interpretation."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b003-professional-1",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The APA Ethics Office still identifies the 2002 Ethics Code with its 2010 and 2017 amendments as the published code in 2026, and Standard 2.06(b) calls for appropriate measures plus a determination about whether affected duties should be limited, suspended, or terminated.",
+      "feedbackDesign": [
+        "complaint-threshold-misconception",
+        "premature-caseload-transfer",
+        "consent-as-competence-remedy"
+      ],
+      "qualityFlags": [
+        "Corrects the prior implication that limiting, suspending, or terminating duties necessarily follows awareness of any potentially interfering health problem.",
+        "Distinguishes APA ethics from jurisdiction-specific law and preserves continuity-of-care analysis."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b003-professional-2",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The official APA policy page states that the revised Guidelines for the Practice of Telepsychology were approved by the Council of Representatives in August 2024 and addresses competence, informed consent, data security, emergencies, and interjurisdictional practice.",
+      "feedbackDesign": [
+        "encryption-as-sufficient-plan",
+        "provider-location-jurisdiction-shortcut",
+        "vendor-responsibility-transfer"
+      ],
+      "qualityFlags": [
+        "Replaces the superseded PDF path with the stable official APA policy landing page for the Council-approved 2024 guidelines.",
+        "Separates aspirational APA guidance from binding jurisdictional practice requirements.",
+        "Uses three plausible partial plans instead of obviously unsafe remote-practice alternatives."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b007-social-1",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "sourceCheck": "The Mezulis, Abramson, Hyde, and Hankin meta-analysis directly supports the tendency to make more internal, stable, and global attributions for positive than negative events and documents substantial developmental and cultural variation in the bias.",
+      "feedbackDesign": [
+        "external-locus-overgeneralization",
+        "actor-observer-asymmetry",
+        "availability-frequency-judgment"
+      ],
+      "qualityFlags": [
+        "Replaces the Miller and Ross historical critique as the sole citation with a meta-analysis that directly supports the full attribution pattern.",
+        "Uses one event pair to distinguish outcome-valence attribution from locus of control, actor-observer asymmetry, and availability."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    },
+    {
+      "id": "eppp-b007-social-2",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "sourceCheck": "Pettigrew and Tropp synthesized 713 independent samples from 515 studies and found that intergroup contact typically relates to lower prejudice, while equal status, cooperation, common goals, and institutional support strengthen effects without serving as necessary conditions.",
+      "feedbackDesign": [
+        "unfavorable-contact-overgeneralization",
+        "self-selection-as-complete-explanation",
+        "allport-conditions-as-prerequisites"
+      ],
+      "qualityFlags": [
+        "Replaces conspicuous absolute claims with plausible boundary-condition, self-selection, and prerequisite misconceptions.",
+        "Frames the finding probabilistically so the item does not imply that a particular contact experience must reduce prejudice."
+      ],
+      "incorrectOptionExplanations": 3,
+      "difficultyRefined": true,
+      "choicesRefined": 4,
+      "promptRefined": true,
+      "rationaleRefined": true,
+      "referencesStrengthened": true
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}
