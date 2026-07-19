@@ -65,15 +65,15 @@ const BASE = {
 };
 
 describe('magnetism tool — registration + structure', () => {
-  it('registers id "magnetism" with six quest hooks and five tabs', () => {
+  it('registers id "magnetism" with nine quest hooks and nine tabs', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain("window.StemLab.registerTool('magnetism'");
       expect(source).toContain('questHooks');
-      ['field', 'electro', 'motor', 'induce', 'materials', 'earth', 'quiz'].forEach((tabId) => {
+      ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'transformer', 'earth', 'quiz'].forEach((tabId) => {
         expect(source).toContain("id: '" + tabId + "'");
       });
-      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_quiz'].forEach((q) => {
+      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_crane', 'mag_quiz'].forEach((q) => {
         expect(source).toContain("id: '" + q + "'");
       });
       // host-guarded registration (does not early-return the whole module)
@@ -174,13 +174,15 @@ describe('magnetism tool — jsdom mount smoke', () => {
   });
 
   it('renders every tab under jsdom', () => {
-    ['field', 'electro', 'motor', 'induce', 'materials', 'earth', 'quiz'].forEach((tab) => {
+    ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'transformer', 'earth', 'quiz'].forEach((tab) => {
       const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab }));
       expect(html.length).toBeGreaterThan(200);
     });
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field' }))).toContain('north (red)');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'electro' }))).toContain('Turns of wire');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor' }))).toContain('commutator');
+    expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'crane' }))).toContain('♻️');
+    expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'transformer' }))).toContain('120 V →');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'earth' }))).toContain('magnetosphere');
   });
 
@@ -202,6 +204,8 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(hooks.mag_induce({ magnetism: { peakEMF: 0.2 } })).toBe(false);
     expect(hooks.mag_materials({ magnetism: { matPerfect: true } })).toBe(true);
     expect(hooks.mag_materials({ magnetism: {} })).toBe(false);
+    expect(hooks.mag_crane({ magnetism: { craneDone: true } })).toBe(true);
+    expect(hooks.mag_crane({ magnetism: {} })).toBe(false);
     expect(hooks.mag_quiz({ magnetism: { quizBest: 9 } })).toBe(true);
     expect(hooks.mag_quiz({ magnetism: { quizBest: 8 } })).toBe(false);
   });
@@ -247,5 +251,46 @@ describe('magnetism tool — materials sorter', () => {
     const source = readFileSync(TOOL_PATHS[0], 'utf8');
     expect(source).toContain('NOT ferromagnetic');
     expect(source).toContain('iron, nickel, and cobalt');
+  });
+});
+
+describe('magnetism tool — transformer (mutual induction)', () => {
+  it('obeys the turns-ratio law V2/V1 = N2/N1 for AC', () => {
+    expect(physics.transformerOut(120, 100, 200, true)).toBeCloseTo(240, 9);  // step-up
+    expect(physics.transformerOut(120, 100, 50, true)).toBeCloseTo(60, 9);    // step-down
+    expect(physics.transformerOut(120, 100, 100, true)).toBeCloseTo(120, 9);  // 1:1
+  });
+
+  it('DC input induces nothing — transformers are AC-only', () => {
+    expect(physics.transformerOut(120, 100, 200, false)).toBe(0);
+    expect(physics.transformerOut(500, 25, 400, false)).toBe(0);
+  });
+
+  it('the energy-conservation caveat is disclosed (no free energy)', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('power stays conserved');
+    expect(source).toContain('loss ∝ I²R');
+  });
+});
+
+describe('magnetism tool — junkyard crane', () => {
+  it('the lineup interleaves magnetic and non-magnetic items, bin one past the end', () => {
+    expect(physics.CRANE_ORDER.length).toBe(8);
+    expect(physics.BIN_SLOT).toBe(8);
+    const pattern = physics.CRANE_ORDER
+      .map((id) => physics.MATERIALS.find((m) => m.id === id).magnetic ? 'M' : '-')
+      .join('');
+    expect(pattern).toBe('M-M-M-M-');   // every move is a decision
+  });
+
+  it('every crane item exists in the MATERIALS bank', () => {
+    const ids = new Set(physics.MATERIALS.map((m) => m.id));
+    physics.CRANE_ORDER.forEach((id) => expect(ids.has(id)).toBe(true));
+  });
+
+  it('the crane teaches the off-switch superpower in its copy', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('a magnet with an off switch');
+    expect(source).toContain('is not ferromagnetic, so the field slides right past it');
   });
 });
