@@ -1067,6 +1067,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_graphcalc.js',
     'stem_lab/stem_tool_algebracas.js',  // lowercase = the git filename (camelCase never got its CDN hash bumped — audit B5 casing)
     'stem_lab/stem_tool_circuit.js',
+    'stem_lab/stem_tool_magnetism.js',
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_flightsim.js',

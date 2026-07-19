@@ -3741,6 +3741,12 @@
                 color: 'yellow', ready: true
               },
               {
+                // @tool magnetism
+                id: 'magnetism', icon: '🧲', label: 'Magnetism Lab',
+                desc: 'See magnetic field lines with a live compass, build an electromagnet, spin a DC motor with real forces, and explore Earth’s magnetic shield.',
+                color: 'rose', ready: true
+              },
+              {
                 // @tool chemBalance
                 id: 'chemBalance', icon: '⚖️', label: t('stem.tools_menu.equation_balancer'),
                 desc: t('stem.tools_menu.balance_chemical_equations_with_visual'),
@@ -5428,7 +5434,7 @@
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true, weatherSystems: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
-            cyberDefense: true, semiconductor: true,
+            cyberDefense: true, magnetism: true, semiconductor: true,
             // Art & Music
             artStudio: true, creative: true, gameStudio: true, freeForms: true,
             // Earth & Space
