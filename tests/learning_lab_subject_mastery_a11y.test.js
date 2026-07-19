@@ -5,83 +5,76 @@ import { describe, expect, it } from 'vitest';
 const root = process.cwd();
 const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
 
-describe('Learning Lab Subject Mastery accessibility', () => {
+describe('Learning Lab Subject learning-status accessibility', () => {
   const source = read('stem_lab/stem_tool_learning_lab.js');
   const start = source.indexOf('  function PersonalSubjectMastery(props) {');
   const end = source.indexOf('  function PersonalSleepLog(props) {', start);
   const mastery = source.slice(start, end);
 
-  it('labels the subject form and supports Enter submission', () => {
-    expect(mastery).toContain("onSubmit: function(event) { event.preventDefault(); addSubject(); }");
-    expect(mastery).toContain("htmlFor: 'learning-lab-subject-name'");
-    expect(mastery).toContain("id: 'learning-lab-subject-name', type: 'text'");
-    expect(mastery).toContain("hh('button', { type: 'submit'");
+  it('frames statuses as optional, contextual self-reflections', () => {
+    expect(mastery).toContain('personal reflections, not grades, test scores, diagnoses');
+    expect(mastery).toContain('Status can change by task, context, or support.');
+    expect(mastery).toContain("label: 'Practicing'");
+    expect(mastery).toContain("label: 'Ready to use'");
+    expect(mastery).not.toContain("label: 'Shaky'");
+    expect(mastery).not.toContain("label: 'Mastered'");
   });
 
-  it('reports blank subjects inline and returns focus to the field', () => {
-    expect(mastery).toContain("setSubjectError('Subject name is required.')");
-    expect(mastery).toContain("document.getElementById('learning-lab-subject-name')");
-    expect(mastery).toContain("id: 'learning-lab-subject-error', role: 'alert'");
-    expect(mastery).toContain("'aria-invalid': subjectError ? 'true' : undefined");
+  it('does not convert ordinal status categories into a numeric average', () => {
+    expect(mastery).toContain('the app does not combine these categories into an average score');
+    expect(mastery).not.toContain('avg.toFixed');
+    expect(mastery).not.toContain('subjectAvg');
+    expect(mastery).not.toContain('Average mastery');
   });
 
-  it('labels the topic form and reports blank topics inline', () => {
-    expect(mastery).toContain("onSubmit: function(event) { event.preventDefault(); addTopic(); }");
-    expect(mastery).toContain("htmlFor: 'learning-lab-topic-name'");
-    expect(mastery).toContain("id: 'learning-lab-topic-name', type: 'text'");
-    expect(mastery).toContain("setTopicError('Topic name is required.')");
-    expect(mastery).toContain("id: 'learning-lab-topic-error', role: 'alert'");
+  it('explains storage and sharing boundaries for learning data', () => {
+    expect(mastery).toContain('not automatically shared with a teacher or school');
+    expect(mastery).toContain('Avoid identifying details on shared devices');
+    expect(mastery).toContain('school or district privacy procedures');
   });
 
-  it('provides a text alternative for the mastery distribution', () => {
-    expect(mastery).toContain("var distributionText = counts.map");
-    expect(mastery).toContain("role: 'img', 'aria-label': 'Mastery distribution. ' + distributionText");
-    expect(mastery).toContain("id: 'learning-lab-mastery-distribution-heading'");
+  it('uses native required forms with bounded fields and conditional alerts', () => {
+    expect(mastery).toContain("onSubmit: addSubject");
+    expect(mastery).toContain("onSubmit: addTopic");
+    expect(mastery).toContain("id: 'learning-lab-subject-name', type: 'text', value: subForm.name, required: true, maxLength: 120");
+    expect(mastery).toContain("id: 'learning-lab-topic-name', type: 'text', value: topicForm.name, required: true, maxLength: 160");
+    expect(mastery).toContain("subjectError ? hh('div', { id: 'learning-lab-subject-error', role: 'alert'");
+    expect(mastery).toContain("topicError ? hh('div', { id: 'learning-lab-topic-error', role: 'alert'");
   });
 
-  it('uses semantic lists for subjects and topics', () => {
-    expect(mastery).toContain("hh('ul', { 'aria-label': sub.name + ' topics'");
-    expect(mastery).toContain("hh('ul', { 'aria-label': 'Tracked subjects'");
-    expect(mastery).toContain("return hh('li', { key: 't-' + topic.id");
-    expect(mastery).toContain("return hh('li', { key: 's-' + subject.id");
+  it('uses a native select for each named single-choice status', () => {
+    expect(mastery).toContain("hh('label', { htmlFor: 'learning-lab-topic-status-' + topic.id");
+    expect(mastery).toContain("hh('select', { id: 'learning-lab-topic-status-' + topic.id");
+    expect(mastery).not.toContain("'aria-pressed': active");
   });
 
-  it('exposes mastery choices as a named group with selected state', () => {
-    expect(mastery).toContain("role: 'group', 'aria-label': 'Set mastery for ' + topic.name");
-    expect(mastery).toContain("'aria-pressed': active ? 'true' : 'false'");
-    expect(mastery).toContain("minHeight: 44, padding: '6px 4px'");
-    expect(mastery).toContain("Current mastery: ' + currentLevel.label");
+  it('renders counts and records as semantic lists, articles, and times', () => {
+    expect(mastery).toContain("'aria-label': 'Learning-status counts for ' + subject.name");
+    expect(mastery).toContain("'aria-label': subject.name + ' topics'");
+    expect(mastery).toContain("hh('article', { 'aria-labelledby': 'learning-lab-topic-heading-' + topic.id");
+    expect(mastery).toContain("hh('time', { dateTime: safeDateTime(topic.updatedAt) }");
+    expect(mastery).not.toContain("role: 'img'");
   });
 
-  it('provides named 44-pixel topic deletion', () => {
-    expect(mastery).toContain("'aria-label': 'Delete topic: ' + topic.name");
-    expect(mastery).toContain("minWidth: 44, minHeight: 44");
-    expect(mastery).toContain("title: 'Delete this topic?', confirmText: 'Delete topic'");
+  it('uses post-render focus recovery for errors, navigation, and deletion', () => {
+    expect(mastery).toContain('var pendingFocusRef = R.useRef(null);');
+    expect(mastery).toContain('R.useLayoutEffect(function()');
+    expect(mastery).toContain("requestFocus('learning-lab-subject-name')");
+    expect(mastery).toContain("requestFocus('learning-lab-topic-name')");
+    expect(mastery).toContain("requestFocus(remainingCount ? 'learning-lab-topics-heading' : 'learning-lab-topic-name')");
+    expect(mastery).not.toContain("setTimeout(function() { var field = document.getElementById");
   });
 
-  it('keeps subject opening and deletion as separate controls', () => {
-    expect(mastery).toContain("'aria-label': 'Open ' + subject.name");
-    expect(mastery).toContain("'aria-label': 'Delete subject: ' + subject.name");
-    expect(mastery).toContain("position: 'absolute', top: 8, right: 8, minWidth: 44, minHeight: 44");
-    expect(mastery).not.toContain("hh('span', { onClick: function(e) { e.stopPropagation(); removeSubject");
-  });
-
-  it('uses app confirmation rather than a native subject dialog', () => {
+  it('confirms destructive actions and preserves sibling data', () => {
     expect(mastery).toContain("title: 'Delete this subject?', confirmText: 'Delete subject'");
-    expect(mastery).not.toContain("confirm('Delete this subject and all its topics?')");
-  });
-
-  it('announces additions, mastery changes, and deletion', () => {
-    expect(mastery).toContain("llAnnounce('Subject added: ' + sub.name + '.')");
-    expect(mastery).toContain("llAnnounce('Topic added: ' + topic.name + '.')");
-    expect(mastery).toContain("' mastery set to '");
-    expect(mastery).toContain("llAnnounce('Subject deleted.')");
-    expect(mastery).toContain("llAnnounce('Topic deleted.')");
-  });
-
-  it('preserves unrelated section data when updating subjects', () => {
+    expect(mastery).toContain("title: 'Delete this topic?', confirmText: 'Delete topic'");
     expect(mastery).toContain("setData(Object.assign({}, data, { subjects:");
-    expect(mastery).not.toContain("setData({ subjects:");
+    expect(mastery).not.toContain('setData({ subjects:');
+  });
+
+  it('updates the catalog description without scoring claims', () => {
+    expect(source).toContain('Track optional topic learning-status reflections without an average score.');
+    expect(source).not.toContain('Track mastery per topic per subject across 5 levels');
   });
 
   it('keeps the deployed mirror identical', () => {
