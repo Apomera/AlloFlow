@@ -62,8 +62,41 @@ describe('Learning Lab Anxiety Toolkit accessibility', () => {
   });
 
   it('preserves unrelated section data when logging tool use', () => {
-    expect(toolkit).toContain("setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }))");
+    expect(toolkit).toContain("setData(Object.assign({}, data, { logs: [entry].concat(rawLogs) }))");
     expect(toolkit).not.toContain('setData({ logs:');
+  });
+
+  it('handles malformed legacy log data without crashing', () => {
+    expect(toolkit).toContain('var rawLogs = Array.isArray(data.logs) ? data.logs : [];');
+    expect(toolkit).toContain('return !!entry && entry.toolId === toolId;');
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(toolkit).toContain('if (!pendingFocusId) return;');
+    expect(toolkit).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(toolkit).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(toolkit).not.toContain('setTimeout');
+  });
+
+  it('explains optional use, local saving, and non-communication', () => {
+    expect(toolkit).toContain('These tools are optional self-help strategies for everyday anxious moments.');
+    expect(toolkit).toContain('They are not therapy and do not replace professional support.');
+    expect(toolkit).toContain('does not notify a teacher, school, employer, clinician, or family member');
+  });
+
+  it('describes strategies with attribution instead of clinical effect claims', () => {
+    expect(toolkit).toContain('This practice comes from acceptance and commitment therapy (ACT).');
+    expect(toolkit).toContain('This idea comes from dialectical behavior therapy (DBT) distress-tolerance skills.');
+    expect(toolkit).not.toContain('regulation circuits');
+    expect(toolkit).not.toContain('reduces fusion');
+  });
+
+  it('lets the user clear logged uses behind an accessible confirmation', () => {
+    expect(toolkit).toContain("title: 'Clear logged uses?', confirmText: 'Clear logged uses'");
+    expect(toolkit).toContain("setData(Object.assign({}, data, { logs: [] }))");
+    expect(toolkit).toContain("llAnnounce('All logged anxiety-tool uses cleared.')");
+    expect(toolkit).toContain("focusById('learning-lab-anxiety-start-' + TOOLS[0].id)");
+    expect(toolkit).not.toContain('confirm(');
   });
 
   it('announces open, return, and logged-use state changes', () => {
@@ -72,11 +105,14 @@ describe('Learning Lab Anxiety Toolkit accessibility', () => {
     expect(toolkit).toContain("llAnnounce(tool.label + ' use logged.')");
   });
 
-  it('sorts usage counts and exposes a semantic ranked list', () => {
-    expect(toolkit).toContain(".sort(function(a, b) { return b.count - a.count; })");
+  it('shows logged tools without ranking or scoring', () => {
     expect(toolkit).toContain("'aria-labelledby': 'learning-lab-anxiety-usage-heading'");
-    expect(toolkit).toContain("usage.map(function(item, index)");
+    expect(toolkit).toContain("'Tools you have logged'");
     expect(toolkit).toContain("item.count + (item.count === 1 ? ' use' : ' uses')");
+    expect(toolkit).toContain('Counts are informational only; using a tool more or less often is not better or worse.');
+    expect(toolkit).not.toContain('.sort(function(a, b) { return b.count - a.count; })');
+    expect(toolkit).not.toContain('Most-used tools');
+    expect(toolkit).not.toContain("(index + 1) + '. '");
   });
 
   it('does not use accent colors for essential small text', () => {

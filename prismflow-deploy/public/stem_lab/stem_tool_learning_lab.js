@@ -12534,28 +12534,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // reframes, and body release. Links to crisis resources when severe.
   function PersonalAnxietyToolkit(props) {
     if (!R) return null;
-    var data = props.data || { logs: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { logs: [] };
     var setData = props.setData;
     var as = R.useState(null); var active = as[0]; var setActive = as[1];
+    var pf = R.useState(''); var pendingFocusId = pf[0]; var setPendingFocusId = pf[1];
+    var rawLogs = Array.isArray(data.logs) ? data.logs : [];
 
     var TOOLS = [
       { id: 'name', label: 'Name it', icon: '🏷', color: '#3b82f6',
-        steps: ['Say: “Anxiety is here right now.”', 'Naming a feeling can help engage regulation circuits.', 'Notice where you feel it in your body.', 'Remind yourself: anxiety is information, not proof of danger.'] },
+        steps: ['Say: “Anxiety is here right now.”', 'Putting the feeling into words can create a little distance from it.', 'Notice where you feel it in your body.', 'Remind yourself: anxiety is a feeling, not proof of danger.'] },
       { id: 'breath', label: 'Slow exhale breath', icon: '🌬', color: '#06b6d4',
         steps: ['Inhale for 4 counts.', 'Hold for 2 counts.', 'Exhale slowly for 8 counts.', 'Repeat 4 to 6 times.', 'Notice whether your heart rate or muscle tension changes.'] },
       { id: 'cold', label: 'Cold water on face or wrists', icon: '🥶', color: '#a855f7',
-        steps: ['Hold a cool cloth to your face or run cool water on your wrists.', 'Notice your breathing and heart rate for about 30 seconds.', 'This is a DBT distress-tolerance strategy.', 'Use the regulation time to choose your next step.'] },
+        steps: ['Hold a cool cloth to your face or run cool water on your wrists.', 'Notice your breathing and heart rate for about 30 seconds.', 'This idea comes from dialectical behavior therapy (DBT) distress-tolerance skills. Skip it if cold feels painful or you have been advised to avoid it.', 'Use the calmer moment to choose your next step.'] },
       { id: 'thought', label: 'Cognitive defusion', icon: '🪂', color: '#fbbf24',
-        steps: ['Notice the anxious thought.', 'Say: “I am having the thought that…” instead of treating the thought as a fact.', 'Imagine the thought as a leaf floating down a river.', 'Remember that you can observe a thought without obeying it.', 'This ACT strategy reduces fusion with anxious content.'] },
+        steps: ['Notice the anxious thought.', 'Say: “I am having the thought that…” instead of treating the thought as a fact.', 'Imagine the thought as a leaf floating down a river.', 'Remember that you can observe a thought without obeying it.', 'This practice comes from acceptance and commitment therapy (ACT).'] },
       { id: 'sense', label: '5-4-3-2-1 grounding', icon: '🌱', color: '#10b981',
         steps: ['Name 5 things you can see.', 'Name 4 things you can feel.', 'Name 3 things you can hear.', 'Name 2 things you can smell.', 'Name 1 thing you can taste.', 'Return attention to the room and choose your next step.'] },
       { id: 'evidence', label: 'Evidence for and against', icon: '⚖', color: '#ef4444',
         steps: ['State the anxious thought.', 'List evidence that supports it.', 'List evidence that does not support it.', 'Write a more balanced thought.', 'Aim for accurate thinking rather than forced positive thinking.'] }
     ];
 
-    function focusById(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, active, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
+    function countFor(toolId) { return rawLogs.filter(function(entry) { return !!entry && entry.toolId === toolId; }).length; }
     function openTool(tool) {
       setActive(tool.id);
       llAnnounce(tool.label + ' anxiety tool opened.');
@@ -12568,16 +12577,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function logTool(tool) {
       var entry = { id: tkId(), date: todayISO(), time: Date.now(), toolId: tool.id };
-      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setData(Object.assign({}, data, { logs: [entry].concat(rawLogs) }));
       setActive(null);
       llAnnounce(tool.label + ' use logged.');
       focusById('learning-lab-anxiety-start-' + tool.id);
     }
+    async function clearLogs() {
+      if (!(await askLearningLabConfirmation('This permanently removes every logged anxiety-tool use from your Personal Toolkit.', {
+        title: 'Clear logged uses?', confirmText: 'Clear logged uses'
+      }))) return;
+      setData(Object.assign({}, data, { logs: [] }));
+      llAnnounce('All logged anxiety-tool uses cleared.');
+      focusById('learning-lab-anxiety-start-' + TOOLS[0].id);
+    }
 
-    var logs = data.logs || [];
     var usage = TOOLS.map(function(tool) {
-      return { tool: tool, count: logs.filter(function(entry) { return entry.toolId === tool.id; }).length };
-    }).filter(function(item) { return item.count > 0; }).sort(function(a, b) { return b.count - a.count; });
+      return { tool: tool, count: countFor(tool.id) };
+    }).filter(function(item) { return item.count > 0; });
 
     if (active) {
       var activeTool = TOOLS.filter(function(tool) { return tool.id === active; })[0];
@@ -12603,7 +12619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🧰', 'Anxiety Toolkit', 'Quick-access tools for everyday anxiety. Choose what fits the moment.', '#ef4444'),
 
-      hh('aside', { 'aria-labelledby': 'learning-lab-anxiety-crisis-heading', style: { padding: 12, borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } },
+      hh('aside', { 'aria-labelledby': 'learning-lab-anxiety-crisis-heading', style: { padding: 12, borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '2px solid #ef4444', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 14 } },
         hh('h3', { id: 'learning-lab-anxiety-crisis-heading', style: { fontSize: 12, margin: '0 0 5px', color: 'var(--allo-stem-text, #fff)', fontWeight: 900 } }, 'If you are in crisis or feel unsafe'),
         hh('p', { style: { margin: '0 0 6px' } },
           hh('a', { href: 'tel:988', 'aria-label': 'Call the 988 Suicide and Crisis Lifeline', style: { color: '#fff', textDecoration: 'underline', fontWeight: 800 } }, 'Call 988'),
@@ -12618,29 +12634,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ),
 
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'These tools are optional self-help strategies for everyday anxious moments. They are not therapy and do not replace professional support. Logging a tool is optional: it saves only a private note in your Personal Toolkit and does not notify a teacher, school, employer, clinician, or family member.'),
+
       hh('ul', { 'aria-label': 'Available anxiety tools', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
         TOOLS.map(function(tool) {
-          var count = logs.filter(function(entry) { return entry.toolId === tool.id; }).length;
+          var count = countFor(tool.id);
           return hh('li', { key: 'at-' + tool.id },
             hh('button', { id: 'learning-lab-anxiety-start-' + tool.id, type: 'button', 'aria-label': 'Open ' + tool.label + ', ' + tool.steps.length + ' steps' + (count > 0 ? ', used ' + count + (count === 1 ? ' time' : ' times') : ''), onClick: function() { openTool(tool); }, 'data-ll-focusable': true, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + tool.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + tool.color + '55', borderLeft: '4px solid ' + tool.color, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
               hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 22, marginBottom: 4 } }, tool.icon),
               hh('strong', { style: { display: 'block', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)' } }, tool.label),
-              hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, tool.steps.length + ' steps' + (count > 0 ? ' · used ' + count + (count === 1 ? ' time' : ' times') : ''))
+              hh('span', { style: { display: 'block', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, tool.steps.length + ' steps' + (count > 0 ? ' · used ' + count + (count === 1 ? ' time' : ' times') : ''))
             )
           );
         })
       ),
 
       usage.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-anxiety-usage-heading', style: { marginTop: 14 } },
-        hh('h3', { id: 'learning-lab-anxiety-usage-heading', style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Most-used tools'),
-        hh('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
-          usage.map(function(item, index) {
+        hh('h3', { id: 'learning-lab-anxiety-usage-heading', style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Tools you have logged'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+          usage.map(function(item) {
             return hh('li', { key: 'l-' + item.tool.id, style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: 8, borderRadius: 4, background: 'rgba(15,23,42,0.5)', borderLeft: '2px solid ' + item.tool.color } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', { 'aria-hidden': 'true' }, item.tool.icon + ' '), (index + 1) + '. ' + item.tool.label),
-              hh('strong', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } }, item.count + (item.count === 1 ? ' use' : ' uses'))
+              hh('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', { 'aria-hidden': 'true' }, item.tool.icon + ' '), item.tool.label),
+              hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } }, item.count + (item.count === 1 ? ' use' : ' uses'))
             );
           })
-        )
+        ),
+        hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '8px 0 6px' } }, 'Counts are informational only; using a tool more or less often is not better or worse.'),
+        hh('button', { type: 'button', onClick: clearLogs, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fecaca', background: 'transparent', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Clear logged uses')
       ) : null
     );
   }
