@@ -8281,11 +8281,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  // R. PERSONAL CONCEPT MAP MAKER (Wave 4)
-  // Interactive node+edge canvas for synthesis. Add nodes by clicking
-  // canvas. Drag nodes. Connect by clicking source then target. Color
-  // by category. Save multiple maps. Novak + Gowin 1984 concept mapping
-  // is strong for synthesis-heavy material.
+  // R. PERSONAL CONCEPT MAP MAKER (Wave 4, WCAG 2.2 revision)
+  // Provides equivalent visual and semantic views of every concept and connection.
   function PersonalConceptMapMaker(props) {
     if (!R) return null;
     var data = props.data || { maps: [] };
@@ -8297,255 +8294,290 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ts = R.useState('');                      var newTitle = ts[0];  var setNewTitle = ts[1];
     var tes = R.useState('');                     var titleError = tes[0]; var setTitleError = tes[1];
 
-    var COLORS = ['#9333ea', '#10b981', '#ef4444', '#fbbf24', '#3b82f6', '#06b6d4', '#f97316', '#a855f7'];
+    var COLORS = ['#d8b4fe', '#6ee7b7', '#fca5a5', '#fde68a', '#93c5fd', '#67e8f9', '#fdba74', '#f9a8d4'];
 
-    function createMap() {
-      if (!newTitle.trim()) { setTitleError('Map title is required.'); setTimeout(function() { var target = document.getElementById('learning-lab-concept-map-title'); if (target) target.focus(); }, 0); return; }
-      var m = { id: tkId(), title: newTitle.trim(), nodes: [], edges: [], createdAt: todayISO() };
-      setData({ maps: [m].concat(data.maps || []) });
-      setActiveMap(m.id);
+    function focusId(id) {
+      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    }
+    function getMap() {
+      return (data.maps || []).filter(function(map) { return map.id === activeMap; })[0];
+    }
+    function updateMap(patch) {
+      var maps = (data.maps || []).map(function(map) {
+        return map.id === activeMap ? Object.assign({}, map, patch) : map;
+      });
+      setData(Object.assign({}, data, { maps: maps }));
+    }
+    function createMap(event) {
+      if (event) event.preventDefault();
+      var title = newTitle.trim();
+      if (!title) {
+        setTitleError('Map title is required.');
+        focusId('learning-lab-concept-map-title');
+        return;
+      }
+      var map = { id: tkId(), title: title, nodes: [], edges: [], createdAt: todayISO() };
+      setData(Object.assign({}, data, { maps: [map].concat(data.maps || []) }));
+      setActiveMap(map.id);
       setNewTitle('');
       setTitleError('');
       setView('edit');
-      llAnnounce('Concept map created.');
+      llAnnounce('Concept map created: ' + title + '.');
+      focusId('learning-lab-concept-map-editor-heading');
     }
     function openMap(id) {
       setActiveMap(id);
+      setSelectedNode(null);
+      setConnectFrom(null);
       setView('edit');
+      focusId('learning-lab-concept-map-editor-heading');
+    }
+    function closeMap() {
+      setView('list');
+      setActiveMap(null);
+      setSelectedNode(null);
+      setConnectFrom(null);
+      focusId('learning-lab-concept-map-list-heading');
     }
     async function removeMap(id) {
-      var map = (data.maps || []).filter(function(m) { return m.id === id; })[0];
+      var map = (data.maps || []).filter(function(item) { return item.id === id; })[0];
       if (!map) return;
       if (!(await askLearningLabConfirmation('This permanently removes the concept map "' + map.title + '".', { title: 'Delete this concept map?', confirmText: 'Delete map' }))) return;
-      setData({ maps: (data.maps || []).filter(function(m) { return m.id !== id; }) });
-    }
-    function getMap() {
-      return (data.maps || []).filter(function(m) { return m.id === activeMap; })[0];
-    }
-    function updateMap(patch) {
-      var maps = (data.maps || []).map(function(m) {
-        if (m.id !== activeMap) return m;
-        return Object.assign({}, m, patch);
-      });
-      setData({ maps: maps });
+      var remaining = (data.maps || []).filter(function(item) { return item.id !== id; });
+      setData(Object.assign({}, data, { maps: remaining }));
+      llAnnounce('Concept map deleted: ' + map.title + '.');
+      focusId(remaining.length ? 'learning-lab-concept-map-list-heading' : 'learning-lab-concept-map-title');
     }
     async function addNode() {
-      var m = getMap(); if (!m) return;
-      var values = await askLearningLabForm({ title: 'Add a concept', description: 'Enter the concept text shown on the map.', submitText: 'Add concept', fields: [{ name: 'label', label: 'Concept name', required: true, maxLength: 80 }] });
+      var map = getMap();
+      if (!map) return;
+      var values = await askLearningLabForm({ title: 'Add a concept', description: 'Enter the concept text shown in both the visual map and concept list.', submitText: 'Add concept', fields: [{ name: 'label', label: 'Concept name', required: true, maxLength: 80 }] });
       if (!values) return;
-      var x = 100 + Math.random() * 400;
-      var y = 100 + Math.random() * 300;
-      var colorIdx = m.nodes.length % COLORS.length;
-      var node = { id: tkId(), label: values.label, x: x, y: y, color: COLORS[colorIdx] };
-      updateMap({ nodes: (m.nodes || []).concat([node]) });
-      llAnnounce('Concept added: ' + values.label + '.');
+      var count = (map.nodes || []).length;
+      var node = {
+        id: tkId(), label: values.label,
+        x: 90 + (count % 4) * 145, y: 90 + (Math.floor(count / 4) % 4) * 100,
+        color: COLORS[count % COLORS.length]
+      };
+      updateMap({ nodes: (map.nodes || []).concat([node]) });
+      setSelectedNode(node.id);
+      llAnnounce('Concept added and selected: ' + values.label + '.');
+      focusId('learning-lab-concepts-heading');
     }
     function deleteNode(nodeId) {
-      var m = getMap(); if (!m) return;
+      var map = getMap();
+      if (!map) return;
+      var node = (map.nodes || []).filter(function(item) { return item.id === nodeId; })[0];
+      if (!node) return;
+      var removedConnections = (map.edges || []).filter(function(edge) { return edge.from === nodeId || edge.to === nodeId; }).length;
       updateMap({
-        nodes: m.nodes.filter(function(n) { return n.id !== nodeId; }),
-        edges: m.edges.filter(function(e) { return e.from !== nodeId && e.to !== nodeId; })
+        nodes: (map.nodes || []).filter(function(item) { return item.id !== nodeId; }),
+        edges: (map.edges || []).filter(function(edge) { return edge.from !== nodeId && edge.to !== nodeId; })
       });
       setSelectedNode(null);
+      if (connectFrom === nodeId) setConnectFrom(null);
+      llAnnounce('Concept deleted: ' + node.label + '.' + (removedConnections ? ' ' + removedConnections + ' related connection' + (removedConnections === 1 ? '' : 's') + ' also deleted.' : ''));
+      focusId((map.nodes || []).length > 1 ? 'learning-lab-concepts-heading' : 'learning-lab-add-concept');
     }
     async function startConnect(nodeId) {
-      if (connectFrom === nodeId) { setConnectFrom(null); llAnnounce('Connection cancelled.'); return; }
-      if (connectFrom) {
-        var m = getMap();
-        var values = await askLearningLabForm({ title: 'Describe the relationship', description: 'A relationship label is optional.', submitText: 'Create connection', fields: [{ name: 'label', label: 'Relationship label', required: false, maxLength: 80, placeholder: 'e.g., causes or is part of' }] });
-        if (!values) return;
-        var edge = { id: tkId(), from: connectFrom, to: nodeId, label: values.label || '' };
-        updateMap({ edges: (m.edges || []).concat([edge]) });
+      var map = getMap();
+      if (!map) return;
+      if (connectFrom === nodeId) {
         setConnectFrom(null);
-        llAnnounce('Concepts connected' + (edge.label ? ': ' + edge.label : '.') );
-      } else {
-        setConnectFrom(nodeId);
-        llAnnounce('Connection started. Choose another concept.');
+        llAnnounce('Connection cancelled.');
+        return;
       }
+      if (!connectFrom) {
+        setConnectFrom(nodeId);
+        var source = (map.nodes || []).filter(function(node) { return node.id === nodeId; })[0];
+        llAnnounce('Connection started from ' + (source ? source.label : 'selected concept') + '. Choose another concept.');
+        return;
+      }
+      var duplicate = (map.edges || []).some(function(edge) { return edge.from === connectFrom && edge.to === nodeId; });
+      if (duplicate) {
+        setConnectFrom(null);
+        llAnnounce('That connection already exists.');
+        focusId('learning-lab-concepts-heading');
+        return;
+      }
+      var values = await askLearningLabForm({ title: 'Describe the relationship', description: 'A relationship label is optional.', submitText: 'Create connection', fields: [{ name: 'label', label: 'Relationship label', required: false, maxLength: 80, placeholder: 'e.g., causes or is part of' }] });
+      if (!values) {
+        llAnnounce('Connection was not created. The source concept remains selected.');
+        return;
+      }
+      var fromId = connectFrom;
+      var edge = { id: tkId(), from: fromId, to: nodeId, label: values.label || '' };
+      updateMap({ edges: (map.edges || []).concat([edge]) });
+      setConnectFrom(null);
+      var fromNode = (map.nodes || []).filter(function(node) { return node.id === fromId; })[0];
+      var toNode = (map.nodes || []).filter(function(node) { return node.id === nodeId; })[0];
+      llAnnounce('Connection created from ' + (fromNode ? fromNode.label : 'concept') + ' to ' + (toNode ? toNode.label : 'concept') + (edge.label ? ': ' + edge.label + '.' : '.'));
+      focusId('learning-lab-connections-heading');
     }
     function activateConceptNode(nodeId) {
-      if (connectFrom && connectFrom !== nodeId) startConnect(nodeId);
+      if (connectFrom) startConnect(nodeId);
       else setSelectedNode(selectedNode === nodeId ? null : nodeId);
     }
     function deleteEdge(edgeId) {
-      var m = getMap();
-      updateMap({ edges: m.edges.filter(function(e) { return e.id !== edgeId; }) });
+      var map = getMap();
+      if (!map) return;
+      var edge = (map.edges || []).filter(function(item) { return item.id === edgeId; })[0];
+      var fromNode = edge && (map.nodes || []).filter(function(node) { return node.id === edge.from; })[0];
+      var toNode = edge && (map.nodes || []).filter(function(node) { return node.id === edge.to; })[0];
+      updateMap({ edges: (map.edges || []).filter(function(item) { return item.id !== edgeId; }) });
+      llAnnounce('Connection deleted' + (fromNode && toNode ? ': ' + fromNode.label + ' to ' + toNode.label + '.' : '.'));
+      focusId((map.edges || []).length > 1 ? 'learning-lab-connections-heading' : 'learning-lab-concepts-heading');
     }
     function moveNode(nodeId, dx, dy) {
-      var m = getMap();
-      updateMap({
-        nodes: m.nodes.map(function(n) {
-          if (n.id !== nodeId) return n;
-          return Object.assign({}, n, { x: Math.max(40, Math.min(560, n.x + dx)), y: Math.max(40, Math.min(440, n.y + dy)) });
-        })
-      });
+      var map = getMap();
+      if (!map) return;
+      var node = (map.nodes || []).filter(function(item) { return item.id === nodeId; })[0];
+      updateMap({ nodes: (map.nodes || []).map(function(item) {
+        return item.id === nodeId ? Object.assign({}, item, { x: Math.max(40, Math.min(560, item.x + dx)), y: Math.max(40, Math.min(440, item.y + dy)) }) : item;
+      }) });
+      var direction = dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : 'down';
+      llAnnounce((node ? node.label : 'Concept') + ' moved ' + direction + ' ' + Math.max(Math.abs(dx), Math.abs(dy)) + ' pixels.');
     }
     function recolorNode(nodeId) {
-      var m = getMap();
-      var n = m.nodes.filter(function(x) { return x.id === nodeId; })[0];
-      var idx = COLORS.indexOf(n.color);
-      var next = COLORS[(idx + 1) % COLORS.length];
-      updateMap({ nodes: m.nodes.map(function(x) { return x.id === nodeId ? Object.assign({}, x, { color: next }) : x; }) });
+      var map = getMap();
+      if (!map) return;
+      var node = (map.nodes || []).filter(function(item) { return item.id === nodeId; })[0];
+      if (!node) return;
+      var index = COLORS.indexOf(node.color);
+      var next = COLORS[(index + 1) % COLORS.length];
+      updateMap({ nodes: (map.nodes || []).map(function(item) { return item.id === nodeId ? Object.assign({}, item, { color: next }) : item; }) });
+      llAnnounce('Color changed for ' + node.label + '.');
     }
 
-    if (view === 'edit') {
-      var m = getMap();
-      if (!m) { setView('list'); return null; }
+    var currentMap = getMap();
+    if (view === 'edit' && currentMap) {
+      var map = currentMap;
+      var selected = (map.nodes || []).filter(function(node) { return node.id === selectedNode; })[0];
+      var connectionSource = (map.nodes || []).filter(function(node) { return node.id === connectFrom; })[0];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🕸', m.title, m.nodes.length + ' concepts · ' + m.edges.length + ' connections · use + Add concept', '#a855f7'),
+        tkSectionHeader('🕸', map.title, (map.nodes || []).length + ' concepts · ' + (map.edges || []).length + ' connections', '#d8b4fe', 'learning-lab-concept-map-editor-heading'),
         hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap' } },
-          tkBtn('← All maps', function() { setView('list'); setActiveMap(null); setSelectedNode(null); setConnectFrom(null); }, 'ghost', { minHeight: 44 }),
+          hh('button', { id: 'learning-lab-concept-map-back', type: 'button', onClick: closeMap, style: { minHeight: 44, padding: '8px 12px' } }, '← All maps'),
           hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-            tkBtn('+ Add concept', addNode, 'primary', { minHeight: 44 }),
-            selectedNode ? tkBtn(connectFrom ? '↻ Cancel connect' : '🔗 Connect from selected', function() { startConnect(selectedNode); }, 'secondary', { minHeight: 44 }) : null,
-            selectedNode ? tkBtn('🎨 Recolor', function() { recolorNode(selectedNode); }, 'ghost', { minHeight: 44 }) : null,
-            selectedNode ? tkBtn('🗑 Delete node', async function() { var current = m.nodes.filter(function(n) { return n.id === selectedNode; })[0]; if (current && await askLearningLabConfirmation('This permanently removes the concept "' + current.label + '" and its connections.', { title: 'Delete this concept?', confirmText: 'Delete concept' })) deleteNode(selectedNode); }, 'bad', { minHeight: 44 }) : null
+            hh('button', { id: 'learning-lab-add-concept', type: 'button', onClick: addNode, style: { minHeight: 44, padding: '8px 12px' } }, '+ Add concept'),
+            selected ? hh('button', { type: 'button', onClick: function() { startConnect(selected.id); }, style: { minHeight: 44, padding: '8px 12px' } }, connectFrom ? 'Cancel connection' : 'Connect from ' + selected.label) : null,
+            selected ? hh('button', { type: 'button', onClick: function() { recolorNode(selected.id); }, style: { minHeight: 44, padding: '8px 12px' } }, 'Change color for ' + selected.label) : null,
+            selected ? hh('button', { type: 'button', onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the concept "' + selected.label + '" and its connections.', { title: 'Delete this concept?', confirmText: 'Delete concept' })) deleteNode(selected.id); }, style: { minHeight: 44, padding: '8px 12px' } }, 'Delete ' + selected.label) : null
           )
         ),
-        connectFrom ? hh('div', { role: 'status', style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.15)', border: '1px solid #a855f7', fontSize: 11, color: '#c084fc', textAlign: 'center', marginBottom: 8 } },
-          '🔗 Now choose another concept to connect them.'
+        connectionSource ? hh('div', { role: 'status', style: { padding: 10, borderRadius: 6, background: 'rgba(168,85,247,0.15)', border: '1px solid #d8b4fe', color: '#e9d5ff', marginBottom: 10 } },
+          'Connection started from ' + connectionSource.label + '. Choose a different concept below, or cancel the connection.'
         ) : null,
 
-        hh('p', { id: 'learning-lab-concept-map-instructions', style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Use Tab to reach concepts. Press Enter or Space to select a concept or complete a connection. Use the movement controls below to reposition the selected concept.'),
-
-        // Canvas
-        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: 10, border: '2px solid rgba(168,85,247,0.30)' } },
-          hh('svg', {
-            viewBox: '0 0 600 480',
-            role: 'group',
-            'aria-label': 'Concept map: ' + m.title,
-            'aria-describedby': 'learning-lab-concept-map-instructions',
-            style: { width: '100%', height: 480, display: 'block', cursor: 'crosshair' }
-          },
-            // Grid background
-            hh('defs', null,
-              hh('pattern', { id: 'cmgrid', width: 30, height: 30, patternUnits: 'userSpaceOnUse' },
-                hh('path', { d: 'M 30 0 L 0 0 0 30', fill: 'none', stroke: 'rgba(168,85,247,0.10)', strokeWidth: 0.5 })
+        hh('section', { 'aria-labelledby': 'learning-lab-concepts-heading', style: { marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(216,180,254,0.45)' } },
+          hh('h3', { id: 'learning-lab-concepts-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 13, color: '#e9d5ff' } }, 'Concepts'),
+          hh('p', { id: 'learning-lab-concept-map-instructions', style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Use these buttons to select concepts and complete connections. The visual map below presents the same information.'),
+          (map.nodes || []).length
+            ? hh('ul', { 'aria-describedby': 'learning-lab-concept-map-instructions', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                (map.nodes || []).map(function(node) {
+                  var source = connectFrom === node.id;
+                  return hh('li', { key: 'concept-option-' + node.id },
+                    hh('button', { type: 'button', 'data-concept-id': node.id, 'aria-pressed': selectedNode === node.id ? 'true' : 'false', onClick: function() { activateConceptNode(node.id); }, style: { width: '100%', minHeight: 44, padding: '9px 12px', textAlign: 'left', borderRadius: 8, border: '2px ' + (source ? 'dashed' : 'solid') + ' ' + node.color, background: 'rgba(15,23,42,0.85)', color: '#fff', fontWeight: 700 } },
+                      node.label + (source ? ' (connection source)' : '')
+                    )
+                  );
+                })
               )
+            : hh('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No concepts yet. Use Add concept to begin.')
+        ),
+
+        hh('div', { style: { background: 'rgba(2,6,23,0.7)', borderRadius: 12, padding: 10, border: '2px solid rgba(216,180,254,0.35)' } },
+          hh('svg', { viewBox: '0 0 600 480', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', height: 'auto', maxHeight: 480, aspectRatio: '5 / 4', display: 'block' } },
+            hh('defs', null,
+              hh('pattern', { id: 'cmgrid', width: 30, height: 30, patternUnits: 'userSpaceOnUse' }, hh('path', { d: 'M 30 0 L 0 0 0 30', fill: 'none', stroke: 'rgba(168,85,247,0.10)', strokeWidth: 0.5 })),
+              hh('marker', { id: 'arrowhead', markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: 'auto' }, hh('polygon', { points: '0 0, 8 4, 0 8', fill: '#94a3b8' }))
             ),
             hh('rect', { x: 0, y: 0, width: 600, height: 480, fill: 'url(#cmgrid)' }),
-            // Edges
-            (m.edges || []).map(function(e) {
-              var from = m.nodes.filter(function(n) { return n.id === e.from; })[0];
-              var to = m.nodes.filter(function(n) { return n.id === e.to; })[0];
+            (map.edges || []).map(function(edge) {
+              var from = (map.nodes || []).filter(function(node) { return node.id === edge.from; })[0];
+              var to = (map.nodes || []).filter(function(node) { return node.id === edge.to; })[0];
               if (!from || !to) return null;
-              var mx = (from.x + to.x) / 2;
-              var my = (from.y + to.y) / 2;
-              return hh('g', { key: 'e-' + e.id },
-                hh('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: '#94a3b8', strokeWidth: 1.5, opacity: 0.6, markerEnd: 'url(#arrowhead)' }),
-                e.label ? hh('g', null,
-                  hh('rect', { x: mx - (e.label.length * 3 + 4), y: my - 7, width: e.label.length * 6 + 8, height: 14, fill: '#1e293b', stroke: '#475569', strokeWidth: 0.5, rx: 3 }),
-                  hh('text', { x: mx, y: my + 3, fontSize: 9, fill: '#cbd5e1', textAnchor: 'middle' }, e.label)
-                ) : null,
-                hh('circle', { cx: mx, cy: my, r: 6, fill: 'transparent', 'aria-hidden': 'true' })
+              var mx = (from.x + to.x) / 2; var my = (from.y + to.y) / 2;
+              return hh('g', { key: 'edge-' + edge.id },
+                hh('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: '#cbd5e1', strokeWidth: 2, markerEnd: 'url(#arrowhead)' }),
+                edge.label ? hh('g', null,
+                  hh('rect', { x: mx - (edge.label.length * 3 + 5), y: my - 8, width: edge.label.length * 6 + 10, height: 16, fill: '#0f172a', stroke: '#94a3b8', rx: 3 }),
+                  hh('text', { x: mx, y: my + 4, fontSize: 10, fill: '#f8fafc', textAnchor: 'middle' }, edge.label)
+                ) : null
               );
             }),
-            // Arrowhead marker
-            hh('defs', null,
-              hh('marker', { id: 'arrowhead', markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: 'auto' },
-                hh('polygon', { points: '0 0, 8 4, 0 8', fill: '#94a3b8' })
-              )
-            ),
-            // Nodes
-            (m.nodes || []).map(function(n) {
-              var isSel = selectedNode === n.id;
-              var isConnFrom = connectFrom === n.id;
-              return hh('g', { key: 'n-' + n.id, role: 'button', tabIndex: 0, focusable: 'true', 'data-ll-focusable': true, 'aria-label': 'Concept: ' + n.label, 'aria-pressed': isSel, style: { cursor: 'pointer' },
-                onClick: function() { activateConceptNode(n.id); },
-                onKeyDown: function(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activateConceptNode(n.id); } }
-              },
-                hh('ellipse', {
-                  cx: n.x, cy: n.y,
-                  rx: Math.max(40, n.label.length * 4 + 14), ry: 22,
-                  fill: n.color + '30', stroke: n.color, strokeWidth: isSel ? 3 : isConnFrom ? 3 : 1.5,
-                  opacity: 0.9, strokeDasharray: isConnFrom ? '4,2' : 'none'
-                }),
-                hh('text', { x: n.x, y: n.y + 4, fontSize: 11, fill: '#fff', textAnchor: 'middle', fontWeight: 700 }, n.label)
+            (map.nodes || []).map(function(node) {
+              var chosen = selectedNode === node.id; var source = connectFrom === node.id;
+              return hh('g', { key: 'node-' + node.id, onClick: function() { activateConceptNode(node.id); }, style: { cursor: 'pointer' } },
+                hh('ellipse', { cx: node.x, cy: node.y, rx: Math.max(40, node.label.length * 4 + 14), ry: 22, fill: '#0f172a', stroke: node.color, strokeWidth: chosen || source ? 4 : 2, strokeDasharray: source ? '5,3' : 'none' }),
+                hh('text', { x: node.x, y: node.y + 4, fontSize: 11, fill: '#fff', textAnchor: 'middle', fontWeight: 700 }, node.label)
               );
             })
           )
         ),
-        (m.edges || []).length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-connections-heading', style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(168,85,247,0.35)' } },
-          hh('h3', { id: 'learning-lab-connections-heading', style: { margin: '0 0 8px', fontSize: 11, color: '#c084fc' } }, 'Connections'),
-          hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-            (m.edges || []).map(function(edge) {
-              var fromNode = m.nodes.filter(function(node) { return node.id === edge.from; })[0];
-              var toNode = m.nodes.filter(function(node) { return node.id === edge.to; })[0];
-              if (!fromNode || !toNode) return null;
-              var connectionText = fromNode.label + (edge.label ? ' — ' + edge.label + ' — ' : ' connects to ') + toNode.label;
-              return hh('li', { key: 'connection-' + edge.id, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
-                hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, connectionText),
-                hh('button', { type: 'button', 'aria-label': 'Delete connection: ' + connectionText, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the connection "' + connectionText + '".', { title: 'Delete this connection?', confirmText: 'Delete connection' })) deleteEdge(edge.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, border: 'none', borderRadius: 6, background: 'rgba(127,29,29,0.45)', color: '#fecaca', cursor: 'pointer' } }, '✕')
-              );
-            }).filter(Boolean)
+
+        hh('section', { 'aria-labelledby': 'learning-lab-connections-heading', style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(216,180,254,0.45)' } },
+          hh('h3', { id: 'learning-lab-connections-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#e9d5ff' } }, 'Connections'),
+          (map.edges || []).length
+            ? hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+                (map.edges || []).map(function(edge) {
+                  var fromNode = (map.nodes || []).filter(function(node) { return node.id === edge.from; })[0];
+                  var toNode = (map.nodes || []).filter(function(node) { return node.id === edge.to; })[0];
+                  if (!fromNode || !toNode) return null;
+                  var text = fromNode.label + (edge.label ? ' — ' + edge.label + ' — ' : ' connects to ') + toNode.label;
+                  return hh('li', { key: 'connection-' + edge.id, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                    hh('span', null, text),
+                    hh('button', { type: 'button', 'aria-label': 'Delete connection: ' + text, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the connection "' + text + '".', { title: 'Delete this connection?', confirmText: 'Delete connection' })) deleteEdge(edge.id); }, style: { minWidth: 44, minHeight: 44 } }, 'Delete')
+                  );
+                }).filter(Boolean)
+              )
+            : hh('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No connections yet.')
+        ),
+
+        selected ? hh('section', { 'aria-labelledby': 'learning-lab-concept-controls-heading', style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid #d8b4fe' } },
+          hh('h3', { id: 'learning-lab-concept-controls-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#e9d5ff' } }, 'Position ' + selected.label),
+          hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
+            [['left', -20, 0], ['left', -60, 0], ['up', 0, -20], ['up', 0, -60], ['down', 0, 20], ['down', 0, 60], ['right', 20, 0], ['right', 60, 0]].map(function(move, index) {
+              var distance = Math.max(Math.abs(move[1]), Math.abs(move[2]));
+              return hh('button', { key: 'move-' + index, type: 'button', 'aria-label': 'Move ' + selected.label + ' ' + move[0] + ' ' + distance + ' pixels', onClick: function() { moveNode(selected.id, move[1], move[2]); }, style: { minWidth: 44, minHeight: 44, padding: '8px 10px' } }, move[0] + ' ' + distance);
+            })
           )
         ) : null,
 
-        // Node manipulation panel
-        selectedNode ? (function() {
-          var n = m.nodes.filter(function(x) { return x.id === selectedNode; })[0];
-          if (!n) return null;
-          return hh('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid #a855f7' } },
-            hh('div', { style: { fontSize: 11, color: '#c084fc', fontWeight: 800, marginBottom: 6 } }, '🎯 Selected: ' + n.label),
-            hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
-              ['◀ Left', '◀◀'].map(function(_, i) {
-                return hh('button', { key: 'mvl-' + i, type: 'button', 'aria-label': 'Move left ' + (i === 0 ? '20' : '60') + ' pixels', onClick: function() { moveNode(n.id, i === 0 ? -20 : -60, 0); },
-                  style: { minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, i === 0 ? '◀ 20' : '◀ 60');
-              }),
-              ['▲ Up', '▲▲'].map(function(_, i) {
-                return hh('button', { key: 'mvu-' + i, type: 'button', 'aria-label': 'Move up ' + (i === 0 ? '20' : '60') + ' pixels', onClick: function() { moveNode(n.id, 0, i === 0 ? -20 : -60); },
-                  style: { minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, i === 0 ? '▲ 20' : '▲ 60');
-              }),
-              ['▼ Down', '▼▼'].map(function(_, i) {
-                return hh('button', { key: 'mvd-' + i, type: 'button', 'aria-label': 'Move down ' + (i === 0 ? '20' : '60') + ' pixels', onClick: function() { moveNode(n.id, 0, i === 0 ? 20 : 60); },
-                  style: { minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, i === 0 ? '▼ 20' : '▼ 60');
-              }),
-              ['▶ Right', '▶▶'].map(function(_, i) {
-                return hh('button', { key: 'mvr-' + i, type: 'button', 'aria-label': 'Move right ' + (i === 0 ? '20' : '60') + ' pixels', onClick: function() { moveNode(n.id, i === 0 ? 20 : 60, 0); },
-                  style: { minWidth: 44, minHeight: 44, padding: '8px 10px', borderRadius: 4, background: 'rgba(168,85,247,0.20)', color: '#c084fc', border: '1px solid #a855f7', fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, i === 0 ? '20 ▶' : '60 ▶');
-              })
-            )
-          );
-        })() : null,
-
-        hh('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-          hh('strong', { style: { color: '#a855f7' } }, '🎓 Concept mapping: '),
-          'Novak + Gowin 1984. Strong evidence for synthesis-heavy material (Dunlosky 2013 MODERATE utility). The act of choosing which concepts to include + how they connect = active processing. Try mapping every chapter or unit.'
+        hh('aside', { id: 'learning-lab-concept-map-evidence', style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(216,180,254,0.35)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+          hh('strong', { style: { color: '#e9d5ff' } }, 'About concept mapping: '),
+          'Concept mapping may support organizing relationships in some learning contexts, especially with appropriate prompting or feedback. Results vary by task, prior knowledge, map construction, and guidance. Concept mapping was not one of the ten learning techniques rated in Dunlosky et al. (2013). This author-created organizer is not an assessment or a guarantee of learning.'
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🕸', 'My Concept Maps', 'Visual synthesis of how ideas connect. Create a map, then use Add concept and the keyboard-accessible connection controls.', '#a855f7'),
-
-      // New map
-      tkCard('#a855f7',
-        hh('div', null,
-          hh('label', { htmlFor: 'learning-lab-concept-map-title', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '+ New concept map (required)'),
-          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start' } },
-            hh('input', { id: 'learning-lab-concept-map-title', type: 'text', value: newTitle, required: true, 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleError ? 'learning-lab-concept-map-title-error' : undefined, onChange: function(e) { setNewTitle(e.target.value); setTitleError(''); }, placeholder: 'Map title, such as Photosynthesis flow', style: { flex: 1, minWidth: 0, minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
-            tkBtn('Create', createMap, 'primary', { minHeight: 44 })
+      tkSectionHeader('🕸', 'My Concept Maps', 'Use an equivalent concept list and visual map to explore how ideas connect.', '#d8b4fe', 'learning-lab-concept-map-list-heading'),
+      hh('p', { id: 'learning-lab-concept-map-privacy', style: { fontSize: 11, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Maps are saved with your Learning Lab data. Avoid sensitive personal information, delete maps you no longer need, and remember that clearing app data may remove saved maps.'),
+      tkCard('#d8b4fe',
+        hh('form', { 'aria-labelledby': 'learning-lab-new-concept-map-heading', onSubmit: createMap, noValidate: true },
+          hh('h3', { id: 'learning-lab-new-concept-map-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#e9d5ff' } }, 'Create a concept map'),
+          hh('label', { htmlFor: 'learning-lab-concept-map-title', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#e9d5ff', marginBottom: 8 } }, 'Map title (required)'),
+          hh('div', { style: { display: 'flex', gap: 6, alignItems: 'flex-start', flexWrap: 'wrap' } },
+            hh('input', { id: 'learning-lab-concept-map-title', type: 'text', value: newTitle, required: true, maxLength: 160, 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': 'learning-lab-concept-map-privacy' + (titleError ? ' learning-lab-concept-map-title-error' : ''), onChange: function(event) { setNewTitle(event.target.value); setTitleError(''); }, placeholder: 'For example, Photosynthesis flow', style: { flex: '1 1 220px', minWidth: 0, minHeight: 44, padding: '10px 12px', boxSizing: 'border-box' } }),
+            hh('button', { type: 'submit', style: { minHeight: 44, padding: '8px 16px' } }, 'Create map')
           ),
           titleError ? hh('div', { id: 'learning-lab-concept-map-title-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: 6 } }, titleError) : null
         )
       ),
-
-      // Existing maps
       (data.maps || []).length === 0
-        ? tkEmptyState('🕸', 'No concept maps yet. Create your first to start synthesizing.', null, null)
-        : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-            (data.maps || []).map(function(m) {
-              return hh('div', { key: 'm-' + m.id, style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(168,85,247,0.40)', borderLeft: '4px solid #a855f7' } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                  hh('strong', { style: { fontSize: 13, color: '#c084fc' } }, '🕸 ' + m.title),
-                  hh('button', { type: 'button', 'aria-label': 'Delete concept map: ' + m.title, onClick: function() { removeMap(m.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 12 } }, '✕')
-                ),
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, (m.nodes || []).length + ' nodes · ' + (m.edges || []).length + ' edges · ' + relDate(m.createdAt)),
-                tkBtn('Open ' + m.title, function() { openMap(m.id); }, 'primary', { width: '100%', minHeight: 44, textAlign: 'center' })
+        ? tkEmptyState('🕸', 'No concept maps yet. Create your first map to begin organizing ideas.', null, null)
+        : hh('ul', { 'aria-label': 'Saved concept maps', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+            (data.maps || []).map(function(map) {
+              return hh('li', { key: 'map-' + map.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(216,180,254,0.45)', borderLeft: '4px solid #d8b4fe' } },
+                hh('article', { 'aria-labelledby': 'learning-lab-map-title-' + map.id },
+                  hh('h3', { id: 'learning-lab-map-title-' + map.id, style: { margin: '0 0 6px', fontSize: 13, color: '#e9d5ff', overflowWrap: 'anywhere' } }, map.title),
+                  hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, (map.nodes || []).length + ' concepts · ' + (map.edges || []).length + ' connections · ' + relDate(map.createdAt)),
+                  hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                    hh('button', { type: 'button', onClick: function() { openMap(map.id); }, style: { minHeight: 44, flex: 1 } }, 'Open ' + map.title),
+                    hh('button', { type: 'button', 'aria-label': 'Delete concept map: ' + map.title, onClick: function() { removeMap(map.id); }, style: { minWidth: 44, minHeight: 44 } }, 'Delete')
+                  )
+                )
               );
             })
           )
@@ -19680,7 +19712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: Object.keys(((data.mytkProfile || {}).profile) || {}).length + ' fields filled', cta: 'Build my profile' },
       { id: 'mytkPrompts',  icon: '📓', label: 'Reflection Prompts',   color: '#a855f7', desc: '30+ metacognitive prompts + journal',
         stat: ((data.mytkPrompts || {}).responses || []).length + ' responses', cta: 'Pick a prompt' },
-      { id: 'mytkMap',      icon: '🕸', label: 'Concept Maps',         color: '#a855f7', desc: 'Visual synthesis canvas (Novak 1984)',
+      { id: 'mytkMap',      icon: '🕸', label: 'Concept Maps',         color: '#a855f7', desc: 'Flexible visual and text relationship organizer',
         stat: ((data.mytkMap || {}).maps || []).length + ' maps', cta: 'Build a map' },
       { id: 'mytkNotes',    icon: '📝', label: 'Cornell Notes',        color: '#3b82f6', desc: 'In-tool note-taking with summaries',
         stat: ((data.mytkNotes || {}).notes || []).length + ' notes', cta: 'Open notebooks' },
@@ -20019,7 +20051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Optional reflection using autonomy, competence, and relatedness concepts.') },
               { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'Optional private learning-preference summary you control and may print.') },
               { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', 'Optional reflection prompts across four categories; responses save locally.') },
-              { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Interactive node + edge canvas for visual synthesis. Novak + Gowin 1984.') },
+              { id: 'mytkMap',    icon: '🕸', label: __alloT('stem.learning_lab.concept_maps', 'Concept Maps'),         desc: __alloT('stem.learning_lab.interactive_node_edge_canvas_for_visua', 'Equivalent visual and text views for exploring relationships between ideas.') },
               { id: 'mytkNotes',  icon: '📝', label: __alloT('stem.learning_lab.cornell_notes', 'Cornell Notes'),        desc: __alloT('stem.learning_lab.in_tool_cornell_style_note_taking_with', 'In-tool Cornell-style note-taking with cue column + summary + search.') },
               { id: 'mytkAgenda', icon: '📋', label: __alloT('stem.learning_lab.today', 'Today'),                desc: __alloT('stem.learning_lab.today_s_pulled_together_agenda_habits_', 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.') },
               { id: 'mytkEmotion',icon: '💖', label: __alloT('stem.learning_lab.emotion_grounding', 'Emotion + Grounding'),  desc: __alloT('stem.learning_lab.quick_emotion_check_box_breathing_5_4_', 'Quick emotion check + box breathing + 5-4-3-2-1 grounding for tough moments.') },
