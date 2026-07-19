@@ -9770,6 +9770,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             cgx.fillRect(0, 0, 128, 64);
           });
           var cloudTex = new THREE.CanvasTexture(cloudCanvas);
+
+          // Sun + moon: glow sprites positioned each frame from the SAME
+          // solar hour that drives the day/night palette, so the light in
+          // the sky finally has a source (the 3D dome had neither, and the
+          // directional light pointed a fixed direction at all hours).
+          var mkGlowTex = function(coreR, coreG, coreB, haloStop) {
+            var gc = document.createElement('canvas');
+            gc.width = 128; gc.height = 128;
+            var gg = gc.getContext('2d');
+            var grad = gg.createRadialGradient(64, 64, 4, 64, 64, 62);
+            grad.addColorStop(0, 'rgba(' + coreR + ',' + coreG + ',' + coreB + ',1)');
+            grad.addColorStop(haloStop, 'rgba(' + coreR + ',' + coreG + ',' + coreB + ',0.55)');
+            grad.addColorStop(1, 'rgba(' + coreR + ',' + coreG + ',' + coreB + ',0)');
+            gg.fillStyle = grad;
+            gg.fillRect(0, 0, 128, 128);
+            return new THREE.CanvasTexture(gc);
+          };
+          var sunMat = new THREE.SpriteMaterial({ map: mkGlowTex(255, 244, 214, 0.18), transparent: true, opacity: 1, depthWrite: false });
+          sunMat.fog = false;
+          var sunSprite = new THREE.Sprite(sunMat);
+          sunSprite.scale.set(34000, 34000, 1);
+          scene.add(sunSprite);
+          var moonMat = new THREE.SpriteMaterial({ map: mkGlowTex(226, 232, 240, 0.32), transparent: true, opacity: 0, depthWrite: false });
+          moonMat.fog = false;
+          var moonSprite = new THREE.Sprite(moonMat);
+          moonSprite.scale.set(16000, 16000, 1);
+          scene.add(moonSprite);
+
           var cloudGroup = new THREE.Group();
           for (var cl = 0; cl < 24; cl++) {
             var clh1 = ((Math.sin(cl * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
@@ -9790,6 +9818,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             underMesh: underMesh,
             starPoints: starPoints,
             cloudGroup: cloudGroup,
+            sunSprite: sunSprite,
+            moonSprite: moonSprite,
             aircraft: null,
             terrainMesh: null,
             runwayMeshes: {},
@@ -10284,8 +10314,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (!terrainMeshRef.current) {
           var geometry = new THREE.PlaneGeometry(240000, 240000, 60, 60);
           geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(geometry.attributes.position.count * 3), 3));
-          
+
+          // ── Ground detail texture ── below ~2,000 ft the vertex-colored
+          // terrain (4,000 ft cells) is a featureless wash. A repeating
+          // near-white patchwork multiplies over the vertex colors: faint
+          // field rectangles + hairline country roads give low flight a
+          // sense of place and speed. One tile = 24,000 ft (~4 nm); the
+          // offset is re-pinned to WORLD position on every mesh recenter so
+          // the pattern stays glued to the ground instead of riding along.
+          var dCan = document.createElement('canvas');
+          dCan.width = 512; dCan.height = 512;
+          var dg = dCan.getContext('2d');
+          dg.fillStyle = '#ffffff';
+          dg.fillRect(0, 0, 512, 512);
+          for (var dfi = 0; dfi < 90; dfi++) {
+            var dfh = ((Math.sin(dfi * 127.1 + 43.7) * 43758.5453) % 1 + 1) % 1;
+            var dfh2 = ((Math.sin(dfi * 269.5 + 11.3) * 28001.8384) % 1 + 1) % 1;
+            var dfShade = 205 + Math.floor(dfh * 50);
+            dg.fillStyle = 'rgb(' + dfShade + ',' + dfShade + ',' + (dfShade - 8) + ')';
+            dg.fillRect(Math.floor(dfh * 512), Math.floor(dfh2 * 512), 30 + Math.floor(dfh2 * 90), 24 + Math.floor(dfh * 70));
+          }
+          dg.strokeStyle = 'rgb(168,168,162)';
+          dg.lineWidth = 1.5;
+          for (var dgl = 0; dgl <= 4; dgl++) {
+            var dOff = dgl * 128 + Math.floor(((Math.sin(dgl * 91.7) * 1000) % 1 + 1) % 1 * 40) - 20;
+            dg.beginPath(); dg.moveTo(dOff, 0); dg.lineTo(dOff + 30, 512); dg.stroke();
+            dg.beginPath(); dg.moveTo(0, dOff); dg.lineTo(512, dOff - 24); dg.stroke();
+          }
+          var detailTex = new THREE.CanvasTexture(dCan);
+          detailTex.wrapS = detailTex.wrapT = THREE.RepeatWrapping;
+          detailTex.repeat.set(10, 10); // 240,000 / 10 = 24,000 ft per tile
+
           var material = new THREE.MeshLambertMaterial({
+            map: detailTex,
             vertexColors: true,
             // Smooth shading, NOT flat: the 60×60 grid spans 40 nm, so far
             // cells are ~4,000 ft wide and any steep height delta produces a
@@ -10311,6 +10372,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         var meshLocal = geodeticToLocal(playerLat, playerLon, 0);
         mesh.position.set(meshLocal.x, 0, meshLocal.z);
+        // Pin the detail texture to the WORLD as the mesh recenters: shift
+        // the UV offset by the mesh's world position in tile units (24,000 ft
+        // per tile) so the patchwork doesn't jump with each recenter.
+        if (mesh.material.map) {
+          mesh.material.map.offset.set(
+            ((meshLocal.x / 24000) % 1 + 1) % 1,
+            ((-meshLocal.z / 24000) % 1 + 1) % 1
+          );
+        }
 
         var R = 364800.0;
         var size = 60;
@@ -10488,6 +10558,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
         }
 
+        // ── Sun + moon ── positioned from the day/night solar hour. Path:
+        // rises east (+X) at 06, south (+Z) at noon, sets west (−X) at 18;
+        // the moon runs the opposite 12 hours. The directional light chases
+        // the sun by day (low warm moonlight direction at night) so terrain
+        // and building shading finally agree with the sky.
+        var sunHr = dayNight.solarHour != null ? dayNight.solarHour : 12;
+        var sunTh = Math.PI * (sunHr - 6) / 12;
+        var sunElev = Math.sin(sunTh) * 1.15;                 // rad, max ~66°
+        var sunDir = new THREE.Vector3(Math.cos(sunTh) * Math.cos(sunElev), Math.sin(sunElev), Math.sin(sunTh) * Math.cos(sunElev));
+        if (resources.sunSprite) {
+          resources.sunSprite.position.copy(camera.position).add(sunDir.clone().multiplyScalar(190000));
+          resources.sunSprite.material.opacity = sunElev > -0.06 ? Math.min(1, 0.35 + sunElev) : 0;
+          // Golden hour: the disc warms as it nears the horizon
+          var sunWarm = Math.max(0, 1 - Math.max(0, sunElev) * 2.2);
+          resources.sunSprite.material.color.setRGB(1, 1 - sunWarm * 0.25, 1 - sunWarm * 0.5);
+        }
+        var moonHr = (sunHr + 12) % 24;
+        var moonTh = Math.PI * (moonHr - 6) / 12;
+        var moonElev = Math.sin(moonTh) * 1.15;
+        if (resources.moonSprite) {
+          var moonDir = new THREE.Vector3(Math.cos(moonTh) * Math.cos(moonElev), Math.sin(moonElev), Math.sin(moonTh) * Math.cos(moonElev));
+          resources.moonSprite.position.copy(camera.position).add(moonDir.clone().multiplyScalar(190000));
+          var moonDark = 1 - Math.min(1, (dayNight.brightness != null ? dayNight.brightness : 1) * 1.3);
+          resources.moonSprite.material.opacity = moonElev > 0 ? moonDark * 0.9 : 0;
+        }
+        if (resources.dirLight) {
+          if (sunElev > 0.02) resources.dirLight.position.copy(sunDir).multiplyScalar(100000);
+          else if (moonElev > 0.02) resources.dirLight.position.set(Math.cos(moonTh) * 100000, Math.sin(moonElev) * 100000, Math.sin(moonTh) * 100000);
+        }
+
         // ── Real-city skylines (Natural Earth REAL_CITIES) ──
         // Rescan for nearby cities at most once per sim-second (or 1 nm of
         // travel), then build/dispose population-scaled building clusters
@@ -10510,6 +10610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (haversineNm(state.lat, state.lon, cm.userData.lat, cm.userData.lon) > 20) {
             scene.remove(cm);
             if (cm.userData.geo) cm.userData.geo.dispose();
+            if (cm.userData.padGeo) cm.userData.padGeo.dispose();
             (cm.userData.mats || []).forEach(function(mDis) { mDis.dispose(); });
             delete resources.cityMeshes[ckRm];
           }
@@ -10534,6 +10635,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             new THREE.MeshLambertMaterial({ color: 0x9aa3b2 })
           ];
           cityGroup.userData.mats = bMats;
+          // Urban footprint pad — a translucent gray disc under the DENSE
+          // CORE only, so downtown doesn't float on bare farmland. Kept
+          // small and see-through: a full-metro-radius opaque disc turned
+          // the NYC approach into a black wasteland (screenshot-caught).
+          // 3 ft proud of the terrain to avoid z-fighting.
+          var padMat = new THREE.MeshLambertMaterial({ color: 0x53575d, transparent: true, opacity: 0.42, depthWrite: false });
+          bMats.push(padMat);
+          var padGeo = new THREE.CircleGeometry(Math.min(12000, cRadius * 0.55), 24);
+          cityGroup.userData.padGeo = padGeo;
+          var padMesh = new THREE.Mesh(padGeo, padMat);
+          padMesh.rotation.x = -Math.PI / 2;
+          padMesh.position.y = 3;
+          cityGroup.add(padMesh);
           for (var bi = 0; bi < bCount; bi++) {
             var bAng = cHash(bi) * Math.PI * 2;
             var bRad = Math.sqrt(cHash(bi + 100)) * cRadius;
@@ -10573,6 +10687,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var nightColor = new THREE.Color().setHSL(0.6, 0.8, 0.02);
           skyColor.copy(nightColor).lerp(dayColor, t);
         }
+        // Dawn/dusk warmth: within ~1.6 h of solar 06:00/18:00 the 3D sky
+        // (and the fog that copies it) blends toward sunset orange. The 2D
+        // fallback always had a golden-hour wash; the 3D dome just went
+        // navy → black with a lonely warm sun disc floating in it.
+        var goldenP3 = Math.max(
+          Math.max(0, 1 - Math.abs(solarHr - 6) / 1.6),
+          Math.max(0, 1 - Math.abs(solarHr - 18) / 1.6));
+        if (goldenP3 > 0.03) skyColor.lerp(new THREE.Color(0.95, 0.5, 0.22), goldenP3 * 0.5);
         if (resources.skyMesh) resources.skyMesh.material.color.copy(skyColor);
 
         if (resources.ambientLight) {
