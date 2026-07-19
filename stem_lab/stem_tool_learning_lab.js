@@ -9961,174 +9961,231 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { entries: [] };
     var setData = props.setData;
-    var fs = R.useState({ bedtime: '22:30', waketime: '06:30', quality: 4, factors: [] });
-    var form = fs[0]; var setForm = fs[1];
+    var EMPTY_FORM = { bedtime: '', waketime: '', quality: '', factors: [] };
+    var fs = R.useState(EMPTY_FORM); var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var timeError = es[0]; var setTimeError = es[1];
+    var pendingFocusRef = R.useRef(null);
 
     var FACTORS = [
-      { id: 'phone', label: 'Phone in bed', icon: '📱', good: false },
-      { id: 'caffeine', label: 'Caffeine after 2pm', icon: '☕', good: false },
-      { id: 'exercise', label: 'Exercised today', icon: '🏃', good: true },
-      { id: 'screens', label: 'Screens 1h+ before bed', icon: '💻', good: false },
-      { id: 'stress', label: 'Stressed / racing mind', icon: '😰', good: false },
-      { id: 'darkroom', label: 'Dark room', icon: '🌑', good: true },
-      { id: 'coolroom', label: 'Cool room temp', icon: '❄️', good: true },
-      { id: 'routine', label: 'Consistent routine', icon: '⏰', good: true }
+      { id: 'phone', label: 'Phone used in bed' },
+      { id: 'caffeine', label: 'Caffeine later in my day' },
+      { id: 'exercise', label: 'Physical activity today' },
+      { id: 'screens', label: 'Screens during the hour before bed' },
+      { id: 'stress', label: 'Stress or a busy mind' },
+      { id: 'darkroom', label: 'Dark room' },
+      { id: 'coolroom', label: 'Cool room' },
+      { id: 'routine', label: 'Similar bedtime routine' }
     ];
-
-    function toggleFactor(id) {
-      var factors = form.factors.slice();
-      var index = factors.indexOf(id);
-      if (index >= 0) factors.splice(index, 1);
-      else factors.push(id);
-      setForm(Object.assign({}, form, { factors: factors }));
-    }
-
-    function totalHoursNumber() {
-      if (!form.bedtime || !form.waketime) return NaN;
-      function toMin(time) { var parts = time.split(':'); return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10); }
-      var bed = toMin(form.bedtime); var wake = toMin(form.waketime);
-      var diff = wake - bed;
-      if (diff < 0) diff += 24 * 60;
-      return diff / 60;
-    }
-    function totalHours() {
-      var hours = totalHoursNumber();
-      return Number.isFinite(hours) ? hours.toFixed(1) : '—';
-    }
-
-    function save() {
-      var hours = totalHoursNumber();
-      if (!Number.isFinite(hours) || hours <= 0) {
-        setTimeError(!form.bedtime || !form.waketime ? 'Bedtime and wake time are required.' : 'Bedtime and wake time must describe a sleep period longer than zero hours.');
-        setTimeout(function() { var field = document.getElementById(!form.bedtime ? 'learning-lab-sleep-bedtime' : 'learning-lab-sleep-waketime'); if (field) field.focus(); }, 0);
-        return;
-      }
-      var entry = Object.assign({ id: tkId(), date: todayISO(), hours: parseFloat(hours.toFixed(1)) }, form);
-      setData(Object.assign({}, data, { entries: [entry].concat(data.entries || []) }));
-      setTimeError('');
-      llAnnounce('Sleep log saved. ' + entry.hours + ' hours, quality ' + entry.quality + ' out of 5.');
-    }
-    async function remove(id) {
-      var entry = (data.entries || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (entry ? ' the sleep log from ' + entry.date : ' this sleep log') + '.', {
-        title: 'Delete this sleep log?', confirmText: 'Delete log'
-      }))) return;
-      setData(Object.assign({}, data, { entries: (data.entries || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Sleep log deleted.');
-    }
-
+    var QUALITY = [
+      { value: '1', label: 'Very poor' }, { value: '2', label: 'Poor' }, { value: '3', label: 'Fair' },
+      { value: '4', label: 'Good' }, { value: '5', label: 'Very good' }
+    ];
     var entries = data.entries || [];
     var today = todayISO();
     var todayEntry = entries.filter(function(entry) { return entry.date === today; })[0];
-    var last7 = entries.slice(0, 7);
-    var avgHours = last7.length > 0 ? (last7.reduce(function(sum, entry) { return sum + (entry.hours || 0); }, 0) / last7.length).toFixed(1) : '—';
-    var avgQuality = last7.length > 0 ? (last7.reduce(function(sum, entry) { return sum + (entry.quality || 0); }, 0) / last7.length).toFixed(1) : '—';
     var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
-    var inputStyle = { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: '#60a5fa', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, boxSizing: 'border-box', fontWeight: 800 };
+    var inputStyle = { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: '#bfdbfe', background: '#0f172a', border: '1px solid #60a5fa', borderRadius: 6, boxSizing: 'border-box', fontWeight: 700 };
+    var wrapText = { overflowWrap: 'anywhere', wordBreak: 'break-word' };
 
+    function requestFocus(id) { pendingFocusRef.current = id; }
+    R.useLayoutEffect(function() {
+      var id = pendingFocusRef.current;
+      if (!id) return;
+      pendingFocusRef.current = null;
+      var node = document.getElementById(id);
+      if (node && typeof node.focus === 'function') node.focus();
+    });
+    function factorLabel(id) {
+      var factor = FACTORS.filter(function(item) { return item.id === id; })[0];
+      return factor ? factor.label : 'Other recorded factor';
+    }
+    function qualityLabel(value) {
+      var option = QUALITY.filter(function(item) { return Number(item.value) === Number(value); })[0];
+      return option ? option.label : 'Not rated';
+    }
+    function safeDateTime(value) {
+      if (!value) return undefined;
+      var parsed = new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? value + 'T12:00:00' : value);
+      return isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+    }
+    function visibleDate(value) {
+      var dateTime = safeDateTime(value);
+      if (!dateTime) return 'Date not recorded';
+      return new Date(dateTime).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    function localISO(date) {
+      var month = String(date.getMonth() + 1).padStart(2, '0');
+      var day = String(date.getDate()).padStart(2, '0');
+      return date.getFullYear() + '-' + month + '-' + day;
+    }
+    function toggleFactor(id) {
+      var factors = form.factors.slice();
+      var index = factors.indexOf(id);
+      if (index >= 0) factors.splice(index, 1); else factors.push(id);
+      setForm(Object.assign({}, form, { factors: factors }));
+    }
+    function totalHoursNumber() {
+      if (!form.bedtime || !form.waketime) return NaN;
+      function toMinutes(time) {
+        var parts = String(time).split(':');
+        if (parts.length < 2) return NaN;
+        return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      }
+      var start = toMinutes(form.bedtime); var end = toMinutes(form.waketime);
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return NaN;
+      var difference = end - start;
+      if (difference < 0) difference += 24 * 60;
+      return difference / 60;
+    }
+    function totalHoursText() {
+      var hours = totalHoursNumber();
+      return Number.isFinite(hours) && hours > 0 ? hours.toFixed(1) + ' hours between the entered times' : 'Enter both times to calculate the interval';
+    }
+    function validHours(entry) {
+      var hours = Number(entry && entry.hours);
+      return Number.isFinite(hours) && hours > 0 ? hours : null;
+    }
+
+    function save(event) {
+      if (event) event.preventDefault();
+      var hours = totalHoursNumber();
+      if (!form.bedtime || !form.waketime) {
+        setTimeError('Sleep-period start and end times are required.');
+        requestFocus(!form.bedtime ? 'learning-lab-sleep-bedtime' : 'learning-lab-sleep-waketime');
+        return;
+      }
+      if (!Number.isFinite(hours) || hours <= 0) {
+        setTimeError('Start and end times must describe an interval longer than zero hours.');
+        requestFocus('learning-lab-sleep-waketime');
+        return;
+      }
+      var quality = form.quality === '' ? null : parseInt(form.quality, 10);
+      var entry = { id: tkId(), date: today, bedtime: form.bedtime, waketime: form.waketime,
+        quality: quality, factors: form.factors.slice(), hours: parseFloat(hours.toFixed(1)), createdAt: Date.now() };
+      setData(Object.assign({}, data, { entries: [entry].concat(entries) }));
+      setTimeError(''); requestFocus('learning-lab-sleep-today-status');
+      llAnnounce('Personal sleep log saved. Entered interval: ' + entry.hours + ' hours' + (quality ? '; how it felt: ' + qualityLabel(quality) : '; no quality rating') + '.');
+    }
+    async function remove(id, legacyEntry) {
+      var entry = id ? entries.filter(function(item) { return item.id === id; })[0] : legacyEntry;
+      if (!(await askLearningLabConfirmation('This removes' + (entry ? ' the personal sleep log from ' + visibleDate(entry.date) : ' this personal sleep log') + '.', { title: 'Delete this sleep log?', confirmText: 'Delete log' }))) return;
+      var remaining = entries.filter(function(item) { return id ? item.id !== id : item !== legacyEntry; });
+      setData(Object.assign({}, data, { entries: remaining }));
+      var removedToday = entry && entry.date === today;
+      requestFocus(removedToday || !remaining.length ? 'learning-lab-sleep-form-heading' : 'learning-lab-sleep-history-heading');
+      llAnnounce('Personal sleep log deleted.');
+    }
+
+    var recentDurations = entries.map(validHours).filter(function(hours) { return hours !== null; }).slice(0, 7);
+    var averageDuration = recentDurations.length ? (recentDurations.reduce(function(sum, hours) { return sum + hours; }, 0) / recentDurations.length).toFixed(1) : null;
     var chartDays = [];
     for (var dayOffset = 6; dayOffset >= 0; dayOffset--) {
-      var chartDate = new Date(); chartDate.setDate(chartDate.getDate() - dayOffset);
-      var chartIso = chartDate.toISOString().slice(0, 10);
+      var chartDate = new Date(); chartDate.setHours(12, 0, 0, 0); chartDate.setDate(chartDate.getDate() - dayOffset);
+      var chartIso = localISO(chartDate);
       var chartEntry = entries.filter(function(item) { return item.date === chartIso; })[0];
-      chartDays.push({ date: chartIso, label: chartDate.toLocaleDateString('en-US', { weekday: 'short' }), hours: chartEntry ? (chartEntry.hours || 0) : 0 });
+      chartDays.push({ date: chartIso, label: chartDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }), hours: validHours(chartEntry) });
     }
-    var chartSummary = chartDays.map(function(day) { return day.label + ' ' + (day.hours > 0 ? day.hours + ' hours' : 'no log'); }).join(', ');
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('😴', 'Sleep Log', 'Daily log of bedtime, wake time, quality, and factors. Patterns over time can support personal insight.', '#3b82f6'),
-
-      hh('section', { 'aria-label': 'Sleep summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: 'Last 7 days average', value: avgHours + 'h', color: '#3b82f6', icon: '⏰' },
-          { label: 'Average quality', value: avgQuality + '/5', color: '#a855f7', icon: '⭐' },
-          { label: 'Total logs', value: entries.length, color: '#10b981', icon: '📔' }
-        ].map(function(stat, index) {
-          return hh('div', { key: 'ss-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
-            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label)
-          );
-        })
+      tkSectionHeader('\uD83D\uDE34', 'Personal sleep log', 'Optional entered observations about one sleep period at a time.', '#3b82f6', 'learning-lab-sleep-heading'),
+      hh('section', { 'aria-labelledby': 'learning-lab-sleep-guidance-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(96,165,250,0.55)', color: '#e2e8f0', fontSize: 11, lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-sleep-guidance-heading', style: { margin: '0 0 5px', color: '#bfdbfe', fontSize: 12 } }, 'Scope, safety, and privacy'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'The calculated interval is only the time between the two entries. It does not measure time asleep or account for time to fall asleep, waking during the period, or naps.'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'This log does not diagnose a sleep condition or decide whether an amount is enough. Sleep needs vary with age and individual circumstances. If sleep problems or daytime sleepiness affect daily activities, consider talking with a qualified health professional. Do not drive or operate equipment when too sleepy to do so safely.'),
+        hh('p', { style: { margin: 0 } }, 'Entries are stored with other Learning Lab data and are not automatically shared with a clinician, family member, teacher, or school. Avoid identifying details on shared devices and follow applicable device or account privacy procedures.')
       ),
-
-      todayEntry ? hh('div', { role: 'status', style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, color: '#22c55e', fontWeight: 700 } }, '✓ Today logged: ' + todayEntry.hours + ' hours sleep · quality ' + todayEntry.quality + ' out of 5')
+      hh('section', { 'aria-labelledby': 'learning-lab-sleep-summary-heading', style: { marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-sleep-summary-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#bfdbfe' } }, 'Log summary'),
+        hh('dl', { style: { margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
+          hh('div', { style: { padding: 10, borderRadius: 8, border: '1px solid #60a5fa', background: 'rgba(15,23,42,0.65)' } },
+            hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, recentDurations.length ? 'Average entered interval across ' + recentDurations.length + ' most recent valid log' + (recentDurations.length === 1 ? '' : 's') : 'Average entered interval'),
+            hh('dd', { style: { margin: '4px 0 0', fontSize: 16, fontWeight: 800, color: '#bfdbfe' } }, averageDuration ? averageDuration + ' hours' : 'No valid logs')
+          ),
+          hh('div', { style: { padding: 10, borderRadius: 8, border: '1px solid #60a5fa', background: 'rgba(15,23,42,0.65)' } },
+            hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Total personal logs'),
+            hh('dd', { style: { margin: '4px 0 0', fontSize: 16, fontWeight: 800, color: '#bfdbfe' } }, String(entries.length))
+          )
+        )
+      ),
+      todayEntry ? hh('section', { id: 'learning-lab-sleep-today-status', tabIndex: -1, role: 'status', 'aria-labelledby': 'learning-lab-sleep-today-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid #60a5fa', marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-sleep-today-heading', style: { margin: '0 0 4px', fontSize: 12, color: '#bfdbfe' } }, 'Today has a personal log'),
+        hh('p', { style: { margin: 0, fontSize: 11, color: '#e2e8f0' } }, 'Entered interval: ' + (validHours(todayEntry) || 'not available') + ' hours. How it felt: ' + qualityLabel(todayEntry.quality) + '. Delete today\'s entry below if you need to replace it.')
       ) : tkCard('#3b82f6',
-        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-sleep-form-heading' },
-          hh('h3', { id: 'learning-lab-sleep-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', margin: '0 0 10px' } }, '😴 Log last night\'s sleep'),
+        hh('form', { noValidate: true, onSubmit: save, 'aria-labelledby': 'learning-lab-sleep-form-heading' },
+          hh('h3', { id: 'learning-lab-sleep-form-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#bfdbfe', margin: '0 0 6px' } }, 'Add today\'s personal sleep entry'),
+          hh('p', { style: { margin: '0 0 10px', fontSize: 10, color: '#cbd5e1' } }, 'Times start empty so a log is saved only from values you deliberately enter.'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 4 } },
             hh('div', null,
-              hh('label', { htmlFor: 'learning-lab-sleep-bedtime', style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Bedtime (required)'),
-              hh('input', { id: 'learning-lab-sleep-bedtime', type: 'time', value: form.bedtime, required: true, 'aria-invalid': timeError ? 'true' : undefined, 'aria-describedby': timeError ? 'learning-lab-sleep-time-error' : undefined, onChange: function(event) { setForm(Object.assign({}, form, { bedtime: event.target.value })); if (timeError) setTimeError(''); }, 'data-ll-focusable': true, style: inputStyle })
+              hh('label', { htmlFor: 'learning-lab-sleep-bedtime', style: { fontSize: 11, fontWeight: 700, color: '#bfdbfe', display: 'block', marginBottom: 4 } }, 'Sleep-period start time (required)'),
+              hh('input', { id: 'learning-lab-sleep-bedtime', type: 'time', value: form.bedtime, required: true, 'aria-invalid': timeError ? 'true' : undefined, 'aria-describedby': timeError ? 'learning-lab-sleep-time-error learning-lab-sleep-interval-note' : 'learning-lab-sleep-interval-note', onChange: function(event) { setForm(Object.assign({}, form, { bedtime: event.target.value })); if (timeError) setTimeError(''); }, 'data-ll-focusable': true, style: inputStyle })
             ),
             hh('div', null,
-              hh('label', { htmlFor: 'learning-lab-sleep-waketime', style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', display: 'block', marginBottom: 4 } }, 'Wake time (required)'),
-              hh('input', { id: 'learning-lab-sleep-waketime', type: 'time', value: form.waketime, required: true, 'aria-invalid': timeError ? 'true' : undefined, 'aria-describedby': timeError ? 'learning-lab-sleep-time-error' : undefined, onChange: function(event) { setForm(Object.assign({}, form, { waketime: event.target.value })); if (timeError) setTimeError(''); }, 'data-ll-focusable': true, style: inputStyle })
+              hh('label', { htmlFor: 'learning-lab-sleep-waketime', style: { fontSize: 11, fontWeight: 700, color: '#bfdbfe', display: 'block', marginBottom: 4 } }, 'Sleep-period end time (required)'),
+              hh('input', { id: 'learning-lab-sleep-waketime', type: 'time', value: form.waketime, required: true, 'aria-invalid': timeError ? 'true' : undefined, 'aria-describedby': timeError ? 'learning-lab-sleep-time-error learning-lab-sleep-interval-note' : 'learning-lab-sleep-interval-note', onChange: function(event) { setForm(Object.assign({}, form, { waketime: event.target.value })); if (timeError) setTimeError(''); }, 'data-ll-focusable': true, style: inputStyle })
             )
           ),
-          hh('div', { id: 'learning-lab-sleep-time-error', role: 'alert', style: { minHeight: timeError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, margin: timeError ? '4px 0 8px' : 0 } }, timeError),
-          hh('div', { role: 'status', 'aria-live': 'polite', style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.40)', textAlign: 'center', marginBottom: 14 } },
-            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Calculated total:'),
-            hh('strong', { style: { fontSize: 20, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, totalHours() + ' hours')
+          timeError ? hh('div', { id: 'learning-lab-sleep-time-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, margin: '4px 0' } }, timeError) : null,
+          hh('div', { id: 'learning-lab-sleep-interval-note', role: 'status', 'aria-live': 'polite', style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid #60a5fa', color: '#e2e8f0', textAlign: 'center', margin: '6px 0 14px', fontSize: 11 } },
+            hh('strong', { style: { color: '#bfdbfe' } }, 'Entered-time interval: '), totalHoursText()
           ),
           hh('div', { style: { marginBottom: 12 } },
-            hh('label', { htmlFor: 'learning-lab-sleep-quality', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 4 } }, 'Sleep quality: ', hh('strong', { style: { fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.quality + '/5')),
-            hh('input', { id: 'learning-lab-sleep-quality', type: 'range', min: 1, max: 5, step: 1, value: form.quality, 'aria-valuetext': form.quality + ' out of 5', onChange: function(event) { setForm(Object.assign({}, form, { quality: parseInt(event.target.value, 10) })); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, accentColor: '#3b82f6' } })
-          ),
-          hh('div', { style: { marginBottom: 12 } },
-            hh('div', { id: 'learning-lab-sleep-factors-label', style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 6 } }, 'Sleep factors (select all that apply)'),
-            hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-sleep-factors-label', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-              FACTORS.map(function(factor) {
-                var on = form.factors.indexOf(factor.id) >= 0;
-                var color = factor.good ? '#10b981' : '#ef4444';
-                return hh('button', { key: 'fa-' + factor.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function() { toggleFactor(factor.id); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: on ? color + '20' : 'rgba(15,23,42,0.5)', color: on ? color : '#94a3b8', border: '1px solid ' + (on ? color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, factor.icon + ' '), factor.label);
-              })
+            hh('label', { htmlFor: 'learning-lab-sleep-quality', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#bfdbfe', marginBottom: 4 } }, 'How the sleep period felt (optional)'),
+            hh('select', { id: 'learning-lab-sleep-quality', value: form.quality, onChange: function(event) { setForm(Object.assign({}, form, { quality: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle },
+              hh('option', { value: '' }, 'Not rated'),
+              QUALITY.map(function(option) { return hh('option', { key: option.value, value: option.value }, option.label); })
             )
           ),
-          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save sleep log')
+          hh('fieldset', { style: { margin: '0 0 12px', padding: 10, border: '1px solid #60a5fa', borderRadius: 8 } },
+            hh('legend', { style: { padding: '0 4px', fontSize: 11, fontWeight: 700, color: '#bfdbfe' } }, 'Optional observations (select any that apply)'),
+            hh('p', { style: { margin: '0 0 6px', fontSize: 10, color: '#cbd5e1' } }, 'These labels record context only. Selecting one does not establish that it caused a sleep outcome.'),
+            hh('ul', { style: Object.assign({}, listStyle, { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 4 }) }, FACTORS.map(function(factor) {
+              var checked = form.factors.indexOf(factor.id) >= 0;
+              return hh('li', { key: factor.id }, hh('label', { style: { minHeight: 44, padding: '6px 8px', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 6, border: '1px solid ' + (checked ? '#60a5fa' : '#64748b'), background: checked ? 'rgba(59,130,246,0.16)' : 'rgba(15,23,42,0.55)', color: '#e2e8f0', cursor: 'pointer', boxSizing: 'border-box' } },
+                hh('input', { type: 'checkbox', checked: checked, onChange: function() { toggleFactor(factor.id); }, 'data-ll-focusable': true, style: { width: 24, height: 24, margin: 0, accentColor: '#2563eb', flexShrink: 0 } }),
+                hh('span', { style: Object.assign({ fontSize: 10 }, wrapText) }, factor.label)
+              ));
+            }))
+          ),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save personal sleep log')
         )
       ),
-
-      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-sleep-chart-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-        hh('h3', { id: 'learning-lab-sleep-chart-heading', style: { fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📊 Last 7 nights'),
-        hh('div', { role: 'img', 'aria-label': 'Sleep hours for the last seven nights. ' + chartSummary, style: { display: 'flex', gap: 4, alignItems: 'flex-end', height: 80 } },
-          chartDays.map(function(day) {
-            var pct = day.hours > 0 ? Math.min(100, (day.hours / 10) * 100) : 0;
-            var color = day.hours >= 8 ? '#10b981' : day.hours >= 7 ? '#fbbf24' : day.hours > 0 ? '#ef4444' : 'rgba(100,116,139,0.20)';
-            return hh('div', { key: 'd-' + day.date, 'aria-hidden': 'true', style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
-              hh('div', { style: { width: '100%', height: 50, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } }, hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: color, transition: 'height 300ms ease' } })),
-              hh('div', { style: { fontSize: 8, color: color, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, day.hours > 0 ? day.hours + 'h' : '—'),
-              hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, day.label)
-            );
-          })
+      entries.length ? hh('section', { 'aria-labelledby': 'learning-lab-sleep-chart-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-sleep-chart-heading', style: { fontSize: 12, color: '#bfdbfe', margin: '0 0 4px' } }, 'Entered intervals for the last seven calendar dates'),
+        hh('p', { style: { margin: '0 0 8px', fontSize: 10, color: '#cbd5e1' } }, 'No duration is categorized as good or bad. A blank row means there is no log for that date.'),
+        hh('table', { style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 10 } },
+          hh('caption', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' } }, 'Entered sleep-period intervals for the last seven calendar dates'),
+          hh('thead', null, hh('tr', null, hh('th', { scope: 'col', style: { textAlign: 'left', padding: 6 } }, 'Date'), hh('th', { scope: 'col', style: { textAlign: 'left', padding: 6 } }, 'Entered interval'))),
+          hh('tbody', null, chartDays.map(function(day) { return hh('tr', { key: day.date },
+            hh('th', { scope: 'row', style: { textAlign: 'left', padding: 6, borderTop: '1px solid #475569' } }, hh('time', { dateTime: day.date }, day.label)),
+            hh('td', { style: { padding: 6, borderTop: '1px solid #475569' } }, day.hours === null ? 'No log' : day.hours + ' hours')
+          ); }))
         )
       ) : null,
-
-      entries.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-sleep-history-heading' },
-        hh('h3', { id: 'learning-lab-sleep-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📔 Recent logs'),
-        hh('ul', { style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 4 }) },
-          entries.slice(0, 14).map(function(entry) {
-            var hours = entry.hours || 0;
-            var color = hours >= 8 ? '#10b981' : hours >= 7 ? '#fbbf24' : '#ef4444';
-            return hh('li', { key: 'le-' + entry.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + color, flexWrap: 'wrap' } },
-              hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, entry.date + ' · ' + entry.bedtime + ' to ' + entry.waketime),
-              hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                hh('span', { style: { fontSize: 11, color: color, fontWeight: 700 } }, hours + ' hours · quality ' + entry.quality + '/5'),
-                hh('button', { type: 'button', 'aria-label': 'Delete sleep log from ' + entry.date, onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
-              )
-            );
-          })
-        )
-      ) : null
+      hh('section', { 'aria-labelledby': 'learning-lab-sleep-history-heading' },
+        hh('h3', { id: 'learning-lab-sleep-history-heading', tabIndex: -1, style: { fontSize: 12, color: '#bfdbfe', margin: '0 0 8px' } }, 'All personal sleep logs'),
+        !entries.length ? hh('p', { style: { fontSize: 11, color: '#cbd5e1' } }, 'No personal sleep logs yet.')
+        : hh('ul', { 'aria-label': 'All personal sleep logs', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 8 }) }, entries.map(function(entry, index) {
+          var entryId = entry.id || ('legacy-sleep-' + index);
+          var hours = validHours(entry);
+          return hh('li', { key: entryId }, hh('article', { 'aria-labelledby': 'learning-lab-sleep-entry-heading-' + entryId, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.65)', border: '1px solid #64748b' } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+              hh('h4', { id: 'learning-lab-sleep-entry-heading-' + entryId, style: { margin: 0, fontSize: 12, color: '#bfdbfe' } }, 'Personal log for ', hh('time', { dateTime: safeDateTime(entry.date) }, visibleDate(entry.date))),
+              hh('button', { type: 'button', 'aria-label': 'Delete sleep log from ' + visibleDate(entry.date), onClick: function() { remove(entry.id, entry); }, 'data-ll-focusable': true, style: { minWidth: 52, minHeight: 44, padding: 6, borderRadius: 6, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+            ),
+            hh('dl', { style: { margin: '6px 0 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6 } },
+              hh('div', null, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Entered times'), hh('dd', { style: { margin: '2px 0 0', color: '#e2e8f0', fontSize: 11 } }, (entry.bedtime || 'Not recorded') + ' to ' + (entry.waketime || 'Not recorded'))),
+              hh('div', null, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, 'Calculated interval'), hh('dd', { style: { margin: '2px 0 0', color: '#e2e8f0', fontSize: 11 } }, hours === null ? 'Not available' : hours + ' hours')),
+              hh('div', null, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, 'How it felt'), hh('dd', { style: { margin: '2px 0 0', color: '#e2e8f0', fontSize: 11 } }, qualityLabel(entry.quality)))
+            ),
+            entry.factors && entry.factors.length ? hh('div', { style: { marginTop: 7, fontSize: 10, color: '#cbd5e1' } },
+              hh('strong', { style: { color: '#bfdbfe' } }, 'Recorded observations: '), entry.factors.map(factorLabel).join(', ')
+            ) : null
+          ));
+        }))
+      )
     );
   }
 
-  // Long-form journal with subject tags + mood tracking + search.
-  // For "I learned X about Y today" entries that build a personal
-  // knowledge log over time. Distinct from Weekly Reflection (structured)
-  // and Reflection Prompts (one-prompt-at-a-time).
   function PersonalLearningJournal(props) {
     if (!R) return null;
     var data = props.data || { entries: [] };
@@ -19877,7 +19934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkIEP || {}).goals || []).length + ' goals', cta: 'Track IEP goals' },
       { id: 'mytkMastery',  icon: '📚', label: 'Subject Mastery',      color: '#3b82f6', desc: 'Track optional learning-status reflections by topic',
         stat: ((data.mytkMastery || {}).subjects || []).length + ' subjects', cta: 'Map mastery' },
-      { id: 'mytkSleep',    icon: '😴', label: 'Sleep Log',            color: '#3b82f6', desc: 'Daily sleep log with quality + factors',
+      { id: 'mytkSleep',    icon: '😴', label: 'Sleep Log',            color: '#3b82f6', desc: 'Personal entered sleep-period intervals + optional context',
         stat: ((data.mytkSleep || {}).entries || []).length + ' nights', cta: 'Log last night' },
       { id: 'mytkJournal',  icon: '📓', label: 'Learning Journal',     color: '#ec4899', desc: 'Free-form journal with subject + mood tags',
         stat: ((data.mytkJournal || {}).entries || []).length + ' entries', cta: 'Write an entry' },
@@ -20209,7 +20266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkEF',     icon: '🧩', label: __alloT('stem.learning_lab.ef_dashboard', 'EF Dashboard'),         desc: __alloT('stem.learning_lab.8_executive_function_dimensions_tracke', 'Optional context-dependent self-reflection across eight dimensions with adaptable strategy ideas.') },
               { id: 'mytkIEP',    icon: '🎓', label: __alloT('stem.learning_lab.my_iep_tracker', 'My IEP Tracker'),       desc: __alloT('stem.learning_lab.your_own_copy_of_your_iep_goals_sub_go', 'Optional personal notes for reviewing IEP goals and preparing for meetings; not the official IEP.') },
               { id: 'mytkMastery',icon: '📚', label: __alloT('stem.learning_lab.subject_mastery', 'Subject Mastery'),      desc: __alloT('stem.learning_lab.track_mastery_per_topic_per_subject_ac', 'Track optional topic learning-status reflections without an average score.') },
-              { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.') },
+              { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Optional start/end times, how-it-felt rating, and context observations; not diagnostic.') },
               { id: 'mytkJournal',icon: '📓', label: __alloT('stem.learning_lab.learning_journal', 'Learning Journal'),     desc: __alloT('stem.learning_lab.free_form_journal_with_subject_mood_ta', 'Free-form journal with subject + mood tags. Search across all entries.') },
               { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', '3 daily gratitudes (Emmons + McCullough 2003) — strongest single positive-psychology intervention.') },
               { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Books read + want-to-read + reflections + page counter (Krashen 2004).') },
