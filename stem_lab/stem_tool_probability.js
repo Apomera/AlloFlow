@@ -116,6 +116,54 @@ window.StemLab = window.StemLab || {
     return { label: label, remaining: pool, refilled: refilled };
   }
 
+  function probabilityPrepareCustomOutcomes(outcomes, subMode) {
+    var input = Array.isArray(outcomes) ? outcomes : [];
+    var prepared = input.map(function(o, i) {
+      var item = Object.assign({}, o || {});
+      item.label = String(item.label == null ? '' : item.label).trim();
+      if (subMode === 'fraction') {
+        var numerator = Number(item.numerator == null ? 1 : item.numerator);
+        var denominator = Number(item.denominator == null ? 20 : item.denominator);
+        item.prob = denominator > 0 ? numerator / denominator : NaN;
+      } else if (subMode === 'marbleBag') {
+        var rawCount = Number(item.count);
+        item.count = Number.isFinite(rawCount) && rawCount > 0 ? Math.floor(rawCount) : 1;
+      } else {
+        item.prob = Number(item.prob);
+      }
+      return item;
+    });
+
+    if (subMode === 'marbleBag') {
+      var marbleTotal = prepared.reduce(function(sum, o) { return sum + o.count; }, 0);
+      prepared = prepared.map(function(o) {
+        return Object.assign({}, o, { prob: marbleTotal > 0 ? o.count / marbleTotal : 0 });
+      });
+    }
+
+    var total = prepared.reduce(function(sum, o) { return sum + (Number.isFinite(o.prob) ? o.prob : 0); }, 0);
+    var reason = '';
+    if (prepared.length < 2) reason = 'Add at least two outcomes.';
+    else if (prepared.some(function(o) { return !o.label; })) reason = 'Give every outcome a name.';
+    else {
+      var seen = {};
+      var duplicate = prepared.find(function(o) {
+        var key = o.label.toLocaleLowerCase();
+        if (seen[key]) return true;
+        seen[key] = true;
+        return false;
+      });
+      if (duplicate) reason = 'Use a unique name for each outcome. “' + duplicate.label + '” appears more than once.';
+      else if (prepared.some(function(o) { return !Number.isFinite(o.prob) || o.prob < 0 || o.prob > 1; })) reason = 'Each probability must be between 0% and 100%.';
+      else if (Math.abs(total - 1) > 0.000001) reason = 'Probabilities total ' + (total * 100).toFixed(1) + '%. Adjust them to exactly 100%.';
+    }
+
+    if (!reason && total > 0 && subMode !== 'marbleBag') {
+      prepared = prepared.map(function(o) { return Object.assign({}, o, { prob: o.prob / total }); });
+    }
+    return { outcomes: prepared, total: total, valid: !reason, reason: reason };
+  }
+
   function probabilityResetPatch() {
     return {
       results: [], trials: 0, convergenceHistory: [], lastResult: null,
@@ -128,6 +176,7 @@ window.StemLab = window.StemLab || {
     buildMarblePool: probabilityBuildMarblePool,
     marbleOdds: probabilityMarbleOdds,
     drawMarble: probabilityDrawMarble,
+    prepareCustomOutcomes: probabilityPrepareCustomOutcomes,
     resetPatch: probabilityResetPatch
   });
 
@@ -239,33 +288,38 @@ var d = (labToolData.probability) || {};
 
           // â”€â”€ Custom mode outcomes â”€â”€
 
-          var customOutcomes = d.customOutcomes || [{ label: 'Red', prob: 0.5, color: '#ef4444', numerator: 1, denominator: 2, count: 5 }, { label: t('stem.probability.blue', 'Blue'), prob: 0.5, color: '#3b82f6', numerator: 1, denominator: 2, count: 5 }];
-
+          var customDefaults = [{ label: 'Red', prob: 0.5, color: '#ef4444', numerator: 1, denominator: 2, count: 5 }, { label: t('stem.probability.blue', 'Blue'), prob: 0.5, color: '#3b82f6', numerator: 1, denominator: 2, count: 5 }];
+          var rawCustomOutcomes = d.customOutcomes || customDefaults;
           var customSubMode = d.customSubMode || 'fraction';
+          var customModel = probabilityPrepareCustomOutcomes(rawCustomOutcomes, d.mode === 'marbleBag' ? 'marbleBag' : customSubMode);
+          var customOutcomes = customModel.outcomes;
+          var customCanRun = (d.mode !== 'custom' && d.mode !== 'marbleBag') || customModel.valid;
 
-          if (d.mode === 'custom') {
+          var setProbabilityOutcomes = function(outcomes) {
+            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            setLabToolData(function(prev) {
+              var current = prev.probability || {};
+              return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch(), { customOutcomes: outcomes }) });
+            });
+            var live = document.getElementById('allo-live-probability');
+            if (live) live.textContent = 'Probability model changed. Previous trials cleared and automatic simulation stopped.';
+          };
 
-            if (customSubMode === 'fraction') { customOutcomes = customOutcomes.map(function (o) { var den = o.denominator || 20; return Object.assign({}, o, { prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); }); }
-
-            else if (customSubMode === 'marbleBag') { var _totalM = customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0); if (_totalM > 0) { customOutcomes = customOutcomes.map(function (o) { return Object.assign({}, o, { prob: (o.count || 1) / _totalM }); }); } }
-
-          }
-
-          // â”€â”€ Marble bag mode: compute probs from counts â”€â”€
-
-          if (d.mode === 'marbleBag') {
-
-            var _mbTotal = customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0);
-
-            if (_mbTotal > 0) { customOutcomes = customOutcomes.map(function (o) { return Object.assign({}, o, { prob: (o.count || 1) / _mbTotal }); }); }
-
-          }
-
-
-
-          // â”€â”€ Run trials â”€â”€
+          var setCustomSubMode = function(subMode) {
+            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            setLabToolData(function(prev) {
+              var current = prev.probability || {};
+              return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch(), { customSubMode: subMode }) });
+            });
+          };
 
           var runTrial = function(n) {
+            if (!customCanRun) {
+              if (addToast) addToast(customModel.reason, 'error');
+              var invalidLive = document.getElementById('allo-live-probability');
+              if (invalidLive) invalidLive.textContent = 'Cannot run trials. ' + customModel.reason;
+              return;
+            }
 
             const results = [...(d.results || [])];
 
@@ -459,8 +513,13 @@ var d = (labToolData.probability) || {};
 
               var _asp2 = SPORTS.find(function(s) { return s.id === (_pd.sportType || 'freethrow'); }) || SPORTS[0];
 
-              var _cos3 = _pd.customOutcomes || [{ label: 'Red', prob: 0.5, color: '#ef4444' }, { label: t('stem.probability.blue_2', 'Blue'), prob: 0.5, color: '#3b82f6' }];
-              if (_pd.mode === 'marbleBag') _cos3 = probabilityMarbleOutcomes(_cos3);
+              var _cos3 = _pd.customOutcomes || customDefaults;
+              var _customModel3 = probabilityPrepareCustomOutcomes(_cos3, _pd.mode === 'marbleBag' ? 'marbleBag' : (_pd.customSubMode || 'fraction'));
+              _cos3 = _customModel3.outcomes;
+              if ((_pd.mode === 'custom' || _pd.mode === 'marbleBag') && !_customModel3.valid) {
+                if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+                return Object.assign({}, prev, { probability: Object.assign({}, _pd, { _autoRunning: false }) });
+              }
 
               var _newPiPts3 = null;
               var _newMbRemaining3 = _pd._mbRemaining;
@@ -942,7 +1001,8 @@ var d = (labToolData.probability) || {};
             var usedTypes = Object.keys(d.experimentsUsed || {}).length;
             var resultCount = (d.results || []).length;
             var trialReadyModes = ['coin', 'dice', 'dice2', 'spinner', 'sports', 'marbleBag', 'custom', 'pi'];
-            var canRunQuickTrials = trialReadyModes.indexOf(d.mode) >= 0;
+            var quickTrialsSupported = trialReadyModes.indexOf(d.mode) >= 0;
+            var canRunQuickTrials = quickTrialsSupported && customCanRun;
             var routeMeta = {
               coin: { label: 'Coin', icon: '\uD83E\uDE99', color: '#475569', desc: 'Begin with a clean 50/50 event.' },
               dice: { label: 'Dice', icon: '\uD83C\uDFB2', color: '#b91c1c', desc: 'Compare faces, denominators, and fairness.' },
@@ -988,7 +1048,7 @@ var d = (labToolData.probability) || {};
                   );
                 })),
                 React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                  React.createElement("button", { onClick: canRunQuickTrials ? function() { runTrial(10); } : function() { selectMode('coin'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: '#5b21b6', color: '#fff', border: '1px solid #4c1d95', boxShadow: '0 8px 18px rgba(91,33,182,0.22)' } }, canRunQuickTrials ? t('stem.probability.run_10_trials', 'Run 10 Trials') : t('stem.probability.start_with_coin', 'Start With Coin')),
+                  React.createElement("button", { disabled: quickTrialsSupported && !customCanRun, onClick: canRunQuickTrials ? function() { runTrial(10); } : function() { if (!quickTrialsSupported) selectMode('coin'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed", style: { background: '#5b21b6', color: '#fff', border: '1px solid #4c1d95', boxShadow: '0 8px 18px rgba(91,33,182,0.22)' } }, canRunQuickTrials ? t('stem.probability.run_10_trials', 'Run 10 Trials') : quickTrialsSupported ? 'Fix Custom Model' : t('stem.probability.start_with_coin', 'Start With Coin')),
                   React.createElement("button", { onClick: function() { selectMode('monty'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.82)', color: isDark || isContrast ? '#e0e7ff' : '#4338ca', border: '1px solid ' + (isDark || isContrast ? 'rgba(196,181,253,0.28)' : '#c7d2fe') } }, t('stem.probability.try_a_paradox', 'Try a Paradox'))
                 )
               ),
@@ -1228,19 +1288,19 @@ var d = (labToolData.probability) || {};
 
                   return React.createElement("div", { key: i, className: "flex items-center gap-2 rounded-lg p-2", style: { background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.7)', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.15)' : '#e9d5ff') } },
 
-                    React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded-full border-0 cursor-pointer flex-shrink-0", style: { borderRadius: '50%' } }),
+                    React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full border-0 cursor-pointer flex-shrink-0", style: { borderRadius: '50%' } }),
 
-                    React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg text-sm font-bold flex-shrink-0", style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ddd6fe'), background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : '#fff', color: _text } }),
+                    React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg text-sm font-bold flex-shrink-0", style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ddd6fe'), background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : '#fff', color: _text } }),
 
-                    React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#fecaca', color: '#dc2626' } }, "\u2212"),
+                    React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#fecaca', color: '#dc2626' } }, "\u2212"),
 
                     React.createElement("span", { className: "w-8 text-center text-sm font-black", style: { color: _text } }, count),
 
-                    React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#bbf7d0', color: '#16a34a' } }, "+"),
+                    React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#bbf7d0', color: '#16a34a' } }, "+"),
 
                     React.createElement("span", { className: "ml-auto text-[11px] font-mono", style: { color: isDark || isContrast ? '#a5b4fc' : '#7c3aed' } }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + ((o.prob || 0) * 100).toFixed(1) + '%'),
 
-                    customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove marble color " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
+                    customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove marble color " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
 
                   );
 
@@ -1248,9 +1308,11 @@ var d = (labToolData.probability) || {};
 
               ),
 
-              customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: ['Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Teal'][Math.min(customOutcomes.length - 2, 5)] || String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 3, color: ['#22c55e', '#eab308', '#8b5cf6', '#f97316', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e'][customOutcomes.length % 8] }]); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('_mbRemaining', null); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-105", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.add_color_2', "+ Add Color")),
+              customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: ['Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Teal'][Math.min(customOutcomes.length - 2, 5)] || String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 3, color: ['#22c55e', '#eab308', '#8b5cf6', '#f97316', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-105", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.add_color_2', "+ Add Color")),
 
               // â”€â”€ SVG Bag Visualization â”€â”€
+
+              !customModel.valid && React.createElement("div", { role: "alert", className: "mt-3 px-3 py-2 rounded-lg text-xs font-bold", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.12)' : '#fef2f2', color: isDark || isContrast ? '#fecaca' : '#b91c1c', border: '1px solid rgba(239,68,68,0.35)' } }, "Marble model not ready: " + customModel.reason),
 
               React.createElement("div", { className: "mt-4 flex justify-center" },
 
@@ -1364,7 +1426,7 @@ var d = (labToolData.probability) || {};
 
               React.createElement("div", { className: "flex gap-1 mb-3 bg-amber-100/50 rounded-lg p-1" },
 
-                [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { "aria-label": "Select " + label + " input mode", key: sm, onClick: function () { upd('customSubMode', sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
+                [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { "aria-label": "Select " + label + " input mode", key: sm, onClick: function () { setCustomSubMode(sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
 
               ),
 
@@ -1382,19 +1444,19 @@ var d = (labToolData.probability) || {};
 
                     return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
 
-                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
+                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), 'aria-label': 'Name for event ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), 'aria-label': 'Name for event ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, 'aria-label': 'Numerator for event ' + (o.label || (i + 1)), onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
+                      React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, 'aria-label': 'Numerator for event ' + (o.label || (i + 1)), onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); setProbabilityOutcomes(co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-600 flex-shrink-0" }, t('stem.probability.out_of', "out of")),
 
-                      React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, 'aria-label': 'Denominator for event ' + (o.label || (i + 1)), onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
+                      React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, 'aria-label': 'Denominator for event ' + (o.label || (i + 1)), onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); setProbabilityOutcomes(co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
 
                       React.createElement("span", { className: "ml-1 px-2 py-0.5 rounded-full text-[11px] font-bold " + (o.prob <= 0.1 ? 'bg-violet-100 text-violet-700' : o.prob <= 0.5 ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700') }, (o.prob * 100).toFixed(1) + '%'),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove event " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove event " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
 
                     );
 
@@ -1402,9 +1464,9 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_event', "+ Add Event"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_event_2', "+ Add Event")),
+                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_event', "+ Add Event"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_event_2', "+ Add Event")),
 
-                React.createElement("p", { className: "text-[11px] mt-1.5 " + (Math.abs(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) - 1) < 0.05 ? 'text-emerald-500' : 'text-red-500') }, "\uD83D\uDCA1 Total: " + (customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100).toFixed(1) + "%" + (Math.abs(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) - 1) > 0.05 ? ' \u2014 fractions should add to 100%' : ' \u2713'))
+                React.createElement("p", { className: "text-[11px] mt-1.5 " + (customModel.valid ? 'text-emerald-500' : 'text-red-500') }, "Total: " + (customModel.total * 100).toFixed(1) + "%" + (customModel.valid ? ' - ready' : ' - must equal exactly 100%'))
 
               ),
 
@@ -1424,19 +1486,19 @@ var d = (labToolData.probability) || {};
 
                     return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
 
-                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
+                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for marble color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for marble color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
+                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
 
                       React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
 
-                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
+                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
 
                       React.createElement("span", { className: "ml-1 text-[11px] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove marble color " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove marble color " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
 
                     );
 
@@ -1462,7 +1524,7 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color_3', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_color_4', "+ Add Color"))
+                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color_3', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_color_4', "+ Add Color"))
 
               ),
 
@@ -1480,19 +1542,19 @@ var d = (labToolData.probability) || {};
 
                     return React.createElement("div", { key: i, className: "flex items-center gap-2" },
 
-                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
+                      React.createElement("input", { type: "color", value: o.color, 'aria-label': 'Color for outcome ' + (o.label || (i + 1)), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); setProbabilityOutcomes(co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
 
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), 'aria-label': 'Name for outcome ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), 'aria-label': 'Name for outcome ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
 
                       React.createElement("div", { className: "flex items-center gap-1" },
 
-                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': 'Probability for outcome ' + (o.label || (i + 1)), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } upd('customOutcomes', co); }, className: "w-20 accent-amber-600" }),
+                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': 'Probability for outcome ' + (o.label || (i + 1)), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "w-20 accent-amber-600" }),
 
                         React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
 
                       ),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove outcome " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": "Remove outcome " + (o.label || (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
 
                     );
 
@@ -1500,11 +1562,13 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_outcome', "+ Add Outcome"), onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); upd('customOutcomes', newOuts); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_outcome_2', "+ Add Outcome")),
+                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_outcome', "+ Add Outcome"), onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); setProbabilityOutcomes(newOuts); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_outcome_2', "+ Add Outcome")),
 
                 React.createElement("p", { className: "text-[11px] text-amber-500 mt-1" }, "\uD83D\uDCA1 Total: " + Math.round(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100) + "% (should be 100%)")
 
-              )
+              ),
+
+              React.createElement("div", { role: customModel.valid ? "status" : "alert", "aria-live": "polite", className: "mt-3 px-3 py-2 rounded-lg text-xs font-bold", style: { background: customModel.valid ? (isDark || isContrast ? 'rgba(16,185,129,0.12)' : '#ecfdf5') : (isDark || isContrast ? 'rgba(239,68,68,0.12)' : '#fef2f2'), color: customModel.valid ? (isDark || isContrast ? '#a7f3d0' : '#047857') : (isDark || isContrast ? '#fecaca' : '#b91c1c'), border: '1px solid ' + (customModel.valid ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)') } }, customModel.valid ? 'Model ready: 100% across ' + customOutcomes.length + ' unique outcomes.' : 'Custom model not ready: ' + customModel.reason)
 
             ),
 
@@ -2468,8 +2532,10 @@ var d = (labToolData.probability) || {};
 
               React.createElement("button", { "aria-label": d._autoRunning ? t('stem.probability.pause_auto_run', "Pause automatic simulation") : t('stem.probability.start_auto_run', "Start automatic simulation"), "aria-pressed": d._autoRunning ? "true" : "false",
 
+                disabled: !customCanRun,
                 onClick: function() {
 
+                  if (!customCanRun) return;
                   if (_autoRun.interval) {
 
                     clearInterval(_autoRun.interval);
@@ -2488,7 +2554,7 @@ var d = (labToolData.probability) || {};
 
                 },
 
-                className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed",
 
                 style: { background: d._autoRunning ? '#ef4444' : _btnBg, color: '#fff', boxShadow: d._autoRunning ? '0 0 10px rgba(239,68,68,0.35)' : 'none' }
 
@@ -2520,7 +2586,7 @@ var d = (labToolData.probability) || {};
 
             d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
-              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
+              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", disabled: !customCanRun, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
 
               React.createElement("button", { "aria-label": t('stem.probability.reset_all_trials', "Reset all trials"), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, t('stem.probability.reset_2', "\uD83D\uDD04 Reset"))
 
