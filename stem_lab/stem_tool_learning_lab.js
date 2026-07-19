@@ -6391,170 +6391,235 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { exams: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                          var view = vs[0];   var setView = vs[1];
+    var vs = R.useState('list');                 var view = vs[0]; var setView = vs[1];
     var fs = R.useState({ name: '', date: '', units: 5, dailyMin: 30 });
-    var form = fs[0];                                     var setForm = fs[1];
-    var ves = R.useState('');                             var formError = ves[0]; var setFormError = ves[1];
+    var form = fs[0];                            var setForm = fs[1];
+    var ers = R.useState({ name: '', date: '', units: '', dailyMin: '' });
+    var errors = ers[0];                         var setErrors = ers[1];
+    var exs = R.useState({});                    var expanded = exs[0]; var setExpanded = exs[1];
+    var fts = R.useState('');                    var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
-    function addExam(e) {
-      var exam = Object.assign({ id: tkId(), createdAt: todayISO(), completedDays: [] }, e);
-      setData({ exams: [exam].concat(data.exams || []) });
-    }
-    function removeExam(id) {
-      setData({ exams: (data.exams || []).filter(function(e) { return e.id !== id; }) });
-    }
-    function markDay(examId, day) {
-      var exams = (data.exams || []).map(function(e) {
-        if (e.id !== examId) return e;
-        var cd = (e.completedDays || []).slice();
-        if (cd.indexOf(day) >= 0) cd = cd.filter(function(d) { return d !== day; });
-        else cd.push(day);
-        return Object.assign({}, e, { completedDays: cd });
-      });
-      setData({ exams: exams });
-    }
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      setFocusTarget('');
+    }, [focusTarget]);
 
+    function isoDayNumber(iso) {
+      var parts = String(iso || '').split('-').map(Number);
+      if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) return null;
+      return Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000);
+    }
+    function isoFromDayNumber(number) {
+      return new Date(number * 86400000).toISOString().slice(0, 10);
+    }
     function daysUntil(iso) {
-      if (!iso) return 0;
-      var target = new Date(iso + 'T12:00:00').getTime();
-      var now = new Date().getTime();
-      return Math.ceil((target - now) / 86400000);
+      var target = isoDayNumber(iso);
+      var current = isoDayNumber(todayISO());
+      return target === null || current === null ? 0 : target - current;
     }
-
+    function tomorrowISO() {
+      return isoFromDayNumber(isoDayNumber(todayISO()) + 1);
+    }
+    function formatMinutes(value) {
+      var minutes = Math.round(Number(value) || 0);
+      return minutes + (minutes === 1 ? ' minute' : ' minutes');
+    }
     function planForExam(exam) {
       var days = daysUntil(exam.date);
       if (days <= 0) return [];
-      // Generate study plan: distribute units across days with intensification near the end
       var plan = [];
       var unitsPerDay = exam.units / days;
-      for (var i = 0; i < days; i++) {
-        var dt = new Date();
-        dt.setDate(dt.getDate() + i);
-        var iso = dt.toISOString().slice(0, 10);
-        var daysFromExam = days - i;
-        var intensity;
-        if (daysFromExam <= 2) intensity = 'review-all';
-        else if (daysFromExam <= 7) intensity = 'practice-test';
-        else intensity = 'learn-new';
-        var unitsToday = Math.min(exam.units, Math.ceil((i + 1) * unitsPerDay) - Math.ceil(i * unitsPerDay));
+      var startDay = isoDayNumber(todayISO());
+      for (var index = 0; index < days; index++) {
+        var daysFromExam = days - index;
+        var intensity = daysFromExam <= 2 ? 'review-all' : daysFromExam <= 7 ? 'practice-retrieval' : 'study-units';
+        var unitsToday = Math.max(0, Math.min(exam.units, Math.ceil((index + 1) * unitsPerDay) - Math.ceil(index * unitsPerDay)));
         plan.push({
-          day: iso, daysFromExam: daysFromExam,
+          day: isoFromDayNumber(startDay + index), daysFromExam: daysFromExam,
           intensity: intensity, units: unitsToday,
-          minutes: intensity === 'review-all' ? exam.dailyMin * 1.5 : exam.dailyMin
+          minutes: Math.round(intensity === 'review-all' ? exam.dailyMin * 1.5 : exam.dailyMin)
         });
       }
       return plan;
+    }
+    function openAdd() {
+      setErrors({ name: '', date: '', units: '', dailyMin: '' });
+      setView('add');
+      setFocusTarget('learning-lab-exam-form-heading');
+    }
+    function cancelAdd() {
+      setErrors({ name: '', date: '', units: '', dailyMin: '' });
+      setView('list');
+      setFocusTarget('learning-lab-exam-heading');
+      llAnnounce('Exam plan creation canceled.');
+    }
+    function submitExam(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var name = String(form.name || '').trim();
+      var units = Number(form.units);
+      var dailyMinutes = Number(form.dailyMin);
+      var nextErrors = {
+        name: name ? '' : 'Enter a name for the exam.',
+        date: !form.date ? 'Choose an exam date.' : daysUntil(form.date) <= 0 ? 'Choose a future exam date.' : '',
+        units: Number.isInteger(units) && units >= 1 && units <= 50 ? '' : 'Enter a whole number from 1 to 50.',
+        dailyMin: Number.isFinite(dailyMinutes) && dailyMinutes >= 15 && dailyMinutes <= 240 ? '' : 'Enter 15 to 240 minutes.'
+      };
+      setErrors(nextErrors);
+      var invalidId = nextErrors.name ? 'learning-lab-exam-name' : nextErrors.date ? 'learning-lab-exam-date' : nextErrors.units ? 'learning-lab-exam-units' : nextErrors.dailyMin ? 'learning-lab-exam-minutes' : '';
+      if (invalidId) {
+        setFocusTarget(invalidId);
+        llAnnounce('The exam plan has invalid or missing information.');
+        return;
+      }
+      var exam = { id: tkId(), createdAt: todayISO(), completedDays: [], name: name, date: form.date, units: units, dailyMin: dailyMinutes };
+      setData(Object.assign({}, data, { exams: [exam].concat(data.exams || []) }));
+      setForm({ name: '', date: '', units: 5, dailyMin: 30 });
+      setErrors({ name: '', date: '', units: '', dailyMin: '' });
+      setView('list');
+      setFocusTarget('learning-lab-exam-heading');
+      llAnnounce('Exam prep plan generated.');
+    }
+    async function removeExam(exam) {
+      if (!(await askLearningLabConfirmation('This permanently removes the selected exam prep plan and its completion history.', {
+        title: 'Delete this exam prep plan?', confirmText: 'Delete plan'
+      }))) return;
+      var remaining = (data.exams || []).filter(function(candidate) { return candidate.id !== exam.id; });
+      setData(Object.assign({}, data, { exams: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-exam-plans-heading' : 'learning-lab-exam-new-button');
+      llAnnounce('Exam prep plan deleted.');
+    }
+    function markDay(exam, planDay) {
+      var wasDone = (exam.completedDays || []).indexOf(planDay.day) >= 0;
+      var exams = (data.exams || []).map(function(candidate) {
+        if (candidate.id !== exam.id) return candidate;
+        var completedDays = (candidate.completedDays || []).filter(function(day) { return day !== planDay.day; });
+        if (!wasDone) completedDays.push(planDay.day);
+        return Object.assign({}, candidate, { completedDays: completedDays });
+      });
+      setData(Object.assign({}, data, { exams: exams }));
+      llAnnounce((wasDone ? 'Marked incomplete: ' : 'Marked complete: ') + planDay.day + ' study session.');
     }
 
     var exams = data.exams || [];
 
     if (view === 'add') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('+', 'New exam prep plan', 'Backwards-plan from the exam date.', '#fbbf24'),
+        tkSectionHeader('➕', 'New exam prep plan', 'Enter a future exam date and planning estimates. All fields are required.', '#fbbf24', 'learning-lab-exam-form-heading'),
         tkCard('#fbbf24',
-          hh('div', null,
-            hh('label', { htmlFor: 'learning-lab-exam-name', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam name (required)'),
-            hh('input', { id: 'learning-lab-exam-name', type: 'text', value: form.name, required: true, 'aria-invalid': formError && !form.name.trim() ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-exam-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); setFormError(''); }, placeholder: 'e.g., "Biology midterm — Unit 3-5"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
-            hh('label', { htmlFor: 'learning-lab-exam-date', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Exam date (required)'),
-            hh('input', { id: 'learning-lab-exam-date', type: 'date', value: form.date, required: true, min: todayISO(), 'aria-invalid': formError && !form.date ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-exam-error' : undefined,
-              onChange: function(e) { setForm(Object.assign({}, form, { date: e.target.value })); setFormError(''); },
-              style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: 12 }
+          hh('form', { 'aria-labelledby': 'learning-lab-exam-form-heading', onSubmit: submitExam },
+            hh('label', { htmlFor: 'learning-lab-exam-name', style: { fontSize: 11, fontWeight: 800, color: '#fde68a', display: 'block', marginBottom: 4 } }, 'Exam name'),
+            tkInput(form.name, function(value) { setForm(Object.assign({}, form, { name: value })); if (errors.name) setErrors(Object.assign({}, errors, { name: '' })); }, 'For example: Biology midterm, units 3 through 5', {
+              id: 'learning-lab-exam-name', required: true, maxLength: 240,
+              'aria-invalid': errors.name ? 'true' : undefined,
+              'aria-describedby': errors.name ? 'learning-lab-exam-name-error' : undefined,
+              marginBottom: errors.name ? 4 : 12
             }),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            errors.name ? hh('p', { id: 'learning-lab-exam-name-error', role: 'alert', style: { margin: '0 0 10px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.name) : null,
+            hh('label', { htmlFor: 'learning-lab-exam-date', style: { fontSize: 11, fontWeight: 800, color: '#fde68a', display: 'block', marginBottom: 4 } }, 'Exam date'),
+            hh('input', { id: 'learning-lab-exam-date', type: 'date', value: form.date, required: true, min: tomorrowISO(), 'data-ll-focusable': true,
+              'aria-invalid': errors.date ? 'true' : undefined, 'aria-describedby': 'learning-lab-exam-date-help' + (errors.date ? ' learning-lab-exam-date-error' : ''),
+              onChange: function(event) { setForm(Object.assign({}, form, { date: event.target.value })); if (errors.date) setErrors(Object.assign({}, errors, { date: '' })); },
+              style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid #fbbf24', borderRadius: 6, boxSizing: 'border-box', marginBottom: errors.date ? 4 : 4 }
+            }),
+            hh('p', { id: 'learning-lab-exam-date-help', style: { margin: errors.date ? '0' : '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Choose tomorrow or a later date so at least one study day can be generated.'),
+            errors.date ? hh('p', { id: 'learning-lab-exam-date-error', role: 'alert', style: { margin: '4px 0 10px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.date) : null,
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 12 } },
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-exam-units', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '# units / chapters'),
-                hh('input', { id: 'learning-lab-exam-units', type: 'number', min: 1, max: 50, value: form.units,
-                  onChange: function(e) { setForm(Object.assign({}, form, { units: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
-                })
+                hh('label', { htmlFor: 'learning-lab-exam-units', style: { fontSize: 11, fontWeight: 800, color: '#fde68a', display: 'block', marginBottom: 4 } }, 'Number of units or chapters'),
+                hh('input', { id: 'learning-lab-exam-units', type: 'number', min: 1, max: 50, step: 1, required: true, value: form.units, 'data-ll-focusable': true,
+                  'aria-invalid': errors.units ? 'true' : undefined, 'aria-describedby': errors.units ? 'learning-lab-exam-units-error' : undefined,
+                  onChange: function(event) { setForm(Object.assign({}, form, { units: event.target.value })); if (errors.units) setErrors(Object.assign({}, errors, { units: '' })); },
+                  style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid #fbbf24', borderRadius: 6, boxSizing: 'border-box' }
+                }),
+                errors.units ? hh('p', { id: 'learning-lab-exam-units-error', role: 'alert', style: { margin: '4px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.units) : null
               ),
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-exam-minutes', style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Minutes/day'),
-                hh('input', { id: 'learning-lab-exam-minutes', type: 'number', min: 15, max: 240, step: 15, value: form.dailyMin,
-                  onChange: function(e) { setForm(Object.assign({}, form, { dailyMin: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' }
-                })
+                hh('label', { htmlFor: 'learning-lab-exam-minutes', style: { fontSize: 11, fontWeight: 800, color: '#fde68a', display: 'block', marginBottom: 4 } }, 'Minutes per study day'),
+                hh('input', { id: 'learning-lab-exam-minutes', type: 'number', min: 15, max: 240, step: 15, required: true, value: form.dailyMin, 'data-ll-focusable': true,
+                  'aria-invalid': errors.dailyMin ? 'true' : undefined, 'aria-describedby': errors.dailyMin ? 'learning-lab-exam-minutes-error' : undefined,
+                  onChange: function(event) { setForm(Object.assign({}, form, { dailyMin: event.target.value })); if (errors.dailyMin) setErrors(Object.assign({}, errors, { dailyMin: '' })); },
+                  style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid #fbbf24', borderRadius: 6, boxSizing: 'border-box' }
+                }),
+                errors.dailyMin ? hh('p', { id: 'learning-lab-exam-minutes-error', role: 'alert', style: { margin: '4px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.dailyMin) : null
               )
             ),
-            formError ? hh('div', { id: 'learning-lab-exam-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: 10 } }, formError) : null
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              tkBtn('Cancel', cancelAdd, 'ghost'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Generate plan')
+            )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); setFormError(''); }, 'ghost'),
-          tkBtn('🎓 Generate plan', function() {
-            if (!form.name.trim() || !form.date) {
-              var missing = !form.name.trim() && !form.date ? 'Exam name and date are required.' : (!form.name.trim() ? 'Exam name is required.' : 'Exam date is required.');
-              setFormError(missing);
-              setTimeout(function() { var target = document.getElementById(!form.name.trim() ? 'learning-lab-exam-name' : 'learning-lab-exam-date'); if (target) target.focus(); }, 0);
-              return;
-            }
-            addExam(form);
-            setForm({ name: '', date: '', units: 5, dailyMin: 30 });
-            setFormError('');
-            setView('list');
-          }, 'primary')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎓', 'Exam Prep Backwards Planner', 'Plan from exam date back to today. Schedule intensifies as the exam approaches. Spaced practice + review baked in.', '#fbbf24'),
-
-      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ New exam plan', function() { setView('add'); }, 'primary')
+      tkSectionHeader('🎓', 'Exam Prep Planner', 'Create an editable study suggestion from a future exam date and your planning estimates.', '#fbbf24', 'learning-lab-exam-heading'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-exam-note-heading', style: { padding: 10, marginBottom: 12, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(253,230,138,0.50)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-exam-note-heading', style: { margin: '0 0 4px', fontSize: 12, color: '#fde68a' } }, 'How the suggestion is generated'),
+        'The planner distributes the number of units across available days, suggests retrieval practice during the final week, and increases the entered minutes during the final two days. This is a planning heuristic, not a guarantee of learning or exam performance. Adjust the suggestion for course requirements, rest, accessibility needs, and guidance from your instructor or support team.'
       ),
-
-      exams.length === 0 ? tkEmptyState('🎓', 'No exam plans yet. Add an upcoming exam to generate a study plan.', '+ Create your first plan', function() { setView('add'); })
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-          exams.map(function(exam) {
-            var days = daysUntil(exam.date);
-            var plan = planForExam(exam);
-            var completedToday = plan[0] && (exam.completedDays || []).indexOf(plan[0].day) >= 0;
-            return hh('div', { key: 'e-' + exam.id, style: {
-              padding: 14, borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))',
-              border: '1px solid rgba(251,191,36,0.40)', borderLeft: '4px solid #fbbf24'
-            } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 } },
-                hh('div', null,
-                  hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24' } }, exam.name),
-                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, exam.date + ' · ' + exam.units + ' units · ' + exam.dailyMin + 'm/day')
-                ),
-                hh('div', { style: { textAlign: 'right' } },
-                  hh('div', { style: { padding: '6px 12px', borderRadius: 999, background: days <= 3 ? 'rgba(239,68,68,0.20)' : days <= 7 ? 'rgba(251,146,60,0.20)' : 'rgba(251,191,36,0.20)', color: days <= 3 ? '#ef4444' : days <= 7 ? '#fb923c' : '#fbbf24', fontSize: 16, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, days + 'd'),
-                  hh('button', { type: 'button', 'aria-label': 'Delete exam plan: ' + exam.name, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the exam plan for "' + exam.name + '".', { title: 'Delete this exam plan?', confirmText: 'Delete plan' })) removeExam(exam.id); }, style: { minHeight: 44, padding: '8px 10px', background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, cursor: 'pointer', marginTop: 4 } }, '✕ delete')
-                )
-              ),
-              // Plan display
-              days > 0 ? hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: 10 } },
-                hh('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 8 } }, '📅 Generated plan'),
-                hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 4 } },
-                  plan.slice(0, 14).map(function(day, i) {
-                    var done = (exam.completedDays || []).indexOf(day.day) >= 0;
-                    var phaseColor = day.intensity === 'review-all' ? '#ef4444' : day.intensity === 'practice-test' ? '#fbbf24' : '#10b981';
-                    return hh('button', { key: 'pl-' + i, type: 'button', 'aria-pressed': done,
-                      onClick: function() { markDay(exam.id, day.day); },
-                      style: { minHeight: 44, padding: 8, borderRadius: 6, background: done ? phaseColor + '30' : 'rgba(15,23,42,0.5)', border: '1px solid ' + phaseColor + '40', textAlign: 'left', cursor: 'pointer', opacity: done ? 0.7 : 1 }
-                    },
-                      hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, 'D-' + day.daysFromExam),
-                      hh('div', { style: { fontSize: 10, color: phaseColor, fontWeight: 700, marginTop: 2 } }, day.intensity === 'review-all' ? '🔥 Review all' : day.intensity === 'practice-test' ? '🎯 Practice test' : '📖 Learn new'),
-                      hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, day.units + ' unit · ' + Math.round(day.minutes) + 'm'),
-                      done ? hh('div', { style: { fontSize: 11, color: phaseColor, marginTop: 4 } }, '✓ Done') : null
-                    );
-                  })
-                ),
-                plan.length > 14 ? hh('div', { style: { marginTop: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', fontStyle: 'italic' } }, '+ ' + (plan.length - 14) + ' more days') : null
-              ) : hh('div', { style: { padding: 12, textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', fontSize: 11 } }, '⚠ Exam date is past or today — no plan to generate.')
-            );
-          })
-        )
+      hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
+        hh('button', { id: 'learning-lab-exam-new-button', type: 'button', onClick: openAdd, 'data-ll-focusable': true,
+          style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1.5px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'New exam plan')
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-exam-plans-heading' },
+        hh('h3', { id: 'learning-lab-exam-plans-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#fde68a' } }, 'Saved exam plans'),
+        exams.length === 0
+          ? tkEmptyState('🎓', 'No exam plans yet. Add a future exam to generate a planning suggestion.', 'Create your first plan', openAdd)
+          : hh('ul', { 'aria-labelledby': 'learning-lab-exam-plans-heading', style: { display: 'flex', flexDirection: 'column', gap: 12, listStyle: 'none', padding: 0, margin: 0 } },
+              exams.map(function(exam) {
+                var days = daysUntil(exam.date);
+                var plan = planForExam(exam);
+                var showAll = !!expanded[exam.id];
+                var visiblePlan = showAll ? plan : plan.slice(0, 14);
+                var examName = String(exam.name || '').slice(0, 160);
+                return hh('li', { key: 'e-' + exam.id, style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(253,230,138,0.50)', borderLeft: '4px solid #fbbf24' } },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+                    hh('div', { style: { minWidth: 0 } },
+                      hh('h4', { style: { margin: '0 0 3px', fontSize: 14, color: '#fde68a', overflowWrap: 'anywhere' } }, exam.name),
+                      hh('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                        'Exam date: ', hh('time', { dateTime: exam.date }, exam.date), ' · ', exam.units + (exam.units === 1 ? ' unit or chapter' : ' units or chapters'), ' · ', formatMinutes(exam.dailyMin) + ' per study day')
+                    ),
+                    hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+                      hh('span', { style: { padding: '6px 10px', borderRadius: 999, background: days <= 3 ? 'rgba(127,29,29,0.45)' : 'rgba(161,98,7,0.35)', color: days <= 3 ? '#fecaca' : '#fde68a', fontSize: 11, fontWeight: 900 } }, days > 0 ? days + (days === 1 ? ' day until exam' : ' days until exam') : 'Exam date reached'),
+                      hh('button', { type: 'button', onClick: function() { removeExam(exam); }, 'aria-label': 'Delete exam prep plan: ' + examName, 'data-ll-focusable': true,
+                        style: { minHeight: 44, padding: '8px 10px', background: 'transparent', border: '1px solid rgba(252,165,165,0.65)', borderRadius: 6, color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                    )
+                  ),
+                  days > 0 ? hh('section', { 'aria-label': 'Generated study suggestion for ' + examName, style: { background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: 10 } },
+                    hh('h5', { style: { margin: '0 0 8px', fontSize: 11, color: '#fde68a' } }, 'Generated study suggestion'),
+                    hh('ol', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+                      visiblePlan.map(function(planDay) {
+                        var done = (exam.completedDays || []).indexOf(planDay.day) >= 0;
+                        var phaseColor = planDay.intensity === 'review-all' ? '#fca5a5' : planDay.intensity === 'practice-retrieval' ? '#fde68a' : '#6ee7b7';
+                        var phaseLabel = planDay.intensity === 'review-all' ? 'Review covered material' : planDay.intensity === 'practice-retrieval' ? 'Practice retrieval' : planDay.units > 0 ? 'Study ' + planDay.units + (planDay.units === 1 ? ' unit' : ' units') : 'Review prior material';
+                        return hh('li', { key: 'pl-' + planDay.day },
+                          hh('button', { type: 'button', 'aria-pressed': done ? 'true' : 'false', 'aria-label': (done ? 'Mark incomplete: ' : 'Mark complete: ') + planDay.day + ', ' + phaseLabel, 'data-ll-focusable': true,
+                            onClick: function() { markDay(exam, planDay); },
+                            style: { width: '100%', minHeight: 64, padding: 8, borderRadius: 6, background: done ? phaseColor + '25' : 'rgba(15,23,42,0.5)', border: '1px solid ' + phaseColor, textAlign: 'left', cursor: 'pointer', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                            hh('span', { style: { display: 'block', fontSize: 10, color: '#cbd5e1' } }, hh('time', { dateTime: planDay.day }, planDay.day), ' · ' + planDay.daysFromExam + (planDay.daysFromExam === 1 ? ' day before exam' : ' days before exam')),
+                            hh('span', { style: { display: 'block', fontSize: 10, color: phaseColor, fontWeight: 800, marginTop: 3 } }, phaseLabel),
+                            hh('span', { style: { display: 'block', fontSize: 10, marginTop: 3 } }, formatMinutes(planDay.minutes)),
+                            done ? hh('span', { style: { display: 'block', fontSize: 10, color: phaseColor, fontWeight: 800, marginTop: 4 } }, 'Completed') : null
+                          )
+                        );
+                      })
+                    ),
+                    plan.length > 14 ? hh('button', { type: 'button', 'aria-expanded': showAll ? 'true' : 'false', onClick: function() { setExpanded(Object.assign({}, expanded, { [exam.id]: !showAll })); }, 'data-ll-focusable': true,
+                      style: { width: '100%', minHeight: 44, marginTop: 8, padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(253,230,138,0.60)', background: 'transparent', color: '#fde68a', fontWeight: 800, cursor: 'pointer' } }, showAll ? 'Show first 14 days' : 'Show all ' + plan.length + ' days') : null
+                  ) : hh('p', { role: 'status', style: { margin: 0, padding: 12, textAlign: 'center', color: '#fecaca', fontSize: 11 } }, 'This saved exam date is today or in the past, so no future study suggestion is available.')
+                );
+              })
+            )
+      )
     );
   }
 
-  // ── J. PERSONAL TASK BREAKER (Wave 2) ──
-  // Decompose big assignments into 2-5 minute subtasks. Time estimation
-  // training (predict vs actual). EF support for autistic/ADHD students
-  // who struggle with initiation due to overwhelm.
+  // J. PERSONAL TASK BREAKER (Wave 2)
   function PersonalTaskBreaker(props) {
     if (!R) return null;
     var data = props.data || { tasks: [] };

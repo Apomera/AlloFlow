@@ -19,27 +19,30 @@ describe('Learning Lab Exam Prep accessibility', () => {
   });
 
   it('marks required fields and reports validation inline', () => {
-    expect(examPrep).toContain("id: 'learning-lab-exam-name', type: 'text', value: form.name, required: true");
+    expect(examPrep).toContain("id: 'learning-lab-exam-name', required: true, maxLength: 240");
     expect(examPrep).toContain("id: 'learning-lab-exam-date', type: 'date', value: form.date, required: true");
-    expect(examPrep).toContain("id: 'learning-lab-exam-error', role: 'alert'");
-    expect(examPrep).toContain("'aria-describedby': formError ? 'learning-lab-exam-error' : undefined");
+    expect(examPrep).toContain("id: 'learning-lab-exam-name-error', role: 'alert'");
+    expect(examPrep).toContain("id: 'learning-lab-exam-date-error', role: 'alert'");
+    expect(examPrep).toContain("'aria-describedby': 'learning-lab-exam-date-help' +");
     expect(examPrep).not.toContain("alert('Need name + date.')");
   });
 
   it('moves focus to the first missing required field', () => {
-    expect(examPrep).toContain("document.getElementById(!form.name.trim() ? 'learning-lab-exam-name' : 'learning-lab-exam-date')");
-    expect(examPrep).toContain('Exam name and date are required.');
+    expect(examPrep).toContain("var invalidId = nextErrors.name ? 'learning-lab-exam-name'");
+    expect(examPrep).toContain('setFocusTarget(invalidId)');
+    expect(examPrep).toContain("name: name ? '' : 'Enter a name for the exam.'");
+    expect(examPrep).toContain("date: !form.date ? 'Choose an exam date.'");
   });
 
   it('confirms plan deletion and provides a generous delete target', () => {
-    expect(examPrep).toContain("'aria-label': 'Delete exam plan: ' + exam.name");
-    expect(examPrep).toContain("title: 'Delete this exam plan?', confirmText: 'Delete plan'");
-    expect(examPrep).toContain("style: { minHeight: 44, padding: '8px 10px'");
+    expect(examPrep).toContain("'aria-label': 'Delete exam prep plan: ' + examName");
+    expect(examPrep).toContain("title: 'Delete this exam prep plan?', confirmText: 'Delete plan'");
+    expect(examPrep).toContain("minHeight: 44, padding: '8px 10px'");
   });
 
   it('exposes daily completion controls as pressed-state toggles', () => {
-    expect(examPrep).toContain("key: 'pl-' + i, type: 'button', 'aria-pressed': done");
-    expect(examPrep).toContain('style: { minHeight: 44, padding: 8');
+    expect(examPrep).toContain("type: 'button', 'aria-pressed': done ? 'true' : 'false'");
+    expect(examPrep).toContain("width: '100%', minHeight: 64, padding: 8");
   });
 
   it('keeps the deployed mirror identical', () => {
