@@ -18451,118 +18451,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { profile: {}, history: [] };
     var setData = props.setData;
-    var ps = R.useState(data.profile || {});       var prof = ps[0]; var setProf = ps[1];
+    var ps = R.useState(data.profile || {}); var prof = ps[0]; var setProf = ps[1];
+    var cs = R.useState(''); var copyStatus = cs[0]; var setCopyStatus = cs[1];
 
     var DIMENSIONS = [
-      { id: 'direct',  label: 'Direct ↔ Diplomatic',
-        left: 'Direct', right: 'Diplomatic',
-        leftDesc: 'Say what you mean, plainly. Brevity > softening.',
-        rightDesc: 'Soften delivery, weigh emotional impact, contextualize.' },
-      { id: 'verbal',  label: 'Verbal ↔ Written',
-        left: 'Verbal', right: 'Written',
-        leftDesc: 'Talk it out. Real-time conversation. Tone is data.',
-        rightDesc: 'Write it down. Time to think. Re-read before responding.' },
-      { id: 'logic',   label: 'Logic ↔ Feeling',
-        left: 'Logic', right: 'Feeling',
-        leftDesc: 'Frame discussions around facts, data, reasoning.',
-        rightDesc: 'Frame discussions around feelings, impact, relationships.' },
-      { id: 'now',     label: 'Now ↔ Later',
-        left: 'Now', right: 'Later',
-        leftDesc: 'Address things as they happen. Don\'t let them linger.',
-        rightDesc: 'Let things settle. Process. Bring it up when calm.' }
+      { id: 'direct', label: 'Message wording', left: 'direct wording', right: 'contextual or softened wording', leftDesc: 'Clear, plain wording with the main point stated explicitly.', rightDesc: 'Context and relational impact included alongside the main point.' },
+      { id: 'verbal', label: 'Information format', left: 'spoken conversation', right: 'written communication', leftDesc: 'Talking in real time may be useful.', rightDesc: 'Reading, composing, or reviewing in writing may be useful.' },
+      { id: 'logic', label: 'Information emphasis', left: 'facts and reasoning', right: 'feelings and relational impact', leftDesc: 'Facts, evidence, steps, or reasons may help.', rightDesc: 'Feelings, effects, relationships, or values may help.' },
+      { id: 'now', label: 'Response timing', left: 'addressing it sooner', right: 'processing before responding', leftDesc: 'Discussing the issue soon may reduce uncertainty.', rightDesc: 'Having time to process may support a more useful response.' }
     ];
-
     var ASK_FOR = [
-      'Be specific. Avoid hints.',
-      'Tell me in writing first, then we can talk if needed.',
-      'Tell me how you\'re feeling, not just what\'s happening.',
-      'Give me a heads-up before hard conversations.',
-      'Tell me directly what you need from me.',
-      'Don\'t ask me to read between the lines.',
-      'Send the meeting notes in advance so I can prepare.',
-      'Don\'t address things in front of others — pull me aside.',
-      'When you\'re angry with me, name it explicitly.',
-      'Tell me what you appreciate, not just what to improve.'
+      'It helps me when the main point and request are stated explicitly.',
+      'It helps me to receive information in writing before or after a conversation.',
+      'It helps me when feelings and impact are named alongside events.',
+      'It helps me to have advance notice before a difficult conversation when possible.',
+      'It helps me when people tell me directly what they need from me.',
+      'It helps me when implied meanings are explained rather than assumed.',
+      'It helps me to receive an agenda or notes so I can prepare or review.',
+      'It helps me to discuss sensitive feedback privately when possible.',
+      'It helps me when strong emotions or concerns are named respectfully and explicitly.',
+      'It helps me to hear what is working as well as what could change.'
     ];
+    var OPTIONS = [
+      { value: 1, prefix: 'Prefer ' },
+      { value: 3, prefix: 'Often prefer ' },
+      { value: 5, label: 'Depends on the context, or no single preference' },
+      { value: 7, prefix: 'Often prefer ' },
+      { value: 9, prefix: 'Prefer ' }
+    ];
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #67e8f9', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#cffafe', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 7px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+    var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.45)', color: '#fee2e2' });
 
-    function setDim(id, val) {
-      var p = Object.assign({}, prof, (function() { var o = {}; o[id] = val; return o; })());
-      setProf(p);
-      setData(Object.assign({}, data, { profile: p }));
+    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    function hasOwn(id) { return Object.prototype.hasOwnProperty.call(prof, id); }
+    function normalizedValue(value) { var number = Number(value); if (number <= 2) return 1; if (number <= 4) return 3; if (number <= 6) return 5; if (number <= 8) return 7; return 9; }
+    function optionLabel(dimension, option) { if (option.label) return option.label; var endpoint = option.value < 5 ? dimension.left : dimension.right; return option.prefix + endpoint; }
+    function preferenceText(dimension) {
+      if (!hasOwn(dimension.id)) return 'No preference saved.';
+      var value = normalizedValue(prof[dimension.id]);
+      if (value === 5) return 'Depends on context, or no single preference.';
+      var leaningLeft = value < 5; var desc = leaningLeft ? dimension.leftDesc : dimension.rightDesc;
+      return optionLabel(dimension, OPTIONS.filter(function(option) { return option.value === value; })[0]) + '. ' + desc;
+    }
+    function saveProfile(next, announcement) { setProf(next); setData(Object.assign({}, data, { profile: next })); setCopyStatus(''); if (announcement) llAnnounce(announcement); }
+    function setDimension(dimension, value) { var next = Object.assign({}, prof); next[dimension.id] = value; saveProfile(next, dimension.label + ' preference saved: ' + optionLabel(dimension, OPTIONS.filter(function(option) { return option.value === value; })[0]) + '.'); }
+    function setAsk(index, checked) { var asks = Array.isArray(prof.asks) ? prof.asks.slice() : []; var position = asks.indexOf(index); if (checked && position < 0) asks.push(index); if (!checked && position >= 0) asks.splice(position, 1); var next = Object.assign({}, prof, { asks: asks }); saveProfile(next, ASK_FOR[index] + (checked ? ' Selected.' : ' Not selected.')); }
+    function setCustom(value) { saveProfile(Object.assign({}, prof, { custom: value }), ''); }
+    function hasProfile() { return DIMENSIONS.some(function(dimension) { return hasOwn(dimension.id); }) || (Array.isArray(prof.asks) && prof.asks.length > 0) || String(prof.custom || '').trim(); }
+    function summaryText() {
+      var lines = ['My communication preferences', '', 'These are flexible preferences, not rules. They may change by person, setting, topic, access need, language, culture, or day.'];
+      DIMENSIONS.forEach(function(dimension) { lines.push('', dimension.label + ': ' + preferenceText(dimension)); });
+      var asks = (Array.isArray(prof.asks) ? prof.asks : []).filter(function(index) { return ASK_FOR[index]; });
+      lines.push('', 'Requests or supports:');
+      if (!asks.length) lines.push('No suggested requests selected.'); else asks.forEach(function(index) { lines.push('- ' + ASK_FOR[index]); });
+      if (String(prof.custom || '').trim()) lines.push('', 'My own wording:', String(prof.custom).trim());
+      return lines.join('\n');
+    }
+    function copySummary() {
+      var text = summaryText(); var id = 'learning-lab-communication-summary';
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { setCopyStatus('Clipboard access is unavailable. The summary is selected; use Control+C or Command+C.'); llAnnounce('Clipboard access is unavailable. The summary is selected for manual copying.'); focusById(id, true); return; }
+      Promise.resolve(navigator.clipboard.writeText(text)).then(function() { setCopyStatus('Summary copied. Review and adapt it before sharing.'); llAnnounce('Communication preference summary copied.'); }).catch(function() { setCopyStatus('Automatic copying failed. The summary is selected; use Control+C or Command+C.'); llAnnounce('Automatic copying failed. The summary is selected for manual copying.'); focusById(id, true); });
+    }
+    function resetProfile() {
+      askLearningLabConfirmation('Clear all saved communication preferences and custom wording? This cannot be undone.', { title: 'Clear communication preferences?', confirmText: 'Clear preferences' }).then(function(accepted) { if (!accepted) return; saveProfile({}, 'Communication preferences cleared.'); focusById('learning-lab-communication-preferences-heading'); });
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🗣', 'My Communication Style', '4-dimension self-snapshot. Know yourself + tell people how you communicate best.', '#06b6d4'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#06b6d4' } }, '🗣 Why this matters: '),
-        'Most conflicts aren\'t about content — they\'re about communication-style mismatch. Knowing your own style + being able to ARTICULATE it lets you ask for what works. Especially valuable for autistic + ADHD students whose natural style may not match neurotypical defaults.'
+      tkSectionHeader('', 'Communication Preferences', 'Record flexible preferences and requests that may help in some situations.', '#22d3ee'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-communication-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #67e8f9', background: 'rgba(8,47,73,0.38)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-communication-context-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 14 } }, 'Preferences are contextual, not personality types'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'Communication can vary by person, relationship, power dynamics, culture, language, topic, setting, access need, stress, and time. You may prefer both options, neither option, or different options at different times.'),
+        hh('p', { style: { margin: 0 } }, 'This optional self-description is not an assessment, diagnosis, conflict explanation, or instruction for other people. It does not share anything automatically. Preferences save in this browser; avoid sensitive details on a shared device.')
       ),
-
-      tkCard('#06b6d4',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 12 } }, '🎯 Where am I on each dimension?'),
-          DIMENSIONS.map(function(d) {
-            var val = prof[d.id] || 5;
-            return hh('div', { key: 'cd-' + d.id, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid #06b6d4', marginBottom: 10 } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-                hh('strong', { style: { fontSize: 11, color: '#67e8f9' } }, d.label),
-                hh('strong', { style: { color: '#06b6d4', fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
-              ),
-              hh('input', { type: 'range', min: 1, max: 10, step: 1, value: val,
-                onChange: function(e) { setDim(d.id, parseInt(e.target.value, 10)); },
-                style: { width: '100%', accentColor: '#06b6d4' }
-              }),
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
-                hh('span', null, '←  ', d.left),
-                hh('span', null, d.right, '  →')
-              ),
-              hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, lineHeight: 1.5 } },
-                val <= 4 ? d.leftDesc : val >= 7 ? d.rightDesc : 'Mix — adapts based on context.'
-              )
-            );
-          })
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-communication-preferences-heading' },
+        hh('h2', { id: 'learning-lab-communication-preferences-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#cffafe', fontSize: 15 } }, 'Preference prompts'),
+        hh('p', { style: helpStyle }, 'Choose an option only when it fits. No option is better, more effective, or more neurotypical than another.'),
+        DIMENSIONS.map(function(dimension) { var current = hasOwn(dimension.id) ? normalizedValue(prof[dimension.id]) : null; var helpId = 'learning-lab-communication-' + dimension.id + '-help'; return hh('fieldset', { key: dimension.id, style: { margin: '0 0 10px', padding: 11, borderRadius: 9, border: '1px solid #67e8f9', background: 'rgba(15,23,42,0.58)' } },
+          hh('legend', { style: { padding: '0 5px', color: '#cffafe', fontSize: 12, fontWeight: 900 } }, dimension.label),
+          hh('p', { id: helpId, style: helpStyle }, dimension.leftDesc + ' ' + dimension.rightDesc),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 7 } }, OPTIONS.map(function(option) { var id = 'learning-lab-communication-' + dimension.id + '-' + option.value; var selected = current === option.value; return hh('label', { key: option.value, htmlFor: id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, padding: 9, borderRadius: 7, border: '2px solid ' + (selected ? '#22d3ee' : '#64748b'), background: selected ? 'rgba(14,116,144,0.30)' : 'rgba(2,6,23,0.44)', color: '#f8fafc', cursor: 'pointer' } },
+            hh('input', { id: id, type: 'radio', name: 'learning-lab-communication-' + dimension.id, value: option.value, checked: selected, 'aria-describedby': helpId, onChange: function() { setDimension(dimension, option.value); }, style: { width: 20, height: 20, margin: 0, flexShrink: 0, accentColor: '#22d3ee' } }),
+            hh('span', { style: { fontSize: 11, lineHeight: 1.45 } }, optionLabel(dimension, option), selected ? hh('span', { style: { display: 'block', marginTop: 3, color: '#a5f3fc', fontSize: 10 } }, 'Selected') : null)
+          ); }))
+        ); })
       ),
-
-      // What I want people to know
-      tkCard('#06b6d4',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '📣 What I\'d ask people to know (pick what fits)'),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-            ASK_FOR.map(function(a, i) {
-              var picked = (prof.asks || []).indexOf(i) >= 0;
-              return hh('button', { key: 'ak-' + i,
-                onClick: function() {
-                  var asks = (prof.asks || []).slice();
-                  var idx = asks.indexOf(i);
-                  if (idx >= 0) asks.splice(idx, 1); else asks.push(i);
-                  setDim('asks', asks);
-                },
-                style: { display: 'block', textAlign: 'left', padding: '8px 10px', borderRadius: 6, background: picked ? 'rgba(6,182,212,0.20)' : 'rgba(15,23,42,0.5)', color: picked ? '#67e8f9' : '#cbd5e1', border: '1px solid ' + (picked ? '#06b6d4' : 'rgba(100,116,139,0.30)'), borderLeft: '3px solid #06b6d4', fontSize: 11, cursor: 'pointer' }
-              }, (picked ? '✓ ' : '') + a);
-            })
-          )
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-communication-requests-heading', style: { marginTop: 14 } },
+        hh('h2', { id: 'learning-lab-communication-requests-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 15 } }, 'Optional requests or supports'),
+        hh('p', { id: 'learning-lab-communication-requests-help', style: helpStyle }, 'Select, adapt, or ignore these suggestions. A request may not be possible, safe, or appropriate in every relationship or setting.'),
+        hh('ul', { style: { margin: '0 0 12px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 7 } }, ASK_FOR.map(function(request, index) { var id = 'learning-lab-communication-request-' + index; var checked = (Array.isArray(prof.asks) ? prof.asks : []).indexOf(index) >= 0; return hh('li', { key: index }, hh('label', { htmlFor: id, style: { display: 'flex', alignItems: 'flex-start', gap: 9, minHeight: 44, padding: 9, borderRadius: 7, border: '1px solid ' + (checked ? '#22d3ee' : '#64748b'), background: checked ? 'rgba(14,116,144,0.28)' : 'rgba(15,23,42,0.58)', color: '#f8fafc', cursor: 'pointer' } },
+          hh('input', { id: id, type: 'checkbox', checked: checked, 'aria-describedby': 'learning-lab-communication-requests-help', onChange: function(event) { setAsk(index, event.target.checked); }, style: { width: 22, height: 22, margin: 0, flexShrink: 0, accentColor: '#22d3ee' } }),
+          hh('span', { style: { fontSize: 11, lineHeight: 1.5 } }, request, hh('span', { style: { display: 'block', marginTop: 2, color: '#a5f3fc', fontSize: 10 } }, checked ? 'Selected' : 'Not selected'))
+        )); })),
+        hh('label', { htmlFor: 'learning-lab-communication-custom', style: labelStyle }, 'My own wording (optional)'),
+        hh('p', { id: 'learning-lab-communication-custom-help', style: helpStyle }, 'Add a preference, boundary, access need, or qualification in your own words. This saves automatically in this browser.'),
+        hh('textarea', { id: 'learning-lab-communication-custom', value: String(prof.custom || ''), rows: 4, maxLength: 4000, 'aria-describedby': 'learning-lab-communication-custom-help', onChange: function(event) { setCustom(event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 100, resize: 'vertical', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) })
       ),
-
-      // Summary card (printable)
-      (prof.asks || []).length > 0 ? hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.20), rgba(15,23,42,0.7))', border: '2px solid #06b6d4', marginBottom: 14 } },
-        hh('div', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, '📄 My communication card (share/print)'),
-        DIMENSIONS.map(function(d) {
-          var val = prof[d.id] || 5;
-          return hh('div', { key: 'sm-' + d.id, style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-            hh('strong', { style: { color: '#06b6d4' } }, d.label + ': '),
-            val <= 4 ? d.leftDesc : val >= 7 ? d.rightDesc : 'mix'
-          );
-        }),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 8, lineHeight: 1.6 } },
-          hh('strong', { style: { color: '#06b6d4' } }, 'What helps me: '),
-          (prof.asks || []).map(function(i) { return ASK_FOR[i]; }).join(' · ')
+      hh('section', { 'aria-labelledby': 'learning-lab-communication-summary-heading', style: { marginTop: 14, padding: 12, borderRadius: 10, border: '2px solid #22d3ee', background: 'rgba(8,47,73,0.32)' } },
+        hh('h2', { id: 'learning-lab-communication-summary-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 15 } }, 'Reviewable preference summary'),
+        hh('p', { id: 'learning-lab-communication-summary-help', style: helpStyle }, 'Review and adapt this text before sharing. The tool does not send, print, or share it automatically.'),
+        !hasProfile() ? hh('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 11 } }, 'No preferences or requests saved yet.') : null,
+        hh('label', { htmlFor: 'learning-lab-communication-summary', style: labelStyle }, 'Communication preference summary'),
+        hh('textarea', { id: 'learning-lab-communication-summary', value: summaryText(), readOnly: true, rows: 14, 'aria-describedby': 'learning-lab-communication-summary-help' + (copyStatus ? ' learning-lab-communication-copy-status' : ''), style: Object.assign({}, fieldStyle, { minHeight: 220, resize: 'vertical', fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+        copyStatus ? hh('p', { id: 'learning-lab-communication-copy-status', role: 'status', 'aria-live': 'polite', style: { margin: '6px 0 0', color: '#cffafe', fontSize: 11 } }, copyStatus) : null,
+        hh('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, marginTop: 9 } },
+          hh('button', { type: 'button', onClick: resetProfile, disabled: !hasProfile(), style: Object.assign({}, dangerButtonStyle, { opacity: hasProfile() ? 1 : 0.55, cursor: hasProfile() ? 'pointer' : 'not-allowed' }) }, 'Clear saved preferences'),
+          hh('button', { type: 'button', onClick: copySummary, style: buttonStyle }, 'Copy summary')
         )
-      ) : null
+      )
     );
   }
+
 
   // ── NNNN. PERSONAL TOOLKIT EXPORT/IMPORT (Wave 22) ──
   // Privacy-conscious: your data lives in your browser. This tool lets you
