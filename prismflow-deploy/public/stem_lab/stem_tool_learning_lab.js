@@ -4527,9 +4527,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     };
     var s = styles[kind || 'secondary'] || styles.secondary;
     return hh('button', Object.assign({
-      onClick: onClick,
+      type: 'button', onClick: onClick, 'data-ll-focusable': true,
       style: Object.assign({
-        padding: '8px 16px', borderRadius: 8,
+        minWidth: 44, minHeight: 44, padding: '8px 16px', borderRadius: 8,
         background: s.bg, color: s.color,
         border: '1.5px solid ' + s.border,
         fontSize: 11, fontWeight: 800, cursor: 'pointer',
@@ -4537,32 +4537,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }, extra || {})
     }), label);
   }
+  function tkFieldOptions(extra) {
+    var props = {};
+    var style = {};
+    var attributeNames = ['id', 'name', 'type', 'role', 'required', 'disabled', 'readOnly', 'maxLength', 'minLength', 'autoComplete', 'inputMode', 'pattern', 'title', 'tabIndex'];
+    Object.keys(extra || {}).forEach(function(key) {
+      if (attributeNames.indexOf(key) >= 0 || key.indexOf('aria-') === 0 || key.indexOf('data-') === 0) props[key] = extra[key];
+      else style[key] = extra[key];
+    });
+    return { props: props, style: style };
+  }
   function tkInput(value, onChange, placeholder, extra) {
+    var options = tkFieldOptions(extra);
     return hh('input', Object.assign({
-      type: 'text', value: value || '', placeholder: placeholder || '',
+      type: 'text', value: value || '', placeholder: placeholder || '', 'data-ll-focusable': true,
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
-        width: '100%', padding: '10px 12px',
+        width: '100%', minHeight: 44, padding: '10px 12px',
         fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
         borderRadius: 6, outline: 'none', boxSizing: 'border-box'
-      }, extra || {})
-    }));
+      }, options.style)
+    }, options.props));
   }
   function tkTextarea(value, onChange, placeholder, rows, extra) {
+    var options = tkFieldOptions(extra);
     return hh('textarea', Object.assign({
-      value: value || '', placeholder: placeholder || '', rows: rows || 3,
+      value: value || '', placeholder: placeholder || '', rows: rows || 3, 'data-ll-focusable': true,
       onChange: function(e) { onChange(e.target.value); },
       style: Object.assign({
-        width: '100%', padding: '10px 12px',
+        width: '100%', minHeight: 44, padding: '10px 12px',
         fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)',
         background: 'rgba(2,6,23,0.7)',
         border: '1px solid rgba(100,116,139,0.40)',
         borderRadius: 6, outline: 'none', boxSizing: 'border-box',
         fontFamily: 'inherit', resize: 'vertical'
-      }, extra || {})
-    }));
+      }, options.style)
+    }, options.props));
   }
   function tkSectionHeader(icon, title, subtitle, accent) {
     accent = accent || '#9333ea';
@@ -4574,7 +4586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
       } }, icon),
       hh('div', { style: { flex: 1, minWidth: 180 } },
-        hh('div', { style: { fontSize: 15, fontWeight: 900, color: accent + 'ee', letterSpacing: '-0.01em' } }, title),
+        hh('h2', { style: { margin: 0, fontSize: 15, fontWeight: 900, color: accent + 'ee', letterSpacing: '-0.01em' } }, title),
         hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, subtitle)
       )
     );
@@ -4588,7 +4600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         marginBottom: 12
       }
     },
-      hh('div', { style: { fontSize: 36, marginBottom: 10, opacity: 0.5 } }, icon),
+      hh('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 10, opacity: 0.5 } }, icon),
       hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14, lineHeight: 1.6, maxWidth: 380, margin: '0 auto 14px' } }, text),
       ctaLabel ? tkBtn(ctaLabel, ctaOnClick, 'primary', { padding: '10px 22px', fontSize: 12 }) : null
     );
