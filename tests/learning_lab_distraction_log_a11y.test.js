@@ -11,89 +11,87 @@ describe('Learning Lab Distraction Log accessibility', () => {
   const end = source.indexOf('  function PersonalSearchHub(props) {', start);
   const log = source.slice(start, end);
 
-  it('uses a named form with native submit behavior', () => {
-    expect(log).toContain("onSubmit: function(event) { event.preventDefault(); logDistraction(); }");
-    expect(log).toContain("'aria-labelledby': 'learning-lab-distraction-form-heading'");
-    expect(log).toContain("hh('button', { type: 'submit'");
+  it('frames attention entries as optional and non-diagnostic', () => {
+    expect(log).toContain('Record an interruption, attention shift, or context only if useful.');
+    expect(log).toContain('not diagnoses, behavior ratings, evidence of effort, or proof that something was a problem');
+    expect(log).toContain('This log cannot determine a cause or recommend a support.');
   });
 
-  it('uses a fieldset and native radio group for distraction sources', () => {
-    expect(log).toContain("hh('fieldset', { 'aria-invalid': sourceError ? 'true' : undefined");
-    expect(log).toContain("hh('legend', { style: labelStyle }, 'Distraction source (required)')");
-    expect(log).toContain("id: 'learning-lab-distraction-source-' + source.id, type: 'radio'");
-    expect(log).toContain("name: 'learning-lab-distraction-source'");
-    expect(log).toContain('checked: selected, required: true');
+  it('provides privacy and data-control guidance', () => {
+    expect(log).toContain('Contexts can reveal schedules, relationships, health information, work, or identity.');
+    expect(log).toContain('does not itself notify a teacher, school, employer, clinician, or family member');
+    expect(log).toContain('edit or delete entries you no longer want stored');
   });
 
-  it('reports and focuses a missing source without a browser alert', () => {
-    expect(log).toContain("setSourceError('Choose a distraction source before logging.')");
-    expect(log).toContain("document.getElementById('learning-lab-distraction-source-phone')");
-    expect(log).toContain("id: 'learning-lab-distraction-source-error', role: 'alert'");
-    expect(log).not.toContain("alert('Pick a distraction source.')");
+  it('uses blank optional native controls rather than required causes or default time', () => {
+    expect(log).toContain("var EMPTY_FORM = { source: '', context: '', durationMin: '' }");
+    expect(log).toContain("hh('select', { id: 'learning-lab-distraction-source'");
+    expect(log).toContain("hh('option', { value: '' }, 'Not recorded')");
+    expect(log).toContain("id: 'learning-lab-distraction-duration', type: 'number'");
+    expect(log).not.toContain('Distraction source (required)');
+    expect(log).not.toContain('durationMin: 5');
+    expect(log).not.toContain("type: 'range'");
   });
 
-  it('associates the context and duration fields with labels', () => {
-    expect(log).toContain("htmlFor: 'learning-lab-distraction-context'");
-    expect(log).toContain("id: 'learning-lab-distraction-context'");
-    expect(log).toContain("htmlFor: 'learning-lab-distraction-duration'");
-    expect(log).toContain("id: 'learning-lab-distraction-duration', type: 'range'");
+  it('uses neutral category labels while preserving stored category IDs', () => {
+    expect(log).toContain("{ id: 'phone', label: 'Device or notification'");
+    expect(log).toContain("{ id: 'thoughts', label: 'Thought or memory'");
+    expect(log).toContain("{ id: 'hungry', label: 'Physical need or fatigue'");
+    expect(log).toContain("{ id: 'bored', label: 'Task interest or fit'");
+    expect(log).toContain("{ id: 'overwhelm', label: 'Stress or overload'");
   });
 
-  it('connects the duration range to help and a live output', () => {
-    expect(log).toContain("id: 'learning-lab-distraction-duration-output', htmlFor: 'learning-lab-distraction-duration', 'aria-live': 'polite'");
-    expect(log).toContain("'aria-describedby': 'learning-lab-distraction-duration-help'");
-    expect(log).toContain('Choose from 1 to 60 minutes.');
+  it('requires only one detail and conditionally reports errors', () => {
+    expect(log).toContain('Enter at least one optional detail before saving.');
+    expect(log).toContain('Enter an approximate duration from 1 to 1,440 minutes, or leave it blank.');
+    expect(log).toContain("errors.detail ? hh('p', { id: 'learning-lab-distraction-detail-error', role: 'alert'");
+    expect(log).toContain("errors.duration ? hh('p', { id: 'learning-lab-distraction-duration-error', role: 'alert'");
+    expect(log).toContain("queueFocus(nextErrors.detail ? 'learning-lab-distraction-source' : 'learning-lab-distraction-duration')");
   });
 
-  it('normalizes submitted duration and context values', () => {
-    expect(log).toContain('context: form.context.trim()');
-    expect(log).toContain('durationMin: Math.max(1, Math.min(60, Number(form.durationMin) || 5))');
+  it('supports editing, dirty cancellation, and focus recovery', () => {
+    expect(log).toContain('function startEdit(entry)');
+    expect(log).toContain("title: 'Discard unsaved changes?', confirmText: 'Discard changes'");
+    expect(log).toContain("queueFocus('learning-lab-distraction-form-heading')");
+    expect(log).toContain("queueFocus('learning-lab-distraction-entry-heading-' + entry.id)");
+    expect(log).toContain("queueFocus('learning-lab-distraction-history-heading')");
   });
 
-  it('preserves unrelated section data when saving and deleting', () => {
-    expect(log).toContain("setData(Object.assign({}, data, { events: [entry].concat(data.events || []) }))");
-    expect(log).toContain("setData(Object.assign({}, data, { events: (data.events || []).filter");
+  it('preserves legacy identity, dates, and unrelated section data', () => {
+    expect(log).toContain('var index = editing ? nextEvents.indexOf(editing.entry) : -1;');
+    expect(log).toContain('events.filter(function(item) { return item !== entry; })');
+    expect(log).toContain('setData(Object.assign({}, data, { events:');
+    expect(log).not.toContain('setData({ events:');
   });
 
-  it('announces additions and deletions', () => {
-    expect(log).toContain("llAnnounce('Distraction logged: '");
-    expect(log).toContain("llAnnounce('Distraction entry deleted.')");
+  it('uses fixed-order semantic counts without ranks or time-loss totals', () => {
+    expect(log).toContain("'Saved entries by selected category'");
+    expect(log).toContain("hh('dl'");
+    expect(log).toContain('Counts are shown in the fixed category order, not ranked.');
+    expect(log).not.toContain('Your top distractions');
+    expect(log).not.toContain("'Rank ' +");
+    expect(log).not.toContain('minutes total');
   });
 
-  it('confirms deletion in an accessible app dialog', () => {
-    expect(log).toContain("title: 'Delete this distraction entry?', confirmText: 'Delete entry'");
-    expect(log).not.toContain('confirm(');
+  it('renders every history record with semantic articles and robust dates', () => {
+    expect(log).toContain("'aria-label': 'All saved attention entries'");
+    expect(log).toContain('events.map(function(entry, index)');
+    expect(log).not.toContain('events.slice(0, 15)');
+    expect(log).toContain("hh('article', { 'aria-labelledby': headingId }");
+    expect(log).toContain("hh('time', { dateTime: date.dateTime }");
+    expect(log).toContain("'Date not recorded'");
   });
 
-  it('uses semantic sections and lists for rankings and history', () => {
-    expect(log).toContain("'aria-labelledby': 'learning-lab-distraction-top-heading'");
-    expect(log).toContain("hh('ol', { style:");
-    expect(log).toContain("'aria-labelledby': 'learning-lab-distraction-recent-heading'");
-    expect(log).toContain("hh('ul', { style:");
-    expect(log).toContain("hh('article', { 'aria-label': source.label + ' distraction, '");
+  it('uses named 44-pixel edit and delete actions', () => {
+    expect(log).toContain("'aria-label': 'Edit attention entry: ' + label");
+    expect(log).toContain("'aria-label': 'Delete attention entry: ' + label");
+    expect(log.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('does not rely on color alone for source selection or ranking', () => {
-    expect(log).toContain("type: 'radio'");
-    expect(log).toContain("hh('span', null, hh('span', { 'aria-hidden': 'true' }, source.icon + ' '), source.label)");
-    expect(log).toContain("'aria-label': 'Rank ' + (index + 1)");
-    expect(log).toContain("item.count + (item.count === 1 ? ' event · ' : ' events · ')");
-  });
-
-  it('provides machine-readable event times', () => {
-    expect(log).toContain("hh('time', { dateTime: eventDate.toISOString() }");
-    expect(log).toContain("validDate ? hh('time'");
-  });
-
-  it('provides named 44-pixel controls and fields', () => {
-    expect(log).toContain("'aria-label': 'Delete ' + source.label.toLowerCase() + ' distraction entry'");
-    expect(log).toContain('minWidth: 44, minHeight: 44');
-    expect(log).toContain('minHeight: 44, padding:');
-    expect(log).toContain("width: '100%', minHeight: 44");
-  });
-
-  it('exposes explanatory guidance as a named aside', () => {
-    expect(log).toContain("hh('aside', { 'aria-label': 'Why logging distractions helps'");
+  it('updates the catalog to neutral optional wording', () => {
+    expect(source).toContain("desc: 'Optional attention-shift or interruption notes'");
+    expect(source).toContain("'Optional attention-shift notes with neutral categories and editable history.'");
+    expect(source).not.toContain('Surfaces YOUR pattern');
   });
 
   it('keeps the deployed mirror identical', () => {

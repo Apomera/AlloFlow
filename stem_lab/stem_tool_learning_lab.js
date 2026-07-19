@@ -11540,143 +11540,220 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { events: [] };
     var setData = props.setData;
-    var fs = R.useState({ source: '', context: '', durationMin: 5 });
-    var form = fs[0]; var setForm = fs[1];
-    var es = R.useState(''); var sourceError = es[0]; var setSourceError = es[1];
+    var EMPTY_FORM = { source: '', context: '', durationMin: '' };
+    var fs = R.useState(Object.assign({}, EMPTY_FORM)); var form = fs[0]; var setForm = fs[1];
+    var es = R.useState(null); var editing = es[0]; var setEditing = es[1];
+    var ers = R.useState({ detail: '', duration: '' }); var errors = ers[0]; var setErrors = ers[1];
+    var focusTargetRef = R.useRef(null);
+    var fts = R.useState(0); var focusTick = fts[0]; var setFocusTick = fts[1];
+    var events = Array.isArray(data.events) ? data.events : [];
 
     var SOURCES = [
-      { id: 'phone', label: 'Phone', icon: '📱', color: '#ef4444' },
-      { id: 'people', label: 'People', icon: '👥', color: '#fbbf24' },
-      { id: 'noise', label: 'Noise', icon: '🔊', color: '#a855f7' },
-      { id: 'thoughts', label: 'My own thoughts', icon: '💭', color: '#06b6d4' },
-      { id: 'hungry', label: 'Hungry or tired', icon: '😴', color: '#3b82f6' },
-      { id: 'bored', label: 'Boredom', icon: '😑', color: '#94a3b8' },
-      { id: 'overwhelm', label: 'Overwhelm', icon: '😵', color: '#f97316' },
-      { id: 'other', label: 'Other', icon: '❓', color: '#94a3b8' }
+      { id: 'phone', label: 'Device or notification', icon: '📱', color: '#fca5a5' },
+      { id: 'people', label: 'Conversation or people', icon: '👥', color: '#fde68a' },
+      { id: 'noise', label: 'Sound or environment', icon: '🔊', color: '#d8b4fe' },
+      { id: 'thoughts', label: 'Thought or memory', icon: '💭', color: '#67e8f9' },
+      { id: 'hungry', label: 'Physical need or fatigue', icon: '🫧', color: '#93c5fd' },
+      { id: 'bored', label: 'Task interest or fit', icon: '🧩', color: '#cbd5e1' },
+      { id: 'overwhelm', label: 'Stress or overload', icon: '🌧', color: '#fdba74' },
+      { id: 'other', label: 'Other', icon: '•', color: '#cbd5e1' }
     ];
 
-    function focusSource() {
-      setTimeout(function() { var control = document.getElementById('learning-lab-distraction-source-phone'); if (control) control.focus(); }, 0);
+    R.useLayoutEffect(function() {
+      var targetId = focusTargetRef.current;
+      if (!targetId) return;
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        focusTargetRef.current = null;
+      }
+    }, [events.length, editing ? 'editing' : 'new', focusTick]);
+    function queueFocus(id) {
+      focusTargetRef.current = id;
+      setFocusTick(function(value) { return value + 1; });
     }
-    function logDistraction() {
-      if (!form.source) {
-        setSourceError('Choose a distraction source before logging.');
-        focusSource();
+    function sourceFor(id) {
+      return SOURCES.filter(function(source) { return source.id === id; })[0] || null;
+    }
+    function formFromEntry(entry) {
+      var duration = Number(entry && entry.durationMin);
+      return {
+        source: sourceFor(entry && entry.source) ? entry.source : '',
+        context: entry && entry.context ? String(entry.context) : '',
+        durationMin: Number.isFinite(duration) && duration >= 1 && duration <= 1440 ? String(Math.round(duration)) : ''
+      };
+    }
+    function formIsDirty() {
+      var baseline = editing ? formFromEntry(editing.entry) : EMPTY_FORM;
+      return ['source', 'context', 'durationMin'].some(function(key) { return String(form[key] || '') !== String(baseline[key] || ''); });
+    }
+    function dateInfo(entry) {
+      var raw = entry && (entry.time || entry.date || entry.createdAt);
+      if (!raw) return null;
+      var parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return { dateTime: parsed.toISOString(), label: parsed.toLocaleString() };
+    }
+    function resetForm() {
+      setForm(Object.assign({}, EMPTY_FORM));
+      setEditing(null);
+      setErrors({ detail: '', duration: '' });
+    }
+    function startEdit(entry) {
+      setForm(formFromEntry(entry));
+      setEditing({ id: entry && entry.id ? entry.id : null, entry: entry });
+      setErrors({ detail: '', duration: '' });
+      queueFocus('learning-lab-distraction-form-heading');
+    }
+    async function cancelEdit() {
+      var returnId = editing && editing.entry && editing.entry.id ? 'learning-lab-distraction-entry-heading-' + editing.entry.id : 'learning-lab-distraction-history-heading';
+      if (formIsDirty() && !(await askLearningLabConfirmation('Your unsaved attention-log changes will be discarded.', {
+        title: 'Discard unsaved changes?', confirmText: 'Discard changes'
+      }))) return;
+      resetForm();
+      queueFocus(returnId);
+      llAnnounce('Attention-log editor closed.');
+    }
+    function saveEntry() {
+      var context = String(form.context || '').trim();
+      var duration = form.durationMin === '' ? null : Number(form.durationMin);
+      var nextErrors = {
+        detail: form.source || context || form.durationMin !== '' ? '' : 'Enter at least one optional detail before saving.',
+        duration: form.durationMin === '' || (Number.isFinite(duration) && duration >= 1 && duration <= 1440) ? '' : 'Enter an approximate duration from 1 to 1,440 minutes, or leave it blank.'
+      };
+      if (nextErrors.detail || nextErrors.duration) {
+        setErrors(nextErrors);
+        queueFocus(nextErrors.detail ? 'learning-lab-distraction-source' : 'learning-lab-distraction-duration');
         return;
       }
-      var source = SOURCES.filter(function(item) { return item.id === form.source; })[0];
-      var entry = {
-        id: tkId(),
-        date: todayISO(),
-        time: Date.now(),
-        source: form.source,
-        context: form.context.trim(),
-        durationMin: Math.max(1, Math.min(60, Number(form.durationMin) || 5))
-      };
-      setData(Object.assign({}, data, { events: [entry].concat(data.events || []) }));
-      setForm({ source: '', context: '', durationMin: 5 });
-      setSourceError('');
-      llAnnounce('Distraction logged: ' + (source ? source.label : 'Other') + ', ' + entry.durationMin + ' minutes.');
+      var nextEvents = events.slice();
+      var index = editing ? nextEvents.indexOf(editing.entry) : -1;
+      if (index < 0 && editing && editing.id) index = nextEvents.findIndex(function(item) { return item && item.id === editing.id; });
+      var existing = index >= 0 ? nextEvents[index] : null;
+      var entry = Object.assign({}, existing || {}, {
+        id: existing && existing.id ? existing.id : tkId(),
+        date: existing && existing.date ? existing.date : todayISO(),
+        time: existing && existing.time ? existing.time : Date.now(),
+        source: sourceFor(form.source) ? form.source : '',
+        context: context,
+        durationMin: duration === null ? null : Math.round(duration)
+      });
+      if (index >= 0) nextEvents[index] = entry;
+      else nextEvents.unshift(entry);
+      setData(Object.assign({}, data, { events: nextEvents }));
+      resetForm();
+      queueFocus('learning-lab-distraction-entry-heading-' + entry.id);
+      llAnnounce('Optional attention-shift entry saved.');
     }
-    async function remove(id) {
-      var entry = (data.events || []).filter(function(item) { return item.id === id; })[0];
-      var source = entry ? SOURCES.filter(function(item) { return item.id === entry.source; })[0] : null;
-      if (!(await askLearningLabConfirmation('This permanently removes the saved ' + (source ? source.label.toLowerCase() + ' ' : '') + 'distraction entry.', {
-        title: 'Delete this distraction entry?', confirmText: 'Delete entry'
+    async function removeEntry(entry) {
+      var source = sourceFor(entry && entry.source);
+      var label = source ? source.label : 'Category not recorded';
+      if (!(await askLearningLabConfirmation('This permanently removes the saved “' + label + '” attention entry.', {
+        title: 'Delete this attention entry?', confirmText: 'Delete entry'
       }))) return;
-      setData(Object.assign({}, data, { events: (data.events || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Distraction entry deleted.');
+      setData(Object.assign({}, data, { events: events.filter(function(item) { return item !== entry; }) }));
+      queueFocus('learning-lab-distraction-history-heading');
+      llAnnounce('Attention entry deleted.');
     }
 
-    var events = data.events || [];
     var bySource = SOURCES.map(function(source) {
-      var matching = events.filter(function(entry) { return entry.source === source.id; });
-      var totalMin = matching.reduce(function(sum, entry) { return sum + (Number(entry.durationMin) || 0); }, 0);
-      return { source: source, count: matching.length, totalMin: totalMin };
-    }).sort(function(a, b) { return b.totalMin - a.totalMin; });
+      return { source: source, count: events.filter(function(entry) { return entry && entry.source === source.id; }).length };
+    }).filter(function(item) { return item.count > 0; });
+    var uncategorizedCount = events.filter(function(entry) { return !entry || !sourceFor(entry.source); }).length;
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
     var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', marginBottom: 4 };
+    var hintStyle = { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, margin: '4px 0 10px' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🚨', 'Distraction Log', 'When you catch yourself distracted, log it (no shame, just data). The pattern is the insight.', '#ef4444'),
+      hh('header', null,
+        hh('h2', { id: 'learning-lab-distraction-heading', style: { fontSize: 18, color: '#fecaca', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '🧭 '), 'Optional Attention Shift or Interruption Log'),
+        hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Record an interruption, attention shift, or context only if useful. Entries are not diagnoses, behavior ratings, evidence of effort, or proof that something was a problem. Categories and durations are optional and self-described.'),
+        hh('p', { style: { margin: '0 0 14px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Contexts can reveal schedules, relationships, health information, work, or identity. They are stored with this Learning Lab data; saving here does not itself notify a teacher, school, employer, clinician, or family member. Use care on a shared or managed device, and edit or delete entries you no longer want stored.')
+      ),
 
       tkCard('#ef4444',
-        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); logDistraction(); }, 'aria-labelledby': 'learning-lab-distraction-form-heading' },
-          hh('h3', { id: 'learning-lab-distraction-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', margin: '0 0 8px' } }, '🚨 Log a distraction'),
-          hh('fieldset', { 'aria-invalid': sourceError ? 'true' : undefined, 'aria-describedby': sourceError ? 'learning-lab-distraction-source-error' : undefined, style: { border: 0, padding: 0, margin: '0 0 10px' } },
-            hh('legend', { style: labelStyle }, 'Distraction source (required)'),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: 6 } },
-              SOURCES.map(function(source) {
-                var selected = form.source === source.id;
-                return hh('label', { key: 'sr-' + source.id, htmlFor: 'learning-lab-distraction-source-' + source.id, style: { minHeight: 44, padding: '7px 9px', borderRadius: 7, background: selected ? 'rgba(239,68,68,0.16)' : 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #e2e8f0)', border: '2px solid ' + (selected ? source.color : 'rgba(148,163,184,0.35)'), fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, boxSizing: 'border-box' } },
-                  hh('input', { id: 'learning-lab-distraction-source-' + source.id, type: 'radio', name: 'learning-lab-distraction-source', value: source.id, checked: selected, required: true, onChange: function() { setForm(Object.assign({}, form, { source: source.id })); if (sourceError) setSourceError(''); }, style: { width: 20, height: 20, margin: 0, accentColor: source.color, flexShrink: 0 } }),
-                  hh('span', null, hh('span', { 'aria-hidden': 'true' }, source.icon + ' '), source.label)
-                );
-              })
-            )
+        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); saveEntry(); }, 'aria-labelledby': 'learning-lab-distraction-form-heading' },
+          hh('h3', { id: 'learning-lab-distraction-form-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#fca5a5', margin: '0 0 8px', outlineOffset: 4 } }, editing ? 'Edit optional attention entry' : 'Add an optional attention entry'),
+          hh('p', { id: 'learning-lab-distraction-form-hint', style: hintStyle }, 'Enter any one or more details. Nothing below is a required category or judgment.'),
+          hh('label', { htmlFor: 'learning-lab-distraction-source', style: labelStyle }, 'Category (optional)'),
+          hh('select', { id: 'learning-lab-distraction-source', value: form.source, 'aria-describedby': 'learning-lab-distraction-form-hint', onChange: function(event) { setForm(Object.assign({}, form, { source: event.target.value })); if (errors.detail) setErrors(Object.assign({}, errors, { detail: '' })); }, style: fieldStyle },
+            hh('option', { value: '' }, 'Not recorded'),
+            SOURCES.map(function(source) { return hh('option', { key: source.id, value: source.id }, source.label); })
           ),
-          hh('div', { id: 'learning-lab-distraction-source-error', role: 'alert', style: { minHeight: sourceError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: sourceError ? 10 : 0 } }, sourceError),
-          hh('label', { htmlFor: 'learning-lab-distraction-context', style: labelStyle }, 'Context (optional)'),
-          hh('input', { id: 'learning-lab-distraction-context', type: 'text', value: form.context, maxLength: 500, placeholder: 'What were you trying to do?', onChange: function(event) { setForm(Object.assign({}, form, { context: event.target.value })); }, style: Object.assign({}, fieldStyle, { marginBottom: 10 }) }),
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 4 } },
-            hh('label', { htmlFor: 'learning-lab-distraction-duration', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Approximate duration'),
-            hh('output', { id: 'learning-lab-distraction-duration-output', htmlFor: 'learning-lab-distraction-duration', 'aria-live': 'polite', style: { color: '#fca5a5', fontSize: 14, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.durationMin + ' minutes')
-          ),
-          hh('input', { id: 'learning-lab-distraction-duration', type: 'range', min: 1, max: 60, step: 1, value: form.durationMin, 'aria-describedby': 'learning-lab-distraction-duration-help', onChange: function(event) { setForm(Object.assign({}, form, { durationMin: parseInt(event.target.value, 10) })); }, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#ef4444', marginBottom: 2 } }),
-          hh('div', { id: 'learning-lab-distraction-duration-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Choose from 1 to 60 minutes.'),
-          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 18px', borderRadius: 8, border: '1px solid #fecaca', background: '#991b1b', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Log distraction')
+          hh('p', { style: hintStyle }, 'Choose the closest description, “Other,” or leave this blank.'),
+
+          hh('label', { htmlFor: 'learning-lab-distraction-context', style: labelStyle }, 'Context or note (optional)'),
+          hh('textarea', { id: 'learning-lab-distraction-context', value: form.context, rows: 3, maxLength: 1000, 'aria-describedby': 'learning-lab-distraction-context-help', onChange: function(event) { setForm(Object.assign({}, form, { context: event.target.value })); if (errors.detail) setErrors(Object.assign({}, errors, { detail: '' })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical' }) }),
+          hh('p', { id: 'learning-lab-distraction-context-help', style: hintStyle }, 'Up to 1,000 characters. Avoid private information you do not want stored here.'),
+
+          hh('label', { htmlFor: 'learning-lab-distraction-duration', style: labelStyle }, 'Approximate duration in minutes (optional)'),
+          hh('input', { id: 'learning-lab-distraction-duration', type: 'number', min: 1, max: 1440, step: 1, inputMode: 'numeric', value: form.durationMin, 'aria-invalid': errors.duration ? 'true' : undefined, 'aria-describedby': 'learning-lab-distraction-duration-help' + (errors.duration ? ' learning-lab-distraction-duration-error' : ''), onChange: function(event) { setForm(Object.assign({}, form, { durationMin: event.target.value })); if (errors.detail || errors.duration) setErrors({ detail: '', duration: '' }); }, style: fieldStyle }),
+          hh('p', { id: 'learning-lab-distraction-duration-help', style: hintStyle }, 'Leave blank if duration is unknown or not useful. Maximum 1,440 minutes.'),
+          errors.duration ? hh('p', { id: 'learning-lab-distraction-duration-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 10px' } }, errors.duration) : null,
+          errors.detail ? hh('p', { id: 'learning-lab-distraction-detail-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 10px' } }, errors.detail) : null,
+          hh('div', { style: { display: 'flex', justifyContent: editing ? 'space-between' : 'flex-end', gap: 10, flexWrap: 'wrap' } },
+            editing ? hh('button', { type: 'button', onClick: cancelEdit, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel edit') : null,
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 18px', borderRadius: 8, border: '1px solid #fecaca', background: '#991b1b', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, editing ? 'Save attention entry changes' : 'Save optional attention entry')
+          )
         )
       ),
 
-      events.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-distraction-top-heading', style: { marginBottom: 14 } },
-        hh('h3', { id: 'learning-lab-distraction-top-heading', style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Your top distractions, sorted by total time'),
-        hh('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-          bySource.filter(function(item) { return item.count > 0; }).map(function(item, index) {
-            return hh('li', { key: 'rk-' + item.source.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + item.source.color } },
-              hh('span', { 'aria-label': 'Rank ' + (index + 1), style: { width: 28, height: 28, borderRadius: '50%', background: 'rgba(148,163,184,0.16)', color: 'var(--allo-stem-text, #e2e8f0)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, flexShrink: 0 } }, '#' + (index + 1)),
-              hh('span', { 'aria-hidden': 'true', style: { fontSize: 14, flexShrink: 0 } }, item.source.icon),
-              hh('div', { style: { flex: 1, minWidth: 0 } },
-                hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, item.source.label),
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.count + (item.count === 1 ? ' event · ' : ' events · ') + item.totalMin + ' minutes total')
-              )
-            );
-          })
-        )
-      ) : null,
+      hh('section', { 'aria-labelledby': 'learning-lab-distraction-summary-heading', style: { marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-distraction-summary-heading', style: { fontSize: 13, color: '#fca5a5', margin: '0 0 4px' } }, 'Saved entries by selected category'),
+        hh('p', { style: hintStyle }, 'Counts are shown in the fixed category order, not ranked. They do not identify a “top problem” or measure time lost.'),
+        bySource.length === 0 && uncategorizedCount === 0 ? hh('p', { style: hintStyle }, 'No categorized entries saved.')
+        : hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, margin: 0 } },
+            bySource.concat(uncategorizedCount > 0 ? [{ source: { id: '', label: 'Category not recorded', icon: '•', color: '#cbd5e1' }, count: uncategorizedCount }] : []).map(function(item) {
+              return hh('div', { key: 'summary-' + (item.source.id || 'none'), style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + item.source.color } },
+                hh('dt', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', { 'aria-hidden': 'true' }, item.source.icon + ' '), item.source.label),
+                hh('dd', { style: { margin: '3px 0 0', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.count + ' saved entr' + (item.count === 1 ? 'y' : 'ies'))
+              );
+            })
+          )
+      ),
 
-      events.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-distraction-recent-heading' },
-        hh('h3', { id: 'learning-lab-distraction-recent-heading', style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Recent distraction entries'),
-        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
-          events.slice(0, 15).map(function(entry) {
-            var source = SOURCES.filter(function(item) { return item.id === entry.source; })[0] || SOURCES[SOURCES.length - 1];
-            var eventDate = new Date(entry.time);
-            var validDate = Number.isFinite(eventDate.getTime());
-            return hh('li', { key: 'el-' + entry.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + source.color } },
-              hh('article', { 'aria-label': source.label + ' distraction, ' + entry.durationMin + ' minutes' + (entry.context ? ', while ' + entry.context : '') },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
-                  hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, hh('span', { 'aria-hidden': 'true' }, source.icon + ' '), hh('strong', null, source.label), entry.context ? ' · ' + entry.context : ''),
-                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } }, entry.durationMin + ' minutes · ', validDate ? hh('time', { dateTime: eventDate.toISOString() }, eventDate.toLocaleString()) : 'date unavailable')
-                  ),
-                  hh('button', { type: 'button', 'aria-label': 'Delete ' + source.label.toLowerCase() + ' distraction entry', onClick: function() { remove(entry.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+      hh('section', { 'aria-labelledby': 'learning-lab-distraction-history-heading' },
+        hh('h3', { id: 'learning-lab-distraction-history-heading', tabIndex: -1, style: { fontSize: 13, color: '#fca5a5', margin: '0 0 8px', outlineOffset: 4 } }, 'All saved attention entries'),
+        events.length === 0 ? tkEmptyState('🧭', 'No attention entries saved.', null, null)
+        : hh('ul', { 'aria-label': 'All saved attention entries', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+            events.map(function(entry, index) {
+              entry = entry || {};
+              var source = sourceFor(entry.source);
+              var label = source ? source.label : 'Category not recorded';
+              var icon = source ? source.icon : '•';
+              var color = source ? source.color : '#cbd5e1';
+              var duration = Number(entry.durationMin);
+              var hasDuration = Number.isFinite(duration) && duration >= 1;
+              var date = dateInfo(entry);
+              var itemKey = entry.id ? String(entry.id) : 'legacy-' + index;
+              var headingId = 'learning-lab-distraction-entry-heading-' + (entry.id || itemKey);
+              return hh('li', { key: 'el-' + itemKey, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + color, overflowWrap: 'anywhere' } },
+                hh('article', { 'aria-labelledby': headingId },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                    hh('div', { style: { flex: 1, minWidth: 0 } },
+                      hh('h4', { id: headingId, tabIndex: -1, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 3px', outlineOffset: 4 } }, hh('span', { 'aria-hidden': 'true' }, icon + ' '), label),
+                      entry.context ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: '0 0 3px' } }, entry.context) : null,
+                      hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, hasDuration ? 'Approximate duration: ' + Math.round(duration) + ' minutes. ' : 'Duration not recorded. ', date ? hh('time', { dateTime: date.dateTime }, date.label) : 'Date not recorded')
+                    ),
+                    hh('div', { style: { display: 'flex', gap: 4 } },
+                      hh('button', { type: 'button', 'aria-label': 'Edit attention entry: ' + label, onClick: function() { startEdit(entry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: color, fontSize: 14, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '✎')),
+                      hh('button', { type: 'button', 'aria-label': 'Delete attention entry: ' + label, onClick: function() { removeEntry(entry); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '×'))
+                    )
+                  )
                 )
-              )
-            );
-          })
-        )
-      ) : null,
+              );
+            })
+          )
+      ),
 
-      hh('aside', { 'aria-label': 'Why logging distractions helps', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#fca5a5' } }, 'Why log distractions: '),
-        'Generic advice may not match your pattern. After two weeks of logging, look for your top one or two sources and choose supports based on your own data.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-distraction-interpretation-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-distraction-interpretation-heading', style: { fontSize: 12, color: '#fca5a5', margin: '0 0 4px' } }, 'Interpretation limits'),
+        hh('p', { style: { margin: 0 } }, 'This log cannot determine a cause or recommend a support. Entries may reflect ordinary needs, access barriers, environmental conditions, task design, or incomplete information. Use only the records and language that feel useful to you.')
       )
     );
   }
 
-  // ── HH. PERSONAL CLASS NOTES SEARCH HUB (Wave 7) ──
-  // Quick search across all journal entries + Cornell notes + reflection
-  // prompts. Unified search across content. Does not store separately —
-  // pulls from the other tools.
+  // Optional, non-diagnostic attention-shift and interruption log.
   function PersonalSearchHub(props) {
     if (!R) return null;
     var allData = props.allData || {};
@@ -20234,7 +20311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkChall || {}).challenges || []).length + ' active', cta: 'Start a challenge' },
       { id: 'mytkTime',     icon: '⏱', label: 'Time Estimator',       color: '#9333ea', desc: 'Optional predicted and recorded task-duration comparisons',
         stat: ((data.mytkTime || {}).predictions || []).length + ' logged', cta: 'Time a task' },
-      { id: 'mytkDist',     icon: '🚨', label: 'Distraction Log',      color: '#ef4444', desc: 'Log distractions, see your top 1-2',
+      { id: 'mytkDist',     icon: '🚨', label: 'Distraction Log',      color: '#ef4444', desc: 'Optional attention-shift or interruption notes',
         stat: ((data.mytkDist || {}).events || []).length + ' events', cta: 'Log a distraction' },
       { id: 'mytkSearch',   icon: '🔎', label: 'Search My Toolkit',    color: '#06b6d4', desc: 'Search across all saved content',
         stat: 'instant', cta: 'Search now' },
@@ -20558,7 +20635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Neutral summary of selected personal tracker counts and 14-day saved activity.') },
               { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', 'Optional challenge or practice notes with editable, neutral check-ins.') },
               { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Compare a predicted task duration with a recorded duration; no score.') },
-              { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.') },
+              { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Optional attention-shift notes with neutral categories and editable history.') },
               { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.') },
               { id: 'mytkCheats', icon: '📋', label: __alloT('stem.learning_lab.cheat_sheet_builder', 'Cheat Sheet Builder'),  desc: __alloT('stem.learning_lab.build_1_page_cheat_sheets_per_topic_bu', 'Build 1-page cheat sheets per topic. Building IS the studying.') },
               { id: 'mytkAsk',    icon: '🙋', label: __alloT('stem.learning_lab.ask_for_help_tracker', 'Ask-for-Help Tracker'), desc: __alloT('stem.learning_lab.log_every_help_ask_normalize_the_most_', 'Log every help-ask. Normalize the most underused academic skill.') },
