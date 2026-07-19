@@ -4951,200 +4951,244 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // weekly totals. Streak tracking. Sound notification on completion.
   function PersonalFocusTimer(props) {
     if (!R) return null;
-    var data = props.data || { sessions: [], workMin: 25, breakMin: 5, currentTask: '' };
+    var data = props.data || { sessions: [], workMin: 25, breakMin: 5, currentTask: '', soundEnabled: true };
     var setData = props.setData;
 
-    var rs = R.useState('idle');     var phase = rs[0];        var setPhase = rs[1]; // idle | work | break | done
+    var rs = R.useState('idle');     var phase = rs[0];        var setPhase = rs[1]; // idle | work | break | paused | done
     var ss = R.useState(0);          var secondsLeft = ss[0];  var setSecondsLeft = ss[1];
     var ts = R.useState(0);          var startedAt = ts[0];    var setStartedAt = ts[1];
     var ks = R.useState('');         var task = ks[0];         var setTask = ks[1];
-    var fs = R.useState(false);      var fullscreen = fs[0];   var setFullscreen = fs[1];
+    var ps = R.useState(null);       var pausedPhase = ps[0];  var setPausedPhase = ps[1];
+    var ft = R.useState('');         var focusTarget = ft[0];  var setFocusTarget = ft[1];
 
     var workMin = data.workMin || 25;
     var breakMin = data.breakMin || 5;
     var sessions = data.sessions || [];
+    var soundEnabled = data.soundEnabled !== false;
 
-    // Today's sessions
     var today = todayISO();
-    var todaySessions = sessions.filter(function(s) { return s.date === today; });
-    var todayMinutes = todaySessions.reduce(function(sum, s) { return sum + (s.workMin || 0); }, 0);
+    var todaySessions = sessions.filter(function(session) { return session.date === today; });
+    var todayMinutes = todaySessions.reduce(function(sum, session) { return sum + (session.workMin || 0); }, 0);
+    var allTimeMinutes = sessions.reduce(function(sum, session) { return sum + (session.workMin || 0); }, 0);
 
-    // Streak — consecutive days with at least one session
     function computeStreak() {
-      var sortedDays = sessions.map(function(s) { return s.date; }).filter(Boolean);
-      sortedDays = sortedDays.filter(function(d, i) { return sortedDays.indexOf(d) === i; }).sort();
+      var sortedDays = sessions.map(function(session) { return session.date; }).filter(Boolean);
+      sortedDays = sortedDays.filter(function(day, index) { return sortedDays.indexOf(day) === index; }).sort();
       if (sortedDays.length === 0) return 0;
-      var streak = 0;
-      for (var i = 0; i < 365; i++) {
-        var dt = new Date(); dt.setDate(dt.getDate() - i);
-        var iso = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
-        if (sortedDays.indexOf(iso) >= 0) streak++;
-        else if (i > 0) break;
+      var streakCount = 0;
+      for (var index = 0; index < 365; index++) {
+        var date = new Date(); date.setDate(date.getDate() - index);
+        var iso = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+        if (sortedDays.indexOf(iso) >= 0) streakCount++;
+        else if (index > 0) break;
       }
-      return streak;
+      return streakCount;
     }
     var streak = computeStreak();
 
-    // Tick down
+    function playCompletionTone() {
+      if (!soundEnabled || typeof window === 'undefined') return;
+      try {
+        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        var audioContext = new AudioContextClass();
+        var oscillator = audioContext.createOscillator();
+        var gain = audioContext.createGain();
+        oscillator.type = 'sine'; oscillator.frequency.value = 880;
+        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.4);
+        oscillator.connect(gain); gain.connect(audioContext.destination);
+        oscillator.start(); oscillator.stop(audioContext.currentTime + 0.4);
+        oscillator.onended = function() { try { audioContext.close(); } catch (error) {} };
+      } catch (error) {}
+    }
+
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      setFocusTarget('');
+    }, [focusTarget]);
+
     R.useEffect(function() {
       if (phase !== 'work' && phase !== 'break') return;
       if (secondsLeft <= 0) {
         if (phase === 'work') {
-          // log session
           var newSession = {
-            id: tkId(), date: todayISO(),
-            workMin: workMin, task: task,
+            id: tkId(), date: todayISO(), workMin: workMin, task: task,
             startedAt: startedAt, completedAt: Date.now()
           };
-          // Preserve sibling keys: setData REPLACES the whole mytkFocus object,
-          // so a bare { sessions } write silently wiped the user's custom
-          // workMin/breakMin (Pomodoro durations reset to 25/5 on every session).
           setData(Object.assign({}, data, { sessions: sessions.concat([newSession]) }));
-          // play ding (if audio context available)
-          try {
-            var ac = new (window.AudioContext || window.webkitAudioContext)();
-            var o = ac.createOscillator(); var g = ac.createGain();
-            o.type = 'sine'; o.frequency.value = 880;
-            g.gain.setValueAtTime(0.15, ac.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
-            o.connect(g); g.connect(ac.destination);
-            o.start(); o.stop(ac.currentTime + 0.4);
-            // Close the context once the tone ends — otherwise every completed
-            // session leaks an AudioContext (Chrome caps ~6, then the ding dies).
-            o.onended = function() { try { ac.close(); } catch (e) {} };
-          } catch (e) {}
+          playCompletionTone();
           setPhase('break');
           setSecondsLeft(breakMin * 60);
+          llAnnounce('Focus interval complete. Break started for ' + breakMin + ' minutes.');
         } else {
+          playCompletionTone();
           setPhase('done');
+          llAnnounce('Break complete. Focus session finished.');
         }
         return;
       }
-      var t = setTimeout(function() { setSecondsLeft(secondsLeft - 1); }, 1000);
-      return function() { clearTimeout(t); };
+      var timer = setTimeout(function() { setSecondsLeft(secondsLeft - 1); }, 1000);
+      return function() { clearTimeout(timer); };
     }, [phase, secondsLeft]);
 
     function start() {
       setStartedAt(Date.now());
       setSecondsLeft(workMin * 60);
+      setPausedPhase(null);
       setPhase('work');
+      setFocusTarget('learning-lab-focus-timer-value');
+      llAnnounce('Focus interval started for ' + workMin + ' minutes.');
     }
-    function pause() { setPhase('idle'); }
-    function reset() { setPhase('idle'); setSecondsLeft(0); setTask(''); }
-    function setWork(n) { setData(Object.assign({}, data, { workMin: n })); }
-    function setBreak(n) { setData(Object.assign({}, data, { breakMin: n })); }
+    function pause() {
+      if (phase !== 'work' && phase !== 'break') return;
+      setPausedPhase(phase);
+      setPhase('paused');
+      llAnnounce((phase === 'work' ? 'Focus' : 'Break') + ' interval paused with ' + displayTime + ' remaining.');
+    }
+    function resume() {
+      var nextPhase = pausedPhase === 'break' ? 'break' : 'work';
+      setPausedPhase(null);
+      setPhase(nextPhase);
+      setFocusTarget('learning-lab-focus-timer-value');
+      llAnnounce((nextPhase === 'work' ? 'Focus' : 'Break') + ' interval resumed.');
+    }
+    function reset() {
+      setPhase('idle');
+      setPausedPhase(null);
+      setSecondsLeft(0);
+      setTask('');
+      setFocusTarget('learning-lab-focus-task');
+      llAnnounce('Focus timer reset.');
+    }
+    function setWork(minutes) {
+      setData(Object.assign({}, data, { workMin: minutes }));
+    }
+    function setBreak(minutes) {
+      setData(Object.assign({}, data, { breakMin: minutes }));
+    }
+    function toggleSound() {
+      setData(Object.assign({}, data, { soundEnabled: !soundEnabled }));
+      llAnnounce('Completion sound ' + (soundEnabled ? 'disabled.' : 'enabled.'));
+    }
     async function clearTodayHistory() {
-      if (!(await askLearningLabConfirmation('Clear today\'s focus session history? This removes all sessions logged today.', {
+      if (!(await askLearningLabConfirmation("Clear today's focus session history? This removes all sessions logged today.", {
         title: 'Clear today\'s focus history?', confirmText: 'Clear today'
       }))) return;
-      setData(Object.assign({}, data, { sessions: sessions.filter(function(s) { return s.date !== today; }) }));
+      setData(Object.assign({}, data, { sessions: sessions.filter(function(session) { return session.date !== today; }) }));
+      setFocusTarget('learning-lab-focus-heading');
+      llAnnounce("Today's focus session history cleared.");
     }
 
-    var totalSeconds = (phase === 'work' ? workMin : breakMin) * 60;
+    var effectivePhase = phase === 'paused' ? (pausedPhase || 'work') : phase;
+    var totalSeconds = (effectivePhase === 'work' ? workMin : breakMin) * 60;
     var pctLeft = totalSeconds > 0 ? secondsLeft / totalSeconds : 0;
+    var percentRemaining = Math.max(0, Math.min(100, Math.round(pctLeft * 100)));
     var mins = Math.floor(secondsLeft / 60);
     var secs = secondsLeft % 60;
     var displayTime = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    var phaseStatus = phase === 'idle' ? 'Timer ready.' : phase === 'work' ? 'Focus interval in progress.' : phase === 'break' ? 'Break interval in progress.' : phase === 'paused' ? (effectivePhase === 'work' ? 'Focus interval paused.' : 'Break interval paused.') : 'Focus session complete.';
+    var phaseName = effectivePhase === 'break' ? 'Break' : 'Focus';
 
-    // SVG circular progress
-    var cR = 70, cC = 2 * Math.PI * cR;
-    var dashOffset = cC * (1 - pctLeft);
+    var circleRadius = 70;
+    var circumference = 2 * Math.PI * circleRadius;
+    var dashOffset = circumference * (1 - pctLeft);
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⏱️', 'Focus Timer', 'Custom Pomodoro intervals. Sessions log automatically. Streak tracks daily focus.', '#ef4444'),
+      tkSectionHeader('⏱️', 'Focus Timer', 'Optional focus and break intervals. Completed focus intervals are added to your session history.', '#ef4444', 'learning-lab-focus-heading'),
 
-      // Stats row
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 14 } },
+      hh('dl', { 'aria-label': 'Focus summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, marginBottom: 14 } },
         [
-          { label: 'Today', value: todayMinutes + 'm', color: '#ef4444', icon: '⏱️' },
+          { label: 'Focus minutes today', value: todayMinutes, color: '#ef4444', icon: '⏱️' },
           { label: 'Sessions today', value: todaySessions.length, color: '#fb923c', icon: '🔁' },
-          { label: 'Streak', value: streak + 'd', color: '#fbbf24', icon: '🔥' },
-          { label: 'All time', value: Math.round(sessions.reduce(function(s, x) { return s + (x.workMin || 0); }, 0) / 60) + 'h', color: '#a78bfa', icon: '∞' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'st-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 } }, s.label)
+          { label: 'Current streak days', value: streak, color: '#fbbf24', icon: '🔥' },
+          { label: 'All-time focus hours', value: Math.round(allTimeMinutes / 60), color: '#a78bfa', icon: '∞' }
+        ].map(function(stat, index) {
+          return hh('div', { key: 'st-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
+            hh('dt', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 } }, stat.label),
+            hh('dd', { style: { margin: 0, fontSize: 18, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value)
           );
         })
       ),
 
-      // Timer display
       tkCard('#ef4444',
         hh('div', null,
+          hh('p', { id: 'learning-lab-focus-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 10px', textAlign: 'center', fontSize: 12, fontWeight: 800, color: phase === 'break' ? '#6ee7b7' : '#fca5a5' } }, phaseStatus),
           phase === 'idle' || phase === 'done' ? hh('div', { style: { textAlign: 'center', padding: 12 } },
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, phase === 'done' ? '✓ Session complete' : 'What are you focusing on?'),
-            tkInput(task, setTask, 'e.g., "Math homework chapter 5"', { marginBottom: 14, textAlign: 'center' }),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 } },
-              hh('div', { style: { textAlign: 'center' } },
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'WORK'),
+            hh('label', { htmlFor: 'learning-lab-focus-task', style: { display: 'block', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, phase === 'done' ? 'Session complete. Next focus task (optional)' : 'Focus task (optional)'),
+            tkInput(task, setTask, 'e.g., Math homework, chapter 5', { id: 'learning-lab-focus-task', maxLength: 240, marginBottom: 14, textAlign: 'center' }),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+              hh('fieldset', { style: { margin: 0, padding: 10, border: '1px solid rgba(239,68,68,0.40)', borderRadius: 8 } },
+                hh('legend', { style: { padding: '0 5px', fontSize: 10, color: '#fca5a5', fontWeight: 800 } }, 'Focus interval length'),
                 hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' } },
-                  [15, 25, 45, 90].map(function(n) {
-                    return hh('button', { key: 'w-' + n,
-                      onClick: function() { setWork(n); },
-                      style: { padding: '6px 12px', borderRadius: 6, background: workMin === n ? '#ef4444' : 'rgba(239,68,68,0.10)', color: workMin === n ? '#fff' : '#fca5a5', border: '1px solid rgba(239,68,68,0.40)', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
-                    }, n + 'm');
+                  [15, 25, 45, 90].map(function(minutes) {
+                    return hh('button', { key: 'w-' + minutes, type: 'button', 'aria-pressed': workMin === minutes ? 'true' : 'false', 'aria-label': minutes + ' minute focus interval', 'data-ll-focusable': true,
+                      onClick: function() { setWork(minutes); },
+                      style: { minWidth: 44, minHeight: 44, padding: '6px 12px', borderRadius: 6, background: workMin === minutes ? '#ef4444' : 'rgba(239,68,68,0.10)', color: workMin === minutes ? '#fff' : '#fca5a5', border: '1px solid rgba(239,68,68,0.40)', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+                    }, minutes + ' min');
                   })
                 )
               ),
-              hh('div', { style: { textAlign: 'center' } },
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'BREAK'),
+              hh('fieldset', { style: { margin: 0, padding: 10, border: '1px solid rgba(16,185,129,0.50)', borderRadius: 8 } },
+                hh('legend', { style: { padding: '0 5px', fontSize: 10, color: '#6ee7b7', fontWeight: 800 } }, 'Break interval length'),
                 hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap' } },
-                  [3, 5, 10, 15].map(function(n) {
-                    return hh('button', { key: 'b-' + n,
-                      onClick: function() { setBreak(n); },
-                      style: { padding: '6px 12px', borderRadius: 6, background: breakMin === n ? '#10b981' : 'rgba(16,185,129,0.10)', color: breakMin === n ? '#fff' : '#10b981', border: '1px solid rgba(16,185,129,0.40)', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
-                    }, n + 'm');
+                  [3, 5, 10, 15].map(function(minutes) {
+                    return hh('button', { key: 'b-' + minutes, type: 'button', 'aria-pressed': breakMin === minutes ? 'true' : 'false', 'aria-label': minutes + ' minute break interval', 'data-ll-focusable': true,
+                      onClick: function() { setBreak(minutes); },
+                      style: { minWidth: 44, minHeight: 44, padding: '6px 12px', borderRadius: 6, background: breakMin === minutes ? '#047857' : 'rgba(16,185,129,0.10)', color: breakMin === minutes ? '#fff' : '#6ee7b7', border: '1px solid rgba(16,185,129,0.50)', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+                    }, minutes + ' min');
                   })
                 )
               )
             ),
-            hh('button', { onClick: start,
-              style: { padding: '14px 32px', borderRadius: 10, background: 'linear-gradient(135deg, #ef4444, #fb923c)', color: '#fff', border: 'none', fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 14px rgba(239,68,68,0.40)' }
-            }, '▶ Start ' + workMin + '-min session')
+            hh('div', { style: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+              hh('button', { type: 'button', 'aria-pressed': soundEnabled ? 'true' : 'false', 'data-ll-focusable': true, onClick: toggleSound,
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #94a3b8', background: 'rgba(15,23,42,0.45)', color: '#e2e8f0', fontWeight: 800, cursor: 'pointer' } }, 'Completion sound: ' + (soundEnabled ? 'on' : 'off')),
+              hh('button', { type: 'button', onClick: start, 'data-ll-focusable': true,
+                style: { minHeight: 44, padding: '12px 32px', borderRadius: 10, background: 'linear-gradient(135deg, #b91c1c, #c2410c)', color: '#fff', border: '1px solid #fecaca', fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 14px rgba(239,68,68,0.40)' }
+              }, 'Start ' + workMin + '-minute focus interval')
+            )
           ) : hh('div', { style: { textAlign: 'center', padding: 12 } },
-            // Circular timer
-            hh('div', { style: { position: 'relative', width: 200, height: 200, margin: '0 auto 14px' } },
-              hh('svg', { viewBox: '0 0 200 200', style: { width: '100%', height: '100%' } },
-                hh('circle', { cx: 100, cy: 100, r: cR, fill: 'none', stroke: 'rgba(100,116,139,0.30)', strokeWidth: 8 }),
-                hh('circle', {
-                  cx: 100, cy: 100, r: cR, fill: 'none',
-                  stroke: phase === 'work' ? '#ef4444' : '#10b981',
-                  strokeWidth: 8, strokeLinecap: 'round',
-                  strokeDasharray: cC, strokeDashoffset: dashOffset,
-                  transform: 'rotate(-90 100 100)',
-                  style: { transition: 'stroke-dashoffset 900ms linear', filter: 'drop-shadow(0 0 4px ' + (phase === 'work' ? 'rgba(239,68,68,0.45)' : 'rgba(16,185,129,0.45)') + ')' }
-                })
+            hh('div', { role: 'progressbar', 'aria-label': phaseName + ' interval remaining', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': percentRemaining, 'aria-valuetext': mins + ' minutes ' + secs + ' seconds remaining', style: { position: 'relative', width: 200, height: 200, margin: '0 auto 14px' } },
+              hh('svg', { viewBox: '0 0 200 200', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', height: '100%' } },
+                hh('circle', { cx: 100, cy: 100, r: circleRadius, fill: 'none', stroke: 'rgba(100,116,139,0.30)', strokeWidth: 8 }),
+                hh('circle', { cx: 100, cy: 100, r: circleRadius, fill: 'none', stroke: effectivePhase === 'work' ? '#ef4444' : '#10b981', strokeWidth: 8, strokeLinecap: 'round', strokeDasharray: circumference, strokeDashoffset: dashOffset, transform: 'rotate(-90 100 100)', style: { transition: 'stroke-dashoffset 900ms linear', filter: 'drop-shadow(0 0 4px ' + (effectivePhase === 'work' ? 'rgba(239,68,68,0.45)' : 'rgba(16,185,129,0.45)') + ')' } })
               ),
               hh('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
-                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, phase === 'work' ? '🔥 WORK' : '☕ BREAK'),
-                hh('div', { style: { fontSize: 40, fontWeight: 900, color: phase === 'work' ? '#ef4444' : '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, displayTime),
-                task ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, padding: '0 16px', textAlign: 'center', maxWidth: 160 } }, task) : null
+                hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } }, phaseName + (phase === 'paused' ? ' paused' : '')),
+                hh('div', { id: 'learning-lab-focus-timer-value', role: 'timer', tabIndex: -1, 'aria-label': phaseName + ' time remaining: ' + mins + ' minutes ' + secs + ' seconds', style: { fontSize: 40, fontWeight: 900, color: effectivePhase === 'work' ? '#ef4444' : '#10b981', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, displayTime),
+                task ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, padding: '0 16px', textAlign: 'center', maxWidth: 160, overflowWrap: 'anywhere' } }, task) : null
               )
             ),
-            hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-              tkBtn('⏸ Pause', pause, 'ghost'),
-              tkBtn('↺ Reset', reset, 'bad')
+            hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+              phase === 'paused' ? tkBtn('Resume ' + phaseName.toLowerCase(), resume, 'primary') : tkBtn('Pause ' + phaseName.toLowerCase(), pause, 'ghost'),
+              tkBtn('Reset timer', reset, 'bad')
             )
           )
         )
       ),
 
-      // Today's sessions log
       todaySessions.length > 0 ? tkCard('#a78bfa',
-        hh('div', null,
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
-            hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#c084fc' } }, '📅 Today\'s sessions'),
-            tkBtn('Clear today', clearTodayHistory, 'ghost', { padding: '4px 10px', fontSize: 10 })
+        hh('section', { 'aria-labelledby': 'learning-lab-focus-history-heading' },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, gap: 8, flexWrap: 'wrap' } },
+            hh('h3', { id: 'learning-lab-focus-history-heading', style: { margin: 0, fontSize: 13, fontWeight: 800, color: '#c084fc' } }, "Today's focus sessions"),
+            tkBtn("Clear today's history", clearTodayHistory, 'ghost', { fontSize: 10 })
           ),
-          hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            todaySessions.slice().reverse().map(function(s) {
-              return hh('div', { key: 's-' + s.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+          hh('ol', { 'aria-label': "Today's focus sessions", style: { display: 'flex', flexDirection: 'column', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+            todaySessions.slice().reverse().map(function(session) {
+              var completedDate = new Date(session.completedAt);
+              var validDate = !isNaN(completedDate.getTime());
+              return hh('li', { key: 's-' + session.id, style: { padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.5)', borderLeft: '3px solid #a78bfa', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
                 hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, s.task || hh('em', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, 'No label')),
-                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, new Date(s.completedAt).toLocaleTimeString())
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, overflowWrap: 'anywhere' } }, session.task || hh('em', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No task label')),
+                  validDate ? hh('time', { dateTime: completedDate.toISOString(), style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } }, completedDate.toLocaleTimeString()) : null
                 ),
-                hh('span', { style: { padding: '4px 8px', borderRadius: 999, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.workMin + 'm')
+                hh('span', { style: { padding: '4px 8px', borderRadius: 999, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, session.workMin + ' minutes')
               );
             })
           )
