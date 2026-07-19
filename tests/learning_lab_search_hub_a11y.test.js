@@ -11,76 +11,97 @@ describe('Learning Lab Search Hub accessibility', () => {
   const end = source.indexOf('  function PersonalCheatSheets(props) {', start);
   const search = source.slice(start, end);
 
-  it('uses a named search landmark', () => {
+  it('explains exact scope, privacy, and non-ranking limits', () => {
+    expect(search).toContain('Search saved Cornell Notes, Learning Journal entries, Reflection Prompts, Weekly Reflections, Goals, and Brain Dump items.');
+    expect(search).toContain('exact character matching, not a relevance score or assessment of importance');
+    expect(search).toContain('This view does not save the search term or create new records');
+    expect(search).toContain('does not itself notify a teacher, school, employer, clinician, or family member');
+  });
+
+  it('uses explicit submit-based search without stealing focus', () => {
+    expect(search).toContain('function submitSearch(event)');
+    expect(search).toContain('setSubmittedQuery(nextQuery)');
+    expect(search).toContain("hh('button', { type: 'submit'");
+    expect(search).toContain('Results do not update while you are typing.');
+    expect(search).not.toContain('autoFocus: true');
+    expect(search).not.toContain('Results update as you type');
+  });
+
+  it('uses a named search landmark and visible labels', () => {
     expect(search).toContain("hh('form', { role: 'search'");
     expect(search).toContain("'aria-labelledby': 'learning-lab-search-heading'");
-    expect(search).toContain("onSubmit: function(event) { event.preventDefault(); }");
-  });
-
-  it('provides a visible label for the search field', () => {
     expect(search).toContain("htmlFor: 'learning-lab-toolkit-search'");
     expect(search).toContain("id: 'learning-lab-toolkit-search', type: 'search'");
-    expect(search).toContain("'aria-describedby': 'learning-lab-toolkit-search-help'");
+    expect(search).toContain("htmlFor: 'learning-lab-toolkit-source-filter'");
+    expect(search).toContain("id: 'learning-lab-toolkit-source-filter'");
   });
 
-  it('associates search with the results region', () => {
-    expect(search).toContain("'aria-controls': 'learning-lab-search-results-region'");
-    expect(search).toContain("id: 'learning-lab-search-results-region'");
-    expect(search).toContain("'aria-labelledby': 'learning-lab-search-results-heading'");
+  it('uses a native source filter and supports one-character searches', () => {
+    expect(search).toContain("hh('select', { id: 'learning-lab-toolkit-source-filter'");
+    expect(search).toContain("hh('option', { value: 'all' }, 'All selected sources')");
+    expect(search).not.toContain('normalizedQuery.length >= 2');
+    expect(search).not.toContain('Enter at least 2 characters');
   });
 
-  it('applies the two-character threshold after trimming', () => {
-    expect(search).toContain('var normalizedQuery = query.trim();');
-    expect(search).toContain('if (normalizedQuery.length >= 2)');
-    expect(search).toContain("var q = normalizedQuery.toLowerCase();");
-    expect(search).not.toContain('if (query.length >= 2)');
+  it('normalizes legacy values and array shapes safely', () => {
+    expect(search).toContain('function asArray(value) { return Array.isArray(value) ? value : []; }');
+    expect(search).toContain("function textValue(value) { return value == null ? '' : String(value); }");
+    expect(search).toContain('values.map(textValue)');
+    expect(search).not.toContain("(note.title || '').toLowerCase()");
   });
 
-  it('provides a named 44-pixel clear action and restores input focus', () => {
-    expect(search).toContain("'aria-label': 'Clear toolkit search'");
-    expect(search).toContain('minWidth: 44, minHeight: 44');
-    expect(search).toContain("document.getElementById('learning-lab-toolkit-search')");
-    expect(search).toContain("if (input) input.focus()");
+  it('deduplicates weekly reflections into one result per record', () => {
+    expect(search).toContain('var reflectionValues = [reflection.week, reflection.went_well, reflection.stuck, reflection.will_try, reflection.wins, reflection.proud];');
+    expect(search).toContain("addResult('reflections', reflection.id || index");
+    expect(search).not.toContain("['went_well', 'stuck', 'will_try', 'wins', 'proud'].forEach");
   });
 
-  it('announces result counts and empty states concisely', () => {
+  it('renders every matching result without a silent cap', () => {
+    expect(search).toContain('var filteredResults =');
+    expect(search).toContain('filteredResults.map(function(result, index)');
+    expect(search).not.toContain('results.slice(0, 30)');
+    expect(search).not.toContain('visibleResults');
+    expect(search).not.toContain('Showing the first');
+  });
+
+  it('uses safe date parsing and stable ordering for malformed dates', () => {
+    expect(search).toContain('function dateInfo(raw)');
+    expect(search).toContain('Number.isNaN(parsed.getTime())');
+    expect(search).toContain('var aTime = a.date ? a.date.timestamp : -Infinity;');
+    expect(search).toContain("hh('time', { dateTime: result.date.dateTime");
+    expect(search).toContain("'Date not recorded'");
+  });
+
+  it('builds contextual bounded snippets around the matching text', () => {
+    expect(search).toContain('function makeSnippet(values, query)');
+    expect(search).toContain('matchIndex - 80');
+    expect(search).toContain('startAt + 240');
+    expect(search).toContain("'…'");
+  });
+
+  it('announces complete result counts and empty states', () => {
     expect(search).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
-    expect(search).toContain("'No matches found across your toolkit.'");
-    expect(search).toContain("results.length === 1 ? ' result found.' : ' results found.'");
+    expect(search).toContain("'No matches found in the selected saved content.'");
+    expect(search).toContain("filteredResults.length === 1 ? ' result found.' : ' results found.'");
   });
 
-  it('discloses when results are capped', () => {
-    expect(search).toContain('var visibleResults = results.slice(0, 30);');
-    expect(search).toContain("'Showing the first ' + visibleResults.length + ' of ' + results.length + ' results.'");
+  it('provides a clear action that restores input focus', () => {
+    expect(search).toContain("'aria-label': 'Clear toolkit search'");
+    expect(search).toContain("queueFocus('learning-lab-toolkit-search')");
+    expect(search).toContain('setSourceFilter(\'all\')');
   });
 
-  it('uses a semantic list of labeled result articles', () => {
-    expect(search).toContain("hh('ul', { 'aria-label': 'Search results'");
-    expect(search).toContain("return hh('li', { key: 'sr-' + index");
+  it('uses semantic result headings, lists, and articles', () => {
+    expect(search).toContain("'aria-label': 'All matching toolkit search results'");
     expect(search).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(search).toContain("hh('h4', { id: headingId");
+    expect(search).toContain("id: 'learning-lab-search-results-heading'");
   });
 
-  it('does not use source accent colors for small source text', () => {
-    expect(search).toContain("color: 'var(--allo-stem-text, #cbd5e1)'");
-    expect(search).toContain("hh('span', { 'aria-hidden': 'true' }, result.sourceIcon + ' ')");
-    expect(search).not.toContain('color: result.sourceColor, fontWeight: 700');
-  });
-
-  it('handles malformed Brain Dump timestamps without eager conversion', () => {
-    expect(search).toContain("date: item.createdAt");
-    expect(search).not.toContain("new Date(item.createdAt).toISOString()");
-    expect(search).toContain('var validDate = resultDate && Number.isFinite(resultDate.getTime());');
-  });
-
-  it('uses machine-readable dates when values parse successfully', () => {
-    expect(search).toContain("hh('time', { dateTime: resultDate.toISOString()");
-    expect(search).toContain("result.date ? validDate ? hh('time'");
-  });
-
-  it('provides a 44-pixel search field', () => {
-    expect(search).toContain('minHeight: 44');
-    expect(search).toContain("autoComplete: 'off', maxLength: 500");
+  it('updates the catalog to submit-based selected-source wording', () => {
+    expect(source).toContain("desc: 'Explicit search across six selected personal tools'");
+    expect(source).toContain("'Submit-based local text search across six named personal Learning Lab tools.'");
+    expect(source).not.toContain('Instant full-text search across notes');
   });
 
   it('keeps the deployed mirror identical', () => {

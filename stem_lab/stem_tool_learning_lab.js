@@ -11757,106 +11757,173 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   function PersonalSearchHub(props) {
     if (!R) return null;
     var allData = props.allData || {};
-    var qs = R.useState(''); var query = qs[0]; var setQuery = qs[1];
-    var normalizedQuery = query.trim();
-    var results = [];
+    var ds = R.useState(''); var draftQuery = ds[0]; var setDraftQuery = ds[1];
+    var ss = R.useState(''); var submittedQuery = ss[0]; var setSubmittedQuery = ss[1];
+    var fs = R.useState('all'); var sourceFilter = fs[0]; var setSourceFilter = fs[1];
+    var focusTargetRef = R.useRef(null);
+    var fts = R.useState(0); var focusTick = fts[0]; var setFocusTick = fts[1];
 
-    if (normalizedQuery.length >= 2) {
-      var q = normalizedQuery.toLowerCase();
-      var notes = ((allData.mytkNotes || {}).notes || []);
-      notes.forEach(function(note) {
-        var match = (note.title || '').toLowerCase().indexOf(q) >= 0 ||
-                    (note.main || '').toLowerCase().indexOf(q) >= 0 ||
-                    (note.cue || '').toLowerCase().indexOf(q) >= 0 ||
-                    (note.summary || '').toLowerCase().indexOf(q) >= 0;
-        if (match) results.push({ source: 'Cornell Notes', sourceIcon: '📝', sourceColor: '#3b82f6', title: note.title, snippet: note.summary || note.main || '', date: note.createdAt });
-      });
-      var journal = ((allData.mytkJournal || {}).entries || []);
-      journal.forEach(function(entry) {
-        var match = (entry.title || '').toLowerCase().indexOf(q) >= 0 ||
-                    (entry.body || '').toLowerCase().indexOf(q) >= 0 ||
-                    (entry.tags || '').toLowerCase().indexOf(q) >= 0;
-        if (match) results.push({ source: 'Learning Journal', sourceIcon: '📓', sourceColor: '#ec4899', title: entry.title || entry.subject || 'Untitled', snippet: entry.body, date: entry.date });
-      });
-      var prompts = ((allData.mytkPrompts || {}).responses || []);
-      prompts.forEach(function(response) {
-        if ((response.text || '').toLowerCase().indexOf(q) >= 0 || (response.promptText || '').toLowerCase().indexOf(q) >= 0) {
-          results.push({ source: 'Reflection Prompts', sourceIcon: '📓', sourceColor: '#a855f7', title: response.promptText, snippet: response.text, date: response.date });
-        }
-      });
-      var reflections = ((allData.mytkReflect || {}).entries || []);
-      reflections.forEach(function(reflection) {
-        ['went_well', 'stuck', 'will_try', 'wins', 'proud'].forEach(function(key) {
-          if ((reflection[key] || '').toLowerCase().indexOf(q) >= 0) {
-            results.push({ source: 'Weekly Reflection', sourceIcon: '📔', sourceColor: '#f472b6', title: reflection.week, snippet: reflection[key], date: reflection.date });
-          }
-        });
-      });
-      var goals = ((allData.mytkGoals || {}).goals || []);
-      goals.forEach(function(goal) {
-        var match = (goal.title || '').toLowerCase().indexOf(q) >= 0 ||
-                    ['specific', 'measurable', 'achievable', 'relevant', 'timebound'].some(function(key) {
-                      return (goal[key] || '').toLowerCase().indexOf(q) >= 0;
-                    });
-        if (match) results.push({ source: 'Goals', sourceIcon: '🎯', sourceColor: '#9333ea', title: goal.title, snippet: goal.specific || '', date: goal.createdAt });
-      });
-      var brainItems = ((allData.mytkBrain || {}).items || []);
-      brainItems.forEach(function(item) {
-        if ((item.text || '').toLowerCase().indexOf(q) >= 0) {
-          results.push({ source: 'Brain Dump', sourceIcon: '🧠', sourceColor: '#60a5fa', title: item.cat, snippet: item.text, date: item.createdAt });
-        }
-      });
-      results.sort(function(a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+    var SOURCES = [
+      { id: 'notes', label: 'Cornell Notes', icon: '📝', color: '#93c5fd' },
+      { id: 'journal', label: 'Learning Journal', icon: '📓', color: '#f9a8d4' },
+      { id: 'prompts', label: 'Reflection Prompts', icon: '💬', color: '#d8b4fe' },
+      { id: 'reflections', label: 'Weekly Reflections', icon: '📔', color: '#f9a8d4' },
+      { id: 'goals', label: 'Goals', icon: '🎯', color: '#c4b5fd' },
+      { id: 'brain', label: 'Brain Dump', icon: '🧠', color: '#93c5fd' }
+    ];
+
+    R.useLayoutEffect(function() {
+      var targetId = focusTargetRef.current;
+      if (!targetId) return;
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        focusTargetRef.current = null;
+      }
+    }, [focusTick]);
+    function queueFocus(id) {
+      focusTargetRef.current = id;
+      setFocusTick(function(value) { return value + 1; });
+    }
+    function asArray(value) { return Array.isArray(value) ? value : []; }
+    function sourceData(name) { return allData[name] && typeof allData[name] === 'object' ? allData[name] : {}; }
+    function textValue(value) { return value == null ? '' : String(value); }
+    function dateInfo(raw) {
+      if (raw == null || raw === '') return null;
+      var parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return { timestamp: parsed.getTime(), dateTime: parsed.toISOString(), label: parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
+    }
+    function makeSnippet(values, query) {
+      var candidates = values.map(textValue).filter(function(value) { return value.trim(); });
+      var matched = candidates.filter(function(value) { return value.toLowerCase().indexOf(query) >= 0; })[0] || candidates[0] || '';
+      if (!matched) return '';
+      var matchIndex = matched.toLowerCase().indexOf(query);
+      var startAt = Math.max(0, matchIndex >= 0 ? matchIndex - 80 : 0);
+      var endAt = Math.min(matched.length, startAt + 240);
+      return (startAt > 0 ? '…' : '') + matched.slice(startAt, endAt) + (endAt < matched.length ? '…' : '');
     }
 
-    var visibleResults = results.slice(0, 30);
-    var resultSummary = normalizedQuery.length < 2 ? 'Enter at least 2 characters to search.'
-      : results.length === 0 ? 'No matches found across your toolkit.'
-      : results.length > visibleResults.length ? 'Showing the first ' + visibleResults.length + ' of ' + results.length + ' results.'
-      : results.length + (results.length === 1 ? ' result found.' : ' results found.');
+    var normalizedQuery = submittedQuery.trim().toLowerCase();
+    var results = [];
+    var resultOrder = 0;
+    function addResult(sourceId, recordKey, title, values, rawDate) {
+      var source = SOURCES.filter(function(item) { return item.id === sourceId; })[0];
+      var haystack = values.map(textValue).join(' ').toLowerCase();
+      if (!source || !normalizedQuery || haystack.indexOf(normalizedQuery) < 0) return;
+      var date = dateInfo(rawDate);
+      results.push({
+        key: sourceId + '-' + textValue(recordKey || resultOrder) + '-' + resultOrder,
+        source: source,
+        title: textValue(title).trim() || source.label + ' entry',
+        snippet: makeSnippet(values, normalizedQuery),
+        date: date,
+        order: resultOrder++
+      });
+    }
+
+    if (normalizedQuery) {
+      asArray(sourceData('mytkNotes').notes).forEach(function(note, index) {
+        note = note || {};
+        addResult('notes', note.id || index, note.title, [note.title, note.main, note.cue, note.summary], note.createdAt || note.date);
+      });
+      asArray(sourceData('mytkJournal').entries).forEach(function(entry, index) {
+        entry = entry || {};
+        addResult('journal', entry.id || index, entry.title || entry.subject, [entry.title, entry.subject, entry.body, entry.tags], entry.date || entry.createdAt);
+      });
+      asArray(sourceData('mytkPrompts').responses).forEach(function(response, index) {
+        response = response || {};
+        addResult('prompts', response.id || index, response.promptText, [response.promptText, response.text], response.date || response.createdAt);
+      });
+      asArray(sourceData('mytkReflect').entries).forEach(function(reflection, index) {
+        reflection = reflection || {};
+        var reflectionValues = [reflection.week, reflection.went_well, reflection.stuck, reflection.will_try, reflection.wins, reflection.proud];
+        addResult('reflections', reflection.id || index, reflection.week || 'Weekly reflection', reflectionValues, reflection.date || reflection.createdAt);
+      });
+      asArray(sourceData('mytkGoals').goals).forEach(function(goal, index) {
+        goal = goal || {};
+        addResult('goals', goal.id || index, goal.title, [goal.title, goal.specific, goal.measurable, goal.achievable, goal.relevant, goal.timebound], goal.createdAt || goal.date);
+      });
+      asArray(sourceData('mytkBrain').items).forEach(function(item, index) {
+        item = item || {};
+        addResult('brain', item.id || index, item.cat || 'Brain Dump item', [item.cat, item.text], item.createdAt || item.date);
+      });
+      results.sort(function(a, b) {
+        var aTime = a.date ? a.date.timestamp : -Infinity;
+        var bTime = b.date ? b.date.timestamp : -Infinity;
+        return bTime === aTime ? a.order - b.order : bTime - aTime;
+      });
+    }
+
+    var filteredResults = sourceFilter === 'all' ? results : results.filter(function(result) { return result.source.id === sourceFilter; });
+    var resultSummary = !normalizedQuery ? 'Enter a search term and select Search.'
+      : filteredResults.length === 0 ? 'No matches found in the selected saved content.'
+      : filteredResults.length + (filteredResults.length === 1 ? ' result found.' : ' results found.');
+
+    function submitSearch(event) {
+      event.preventDefault();
+      var nextQuery = draftQuery.trim();
+      setSubmittedQuery(nextQuery);
+      if (!nextQuery) queueFocus('learning-lab-toolkit-search');
+    }
+    function clearSearch() {
+      setDraftQuery('');
+      setSubmittedQuery('');
+      setSourceFilter('all');
+      queueFocus('learning-lab-toolkit-search');
+    }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🔎', 'Search My Toolkit', 'Find anything across your notes, journal, reflections, prompts, goals, and brain dumps.', '#06b6d4'),
+      hh('header', null,
+        hh('h2', { id: 'learning-lab-search-page-heading', style: { fontSize: 18, color: '#67e8f9', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '🔎 '), 'Search Selected Personal Toolkit Content'),
+        hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Search saved Cornell Notes, Learning Journal entries, Reflection Prompts, Weekly Reflections, Goals, and Brain Dump items. Search is exact character matching, not a relevance score or assessment of importance.'),
+        hh('p', { style: { margin: '0 0 14px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Results can combine sensitive personal content. This view does not save the search term or create new records, and searching here does not itself notify a teacher, school, employer, clinician, or family member. People who can access this Learning Lab data may still be able to view the source records.')
+      ),
 
-      hh('form', { role: 'search', onSubmit: function(event) { event.preventDefault(); }, 'aria-labelledby': 'learning-lab-search-heading', style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, border: '2px solid #06b6d4', marginBottom: 14 } },
-        hh('h3', { id: 'learning-lab-search-heading', style: { fontSize: 12, color: '#67e8f9', margin: '0 0 8px' } }, 'Search saved toolkit content'),
-        hh('label', { htmlFor: 'learning-lab-toolkit-search', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4 } }, 'Search terms'),
-        hh('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
-          hh('input', { id: 'learning-lab-toolkit-search', type: 'search', value: query, autoFocus: true, autoComplete: 'off', maxLength: 500, 'aria-describedby': 'learning-lab-toolkit-search-help', 'aria-controls': 'learning-lab-search-results-region', onChange: function(event) { setQuery(event.target.value); }, placeholder: 'Search across all your saved content', style: { flex: 1, minWidth: 0, minHeight: 44, padding: '10px 12px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.55)', borderRadius: 8, boxSizing: 'border-box', font: 'inherit' } }),
-          query ? hh('button', { type: 'button', onClick: function() { setQuery(''); setTimeout(function() { var input = document.getElementById('learning-lab-toolkit-search'); if (input) input.focus(); }, 0); }, 'aria-label': 'Clear toolkit search', 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, border: '1px solid rgba(6,182,212,0.55)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 16, cursor: 'pointer' } }, '×') : null
+      hh('form', { role: 'search', onSubmit: submitSearch, 'aria-labelledby': 'learning-lab-search-heading', style: { background: 'rgba(15,23,42,0.7)', borderRadius: 12, padding: 14, border: '2px solid #06b6d4', marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-search-heading', style: { fontSize: 13, color: '#67e8f9', margin: '0 0 8px' } }, 'Search saved personal content'),
+        hh('label', { htmlFor: 'learning-lab-toolkit-search', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4 } }, 'Search term'),
+        hh('input', { id: 'learning-lab-toolkit-search', type: 'search', value: draftQuery, autoComplete: 'off', maxLength: 200, 'aria-describedby': 'learning-lab-toolkit-search-help', 'aria-controls': 'learning-lab-search-results-region', onChange: function(event) { setDraftQuery(event.target.value); }, style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.55)', borderRadius: 8, boxSizing: 'border-box', font: 'inherit' } }),
+        hh('p', { id: 'learning-lab-toolkit-search-help', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '5px 0 10px', lineHeight: 1.45 } }, 'Enter one or more characters, then select Search. Results do not update while you are typing.'),
+        hh('label', { htmlFor: 'learning-lab-toolkit-source-filter', style: { display: 'block', fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4 } }, 'Limit results to a source'),
+        hh('select', { id: 'learning-lab-toolkit-source-filter', value: sourceFilter, onChange: function(event) { setSourceFilter(event.target.value); }, style: { width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(6,182,212,0.55)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit', marginBottom: 10 } },
+          hh('option', { value: 'all' }, 'All selected sources'),
+          SOURCES.map(function(source) { return hh('option', { key: source.id, value: source.id }, source.label); })
         ),
-        hh('div', { id: 'learning-lab-toolkit-search-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 5 } }, 'Enter at least 2 characters. Results update as you type.')
+        hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' } },
+          draftQuery || submittedQuery ? hh('button', { type: 'button', onClick: clearSearch, 'aria-label': 'Clear toolkit search', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid rgba(6,182,212,0.55)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Clear') : null,
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 18px', borderRadius: 8, border: '1px solid #a5f3fc', background: '#0e7490', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Search')
+        )
       ),
 
       hh('section', { id: 'learning-lab-search-results-region', 'aria-labelledby': 'learning-lab-search-results-heading' },
-        hh('h3', { id: 'learning-lab-search-results-heading', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Toolkit search results'),
-        hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: normalizedQuery.length < 2 || results.length === 0 ? 20 : '0 0 10px', textAlign: normalizedQuery.length < 2 || results.length === 0 ? 'center' : 'left', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: normalizedQuery.length < 2 || results.length === 0 ? 'italic' : 'normal' } }, resultSummary),
-        visibleResults.length > 0 ? hh('ul', { 'aria-label': 'Search results', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-          visibleResults.map(function(result, index) {
+        hh('h3', { id: 'learning-lab-search-results-heading', style: { fontSize: 13, color: '#67e8f9', margin: '0 0 6px' } }, 'Search results'),
+        hh('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: filteredResults.length === 0 ? '12px 0' : '0 0 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, margin: 0 } }, resultSummary),
+        filteredResults.length > 0 ? hh('ul', { 'aria-label': 'All matching toolkit search results', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+          filteredResults.map(function(result, index) {
             var headingId = 'learning-lab-search-result-' + index;
-            var resultDate = result.date == null ? null : new Date(result.date);
-            var validDate = resultDate && Number.isFinite(resultDate.getTime());
-            var snippet = String(result.snippet || '');
-            return hh('li', { key: 'sr-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + result.sourceColor } },
+            return hh('li', { key: result.key, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + result.source.color, overflowWrap: 'anywhere' } },
               hh('article', { 'aria-labelledby': headingId },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, hh('span', { 'aria-hidden': 'true' }, result.sourceIcon + ' '), result.source),
-                  result.date ? validDate ? hh('time', { dateTime: resultDate.toISOString(), style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, String(result.date)) : hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, String(result.date)) : null
+                  hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, hh('span', { 'aria-hidden': 'true' }, result.source.icon + ' '), result.source.label),
+                  result.date ? hh('time', { dateTime: result.date.dateTime, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, result.date.label) : hh('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Date not recorded')
                 ),
-                hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 2px' } }, result.title || result.source + ' result'),
-                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', margin: 0, lineHeight: 1.55 } }, snippet.substring(0, 200) + (snippet.length > 200 ? '…' : ''))
+                hh('h4', { id: headingId, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 2px' } }, result.title),
+                hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', margin: 0, lineHeight: 1.55, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, result.snippet || 'Matching text is not available for this legacy record.')
               )
             );
           })
         ) : null
+      ),
+
+      hh('aside', { 'aria-labelledby': 'learning-lab-search-limits-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-search-limits-heading', style: { fontSize: 12, color: '#67e8f9', margin: '0 0 4px' } }, 'Search limits'),
+        hh('p', { style: { margin: 0 } }, 'This search covers only the six named tools and exact text stored in supported fields. A missing result does not mean the information is absent from every Learning Lab tool, and result order does not indicate importance or relevance.')
       )
     );
   }
 
-  // ── II. PERSONAL CHEAT-SHEET BUILDER (Wave 7) ──
-  // Build a one-page cheat-sheet per topic. Sections + bullets.
-  // The act of building a cheat-sheet is itself retrieval practice +
-  // compression — both Dunlosky-high-utility strategies.
+  // Explicit local search across selected personal Learning Lab records.
   function PersonalCheatSheets(props) {
     if (!R) return null;
     var data = props.data || { sheets: [] };
@@ -20313,7 +20380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkTime || {}).predictions || []).length + ' logged', cta: 'Time a task' },
       { id: 'mytkDist',     icon: '🚨', label: 'Distraction Log',      color: '#ef4444', desc: 'Optional attention-shift or interruption notes',
         stat: ((data.mytkDist || {}).events || []).length + ' events', cta: 'Log a distraction' },
-      { id: 'mytkSearch',   icon: '🔎', label: 'Search My Toolkit',    color: '#06b6d4', desc: 'Search across all saved content',
+      { id: 'mytkSearch',   icon: '🔎', label: 'Search My Toolkit',    color: '#06b6d4', desc: 'Explicit search across six selected personal tools',
         stat: 'instant', cta: 'Search now' },
       { id: 'mytkCheats',   icon: '📋', label: 'Cheat Sheet Builder',  color: '#fbbf24', desc: 'Build 1-page cheat sheets per topic',
         stat: ((data.mytkCheats || {}).sheets || []).length + ' sheets', cta: 'Build a sheet' },
@@ -20636,7 +20703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', 'Optional challenge or practice notes with editable, neutral check-ins.') },
               { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Compare a predicted task duration with a recorded duration; no score.') },
               { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Optional attention-shift notes with neutral categories and editable history.') },
-              { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.') },
+              { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Submit-based local text search across six named personal Learning Lab tools.') },
               { id: 'mytkCheats', icon: '📋', label: __alloT('stem.learning_lab.cheat_sheet_builder', 'Cheat Sheet Builder'),  desc: __alloT('stem.learning_lab.build_1_page_cheat_sheets_per_topic_bu', 'Build 1-page cheat sheets per topic. Building IS the studying.') },
               { id: 'mytkAsk',    icon: '🙋', label: __alloT('stem.learning_lab.ask_for_help_tracker', 'Ask-for-Help Tracker'), desc: __alloT('stem.learning_lab.log_every_help_ask_normalize_the_most_', 'Log every help-ask. Normalize the most underused academic skill.') },
               { id: 'mytkMind',   icon: '🧘', label: __alloT('stem.learning_lab.mindfulness', 'Mindfulness'),          desc: __alloT('stem.learning_lab.6_guided_practices_body_scan_breath_ra', '6 guided practices (body scan, breath, RAIN, walking, eating, open). MBSR-aligned.') },
