@@ -13646,6 +13646,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return initialQuotes.length ? initialQuotes[Math.floor(Math.random() * initialQuotes.length)].id : null;
     });
     var featuredId = rs[0]; var setFeaturedId = rs[1];
+    var pfq = R.useState(''); var pendingFocusId = pfq[0]; var setPendingFocusId = pfq[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data, search]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     function updateForm(key, value) {
       var patch = {}; patch[key] = value;
@@ -13951,6 +13962,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var setData = props.setData;
     var vs = R.useState('quiz'); var view = vs[0]; var setView = vs[1];
     var fs = R.useState({}); var answers = fs[0]; var setAnswers = fs[1];
+    var pfc = R.useState(''); var pendingFocusId = pfc[0]; var setPendingFocusId = pfc[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     var QUESTIONS = [
       { id: 'q1', text: 'I prefer working with…', options: [{ v: 'people', label: 'People and ideas' }, { v: 'data', label: 'Data and systems' }, { v: 'things', label: 'Things and tools' }] },
@@ -14102,6 +14124,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var emptyForm = function() { return { mood: 5, energy: 5, note: '' }; };
     var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
+    var pfm = R.useState(''); var pendingFocusId = pfm[0]; var setPendingFocusId = pfm[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     function save() {
       var entry = { id: tkId(), date: todayISO(), time: Date.now(), mood: form.mood, energy: form.energy, note: form.note.trim() };
@@ -14238,6 +14271,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState(emptyForm()); var form = fs[0]; var setForm = fs[1];
     var rs = R.useState(null); var reading = rs[0]; var setReading = rs[1];
     var es = R.useState(''); var bodyError = es[0]; var setBodyError = es[1];
+    var pff = R.useState(''); var pendingFocusId = pff[0]; var setPendingFocusId = pff[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, view, reading, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     var letters = data.letters || [];
     var today = todayISO();
@@ -14646,6 +14690,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ts = R.useState(15 * 60); var secsLeft = ts[0]; var setSecsLeft = ts[1];
     var rs = R.useState(false); var running = rs[0]; var setRunning = rs[1];
     var ks = R.useState({}); var thinking = ks[0]; var setThinking = ks[1];
+    var pfw = R.useState(''); var pendingFocusId = pfw[0]; var setPendingFocusId = pfw[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, working, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     function addWorry() {
       var text = newWorry.trim();
@@ -14869,6 +14924,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
     var es = R.useState(''); var hourError = es[0]; var setHourError = es[1];
+    var pfe = R.useState(''); var pendingFocusId = pfe[0]; var setPendingFocusId = pfe[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     function formatHour(hour) {
       var normalized = Number(hour);
