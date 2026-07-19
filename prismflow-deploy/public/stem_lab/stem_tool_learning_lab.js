@@ -17408,7 +17408,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { custom: [] };
     var setData = props.setData;
     var cs = R.useState('boundaries'); var cat = cs[0]; var setCat = cs[1];
-    var ns = R.useState({ situation: '', script: '' }); var newForm = ns[0]; var setNewForm = ns[1];
+    var emptyForm = { situation: '', script: '' };
+    var ns = R.useState(emptyForm); var newForm = ns[0]; var setNewForm = ns[1];
+    var es = R.useState({ situation: '', script: '' }); var errors = es[0]; var setErrors = es[1];
+    var cps = R.useState(null); var copyStatus = cps[0]; var setCopyStatus = cps[1];
 
     var BUILTIN = {
       boundaries: [
@@ -17450,65 +17453,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ]
     };
 
+
     var CATS = [
-      { id: 'boundaries', label: '🛡 Boundaries', color: '#ef4444' },
-      { id: 'asking',     label: '🙋 Asking',     color: '#10b981' },
-      { id: 'saying_no',  label: '🚫 Saying no',  color: '#fbbf24' },
-      { id: 'conflict',   label: '⚖ Conflict',    color: '#a855f7' },
-      { id: 'starting',   label: '👋 Starting',   color: '#3b82f6' }
+      { id: 'boundaries', label: 'Boundaries', icon: '🛡', color: '#fca5a5' },
+      { id: 'asking', label: 'Asking', icon: '🙋', color: '#6ee7b7' },
+      { id: 'saying_no', label: 'Saying no', icon: '🚫', color: '#fde68a' },
+      { id: 'conflict', label: 'Conflict or repair', icon: '⚖', color: '#d8b4fe' },
+      { id: 'starting', label: 'Starting conversations', icon: '👋', color: '#93c5fd' }
     ];
 
-    function addCustom() {
-      if (!newForm.situation.trim() || !newForm.script.trim()) return;
-      var c = Object.assign({ id: tkId(), category: cat, addedAt: todayISO() }, newForm);
-      setData({ custom: [c].concat(data.custom || []) });
-      setNewForm({ situation: '', script: '' });
+    function safeDomId(value) { return String(value || 'script').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0]; }
+    function changeCategory(id) { setCat(categoryFor(id).id); setCopyStatus(null); }
+    function handleTabKey(event, index) {
+      var next = index;
+      if (event.key === 'ArrowRight') next = (index + 1) % CATS.length;
+      else if (event.key === 'ArrowLeft') next = (index - 1 + CATS.length) % CATS.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = CATS.length - 1;
+      else return;
+      event.preventDefault(); changeCategory(CATS[next].id); focusById('learning-lab-script-tab-' + CATS[next].id);
     }
-    function removeCustom(id) { setData({ custom: (data.custom || []).filter(function(c) { return c.id !== id; }) }); }
+    function addCustom() {
+      var situation = newForm.situation.trim(); var script = newForm.script.trim(); var nextErrors = { situation: situation ? '' : 'Describe the situation.', script: script ? '' : 'Enter the words you want to save.' };
+      setErrors(nextErrors);
+      if (!situation || !script) { llAnnounce('Custom script not saved. Complete both required fields.'); focusById(!situation ? 'learning-lab-script-situation' : 'learning-lab-script-text'); return; }
+      var custom = { id: tkId(), category: categoryFor(cat).id, addedAt: todayISO(), situation: situation, script: script };
+      setData(Object.assign({}, data, { custom: [custom].concat(data.custom || []) }));
+      setNewForm(emptyForm); setErrors({ situation: '', script: '' }); llAnnounce('Custom script saved in this browser.'); focusById('learning-lab-script-situation');
+    }
+    function removeCustom(item) {
+      askLearningLabConfirmation('Remove the custom script for “' + String(item.s || 'this situation') + '”? This cannot be undone.', { title: 'Remove this custom script?', confirmText: 'Remove script' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { custom: (data.custom || []).filter(function(custom) { return custom.id !== item.id; }) }));
+        llAnnounce('Custom script removed.'); focusById('learning-lab-script-panel-heading');
+      });
+    }
+    function copyScript(item) {
+      var text = String(item.script || '').trim(); var domId = safeDomId(item.id); var textId = 'learning-lab-script-text-' + domId;
+      if (!text) { setCopyStatus({ id: item.id, message: 'This script is empty and was not copied.' }); llAnnounce('Script not copied because it is empty.'); focusById(textId); return; }
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+        setCopyStatus({ id: item.id, message: 'Clipboard access is unavailable. The script text is selected; use Control+C or Command+C.' }); llAnnounce('Clipboard access is unavailable. The script text is selected for manual copying.'); focusById(textId, true); return;
+      }
+      Promise.resolve(navigator.clipboard.writeText(text)).then(function() {
+        setCopyStatus({ id: item.id, message: 'Script copied. Review and adapt it before using it.' }); llAnnounce('Script copied to the clipboard.');
+      }).catch(function() {
+        setCopyStatus({ id: item.id, message: 'The script could not be copied automatically. The text is selected; use Control+C or Command+C.' }); llAnnounce('Automatic copying failed. The script text is selected for manual copying.'); focusById(textId, true);
+      });
+    }
 
-    var currentCat = CATS.filter(function(c) { return c.id === cat; })[0];
-    var allInCat = (BUILTIN[cat] || []).map(function(b, i) { return Object.assign({ id: 'b-' + cat + '-' + i, builtin: true }, b); })
-      .concat((data.custom || []).filter(function(c) { return c.category === cat; }).map(function(c) { return { id: c.id, s: c.situation, script: c.script, builtin: false }; }));
+    var currentCat = categoryFor(cat);
+    var allInCat = (BUILTIN[currentCat.id] || []).map(function(item, index) { return Object.assign({ id: 'builtin-' + currentCat.id + '-' + index, builtin: true }, item); }).concat((data.custom || []).filter(function(custom) { return categoryFor(custom.category).id === currentCat.id; }).map(function(custom) { return { id: custom.id, s: custom.situation, script: custom.script, addedAt: custom.addedAt, builtin: false }; }));
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#f3e8ff', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #c084fc', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12, lineHeight: 1.5 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #d8b4fe', background: '#7e22ce', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💬', 'Script Library', 'Curated phrases for hard moments. Plus your own. Especially valuable for ND students.', '#a855f7'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#a855f7' } }, '💬 Why scripts: '),
-        'In the moment of an interaction, working memory is loaded. Pre-practiced scripts make the words available — you don\'t have to invent them. Modify mine, use as-is, or write your own.'
+      tkSectionHeader('💬', 'Script Library', 'Review, adapt, copy, or save optional phrases for different situations.', '#a855f7'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-script-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #c084fc', background: 'rgba(88,28,135,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-script-context-heading', style: { margin: '0 0 5px', color: '#f3e8ff', fontSize: 13 } }, 'Suggestions to adapt, not guaranteed advice'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'Prepared words can reduce the need to compose a response in the moment for some people. You can edit, ignore, or replace any suggestion; there is no required wording.'),
+        hh('p', { style: { margin: 0 } }, 'A phrase may not be safe or effective in every relationship, culture, power dynamic, or urgent situation. Prioritize your safety and use appropriate trusted, emergency, legal, or crisis support when needed. This tool does not send messages or contact anyone.')
       ),
-
-      hh('div', { role: 'tablist', style: { display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' } },
-        CATS.map(function(c) {
-          var active = cat === c.id;
-          return hh('button', { key: 'sc-' + c.id,
-            onClick: function() { setCat(c.id); },
-            style: { padding: '8px 12px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-          }, c.label);
-        })
+      hh('div', { role: 'tablist', 'aria-label': 'Script categories', style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } }, CATS.map(function(category, index) { var active = currentCat.id === category.id; return hh('button', { key: category.id, id: 'learning-lab-script-tab-' + category.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'learning-lab-script-panel', tabIndex: active ? 0 : -1, onClick: function() { changeCategory(category.id); }, onKeyDown: function(event) { handleTabKey(event, index); }, style: { minWidth: 44, minHeight: 44, padding: '9px 12px', borderRadius: 7, background: active ? '#7e22ce' : 'rgba(15,23,42,0.72)', color: '#f8fafc', border: '2px solid ' + (active ? category.color : '#64748b'), fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label); })),
+      hh('section', { id: 'learning-lab-script-panel', role: 'tabpanel', 'aria-labelledby': 'learning-lab-script-tab-' + currentCat.id, tabIndex: 0 },
+        hh('h2', { id: 'learning-lab-script-panel-heading', tabIndex: -1, style: { margin: '0 0 8px', color: currentCat.color, fontSize: 15 } }, currentCat.label + ' scripts'),
+        hh('ul', { 'aria-label': currentCat.label + ' scripts', style: { display: 'flex', flexDirection: 'column', gap: 9, margin: '0 0 14px', padding: 0, listStyle: 'none' } }, allInCat.map(function(item) { var domId = safeDomId(item.id); var headingId = 'learning-lab-script-heading-' + domId; var textId = 'learning-lab-script-text-' + domId; var statusId = 'learning-lab-script-copy-status-' + domId; var itemStatus = copyStatus && copyStatus.id === item.id ? copyStatus.message : ''; return hh('li', { key: item.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid ' + currentCat.color } },
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
+            hh('div', { style: { minWidth: 0 } }, hh('p', { style: { margin: '0 0 3px', color: currentCat.color, fontSize: 10, fontWeight: 800 } }, item.builtin ? 'Built-in suggestion' : 'Personal script'), hh('h3', { id: headingId, style: { margin: 0, color: '#f8fafc', fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(item.s || 'Untitled situation')), !item.builtin && item.addedAt ? hh('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Added ', hh('time', { dateTime: item.addedAt }, relDate(item.addedAt))) : null),
+            !item.builtin ? hh('button', { type: 'button', onClick: function() { removeCustom(item); }, 'aria-label': 'Remove custom script for ' + String(item.s || 'untitled situation'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove') : null
+          ),
+          hh('label', { htmlFor: textId, style: Object.assign({}, labelStyle, { marginTop: 8 }) }, item.builtin ? 'Suggested wording' : 'Saved wording'),
+          hh('textarea', { id: textId, value: String(item.script || ''), readOnly: true, rows: 4, 'aria-describedby': itemStatus ? statusId : undefined, style: Object.assign({}, fieldStyle, { minHeight: 96, resize: 'vertical', fontFamily: 'Georgia, serif', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+          hh('button', { type: 'button', onClick: function() { copyScript(item); }, 'aria-label': 'Copy script for ' + String(item.s || 'untitled situation'), style: Object.assign({}, buttonStyle, { marginTop: 7 }) }, 'Copy script'),
+          itemStatus ? hh('p', { id: statusId, role: 'status', 'aria-live': 'polite', style: { margin: '6px 0 0', color: '#e9d5ff', fontSize: 11, lineHeight: 1.5 } }, itemStatus) : null
+        )); }))
       ),
-
-      hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
-        allInCat.map(function(item) {
-          return hh('div', { key: 'sl-' + item.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + currentCat.color } },
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
-              hh('div', { style: { fontSize: 11, color: currentCat.color, fontWeight: 700 } }, '⚡ ' + item.s),
-              !item.builtin ? hh('button', { onClick: function() { removeCustom(item.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕') : null
-            ),
-            hh('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(2,6,23,0.5)', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Georgia, serif' } }, '"' + item.script + '"'),
-            hh('div', { style: { marginTop: 6, textAlign: 'right' } },
-              tkBtn('📋 Copy', function() { try { navigator.clipboard.writeText(item.script); } catch(e) {} }, 'secondary', { padding: '3px 10px', fontSize: 10 })
-            )
-          );
-        })
-      ),
-
       tkCard(currentCat.color,
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: currentCat.color, marginBottom: 8 } }, '+ Add your own script for ' + currentCat.label),
-          tkInput(newForm.situation, function(v) { setNewForm(Object.assign({}, newForm, { situation: v })); }, 'When this situation happens...', { marginBottom: 6 }),
-          tkInput(newForm.script, function(v) { setNewForm(Object.assign({}, newForm, { script: v })); }, '...I\'ll say this:', { marginBottom: 8 }),
-          tkBtn('+ Add', addCustom, 'primary')
+        hh('form', { onSubmit: function(event) { event.preventDefault(); addCustom(); }, 'aria-labelledby': 'learning-lab-script-form-heading', 'aria-describedby': 'learning-lab-script-privacy' },
+          hh('h2', { id: 'learning-lab-script-form-heading', style: { margin: '0 0 6px', color: '#f3e8ff', fontSize: 15 } }, 'Add a personal script for ' + currentCat.label),
+          hh('p', { id: 'learning-lab-script-privacy', style: helpStyle }, 'Personal scripts save in this browser and may describe sensitive situations. Avoid names or private details if other people use this device.'),
+          hh('label', { htmlFor: 'learning-lab-script-situation', style: labelStyle }, 'Situation (required)'),
+          hh('p', { id: 'learning-lab-script-situation-help', style: helpStyle }, 'Describe when you may want these words.'),
+          hh('textarea', { id: 'learning-lab-script-situation', value: newForm.situation, rows: 2, required: true, maxLength: 4000, onChange: function(event) { setNewForm(Object.assign({}, newForm, { situation: event.target.value })); if (errors.situation) setErrors(Object.assign({}, errors, { situation: '' })); }, 'aria-invalid': errors.situation ? 'true' : undefined, 'aria-describedby': 'learning-lab-script-situation-help' + (errors.situation ? ' learning-lab-script-situation-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical' }) }),
+          errors.situation ? hh('p', { id: 'learning-lab-script-situation-error', role: 'alert', style: { margin: '5px 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.situation) : null,
+          hh('label', { htmlFor: 'learning-lab-script-text', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Words to save (required)'),
+          hh('p', { id: 'learning-lab-script-text-help', style: helpStyle }, 'Write wording you can review and adapt later.'),
+          hh('textarea', { id: 'learning-lab-script-text', value: newForm.script, rows: 4, required: true, maxLength: 6000, onChange: function(event) { setNewForm(Object.assign({}, newForm, { script: event.target.value })); if (errors.script) setErrors(Object.assign({}, errors, { script: '' })); }, 'aria-invalid': errors.script ? 'true' : undefined, 'aria-describedby': 'learning-lab-script-text-help' + (errors.script ? ' learning-lab-script-text-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 110, resize: 'vertical' }) }),
+          errors.script ? hh('p', { id: 'learning-lab-script-text-error', role: 'alert', style: { margin: '5px 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, errors.script) : null,
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 9 }) }, 'Save personal script')
         )
       )
     );
