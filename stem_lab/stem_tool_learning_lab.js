@@ -2776,7 +2776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             key: 'p-' + p.preset,
             onClick: function() { applyPreset(p.preset); },
             style: {
-              padding: '6px 12px', borderRadius: 8,
+              minWidth: 44, minHeight: 44, padding: '6px 12px', borderRadius: 8,
               background: 'rgba(147,51,234,0.10)', color: '#c084fc',
               border: '1px solid rgba(147,51,234,0.40)',
               fontSize: 10, fontWeight: 700, cursor: 'pointer'
@@ -4124,7 +4124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // Actions
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
         hh('button', { onClick: loadExample,
-          style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(147,51,234,0.18)', color: '#c084fc', border: '1.5px solid rgba(147,51,234,0.50)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+          style: { minWidth: 44, minHeight: 44, padding: '8px 14px', borderRadius: 8, background: 'rgba(147,51,234,0.18)', color: '#c084fc', border: '1.5px solid rgba(147,51,234,0.50)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
         }, '📋 Load example'),
         hh('button', { onClick: clearAll,
           style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
@@ -12289,7 +12289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var career = CAREERS.filter(function(item) { return item.id === saved.id; })[0];
       return career ? { career: career, savedAt: saved.savedAt } : null;
     }).filter(Boolean);
-    var primaryButtonStyle = { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: completed ? '#047857' : 'rgba(71,85,105,0.55)', color: completed ? '#fff' : '#cbd5e1', fontWeight: 800, cursor: completed ? 'pointer' : 'not-allowed' };
+    var primaryButtonStyle = { minHeight: 44, minWidth: 44, minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: completed ? '#047857' : 'rgba(71,85,105,0.55)', color: completed ? '#fff' : '#cbd5e1', fontWeight: 800, cursor: completed ? 'pointer' : 'not-allowed' };
     var secondaryButtonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #a7f3d0', background: 'rgba(6,78,59,0.45)', color: '#d1fae5', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
@@ -18994,7 +18994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     name: 'Learning Lab',
     icon: '🧠',
     category: 'life-skills',
-    description: 'The science of how learning works. Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking, education-career pathways. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0). Honest about contested claims. Maine education programs + EL Education context.',
+    description: 'Explore optional learning, planning, reflection, accessibility, and education-career resources. Individual tools explain their purpose, limits, storage, and cited sources where relevant.',
     tags: ['pedagogy', 'learning-science', 'metacognition', 'UDL', 'study-skills', 'education-career', 'maine', 'teachers', 'school-psych'],
 
     render: function(ctx) {
@@ -19035,7 +19035,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       };
 
       var view = d.view || 'menu';
-      var setView = function(v) { upd('view', v); llAnnounce('Now showing: ' + v); };
+      function friendlyViewName(value) {
+        var names = { menu: 'Learning Lab menu', badges: 'Badge gallery', bloom: 'Bloom’s Taxonomy', cogload: 'Cognitive load', metacog: 'Metacognition', zpd: 'Zone of proximal development', udlPrinciples: 'Universal Design for Learning', spaced: 'Spaced and retrieval practice', study: 'Study strategies', mindset: 'Mindset evidence', myths: 'Learning myths', 'careers-list': 'Education careers', 'maine-progs': 'Maine education programs', lessonPlan: 'Lesson planner', strategyPicker: 'Strategy picker', bloomMatch: 'Bloom matching activity', path: 'Education pathway', glossary: 'Learning glossary', memory: 'Memory and learning', testAnxiety: 'Test-anxiety resources', sdt: 'Self-determination theory', researchLit: 'Research literacy', lab: 'Learning lab activities', noteTaking: 'Note-taking resources', sleep: 'Sleep and learning', goals: 'Goal-setting resources', multitask: 'Multitasking evidence', reading: 'Reading resources', trauma: 'Trauma-aware education', mtss: 'Multi-tiered systems of support', mathPed: 'Mathematics pedagogy', writing: 'Writing pedagogy', groupWork: 'Group-work resources', quiz: 'Learning Lab quiz', resources: 'Learning Lab resources', mytkHub: 'My Toolkit' };
+        if (names[value]) return names[value];
+        if (String(value || '').indexOf('mytk') === 0) return 'My Toolkit tool';
+        return 'Learning Lab module';
+      }
+      var currentViewLabel = String(d.viewLabel || friendlyViewName(view));
+      function focusCurrentView(nextView) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(nextView === 'menu' ? 'learning-lab-menu-heading' : 'learning-lab-current-view'); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+      var setView = function(value, label) { var nextLabel = String(label || friendlyViewName(value)); updMulti({ view: value, viewLabel: nextLabel }); llAnnounce('Opening ' + nextLabel + '.'); focusCurrentView(value); };
+      function wrapShellView(content) { return h('main', { id: 'learning-lab-current-view', tabIndex: -1, 'aria-label': currentViewLabel, style: { outline: 'none' } }, content); }
 
       var badges = d.badges || {};
       var awardBadge = function(id, label) {
@@ -19050,7 +19059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // ── Reusable styled buttons ──
       function btnPrimary(extra) {
         return Object.assign({
-          padding: '10px 16px', borderRadius: 8,
+          minWidth: 44, minHeight: 44, padding: '10px 16px', borderRadius: 8,
           background: T.accent, color: '#fff',
           border: '1px solid ' + T.accent,
           cursor: 'pointer', fontWeight: 700, fontSize: 14
@@ -19058,7 +19067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
       function btnSecondary(extra) {
         return Object.assign({
-          padding: '8px 14px', borderRadius: 8,
+          minWidth: 44, minHeight: 44, padding: '8px 14px', borderRadius: 8,
           background: T.cardAlt, color: T.text,
           border: '1px solid ' + T.border,
           cursor: 'pointer', fontWeight: 600, fontSize: 13
@@ -19066,7 +19075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
       function btnGhost(extra) {
         return Object.assign({
-          padding: '6px 12px', borderRadius: 8,
+          minWidth: 44, minHeight: 44, padding: '6px 12px', borderRadius: 8,
           background: 'transparent', color: T.muted,
           border: '1px solid ' + T.border,
           cursor: 'pointer', fontSize: 12
@@ -19074,10 +19083,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       function backBar(title) {
-        return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-          h('button', { 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.back_to_learning_lab_menu', 'Back to Learning Lab menu'),
-            onClick: function() { setView('menu'); }, style: btnGhost() }, __alloT('stem.learning_lab.menu', '← Menu')),
-          h('h2', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
+        return h(React.Fragment, null,
+          h('nav', { 'aria-label': 'Learning Lab navigation', style: { marginBottom: 8 } },
+            h('button', { type: 'button', 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.back_to_learning_lab_menu', 'Back to Learning Lab menu'), onClick: function() { setView('menu', 'Learning Lab menu'); }, style: btnGhost() }, __alloT('stem.learning_lab.menu', 'Back to menu'))
+          ),
+          h('h1', { id: 'learning-lab-view-heading', tabIndex: -1, style: { margin: '0 0 14px', paddingBottom: 10, borderBottom: '1px solid ' + T.border, fontSize: 20, color: T.text } }, currentViewLabel || title)
         );
       }
 
@@ -19094,7 +19104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       function renderMenu() {
         var categories = [
           { id: 'mytk', icon: '🧰', name: __alloT('stem.learning_lab.my_toolkit_personal_saved', 'My Toolkit (personal + saved)'),
-            desc: __alloT('stem.learning_lab.build_your_own_evidence_based_learning', 'Build YOUR own evidence-based learning + executive-function supports. Everything saves to your browser.'),
+            desc: __alloT('stem.learning_lab.build_your_own_evidence_based_learning', 'Explore optional personal learning, planning, reflection, and executive-function supports. Storage varies by configuration.'),
             featured: true,
             modules: [
               { id: 'mytkHub',    icon: '🧰', label: __alloT('stem.learning_lab.toolkit_hub', 'Toolkit Hub'),          desc: __alloT('stem.learning_lab.all_my_personal_tools_in_one_place_qui', 'All my personal tools in one place + quick stats.') },
@@ -19278,45 +19288,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
           }, __alloT('stem.learning_lab.skip_to_module_categories', 'Skip to module categories')),
           h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
+            h('h1', { id: 'learning-lab-menu-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
               h('span', { 'aria-hidden': 'true' }, '🧠 '), __alloT('stem.learning_lab.learning_lab', 'Learning Lab')),
             h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
               __alloT('stem.learning_lab.the_science_of_how_learning_works_for_', 'The science of how learning works — for students, teachers, and future educators. Bloom\'s, UDL, metacognition, cognitive load, spaced repetition, study strategies that actually work, neuromyth debunking, education careers. Cited primary sources; honest about contested claims.'))
           ),
           badgeCount > 0 && h('button', { 'data-ll-focusable': true,
             'aria-label': 'View badge gallery — ' + badgeCount + ' badges earned',
-            onClick: function() { setView('badges'); },
+            onClick: function() { setView('badges', 'Badge gallery'); },
             style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
             h('span', { 'aria-hidden': 'true' }, '🏅 '),
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.learning_lab.tap_to_view_gallery', ' — tap to view gallery →')
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.learning_lab.tap_to_view_gallery', ' — open gallery →')
           ),
           h('div', { id: 'll-menu-categories', tabIndex: -1, 'aria-label': __alloT('stem.learning_lab.module_categories', 'Learning Lab module categories') }),
           categories.map(function(cat) {
             var collapsed = !!collapsedCats[cat.id];
             return h('div', { key: cat.id, style: { marginBottom: 14 } },
-              h('button', { 'data-ll-focusable': true,
+              h('button', { type: 'button', id: 'learning-lab-category-toggle-' + cat.id, 'data-ll-focusable': true,
                 'aria-label': (collapsed ? 'Expand' : 'Collapse') + ' ' + cat.name,
                 'aria-expanded': collapsed ? 'false' : 'true',
+                'aria-controls': 'learning-lab-category-panel-' + cat.id,
                 onClick: function() {
                   var nv = Object.assign({}, collapsedCats); nv[cat.id] = !nv[cat.id];
                   upd('collapsedCats', nv);
                 },
                 style: { width: '100%', padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, color: T.text, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 } },
-                h('span', { style: { fontSize: 26 } }, cat.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 26 } }, cat.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontWeight: 800, fontSize: 16, color: T.accentHi } }, cat.name),
                   h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, cat.desc + ' · ' + cat.modules.length + ' modules')
                 ),
-                h('span', { style: { fontSize: 14, color: T.dim } }, collapsed ? '▶' : '▼')
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: T.dim } }, collapsed ? '▶' : '▼')
               ),
-              !collapsed && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 } },
+              !collapsed && h('div', { id: 'learning-lab-category-panel-' + cat.id, role: 'region', 'aria-labelledby': 'learning-lab-category-toggle-' + cat.id, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 } },
                 cat.modules.map(function(m) {
-                  return h('button', { 'data-ll-focusable': true, key: m.id,
+                  return h('button', { type: 'button', 'data-ll-focusable': true, key: m.id,
                     'aria-label': 'Open ' + m.label + ' module',
-                    onClick: function() { setView(m.id); },
-                    style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
+                    onClick: function() { setView(m.id, m.label); },
+                    style: { minHeight: 44, textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                      h('span', { style: { fontSize: 22 } }, m.icon),
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, m.icon),
                       h('strong', { style: { fontWeight: 700, fontSize: 14, color: T.text } }, m.label)
                     ),
                     h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, m.desc)
@@ -20575,23 +20586,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   var key = 'w' + w.week + '-' + m.id;
                   var isDone = !!done[key];
                   var label = MOD_LABELS[m.id] || m.id;
-                  return h('button', { key: key, role: 'listitem', 'data-ll-focusable': true,
-                    'aria-label': label + (isDone ? ' (done)' : ''),
-                    onClick: function() {
-                      var nv = Object.assign({}, done); nv[key] = !nv[key];
-                      upd('pathDone', nv);
-                    },
-                    style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
-                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
-                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
-                      h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.accentHi, flex: 1 } }, '→ ' + label)
+                  return h('div', { key: key, role: 'listitem', style: { padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text } },
+                    h('button', { type: 'button', 'data-ll-focusable': true,
+                      'aria-pressed': isDone ? 'true' : 'false',
+                      'aria-label': (isDone ? 'Mark incomplete: ' : 'Mark complete: ') + label,
+                      onClick: function() {
+                        var nv = Object.assign({}, done); nv[key] = !nv[key];
+                        upd('pathDone', nv);
+                      },
+                      style: { width: '100%', minHeight: 44, textAlign: 'left', padding: 8, borderRadius: 6, background: 'transparent', border: 0, color: T.text, cursor: 'pointer' } },
+                      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
+                        h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.accentHi, flex: 1 } }, '→ ' + label)
+                      ),
+                      h('span', { style: { display: 'block', fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
+                        h('strong', { style: { color: T.dim } }, 'Why: '), m.why)
                     ),
-                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
-                      h('strong', { style: { color: T.dim } }, 'Why: '), m.why),
-                    h('div', { style: { marginTop: 6, marginLeft: 22 } },
-                      h('a', { href: '#', onClick: function(e) { e.preventDefault(); e.stopPropagation(); setView(m.id); },
-                        style: { fontSize: 11, color: T.link, textDecoration: 'underline' } },
-                        '🔗 Open ' + label + ' →'))
+                    h('button', { type: 'button', 'data-ll-focusable': true, onClick: function() { setView(m.id, label); },
+                      'aria-label': 'Open ' + label + ' module',
+                      style: { minHeight: 44, marginTop: 4, marginLeft: 8, padding: '8px 10px', borderRadius: 6, border: '1px solid ' + T.border, background: T.card, fontSize: 11, color: T.link, textDecoration: 'underline', cursor: 'pointer' } },
+                      'Open ' + label + ' →')
                   );
                 })
               ),
@@ -22226,17 +22240,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // data via labToolData. Includes a back-to-toolkit nav.
       // ─────────────────────────────────────────
       function tkBackBar() {
-        return h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, padding: '0 14px' } },
-          h('button', { 'data-ll-focusable': true,
-            'aria-label': __alloT('stem.learning_lab.back_to_my_toolkit', 'Back to My Toolkit'),
-            onClick: function() { setView('mytkHub'); },
-            style: btnGhost({ padding: '6px 12px' }) }, __alloT('stem.learning_lab.my_toolkit', '← My Toolkit'))
+        return h(React.Fragment, null,
+          h('nav', { 'aria-label': 'My Toolkit navigation', style: { margin: '0 14px 6px' } },
+            h('button', { type: 'button', 'data-ll-focusable': true, 'aria-label': __alloT('stem.learning_lab.back_to_my_toolkit', 'Back to My Toolkit'), onClick: function() { setView('mytkHub', 'My Toolkit'); }, style: btnGhost({ padding: '8px 12px' }) }, __alloT('stem.learning_lab.my_toolkit', 'Back to My Toolkit'))
+          ),
+          h('h1', { id: 'learning-lab-view-heading', tabIndex: -1, style: { margin: '0 14px 6px', color: T.text, fontSize: 20 } }, currentViewLabel)
         );
       }
       function renderMytkHub() {
         return h('div', { style: { padding: '20px 0', maxWidth: 920, margin: '0 auto', color: T.text } },
-          backBar('🧰 My Toolkit'),
-          h(MyToolkitHub, { data: d, navigate: function(v) { setView(v); } })
+          h('nav', { 'aria-label': 'Learning Lab navigation', style: { margin: '0 14px 6px' } }, h('button', { type: 'button', 'data-ll-focusable': true, onClick: function() { setView('menu', 'Learning Lab menu'); }, style: btnGhost({ padding: '8px 12px' }) }, 'Back to Learning Lab menu')),
+          h(MyToolkitHub, { data: d, navigate: function(value, label) { setView(value, label); } })
         );
       }
       function renderMytkGoals() {
@@ -22967,139 +22981,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       // ─────────────────────────────────────────
       switch (view) {
         // My Toolkit (personalized tools)
-        case 'mytkHub':       return renderMytkHub();
-        case 'mytkGoals':     return renderMytkGoals();
-        case 'mytkFocus':     return renderMytkFocus();
-        case 'mytkBrain':     return renderMytkBrain();
-        case 'mytkIfThen':    return renderMytkIfThen();
-        case 'mytkAccom':     return renderMytkAccom();
-        case 'mytkFlash':     return renderMytkFlash();
-        case 'mytkPlanner':   return renderMytkPlanner();
-        case 'mytkExam':      return renderMytkExam();
-        case 'mytkTasks':     return renderMytkTasks();
-        case 'mytkHabits':    return renderMytkHabits();
-        case 'mytkReflect':   return renderMytkReflect();
-        case 'mytkWizard':    return renderMytkWizard();
-        case 'mytkLoad':      return renderMytkLoad();
-        case 'mytkMotiv':     return renderMytkMotiv();
-        case 'mytkProfile':   return renderMytkProfile();
-        case 'mytkPrompts':   return renderMytkPrompts();
-        case 'mytkMap':       return renderMytkMap();
-        case 'mytkNotes':     return renderMytkNotes();
-        case 'mytkAgenda':    return renderMytkAgenda();
-        case 'mytkEmotion':   return renderMytkEmotion();
-        case 'mytkEF':        return renderMytkEF();
-        case 'mytkIEP':       return renderMytkIEP();
-        case 'mytkMastery':   return renderMytkMastery();
-        case 'mytkSleep':     return renderMytkSleep();
-        case 'mytkJournal':   return renderMytkJournal();
-        case 'mytkGrat':      return renderMytkGrat();
-        case 'mytkRead':      return renderMytkRead();
-        case 'mytkCompass':   return renderMytkCompass();
-        case 'mytkDash':      return renderMytkDash();
-        case 'mytkChall':     return renderMytkChall();
-        case 'mytkTime':      return renderMytkTime();
-        case 'mytkDist':      return renderMytkDist();
-        case 'mytkSearch':    return renderMytkSearch();
-        case 'mytkCheats':    return renderMytkCheats();
-        case 'mytkAsk':       return renderMytkAsk();
-        case 'mytkMind':      return renderMytkMind();
-        case 'mytkAnxiety':   return renderMytkAnxiety();
-        case 'mytkDec':       return renderMytkDec();
-        case 'mytkVocab':     return renderMytkVocab();
-        case 'mytkPalace':    return renderMytkPalace();
-        case 'mytkRoster':    return renderMytkRoster();
-        case 'mytkQuote':     return renderMytkQuote();
-        case 'mytkCrisis':    return renderMytkCrisis();
-        case 'mytkIdent':     return renderMytkIdent();
-        case 'mytkCareer':    return renderMytkCareer();
-        case 'mytkMood':      return renderMytkMood();
-        case 'mytkFut':       return renderMytkFut();
-        case 'mytkDisc':      return renderMytkDisc();
-        case 'mytkAudio':     return renderMytkAudio();
-        case 'mytkWorry':     return renderMytkWorry();
-        case 'mytkEnergy':    return renderMytkEnergy();
-        case 'mytkQuest':     return renderMytkQuest();
-        case 'mytkSuccess':   return renderMytkSuccess();
-        case 'mytkEmail':     return renderMytkEmail();
-        case 'mytkBody':      return renderMytkBody();
-        case 'mytkAchieve':   return renderMytkAchieve();
-        case 'mytkAffirm':    return renderMytkAffirm();
-        case 'mytkRole':      return renderMytkRole();
-        case 'mytkAssess':    return renderMytkAssess();
-        case 'mytkContract':  return renderMytkContract();
-        case 'mytkCircle':    return renderMytkCircle();
-        case 'mytkRoutine':   return renderMytkRoutine();
-        case 'mytkPrio':      return renderMytkPrio();
-        case 'mytkParent':    return renderMytkParent();
-        case 'mytkRecovery':  return renderMytkRecovery();
-        case 'mytkCurrentRead': return renderMytkCurrentRead();
-        case 'mytkGreatDay':  return renderMytkGreatDay();
-        case 'mytkSensory':   return renderMytkSensory();
-        case 'mytkND':        return renderMytkND();
-        case 'mytkLifeMap':   return renderMytkLifeMap();
-        case 'mytkOpen':      return renderMytkOpen();
-        case 'mytkHigh':      return renderMytkHigh();
-        case 'mytkLifeSkills':return renderMytkLifeSkills();
-        case 'mytkEthical':   return renderMytkEthical();
-        case 'mytkResources': return renderMytkResources();
-        case 'mytkSunday':    return renderMytkSunday();
-        case 'mytkFriends':   return renderMytkFriends();
-        case 'mytkValues':    return renderMytkValues();
-        case 'mytkMomentum':  return renderMytkMomentum();
-        case 'mytkScreen':    return renderMytkScreen();
-        case 'mytkD3':        return renderMytkD3();
-        case 'mytkConf':      return renderMytkConf();
-        case 'mytkHope':      return renderMytkHope();
-        case 'mytkScript':    return renderMytkScript();
-        case 'mytkKnowl':     return renderMytkKnowl();
-        case 'mytkCurr':      return renderMytkCurr();
-        case 'mytkTransition':return renderMytkTransition();
-        case 'mytkAccomReq':  return renderMytkAccomReq();
-        case 'mytkDeck':      return renderMytkDeck();
-        case 'mytkComm':      return renderMytkComm();
-        case 'mytkBackup':    return renderMytkBackup();
-        case 'bloom':         return renderBloom();
-        case 'cogload':       return renderCogLoad();
-        case 'metacog':       return renderMetacog();
-        case 'zpd':           return renderZpd();
-        case 'udlPrinciples': return renderUDL();
-        case 'spaced':        return renderSpaced();
-        case 'study':         return renderStudy();
-        case 'mindset':       return renderMindset();
-        case 'myths':         return renderMyths();
-        case 'careers-list':  return renderCareers();
-        case 'maine-progs':   return renderMaineProgs();
-        case 'lessonPlan':    return renderLessonPlan();
-        case 'strategyPicker':return renderStrategyPicker();
-        case 'bloomMatch':    return renderBloomMatch();
-        case 'path':          return renderPath();
-        case 'glossary':      return renderGlossary();
-        case 'memory':        return renderMemory();
-        case 'testAnxiety':   return renderTestAnxiety();
-        case 'sdt':           return renderSDT();
-        case 'researchLit':   return renderResearchLit();
-        case 'lab':           return renderLab();
-        case 'noteTaking':    return renderNoteTaking();
-        case 'sleep':         return renderSleep();
-        case 'goals':         return renderGoals();
-        case 'multitask':     return renderMultitasking();
-        case 'reading':       return renderReading();
-        case 'trauma':        return renderTrauma();
-        case 'mtss':          return renderMTSS();
-        case 'mathPed':       return renderMathPedagogy();
-        case 'writing':       return renderWriting();
-        case 'groupWork':     return renderGroupWork();
-        case 'quiz':          return renderQuiz();
-        case 'badges':        return renderBadges();
-        case 'resources':     return renderResources();
+        case 'mytkHub':       return wrapShellView(renderMytkHub());
+        case 'mytkGoals':     return wrapShellView(renderMytkGoals());
+        case 'mytkFocus':     return wrapShellView(renderMytkFocus());
+        case 'mytkBrain':     return wrapShellView(renderMytkBrain());
+        case 'mytkIfThen':    return wrapShellView(renderMytkIfThen());
+        case 'mytkAccom':     return wrapShellView(renderMytkAccom());
+        case 'mytkFlash':     return wrapShellView(renderMytkFlash());
+        case 'mytkPlanner':   return wrapShellView(renderMytkPlanner());
+        case 'mytkExam':      return wrapShellView(renderMytkExam());
+        case 'mytkTasks':     return wrapShellView(renderMytkTasks());
+        case 'mytkHabits':    return wrapShellView(renderMytkHabits());
+        case 'mytkReflect':   return wrapShellView(renderMytkReflect());
+        case 'mytkWizard':    return wrapShellView(renderMytkWizard());
+        case 'mytkLoad':      return wrapShellView(renderMytkLoad());
+        case 'mytkMotiv':     return wrapShellView(renderMytkMotiv());
+        case 'mytkProfile':   return wrapShellView(renderMytkProfile());
+        case 'mytkPrompts':   return wrapShellView(renderMytkPrompts());
+        case 'mytkMap':       return wrapShellView(renderMytkMap());
+        case 'mytkNotes':     return wrapShellView(renderMytkNotes());
+        case 'mytkAgenda':    return wrapShellView(renderMytkAgenda());
+        case 'mytkEmotion':   return wrapShellView(renderMytkEmotion());
+        case 'mytkEF':        return wrapShellView(renderMytkEF());
+        case 'mytkIEP':       return wrapShellView(renderMytkIEP());
+        case 'mytkMastery':   return wrapShellView(renderMytkMastery());
+        case 'mytkSleep':     return wrapShellView(renderMytkSleep());
+        case 'mytkJournal':   return wrapShellView(renderMytkJournal());
+        case 'mytkGrat':      return wrapShellView(renderMytkGrat());
+        case 'mytkRead':      return wrapShellView(renderMytkRead());
+        case 'mytkCompass':   return wrapShellView(renderMytkCompass());
+        case 'mytkDash':      return wrapShellView(renderMytkDash());
+        case 'mytkChall':     return wrapShellView(renderMytkChall());
+        case 'mytkTime':      return wrapShellView(renderMytkTime());
+        case 'mytkDist':      return wrapShellView(renderMytkDist());
+        case 'mytkSearch':    return wrapShellView(renderMytkSearch());
+        case 'mytkCheats':    return wrapShellView(renderMytkCheats());
+        case 'mytkAsk':       return wrapShellView(renderMytkAsk());
+        case 'mytkMind':      return wrapShellView(renderMytkMind());
+        case 'mytkAnxiety':   return wrapShellView(renderMytkAnxiety());
+        case 'mytkDec':       return wrapShellView(renderMytkDec());
+        case 'mytkVocab':     return wrapShellView(renderMytkVocab());
+        case 'mytkPalace':    return wrapShellView(renderMytkPalace());
+        case 'mytkRoster':    return wrapShellView(renderMytkRoster());
+        case 'mytkQuote':     return wrapShellView(renderMytkQuote());
+        case 'mytkCrisis':    return wrapShellView(renderMytkCrisis());
+        case 'mytkIdent':     return wrapShellView(renderMytkIdent());
+        case 'mytkCareer':    return wrapShellView(renderMytkCareer());
+        case 'mytkMood':      return wrapShellView(renderMytkMood());
+        case 'mytkFut':       return wrapShellView(renderMytkFut());
+        case 'mytkDisc':      return wrapShellView(renderMytkDisc());
+        case 'mytkAudio':     return wrapShellView(renderMytkAudio());
+        case 'mytkWorry':     return wrapShellView(renderMytkWorry());
+        case 'mytkEnergy':    return wrapShellView(renderMytkEnergy());
+        case 'mytkQuest':     return wrapShellView(renderMytkQuest());
+        case 'mytkSuccess':   return wrapShellView(renderMytkSuccess());
+        case 'mytkEmail':     return wrapShellView(renderMytkEmail());
+        case 'mytkBody':      return wrapShellView(renderMytkBody());
+        case 'mytkAchieve':   return wrapShellView(renderMytkAchieve());
+        case 'mytkAffirm':    return wrapShellView(renderMytkAffirm());
+        case 'mytkRole':      return wrapShellView(renderMytkRole());
+        case 'mytkAssess':    return wrapShellView(renderMytkAssess());
+        case 'mytkContract':  return wrapShellView(renderMytkContract());
+        case 'mytkCircle':    return wrapShellView(renderMytkCircle());
+        case 'mytkRoutine':   return wrapShellView(renderMytkRoutine());
+        case 'mytkPrio':      return wrapShellView(renderMytkPrio());
+        case 'mytkParent':    return wrapShellView(renderMytkParent());
+        case 'mytkRecovery':  return wrapShellView(renderMytkRecovery());
+        case 'mytkCurrentRead': return wrapShellView(renderMytkCurrentRead());
+        case 'mytkGreatDay':  return wrapShellView(renderMytkGreatDay());
+        case 'mytkSensory':   return wrapShellView(renderMytkSensory());
+        case 'mytkND':        return wrapShellView(renderMytkND());
+        case 'mytkLifeMap':   return wrapShellView(renderMytkLifeMap());
+        case 'mytkOpen':      return wrapShellView(renderMytkOpen());
+        case 'mytkHigh':      return wrapShellView(renderMytkHigh());
+        case 'mytkLifeSkills':return wrapShellView(renderMytkLifeSkills());
+        case 'mytkEthical':   return wrapShellView(renderMytkEthical());
+        case 'mytkResources': return wrapShellView(renderMytkResources());
+        case 'mytkSunday':    return wrapShellView(renderMytkSunday());
+        case 'mytkFriends':   return wrapShellView(renderMytkFriends());
+        case 'mytkValues':    return wrapShellView(renderMytkValues());
+        case 'mytkMomentum':  return wrapShellView(renderMytkMomentum());
+        case 'mytkScreen':    return wrapShellView(renderMytkScreen());
+        case 'mytkD3':        return wrapShellView(renderMytkD3());
+        case 'mytkConf':      return wrapShellView(renderMytkConf());
+        case 'mytkHope':      return wrapShellView(renderMytkHope());
+        case 'mytkScript':    return wrapShellView(renderMytkScript());
+        case 'mytkKnowl':     return wrapShellView(renderMytkKnowl());
+        case 'mytkCurr':      return wrapShellView(renderMytkCurr());
+        case 'mytkTransition':return wrapShellView(renderMytkTransition());
+        case 'mytkAccomReq':  return wrapShellView(renderMytkAccomReq());
+        case 'mytkDeck':      return wrapShellView(renderMytkDeck());
+        case 'mytkComm':      return wrapShellView(renderMytkComm());
+        case 'mytkBackup':    return wrapShellView(renderMytkBackup());
+        case 'bloom':         return wrapShellView(renderBloom());
+        case 'cogload':       return wrapShellView(renderCogLoad());
+        case 'metacog':       return wrapShellView(renderMetacog());
+        case 'zpd':           return wrapShellView(renderZpd());
+        case 'udlPrinciples': return wrapShellView(renderUDL());
+        case 'spaced':        return wrapShellView(renderSpaced());
+        case 'study':         return wrapShellView(renderStudy());
+        case 'mindset':       return wrapShellView(renderMindset());
+        case 'myths':         return wrapShellView(renderMyths());
+        case 'careers-list':  return wrapShellView(renderCareers());
+        case 'maine-progs':   return wrapShellView(renderMaineProgs());
+        case 'lessonPlan':    return wrapShellView(renderLessonPlan());
+        case 'strategyPicker':return wrapShellView(renderStrategyPicker());
+        case 'bloomMatch':    return wrapShellView(renderBloomMatch());
+        case 'path':          return wrapShellView(renderPath());
+        case 'glossary':      return wrapShellView(renderGlossary());
+        case 'memory':        return wrapShellView(renderMemory());
+        case 'testAnxiety':   return wrapShellView(renderTestAnxiety());
+        case 'sdt':           return wrapShellView(renderSDT());
+        case 'researchLit':   return wrapShellView(renderResearchLit());
+        case 'lab':           return wrapShellView(renderLab());
+        case 'noteTaking':    return wrapShellView(renderNoteTaking());
+        case 'sleep':         return wrapShellView(renderSleep());
+        case 'goals':         return wrapShellView(renderGoals());
+        case 'multitask':     return wrapShellView(renderMultitasking());
+        case 'reading':       return wrapShellView(renderReading());
+        case 'trauma':        return wrapShellView(renderTrauma());
+        case 'mtss':          return wrapShellView(renderMTSS());
+        case 'mathPed':       return wrapShellView(renderMathPedagogy());
+        case 'writing':       return wrapShellView(renderWriting());
+        case 'groupWork':     return wrapShellView(renderGroupWork());
+        case 'quiz':          return wrapShellView(renderQuiz());
+        case 'badges':        return wrapShellView(renderBadges());
+        case 'resources':     return wrapShellView(renderResources());
         case 'menu':
         default:              return renderMenu();
       }
       } catch(e) {
         console.error('[LearningLab] render error', e);
-        return ctx.React.createElement('div', { style: { padding: 16, color: '#fde2e2', background: '#7f1d1d', borderRadius: 8 } },
-          'Learning Lab failed to render. ' + (e && e.message ? e.message : ''));
+        setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById('learning-lab-render-error-heading'); if (target && typeof target.focus === 'function') target.focus(); }, 0);
+        return ctx.React.createElement('section', { role: 'alert', 'aria-live': 'assertive', 'aria-labelledby': 'learning-lab-render-error-heading', style: { padding: 16, color: '#fee2e2', background: '#7f1d1d', border: '2px solid #fca5a5', borderRadius: 8 } },
+          ctx.React.createElement('h1', { id: 'learning-lab-render-error-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 18 } }, 'Learning Lab could not be displayed'),
+          ctx.React.createElement('p', { style: { margin: '0 0 10px', lineHeight: 1.5 } }, 'Your saved data was not changed by this display error. Return to the Learning Lab menu and try again. If the problem continues, report what you were opening.'),
+          ctx.React.createElement('button', { type: 'button', onClick: function() { if (typeof setView === 'function') setView('menu', 'Learning Lab menu'); else if (ctx && typeof ctx.update === 'function') ctx.update('learningLab', 'view', 'menu'); }, style: { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #fff', background: '#fff', color: '#7f1d1d', fontWeight: 800, cursor: 'pointer' } }, 'Return to Learning Lab menu'));
       }
     }
   });
