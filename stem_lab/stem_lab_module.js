@@ -3476,6 +3476,14 @@
                 ready: true
               },
               {
+                id: 'timeSchedule',
+                icon: '\uD83D\uDD70\uFE0F',
+                label: 'Time & Schedule Lab',
+                desc: 'Link clocks, model elapsed time, reason about schedules, and convert 12/24-hour time.',
+                color: 'sky',
+                ready: true
+              },
+              {
                 id: 'fractionViz',
                 aliases: ['fractions'],
                 icon: '🍕',
@@ -5404,6 +5412,7 @@
             arithmeticStudio: true,
             ratioLab: true,
             areaPerimeter: true,
+            timeSchedule: true,
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,

@@ -1086,6 +1086,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_arithmetic.js',
     'stem_lab/stem_tool_ratios.js',
     'stem_lab/stem_tool_areaperimeter.js',
+    'stem_lab/stem_tool_timeschedule.js',
     'stem_lab/stem_tool_platetectonics.js',
     'stem_lab/stem_tool_punnett.js',
     'stem_lab/stem_tool_semiconductor.js',
