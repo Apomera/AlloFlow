@@ -135,15 +135,26 @@ function _quizDraftNamespace(data, sessionCode) {
   }
   return _QUIZ_DRAFT_STORAGE_PREFIX + String(sessionCode || 'local') + ':' + (hash >>> 0).toString(36);
 }
-function _quizReadDraft(namespace) {
-  if (!namespace || typeof window === 'undefined' || !window.localStorage) return null;
+function _quizLocalStorage() {
+  // Reading window.localStorage THROWS (not merely returns undefined) in
+  // sandboxed iframes and opaque origins — probe it inside a try.
   try {
-    var raw = window.localStorage.getItem(namespace);
+    if (typeof window === 'undefined') return null;
+    return window.localStorage || null;
+  } catch (e) {
+    return null;
+  }
+}
+function _quizReadDraft(namespace) {
+  var storage = _quizLocalStorage();
+  if (!namespace || !storage) return null;
+  try {
+    var raw = storage.getItem(namespace);
     if (!raw) return null;
     var parsed = JSON.parse(raw);
     if (!parsed || parsed.version !== 1 || !parsed.items || typeof parsed.items !== 'object') return null;
     if (!Number.isFinite(Number(parsed.updatedAt)) || Date.now() - Number(parsed.updatedAt) > _QUIZ_DRAFT_MAX_AGE_MS) {
-      window.localStorage.removeItem(namespace);
+      storage.removeItem(namespace);
       return null;
     }
     return parsed;
@@ -163,7 +174,8 @@ function _quizReadDraftField(namespace, itemKey, field) {
   };
 }
 function _quizWriteDraftField(namespace, itemKey, field, value) {
-  if (!namespace || typeof window === 'undefined' || !window.localStorage) return false;
+  var storage = _quizLocalStorage();
+  if (!namespace || !storage) return false;
   try {
     var draft = _quizReadDraft(namespace) || {
       version: 1,
@@ -173,7 +185,7 @@ function _quizWriteDraftField(namespace, itemKey, field, value) {
     draft.items[itemKey] = Object.assign({}, draft.items[itemKey] || {});
     draft.items[itemKey][field] = value;
     draft.updatedAt = Date.now();
-    window.localStorage.setItem(namespace, JSON.stringify(draft));
+    storage.setItem(namespace, JSON.stringify(draft));
     try {
       window.dispatchEvent(new CustomEvent('alloflow:assessment-draft-saved', {
         detail: {
