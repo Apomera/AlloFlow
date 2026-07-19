@@ -87,7 +87,7 @@ For school psychologists:
 
 Curriculum depth:
 
-- **STEM Lab**: 122 tool files / 123 registered plugin IDs across math, life science, earth/space, physics/chemistry, CS, design, and applied simulations
+- **STEM Lab**: 126 tool files / 127 registered plugin IDs across math, life science, earth/space, physics/chemistry, CS, design, and applied simulations
 - **SEL Hub**: 70 tools aligned to CASEL and expanded AlloFlow categories such as self-direction, inner work, care of self, and stewardship
 
 ---

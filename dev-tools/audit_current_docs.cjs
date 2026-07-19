@@ -23,7 +23,7 @@ const stemMatch = registryOutput.match(/StemLab tools:\s+(\d+)/);
 const stemIds = stemMatch ? Number(stemMatch[1]) : NaN;
 const selFiles = fs.readdirSync(path.join(root, 'sel_hub')).filter((name) => /^sel_tool_.*\.js$/i.test(name)).length;
 const totals = { stemFiles: stemNames.length, stemIds, selFiles };
-for (const [key, expected] of Object.entries({ stemFiles: 122, stemIds: 123, selFiles: 70 })) {
+for (const [key, expected] of Object.entries({ stemFiles: 126, stemIds: 127, selFiles: 70 })) {
   if (totals[key] !== expected) errors.push(`registry freshness: ${key} expected ${expected}, found ${totals[key]}; update maintained docs and this audit together`);
 }
 for (const file of ['README.md','AdminBrief.md','AlloFlow Complete User Manual.md','CONTRIBUTING.md','ORIENTATION.md']) {
