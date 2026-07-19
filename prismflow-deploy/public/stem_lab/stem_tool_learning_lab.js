@@ -17556,134 +17556,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { areas: [] };
     var setData = props.setData;
-    var fs = R.useState({ name: '', icon: '📚' });
-    var form = fs[0]; var setForm = fs[1];
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var as = R.useState(null);                         var activeId = as[0]; var setActiveId = as[1];
-    var ts = R.useState({ text: '', status: 'learning' }); var topicForm = ts[0]; var setTopicForm = ts[1];
+    var emptyAreaForm = { name: '', icon: '📚' };
+    var fs = R.useState(emptyAreaForm); var form = fs[0]; var setForm = fs[1];
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var as = R.useState(null); var activeId = as[0]; var setActiveId = as[1];
+    var emptyTopicForm = { text: '', status: 'learning' };
+    var ts = R.useState(emptyTopicForm); var topicForm = ts[0]; var setTopicForm = ts[1];
+    var aes = R.useState(''); var areaError = aes[0]; var setAreaError = aes[1];
+    var tes = R.useState(''); var topicError = tes[0]; var setTopicError = tes[1];
 
     var STATUSES = [
-      { id: 'mastered',  label: 'Mastered', icon: '🏆', color: '#10b981' },
-      { id: 'know',      label: 'I know it', icon: '✓', color: '#3b82f6' },
-      { id: 'learning',  label: 'Learning', icon: '📖', color: '#fbbf24' },
-      { id: 'next',      label: 'Next up', icon: '⏭', color: '#a855f7' },
-      { id: 'curious',   label: 'Curious about', icon: '🤔', color: '#06b6d4' }
+      { id: 'mastered', label: 'Strong confidence', icon: '🏆', color: '#6ee7b7' },
+      { id: 'know', label: 'Familiar', icon: '✓', color: '#93c5fd' },
+      { id: 'learning', label: 'Learning', icon: '📖', color: '#fde68a' },
+      { id: 'next', label: 'Next to explore', icon: '⏭', color: '#d8b4fe' },
+      { id: 'curious', label: 'Curious about', icon: '🤔', color: '#67e8f9' }
     ];
 
+    function safeDomId(value) { return String(value || 'area').replace(/[^A-Za-z0-9_-]+/g, '-'); }
+    function focusById(id) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (target && typeof target.focus === 'function') target.focus(); }, 0); }
+    function statusFor(id) { return STATUSES.filter(function(status) { return status.id === id; })[0] || STATUSES[2]; }
+    function getArea() { return (data.areas || []).filter(function(area) { return area.id === activeId; })[0]; }
     function addArea() {
-      if (!form.name.trim()) return;
-      var a = Object.assign({ id: tkId(), topics: [], createdAt: todayISO() }, form);
-      setData({ areas: [a].concat(data.areas || []) });
-      setForm({ name: '', icon: '📚' });
+      var name = form.name.trim();
+      if (!name) { setAreaError('Enter a knowledge-area name before saving.'); llAnnounce('Knowledge area not saved. Enter a name first.'); focusById('learning-lab-knowledge-area-name'); return; }
+      var area = { id: tkId(), topics: [], createdAt: todayISO(), name: name, icon: form.icon.trim() || '📚' };
+      setData(Object.assign({}, data, { areas: [area].concat(data.areas || []) }));
+      setForm(emptyAreaForm); setAreaError(''); llAnnounce('Knowledge area saved: ' + name); focusById('learning-lab-knowledge-area-name');
     }
-    function getArea() { return (data.areas || []).filter(function(a) { return a.id === activeId; })[0]; }
-    function updateArea(patch) {
-      setData({ areas: (data.areas || []).map(function(a) { return a.id === activeId ? Object.assign({}, a, patch) : a; }) });
-    }
-    function removeArea(id) {
-      if (!confirm('Delete this knowledge area + all its topics?')) return;
-      setData({ areas: (data.areas || []).filter(function(a) { return a.id !== id; }) });
+    function openArea(area) { setActiveId(area.id); setView('area'); llAnnounce('Opened knowledge area: ' + String(area.name || 'untitled area')); focusById('learning-lab-knowledge-detail-heading'); }
+    function closeArea() { var previous = activeId; setView('list'); setActiveId(null); llAnnounce('Returned to all knowledge areas.'); focusById('learning-lab-knowledge-open-' + safeDomId(previous)); }
+    function updateArea(patch) { setData(Object.assign({}, data, { areas: (data.areas || []).map(function(area) { return area.id === activeId ? Object.assign({}, area, patch) : area; }) })); }
+    function removeArea(area) {
+      askLearningLabConfirmation('Remove “' + String(area.name || 'this knowledge area') + '” and all of its topics? This cannot be undone.', { title: 'Remove this knowledge area?', confirmText: 'Remove area' }).then(function(accepted) {
+        if (!accepted) return;
+        setData(Object.assign({}, data, { areas: (data.areas || []).filter(function(item) { return item.id !== area.id; }) }));
+        llAnnounce('Knowledge area and its topics removed.'); focusById('learning-lab-knowledge-list-heading');
+      });
     }
     function addTopic() {
-      if (!topicForm.text.trim()) return;
-      var a = getArea();
-      updateArea({ topics: (a.topics || []).concat([Object.assign({ id: tkId(), addedAt: todayISO() }, topicForm)]) });
-      setTopicForm({ text: '', status: 'learning' });
+      var text = topicForm.text.trim(); var area = getArea();
+      if (!text) { setTopicError('Enter a topic name before saving.'); llAnnounce('Topic not saved. Enter a name first.'); focusById('learning-lab-knowledge-topic-name'); return; }
+      if (!area) return;
+      var topic = { id: tkId(), addedAt: todayISO(), text: text, status: statusFor(topicForm.status).id };
+      updateArea({ topics: (area.topics || []).concat([topic]) }); setTopicForm(emptyTopicForm); setTopicError(''); llAnnounce('Topic saved: ' + text); focusById('learning-lab-knowledge-topic-name');
     }
-    function setTopicStatus(topicId, status) {
-      var a = getArea();
-      updateArea({ topics: a.topics.map(function(t) { return t.id === topicId ? Object.assign({}, t, { status: status, updatedAt: todayISO() }) : t; }) });
+    function setTopicStatus(topic, status) {
+      var area = getArea(); var normalized = statusFor(status);
+      if (!area) return;
+      updateArea({ topics: (area.topics || []).map(function(item) { return item.id === topic.id ? Object.assign({}, item, { status: normalized.id, updatedAt: todayISO() }) : item; }) });
+      llAnnounce('Learning status changed to ' + normalized.label + ' for ' + String(topic.text || 'this topic') + '.'); focusById('learning-lab-knowledge-topic-status-' + safeDomId(topic.id));
     }
-    function removeTopic(topicId) {
-      var a = getArea();
-      updateArea({ topics: a.topics.filter(function(t) { return t.id !== topicId; }) });
+    function removeTopic(topic) {
+      var area = getArea(); if (!area) return;
+      askLearningLabConfirmation('Remove the topic “' + String(topic.text || 'this topic') + '”? This cannot be undone.', { title: 'Remove this topic?', confirmText: 'Remove topic' }).then(function(accepted) {
+        if (!accepted) return;
+        updateArea({ topics: (area.topics || []).filter(function(item) { return item.id !== topic.id; }) }); llAnnounce('Knowledge topic removed.'); focusById('learning-lab-knowledge-topics-heading');
+      });
     }
+
+    var areas = data.areas || [];
+    var labelStyle = { display: 'block', marginBottom: 5, color: '#cffafe', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 6px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, borderRadius: 7, border: '1px solid #22d3ee', background: 'rgba(15,23,42,0.85)', color: '#f8fafc', padding: '9px 10px', fontSize: 12 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #67e8f9', background: '#0e7490', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     if (view === 'area' && activeId) {
-      var a = getArea();
-      if (!a) { setView('list'); return null; }
-      var byStatus = {};
-      (a.topics || []).forEach(function(t) {
-        byStatus[t.status] = byStatus[t.status] || [];
-        byStatus[t.status].push(t);
-      });
+      var activeArea = getArea();
+      if (!activeArea) return hh('div', { style: { padding: 14 } }, tkSectionHeader('🗺', 'Knowledge Map', 'The selected area is no longer available.', '#06b6d4'), hh('p', { role: 'alert', style: { color: '#fecaca' } }, 'This knowledge area could not be found.'), hh('button', { type: 'button', onClick: closeArea, style: buttonStyle }, 'Return to all areas'));
+      var topics = Array.isArray(activeArea.topics) ? activeArea.topics : []; var byStatus = {};
+      topics.forEach(function(topic) { var normalized = statusFor(topic.status); byStatus[normalized.id] = byStatus[normalized.id] || []; byStatus[normalized.id].push(topic); });
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(a.icon, a.name, (a.topics || []).length + ' topics tracked', '#06b6d4'),
-
-        tkCard('#06b6d4',
-          hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '+ Add topic'),
-            hh('div', { style: { display: 'flex', gap: 6 } },
-              tkInput(topicForm.text, function(v) { setTopicForm(Object.assign({}, topicForm, { text: v })); }, 'Topic name', { flex: 1 }),
-              hh('select', { value: topicForm.status,
-                onChange: function(e) { setTopicForm(Object.assign({}, topicForm, { status: e.target.value })); },
-                style: { padding: '8px 10px', fontSize: 11, color: '#67e8f9', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 6 }
-              }, STATUSES.map(function(s) { return hh('option', { key: 'so-' + s.id, value: s.id }, s.icon + ' ' + s.label); })),
-              tkBtn('+', addTopic, 'primary', { padding: '8px 14px' })
-            )
+        tkSectionHeader(activeArea.icon || '📚', String(activeArea.name || 'Untitled area'), topics.length + ' topics saved', '#06b6d4'),
+        hh('aside', { 'aria-labelledby': 'learning-lab-knowledge-detail-context', style: { marginBottom: 12, padding: 10, borderRadius: 8, border: '1px solid #22d3ee', background: 'rgba(8,51,68,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } }, hh('h2', { id: 'learning-lab-knowledge-detail-context', style: { margin: '0 0 4px', color: '#cffafe', fontSize: 13 } }, 'Personal learning notes'), hh('p', { style: { margin: 0 } }, 'Statuses are labels you control, not grades or assessments. They may change as your context, goals, or understanding changes.')),
+        hh('section', { 'aria-labelledby': 'learning-lab-knowledge-detail-heading' },
+          hh('h2', { id: 'learning-lab-knowledge-detail-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#cffafe', fontSize: 15 } }, String(activeArea.name || 'Untitled area') + ' topics'),
+          tkCard('#06b6d4', hh('form', { onSubmit: function(event) { event.preventDefault(); addTopic(); }, 'aria-labelledby': 'learning-lab-knowledge-topic-form-heading' },
+            hh('h3', { id: 'learning-lab-knowledge-topic-form-heading', style: { margin: '0 0 7px', color: '#cffafe', fontSize: 13 } }, 'Add a topic'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(150px, 1fr)', gap: 10 } },
+              hh('div', null, hh('label', { htmlFor: 'learning-lab-knowledge-topic-name', style: labelStyle }, 'Topic name (required)'), hh('input', { id: 'learning-lab-knowledge-topic-name', type: 'text', value: topicForm.text, required: true, maxLength: 2000, onChange: function(event) { setTopicForm(Object.assign({}, topicForm, { text: event.target.value })); if (topicError) setTopicError(''); }, 'aria-invalid': topicError ? 'true' : undefined, 'aria-describedby': topicError ? 'learning-lab-knowledge-topic-error' : undefined, style: fieldStyle }), topicError ? hh('p', { id: 'learning-lab-knowledge-topic-error', role: 'alert', style: { margin: '5px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, topicError) : null),
+              hh('div', null, hh('label', { htmlFor: 'learning-lab-knowledge-topic-status-new', style: labelStyle }, 'Initial learning status'), hh('select', { id: 'learning-lab-knowledge-topic-status-new', value: topicForm.status, onChange: function(event) { setTopicForm(Object.assign({}, topicForm, { status: event.target.value })); }, style: fieldStyle }, STATUSES.map(function(status) { return hh('option', { key: status.id, value: status.id }, status.label); })))
+            ),
+            hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Save topic')
+          )),
+          hh('section', { 'aria-labelledby': 'learning-lab-knowledge-topics-heading' },
+            hh('h3', { id: 'learning-lab-knowledge-topics-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#cffafe', fontSize: 13 } }, 'Saved topics by learning status'),
+            topics.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No topics saved in this area yet.') : STATUSES.map(function(status) { var inStatus = byStatus[status.id] || []; if (!inStatus.length) return null; var statusHeadingId = 'learning-lab-knowledge-status-' + status.id; return hh('section', { key: status.id, 'aria-labelledby': statusHeadingId, style: { marginBottom: 14 } },
+              hh('h4', { id: statusHeadingId, style: { margin: '0 0 7px', color: status.color, fontSize: 12 } }, hh('span', { 'aria-hidden': 'true' }, status.icon + ' '), status.label + ' (' + inStatus.length + ')'),
+              hh('ul', { 'aria-label': status.label + ' topics', style: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } }, inStatus.map(function(topic) { var domId = safeDomId(topic.id); var headingId = 'learning-lab-knowledge-topic-' + domId; return hh('li', { key: topic.id }, hh('article', { 'aria-labelledby': headingId, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid ' + status.color } },
+                hh('h5', { id: headingId, style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 12, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(topic.text || 'Untitled topic')),
+                hh('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'end', gap: 8 } },
+                  hh('div', { style: { flex: '1 1 190px' } }, hh('label', { htmlFor: 'learning-lab-knowledge-topic-status-' + domId, style: labelStyle }, 'Learning status for ' + String(topic.text || 'this topic')), hh('select', { id: 'learning-lab-knowledge-topic-status-' + domId, value: statusFor(topic.status).id, onChange: function(event) { setTopicStatus(topic, event.target.value); }, style: fieldStyle }, STATUSES.map(function(option) { return hh('option', { key: option.id, value: option.id }, option.label); }))),
+                  hh('button', { type: 'button', onClick: function() { removeTopic(topic); }, 'aria-label': 'Remove knowledge topic: ' + String(topic.text || 'untitled topic'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                ),
+                hh('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 10 } }, 'Added ', hh('time', { dateTime: topic.addedAt || undefined }, relDate(topic.addedAt)), topic.updatedAt ? hh('span', null, '. Status updated ', hh('time', { dateTime: topic.updatedAt }, relDate(topic.updatedAt))) : null)
+              )); }))
+            ); }).filter(Boolean)
           )
         ),
-
-        STATUSES.map(function(s) {
-          var inStatus = byStatus[s.id] || [];
-          if (inStatus.length === 0) return null;
-          return hh('div', { key: 'st-' + s.id, style: { marginBottom: 14 } },
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 8, padding: '4px 10px', background: s.color + '15', borderRadius: 6, display: 'inline-block' } }, s.icon + ' ' + s.label + ' (' + inStatus.length + ')'),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-              inStatus.map(function(t) {
-                return hh('div', { key: 'tp-' + t.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + s.color, display: 'flex', justifyContent: 'space-between', gap: 6 } },
-                  hh('span', { style: { flex: 1, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, t.text),
-                  hh('select', { value: t.status,
-                    onChange: function(e) { setTopicStatus(t.id, e.target.value); },
-                    style: { padding: '4px 6px', fontSize: 10, color: '#67e8f9', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(6,182,212,0.40)', borderRadius: 4 }
-                  }, STATUSES.map(function(opt) { return hh('option', { key: 'os-' + opt.id, value: opt.id }, opt.icon); })),
-                  hh('button', { onClick: function() { removeTopic(t.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                );
-              })
-            )
-          );
-        }).filter(Boolean),
-
-        hh('div', { style: { textAlign: 'center', marginTop: 14 } },
-          tkBtn('← All areas', function() { setView('list'); setActiveId(null); }, 'ghost')
-        )
+        hh('button', { type: 'button', onClick: closeArea, style: Object.assign({}, buttonStyle, { marginTop: 14 }) }, 'Return to all knowledge areas')
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🗺', 'Knowledge Map', 'Map what you know vs. what you\'re learning vs. what you\'re curious about. Personal knowledge inventory.', '#06b6d4'),
-
-      tkCard('#06b6d4',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#67e8f9', marginBottom: 8 } }, '+ New knowledge area'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '60px 1fr 80px', gap: 6 } },
-            tkInput(form.icon, function(v) { setForm(Object.assign({}, form, { icon: v })); }, '📚', { textAlign: 'center', fontSize: 18 }),
-            tkInput(form.name, function(v) { setForm(Object.assign({}, form, { name: v })); }, 'Area (e.g., "AP Chemistry", "Cooking", "Spanish")'),
-            tkBtn('+ Add', addArea, 'primary')
-          )
-        )
+      tkSectionHeader('🗺', 'Knowledge Map', 'Organize subjects and personal learning-status notes over time.', '#06b6d4'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-knowledge-context-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #22d3ee', background: 'rgba(8,51,68,0.28)', color: '#f8fafc', fontSize: 11, lineHeight: 1.55 } },
+        hh('h2', { id: 'learning-lab-knowledge-context-heading', style: { margin: '0 0 5px', color: '#cffafe', fontSize: 13 } }, 'Your map, not a test'),
+        hh('p', { style: { margin: 0 } }, 'Names, topics, and status notes save in this browser. They are personal organization labels—not grades, diagnoses, or proof of ability. Avoid sensitive details on a shared device.')
       ),
-
-      (data.areas || []).length === 0 ? tkEmptyState('🗺', 'No knowledge areas yet.', null, null)
-      : hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-          (data.areas || []).map(function(a) {
-            var topicCount = (a.topics || []).length;
-            var mastered = (a.topics || []).filter(function(t) { return t.status === 'mastered'; }).length;
-            return hh('button', { key: 'ka-' + a.id,
-              onClick: function() { setActiveId(a.id); setView('area'); },
-              style: { display: 'block', textAlign: 'left', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4', cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-                hh('div', null,
-                  hh('div', { style: { fontSize: 24, marginBottom: 4 } }, a.icon),
-                  hh('strong', { style: { fontSize: 13, color: '#67e8f9' } }, a.name)
-                ),
-                hh('span', { onClick: function(e) { e.stopPropagation(); removeArea(a.id); }, style: { color: 'var(--allo-stem-text-soft, #64748b)', cursor: 'pointer', fontSize: 12 } }, '✕')
-              ),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, topicCount + ' topics · ' + mastered + ' mastered')
-            );
-          })
-        )
+      tkCard('#06b6d4', hh('form', { onSubmit: function(event) { event.preventDefault(); addArea(); }, 'aria-labelledby': 'learning-lab-knowledge-area-form-heading' },
+        hh('h2', { id: 'learning-lab-knowledge-area-form-heading', style: { margin: '0 0 7px', color: '#cffafe', fontSize: 15 } }, 'Add a knowledge area'),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(100px, 1fr) minmax(0, 3fr)', gap: 10 } },
+          hh('div', null, hh('label', { htmlFor: 'learning-lab-knowledge-area-icon', style: labelStyle }, 'Icon or short symbol (optional)'), hh('input', { id: 'learning-lab-knowledge-area-icon', type: 'text', value: form.icon, maxLength: 12, onChange: function(event) { setForm(Object.assign({}, form, { icon: event.target.value })); }, style: fieldStyle })),
+          hh('div', null, hh('label', { htmlFor: 'learning-lab-knowledge-area-name', style: labelStyle }, 'Knowledge-area name (required)'), hh('input', { id: 'learning-lab-knowledge-area-name', type: 'text', value: form.name, required: true, maxLength: 1000, onChange: function(event) { setForm(Object.assign({}, form, { name: event.target.value })); if (areaError) setAreaError(''); }, 'aria-invalid': areaError ? 'true' : undefined, 'aria-describedby': areaError ? 'learning-lab-knowledge-area-error' : undefined, style: fieldStyle }), areaError ? hh('p', { id: 'learning-lab-knowledge-area-error', role: 'alert', style: { margin: '5px 0 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, areaError) : null)
+        ),
+        hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Save knowledge area')
+      )),
+      hh('section', { 'aria-labelledby': 'learning-lab-knowledge-list-heading' },
+        hh('h2', { id: 'learning-lab-knowledge-list-heading', tabIndex: -1, style: { margin: '0 0 8px', color: '#cffafe', fontSize: 15 } }, 'Saved knowledge areas'),
+        areas.length === 0 ? hh('p', { style: { margin: 0, padding: 11, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: '#e2e8f0', fontSize: 11 } }, 'No knowledge areas saved yet.') :
+        hh('ul', { 'aria-label': 'Saved knowledge areas', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, margin: 0, padding: 0, listStyle: 'none' } }, areas.map(function(area) { var domId = safeDomId(area.id); var headingId = 'learning-lab-knowledge-area-' + domId; var topics = Array.isArray(area.topics) ? area.topics : []; var confident = topics.filter(function(topic) { return statusFor(topic.status).id === 'mastered'; }).length; return hh('li', { key: area.id }, hh('article', { 'aria-labelledby': headingId, style: { height: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.62)', borderLeft: '4px solid #22d3ee' } },
+          hh('h3', { id: headingId, style: { margin: 0, color: '#cffafe', fontSize: 13, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, String(area.icon || '📚') + ' '), String(area.name || 'Untitled area')),
+          hh('p', { style: { margin: '6px 0', color: '#f8fafc', fontSize: 11 } }, topics.length + ' topics; ' + confident + ' marked strong confidence.'),
+          area.createdAt ? hh('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 10 } }, 'Added ', hh('time', { dateTime: area.createdAt }, relDate(area.createdAt))) : null,
+          hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+            hh('button', { id: 'learning-lab-knowledge-open-' + domId, type: 'button', onClick: function() { openArea(area); }, 'aria-label': 'Open knowledge area: ' + String(area.name || 'untitled area'), style: buttonStyle }, 'Open area'),
+            hh('button', { type: 'button', onClick: function() { removeArea(area); }, 'aria-label': 'Remove knowledge area: ' + String(area.name || 'untitled area'), style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+          )
+        )); }))
+      )
     );
   }
 
