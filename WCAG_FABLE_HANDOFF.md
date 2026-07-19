@@ -1,6 +1,6 @@
 # WCAG 2.2 AA Audit Handoff for Fable
 
-Updated: 2026-07-19 (America/New_York)
+Updated: 2026-07-19 evening (America/New_York) — continued by Fable
 
 ## Objective and working rules
 
@@ -41,6 +41,8 @@ These sections were independently committed:
 | Optional Attention Shift or Interruption Log | `0f7fe7951` |
 | Search Selected Personal Toolkit Content | `69c575228` |
 | Personal Reference Sheet Builder | `cffee2e98` |
+| Optional Support Request Notes | `d3dd20d32` |
+| Mindfulness Practice | `6598a8ad6` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -55,30 +57,29 @@ Its exact committed files were:
 - `tests/learning_lab_cheat_sheets_a11y.test.js`
 - `tests/learning_lab_cheat_sheets_render_a11y.test.js`
 
-## Current in-progress section: Optional Support Request Notes
+## Session notes (2026-07-19 evening, Fable)
 
-The former `PersonalAskTracker` / “Ask-for-Help Tracker” section is revised in both product mirrors but is **not tested or committed yet**. Do not commit it in its current state until focused and full verification are complete.
+Both sections above marked `d3dd20d32` and `6598a8ad6` are fully verified and committed. Nothing is in progress; the worktree is clean for this audit's scoped files. Current mirror SHA-256 after the Mindfulness commit: `CCCF225D2FF41D5B24ACACD301A6A53DA8C005FE767039FFAFEC994431771CF1`.
 
-Current scoped status:
+- Support Request Notes: focused tests 28/28 (`learning_lab_ask_tracker_a11y` rewritten, `learning_lab_ask_tracker_render_a11y` added), golden passed, bounded full suite 2,133/2,133.
+- Mindfulness Practice: removed unsupported clinical effect claims (hedged, descriptive `about:` text replaces `research:`), added optional/local-save/non-communication guidance and a stop-if-uncomfortable note, converted `setTimeout` focus to render-synchronized `pendingFocusId` state, added `Array.isArray` guards for malformed session data (component and catalog `stat`), removed `aria-pressed` from the changing-label toggle, bumped 10px meta text to 12px. Focused tests 25/25, golden passed, bounded full suite 2,142/2,142.
+- The deny-read ACL was NOT active this session: direct Edit-tool patches to both product mirrors worked. Try direct edits first before falling back to the elevated `C:\tmp` updater pattern.
+- `tests/learning_lab_notes_workbench_render_a11y.test.js` flaked once under `--maxWorkers=4` (focus assertion) and passed in isolation and on full-suite rerun. If it fails again, treat as a concurrency flake first, not a regression.
+- Two Codex-app zero-byte `.git/index.lock` files were removed after satisfying the staleness protocol (zero bytes, >3 min, unchanged, only read-only git processes observable).
 
-```text
- M prismflow-deploy/public/stem_lab/stem_tool_learning_lab.js
- M stem_lab/stem_tool_learning_lab.js
-```
+Known follow-ups (not blocking, for a future section or the i18n lane):
+- Both retained i18n keys `stem.learning_lab.ask_for_help_tracker` and `stem.learning_lab.log_every_help_ask_normalize_the_most_` still serve OLD translated strings ("Ask-for-Help Tracker", "Log every help ask…") in non-English packs, so localized UIs may still show the removed framing. Same pattern likely applies to `stem.learning_lab.mindfulness` descriptions. Fixing means minting new keys (falls back to the corrected English) or updating 63 packs.
+- `formattedDate` in the support notes treats `time: null` or `time: ''` as epoch 0 and would render a 1970 date; only non-numeric garbage falls back to "Date not recorded". Exotic, not observed in real data.
 
-Both current mirrors have the identical SHA-256 checksum:
+## Next section: PersonalAnxietyToolkit
 
-```text
-3B50BF050F4EAFF4335BEE167F14B8E423B3922522063D4780622638C12B57CA
-```
+Continue with `PersonalAnxietyToolkit` (crisis-adjacent content — apply the scientific-integrity and non-communication conventions with extra care, and check any crisis-resource claims are current), then the remaining Learning Lab components and app areas, one independently tested and committed section at a time.
 
-The guarded updater that produced this state remains at:
+## Completed section reference: Optional Support Request Notes
 
-`C:\tmp\update_ask_tracker.cjs`
+The former `PersonalAskTracker` / “Ask-for-Help Tracker” section revision, now committed as `d3dd20d32`.
 
-It already ran successfully, and both JavaScript mirrors passed `node -c` after the update.
-
-### What the in-progress revision changes
+### What the revision changed
 
 - Renames visible framing to “Optional Support Request Notes.”
 - Clearly states that saving a note does not send a request or notify anyone.
@@ -97,27 +98,7 @@ It already ran successfully, and both JavaScript mirrors passed `node -c` after 
 
 ### Immediate next work
 
-1. Rewrite `tests/learning_lab_ask_tracker_a11y.test.js` for the new contract.
-2. Add `tests/learning_lab_ask_tracker_render_a11y.test.js`.
-3. Render-test at minimum:
-   - optional/privacy/non-communication guidance;
-   - malformed legacy entries and invalid dates;
-   - blank submit error and focus on `#learning-lab-ask-what`;
-   - no outcome preselected;
-   - selecting and clearing an outcome;
-   - saving with only one detail;
-   - editing and updating an existing note;
-   - dirty cancel opening the shared accessible confirmation dialog;
-   - all entries rendered (include more than 15 fixtures);
-   - confirmed deletion and focus moving to the next edit control;
-   - no metrics, percentages, ranks, or scores.
-4. Review the in-progress component carefully for any regression before accepting the implementation.
-
-Suggested focused command:
-
-```powershell
-npx vitest run tests\learning_lab_ask_tracker_a11y.test.js tests\learning_lab_ask_tracker_render_a11y.test.js --reporter=dot
-```
+All of the above was done: `tests/learning_lab_ask_tracker_a11y.test.js` rewritten, `tests/learning_lab_ask_tracker_render_a11y.test.js` added covering every point listed in the previous handoff (guidance, malformed data, blank-submit focus, outcome select/clear, one-detail save, edit/update, dirty cancel, 18-entry full render, confirmed delete focus recovery, no metrics).
 
 Golden command:
 
@@ -128,21 +109,10 @@ npx vitest run tests\stem_big_tools_golden.test.js -t learningLab --reporter=dot
 Bounded full Learning Lab command:
 
 ```powershell
-npx vitest run learning_lab_ --reporter=json --outputFile=C:\tmp\ask_tracker_full.json --maxWorkers=4
+npx vitest run learning_lab_ --reporter=json --outputFile=C:\tmp\full.json --maxWorkers=4
 ```
 
-Before committing, verify both product hashes still match, run `git diff --check`, and inspect scoped status. Then stage only the new render test and commit exact paths:
-
-```powershell
-git add -- tests\learning_lab_ask_tracker_render_a11y.test.js
-git commit --only -m "Improve support note accessibility" -- `
-  stem_lab\stem_tool_learning_lab.js `
-  prismflow-deploy\public\stem_lab\stem_tool_learning_lab.js `
-  tests\learning_lab_ask_tracker_a11y.test.js `
-  tests\learning_lab_ask_tracker_render_a11y.test.js
-```
-
-Use a fresh hash guard in the commit command. If either mirror changes unexpectedly, stop and inspect rather than overwriting; another agent may have touched the shared bundle.
+Before committing any section: verify both product hashes still match a freshly computed guard, run `git diff --check`, inspect scoped status, stage only newly created tests, and use `git commit --only` with exact paths. If either mirror changes unexpectedly, stop and inspect rather than overwriting; another agent may have touched the shared bundle.
 
 ## Git lock safety in this shared workspace
 
@@ -170,4 +140,4 @@ The in-app browser was unavailable in this workspace because of the deny-read AC
 
 ## Goal status
 
-The comprehensive WCAG goal remains active and is not complete. After committing Optional Support Request Notes, continue with the next unaudited Learning Lab component (`PersonalMindfulness`) and then the remaining app areas, one independently tested and committed section at a time.
+The comprehensive WCAG goal remains active and is not complete. Optional Support Request Notes (`d3dd20d32`) and Mindfulness Practice (`6598a8ad6`) are done. Continue with `PersonalAnxietyToolkit` and then the remaining app areas, one independently tested and committed section at a time.
