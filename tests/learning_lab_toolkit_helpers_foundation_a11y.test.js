@@ -54,7 +54,7 @@ describe('Learning Lab shared Toolkit accessibility foundation', () => {
   });
 
   it('uses a semantic level-two heading for each Toolkit section title', () => {
-    expect(helpers).toContain("hh('h2', { style: { margin: 0");
+    expect(helpers).toContain("hh('h2', { id: headingId || undefined, tabIndex: headingId ? -1 : undefined, style: { margin: 0");
     expect(helpers).not.toContain("hh('div', { style: { fontSize: 15, fontWeight: 900");
   });
 
