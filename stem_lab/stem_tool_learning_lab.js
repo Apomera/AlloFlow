@@ -10518,107 +10518,187 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { books: [] };
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0]; var setView = vs[1];
-    var fs = R.useState({ title: '', author: '', status: 'reading', pages: 0, rating: 0, notes: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var EMPTY_FORM = { title: '', author: '', status: '', pages: '', rating: '', notes: '' };
+    var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
+    var fs = R.useState(Object.assign({}, EMPTY_FORM)); var form = fs[0]; var setForm = fs[1];
     var es = R.useState(null); var editing = es[0]; var setEditing = es[1];
     var ft = R.useState('all'); var filter = ft[0]; var setFilter = ft[1];
     var ers = R.useState(''); var titleError = ers[0]; var setTitleError = ers[1];
+    var focusTargetRef = R.useRef(null);
 
     var STATUSES = [
-      { id: 'want',    label: 'Want to read', icon: '📚', color: 'var(--allo-stem-text-soft, #94a3b8)' },
-      { id: 'reading', label: 'Reading',      icon: '📖', color: '#fbbf24' },
-      { id: 'done',    label: 'Done',         icon: '✓',  color: '#10b981' },
-      { id: 'dnf',     label: 'Didn\'t finish', icon: '✕', color: 'var(--allo-stem-text-soft, #94a3b8)' }
+      { id: 'want', label: 'Want to read', icon: '📚', color: 'var(--allo-stem-text-soft, #94a3b8)' },
+      { id: 'reading', label: 'Reading', icon: '📖', color: '#fbbf24' },
+      { id: 'done', label: 'Finished', icon: '✓', color: '#10b981' },
+      { id: 'dnf', label: 'Stopped or paused', icon: '–', color: 'var(--allo-stem-text-soft, #94a3b8)' }
     ];
+    var books = Array.isArray(data.books) ? data.books : [];
+    var filtered = filter === 'all' ? books : books.filter(function(book) { return book && book.status === filter; });
+    var doneCount = books.filter(function(book) { return book && book.status === 'done'; }).length;
+    var totalPages = books.filter(function(book) { return book && book.status === 'done'; }).reduce(function(sum, book) {
+      var pages = Number(book.pages);
+      return sum + (Number.isFinite(pages) && pages > 0 ? pages : 0);
+    }, 0);
 
+    R.useLayoutEffect(function() {
+      var targetId = focusTargetRef.current;
+      if (!targetId) return;
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        focusTargetRef.current = null;
+      }
+    }, [view, books.length]);
+
+    function statusFor(value) {
+      return STATUSES.filter(function(status) { return status.id === value; })[0] || {
+        id: '', label: 'Not recorded', icon: '•', color: 'var(--allo-stem-text-soft, #94a3b8)'
+      };
+    }
+    function formFromBook(book) {
+      var pages = Number(book && book.pages);
+      var rating = Number(book && book.rating);
+      return {
+        title: book && book.title ? String(book.title) : '',
+        author: book && book.author ? String(book.author) : '',
+        status: STATUSES.some(function(status) { return status.id === (book && book.status); }) ? book.status : '',
+        pages: Number.isFinite(pages) && pages >= 0 ? String(pages) : '',
+        rating: Number.isFinite(rating) && rating >= 1 && rating <= 5 ? String(rating) : '',
+        notes: book && book.notes ? String(book.notes) : ''
+      };
+    }
+    function formIsDirty() {
+      var baseline = editing ? formFromBook(editing.book) : EMPTY_FORM;
+      return ['title', 'author', 'status', 'pages', 'rating', 'notes'].some(function(key) {
+        return String(form[key] == null ? '' : form[key]) !== String(baseline[key] == null ? '' : baseline[key]);
+      });
+    }
+    function dateFor(book) {
+      var raw = book && (book.createdAt || book.date);
+      if (!raw) return null;
+      var parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return { dateTime: parsed.toISOString(), label: parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
+    }
+    function startNew() {
+      setForm(Object.assign({}, EMPTY_FORM));
+      setEditing(null);
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-reading-editor-heading';
+      setView('new');
+    }
+    function startEdit(book) {
+      setEditing({ id: book && book.id ? book.id : null, book: book });
+      setForm(formFromBook(book));
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-reading-editor-heading';
+      setView('new');
+    }
+    async function cancelEditor() {
+      if (formIsDirty() && !(await askLearningLabConfirmation('Your unsaved Reading Tracker changes will be discarded.', {
+        title: 'Discard unsaved changes?', confirmText: 'Discard changes'
+      }))) return;
+      setForm(Object.assign({}, EMPTY_FORM));
+      setEditing(null);
+      setTitleError('');
+      focusTargetRef.current = 'learning-lab-reading-add';
+      setView('list');
+      llAnnounce('Reading Tracker editor closed.');
+    }
     function save() {
-      if (!form.title.trim()) {
-        setTitleError('Book title is required.');
+      var title = String(form.title || '').trim();
+      if (!title) {
+        setTitleError('Enter a title before saving this reading entry.');
         setTimeout(function() { var field = document.getElementById('learning-lab-reading-title'); if (field) field.focus(); }, 0);
         return;
       }
-      var id = editing || tkId();
-      var books = (data.books || []).slice();
-      var index = books.findIndex(function(book) { return book.id === id; });
-      var createdAt = index >= 0 ? books[index].createdAt : todayISO();
-      var book = Object.assign({ id: id, createdAt: createdAt }, form, { title: form.title.trim(), author: form.author.trim(), pages: Math.max(0, Number(form.pages) || 0), notes: form.notes.trim() });
-      if (index >= 0) books[index] = Object.assign({}, books[index], book);
-      else books.unshift(book);
-      setData(Object.assign({}, data, { books: books }));
-      setForm({ title: '', author: '', status: 'reading', pages: 0, rating: 0, notes: '' });
+      var nextBooks = books.slice();
+      var index = editing ? nextBooks.indexOf(editing.book) : -1;
+      if (index < 0 && editing && editing.id) index = nextBooks.findIndex(function(book) { return book && book.id === editing.id; });
+      var existing = index >= 0 ? nextBooks[index] : null;
+      var pagesNumber = form.pages === '' ? null : Math.min(1000000, Math.max(0, Math.round(Number(form.pages) || 0)));
+      var ratingNumber = form.rating === '' ? null : Math.min(5, Math.max(1, Math.round(Number(form.rating) || 1)));
+      var book = Object.assign({}, existing || {}, {
+        id: existing && existing.id ? existing.id : tkId(),
+        createdAt: existing && (existing.createdAt || existing.date) ? (existing.createdAt || existing.date) : todayISO(),
+        title: title,
+        author: String(form.author || '').trim(),
+        status: statusFor(form.status).id,
+        pages: pagesNumber,
+        rating: ratingNumber,
+        notes: String(form.notes || '').trim()
+      });
+      if (index >= 0) nextBooks[index] = book;
+      else nextBooks.unshift(book);
+      setData(Object.assign({}, data, { books: nextBooks }));
+      setForm(Object.assign({}, EMPTY_FORM));
       setEditing(null);
       setTitleError('');
+      focusTargetRef.current = 'learning-lab-reading-entry-heading-' + book.id;
       setView('list');
-      llAnnounce('Reading tracker book saved: ' + book.title + '.');
+      llAnnounce('Reading entry saved: ' + book.title + '.');
     }
-    async function remove(id) {
-      var book = (data.books || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (book ? ' "' + book.title + '"' : ' this book') + ' and its reflection.', {
-        title: 'Delete this book?', confirmText: 'Delete book'
+    async function remove(book) {
+      var title = book && book.title ? String(book.title) : 'Untitled entry';
+      if (!(await askLearningLabConfirmation('This permanently removes “' + title + '” and its notes from this tracker.', {
+        title: 'Delete this reading entry?', confirmText: 'Delete entry'
       }))) return;
-      setData(Object.assign({}, data, { books: (data.books || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Book deleted from the reading tracker.');
-    }
-    function startEdit(book) {
-      setEditing(book.id);
-      setForm({ title: book.title, author: book.author || '', status: book.status, pages: book.pages || 0, rating: book.rating || 0, notes: book.notes || '' });
-      setTitleError('');
-      setView('new');
+      setData(Object.assign({}, data, { books: books.filter(function(item) { return item !== book; }) }));
+      focusTargetRef.current = 'learning-lab-reading-entries-heading';
+      llAnnounce('Reading entry deleted.');
     }
 
-    var books = data.books || [];
-    var filtered = filter === 'all' ? books : books.filter(function(book) { return book.status === filter; });
-    var doneCount = books.filter(function(book) { return book.status === 'done'; }).length;
-    var totalPages = books.filter(function(book) { return book.status === 'done'; }).reduce(function(sum, book) { return sum + (book.pages || 0); }, 0);
     var inputStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
     var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 4 };
-    var listStyle = { listStyle: 'none', padding: 0, margin: 0 };
+    var hintStyle = { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, margin: '4px 0 10px' };
 
     if (view === 'new') {
+      var titleDescriptions = 'learning-lab-reading-title-hint' + (titleError ? ' learning-lab-reading-title-error' : '');
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📚', editing ? 'Edit book' : 'Add a book', 'Track what you\'re reading and what you thought of it.', '#fbbf24'),
+        tkSectionHeader('📚', editing ? 'Edit reading entry' : 'Add a reading entry', 'Record only the details you choose.', '#fbbf24'),
         tkCard('#fbbf24',
-          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-reading-form-heading' },
-            hh('h3', { id: 'learning-lab-reading-form-heading', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, editing ? 'Edit book' : 'Add a book'),
+          hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-reading-editor-heading' },
+            hh('h2', { id: 'learning-lab-reading-editor-heading', tabIndex: -1, style: { fontSize: 16, margin: '0 0 8px', color: '#fef3c7', outlineOffset: 4 } }, editing ? 'Edit personal reading entry' : 'Add a personal reading entry'),
+            hh('p', { id: 'learning-lab-reading-editor-privacy', style: hintStyle }, 'All fields except title are optional. Titles and notes can reveal interests, beliefs, or identity. They are stored with this Learning Lab data; saving here does not itself notify a teacher, school, library, or family member. Use care on a shared or managed device.'),
             hh('label', { htmlFor: 'learning-lab-reading-title', style: labelStyle }, 'Title (required)'),
-            hh('input', { id: 'learning-lab-reading-title', type: 'text', value: form.title, required: true, maxLength: 240, 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleError ? 'learning-lab-reading-title-error' : undefined, placeholder: 'e.g., Charlotte\'s Web', onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (titleError) setTitleError(''); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: titleError ? 4 : 10 }) }),
-            hh('div', { id: 'learning-lab-reading-title-error', role: 'alert', style: { minHeight: titleError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: titleError ? 8 : 0 } }, titleError),
-            hh('label', { htmlFor: 'learning-lab-reading-author', style: labelStyle }, 'Author (optional)'),
-            hh('input', { id: 'learning-lab-reading-author', type: 'text', value: form.author, maxLength: 180, placeholder: 'e.g., E. B. White', onChange: function(event) { setForm(Object.assign({}, form, { author: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { marginBottom: 10 }) }),
+            hh('input', { id: 'learning-lab-reading-title', type: 'text', value: form.title, required: true, maxLength: 240, autoComplete: 'off', 'aria-invalid': titleError ? 'true' : undefined, 'aria-describedby': titleDescriptions, onChange: function(event) { setForm(Object.assign({}, form, { title: event.target.value })); if (titleError) setTitleError(''); }, 'data-ll-focusable': true, style: inputStyle }),
+            hh('p', { id: 'learning-lab-reading-title-hint', style: hintStyle }, 'Up to 240 characters.'),
+            titleError ? hh('p', { id: 'learning-lab-reading-title-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, margin: '0 0 10px' } }, titleError) : null,
 
-            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
+            hh('label', { htmlFor: 'learning-lab-reading-author', style: labelStyle }, 'Author or creator (optional)'),
+            hh('input', { id: 'learning-lab-reading-author', type: 'text', value: form.author, maxLength: 180, autoComplete: 'off', 'aria-describedby': 'learning-lab-reading-author-hint', onChange: function(event) { setForm(Object.assign({}, form, { author: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle }),
+            hh('p', { id: 'learning-lab-reading-author-hint', style: hintStyle }, 'Up to 180 characters.'),
+
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               hh('div', null,
-                hh('div', { id: 'learning-lab-reading-status-label', style: labelStyle }, 'Reading status'),
-                hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-reading-status-label', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: 4 } },
-                  STATUSES.map(function(status) {
-                    var active = form.status === status.id;
-                    return hh('button', { key: 'st-' + status.id, type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function() { setForm(Object.assign({}, form, { status: status.id })); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 4px', borderRadius: 6, background: active ? status.color + '30' : 'rgba(15,23,42,0.5)', color: active ? status.color : 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? status.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, status.icon + ' '), status.label);
-                  })
+                hh('label', { htmlFor: 'learning-lab-reading-status', style: labelStyle }, 'Status (optional)'),
+                hh('select', { id: 'learning-lab-reading-status', value: form.status, onChange: function(event) { setForm(Object.assign({}, form, { status: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle },
+                  hh('option', { value: '' }, 'Not recorded'),
+                  STATUSES.map(function(status) { return hh('option', { key: status.id, value: status.id }, status.label); })
                 )
               ),
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-reading-pages', style: labelStyle }, 'Pages'),
-                hh('input', { id: 'learning-lab-reading-pages', type: 'number', min: 0, step: 1, value: form.pages, onChange: function(event) { setForm(Object.assign({}, form, { pages: Math.max(0, parseInt(event.target.value, 10) || 0) })); }, 'data-ll-focusable': true, style: inputStyle })
+                hh('label', { htmlFor: 'learning-lab-reading-pages', style: labelStyle }, 'Pages recorded (optional)'),
+                hh('input', { id: 'learning-lab-reading-pages', type: 'number', min: 0, max: 1000000, step: 1, inputMode: 'numeric', value: form.pages, 'aria-describedby': 'learning-lab-reading-pages-hint', onChange: function(event) { setForm(Object.assign({}, form, { pages: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle }),
+                hh('p', { id: 'learning-lab-reading-pages-hint', style: hintStyle }, 'Leave blank if page count is not useful or does not apply.')
+              ),
+              hh('div', null,
+                hh('label', { htmlFor: 'learning-lab-reading-rating', style: labelStyle }, 'Personal rating (optional)'),
+                hh('select', { id: 'learning-lab-reading-rating', value: form.rating, 'aria-describedby': 'learning-lab-reading-rating-hint', onChange: function(event) { setForm(Object.assign({}, form, { rating: event.target.value })); }, 'data-ll-focusable': true, style: inputStyle },
+                  hh('option', { value: '' }, 'Not rated'),
+                  [1, 2, 3, 4, 5].map(function(rating) { return hh('option', { key: rating, value: String(rating) }, rating + ' out of 5'); })
+                ),
+                hh('p', { id: 'learning-lab-reading-rating-hint', style: hintStyle }, 'A rating is never required, including for finished entries.')
               )
             ),
 
-            form.status === 'done' ? hh('div', { style: { marginBottom: 10 } },
-              hh('div', { id: 'learning-lab-reading-rating-label', style: labelStyle }, 'Rating (optional)'),
-              hh('div', { role: 'radiogroup', 'aria-labelledby': 'learning-lab-reading-rating-label', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                [1, 2, 3, 4, 5].map(function(rating) {
-                  var selected = form.rating === rating;
-                  return hh('button', { key: 'r-' + rating, type: 'button', role: 'radio', 'aria-checked': selected ? 'true' : 'false', 'aria-label': rating + ' out of 5 stars', onClick: function() { setForm(Object.assign({}, form, { rating: rating })); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 6, background: form.rating >= rating ? 'rgba(251,191,36,0.30)' : 'rgba(15,23,42,0.5)', color: form.rating >= rating ? '#fbbf24' : '#94a3b8', border: '1px solid rgba(251,191,36,0.40)', fontSize: 16, cursor: 'pointer' } }, '⭐');
-                })
-              )
-            ) : null,
-
-            hh('label', { htmlFor: 'learning-lab-reading-notes', style: labelStyle }, 'Notes or reflection (optional)'),
-            hh('textarea', { id: 'learning-lab-reading-notes', value: form.notes, rows: 4, maxLength: 6000, placeholder: 'What did you think? What\'s memorable? Quotes? Questions?', onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { minHeight: 96, resize: 'vertical' }) }),
+            hh('label', { htmlFor: 'learning-lab-reading-notes', style: labelStyle }, 'Personal notes or reflection (optional)'),
+            hh('textarea', { id: 'learning-lab-reading-notes', value: form.notes, rows: 4, maxLength: 6000, 'aria-describedby': 'learning-lab-reading-notes-hint learning-lab-reading-editor-privacy', onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, 'data-ll-focusable': true, style: Object.assign({}, inputStyle, { minHeight: 96, resize: 'vertical' }) }),
+            hh('p', { id: 'learning-lab-reading-notes-hint', style: hintStyle }, 'Up to 6,000 characters. Avoid recording private information you do not want stored here.'),
 
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 14 } },
-              hh('button', { type: 'button', onClick: function() { setTitleError(''); setView('list'); setEditing(null); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← Cancel'),
-              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save book')
+              hh('button', { type: 'button', onClick: cancelEditor, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save reading entry')
             )
           )
         )
@@ -10626,68 +10706,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📚', 'My Reading Tracker', 'Books read, want-to-read titles, and reflections. Reading volume supports literacy growth (Krashen 2004).', '#fbbf24'),
-
-      hh('section', { 'aria-label': 'Reading summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: 'Books read', value: doneCount, color: '#10b981', icon: '✓' },
-          { label: 'Pages read', value: totalPages.toLocaleString(), color: '#fbbf24', icon: '📖' },
-          { label: 'Total tracked', value: books.length, color: '#a855f7', icon: '📚' }
-        ].map(function(stat, index) {
-          return hh('div', { key: 'rs-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
-            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, stat.icon),
-            hh('div', { style: { fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label)
-          );
-        })
+      hh('section', { 'aria-labelledby': 'learning-lab-reading-heading' },
+        hh('h2', { id: 'learning-lab-reading-heading', style: { fontSize: 18, margin: '0 0 6px', color: '#fef3c7' } }, hh('span', { 'aria-hidden': 'true' }, '📚 '), 'Personal Reading Tracker'),
+        hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'An optional personal list for books and other reading. This tracker is not a grade, assignment, reading-level test, or measure of ability. There is no requirement to finish, rate, or record a certain amount.'),
+        hh('p', { style: { margin: '0 0 12px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Titles and reflections can reveal interests, beliefs, or identity. Entries are stored with this Learning Lab data; saving here does not itself notify a teacher, school, library, or family member. Use care on a shared or managed device.')
       ),
 
-      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, flexWrap: 'wrap', gap: 8 } },
-        hh('div', { role: 'group', 'aria-label': 'Filter books by reading status', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-          [{ id: 'all', label: 'All' }].concat(STATUSES).map(function(option) {
-            var active = filter === option.id;
-            var color = (STATUSES.filter(function(status) { return status.id === option.id; })[0] || { color: '#fbbf24' }).color;
-            return hh('button', { key: 'fi-' + option.id, type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function() { setFilter(option.id); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: active ? color + '20' : 'transparent', color: active ? color : '#94a3b8', border: '1px solid ' + (active ? color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, option.label);
-          })
-        ),
-        hh('button', { type: 'button', onClick: function() { setTitleError(''); setForm({ title: '', author: '', status: 'reading', pages: 0, rating: 0, notes: '' }); setEditing(null); setView('new'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ Add book')
-      ),
-      hh('div', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, filtered.length + ' book' + (filtered.length === 1 ? '' : 's') + ' shown.'),
-
-      filtered.length === 0 ? tkEmptyState('📚', books.length === 0 ? 'No books tracked yet. Add your current read or a want-to-read title.' : 'No books in this filter.', null, null)
-      : hh('ul', { 'aria-label': 'Tracked books', style: Object.assign({}, listStyle, { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }) },
-          filtered.map(function(book) {
-            var status = STATUSES.filter(function(item) { return item.id === book.status; })[0] || STATUSES[0];
-            var ratingText = book.status === 'done' && book.rating > 0 ? '. Rating ' + book.rating + ' out of 5.' : '';
-            return hh('li', { key: 'bk-' + book.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + status.color } },
-              hh('article', { 'aria-label': book.title + '. Status: ' + status.label + ratingText },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-                  hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('strong', { style: { fontSize: 13, color: status.color } }, hh('span', { 'aria-hidden': 'true' }, status.icon + ' '), book.title),
-                    book.author ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'by ' + book.author) : null,
-                    hh('div', { style: { fontSize: 10, color: status.color, fontWeight: 800, marginTop: 2 } }, 'Status: ' + status.label)
-                  ),
-                  hh('div', { style: { display: 'flex', gap: 4 } },
-                    hh('button', { type: 'button', 'aria-label': 'Edit book: ' + book.title, onClick: function() { startEdit(book); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: status.color, fontSize: 14, cursor: 'pointer' } }, '✏'),
-                    hh('button', { type: 'button', 'aria-label': 'Delete book: ' + book.title, onClick: function() { remove(book.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
-                  )
-                ),
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: book.notes ? 6 : 0 } },
-                  book.pages > 0 ? book.pages + ' pages · ' : '',
-                  book.status === 'done' && book.rating > 0 ? 'Rating ' + book.rating + '/5 · ' : '',
-                  relDate(book.createdAt)
-                ),
-                book.notes ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6 } }, book.notes) : null
-              )
+      hh('section', { 'aria-labelledby': 'learning-lab-reading-summary-heading', style: { marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-reading-summary-heading', style: { fontSize: 13, margin: '0 0 6px', color: '#fef3c7' } }, 'Self-entered summary'),
+        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, margin: 0 } },
+          [
+            { label: 'Finished entries', value: doneCount, color: '#10b981' },
+            { label: 'Pages recorded for finished entries', value: totalPages.toLocaleString(), color: '#fbbf24' },
+            { label: 'Total saved entries', value: books.length, color: '#a855f7' }
+          ].map(function(stat, index) {
+            return hh('div', { key: 'rs-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '30', textAlign: 'center' } },
+              hh('dt', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, stat.label),
+              hh('dd', { style: { margin: '4px 0 0', fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value)
             );
           })
         )
+      ),
+
+      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: 8, flexWrap: 'wrap', gap: 10 } },
+        hh('div', { style: { minWidth: 220, flex: '1 1 260px' } },
+          hh('label', { htmlFor: 'learning-lab-reading-filter', style: labelStyle }, 'Filter by status'),
+          hh('select', { id: 'learning-lab-reading-filter', value: filter, onChange: function(event) { setFilter(event.target.value); }, 'data-ll-focusable': true, style: inputStyle },
+            hh('option', { value: 'all' }, 'All statuses'),
+            hh('option', { value: '' }, 'Not recorded'),
+            STATUSES.map(function(status) { return hh('option', { key: 'filter-' + status.id, value: status.id }, status.label); })
+          )
+        ),
+        hh('button', { id: 'learning-lab-reading-add', type: 'button', onClick: startNew, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '+ Add reading entry')
+      ),
+      hh('p', { role: 'status', 'aria-live': 'polite', style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, filtered.length + ' reading entr' + (filtered.length === 1 ? 'y' : 'ies') + ' shown.'),
+
+      hh('section', { 'aria-labelledby': 'learning-lab-reading-entries-heading' },
+        hh('h3', { id: 'learning-lab-reading-entries-heading', tabIndex: -1, style: { fontSize: 13, margin: '0 0 6px', color: '#fef3c7', outlineOffset: 4 } }, 'Saved reading entries'),
+        filtered.length === 0 ? tkEmptyState('📚', books.length === 0 ? 'No reading entries saved yet.' : 'No entries match this filter.', null, null)
+        : hh('ul', { 'aria-label': 'Saved reading entries', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
+            filtered.map(function(book, filteredIndex) {
+              book = book || {};
+              var status = statusFor(book.status);
+              var bookTitle = String(book.title || '').trim() || 'Untitled entry';
+              var itemIndex = books.indexOf(book);
+              var itemKey = book.id ? String(book.id) : 'legacy-' + (itemIndex >= 0 ? itemIndex : filteredIndex);
+              var headingId = 'learning-lab-reading-entry-heading-' + (book.id || itemKey);
+              var date = dateFor(book);
+              var pages = Number(book.pages);
+              var rating = Number(book.rating);
+              return hh('li', { key: 'bk-' + itemKey, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + status.color, overflowWrap: 'anywhere' } },
+                hh('article', { 'aria-labelledby': headingId },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                    hh('div', { style: { flex: 1, minWidth: 0 } },
+                      hh('h4', { id: headingId, tabIndex: -1, style: { fontSize: 13, margin: 0, color: status.color, outlineOffset: 4 } }, hh('span', { 'aria-hidden': 'true' }, status.icon + ' '), bookTitle),
+                      book.author ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '2px 0 0', fontStyle: 'italic' } }, 'by ' + book.author) : null,
+                      hh('p', { style: { fontSize: 10, color: status.color, fontWeight: 800, margin: '2px 0 0' } }, 'Status: ' + status.label)
+                    ),
+                    hh('div', { style: { display: 'flex', gap: 4 } },
+                      hh('button', { type: 'button', 'aria-label': 'Edit reading entry: ' + bookTitle, onClick: function() { startEdit(book); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: status.color, fontSize: 14, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '✎')),
+                      hh('button', { type: 'button', 'aria-label': 'Delete reading entry: ' + bookTitle, onClick: function() { remove(book); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '×'))
+                    )
+                  ),
+                  hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', margin: '0 0 ' + (book.notes ? '6px' : '0') } },
+                    Number.isFinite(pages) && pages > 0 ? pages.toLocaleString() + ' pages · ' : '',
+                    Number.isFinite(rating) && rating >= 1 && rating <= 5 ? 'Personal rating ' + rating + ' out of 5 · ' : '',
+                    date ? hh('time', { dateTime: date.dateTime }, date.label) : 'Date not recorded'
+                  ),
+                  book.notes ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic', padding: 8, margin: 0, background: 'rgba(2,6,23,0.4)', borderRadius: 6, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, book.notes) : null
+                )
+              );
+            })
+          )
+      )
     );
   }
 
-  // Guided self-compassion exercises. Neff 2003 — alternative to
-  // self-esteem-based motivation. Especially valuable for students with
-  // perfectionism or harsh inner critics.
+  // Optional personal reading list and reflections.
   function PersonalSelfCompassion(props) {
     if (!R) return null;
     var data = props.data || { sessions: [] };
@@ -19961,7 +20056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkJournal || {}).entries || []).length + ' entries', cta: 'Write an entry' },
       { id: 'mytkGrat',     icon: '🙏', label: 'Gratitude Log',        color: '#10b981', desc: 'Optional gratitude entries and reflections',
         stat: ((data.mytkGrat || {}).entries || []).length + ' days logged', cta: 'Log today\'s 3' },
-      { id: 'mytkRead',     icon: '📚', label: 'Reading Tracker',      color: '#fbbf24', desc: 'Books read + want-to-read + reflections',
+      { id: 'mytkRead',     icon: '📚', label: 'Reading Tracker',      color: '#fbbf24', desc: 'Optional personal reading list + reflections',
         stat: ((data.mytkRead || {}).books || []).filter(function(b) { return b.status === 'done'; }).length + ' read', cta: 'Track a book' },
       { id: 'mytkCompass',  icon: '💖', label: 'Self-Compassion',      color: '#f472b6', desc: 'RAIN + Inner Coach + Self-Compassion Break',
         stat: ((data.mytkCompass || {}).sessions || []).length + ' practices', cta: 'Practice now' },
@@ -20290,7 +20385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Optional start/end times, how-it-felt rating, and context observations; not diagnostic.') },
               { id: 'mytkJournal',icon: '📓', label: __alloT('stem.learning_lab.learning_journal', 'Learning Journal'),     desc: __alloT('stem.learning_lab.free_form_journal_with_subject_mood_ta', 'Optional personal learning notes with searchable subject, mood, and tags; review privacy before use.') },
               { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', 'Optional appreciation notes with privacy and non-treatment guidance; use only when this reflection fits.') },
-              { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Books read + want-to-read + reflections + page counter (Krashen 2004).') },
+              { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Optional personal reading list, status, page notes, and reflections.') },
               { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Guided RAIN + Inner Coach + Self-Compassion Break (Neff 2003).') },
               { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Single overview of every toolkit tool with 14-day activity strip + suggestions.') },
               { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', '30-day challenges with daily action log + Fogg 2019 Tiny Habits.') },
