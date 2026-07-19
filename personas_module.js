@@ -536,7 +536,11 @@ const createPersonas = deps => {
       setHistory
     } = liveRef.current;
     const sanitizeCandidate = candidate => {
-      const { chatHistory: _chatHistory, savedDialogue: _savedDialogue, ...safeCandidate } = candidate || {};
+      const {
+        chatHistory: _chatHistory,
+        savedDialogue: _savedDialogue,
+        ...safeCandidate
+      } = candidate || {};
       return safeCandidate;
     };
     const updateResource = item => {
