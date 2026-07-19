@@ -215,7 +215,9 @@ window.StemLab = window.StemLab || {
   function ttest_oneSample(arr, mu0) {
     var x = _clean(arr); var n = x.length;
     if (n < 2) return { error: 'Need at least 2 data points.' };
-    var m = mean(x), sd = stdDev(x), se = sd / Math.sqrt(n);
+    var m = mean(x), sd = stdDev(x);
+    if (!_isNum(sd) || sd === 0) return { error: 'The sample has no variability, so a one-sample t statistic is undefined.' };
+    var se = sd / Math.sqrt(n);
     var t = (m - mu0) / se;
     var df = n - 1;
     var p2 = _pTwoTailedT(t, df);
@@ -235,14 +237,14 @@ window.StemLab = window.StemLab || {
 
   // ── Paired t-test ──
   function ttest_paired(a, b) {
-    var n = Math.min(a.length, b.length);
-    var diffs = [];
-    for (var i = 0; i < n; i++) {
-      if (_isNum(a[i]) && _isNum(b[i])) diffs.push(a[i] - b[i]);
-    }
-    if (diffs.length < 2) return { error: 'Need at least 2 matched pairs.' };
-    n = diffs.length;
-    var md = mean(diffs), sd = stdDev(diffs), se = sd / Math.sqrt(n);
+    var paired = _pairedRows(a, b);
+    if (paired.error) return { error: paired.error };
+    var diffs = paired.differences;
+    if (diffs.length < 2) return { error: 'Need at least 2 complete matched pairs.' };
+    var n = diffs.length;
+    var md = mean(diffs), sd = stdDev(diffs);
+    if (!_isNum(sd) || sd === 0) return { error: 'Paired difference scores have no variability, so a paired t statistic is undefined.' };
+    var se = sd / Math.sqrt(n);
     var t = md / se;
     var df = n - 1;
     var p2 = _pTwoTailedT(t, df);
@@ -254,8 +256,8 @@ window.StemLab = window.StemLab || {
       p: p2, pTwoTailed: p2, pOneTailed: _pOneTailedT(t, df),
       cohensD: d,
       ci95: [md - crit * se, md + crit * se],
-      groupAMean: mean(a.slice(0, n)), groupBMean: mean(b.slice(0, n)),
-      groupASD: stdDev(a.slice(0, n)), groupBSD: stdDev(b.slice(0, n)),
+      groupAMean: mean(paired.a), groupBMean: mean(paired.b),
+      groupASD: stdDev(paired.a), groupBSD: stdDev(paired.b),
       formula: 't = M_d / (s_d / √n)',
       formulaPlugged: 't = ' + md.toFixed(2) + ' / (' + sd.toFixed(2) + ' / √' + n + ')',
     };
@@ -284,6 +286,7 @@ window.StemLab = window.StemLab || {
       df = Math.pow(v1 / n1 + v2 / n2, 2) /
            (Math.pow(v1 / n1, 2) / (n1 - 1) + Math.pow(v2 / n2, 2) / (n2 - 1));
     }
+    if (!_isNum(se) || se === 0) return { error: 'The groups have no variability, so the independent t statistic is undefined.' };
     var p2 = _pTwoTailedT(t, df);
     // Cohen's d (pooled SD)
     var pooledSD = Math.sqrt(((n1 - 1) * v1 + (n2 - 1) * v2) / (n1 + n2 - 2));
@@ -360,11 +363,11 @@ window.StemLab = window.StemLab || {
 
   // ── Pearson correlation ──
   function pearson(x, y) {
-    var pairs = [];
-    var n = Math.min(x.length, y.length);
-    for (var i = 0; i < n; i++) if (_isNum(x[i]) && _isNum(y[i])) pairs.push([x[i], y[i]]);
-    if (pairs.length < 3) return { error: 'Need at least 3 paired data points.' };
-    n = pairs.length;
+    var paired = _pairedRows(x, y);
+    if (paired.error) return { error: paired.error };
+    var pairs = paired.rows;
+    if (pairs.length < 3) return { error: 'Need at least 3 complete paired data points.' };
+    var n = pairs.length;
     var xs = pairs.map(function(p) { return p[0]; });
     var ys = pairs.map(function(p) { return p[1]; });
     var mx = mean(xs), my = mean(ys);
@@ -373,6 +376,7 @@ window.StemLab = window.StemLab || {
       var a = xs[i2] - mx, b = ys[i2] - my;
       num += a * b; dx += a * a; dy += b * b;
     }
+    if (dx === 0 || dy === 0) return { error: 'Correlation is undefined when either variable has no variability.' };
     var r = num / Math.sqrt(dx * dy);
     var df = n - 2;
     var t = r * Math.sqrt(df / (1 - r * r));
@@ -410,11 +414,11 @@ window.StemLab = window.StemLab || {
     return ranks;
   }
   function spearman(x, y) {
-    var pairs = [];
-    var n = Math.min(x.length, y.length);
-    for (var i = 0; i < n; i++) if (_isNum(x[i]) && _isNum(y[i])) pairs.push([x[i], y[i]]);
-    if (pairs.length < 3) return { error: 'Need at least 3 paired data points.' };
-    n = pairs.length;
+    var paired = _pairedRows(x, y);
+    if (paired.error) return { error: paired.error };
+    var pairs = paired.rows;
+    if (pairs.length < 3) return { error: 'Need at least 3 complete paired data points.' };
+    var n = pairs.length;
     var rx = _ranks(pairs.map(function(p) { return p[0]; }));
     var ry = _ranks(pairs.map(function(p) { return p[1]; }));
     return Object.assign({}, pearson(rx, ry), {
@@ -425,11 +429,11 @@ window.StemLab = window.StemLab || {
 
   // ── Linear regression ──
   function linearRegression(x, y) {
-    var pairs = [];
-    var n = Math.min(x.length, y.length);
-    for (var i = 0; i < n; i++) if (_isNum(x[i]) && _isNum(y[i])) pairs.push([x[i], y[i]]);
-    if (pairs.length < 3) return { error: 'Need at least 3 paired data points.' };
-    n = pairs.length;
+    var paired = _pairedRows(x, y);
+    if (paired.error) return { error: paired.error };
+    var pairs = paired.rows;
+    if (pairs.length < 3) return { error: 'Need at least 3 complete paired data points.' };
+    var n = pairs.length;
     var xs = pairs.map(function(p) { return p[0]; });
     var ys = pairs.map(function(p) { return p[1]; });
     var mx = mean(xs), my = mean(ys);
@@ -449,6 +453,7 @@ window.StemLab = window.StemLab || {
       ssRes += (ys[i3] - pred) * (ys[i3] - pred);
       ssTot += (ys[i3] - my) * (ys[i3] - my);
     }
+    if (ssTot === 0) return { error: 'Regression is undefined when the outcome has no variability.' };
     var rSq = 1 - ssRes / ssTot;
     var adjRSq = 1 - (1 - rSq) * (n - 1) / (n - 2);
     // SE of slope
@@ -577,18 +582,19 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   // ASSUMPTION CHECKS
   // ──────────────────────────────────────────────────────────────────
-  function assumptionChecks(arr) {
+  function assumptionChecks(arr, alternative) {
     var x = _clean(arr);
+    alternative = alternative || 'a suitable non-parametric or robust analysis';
     var warnings = [];
     var n = x.length;
     if (n < 10) warnings.push({
       severity: 'high',
-      msg: 'Sample size is small (n=' + n + '). Parametric tests assume larger samples; consider a non-parametric alternative (Mann-Whitney, Wilcoxon) for more robust conclusions.'
+      msg: 'Small sample (n=' + n + ') means lower power and less protection from skew or outliers. If the distribution is doubtful, consider ' + alternative + '.'
     });
     var sk = skewness(x);
     if (Math.abs(sk) > 1) warnings.push({
       severity: 'medium',
-      msg: 'Distribution is ' + (sk > 0 ? 'right' : 'left') + '-skewed (skewness = ' + sk.toFixed(2) + '). Consider a non-parametric test if skew exceeds |1|.'
+      msg: 'Distribution is ' + (sk > 0 ? 'right' : 'left') + '-skewed (skewness = ' + sk.toFixed(2) + '). Consider ' + alternative + ' or justify the parametric model.'
     });
     // Outlier flag (1.5×IQR rule)
     var q = quartiles(x);
@@ -986,14 +992,10 @@ window.StemLab = window.StemLab || {
 
   // ── Wilcoxon signed-rank test (paired non-parametric) ──
   function wilcoxonSignedRank(a, b) {
-    var n = Math.min(a.length, b.length);
-    var diffs = [];
-    for (var i = 0; i < n; i++) {
-      if (_isNum(a[i]) && _isNum(b[i])) {
-        var d = a[i] - b[i];
-        if (d !== 0) diffs.push(d);  // exclude zero diffs
-      }
-    }
+    var paired = _pairedRows(a, b);
+    if (paired.error) return { error: paired.error };
+    var diffs = paired.differences.filter(function(d) { return d !== 0; });
+    var n = diffs.length;
     if (diffs.length < 2) return { error: 'Need ≥2 non-zero paired differences.' };
     n = diffs.length;
     var absRanks = _ranks(diffs.map(Math.abs));
@@ -1385,6 +1387,17 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   // PLUGIN REGISTRATION + UI
   // ──────────────────────────────────────────────────────────────────
+  window.__StatsLabCore = Object.assign({}, window.__StatsLabCore || {}, {
+    pairedRows: _pairedRows,
+    stripPairedDifferenceOutliers: _stripPairedDifferenceOutliers,
+    sensitivityData: _sensitivityData,
+    ttestOneSample: ttest_oneSample,
+    ttestPaired: ttest_paired,
+    pearson: pearson,
+    linearRegression: linearRegression,
+    wilcoxonSignedRank: wilcoxonSignedRank
+  });
+
   window.StemLab.registerTool('statsLab', {
     icon: '📊',
     label: 'Statistics Lab',
@@ -1560,17 +1573,14 @@ window.StemLab = window.StemLab || {
             return;
           }
           var result = null;
-          // Optionally strip outliers from the loaded inputs
-          var oneColVals = excludeOutliers ? _stripOutliers(d.oneColData.values).kept : d.oneColData.values;
-          var twoColA = excludeOutliers ? _stripOutliers(d.twoColData.a).kept : d.twoColData.a;
-          var twoColB = excludeOutliers ? _stripOutliers(d.twoColData.b).kept : d.twoColData.b;
-          var multiCol = excludeOutliers
-            ? d.multiColData.groups.map(function(g) { return _stripOutliers(g.values).kept; })
-            : d.multiColData.groups.map(function(g) { return g.values; });
-          var nRemoved = excludeOutliers
-            ? _outlierIndices(d.oneColData.values).length + _outlierIndices(d.twoColData.a).length + _outlierIndices(d.twoColData.b).length
-              + d.multiColData.groups.reduce(function(acc, g) { return acc + _outlierIndices(g.values).length; }, 0)
-            : 0;
+          // Sensitivity analyses remove only observations used by this test.
+          // Paired and repeated-measures designs always remove complete rows.
+          var sensitivity = excludeOutliers ? _sensitivityData(d, testType) : null;
+          var oneColVals = sensitivity ? sensitivity.oneCol : d.oneColData.values;
+          var twoColA = sensitivity ? sensitivity.twoColA : d.twoColData.a;
+          var twoColB = sensitivity ? sensitivity.twoColB : d.twoColData.b;
+          var multiCol = sensitivity ? sensitivity.multiCol : d.multiColData.groups.map(function(g) { return g.values; });
+          var nRemoved = sensitivity ? sensitivity.removed : 0;
           try {
             if (testType === 'ttest_oneSample') {
               result = ttest_oneSample(oneColVals, d.oneColData.mu0);
@@ -1583,14 +1593,18 @@ window.StemLab = window.StemLab || {
             } else if (testType === 'anova_repeatedMeasures') {
               // Reshape multiCol into [subj × cond] matrix, transposed
               var rmGroups = multiCol;
-              var nSubj = Math.min.apply(null, rmGroups.map(function(g) { return g.length; }));
+              var rmLengths = rmGroups.map(function(g) { return g.length; });
+              var nSubj = Math.min.apply(null, rmLengths);
+              if (rmLengths.some(function(n) { return n !== nSubj; })) {
+                result = { error: 'Repeated-measures ANOVA requires equal condition lengths so every subject remains matched.' };
+              }
               var rmData = [];
               for (var s = 0; s < nSubj; s++) {
                 var row = [];
                 for (var c = 0; c < rmGroups.length; c++) row.push(rmGroups[c][s]);
                 rmData.push(row);
               }
-              result = anova_repeatedMeasures(rmData);
+              if (!result) result = anova_repeatedMeasures(rmData);
             } else if (testType === 'anova_twoWay') {
               if (!d.twoWayData) result = { error: 'Load the AP Bio Plant Growth sample to use two-way ANOVA.' };
               else result = anova_twoWay(d.twoWayData.matrix, d.twoWayData.factorAName || 'Factor A', d.twoWayData.factorBName || 'Factor B');
@@ -1630,6 +1644,7 @@ window.StemLab = window.StemLab || {
             showGlossary: false,
             excludedOutliers: !!excludeOutliers,
             outliersRemoved: nRemoved,
+            outlierRule: sensitivity ? sensitivity.rule : '',
             quizQuestions: null,
             quizAnswers: [],
             quizSubmitted: false,
@@ -2800,13 +2815,25 @@ window.StemLab = window.StemLab || {
     } else {
       dataNeeded = 'pick a test below';
     }
-    // Quick assumption preview for parametric tests
+    // A paired t-test assumes approximately normal difference scores, not
+    // separately normal before/after columns.
     var assumptionPreview = null;
-    if (/^ttest_(paired|independent)$|^pearson$|^linearRegression$/.test(sel) && d.twoColData.a.length && d.twoColData.b.length) {
-      var aWarn = assumptionChecks(d.twoColData.a);
-      var bWarn = assumptionChecks(d.twoColData.b);
+    if (sel === 'ttest_paired' && d.twoColData.a.length && d.twoColData.b.length) {
+      var pairedPreview = _pairedRows(d.twoColData.a, d.twoColData.b);
+      assumptionPreview = pairedPreview.error
+        ? [{ severity: 'high', msg: pairedPreview.error }]
+        : assumptionChecks(pairedPreview.differences, 'the Wilcoxon signed-rank test').map(function(w) { return Object.assign({}, w, { msg: 'Difference scores: ' + w.msg }); }).slice(0, 4);
+      if (!assumptionPreview.length) assumptionPreview = null;
+    } else if (sel === 'ttest_independent' && d.twoColData.a.length && d.twoColData.b.length) {
+      var aWarn = assumptionChecks(d.twoColData.a, 'the Mann-Whitney U test');
+      var bWarn = assumptionChecks(d.twoColData.b, 'the Mann-Whitney U test');
       var combined = aWarn.concat(bWarn);
       if (combined.length) assumptionPreview = combined.slice(0, 4);
+    } else if (sel === 'pearson' && d.twoColData.a.length && d.twoColData.b.length) {
+      var xWarn = assumptionChecks(d.twoColData.a, 'Spearman rank correlation');
+      var yWarn = assumptionChecks(d.twoColData.b, 'Spearman rank correlation');
+      var relationshipWarnings = xWarn.concat(yWarn);
+      if (relationshipWarnings.length) assumptionPreview = relationshipWarnings.slice(0, 4);
     }
     return h('div', null,
       h('div', {
@@ -2867,21 +2894,20 @@ window.StemLab = window.StemLab || {
           (function() {
             if (!sel) return null;
             if (!/^(ttest_|anova_oneWay|anova_repeatedMeasures|pearson|linearRegression|kruskalWallis|mannWhitneyU|wilcoxonSignedRank)/.test(sel)) return null;
-            var nOut = _outlierIndices(d.twoColData.a).length + _outlierIndices(d.twoColData.b).length
-              + _outlierIndices(d.oneColData.values).length
-              + d.multiColData.groups.reduce(function(acc, g) { return acc + _outlierIndices(g.values).length; }, 0);
-            if (nOut === 0) return null;
+            var sensitivity = _sensitivityData(d, sel);
+            if (sensitivity.error || sensitivity.removed === 0) return null;
+            var nOut = sensitivity.removed;
             return h('button', {
               onClick: function() { runTest(sel, true); },
               'data-sl-focusable': 'true',
-              title: 'Run the test after stripping ' + nOut + ' point(s) flagged by the 1.5×IQR rule. Useful for sensitivity analysis: how much does one outlier change your result?',
+              title: 'Sensitivity analysis excluding ' + sensitivity.rule + '. The original analysis remains available for comparison.',
               style: {
                 padding: '10px 16px',
                 background: 'rgba(245,158,11,0.15)', color: '#fbbf24',
                 border: '1px solid rgba(245,158,11,0.55)',
                 borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 40
               }
-            }, '⚠ Run minus ' + nOut + ' outlier(s)');
+            }, 'Sensitivity: exclude ' + nOut + ' ' + (/pair|row/.test(sensitivity.rule) ? 'row(s)' : 'point(s)'));
           })()
         )
       ),
@@ -3217,7 +3243,7 @@ window.StemLab = window.StemLab || {
         },
         role: 'note'
       },
-        '⚠ Sensitivity analysis: ' + d.outliersRemoved + ' outlier(s) (1.5×IQR rule) were excluded from this run. Compare to the all-data result to see how much one extreme value moves your conclusion.'
+        'Sensitivity analysis: ' + d.outliersRemoved + ' ' + (d.outlierRule || 'flagged observation(s)') + ' were excluded from this run. Complete rows stayed intact. Compare this result with the all-data analysis.'
       ),
       // Top banner: significance + effect-size verdict
       h('div', {
@@ -4812,7 +4838,14 @@ window.StemLab = window.StemLab || {
         charts.push(h('div', { key: 'qa', style: { marginBottom: 10 } }, _renderQQPlot(t.a, t.aLabel, h)));
         charts.push(h('div', { key: 'qb', style: { marginBottom: 10 } }, _renderQQPlot(t.b, t.bLabel, h)));
       }
-    } else if (/^ttest_(paired|independent)$|^mannWhitneyU$|^wilcoxonSignedRank$/.test(sel)) {
+    } else if (sel === 'ttest_paired' || sel === 'wilcoxonSignedRank') {
+      var pairedChart = _pairedRows(t.a, t.b);
+      if (!pairedChart.error && pairedChart.differences.length >= 2) {
+        var diffLabel = t.aLabel + ' minus ' + t.bLabel + ' difference scores';
+        charts.push(h('div', { key: 'hd', style: { marginBottom: 10 } }, _renderHistogram(pairedChart.differences, diffLabel, h)));
+        if (sel === 'ttest_paired' && pairedChart.differences.length >= 4) charts.push(h('div', { key: 'qd', style: { marginBottom: 10 } }, _renderQQPlot(pairedChart.differences, diffLabel, h)));
+      }
+    } else if (/^ttest_independent$|^mannWhitneyU$/.test(sel)) {
       if (twoColReady) charts.push(h('div', { key: 'bp', style: { marginBottom: 10 } }, _renderBoxplots([{ label: t.aLabel, values: t.a }, { label: t.bLabel, values: t.b }], h)));
       if (twoColReady && isParametric) {
         charts.push(h('div', { key: 'qa', style: { marginBottom: 10 } }, _renderQQPlot(t.a, t.aLabel, h)));
@@ -4837,6 +4870,52 @@ window.StemLab = window.StemLab || {
   }
 
   // Identify outlier indices in a sample using the 1.5×IQR rule.
+  function _pairedRows(a, b) {
+    a = Array.isArray(a) ? a : [];
+    b = Array.isArray(b) ? b : [];
+    if (a.length !== b.length) return { error: 'Paired analyses require equal column lengths so every row remains matched.' };
+    var rows = [];
+    for (var i = 0; i < a.length; i++) if (_isNum(a[i]) && _isNum(b[i])) rows.push([a[i], b[i]]);
+    return {
+      rows: rows,
+      a: rows.map(function(row) { return row[0]; }),
+      b: rows.map(function(row) { return row[1]; }),
+      differences: rows.map(function(row) { return row[0] - row[1]; })
+    };
+  }
+
+  function _stripPairedDifferenceOutliers(a, b) {
+    var paired = _pairedRows(a, b);
+    if (paired.error) return paired;
+    var flagged = _outlierIndices(paired.differences);
+    var flagSet = {};
+    flagged.forEach(function(i) { flagSet[i] = true; });
+    var rows = paired.rows.filter(function(_, i) { return !flagSet[i]; });
+    return {
+      rows: rows,
+      a: rows.map(function(row) { return row[0]; }),
+      b: rows.map(function(row) { return row[1]; }),
+      differences: rows.map(function(row) { return row[0] - row[1]; }),
+      removed: flagged.length,
+      rule: 'complete matched pair(s) with difference scores flagged by the 1.5 x IQR rule'
+    };
+  }
+
+  function _stripAlignedMarginalOutliers(a, b) {
+    var paired = _pairedRows(a, b);
+    if (paired.error) return paired;
+    var flaggedA = _outlierIndices(paired.a), flaggedB = _outlierIndices(paired.b), flagSet = {};
+    flaggedA.concat(flaggedB).forEach(function(i) { flagSet[i] = true; });
+    var rows = paired.rows.filter(function(_, i) { return !flagSet[i]; });
+    return {
+      rows: rows,
+      a: rows.map(function(row) { return row[0]; }),
+      b: rows.map(function(row) { return row[1]; }),
+      removed: Object.keys(flagSet).length,
+      rule: 'complete paired row(s) flagged in either variable by the 1.5 x IQR rule'
+    };
+  }
+
   function _outlierIndices(arr) {
     var x = _clean(arr);
     if (x.length < 4) return [];
@@ -4857,6 +4936,63 @@ window.StemLab = window.StemLab || {
     var kept = [];
     for (var i = 0; i < arr.length; i++) if (!idxSet[i]) kept.push(arr[i]);
     return { kept: kept, removed: idx.length };
+  }
+
+  function _stripRepeatedMeasureRows(groups) {
+    var arrays = (groups || []).map(function(g) { return Array.isArray(g) ? g : []; });
+    if (!arrays.length) return { groups: arrays, removed: 0, rule: 'complete subject row(s)' };
+    var n = arrays[0].length;
+    if (arrays.some(function(g) { return g.length !== n; })) return { error: 'Repeated-measures analyses require equal condition lengths so every subject remains matched.' };
+    var rows = [];
+    for (var i = 0; i < n; i++) {
+      var row = arrays.map(function(g) { return g[i]; });
+      if (row.every(_isNum)) rows.push(row);
+    }
+    var flagSet = {};
+    for (var c = 0; c < arrays.length; c++) {
+      _outlierIndices(rows.map(function(row) { return row[c]; })).forEach(function(i) { flagSet[i] = true; });
+    }
+    var keptRows = rows.filter(function(_, i) { return !flagSet[i]; });
+    return {
+      groups: arrays.map(function(_, c) { return keptRows.map(function(row) { return row[c]; }); }),
+      removed: Object.keys(flagSet).length,
+      rule: 'complete subject row(s) flagged in any condition by the 1.5 x IQR rule'
+    };
+  }
+
+  function _sensitivityData(d, testType) {
+    var result = {
+      oneCol: d.oneColData.values,
+      twoColA: d.twoColData.a,
+      twoColB: d.twoColData.b,
+      multiCol: d.multiColData.groups.map(function(g) { return g.values; }),
+      removed: 0,
+      rule: 'flagged observation(s)'
+    };
+    if (testType === 'ttest_paired' || testType === 'wilcoxonSignedRank') {
+      var paired = _stripPairedDifferenceOutliers(result.twoColA, result.twoColB);
+      if (paired.error) return paired;
+      result.twoColA = paired.a; result.twoColB = paired.b; result.removed = paired.removed; result.rule = paired.rule;
+    } else if (testType === 'pearson' || testType === 'spearman' || testType === 'linearRegression') {
+      var aligned = _stripAlignedMarginalOutliers(result.twoColA, result.twoColB);
+      if (aligned.error) return aligned;
+      result.twoColA = aligned.a; result.twoColB = aligned.b; result.removed = aligned.removed; result.rule = aligned.rule;
+    } else if (testType === 'ttest_independent' || testType === 'mannWhitneyU') {
+      var groupA = _stripOutliers(result.twoColA), groupB = _stripOutliers(result.twoColB);
+      result.twoColA = groupA.kept; result.twoColB = groupB.kept; result.removed = groupA.removed + groupB.removed;
+      result.rule = 'independent-group point(s) flagged by the 1.5 x IQR rule';
+    } else if (testType === 'ttest_oneSample') {
+      var one = _stripOutliers(result.oneCol); result.oneCol = one.kept; result.removed = one.removed;
+      result.rule = 'sample point(s) flagged by the 1.5 x IQR rule';
+    } else if (testType === 'anova_repeatedMeasures') {
+      var repeated = _stripRepeatedMeasureRows(result.multiCol);
+      if (repeated.error) return repeated;
+      result.multiCol = repeated.groups; result.removed = repeated.removed; result.rule = repeated.rule;
+    } else if (testType === 'anova_oneWay' || testType === 'kruskalWallis') {
+      result.multiCol = result.multiCol.map(function(g) { var stripped = _stripOutliers(g); result.removed += stripped.removed; return stripped.kept; });
+      result.rule = 'independent-group point(s) flagged by the 1.5 x IQR rule';
+    }
+    return result;
   }
 
   // ──────────────────────────────────────────────────────────────────
