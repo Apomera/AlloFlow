@@ -102,6 +102,34 @@ describe('coaster lab — mount smoke (no WebGL in jsdom)', () => {
   });
 });
 
+describe('coaster lab — ctx capabilities (AI, XP, grade level)', () => {
+  it('renders cleanly with AI enabled, awardXP, announceToSR, and an MS grade level', () => {
+    const cfg = loadTool(TOOL_PATHS[0], 'coasterLab');
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const ctx = {
+      React,
+      toolData: {},
+      setToolData: () => {},
+      addToast: () => {},
+      awardXP: () => {},
+      announceToSR: () => {},
+      aiHintsEnabled: true,
+      callGemini: () => Promise.resolve('hint'),
+      gradeLevel: '7th Grade',
+      t: (k, f) => (f != null ? f : k),
+    };
+    try {
+      act(() => { root.render(cfg.render(ctx)); });
+      expect(host.querySelector('.clab-root')).toBeTruthy();
+    } finally {
+      act(() => { root.unmount(); });
+      host.remove();
+    }
+  });
+});
+
 describe('coaster lab — wired into every load site', () => {
   it.each([
     'AlloFlowANTI.txt',
