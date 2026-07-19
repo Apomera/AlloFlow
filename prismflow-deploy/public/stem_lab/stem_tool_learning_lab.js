@@ -9232,197 +9232,180 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { ratings: [] };
     var setData = props.setData;
-    var ds = R.useState(null);                  var detail = ds[0];     var setDetail = ds[1];
-    var fs = R.useState({});                    var newRating = fs[0];  var setNewRating = fs[1];
+    var ds = R.useState(null);                     var detail = ds[0]; var setDetail = ds[1];
+    var fsState = R.useState({});                  var newRating = fsState[0]; var setNewRating = fsState[1];
+    var es = R.useState('');                       var ratingError = es[0]; var setRatingError = es[1];
+    var pendingFocusRef = R.useRef(null);
 
     var DIMENSIONS = [
-      { id: 'initiation', label: 'Task initiation', icon: '🚀', color: '#ef4444',
-        what: 'Getting started on something — especially something you don\'t feel like doing.',
-        strategies: [
-          { title: 'Smallest-next-step rule', detail: 'Don\'t plan the whole project. Identify the SMALLEST next physical step (open the document, write the title) and do just that.' },
-          { title: '2-minute rule', detail: 'Commit to working for just 2 minutes. Often momentum carries you forward; if not, you tried.' },
-          { title: 'Body doubling', detail: 'Work in the presence of someone else (in person or video call). Their presence raises your behavioral threshold.' },
-          { title: 'Implementation intentions', detail: '"When I sit down at my desk after dinner, then I will open my biology homework before doing anything else."' }
-        ]
-      },
-      { id: 'planning', label: 'Planning', icon: '🗺', color: '#3b82f6',
-        what: 'Mapping out what needs to happen + when. Backward-planning from a deadline.',
-        strategies: [
-          { title: 'Reverse-engineer from due date', detail: 'Write the due date. Work backward in days. Assign concrete tasks to specific days.' },
-          { title: 'Externalize the plan', detail: 'Put it on paper, calendar, or app. Internal mental plans get lost. External plans persist.' },
-          { title: 'Time estimates × 1.5', detail: 'Most students underestimate by 30-50%. Multiply your initial estimate by 1.5.' },
-          { title: 'Visual schedule', detail: 'See it. Color-code it. The visibility itself reduces working-memory cost.' }
-        ]
-      },
-      { id: 'attention', label: 'Sustained attention', icon: '🎯', color: '#fbbf24',
-        what: 'Maintaining focus on one task across time, especially when it\'s not intrinsically interesting.',
-        strategies: [
-          { title: 'Pomodoro', detail: '25-min focused blocks + 5-min breaks. Hard limit makes attention manageable.' },
-          { title: 'Remove distractions FIRST', detail: 'Phone in another room, browser tabs closed, music if it helps. Build the environment before starting.' },
-          { title: 'Track when attention drifts', detail: 'Notice without judgment. Just bringing it back IS the practice. Like meditation.' },
-          { title: 'Match task difficulty to energy', detail: 'Hard cognitive work when energy is highest. Routine tasks when energy is lower.' }
-        ]
-      },
-      { id: 'workingmemory', label: 'Working memory', icon: '🧠', color: '#a855f7',
-        what: 'Holding info in mind while working with it. Multi-step directions, mental math, "what was I about to do?"',
-        strategies: [
-          { title: 'Externalize relentlessly', detail: 'Write it down. Anything you need to "remember to do" goes to a list, not your head.' },
-          { title: 'Use the brain-dump tool', detail: 'When your head feels full, dump it ALL out. Clears working memory for the current task.' },
-          { title: 'Visual aids', detail: 'Sticky notes, whiteboards, calendars. Make your working memory visible in the environment.' },
-          { title: 'One thing at a time', detail: 'Multitasking taxes working memory. Single-task, finish, then switch.' }
-        ]
-      },
-      { id: 'flexibility', label: 'Cognitive flexibility', icon: '🔄', color: '#10b981',
-        what: 'Shifting between tasks or perspectives. Adapting when plans change.',
-        strategies: [
-          { title: 'Transition rituals', detail: 'A consistent micro-routine between activities (stand up, breath, declare next task) eases the shift.' },
-          { title: 'Warning before changes', detail: 'For yourself: a 5-min warning before switching tasks. For others: ask for it.' },
-          { title: 'Multiple options upfront', detail: 'Generate 2-3 ways to approach a task. Builds flexibility into the plan.' },
-          { title: 'Reframe failure as data', detail: 'When plans break, ask what they revealed rather than catastrophizing.' }
-        ]
-      },
-      { id: 'emotion', label: 'Emotional regulation', icon: '💖', color: '#ec4899',
-        what: 'Noticing + managing emotional intensity so it doesn\'t derail focus or relationships.',
-        strategies: [
-          { title: 'Name it', detail: 'Just labeling the emotion ("I\'m frustrated") activates regulation circuits (Lieberman 2007).' },
-          { title: 'Body first', detail: 'Box breathing, walk, water. Calm the body, then the mind. Don\'t reason your way out.' },
-          { title: 'Pause before responding', detail: 'For social situations: 10 seconds. For texts: 5 minutes. Distance helps.' },
-          { title: 'Pre-decide for triggers', detail: '"When I feel my voice rising in a discussion, then I will pause and breathe before continuing."' }
-        ]
-      },
-      { id: 'selfmonitor', label: 'Self-monitoring', icon: '🔍', color: '#06b6d4',
-        what: 'Noticing how things are going + adjusting in real time. Knowing when you\'re off-task.',
-        strategies: [
-          { title: 'Periodic check-ins', detail: 'Set a timer for every 25-30 min. When it rings: "Am I doing what I planned?"' },
-          { title: 'Daily 1-line review', detail: 'End of day: 1 sentence on what worked + 1 on what didn\'t.' },
-          { title: 'Visible progress', detail: 'See your own progress (checkboxes, charts, streaks). Builds self-monitoring habit naturally.' },
-          { title: 'Trusted feedback', detail: 'One person who can honestly tell you when you\'re off-track. Solicit it explicitly.' }
-        ]
-      },
-      { id: 'organization', label: 'Organization', icon: '📦', color: '#f97316',
-        what: 'Keeping materials, ideas, and time arranged so things don\'t get lost.',
-        strategies: [
-          { title: 'A place for everything', detail: 'Designate ONE spot for each type of thing (homework, headphones, library books).' },
-          { title: 'Weekly reset', detail: '15 min on Sunday: clear backpack, sort papers, check calendar. Compound effect.' },
-          { title: 'Digital + physical hybrids', detail: 'Calendar on phone + visible paper version on desk. Redundancy reduces lost items.' },
-          { title: 'Label everything', detail: 'Folders, binders, drawers, files. Visible labels reduce decision cost.' }
-        ]
-      }
+      { id: 'initiation', label: 'Getting started', icon: '🚀', color: '#fca5a5', what: 'How manageable it felt to begin tasks in the situations you are reflecting on.', strategies: [
+        { title: 'Choose a very small first action', detail: 'If useful, name one concrete action such as opening a document or gathering materials. A smaller start does not need to become a longer session.' },
+        { title: 'Try an external cue', detail: 'A written prompt, reminder, or visual starting point may reduce the need to hold the first step in mind.' },
+        { title: 'Work near another person', detail: 'Some people find quiet, consensual company helpful. Choose a setting and person that feel safe and do not add pressure.' }
+      ] },
+      { id: 'planning', label: 'Planning', icon: '🗺', color: '#93c5fd', what: 'How manageable it felt to identify steps, timing, and needed support.', strategies: [
+        { title: 'Work backward from a date', detail: 'If a deadline exists, list possible checkpoints in reverse order and adjust them as circumstances change.' },
+        { title: 'Put the plan outside your head', detail: 'A calendar, checklist, audio note, or another accessible format may make the plan easier to revisit.' },
+        { title: 'Use a range for time estimates', detail: 'When timing is uncertain, try a best-case and a more-generous estimate instead of treating one estimate as a promise.' }
+      ] },
+      { id: 'attention', label: 'Sustaining attention', icon: '🎯', color: '#fde68a', what: 'How manageable it felt to return attention to a chosen activity in a particular environment.', strategies: [
+        { title: 'Try adjustable work intervals', detail: 'Choose a work and break length that fits the task and your needs; a fixed 25-minute interval is not required.' },
+        { title: 'Change one distraction at a time', detail: 'If safe and possible, test one environmental change and notice whether it helps rather than trying to remove every stimulus.' },
+        { title: 'Match the task to current capacity', detail: 'It may help to move demanding work, routine work, or breaks based on energy, access needs, and deadlines.' }
+      ] },
+      { id: 'workingmemory', label: 'Holding information while working', icon: '🧠', color: '#d8b4fe', what: 'How manageable it felt to keep track of information needed for the current task.', strategies: [
+        { title: 'Record information externally', detail: 'Notes, checklists, pictures, recordings, or examples can reduce how much must be held in mind.' },
+        { title: 'Show one step at a time', detail: 'Covering or hiding later steps may help when a long set of directions feels crowded.' },
+        { title: 'Repeat back or check directions', detail: 'When appropriate, restate the next step in your own words or ask for written directions.' }
+      ] },
+      { id: 'flexibility', label: 'Adapting and switching', icon: '🔄', color: '#6ee7b7', what: 'How manageable changes, transitions, or alternate approaches felt in the situations you chose.', strategies: [
+        { title: 'Ask for transition notice', detail: 'Advance notice, a visual countdown, or a clear stopping point may make some transitions more predictable.' },
+        { title: 'Keep more than one possible route', detail: 'If useful, name a preferred approach and one backup without requiring yourself to like an unexpected change.' },
+        { title: 'Use a consistent transition cue', detail: 'A brief action such as saving work, stretching, or naming the next activity can mark a change between tasks.' }
+      ] },
+      { id: 'emotion', label: 'Responding to emotions', icon: '💖', color: '#f9a8d4', what: 'How supported and manageable emotional responses felt in the selected context.', strategies: [
+        { title: 'Name an experience if helpful', detail: 'Some people find a word, image, body sensation, or intensity description useful; others may prefer not to label it.' },
+        { title: 'Pause before responding', detail: 'When safe, a brief pause or delayed message may create choice. Urgent or unsafe situations may require immediate support instead.' },
+        { title: 'Choose appropriate support', detail: 'A trusted person, accommodation, quiet space, professional, or crisis resource may be more appropriate than a self-help strategy.' }
+      ] },
+      { id: 'selfmonitor', label: 'Noticing and adjusting', icon: '🔍', color: '#67e8f9', what: 'How manageable it felt to notice what was happening and decide whether to adjust.', strategies: [
+        { title: 'Use a neutral check-in', detail: 'A timer or natural pause can prompt a question such as “Is this still what I want to be doing?” without assigning blame.' },
+        { title: 'Review one example', detail: 'If useful, note one condition that helped and one condition you may want to change next time.' },
+        { title: 'Request feedback with boundaries', detail: 'Choose who may offer feedback, what kind is useful, and when you want it. Feedback should not override your perspective.' }
+      ] },
+      { id: 'organization', label: 'Organizing materials and information', icon: '📦', color: '#fdba74', what: 'How manageable it felt to find and arrange needed materials, information, or time.', strategies: [
+        { title: 'Choose consistent locations', detail: 'A predictable place for frequently used items may make retrieval easier; accessibility and available space matter.' },
+        { title: 'Use labels that work for you', detail: 'Text, color plus text, pictures, texture, or audio labels can be combined so meaning does not depend on color alone.' },
+        { title: 'Build in a brief reset', detail: 'A periodic reset may help, but its timing and length should fit your schedule, energy, and support needs.' }
+      ] }
     ];
-
-    function rateAll() {
-      var values = {};
-      DIMENSIONS.forEach(function(dim) { values[dim.id] = newRating[dim.id] || 5; });
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, values);
-      setData(Object.assign({}, data, { ratings: [entry].concat(data.ratings || []) }));
-      setNewRating({});
-      llAnnounce('Executive function ratings saved.');
-    }
-    async function removeRating(id) {
-      var rating = (data.ratings || []).filter(function(r) { return r.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (rating ? ' the executive function rating from ' + rating.date : ' this executive function rating') + '.', {
-        title: 'Delete this weekly rating?', confirmText: 'Delete rating'
-      }))) return;
-      setData(Object.assign({}, data, { ratings: (data.ratings || []).filter(function(r) { return r.id !== id; }) }));
-      llAnnounce('Executive function rating deleted.');
-    }
 
     var ratings = data.ratings || [];
     var latest = ratings[0];
-
-    // Trend per dimension (last 8 ratings)
-    function trend(dimId) {
-      return ratings.slice(0, 8).reverse().map(function(r) { return r[dimId] || 0; });
-    }
-
-    var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
     var listStyle = { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 };
 
-    if (detail) {
-      var dim = DIMENSIONS.filter(function(d) { return d.id === detail; })[0];
-      if (!dim) { setDetail(null); return null; }
+    function focusId(id) { pendingFocusRef.current = id; }
+    R.useLayoutEffect(function() {
+      if (!pendingFocusRef.current) return;
+      var id = pendingFocusRef.current; pendingFocusRef.current = null;
+      var target = document.getElementById(id); if (target) target.focus();
+    });
+    function validValue(value) {
+      var number = Number(value); return number >= 1 && number <= 10 ? number : null;
+    }
+    function setDimensionRating(id, value) {
+      var next = Object.assign({}, newRating);
+      if (value === '') delete next[id]; else next[id] = Number(value);
+      setNewRating(next); if (ratingError) setRatingError('');
+    }
+    function saveRatings(event) {
+      if (event) event.preventDefault();
+      var values = {};
+      DIMENSIONS.forEach(function(dimension) { var value = validValue(newRating[dimension.id]); if (value != null) values[dimension.id] = value; });
+      if (!Object.keys(values).length) {
+        setRatingError('Choose at least one optional rating before saving.');
+        focusId('learning-lab-ef-rating-initiation');
+        return;
+      }
+      var entry = Object.assign({ id: tkId(), date: todayISO(), time: Date.now() }, values);
+      setData(Object.assign({}, data, { ratings: [entry].concat(ratings) }));
+      setNewRating({}); setRatingError('');
+      llAnnounce('Executive function reflection saved with ' + Object.keys(values).length + ' rated dimension' + (Object.keys(values).length === 1 ? '.' : 's.'));
+      focusId('learning-lab-ef-history-heading');
+    }
+    async function removeRating(id) {
+      var rating = ratings.filter(function(item) { return item.id === id; })[0];
+      if (!rating) return;
+      if (!(await askLearningLabConfirmation('This permanently removes the executive function reflection from ' + (rating.date || 'the selected date') + '.', { title: 'Delete this reflection?', confirmText: 'Delete reflection' }))) return;
+      setData(Object.assign({}, data, { ratings: ratings.filter(function(item) { return item.id !== id; }) }));
+      llAnnounce('Executive function reflection deleted.');
+      focusId(ratings.length > 1 ? 'learning-lab-ef-history-heading' : 'learning-lab-ef-rating-heading');
+    }
+    function openDetail(id) { setDetail(id); focusId('learning-lab-ef-detail-heading'); }
+    function closeDetail() { var id = detail; setDetail(null); focusId('learning-lab-ef-dimension-' + id); }
+    function trend(dimensionId) {
+      return ratings.slice(0, 8).reverse().map(function(rating) { return { date: rating.date || 'Unknown date', value: validValue(rating[dimensionId]) }; }).filter(function(point) { return point.value != null; });
+    }
+    function ratingDate(rating) {
+      var date = new Date(rating.time || rating.date || Date.now());
+      return isNaN(date.getTime()) ? new Date() : date;
+    }
+
+    var dimension = detail ? DIMENSIONS.filter(function(item) { return item.id === detail; })[0] : null;
+    if (dimension) {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader(dim.icon, dim.label, dim.what, dim.color),
-        hh('ul', { 'aria-label': dim.label + ' strategies', style: Object.assign({}, listStyle, { gap: 10, marginBottom: 14 }) },
-          dim.strategies.map(function(strategy, index) {
-            return hh('li', { key: 'str-' + index, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color } },
-              hh('h3', { style: { fontSize: 12, fontWeight: 800, color: dim.color, margin: '0 0 4px' } }, '→ ' + strategy.title),
-              hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, strategy.detail)
+        tkSectionHeader(dimension.icon, dimension.label, dimension.what, dimension.color, 'learning-lab-ef-detail-heading'),
+        hh('p', { id: 'learning-lab-ef-strategy-guidance', style: { fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'These are optional ideas, not prescriptions or treatment. A strategy may help, have no effect, create barriers, or be inappropriate in a particular setting. Adapt or skip any idea and seek accommodations or qualified support when useful.'),
+        hh('ul', { 'aria-label': dimension.label + ' strategy ideas', 'aria-describedby': 'learning-lab-ef-strategy-guidance', style: Object.assign({}, listStyle, { gap: 10, marginBottom: 14 }) },
+          dimension.strategies.map(function(strategy, index) {
+            return hh('li', { key: 'strategy-' + index, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid ' + dimension.color, borderLeftWidth: 3 } },
+              hh('h3', { style: { fontSize: 12, fontWeight: 800, color: dimension.color, margin: '0 0 4px' } }, strategy.title),
+              hh('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } }, strategy.detail)
             );
           })
         ),
-        hh('div', { style: { textAlign: 'center' } },
-          tkBtn('← Back to dashboard', function() { setDetail(null); }, 'ghost', { minHeight: 44 })
-        )
+        hh('button', { type: 'button', onClick: closeDetail, style: { minHeight: 44, padding: '8px 14px' } }, '← Back to dashboard')
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧩', 'Executive Function Dashboard', 'Rate 8 EF dimensions weekly. Track trends. Select any dimension for strategies. Barkley + Brown frameworks.', '#a855f7'),
-
-      tkCard('#a855f7',
-        hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); rateAll(); }, 'aria-labelledby': 'learning-lab-ef-rating-heading' },
-          hh('h3', { id: 'learning-lab-ef-rating-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '📊 Rate your week (1 = struggling, 10 = strong)'),
-          DIMENSIONS.map(function(dim) {
-            var ratingId = 'learning-lab-ef-rating-' + dim.id;
-            var ratingValue = newRating[dim.id] || 5;
-            return hh('div', { key: 'rd-' + dim.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + dim.color, marginBottom: 6, flexWrap: 'wrap' } },
-              hh('label', { htmlFor: ratingId, style: { display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 12rem', minWidth: 0, fontSize: 11, fontWeight: 800, color: dim.color } },
-                hh('span', { 'aria-hidden': 'true', style: { fontSize: 16, flexShrink: 0 } }, dim.icon),
-                dim.label
-              ),
-              hh('input', { id: ratingId, type: 'range', min: 1, max: 10, step: 1, value: ratingValue, 'aria-valuetext': ratingValue + ' out of 10',
-                onChange: function(event) { setNewRating(Object.assign({}, newRating, (function() { var o = {}; o[dim.id] = parseInt(event.target.value, 10); return o; })())); }, 'data-ll-focusable': true,
-                style: { flex: '1 1 140px', width: 140, maxWidth: '100%', minHeight: 44, accentColor: dim.color }
-              }),
-              hh('output', { htmlFor: ratingId, 'aria-live': 'polite', style: { width: 42, textAlign: 'right', fontSize: 14, color: dim.color, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, ratingValue + '/10')
+      tkSectionHeader('🧩', 'Executive Function Reflection', 'Optional, context-dependent self-ratings and adaptable strategy ideas.', '#d8b4fe', 'learning-lab-ef-dashboard-heading'),
+      hh('aside', { id: 'learning-lab-ef-guidance', style: { padding: 10, marginBottom: 12, borderRadius: 8, border: '1px solid #d8b4fe', background: 'rgba(88,28,135,0.18)', fontSize: 11, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)' } },
+        hh('p', { style: { margin: '0 0 5px' } }, 'These ratings are private self-reflections, not tests of ability, diagnoses, clinical measures, or comparisons with other people. Experiences can change with task, environment, disability, stress, health, support, culture, and access.'),
+        hh('p', { style: { margin: 0 } }, 'Rate only dimensions that feel useful. Saved reflections stay with your Learning Lab data; avoid sensitive details on a shared device and delete entries you no longer need.')
+      ),
+      tkCard('#d8b4fe',
+        hh('form', { noValidate: true, onSubmit: saveRatings, 'aria-labelledby': 'learning-lab-ef-rating-heading', 'aria-describedby': 'learning-lab-ef-rating-instructions learning-lab-ef-guidance' },
+          hh('h3', { id: 'learning-lab-ef-rating-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#e9d5ff', margin: '0 0 6px' } }, 'Reflect on a situation or time period'),
+          hh('p', { id: 'learning-lab-ef-rating-instructions', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px' } }, 'Each dimension is optional. If you rate one, 1 means “needed much more support” and 10 means “felt very manageable.” The same number may mean different things in different contexts.'),
+          DIMENSIONS.map(function(item) {
+            var ratingId = 'learning-lab-ef-rating-' + item.id;
+            var value = newRating[item.id] == null ? '' : String(newRating[item.id]);
+            return hh('div', { key: 'rating-' + item.id, style: { display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + item.color, marginBottom: 6, flexWrap: 'wrap' } },
+              hh('label', { htmlFor: ratingId, style: { display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 15rem', minWidth: 0, fontSize: 11, fontWeight: 800, color: item.color } }, hh('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, item.icon), item.label + ' (optional)'),
+              hh('select', { id: ratingId, value: value, onChange: function(event) { setDimensionRating(item.id, event.target.value); }, style: { flex: '0 1 14rem', minWidth: 180, maxWidth: '100%', minHeight: 44, padding: '8px 10px', background: '#0f172a', color: '#f8fafc', border: '2px solid ' + item.color } },
+                hh('option', { value: '' }, 'Not rated'),
+                [1,2,3,4,5,6,7,8,9,10].map(function(number) { return hh('option', { key: number, value: String(number) }, number + (number === 1 ? ' — needed much more support' : number === 10 ? ' — felt very manageable' : '')); })
+              )
             );
           }),
-          hh('div', { style: { textAlign: 'right', marginTop: 8 } },
-            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #c4b5fd', background: '#7e22ce', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, '💾 Save this week\'s ratings')
-          )
+          ratingError ? hh('div', { id: 'learning-lab-ef-rating-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, margin: '8px 0' } }, ratingError) : null,
+          hh('button', { type: 'submit', style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '2px solid #e9d5ff', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save reflection')
         )
       ),
 
-      latest ? tkCard('#9333ea',
-        hh('section', { 'aria-labelledby': 'learning-lab-ef-snapshot-heading' },
-          hh('h3', { id: 'learning-lab-ef-snapshot-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '🎯 Latest snapshot · ' + relDate(latest.date) + ' · Select for strategies'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
-            DIMENSIONS.map(function(dim) {
-              var val = latest[dim.id] || 0;
-              var hist = trend(dim.id);
-              var trendText = hist.length ? hist.join(', ') : 'No trend history';
-              return hh('button', { key: 'sn-' + dim.id, type: 'button', 'aria-label': dim.label + ': ' + val + ' out of 10. Open strategies. Recent ratings: ' + trendText,
-                onClick: function() { setDetail(dim.id); }, 'data-ll-focusable': true,
-                style: { display: 'block', minHeight: 80, textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid ' + dim.color + '30', borderLeft: '3px solid ' + dim.color, cursor: 'pointer' }
-              },
-                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                  hh('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, dim.icon),
-                  hh('span', { style: { fontSize: 11, fontWeight: 700, color: dim.color, flex: 1 } }, dim.label),
-                  hh('strong', { style: { fontSize: 16, color: dim.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, val + '/10')
-                ),
-                hh('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: 1, alignItems: 'flex-end', height: 20 } },
-                  hist.map(function(value, index) {
-                    return hh('div', { key: 'h-' + index, style: { flex: 1, height: (value / 10 * 100) + '%', background: dim.color + '70', minHeight: 1, borderRadius: 1 } });
-                  })
-                ),
-                hh('span', { style: srOnlyStyle }, 'Recent ratings: ' + trendText)
-              );
-            })
-          )
+      hh('section', { 'aria-labelledby': 'learning-lab-ef-dimensions-heading', style: { marginTop: 12 } },
+        hh('h3', { id: 'learning-lab-ef-dimensions-heading', style: { fontSize: 13, color: '#e9d5ff' } }, 'Dimensions and optional strategy ideas'),
+        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
+          DIMENSIONS.map(function(item) {
+            var latestValue = latest ? validValue(latest[item.id]) : null;
+            var history = trend(item.id);
+            var historyText = history.length ? history.map(function(point) { return point.date + ': ' + point.value + ' out of 10'; }).join('; ') : 'No saved ratings';
+            return hh('li', { key: 'dimension-' + item.id },
+              hh('button', { id: 'learning-lab-ef-dimension-' + item.id, type: 'button', 'aria-label': item.label + '. ' + (latestValue == null ? 'Not rated in the latest reflection.' : 'Latest rating ' + latestValue + ' out of 10.') + ' Open optional strategy ideas. Recent ratings: ' + historyText, onClick: function() { openDetail(item.id); }, style: { display: 'block', width: '100%', minHeight: 88, textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '2px solid ' + item.color, cursor: 'pointer' } },
+                hh('span', { 'aria-hidden': 'true', style: { fontSize: 16, marginRight: 6 } }, item.icon),
+                hh('strong', { style: { color: item.color } }, item.label),
+                hh('span', { style: { display: 'block', marginTop: 6, color: '#e2e8f0', fontSize: 11 } }, latestValue == null ? 'Latest: not rated' : 'Latest: ' + latestValue + ' out of 10'),
+                hh('span', { style: { display: 'block', marginTop: 4, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'Open strategy ideas')
+              )
+            );
+          })
         )
-      ) : null,
+      ),
 
-      ratings.length > 1 ? hh('section', { 'aria-labelledby': 'learning-lab-ef-history-heading', style: { marginTop: 12 } },
-        hh('h3', { id: 'learning-lab-ef-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, '📚 Rating history'),
-        hh('ul', { style: Object.assign({}, listStyle, { gap: 4 }) },
-          ratings.slice(0, 10).map(function(rating) {
-            var avg = (DIMENSIONS.reduce(function(sum, dimension) { return sum + (rating[dimension.id] || 0); }, 0) / DIMENSIONS.length).toFixed(1);
-            return hh('li', { key: 'rt-' + rating.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7', flexWrap: 'wrap' } },
-              hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, rating.date + ' · ' + relDate(rating.date)),
-              hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                hh('span', { style: { fontSize: 11, color: '#c084fc', fontWeight: 700 } }, 'average ' + avg + '/10'),
-                hh('button', { type: 'button', 'aria-label': 'Delete executive function rating from ' + rating.date, onClick: function() { removeRating(rating.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '✕')
+      ratings.length ? hh('section', { 'aria-labelledby': 'learning-lab-ef-history-heading', style: { marginTop: 14 } },
+        hh('h3', { id: 'learning-lab-ef-history-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#e9d5ff', margin: '0 0 8px' } }, 'Saved reflections'),
+        hh('ul', { style: listStyle },
+          ratings.map(function(rating) {
+            var date = ratingDate(rating);
+            var rated = DIMENSIONS.map(function(item) { return { label: item.label, value: validValue(rating[item.id]) }; }).filter(function(item) { return item.value != null; });
+            return hh('li', { key: 'reflection-' + rating.id },
+              hh('article', { 'aria-label': 'Executive function reflection from ' + date.toLocaleString(), style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #d8b4fe' } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
+                  hh('time', { dateTime: date.toISOString(), style: { color: '#e9d5ff', fontWeight: 700 } }, date.toLocaleString()),
+                  hh('button', { type: 'button', 'aria-label': 'Delete executive function reflection from ' + date.toLocaleString(), onClick: function() { removeRating(rating.id); }, style: { minWidth: 44, minHeight: 44 } }, 'Delete')
+                ),
+                hh('ul', { 'aria-label': 'Rated dimensions', style: { margin: '6px 0 0', paddingLeft: 20 } }, rated.map(function(item) { return hh('li', { key: item.label }, item.label + ': ' + item.value + ' out of 10'); }))
               )
             );
           })
@@ -9430,6 +9413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       ) : null
     );
   }
+
 
   // Student-controlled IEP goal tracking. Annual goals + quarterly
   // sub-goals + accommodation review. Designed for the student to
@@ -19802,7 +19786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: 'today', cta: 'View today' },
       { id: 'mytkEmotion',  icon: '💖', label: 'Emotion + Grounding',  color: '#ec4899', desc: 'Private check-in + optional adaptable grounding tools',
         stat: ((data.mytkEmotion || {}).checks || []).length + ' check-ins', cta: 'Check in' },
-      { id: 'mytkEF',       icon: '🧩', label: 'EF Dashboard',         color: '#a855f7', desc: '8 executive-function dimensions tracked weekly',
+      { id: 'mytkEF',       icon: '🧩', label: 'EF Dashboard',         color: '#a855f7', desc: 'Optional context-dependent reflection across 8 dimensions',
         stat: ((data.mytkEF || {}).ratings || []).length + ' ratings', cta: 'Rate this week' },
       { id: 'mytkIEP',      icon: '🎓', label: 'My IEP Tracker',       color: '#06b6d4', desc: 'Personal notes about IEP goals and meetings',
         stat: ((data.mytkIEP || {}).goals || []).length + ' goals', cta: 'Track IEP goals' },
@@ -20137,7 +20121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkNotes',  icon: '📝', label: __alloT('stem.learning_lab.cornell_notes', 'Cornell Notes'),        desc: __alloT('stem.learning_lab.in_tool_cornell_style_note_taking_with', 'In-tool Cornell-style note-taking with cue column + summary + search.') },
               { id: 'mytkAgenda', icon: '📋', label: __alloT('stem.learning_lab.today', 'Today'),                desc: __alloT('stem.learning_lab.today_s_pulled_together_agenda_habits_', 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.') },
               { id: 'mytkEmotion',icon: '💖', label: __alloT('stem.learning_lab.emotion_grounding', 'Emotion + Grounding'),  desc: __alloT('stem.learning_lab.quick_emotion_check_box_breathing_5_4_', 'Private emotion check-in with optional paced breathing and adaptable grounding prompts.') },
-              { id: 'mytkEF',     icon: '🧩', label: __alloT('stem.learning_lab.ef_dashboard', 'EF Dashboard'),         desc: __alloT('stem.learning_lab.8_executive_function_dimensions_tracke', '8 executive-function dimensions tracked weekly + strategy library (Barkley + Brown).') },
+              { id: 'mytkEF',     icon: '🧩', label: __alloT('stem.learning_lab.ef_dashboard', 'EF Dashboard'),         desc: __alloT('stem.learning_lab.8_executive_function_dimensions_tracke', 'Optional context-dependent self-reflection across eight dimensions with adaptable strategy ideas.') },
               { id: 'mytkIEP',    icon: '🎓', label: __alloT('stem.learning_lab.my_iep_tracker', 'My IEP Tracker'),       desc: __alloT('stem.learning_lab.your_own_copy_of_your_iep_goals_sub_go', 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.') },
               { id: 'mytkMastery',icon: '📚', label: __alloT('stem.learning_lab.subject_mastery', 'Subject Mastery'),      desc: __alloT('stem.learning_lab.track_mastery_per_topic_per_subject_ac', 'Track mastery per topic per subject across 5 levels (new → mastered).') },
               { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.') },
