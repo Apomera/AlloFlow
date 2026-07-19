@@ -19,34 +19,34 @@ describe('Learning Lab Habit Tracker accessibility', () => {
   });
 
   it('marks the habit name required and reports validation inline', () => {
-    expect(habitTracker).toContain("id: 'learning-lab-habit-name', type: 'text', value: form.name, required: true");
-    expect(habitTracker).toContain("id: 'learning-lab-habit-error', role: 'alert'");
-    expect(habitTracker).toContain("document.getElementById('learning-lab-habit-name')");
+    expect(habitTracker).toContain("id: 'learning-lab-habit-name', required: true, maxLength: 240");
+    expect(habitTracker).toContain("id: 'learning-lab-habit-name-error', role: 'alert'");
+    expect(habitTracker).toContain("setFocusTarget('learning-lab-habit-name')");
     expect(habitTracker).not.toContain("alert('Need a name.')");
   });
 
   it('gives template and custom controls suitable target sizes', () => {
-    expect(habitTracker).toContain("key: 'tp-' + i, type: 'button'");
-    expect(habitTracker).toContain('gap: 8, minHeight: 44');
+    expect(habitTracker).toContain("key: 'tp-' + index");
+    expect(habitTracker).toContain("type: 'button', onClick: function() { openAdd(template); }");
     expect(habitTracker.match(/minHeight: 44/g)?.length).toBeGreaterThanOrEqual(6);
   });
 
-  it('provides accessible names for streak, weekly, and 30-day visuals', () => {
-    expect(habitTracker).toContain("role: 'img', 'aria-label': 'Current streak: '");
-    expect(habitTracker).toContain("role: 'img', 'aria-label': 'Completed this week: '");
-    expect(habitTracker).toContain("role: 'img', 'aria-label': h.name + ' activity for the last 30 days: '");
-    expect(habitTracker).toContain("key: 'day-' + i, 'aria-hidden': 'true'");
+  it('provides text summaries and an exact accessible 30-day history', () => {
+    expect(habitTracker).toContain("'Current streak: ' + streak");
+    expect(habitTracker).toContain("'Last 7 days: ' + thisWeek + ' completed'");
+    expect(habitTracker).toContain("'View 30-day check-in history (' + completedHistory.length + ' completed)'");
+    expect(habitTracker).toContain("hh('time', { dateTime: entry.day }, entry.day)");
   });
 
   it('confirms deletion and names its 44-pixel control', () => {
-    expect(habitTracker).toContain("'aria-label': 'Delete habit: ' + h.name");
+    expect(habitTracker).toContain("'aria-label': 'Delete habit: ' + habitName");
     expect(habitTracker).toContain("title: 'Delete this habit?', confirmText: 'Delete habit'");
-    expect(habitTracker).toContain('minWidth: 44, minHeight: 44');
+    expect(habitTracker).toContain('minHeight: 44');
     expect(habitTracker).not.toContain("confirm('Remove this habit and all its history?')");
   });
 
   it('exposes today completion as a pressed-state toggle', () => {
-    expect(habitTracker).toContain("type: 'button', 'aria-pressed': todayDone");
+    expect(habitTracker).toContain("type: 'button', 'aria-pressed': todayDone ? 'true' : 'false'");
     expect(habitTracker).toContain("style: { width: '100%', minHeight: 44");
   });
 

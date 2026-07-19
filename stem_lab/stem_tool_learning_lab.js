@@ -6874,61 +6874,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { habits: [], logs: {} };
     var setData = props.setData;
-    var vs = R.useState('today');               var view = vs[0];   var setView = vs[1];
+    var vs = R.useState('today');                var view = vs[0]; var setView = vs[1];
     var ns = R.useState({ name: '', icon: '✅', target: '' });
     var form = ns[0];                            var setForm = ns[1];
-    var ves = R.useState('');                    var formError = ves[0]; var setFormError = ves[1];
+    var ers = R.useState('');                    var formError = ers[0]; var setFormError = ers[1];
+    var fts = R.useState('');                    var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var TEMPLATE_HABITS = [
-      { name: '8+ hours of sleep', icon: '😴', target: 'every night' },
-      { name: 'Phone off desk during study', icon: '📱', target: 'each study session' },
-      { name: '25-min focus session', icon: '⏱️', target: 'at least 1/day' },
-      { name: 'Review notes within 24h', icon: '📓', target: 'after each class' },
-      { name: 'Practice testing (not re-reading)', icon: '🃏', target: '3x/week' },
-      { name: '30 min exercise', icon: '🏃', target: '3x/week' },
-      { name: 'No screens 1h before bed', icon: '🌙', target: 'every night' },
-      { name: 'Daily check-in with a friend', icon: '🤝', target: 'every day' }
+      { name: 'Use a consistent sleep schedule', icon: '😴', target: 'On nights when this is useful' },
+      { name: 'Move my phone away during study time', icon: '📱', target: 'During selected study sessions' },
+      { name: 'Complete a focused work session', icon: '⏱️', target: 'Once on selected days' },
+      { name: 'Review notes after class', icon: '📓', target: 'After selected classes' },
+      { name: 'Practice retrieving information from memory', icon: '🃏', target: 'Three times per week' },
+      { name: 'Choose a movement activity', icon: '🏃', target: 'On selected days' },
+      { name: 'Take a screen break before bed', icon: '🌙', target: 'On nights when this helps' },
+      { name: 'Connect with someone I trust', icon: '🤝', target: 'When connection would be helpful' }
     ];
 
-    function addHabit(h) {
-      var habit = Object.assign({ id: tkId(), createdAt: todayISO() }, h);
-      setData(Object.assign({}, data, { habits: (data.habits || []).concat([habit]) }));
-    }
-    function removeHabit(id) {
-      var logs = Object.assign({}, data.logs || {});
-      delete logs[id];
-      setData({ habits: (data.habits || []).filter(function(h) { return h.id !== id; }), logs: logs });
-    }
-    function toggleDay(habitId, day) {
-      var logs = Object.assign({}, data.logs || {});
-      var hl = (logs[habitId] || []).slice();
-      var idx = hl.indexOf(day);
-      if (idx >= 0) hl.splice(idx, 1);
-      else hl.push(day);
-      logs[habitId] = hl;
-      setData(Object.assign({}, data, { logs: logs }));
-    }
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      setFocusTarget('');
+    }, [focusTarget]);
 
+    function isoDayNumber(iso) {
+      var parts = String(iso || '').split('-').map(Number);
+      return parts.length === 3 && parts[0] && parts[1] && parts[2] ? Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000) : null;
+    }
+    function isoFromDayNumber(value) {
+      return new Date(value * 86400000).toISOString().slice(0, 10);
+    }
+    function openAdd(template) {
+      setForm(template ? { name: template.name, icon: template.icon, target: template.target } : { name: '', icon: '✅', target: '' });
+      setFormError('');
+      setView('add');
+      setFocusTarget(template ? 'learning-lab-habit-name' : 'learning-lab-habit-form-heading');
+      if (template) llAnnounce('Editable habit example loaded. Review it before saving.');
+    }
+    function cancelAdd() {
+      setFormError('');
+      setView('today');
+      setFocusTarget('learning-lab-habit-heading');
+      llAnnounce('Habit creation canceled.');
+    }
+    function saveHabit(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var name = String(form.name || '').trim();
+      if (!name) {
+        setFormError('Enter a name for the habit.');
+        setFocusTarget('learning-lab-habit-name');
+        llAnnounce('A habit name is required.');
+        return;
+      }
+      var habit = { id: tkId(), createdAt: todayISO(), name: name, icon: String(form.icon || '').trim() || '✅', target: String(form.target || '').trim() };
+      setData(Object.assign({}, data, { habits: (data.habits || []).concat([habit]) }));
+      setForm({ name: '', icon: '✅', target: '' });
+      setFormError('');
+      setView('today');
+      setFocusTarget('learning-lab-habit-heading');
+      llAnnounce('Habit saved.');
+    }
+    async function removeHabit(habit) {
+      if (!(await askLearningLabConfirmation('This permanently removes the selected habit and its check-in history.', {
+        title: 'Delete this habit?', confirmText: 'Delete habit'
+      }))) return;
+      var logs = Object.assign({}, data.logs || {});
+      delete logs[habit.id];
+      var remaining = (data.habits || []).filter(function(candidate) { return candidate.id !== habit.id; });
+      setData(Object.assign({}, data, { habits: remaining, logs: logs }));
+      setFocusTarget(remaining.length ? 'learning-lab-habit-list-heading' : 'learning-lab-habit-add-button');
+      llAnnounce('Habit deleted.');
+    }
+    function toggleDay(habit, day) {
+      var logs = Object.assign({}, data.logs || {});
+      var habitLogs = (logs[habit.id] || []).slice();
+      var index = habitLogs.indexOf(day);
+      var wasDone = index >= 0;
+      if (wasDone) habitLogs.splice(index, 1);
+      else habitLogs.push(day);
+      logs[habit.id] = habitLogs;
+      setData(Object.assign({}, data, { logs: logs }));
+      llAnnounce((wasDone ? 'Removed today’s check-in for ' : 'Recorded today’s check-in for ') + habit.name + '.');
+    }
     function habitStreak(habitId) {
-      var hl = (data.logs || {})[habitId] || [];
+      var habitLogs = (data.logs || {})[habitId] || [];
+      var currentDay = isoDayNumber(todayISO());
       var streak = 0;
-      for (var i = 0; i < 365; i++) {
-        var dt = new Date(); dt.setDate(dt.getDate() - i);
-        var iso = dt.toISOString().slice(0, 10);
-        if (hl.indexOf(iso) >= 0) streak++;
-        else if (i > 0) break;
+      for (var offset = 0; offset < 365; offset++) {
+        var iso = isoFromDayNumber(currentDay - offset);
+        if (habitLogs.indexOf(iso) >= 0) streak++;
+        else if (offset > 0) break;
       }
       return streak;
     }
-    function habitsTotalThisWeek(habitId) {
-      var hl = (data.logs || {})[habitId] || [];
+    function totalThisWeek(habitId) {
+      var habitLogs = (data.logs || {})[habitId] || [];
+      var currentDay = isoDayNumber(todayISO());
       var count = 0;
-      for (var i = 0; i < 7; i++) {
-        var dt = new Date(); dt.setDate(dt.getDate() - i);
-        var iso = dt.toISOString().slice(0, 10);
-        if (hl.indexOf(iso) >= 0) count++;
-      }
+      for (var offset = 0; offset < 7; offset++) if (habitLogs.indexOf(isoFromDayNumber(currentDay - offset)) >= 0) count++;
       return count;
+    }
+    function historyFor(habitId) {
+      var habitLogs = (data.logs || {})[habitId] || [];
+      var currentDay = isoDayNumber(todayISO());
+      var history = [];
+      for (var offset = 29; offset >= 0; offset--) {
+        var iso = isoFromDayNumber(currentDay - offset);
+        history.push({ day: iso, done: habitLogs.indexOf(iso) >= 0, today: offset === 0 });
+      }
+      return history;
     }
 
     var habits = data.habits || [];
@@ -6936,130 +6993,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     if (view === 'add') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('+', 'Add a habit', 'Pick a template or write your own.', '#10b981'),
-
+        tkSectionHeader('➕', 'Add a habit', 'Choose an editable example or write your own. Review the name and target before saving.', '#10b981', 'learning-lab-habit-form-heading'),
         tkCard('#10b981',
           hh('div', null,
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '✨ Common student habits'),
-            hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 } },
-              TEMPLATE_HABITS.map(function(h, i) {
-                return hh('button', { key: 'tp-' + i, type: 'button',
-                  onClick: function() { addHabit(h); setView('today'); },
-                  style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px dashed rgba(16,185,129,0.30)', cursor: 'pointer', textAlign: 'left' }
-                },
-                  hh('span', { style: { fontSize: 16 } }, h.icon),
-                  hh('div', { style: { flex: 1 } },
-                    hh('div', { style: { fontSize: 12, fontWeight: 700 } }, h.name),
-                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'target: ' + h.target)
-                  ),
-                  hh('span', { style: { color: '#10b981', fontSize: 14 } }, '+')
+            hh('section', { 'aria-labelledby': 'learning-lab-habit-templates-heading' },
+            hh('h3', { id: 'learning-lab-habit-templates-heading', style: { margin: '0 0 4px', fontSize: 13, color: '#a7f3d0' } }, 'Editable examples'),
+            hh('p', { id: 'learning-lab-habit-templates-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'These optional examples are not health recommendations. Choose one only if it fits your needs, then edit it before saving.'),
+            hh('ul', { 'aria-labelledby': 'learning-lab-habit-templates-heading', 'aria-describedby': 'learning-lab-habit-templates-help', style: { display: 'flex', flexDirection: 'column', gap: 5, listStyle: 'none', padding: 0, margin: '0 0 16px' } },
+              TEMPLATE_HABITS.map(function(template, index) {
+                return hh('li', { key: 'tp-' + index },
+                  hh('button', { type: 'button', onClick: function() { openAdd(template); }, 'aria-label': 'Use editable example: ' + template.name, 'data-ll-focusable': true,
+                    style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, padding: '8px 10px', borderRadius: 6, background: 'rgba(2,6,23,0.4)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px dashed rgba(110,231,183,0.55)', cursor: 'pointer', textAlign: 'left' } },
+                    hh('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, template.icon),
+                    hh('span', { style: { flex: 1, minWidth: 0 } },
+                      hh('span', { style: { display: 'block', fontSize: 12, fontWeight: 700, overflowWrap: 'anywhere' } }, template.name),
+                      hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', overflowWrap: 'anywhere' } }, 'Example target: ' + template.target)
+                    ),
+                    hh('span', { 'aria-hidden': 'true', style: { color: '#6ee7b7', fontSize: 14 } }, '＋')
+                  )
                 );
               })
-            ),
-
-            hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 6 } }, '📝 Or write your own'),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: 8, alignItems: 'end', marginBottom: 8 } },
+            )
+          ),
+          hh('form', { 'aria-labelledby': 'learning-lab-habit-custom-heading', onSubmit: saveHabit },
+            hh('h3', { id: 'learning-lab-habit-custom-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#a7f3d0' } }, 'Habit details'),
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, alignItems: 'end', marginBottom: 8 } },
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-habit-icon', style: { fontSize: 10, fontWeight: 800, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Icon'),
-                hh('input', { id: 'learning-lab-habit-icon', type: 'text', value: form.icon, maxLength: 8, onChange: function(e) { setForm(Object.assign({}, form, { icon: e.target.value })); }, placeholder: '🎯', style: { width: '100%', minHeight: 44, padding: 8, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' } })
+                hh('label', { htmlFor: 'learning-lab-habit-icon', style: { fontSize: 11, fontWeight: 800, color: '#a7f3d0', display: 'block', marginBottom: 4 } }, 'Icon or emoji (optional)'),
+                tkInput(form.icon, function(value) { setForm(Object.assign({}, form, { icon: value })); }, 'For example: 🎯', { id: 'learning-lab-habit-icon', maxLength: 16 })
               ),
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-habit-name', style: { fontSize: 10, fontWeight: 800, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Habit name (required)'),
-                hh('input', { id: 'learning-lab-habit-name', type: 'text', value: form.name, required: true, 'aria-invalid': formError ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-habit-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); setFormError(''); }, placeholder: 'Habit name', style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } })
+                hh('label', { htmlFor: 'learning-lab-habit-name', style: { fontSize: 11, fontWeight: 800, color: '#a7f3d0', display: 'block', marginBottom: 4 } }, 'Habit name'),
+                tkInput(form.name, function(value) { setForm(Object.assign({}, form, { name: value })); if (formError) setFormError(''); }, 'For example: Review my planner', {
+                  id: 'learning-lab-habit-name', required: true, maxLength: 240, 'aria-invalid': formError ? 'true' : undefined,
+                  'aria-describedby': formError ? 'learning-lab-habit-name-error' : undefined
+                })
               )
             ),
-            hh('label', { htmlFor: 'learning-lab-habit-target', style: { fontSize: 10, fontWeight: 800, color: '#10b981', display: 'block', marginBottom: 4 } }, 'Target (optional)'),
-            hh('input', { id: 'learning-lab-habit-target', type: 'text', value: form.target, onChange: function(e) { setForm(Object.assign({}, form, { target: e.target.value })); }, placeholder: 'e.g., "5x/week"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box' } }),
-            formError ? hh('div', { id: 'learning-lab-habit-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, formError) : null,
-            tkBtn('+ Add custom habit', function() {
-              if (!form.name.trim()) { setFormError('Habit name is required.'); setTimeout(function() { var target = document.getElementById('learning-lab-habit-name'); if (target) target.focus(); }, 0); return; }
-              addHabit(form);
-              setForm({ name: '', icon: '✅', target: '' });
-              setFormError('');
-              setView('today');
-            }, 'primary')
+            formError ? hh('p', { id: 'learning-lab-habit-name-error', role: 'alert', style: { margin: '0 0 8px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formError) : null,
+            hh('label', { htmlFor: 'learning-lab-habit-target', style: { fontSize: 11, fontWeight: 800, color: '#a7f3d0', display: 'block', marginBottom: 4 } }, 'Target or context (optional)'),
+            tkInput(form.target, function(value) { setForm(Object.assign({}, form, { target: value })); }, 'For example: On weekdays when it is useful', { id: 'learning-lab-habit-target', maxLength: 500, marginBottom: 10 }),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              tkBtn('Cancel', cancelAdd, 'ghost'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save habit')
+            )
           )
-        ),
-
-        hh('div', { style: { display: 'flex', justifyContent: 'flex-start' } },
-          tkBtn('← Back', function() { setFormError(''); setView('today'); }, 'ghost')
+          )
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('✅', 'Habit Tracker', 'Daily check-ins build the routine. Habits take ~66 days to form (Lally 2009).', '#10b981'),
-
+      tkSectionHeader('✅', 'Habit Tracker', 'Optional daily check-ins for routines you choose. Missing a check-in does not erase prior progress.', '#10b981', 'learning-lab-habit-heading'),
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-        tkBtn('+ Add habit', function() { setFormError(''); setView('add'); }, 'primary')
+        hh('button', { id: 'learning-lab-habit-add-button', type: 'button', onClick: function() { openAdd(null); }, 'data-ll-focusable': true,
+          style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1.5px solid #6ee7b7', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add habit')
       ),
-
-      habits.length === 0 ? tkEmptyState('✅', 'No habits tracked yet. Pick from common student habits or build your own.', '+ Add your first habit', function() { setFormError(''); setView('add'); })
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          habits.map(function(h) {
-            var streak = habitStreak(h.id);
-            var thisWeek = habitsTotalThisWeek(h.id);
-            var habitLogs = ((data.logs || {})[h.id] || []);
-            var todayDone = habitLogs.indexOf(today) >= 0;
-            var last30Count = 0;
-            for (var historyIndex = 29; historyIndex >= 0; historyIndex--) {
-              var historyDate = new Date(); historyDate.setDate(historyDate.getDate() - historyIndex);
-              if (habitLogs.indexOf(historyDate.toISOString().slice(0, 10)) >= 0) last30Count++;
-            }
-            return hh('div', { key: 'h-' + h.id, style: {
-              padding: 12, borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(16,185,129,0.10), rgba(15,23,42,0.7))',
-              border: '1px solid rgba(16,185,129,0.30)', borderLeft: '4px solid #10b981'
-            } },
-              hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                hh('div', { style: { fontSize: 22 } }, h.icon),
-                hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#10b981' } }, h.name),
-                  hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'target: ' + h.target)
-                ),
-                hh('div', { style: { display: 'flex', gap: 6 } },
-                  hh('div', { role: 'img', 'aria-label': 'Current streak: ' + streak + ' day' + (streak === 1 ? '' : 's'), style: { padding: '6px 12px', borderRadius: 999, background: streak > 0 ? 'rgba(251,191,36,0.20)' : 'rgba(100,116,139,0.10)', color: streak > 0 ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, '🔥 ' + streak),
-                  hh('div', { role: 'img', 'aria-label': 'Completed this week: ' + thisWeek + ' of 7 days', style: { padding: '6px 12px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#10b981', fontSize: 12, fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWeek + '/7'),
-                  hh('button', { type: 'button', 'aria-label': 'Delete habit: ' + h.name, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the habit "' + h.name + '" and all of its history.', { title: 'Delete this habit?', confirmText: 'Delete habit' })) removeHabit(h.id); }, style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer', padding: 8 } }, '✕')
-                )
-              ),
-              // 30-day strip
-              hh('div', { role: 'img', 'aria-label': h.name + ' activity for the last 30 days: ' + last30Count + ' days completed. Today is ' + (todayDone ? 'complete.' : 'not complete.'), style: { display: 'flex', gap: 2, marginBottom: 8 } },
-                (function() {
-                  var arr = [];
-                  for (var i = 29; i >= 0; i--) {
-                    var dt = new Date(); dt.setDate(dt.getDate() - i);
-                    var iso = dt.toISOString().slice(0, 10);
-                    var done = ((data.logs || {})[h.id] || []).indexOf(iso) >= 0;
-                    var isToday = iso === today;
-                    arr.push(hh('div', { key: 'day-' + i, 'aria-hidden': 'true',
-                      title: iso + (done ? ' ✓' : ''),
-                      style: { flex: 1, height: 16, borderRadius: 2, background: done ? '#10b981' : 'rgba(100,116,139,0.15)', border: isToday ? '1px solid #fbbf24' : 'none' }
-                    }));
-                  }
-                  return arr;
-                })()
-              ),
-              // Today button
-              hh('button', { type: 'button', 'aria-pressed': todayDone, onClick: function() { toggleDay(h.id, today); },
-                style: { width: '100%', minHeight: 44, padding: '10px', borderRadius: 8, background: todayDone ? 'rgba(16,185,129,0.30)' : 'rgba(16,185,129,0.10)', color: todayDone ? '#10b981' : '#94a3b8', border: '1.5px solid ' + (todayDone ? '#10b981' : 'rgba(16,185,129,0.40)'), fontSize: 12, fontWeight: 800, cursor: 'pointer' }
-              }, todayDone ? '✓ Done today — undo' : 'Mark done today')
-            );
-          })
-        ),
-
-      // Lesson card
-      habits.length > 0 ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#10b981' } }, '🎓 Habit formation reality: '),
-        'Lally et al. (2009) — actual average was 66 DAYS, not the 21-day myth. Range was 18-254 days. The "missed a day" effect: missing one day did NOT prevent habit formation in the data. Self-blame on a miss is the bigger threat than the miss itself. Just resume tomorrow.'
+      hh('section', { 'aria-labelledby': 'learning-lab-habit-list-heading' },
+        hh('h3', { id: 'learning-lab-habit-list-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#a7f3d0' } }, 'Tracked habits'),
+        habits.length === 0
+          ? tkEmptyState('✅', 'No habits are being tracked. Add one only if daily check-ins would be useful.', 'Add your first habit', function() { openAdd(null); })
+          : hh('ul', { 'aria-labelledby': 'learning-lab-habit-list-heading', style: { display: 'flex', flexDirection: 'column', gap: 10, listStyle: 'none', padding: 0, margin: 0 } },
+              habits.map(function(habit) {
+                var streak = habitStreak(habit.id);
+                var thisWeek = totalThisWeek(habit.id);
+                var habitLogs = (data.logs || {})[habit.id] || [];
+                var todayDone = habitLogs.indexOf(today) >= 0;
+                var history = historyFor(habit.id);
+                var completedHistory = history.filter(function(entry) { return entry.done; });
+                var habitName = String(habit.name || '').slice(0, 160);
+                return hh('li', { key: 'h-' + habit.id, style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(16,185,129,0.10), rgba(15,23,42,0.7))', border: '1px solid rgba(110,231,183,0.50)', borderLeft: '4px solid #10b981' } },
+                  hh('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                    hh('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, habit.icon || '✅'),
+                    hh('div', { style: { flex: 1, minWidth: 0 } },
+                      hh('h4', { style: { margin: '0 0 2px', fontSize: 13, color: '#a7f3d0', overflowWrap: 'anywhere' } }, habit.name),
+                      habit.target ? hh('p', { style: { margin: 0, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', overflowWrap: 'anywhere' } }, 'Target or context: ' + habit.target) : null
+                    ),
+                    hh('button', { type: 'button', onClick: function() { removeHabit(habit); }, 'aria-label': 'Delete habit: ' + habitName, 'data-ll-focusable': true,
+                      style: { minHeight: 44, padding: '8px 11px', background: 'transparent', border: '1px solid rgba(252,165,165,0.65)', borderRadius: 6, color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                  ),
+                  hh('ul', { 'aria-label': 'Check-in summary for ' + habitName, style: { display: 'flex', gap: 6, flexWrap: 'wrap', listStyle: 'none', padding: 0, margin: '0 0 8px' } },
+                    hh('li', { style: { padding: '6px 10px', borderRadius: 999, background: 'rgba(251,191,36,0.15)', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, 'Current streak: ' + streak + (streak === 1 ? ' day' : ' days')),
+                    hh('li', { style: { padding: '6px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.18)', color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, 'Last 7 days: ' + thisWeek + ' completed')
+                  ),
+                  hh('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: 2, marginBottom: 8 } },
+                    history.map(function(entry) { return hh('span', { key: entry.day, title: entry.day + (entry.done ? ' completed' : ' not completed'), style: { flex: 1, height: 16, borderRadius: 2, background: entry.done ? '#10b981' : 'rgba(100,116,139,0.20)', border: entry.today ? '1px solid #fde68a' : '1px solid transparent' } }); })
+                  ),
+                  hh('details', { style: { marginBottom: 8, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                    hh('summary', { 'data-ll-focusable': true, style: { minHeight: 44, display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, 'View 30-day check-in history (' + completedHistory.length + ' completed)'),
+                    hh('ol', { style: { maxHeight: 220, overflowY: 'auto', margin: '4px 0 8px', paddingLeft: 24, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                      history.map(function(entry) { return hh('li', { key: 'history-' + entry.day }, hh('time', { dateTime: entry.day }, entry.day), ': ' + (entry.done ? 'Completed' : 'Not completed')); })
+                    )
+                  ),
+                  hh('button', { type: 'button', 'aria-pressed': todayDone ? 'true' : 'false', 'aria-label': (todayDone ? 'Remove today’s check-in for ' : 'Record today’s check-in for ') + habitName, 'data-ll-focusable': true,
+                    onClick: function() { toggleDay(habit, today); },
+                    style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 8, background: todayDone ? 'rgba(4,120,87,0.45)' : 'rgba(16,185,129,0.10)', color: todayDone ? '#d1fae5' : '#cbd5e1', border: '1.5px solid ' + (todayDone ? '#6ee7b7' : 'rgba(110,231,183,0.55)'), fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+                  }, todayDone ? 'Today’s check-in is recorded — remove' : 'Record today’s check-in')
+                );
+              })
+            )
+      ),
+      habits.length > 0 ? hh('aside', { 'aria-labelledby': 'learning-lab-habit-evidence-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(110,231,183,0.45)', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-habit-evidence-heading', style: { margin: '0 0 4px', color: '#a7f3d0', fontSize: 12 } }, 'Research context'),
+        'In Lally et al. (2010), the modeled time to reach 95 percent of an automaticity plateau varied widely; the reported median was 66 days, with a range of 18 to 254 days among participants whose data fit the model. Missing one opportunity did not materially affect the habit-formation process in that study. These findings do not set a deadline for an individual habit, and a missed check-in is not a failure.'
       ) : null
     );
   }
 
-  // ── L. PERSONAL WEEKLY REFLECTION (Wave 3) ──
-  // Weekly journal with structured prompts. Reflection has the highest
-  // evidence-to-effort ratio for metacognitive growth (Zimmerman 2002,
-  // Schön 1983 reflective practice). Saves entries over time, searchable.
+  // L. PERSONAL WEEKLY REFLECTION (Wave 3)
   function PersonalWeeklyReflection(props) {
     if (!R) return null;
     var data = props.data || { entries: [] };
