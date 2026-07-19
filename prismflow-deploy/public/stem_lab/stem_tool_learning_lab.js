@@ -18571,99 +18571,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   function PersonalToolkitExport(props) {
     if (!R) return null;
     var allData = props.allData || {};
-    var setData = props.setData; // resets entire toolkit data
+    var setData = props.setData;
+    var ts = R.useState(''); var importText = ts[0]; var setImportText = ts[1];
+    var ms = R.useState('merge'); var importMode = ms[0]; var setImportMode = ms[1];
+    var es = R.useState(''); var importError = es[0]; var setImportError = es[1];
+    var ss = R.useState(null); var status = ss[0]; var setStatus = ss[1];
+    var ws = R.useState(false); var wipeAcknowledged = ws[0]; var setWipeAcknowledged = ws[1];
+    var fsState = R.useState(''); var selectedFile = fsState[0]; var setSelectedFile = fsState[1];
 
-    var ms = R.useState(''); var msg = ms[0]; var setMsg = ms[1];
+    var toolkitKeys = Object.keys(allData).filter(function(key) { return key.indexOf('mytk') === 0; }).sort();
+    var exportObject = {};
+    toolkitKeys.forEach(function(key) { exportObject[key] = allData[key]; });
+    var exportJson = JSON.stringify(exportObject, null, 2);
+    var approximateBytes = exportJson.length;
+    var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid #60a5fa', background: 'rgba(15,23,42,0.88)', color: '#f8fafc', fontSize: 12, lineHeight: 1.5 };
+    var labelStyle = { display: 'block', marginBottom: 4, color: '#dbeafe', fontSize: 12, fontWeight: 800 };
+    var helpStyle = { margin: '0 0 7px', color: '#e2e8f0', fontSize: 11, lineHeight: 1.55 };
+    var buttonStyle = { minWidth: 44, minHeight: 44, padding: '9px 14px', borderRadius: 7, border: '1px solid #60a5fa', background: '#1d4ed8', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' };
+    var secondaryButtonStyle = Object.assign({}, buttonStyle, { background: 'rgba(30,64,175,0.32)', color: '#dbeafe' });
+    var dangerButtonStyle = Object.assign({}, buttonStyle, { borderColor: '#f87171', background: 'rgba(127,29,29,0.48)', color: '#fee2e2' });
 
+    function focusById(id, selectText) { setTimeout(function() { if (typeof document === 'undefined') return; var target = document.getElementById(id); if (!target) return; if (typeof target.focus === 'function') target.focus(); if (selectText && typeof target.select === 'function') target.select(); }, 0); }
+    function report(kind, text) { setStatus({ kind: kind, text: text }); llAnnounce(text); }
+    function formattedSize(bytes) { if (bytes < 1024) return bytes + ' bytes'; return (Math.round(bytes / 102.4) / 10) + ' KB'; }
     function exportAll() {
-      var keys = Object.keys(allData).filter(function(k) { return k.indexOf('mytk') === 0; });
-      var out = {};
-      keys.forEach(function(k) { out[k] = allData[k]; });
-      var json = JSON.stringify(out, null, 2);
+      if (typeof document === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') { report('error', 'Automatic download is unavailable. Copy the backup JSON from the labeled field instead.'); focusById('learning-lab-toolkit-export-json', true); return; }
       try {
-        var blob = new Blob([json], { type: 'application/json' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'my-toolkit-' + todayISO() + '.json';
-        a.click();
-        URL.revokeObjectURL(url);
-        setMsg('✓ Downloaded. Save it somewhere safe.');
-      } catch (e) {
-        setMsg('Export failed. Try copying the JSON below manually.');
-      }
+        var blob = new Blob([exportJson], { type: 'application/json' }); var url = URL.createObjectURL(blob); var link = document.createElement('a');
+        link.href = url; link.download = 'my-toolkit-' + todayISO() + '.json'; link.style.display = 'none'; document.body.appendChild(link); link.click(); document.body.removeChild(link); setTimeout(function() { URL.revokeObjectURL(url); }, 0);
+        report('success', 'Toolkit backup download started. Store the file securely and review your browser downloads.');
+      } catch (error) { report('error', 'Automatic download failed. Copy the backup JSON from the labeled field instead.'); focusById('learning-lab-toolkit-export-json', true); }
     }
-
-    function importJson() {
-      var txt = prompt('Paste exported JSON here:');
-      if (!txt) return;
+    function copyExport() {
+      var id = 'learning-lab-toolkit-export-json';
+      if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { report('error', 'Clipboard access is unavailable. The backup JSON is selected; use Control+C or Command+C.'); focusById(id, true); return; }
+      Promise.resolve(navigator.clipboard.writeText(exportJson)).then(function() { report('success', 'Backup JSON copied. Store it securely because it may contain sensitive information.'); }).catch(function() { report('error', 'Automatic copying failed. The backup JSON is selected; use Control+C or Command+C.'); focusById(id, true); });
+    }
+    function validateImport() {
+      var text = String(importText || '').trim();
+      if (!text) return { error: 'Paste backup JSON or choose a JSON file before importing.' };
+      if (text.length > 2000000) return { error: 'This backup is larger than the 2,000,000-character import limit.' };
       try {
-        var parsed = JSON.parse(txt);
-        if (typeof parsed !== 'object') throw new Error('Invalid JSON.');
-        if (!confirm('This will OVERWRITE all your current toolkit data with the imported version. Continue?')) return;
-        Object.keys(parsed).forEach(function(k) {
-          if (setData) setData(k, parsed[k]);
-        });
-        setMsg('✓ Imported. Refresh to see the data.');
-      } catch (e) {
-        setMsg('Import failed: ' + e.message);
-      }
+        var parsed = JSON.parse(text);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { error: 'The backup must be a JSON object containing toolkit keys.' };
+        var keys = Object.keys(parsed);
+        if (!keys.length) return { error: 'The backup contains no toolkit records.' };
+        var invalid = keys.filter(function(key) { return key.indexOf('mytk') !== 0; });
+        if (invalid.length) return { error: 'The backup contains unsupported keys. Only keys beginning with “mytk” can be imported.' };
+        return { parsed: parsed, keys: keys.sort() };
+      } catch (error) { return { error: 'The backup is not valid JSON: ' + String(error && error.message ? error.message : 'parse error') }; }
     }
-
+    function importJson(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var result = validateImport();
+      if (result.error) { setImportError(result.error); report('error', 'Toolkit data was not imported. ' + result.error); focusById('learning-lab-toolkit-import-json'); return; }
+      if (typeof setData !== 'function') { var unavailable = 'Import is unavailable because toolkit storage could not be accessed.'; setImportError(unavailable); report('error', unavailable); focusById('learning-lab-toolkit-import-json'); return; }
+      var actionText = importMode === 'replace' ? 'Replace all ' + toolkitKeys.length + ' current toolkit records with ' + result.keys.length + ' imported records?' : 'Merge ' + result.keys.length + ' imported toolkit records into current data? Matching records will be replaced; other current records will remain.';
+      askLearningLabConfirmation(actionText + ' Review and back up current data first. This change cannot be undone here.', { title: importMode === 'replace' ? 'Replace toolkit data?' : 'Merge toolkit data?', confirmText: importMode === 'replace' ? 'Replace data' : 'Merge data' }).then(function(accepted) {
+        if (!accepted) return;
+        if (importMode === 'replace') toolkitKeys.forEach(function(key) { setData(key, null); });
+        result.keys.forEach(function(key) { setData(key, result.parsed[key]); });
+        setImportText(''); setSelectedFile(''); setImportError(''); report('success', (importMode === 'replace' ? 'Toolkit data replaced' : 'Toolkit data merged') + ' with ' + result.keys.length + ' imported records. Review the affected tools before relying on the data.'); focusById('learning-lab-toolkit-import-heading');
+      });
+    }
+    function loadFile(event) {
+      var file = event.target.files && event.target.files[0]; setSelectedFile(file ? file.name : ''); setImportError(''); setStatus(null);
+      if (!file) return;
+      if (file.size > 2000000) { var tooLarge = 'The selected file is larger than the 2 MB import limit.'; setImportError(tooLarge); report('error', tooLarge); focusById('learning-lab-toolkit-import-file'); return; }
+      if (typeof FileReader === 'undefined') { var unavailable = 'File reading is unavailable in this browser. Paste the JSON into the text field instead.'; setImportError(unavailable); report('error', unavailable); return; }
+      var reader = new FileReader();
+      reader.onload = function() { setImportText(String(reader.result || '')); setImportError(''); report('success', 'Selected file loaded into the import field. Review it and choose merge or replace before importing.'); focusById('learning-lab-toolkit-import-json'); };
+      reader.onerror = function() { var failure = 'The selected file could not be read. Paste the JSON into the text field instead.'; setImportError(failure); report('error', failure); focusById('learning-lab-toolkit-import-file'); };
+      reader.readAsText(file);
+    }
     function wipeAll() {
-      if (!confirm('This will DELETE ALL your personal toolkit data forever. There is no undo. Continue?')) return;
-      if (!confirm('Really sure? This includes goals, journals, all check-ins, every saved entry.')) return;
-      var keys = Object.keys(allData).filter(function(k) { return k.indexOf('mytk') === 0; });
-      keys.forEach(function(k) { if (setData) setData(k, null); });
-      setMsg('✓ All toolkit data wiped.');
+      if (!wipeAcknowledged || !toolkitKeys.length) return;
+      if (typeof setData !== 'function') { report('error', 'Deletion is unavailable because toolkit storage could not be accessed.'); return; }
+      askLearningLabConfirmation('Permanently clear all ' + toolkitKeys.length + ' toolkit records available to this screen? This cannot be undone here. A downloaded backup is not deleted.', { title: 'Clear all toolkit data?', confirmText: 'Clear all data' }).then(function(accepted) {
+        if (!accepted) return; toolkitKeys.forEach(function(key) { setData(key, null); }); setWipeAcknowledged(false); report('success', 'All toolkit records available to this screen were cleared. Other account, synced, downloaded, or device backups are not deleted by this action.'); focusById('learning-lab-toolkit-wipe-heading');
+      });
     }
-
-    var dataSize = 0;
-    Object.keys(allData).filter(function(k) { return k.indexOf('mytk') === 0; }).forEach(function(k) {
-      try { dataSize += JSON.stringify(allData[k]).length; } catch (e) {}
-    });
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('💾', 'Backup + Import', 'Your data lives in YOUR browser. Back it up, transfer to another device, or wipe it cleanly.', '#3b82f6'),
-
-      hh('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.40)', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: 4 } }, 'Your toolkit holds'),
-        hh('div', { style: { fontSize: 28, fontWeight: 900, color: '#60a5fa', fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(dataSize / 1024) + ' KB'),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'of data, stored only in this browser')
+      tkSectionHeader('', 'Toolkit Data Management', 'Review, download, import, or clear toolkit records available in this browser session.', '#60a5fa'),
+      hh('aside', { 'aria-labelledby': 'learning-lab-toolkit-privacy-heading', style: { marginBottom: 12, padding: 11, borderRadius: 8, border: '1px solid #60a5fa', background: 'rgba(30,64,175,0.24)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } },
+        hh('h2', { id: 'learning-lab-toolkit-privacy-heading', style: { margin: '0 0 5px', color: '#dbeafe', fontSize: 14 } }, 'Treat backups as sensitive data'),
+        hh('p', { style: { margin: '0 0 5px' } }, 'A backup may include journals, health or disability information, plans, contacts, school or workplace details, and other personal text. Store and share it only in places you trust.'),
+        hh('p', { style: { margin: 0 } }, 'This screen manages the toolkit records currently provided to it. Depending on app configuration, sign-in, synchronization, browser backup, downloaded files, or device services, other copies may exist. Downloading, importing, or clearing here does not manage every possible copy.')
       ),
-
-      tkCard('#3b82f6',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#60a5fa', marginBottom: 10 } }, '💾 Backup'),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } }, 'Download a .json file with EVERYTHING from your toolkit. Save it somewhere safe (cloud drive, email to yourself, USB).'),
-          tkBtn('📥 Download my toolkit data', exportAll, 'primary')
+      hh('section', { 'aria-labelledby': 'learning-lab-toolkit-overview-heading', style: { marginBottom: 14, padding: 12, borderRadius: 10, border: '1px solid #60a5fa', background: 'rgba(30,64,175,0.18)' } },
+        hh('h2', { id: 'learning-lab-toolkit-overview-heading', style: { margin: '0 0 5px', color: '#dbeafe', fontSize: 15 } }, 'Current export scope'),
+        hh('p', { style: { margin: 0, color: '#f8fafc', fontSize: 12 } }, toolkitKeys.length + ' toolkit record' + (toolkitKeys.length === 1 ? '' : 's') + ', approximately ' + formattedSize(approximateBytes) + ' as formatted JSON.'),
+        hh('p', { style: helpStyle }, 'Only records whose keys begin with “mytk” are included. The size is approximate and does not prove that every app record is represented.')
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-toolkit-backup-heading', style: { marginBottom: 14 } },
+        hh('h2', { id: 'learning-lab-toolkit-backup-heading', style: { margin: '0 0 5px', color: '#dbeafe', fontSize: 15 } }, 'Download or copy a backup'),
+        hh('p', { id: 'learning-lab-toolkit-export-help', style: helpStyle }, 'Review the JSON before storing it. A download may be available to other people or services with access to your downloads folder, device, cloud storage, email, or clipboard.'),
+        hh('label', { htmlFor: 'learning-lab-toolkit-export-json', style: labelStyle }, 'Backup JSON (read-only)'),
+        hh('textarea', { id: 'learning-lab-toolkit-export-json', value: exportJson, readOnly: true, rows: 10, 'aria-describedby': 'learning-lab-toolkit-export-help', style: Object.assign({}, fieldStyle, { minHeight: 190, resize: 'vertical', fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+        hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 } },
+          hh('button', { type: 'button', onClick: exportAll, style: buttonStyle }, 'Download backup JSON'),
+          hh('button', { type: 'button', onClick: copyExport, style: secondaryButtonStyle }, 'Copy backup JSON')
         )
       ),
-
-      tkCard('#10b981',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#10b981', marginBottom: 10 } }, '📤 Import (transfer or restore)'),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } }, 'Paste a previously-exported JSON. ', hh('strong', { style: { color: '#ef4444' } }, 'This will OVERWRITE your current data.'), ' Useful for moving to a new browser or restoring after a wipe.'),
-          tkBtn('📤 Paste JSON to import', importJson, 'good')
+      hh('section', { 'aria-labelledby': 'learning-lab-toolkit-import-heading', style: { marginBottom: 14, padding: 12, borderRadius: 10, border: '1px solid #34d399', background: 'rgba(6,78,59,0.18)' } },
+        hh('h2', { id: 'learning-lab-toolkit-import-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#d1fae5', fontSize: 15 } }, 'Import a toolkit backup'),
+        hh('p', { id: 'learning-lab-toolkit-import-help', style: helpStyle }, 'Import accepts a JSON object up to 2 MB whose keys all begin with “mytk”. Review the source and contents first. Imported text is data, not trusted instructions.'),
+        hh('form', { onSubmit: importJson, 'aria-labelledby': 'learning-lab-toolkit-import-heading' },
+          hh('label', { htmlFor: 'learning-lab-toolkit-import-file', style: labelStyle }, 'Choose a backup file (optional)'),
+          hh('input', { id: 'learning-lab-toolkit-import-file', type: 'file', accept: '.json,application/json', onChange: loadFile, 'aria-describedby': 'learning-lab-toolkit-import-help' + (selectedFile ? ' learning-lab-toolkit-file-status' : ''), style: Object.assign({}, fieldStyle, { padding: 8 }) }),
+          selectedFile ? hh('p', { id: 'learning-lab-toolkit-file-status', style: helpStyle }, 'Selected file: ' + selectedFile) : null,
+          hh('label', { htmlFor: 'learning-lab-toolkit-import-json', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Backup JSON (required)'),
+          hh('textarea', { id: 'learning-lab-toolkit-import-json', value: importText, rows: 10, required: true, maxLength: 2000000, onChange: function(event) { setImportText(event.target.value); setImportError(''); setStatus(null); }, 'aria-invalid': importError ? 'true' : undefined, 'aria-describedby': 'learning-lab-toolkit-import-help' + (importError ? ' learning-lab-toolkit-import-error' : ''), style: Object.assign({}, fieldStyle, { minHeight: 190, resize: 'vertical', fontFamily: 'ui-monospace, Menlo, monospace', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }) }),
+          importError ? hh('p', { id: 'learning-lab-toolkit-import-error', role: 'alert', style: { margin: '6px 0', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, importError) : null,
+          hh('fieldset', { style: { margin: '10px 0', padding: 10, borderRadius: 8, border: '1px solid #34d399' } },
+            hh('legend', { style: { padding: '0 5px', color: '#d1fae5', fontSize: 12, fontWeight: 800 } }, 'Import behavior'),
+            hh('label', { htmlFor: 'learning-lab-toolkit-import-merge', style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, color: '#f8fafc', fontSize: 11, cursor: 'pointer' } }, hh('input', { id: 'learning-lab-toolkit-import-merge', type: 'radio', name: 'learning-lab-toolkit-import-mode', value: 'merge', checked: importMode === 'merge', onChange: function() { setImportMode('merge'); }, style: { width: 20, height: 20, margin: 0, accentColor: '#34d399' } }), hh('span', null, hh('strong', null, 'Merge — selected by default'), hh('span', { style: { display: 'block', marginTop: 3, color: '#e2e8f0' } }, 'Replace matching records and keep current records that are not in the backup.'))),
+            hh('label', { htmlFor: 'learning-lab-toolkit-import-replace', style: { display: 'flex', alignItems: 'flex-start', gap: 8, minHeight: 44, color: '#f8fafc', fontSize: 11, cursor: 'pointer' } }, hh('input', { id: 'learning-lab-toolkit-import-replace', type: 'radio', name: 'learning-lab-toolkit-import-mode', value: 'replace', checked: importMode === 'replace', onChange: function() { setImportMode('replace'); }, style: { width: 20, height: 20, margin: 0, accentColor: '#34d399' } }), hh('span', null, hh('strong', null, 'Replace all current toolkit records'), hh('span', { style: { display: 'block', marginTop: 3, color: '#e2e8f0' } }, 'Clear every current “mytk” record, then write only records from the backup.')))
+          ),
+          hh('button', { type: 'submit', style: Object.assign({}, buttonStyle, { background: '#047857', borderColor: '#34d399' }) }, importMode === 'replace' ? 'Review and replace data' : 'Review and merge data')
         )
       ),
-
-      tkCard('#ef4444',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#ef4444', marginBottom: 10 } }, '🗑 Wipe (start fresh)'),
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, lineHeight: 1.6 } }, 'Delete ALL your toolkit data from this browser. ', hh('strong', { style: { color: '#ef4444' } }, 'Cannot be undone.'), ' Make sure you\'ve exported first if you want to keep anything.'),
-          tkBtn('🗑 Wipe my toolkit', wipeAll, 'bad')
-        )
+      hh('section', { 'aria-labelledby': 'learning-lab-toolkit-wipe-heading', style: { marginBottom: 14, padding: 12, borderRadius: 10, border: '2px solid #f87171', background: 'rgba(127,29,29,0.20)' } },
+        hh('h2', { id: 'learning-lab-toolkit-wipe-heading', tabIndex: -1, style: { margin: '0 0 5px', color: '#fee2e2', fontSize: 15 } }, 'Clear toolkit records available here'),
+        hh('p', { id: 'learning-lab-toolkit-wipe-help', style: helpStyle }, 'This permanently clears the ' + toolkitKeys.length + ' current “mytk” records available to this screen. It does not delete downloaded, synced, account, browser-backup, or device-backup copies.'),
+        hh('label', { htmlFor: 'learning-lab-toolkit-wipe-acknowledge', style: { display: 'flex', alignItems: 'flex-start', gap: 9, minHeight: 44, padding: 9, borderRadius: 7, border: '1px solid #f87171', color: '#f8fafc', cursor: toolkitKeys.length ? 'pointer' : 'not-allowed' } },
+          hh('input', { id: 'learning-lab-toolkit-wipe-acknowledge', type: 'checkbox', checked: wipeAcknowledged, disabled: !toolkitKeys.length, 'aria-describedby': 'learning-lab-toolkit-wipe-help', onChange: function(event) { setWipeAcknowledged(event.target.checked); }, style: { width: 22, height: 22, margin: 0, flexShrink: 0, accentColor: '#ef4444' } }),
+          hh('span', { style: { fontSize: 11, lineHeight: 1.5 } }, 'I understand that clearing these records cannot be undone here and I have made any backup I need.')
+        ),
+        hh('button', { type: 'button', onClick: wipeAll, disabled: !wipeAcknowledged || !toolkitKeys.length, style: Object.assign({}, dangerButtonStyle, { marginTop: 9, opacity: wipeAcknowledged && toolkitKeys.length ? 1 : 0.55, cursor: wipeAcknowledged && toolkitKeys.length ? 'pointer' : 'not-allowed' }) }, 'Review and clear all toolkit data')
       ),
-
-      msg ? hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, msg) : null,
-
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#3b82f6' } }, '🔒 Privacy: '),
-        'Nothing in My Toolkit syncs to a server. Your data is stored only in your browser\'s local storage. If you clear browser data, switch browsers, or use a different device — the data does not follow you unless YOU export it. This is intentional. Your data, your control.'
-      )
+      status ? hh('p', { id: 'learning-lab-toolkit-status', role: status.kind === 'error' ? 'alert' : 'status', 'aria-live': status.kind === 'error' ? 'assertive' : 'polite', 'aria-atomic': 'true', style: { margin: '0 0 14px', padding: 10, borderRadius: 8, border: '1px solid ' + (status.kind === 'error' ? '#f87171' : '#60a5fa'), background: status.kind === 'error' ? 'rgba(127,29,29,0.24)' : 'rgba(30,64,175,0.20)', color: '#f8fafc', fontSize: 11, lineHeight: 1.6 } }, status.text) : null
     );
   }
+
 
   // ── F. MY TOOLKIT HUB (landing page) ──
   // Single entry point that shows status of all toolkit tools + quick
