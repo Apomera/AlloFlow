@@ -7609,161 +7609,228 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Identify overwhelm triggers. Adaptive suggestions to reduce load.
   function PersonalCognitiveLoadMonitor(props) {
     if (!R) return null;
-    var data = props.data || { entries: [] };
+    var data = props.data || {};
     var setData = props.setData;
-    var fs = R.useState({ intrinsic: 5, extraneous: 5, germane: 5, triggers: [], notes: '' });
-    var form = fs[0]; var setForm = fs[1];
+    var emptyForm = { intrinsic: 5, extraneous: 5, germane: 5, triggers: [], notes: '' };
+    var fs = R.useState(emptyForm); var form = fs[0]; var setForm = fs[1];
+    var eds = R.useState(false); var editingToday = eds[0]; var setEditingToday = eds[1];
+    var fts = R.useState(null); var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var TRIGGERS = [
-      { id: 'sleep',         label: 'Poor sleep last night', icon: '😴' },
-      { id: 'noise',         label: 'Noisy environment',     icon: '🔊' },
-      { id: 'phone',         label: 'Phone interruptions',   icon: '📱' },
-      { id: 'multitask',     label: 'Tried to multitask',    icon: '🔀' },
-      { id: 'newconcept',    label: 'New / hard concept',    icon: '🧩' },
-      { id: 'unclear',       label: 'Unclear instructions',  icon: '❓' },
-      { id: 'overwhelmed',   label: 'Just felt overwhelmed', icon: '😵' },
-      { id: 'social',        label: 'Social stress',         icon: '🤝' },
-      { id: 'physical',      label: 'Physical (pain, hunger, headache)', icon: '🤕' },
-      { id: 'deadline',      label: 'Deadline pressure',     icon: '⏰' }
+      { id: 'sleep', label: 'Sleep affected today', icon: '\ud83d\ude34' },
+      { id: 'noise', label: 'Environmental noise', icon: '\ud83d\udd0a' },
+      { id: 'phone', label: 'Phone or device interruptions', icon: '\ud83d\udcf1' },
+      { id: 'multitask', label: 'Several tasks competed for attention', icon: '\ud83d\udd00' },
+      { id: 'newconcept', label: 'New or complex material', icon: '\ud83e\udde9' },
+      { id: 'unclear', label: 'Instructions were unclear', icon: '\u2753' },
+      { id: 'overwhelmed', label: 'Felt overwhelmed', icon: '\ud83c\udf0a' },
+      { id: 'social', label: 'Social demands or stress', icon: '\ud83e\udd1d' },
+      { id: 'physical', label: 'Physical needs or discomfort', icon: '\ud83e\ude79' },
+      { id: 'deadline', label: 'Deadline pressure', icon: '\u23f0' }
+    ];
+    var SCALES = [
+      { id: 'intrinsic', label: 'Perceived task complexity', color: '#93c5fd', help: 'How complex the material or task felt to you today.' },
+      { id: 'extraneous', label: 'Perceived avoidable demands', color: '#fca5a5', help: 'How much effort seemed tied to distractions, unclear presentation, or unnecessary steps.' },
+      { id: 'germane', label: 'Perceived learning-supporting effort', color: '#6ee7b7', help: 'How much effort seemed connected to organizing, practicing, or building understanding.' }
     ];
 
+    R.useEffect(function() {
+      if (!focusTarget || typeof document === 'undefined') return;
+      var target = document.getElementById(focusTarget);
+      if (target && typeof target.focus === 'function') target.focus();
+      setFocusTarget(null);
+    }, [focusTarget, editingToday, data.entries]);
+
+    function isoDayNumber(iso) {
+      var parts = String(iso || '').split('-').map(Number);
+      return Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000);
+    }
+    function isoFromDayNumber(dayNumber) {
+      var date = new Date(dayNumber * 86400000);
+      return date.getUTCFullYear() + '-' + String(date.getUTCMonth() + 1).padStart(2, '0') + '-' + String(date.getUTCDate()).padStart(2, '0');
+    }
+    function triggerLabel(id) {
+      var trigger = TRIGGERS.filter(function(item) { return item.id === id; })[0];
+      return trigger ? trigger.label : '';
+    }
     function toggleTrigger(id) {
       var triggers = form.triggers.slice();
-      var i = triggers.indexOf(id);
-      if (i >= 0) triggers.splice(i, 1);
+      var index = triggers.indexOf(id);
+      if (index >= 0) triggers.splice(index, 1);
       else triggers.push(id);
       setForm(Object.assign({}, form, { triggers: triggers }));
     }
-    function save() {
-      var entry = Object.assign({ id: tkId(), date: todayISO() }, form);
-      setData({ entries: [entry].concat(data.entries || []) });
-      setForm({ intrinsic: 5, extraneous: 5, germane: 5, triggers: [], notes: '' });
-      llAnnounce('Cognitive load check-in saved.');
-    }
-    function remove(id) { setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) }); }
 
     var entries = data.entries || [];
     var today = todayISO();
-    var todayEntry = entries.filter(function(e) { return e.date === today; })[0];
+    var todayEntry = entries.filter(function(entry) { return entry.date === today; })[0];
 
-    // 7-day trend
-    var last7 = [];
-    for (var i = 6; i >= 0; i--) {
-      var dt = new Date(); dt.setDate(dt.getDate() - i);
-      var iso = dt.toISOString().slice(0, 10);
-      var e = entries.filter(function(x) { return x.date === iso; })[0];
-      last7.push({ date: iso, entry: e, label: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dt.getDay()] });
+    function editToday() {
+      if (!todayEntry) return;
+      setForm({
+        intrinsic: Number(todayEntry.intrinsic) || 0, extraneous: Number(todayEntry.extraneous) || 0,
+        germane: Number(todayEntry.germane) || 0, triggers: (todayEntry.triggers || []).slice(), notes: todayEntry.notes || ''
+      });
+      setEditingToday(true);
+      setFocusTarget('learning-lab-load-form-heading');
+      llAnnounce('Today\'s check-in opened for editing.');
+    }
+    function cancelEdit() {
+      setForm(Object.assign({}, emptyForm));
+      setEditingToday(false);
+      setFocusTarget('learning-lab-load-today-heading');
+      llAnnounce('Check-in editing canceled.');
+    }
+    function save(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var existing = todayEntry || null;
+      var entry = Object.assign({}, existing || {}, {
+        id: existing ? existing.id : tkId(), date: today,
+        intrinsic: Number(form.intrinsic), extraneous: Number(form.extraneous), germane: Number(form.germane),
+        triggers: form.triggers.slice(), notes: String(form.notes || '').trim()
+      });
+      var remaining = entries.filter(function(candidate) { return candidate.date !== today; });
+      setData(Object.assign({}, data, { entries: [entry].concat(remaining) }));
+      setForm(Object.assign({}, emptyForm));
+      setEditingToday(false);
+      setFocusTarget('learning-lab-load-today-heading');
+      llAnnounce(existing ? 'Cognitive-load check-in changes saved.' : 'Cognitive-load check-in saved.');
+    }
+    async function remove(entry) {
+      if (!(await askLearningLabConfirmation('This permanently removes the check-in from ' + entry.date + '.', {
+        title: 'Delete this check-in?', confirmText: 'Delete check-in'
+      }))) return;
+      var remaining = entries.filter(function(candidate) { return candidate.id !== entry.id; });
+      setData(Object.assign({}, data, { entries: remaining }));
+      if (entry.date === today) {
+        setEditingToday(false);
+        setForm(Object.assign({}, emptyForm));
+        setFocusTarget('learning-lab-load-form-heading');
+      } else setFocusTarget(remaining.length ? 'learning-lab-load-history-heading' : 'learning-lab-load-form-heading');
+      llAnnounce('Cognitive-load check-in deleted.');
     }
 
-    var totalLoad = form.intrinsic + form.extraneous + form.germane;
-    var overloadColor = totalLoad >= 24 ? '#ef4444' : totalLoad >= 18 ? '#fbbf24' : '#10b981';
+    var currentDay = isoDayNumber(today);
+    var last7 = [];
+    for (var dayOffset = 6; dayOffset >= 0; dayOffset--) {
+      var iso = isoFromDayNumber(currentDay - dayOffset);
+      var dayEntry = entries.filter(function(entry) { return entry.date === iso; })[0];
+      last7.push({ date: iso, entry: dayEntry });
+    }
+    var showForm = !todayEntry || editingToday;
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⚖️', 'Cognitive Load Monitor', 'Daily check-in on Sweller\'s 3 types of load + overwhelm triggers. Pattern over time = personal insight.', '#fbbf24'),
-
-      // Today
-      todayEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12 } },
-        hh('div', { style: { fontSize: 12, fontWeight: 700, color: '#22c55e', marginBottom: 4 } }, '✓ Today\'s check-in saved'),
-        hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          'Intrinsic ', todayEntry.intrinsic, ' · Extraneous ', todayEntry.extraneous, ' · Germane ', todayEntry.germane,
-          (todayEntry.triggers || []).length > 0 ? ' · ' + (todayEntry.triggers || []).length + ' triggers' : ''
+      tkSectionHeader('\u2696\ufe0f', 'Cognitive Load Monitor', 'An optional private self-report for noticing task demands and context over time.', '#fde68a', 'learning-lab-load-heading'),
+      hh('p', { id: 'learning-lab-load-privacy', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(253,230,138,0.40)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10, lineHeight: 1.6 } }, 'Check-ins save in this browser. On a shared device, avoid details you would not want another user to see. You may skip any context factor or note.'),
+      todayEntry && !editingToday ? hh('section', { 'aria-labelledby': 'learning-lab-load-today-heading', style: { padding: 12, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(110,231,183,0.45)', marginBottom: 12 } },
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+          hh('h3', { id: 'learning-lab-load-today-heading', tabIndex: -1, style: { margin: 0, fontSize: 13, color: '#a7f3d0' } }, 'Today\'s check-in is saved'),
+          tkBtn('Edit today\'s check-in', editToday, 'secondary')
+        ),
+        hh('dl', { 'aria-label': 'Today\'s ratings', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, margin: '10px 0 0' } },
+          SCALES.map(function(scale) { return hh('div', { key: scale.id }, hh('dt', { style: { fontSize: 10, color: '#cbd5e1' } }, scale.label), hh('dd', { style: { margin: '2px 0 0', fontSize: 12, color: scale.color, fontWeight: 800 } }, todayEntry[scale.id] + ' out of 10')); })
         )
-      ) : tkCard('#fbbf24',
-        hh('div', null,
-          hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 10 } }, '⚖️ Today\'s check-in'),
-
-          // 3 sliders
-          [
-            { id: 'intrinsic', label: 'Intrinsic load', color: '#3b82f6', help: 'Actual difficulty of the material I worked on' },
-            { id: 'extraneous', label: 'Extraneous load', color: '#ef4444', help: 'Wasted effort (distractions, confusion, bad instructions)' },
-            { id: 'germane', label: 'Germane load', color: '#10b981', help: 'Effort that built understanding (the productive kind)' }
-          ].map(function(s) {
-            return hh('div', { key: 'cl-' + s.id, style: { marginBottom: 12 } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+      ) : null,
+      showForm ? tkCard('#fde68a',
+        hh('form', { 'aria-labelledby': 'learning-lab-load-form-heading', 'aria-describedby': 'learning-lab-load-privacy learning-lab-load-scale-help', onSubmit: save },
+          hh('h3', { id: 'learning-lab-load-form-heading', tabIndex: -1, style: { margin: '0 0 6px', fontSize: 13, color: '#fde68a' } }, editingToday ? 'Edit today\'s check-in' : 'Today\'s optional check-in'),
+          hh('p', { id: 'learning-lab-load-scale-help', style: { margin: '0 0 12px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'For each subjective rating, 0 means not noticed and 10 means extremely high. These ratings are not added into a clinical or diagnostic score.'),
+          SCALES.map(function(scale) {
+            return hh('div', { key: 'cl-' + scale.id, style: { marginBottom: 12 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                 hh('div', null,
-                  hh('label', { htmlFor: 'learning-lab-load-' + s.id, style: { fontSize: 11, color: s.color, marginRight: 6, fontWeight: 800 } }, s.label),
-                  hh('span', { id: 'learning-lab-load-help-' + s.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, s.help)
+                  hh('label', { htmlFor: 'learning-lab-load-' + scale.id, style: { fontSize: 11, color: scale.color, marginRight: 6, fontWeight: 800 } }, scale.label),
+                  hh('span', { id: 'learning-lab-load-help-' + scale.id, style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 2 } }, scale.help)
                 ),
-                hh('strong', { style: { fontSize: 14, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[s.id] + '/10')
+                hh('strong', { style: { fontSize: 14, color: scale.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, form[scale.id] + ' out of 10')
               ),
-              hh('input', { id: 'learning-lab-load-' + s.id, type: 'range', min: 0, max: 10, step: 1, value: form[s.id], 'aria-describedby': 'learning-lab-load-help-' + s.id, 'aria-valuetext': form[s.id] + ' out of 10',
-                onChange: function(e) { setForm(Object.assign({}, form, (function() { var o = {}; o[s.id] = parseInt(e.target.value, 10); return o; })())); },
-                style: { width: '100%', minHeight: 44, accentColor: s.color }
+              hh('input', { id: 'learning-lab-load-' + scale.id, type: 'range', min: 0, max: 10, step: 1, value: form[scale.id],
+                'aria-describedby': 'learning-lab-load-help-' + scale.id + ' learning-lab-load-scale-help', 'aria-valuetext': form[scale.id] + ' out of 10',
+                onChange: function(event) { var patch = {}; patch[scale.id] = parseInt(event.target.value, 10); setForm(Object.assign({}, form, patch)); },
+                style: { width: '100%', minHeight: 44, accentColor: scale.color }
               })
             );
           }),
-
-          hh('div', { style: { padding: 8, borderRadius: 6, background: overloadColor + '12', border: '1px solid ' + overloadColor + '30', textAlign: 'center', marginBottom: 12 } },
-            hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 6 } }, 'Total load:'),
-            hh('strong', { style: { fontSize: 16, color: overloadColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, totalLoad + '/30'),
-            hh('span', { style: { fontSize: 10, color: overloadColor, marginLeft: 6 } },
-              totalLoad >= 24 ? 'overload zone' : totalLoad >= 18 ? 'demanding' : 'manageable'
-            )
-          ),
-
-          // Triggers
           hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
-            hh('legend', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '⚠️ Overwhelm triggers (select all that apply)'),
-            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-              TRIGGERS.map(function(t) {
-                var on = form.triggers.indexOf(t.id) >= 0;
-                return hh('button', { key: 't-' + t.id, type: 'button', 'aria-pressed': on,
-                  onClick: function() { toggleTrigger(t.id); },
-                  style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: on ? 'rgba(251,191,36,0.20)' : 'rgba(15,23,42,0.5)', color: on ? '#fbbf24' : '#94a3b8', border: '1px solid ' + (on ? '#fbbf24' : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, t.icon + ' ' + t.label);
+            hh('legend', { style: { fontSize: 11, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, 'Context factors (optional; select any that fit)'),
+            hh('p', { id: 'learning-lab-load-context-help', style: { margin: '0 0 7px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Selections describe your experience; they do not identify a cause or diagnosis.'),
+            hh('div', { 'aria-describedby': 'learning-lab-load-context-help', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              TRIGGERS.map(function(trigger) {
+                var selected = form.triggers.indexOf(trigger.id) >= 0;
+                return hh('button', { key: 't-' + trigger.id, type: 'button', 'aria-pressed': selected, onClick: function() { toggleTrigger(trigger.id); },
+                  style: { minHeight: 44, padding: '7px 10px', borderRadius: 6, background: selected ? 'rgba(253,230,138,0.18)' : 'rgba(15,23,42,0.5)', color: selected ? '#fde68a' : 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + (selected ? '#fde68a' : 'rgba(148,163,184,0.55)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, hh('span', { 'aria-hidden': 'true' }, trigger.icon + ' '), trigger.label);
               })
             )
           ),
-
-          hh('label', { htmlFor: 'learning-lab-load-notes', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 4 } }, 'Notes (optional)'),
-          hh('textarea', { id: 'learning-lab-load-notes', value: form.notes, rows: 2, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'What happened today, what surprised you, or what should you remember?', style: { width: '100%', minHeight: 72, padding: '10px 12px', marginBottom: 10, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } }),
-          tkBtn('💾 Save check-in', save, 'primary', { minHeight: 44 })
+          hh('label', { htmlFor: 'learning-lab-load-notes', style: { display: 'block', fontSize: 11, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, 'Notes (optional)'),
+          hh('textarea', { id: 'learning-lab-load-notes', value: form.notes, rows: 3, maxLength: 2000, 'aria-describedby': 'learning-lab-load-notes-help',
+            onChange: function(event) { setForm(Object.assign({}, form, { notes: event.target.value })); }, placeholder: 'Record only what is useful to you.',
+            style: { width: '100%', minHeight: 88, padding: '10px 12px', marginBottom: 4, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(253,230,138,0.55)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+          }),
+          hh('p', { id: 'learning-lab-load-notes-help', style: { margin: '0 0 10px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Maximum 2,000 characters. Avoid sensitive details on a shared device.'),
+          hh('div', { style: { display: 'flex', justifyContent: editingToday ? 'space-between' : 'flex-end', gap: 8, flexWrap: 'wrap' } },
+            editingToday ? tkBtn('Cancel editing', cancelEdit, 'ghost') : null,
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #fde68a', background: '#a16207', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, editingToday ? 'Save changes' : 'Save check-in')
+          )
+        )
+      ) : null,
+      hh('section', { 'aria-labelledby': 'learning-lab-load-seven-day-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-load-seven-day-heading', style: { margin: '0 0 8px', fontSize: 12, color: '#fde68a' } }, 'Last 7 days'),
+        hh('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: 4, alignItems: 'flex-end', marginBottom: 10 } },
+          last7.map(function(day) {
+            var value = day.entry ? Math.max(Number(day.entry.intrinsic) || 0, Number(day.entry.extraneous) || 0, Number(day.entry.germane) || 0) : 0;
+            return hh('div', { key: 'visual-' + day.date, style: { flex: 1, textAlign: 'center' } },
+              hh('div', { style: { height: 50, background: 'rgba(15,23,42,0.6)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
+                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: (value * 10) + '%', background: day.entry ? '#93c5fd' : 'transparent' } })
+              )
+            );
+          })
+        ),
+        hh('div', { style: { overflowX: 'auto' } },
+          hh('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10 } },
+            hh('caption', { style: { textAlign: 'left', paddingBottom: 6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Exact self-reported ratings; a dash means no check-in.'),
+            hh('thead', null, hh('tr', null,
+              ['Date', 'Task complexity', 'Avoidable demands', 'Learning-supporting effort'].map(function(label) { return hh('th', { key: label, scope: 'col', style: { padding: 6, textAlign: 'left', color: '#fde68a', borderBottom: '1px solid rgba(148,163,184,0.45)' } }, label); })
+            )),
+            hh('tbody', null, last7.map(function(day) {
+              return hh('tr', { key: 'row-' + day.date },
+                hh('th', { scope: 'row', style: { padding: 6, textAlign: 'left', color: '#e2e8f0' } }, hh('time', { dateTime: day.date }, day.date)),
+                SCALES.map(function(scale) { return hh('td', { key: scale.id, style: { padding: 6, color: '#e2e8f0' } }, day.entry ? day.entry[scale.id] + ' out of 10' : '\u2014'); })
+              );
+            }))
+          )
         )
       ),
-
-      // 7-day strip
-      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
-        hh('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📊 Last 7 days'),
-        hh('div', { role: 'img', 'aria-label': 'Last 7 days cognitive load: ' + last7.map(function(d) { var value = d.entry ? (d.entry.intrinsic + d.entry.extraneous + d.entry.germane) : 0; return d.date + ': ' + (value ? value + ' out of 30' : 'no check-in'); }).join('; '), style: { display: 'flex', gap: 4, alignItems: 'flex-end' } },
-          last7.map(function(d) {
-            var total = d.entry ? (d.entry.intrinsic + d.entry.extraneous + d.entry.germane) : 0;
-            var pct = total > 0 ? (total / 30) * 100 : 0;
-            var col = total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : total > 0 ? '#10b981' : 'rgba(100,116,139,0.20)';
-            return hh('div', { key: 'd-' + d.date, 'aria-hidden': 'true', style: { flex: 1, textAlign: 'center' } },
-              hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, d.label),
-              hh('div', { style: { height: 60, background: 'rgba(15,23,42,0.5)', borderRadius: 4, position: 'relative', overflow: 'hidden' } },
-                hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: col, transition: 'height 300ms ease' } })
+      entries.length ? hh('section', { 'aria-labelledby': 'learning-lab-load-history-heading' },
+        hh('h3', { id: 'learning-lab-load-history-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#fde68a' } }, 'Recent check-in history'),
+        hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 } },
+          entries.slice(0, 10).map(function(entry) {
+            var selectedLabels = (entry.triggers || []).map(triggerLabel).filter(Boolean);
+            return hh('li', { key: 'e-' + entry.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(253,230,138,0.35)' } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                hh('h4', { style: { margin: 0, fontSize: 11, color: '#fde68a' } }, 'Check-in from ', hh('time', { dateTime: entry.date }, entry.date)),
+                hh('button', { type: 'button', 'aria-label': 'Delete cognitive-load check-in from ' + entry.date, onClick: function() { remove(entry); },
+                  style: { minWidth: 44, minHeight: 44, padding: 8, background: 'rgba(127,29,29,0.25)', border: '1px solid rgba(252,165,165,0.55)', borderRadius: 6, color: '#fecaca', fontSize: 11, cursor: 'pointer' }
+                }, 'Delete')
               ),
-              hh('div', { style: { fontSize: 9, color: total > 0 ? col : '#475569', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } }, total > 0 ? total : '—')
+              hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, margin: '8px 0 0' } },
+                SCALES.map(function(scale) { return hh('div', { key: scale.id }, hh('dt', { style: { fontSize: 9, color: '#cbd5e1' } }, scale.label), hh('dd', { style: { margin: '2px 0 0', fontSize: 10, color: scale.color, fontWeight: 800 } }, entry[scale.id] + ' out of 10')); })
+              ),
+              selectedLabels.length ? hh('p', { style: { margin: '8px 0 0', fontSize: 10, color: '#e2e8f0', overflowWrap: 'anywhere' } }, 'Selected context factors: ' + selectedLabels.join('; ')) : null,
+              entry.notes ? hh('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#e2e8f0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, entry.notes) : null
             );
           })
         )
-      ),
-
-      // Recent history
-      entries.length > 0 ? hh('div', null,
-        hh('h3', { style: { margin: '0 0 8px', fontSize: 12, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📚 History'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          entries.slice(0, 10).map(function(e) {
-            var total = e.intrinsic + e.extraneous + e.germane;
-            return hh('div', { key: 'e-' + e.id, style: { padding: 8, borderRadius: 6, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + (total >= 24 ? '#ef4444' : total >= 18 ? '#fbbf24' : '#10b981') } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.date + ' · ' + relDate(e.date)),
-                hh('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                  hh('span', { 'aria-label': 'Intrinsic ' + e.intrinsic + ', extraneous ' + e.extraneous + ', germane ' + e.germane, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.intrinsic + '/' + e.extraneous + '/' + e.germane),
-                  hh('button', { type: 'button', 'aria-label': 'Delete cognitive load check-in from ' + e.date, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the cognitive load check-in from ' + e.date + '.', { title: 'Delete this check-in?', confirmText: 'Delete check-in' })) remove(e.id); }, style: { minWidth: 44, minHeight: 44, padding: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, cursor: 'pointer' } }, '✕')
-                )
-              ),
-              (e.triggers || []).length > 0 ? hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, '⚠ ' + e.triggers.map(function(tid) { return (TRIGGERS.filter(function(t) { return t.id === tid; })[0] || {}).label; }).filter(Boolean).join(' · ')) : null,
-              e.notes ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', marginTop: 4 } }, '"' + e.notes + '"') : null
-            );
-          })
-        )
-      ) : null
+      ) : null,
+      hh('aside', { 'aria-labelledby': 'learning-lab-load-evidence-heading', style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.40)' } },
+        hh('h3', { id: 'learning-lab-load-evidence-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#fde68a' } }, 'Evidence and limits'),
+        hh('p', { style: { margin: 0, fontSize: 10, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Cognitive load theory distinguishes sources of demand on working memory, but terminology and measurement approaches have evolved. These three ratings are simplified personal reflections, not validated scales, and they should not be added to label an overload threshold. This tool is not a medical, mental-health, or learning-disability assessment.')
+      )
     );
   }
 
-  // ── O. PERSONAL MOTIVATION AUDIT (Wave 3, SDT-based) ──
+  // O. PERSONAL MOTIVATION AUDIT (Wave 3, SDT-based)
   // Quick check on autonomy / competence / relatedness for current
   // classes/activities. Adaptive suggestions to boost weakest dimension.
   // Deci + Ryan Self-Determination Theory.
@@ -19464,7 +19531,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkReflect || {}).entries || []).length + ' reflections', cta: 'Reflect on this week' },
       { id: 'mytkWizard',   icon: '🪄', label: 'Strategy Wizard',      color: '#a855f7', desc: 'Optional study-strategy planning prompts',
         stat: ((data.mytkWizard || {}).savedPlans || []).length + ' saved plans', cta: 'Generate a plan' },
-      { id: 'mytkLoad',     icon: '⚖️', label: 'Cognitive Load Monitor', color: '#fbbf24', desc: 'Daily 3-axis load check + triggers',
+      { id: 'mytkLoad',     icon: '⚖️', label: 'Cognitive Load Monitor', color: '#fbbf24', desc: 'Optional private self-report on task demands and context',
         stat: ((data.mytkLoad || {}).entries || []).length + ' check-ins', cta: 'Log today\'s load' },
       { id: 'mytkMotiv',    icon: '🌟', label: 'Motivation Audit',     color: '#ec4899', desc: 'Reflect on autonomy, competence, and connection',
         stat: ((data.mytkMotiv || {}).audits || []).length + ' audits', cta: 'Audit motivation' },
@@ -19807,7 +19874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkHabits', icon: '✅', label: __alloT('stem.learning_lab.habit_tracker', 'Habit Tracker'),        desc: __alloT('stem.learning_lab.daily_check_ins_streak_heatmap_lally_2', 'Daily check-ins + streak heatmap + Lally 2009 evidence.') },
               { id: 'mytkReflect',icon: '📔', label: __alloT('stem.learning_lab.weekly_reflection', 'Weekly Reflection'),    desc: __alloT('stem.learning_lab.5_prompt_structured_journal_zimmerman_', 'Optional structured journal for reviewing a week and planning next steps.') },
               { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Optional comparison of study approaches using a disclosed heuristic.') },
-              { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.') },
+              { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Optional self-report on task demands and context; not a diagnostic score.') },
               { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Self-Determination Theory check (autonomy / competence / relatedness).') },
               { id: 'mytkProfile',icon: '🪞', label: __alloT('stem.learning_lab.learning_profile', 'Learning Profile'),     desc: __alloT('stem.learning_lab.one_page_self_snapshot_you_control_pri', 'One-page self-snapshot you control — printable for teachers / IEP.') },
               { id: 'mytkPrompts',icon: '📓', label: __alloT('stem.learning_lab.reflection_prompts', 'Reflection Prompts'),   desc: __alloT('stem.learning_lab.30_metacognitive_prompts_across_4_cate', '30+ metacognitive prompts across 4 categories. Saves to journal history.') },
