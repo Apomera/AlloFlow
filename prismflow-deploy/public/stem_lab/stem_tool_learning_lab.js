@@ -5206,126 +5206,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { items: [] };
     var setData = props.setData;
-    var fs = R.useState('');     var text = fs[0];     var setText = fs[1];
-    var cs = R.useState('todo'); var cat = cs[0];      var setCat = cs[1];
-    var ft = R.useState('all');  var filter = ft[0];   var setFilter = ft[1];
+    var fs = R.useState('');     var text = fs[0];       var setText = fs[1];
+    var cs = R.useState('todo'); var category = cs[0];   var setCategory = cs[1];
+    var ft = R.useState('all');  var filter = ft[0];     var setFilter = ft[1];
+    var es = R.useState('');     var entryError = es[0]; var setEntryError = es[1];
+    var fts = R.useState('');    var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
-    var CATS = [
-      { id: 'todo',     label: 'To-do',    icon: '✅', color: '#10b981' },
-      { id: 'worry',    label: 'Worry',    icon: '😟', color: '#ef4444' },
-      { id: 'idea',     label: 'Idea',     icon: '💡', color: '#fbbf24' },
+    var CATEGORIES = [
+      { id: 'todo', label: 'To-do', icon: '✅', color: '#10b981' },
+      { id: 'worry', label: 'Worry', icon: '😟', color: '#ef4444' },
+      { id: 'idea', label: 'Idea', icon: '💡', color: '#fbbf24' },
       { id: 'question', label: 'Question', icon: '❓', color: '#60a5fa' },
-      { id: 'other',    label: 'Other',    icon: '📝', color: '#a78bfa' }
+      { id: 'other', label: 'Other', icon: '📝', color: '#a78bfa' }
     ];
 
-    function add() {
-      if (!text.trim()) return;
-      var item = { id: tkId(), text: text.trim(), cat: cat, createdAt: Date.now(), done: false };
-      setData({ items: [item].concat(data.items || []) });
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      setFocusTarget('');
+    }, [focusTarget]);
+
+    function categoryFor(id) {
+      return CATEGORIES.filter(function(candidate) { return candidate.id === id; })[0] || CATEGORIES[CATEGORIES.length - 1];
+    }
+    function add(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var value = String(text || '').trim();
+      if (!value) {
+        setEntryError('Enter something to add to the brain dump.');
+        setFocusTarget('learning-lab-brain-dump-entry');
+        llAnnounce('Brain dump text is required.');
+        return;
+      }
+      var selectedCategory = categoryFor(category);
+      var item = { id: tkId(), text: value, cat: selectedCategory.id, createdAt: Date.now(), done: false };
+      setData(Object.assign({}, data, { items: [item].concat(data.items || []) }));
       setText('');
+      setEntryError('');
+      setFocusTarget('learning-lab-brain-dump-entry');
+      llAnnounce('Brain dump item added to ' + selectedCategory.label + '.');
     }
-    function toggle(id) {
-      var items = (data.items || []).map(function(it) {
-        if (it.id === id) return Object.assign({}, it, { done: !it.done });
-        return it;
+    function toggle(item) {
+      var nextDone = !item.done;
+      var items = (data.items || []).map(function(candidate) {
+        return candidate.id === item.id ? Object.assign({}, candidate, { done: nextDone }) : candidate;
       });
-      setData({ items: items });
+      setData(Object.assign({}, data, { items: items }));
+      llAnnounce((nextDone ? 'Completed: ' : 'Marked incomplete: ') + item.text);
     }
-    function remove(id) {
-      setData({ items: (data.items || []).filter(function(it) { return it.id !== id; }) });
+    async function remove(item) {
+      if (!(await askLearningLabConfirmation('This permanently removes the selected brain dump item.', {
+        title: 'Delete this brain dump item?', confirmText: 'Delete item'
+      }))) return;
+      var remaining = (data.items || []).filter(function(candidate) { return candidate.id !== item.id; });
+      setData(Object.assign({}, data, { items: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-brain-dump-items-heading' : 'learning-lab-brain-dump-entry');
+      llAnnounce('Brain dump item deleted.');
     }
     async function clearAll() {
       if (!(await askLearningLabConfirmation('Clear all brain dump items? This cannot be undone.', {
         title: 'Clear the entire brain dump?', confirmText: 'Clear all items'
       }))) return;
-      setData({ items: [] });
+      setData(Object.assign({}, data, { items: [] }));
+      setFilter('all');
+      setFocusTarget('learning-lab-brain-dump-entry');
+      llAnnounce('All brain dump items cleared.');
     }
-    function clearDone() {
-      setData({ items: (data.items || []).filter(function(it) { return !it.done; }) });
+    async function clearDone() {
+      if (!(await askLearningLabConfirmation('Clear all completed brain dump items? This cannot be undone.', {
+        title: 'Clear completed brain dump items?', confirmText: 'Clear completed'
+      }))) return;
+      var remaining = (data.items || []).filter(function(item) { return !item.done; });
+      setData(Object.assign({}, data, { items: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-brain-dump-items-heading' : 'learning-lab-brain-dump-entry');
+      llAnnounce('Completed brain dump items cleared.');
     }
 
     var items = data.items || [];
-    var filtered = filter === 'all' ? items : items.filter(function(it) { return it.cat === filter; });
-    var doneCount = items.filter(function(it) { return it.done; }).length;
+    var filtered = filter === 'all' ? items : items.filter(function(item) { return item.cat === filter; });
+    var doneCount = items.filter(function(item) { return item.done; }).length;
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🧠', 'Brain Dump', 'Externalize what\'s in your working memory. Categorize. Off your mind, into the system.', '#60a5fa'),
+      tkSectionHeader('🧠', 'Brain Dump', 'An optional space to write down thoughts, tasks, worries, ideas, or questions and organize them for later.', '#60a5fa', 'learning-lab-brain-dump-heading'),
 
-      // Quick add card
       tkCard('#60a5fa',
-        hh('div', null,
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'What\'s on your mind right now? (Press Enter to save.)'),
-          tkTextarea(text, setText, 'Type anything — a worry, a task, a half-formed idea, a question you forgot to ask...', 3, { marginBottom: 10 }),
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
-            hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-              CATS.map(function(c) {
-                var active = cat === c.id;
-                return hh('button', { key: 'c-' + c.id,
-                  onClick: function() { setCat(c.id); },
-                  style: { padding: '6px 10px', borderRadius: 6, background: active ? c.color + '30' : 'rgba(15,23,42,0.5)', color: active ? c.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? c.color : 'rgba(100,116,139,0.30)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-                }, c.icon + ' ' + c.label);
+        hh('form', { 'aria-labelledby': 'learning-lab-brain-dump-entry-heading', onSubmit: add },
+          hh('h3', { id: 'learning-lab-brain-dump-entry-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#bfdbfe' } }, 'Add an item'),
+          hh('label', { htmlFor: 'learning-lab-brain-dump-entry', style: { display: 'block', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, "What's on your mind?"),
+          hh('p', { id: 'learning-lab-brain-dump-entry-help', style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Write one item or several lines, choose a category, then save.'),
+          tkTextarea(text, function(value) { setText(value); if (entryError) setEntryError(''); }, 'For example: finish the lab report, ask about office hours, or remember an idea', 3, { id: 'learning-lab-brain-dump-entry', required: true, maxLength: 4000, 'aria-invalid': entryError ? 'true' : undefined, 'aria-describedby': 'learning-lab-brain-dump-entry-help' + (entryError ? ' learning-lab-brain-dump-entry-error' : ''), minHeight: 96, marginBottom: entryError ? 4 : 10 }),
+          entryError ? hh('p', { id: 'learning-lab-brain-dump-entry-error', role: 'alert', style: { margin: '0 0 10px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, entryError) : null,
+          hh('fieldset', { style: { margin: '0 0 10px', padding: 10, border: '1px solid rgba(96,165,250,0.45)', borderRadius: 8 } },
+            hh('legend', { style: { padding: '0 5px', fontSize: 10, fontWeight: 800, color: '#bfdbfe' } }, 'Item category'),
+            hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              CATEGORIES.map(function(option) {
+                var active = category === option.id;
+                return hh('button', { key: 'c-' + option.id, type: 'button', 'aria-pressed': active ? 'true' : 'false', 'data-ll-focusable': true,
+                  onClick: function() { setCategory(option.id); },
+                  style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: active ? option.color + '30' : 'rgba(15,23,42,0.5)', color: active ? option.color : 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (active ? option.color : 'rgba(100,116,139,0.45)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+                }, hh('span', { 'aria-hidden': 'true' }, option.icon + ' '), option.label);
               })
-            ),
-            tkBtn('💾 Dump it', add, 'primary')
-          )
+            )
+          ),
+          hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #bfdbfe', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add to brain dump')
         )
       ),
 
-      // Filter + stats
-      hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
-        hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-          [{ id: 'all', label: 'All (' + items.length + ')', icon: '📋' }].concat(CATS.map(function(c) {
-            var n = items.filter(function(it) { return it.cat === c.id; }).length;
-            return { id: c.id, label: c.label + ' (' + n + ')', icon: c.icon };
-          })).map(function(f) {
-            var active = filter === f.id;
-            return hh('button', { key: 'fi-' + f.id,
-              onClick: function() { setFilter(f.id); },
-              style: { padding: '6px 10px', borderRadius: 6, background: active ? 'rgba(96,165,250,0.20)' : 'transparent', color: active ? '#60a5fa' : '#94a3b8', border: '1px solid ' + (active ? 'rgba(96,165,250,0.50)' : 'transparent'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
-            }, f.icon + ' ' + f.label);
-          })
-        ),
-        hh('div', { style: { display: 'flex', gap: 4 } },
-          doneCount > 0 ? tkBtn('Clear done (' + doneCount + ')', clearDone, 'ghost', { padding: '6px 10px', fontSize: 10 }) : null,
-          items.length > 0 ? tkBtn('Clear all', clearAll, 'bad', { padding: '6px 10px', fontSize: 10 }) : null
-        )
-      ),
-
-      // Items
-      filtered.length === 0
-        ? tkEmptyState('🧠', items.length === 0 ? 'Your brain dump is empty. Use this space to externalize anything taking up working memory.' : 'No items in this category.', null, null)
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            filtered.map(function(it) {
-              var c = CATS.filter(function(x) { return x.id === it.cat; })[0] || CATS[CATS.length - 1];
-              return hh('div', { key: 'it-' + it.id, style: {
-                display: 'flex', alignItems: 'flex-start', gap: 8,
-                padding: '8px 10px', borderRadius: 8,
-                background: 'rgba(15,23,42,0.6)',
-                border: '1px solid ' + c.color + '30',
-                borderLeft: '3px solid ' + c.color,
-                opacity: it.done ? 0.5 : 1,
-                transition: 'opacity 200ms ease'
-              } },
-                hh('button', {
-                  onClick: function() { toggle(it.id); },
-                  'aria-label': it.done ? 'Mark not done' : 'Mark done',
-                  style: { width: 18, height: 18, borderRadius: 4, border: '1.5px solid ' + c.color, background: it.done ? c.color : 'transparent', color: '#0f172a', fontSize: 11, fontWeight: 900, cursor: 'pointer', flexShrink: 0, marginTop: 2 }
-                }, it.done ? '✓' : ''),
-                hh('div', { style: { flex: 1, minWidth: 0 } },
-                  hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, textDecoration: it.done ? 'line-through' : 'none' } }, it.text),
-                  hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, c.icon + ' ' + c.label + ' · ' + relDate(new Date(it.createdAt).toISOString().slice(0, 10)))
-                ),
-                hh('button', { onClick: function() { remove(it.id); }, 'aria-label': 'Delete',
-                  style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 14, cursor: 'pointer', padding: 4 }
-                }, '✕')
-              );
+      hh('section', { 'aria-labelledby': 'learning-lab-brain-dump-items-heading' },
+        hh('h3', { id: 'learning-lab-brain-dump-items-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#bfdbfe' } }, 'Saved items'),
+        hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
+          hh('div', { role: 'group', 'aria-label': 'Filter brain dump items by category', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+            [{ id: 'all', label: 'All', icon: '📋' }].concat(CATEGORIES).map(function(option) {
+              var count = option.id === 'all' ? items.length : items.filter(function(item) { return item.cat === option.id; }).length;
+              var active = filter === option.id;
+              return hh('button', { key: 'fi-' + option.id, type: 'button', 'aria-pressed': active ? 'true' : 'false', 'data-ll-focusable': true,
+                onClick: function() { setFilter(option.id); llAnnounce(option.label + ' filter selected. ' + count + (count === 1 ? ' item.' : ' items.')); },
+                style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: active ? 'rgba(37,99,235,0.35)' : 'transparent', color: active ? '#bfdbfe' : '#94a3b8', border: '1px solid ' + (active ? '#93c5fd' : 'rgba(100,116,139,0.35)'), fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+              }, hh('span', { 'aria-hidden': 'true' }, option.icon + ' '), option.label + ' (' + count + ')');
             })
           ),
+          hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            doneCount > 0 ? tkBtn('Clear completed (' + doneCount + ')', clearDone, 'ghost', { fontSize: 10 }) : null,
+            items.length > 0 ? tkBtn('Clear all items', clearAll, 'bad', { fontSize: 10 }) : null
+          )
+        ),
+        hh('p', { id: 'learning-lab-brain-dump-results', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, filtered.length + (filtered.length === 1 ? ' item shown' : ' items shown')),
 
-      // Lesson card at bottom
-      hh('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#60a5fa' } }, '🧠 Why this works: '),
-        'Working memory is a hard limit (~7 items, Miller 1956; or ~4 in pure WM, Cowan 2001). Items competing for that capacity drain attention even when you\'re trying to focus on something else. Writing them down externalizes them — the brain stops tracking them as "open loops" (Allen GTD). David Allen\'s 2001 productivity research + Sweller\'s cognitive-load theory point at the same fix: get it out of your head and into a trusted system.'
+        filtered.length === 0
+          ? tkEmptyState('🧠', items.length === 0 ? 'Your brain dump is empty. Add an item if writing it down would be useful.' : 'No items match this category filter.', null, null)
+          : hh('ul', { 'aria-labelledby': 'learning-lab-brain-dump-items-heading', style: { display: 'flex', flexDirection: 'column', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+              filtered.map(function(item) {
+                var itemCategory = categoryFor(item.cat);
+                var createdDate = new Date(item.createdAt);
+                var validDate = !isNaN(createdDate.getTime());
+                var itemName = String(item.text || '').slice(0, 100);
+                return hh('li', { key: 'it-' + item.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 10px', borderRadius: 8, background: item.done ? 'rgba(15,23,42,0.85)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + itemCategory.color + '55', borderLeft: '3px solid ' + itemCategory.color } },
+                  hh('button', { type: 'button', 'aria-pressed': item.done ? 'true' : 'false', 'aria-label': (item.done ? 'Mark incomplete: ' : 'Mark complete: ') + itemName, 'data-ll-focusable': true, onClick: function() { toggle(item); },
+                    style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 6, border: '1.5px solid ' + itemCategory.color, background: item.done ? itemCategory.color : 'transparent', color: item.done ? '#0f172a' : '#f8fafc', fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0 } }, hh('span', { 'aria-hidden': 'true' }, item.done ? '✓' : '○')),
+                  hh('div', { style: { flex: 1, minWidth: 0 } },
+                    hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, textDecoration: item.done ? 'line-through' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } }, item.text),
+                    hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
+                      hh('span', { 'aria-hidden': 'true' }, itemCategory.icon + ' '), itemCategory.label,
+                      validDate ? hh(React.Fragment, null, ' · ', hh('time', { dateTime: createdDate.toISOString() }, relDate(createdDate.toISOString().slice(0, 10)))) : null,
+                      item.done ? hh('span', null, ' · Completed') : null
+                    )
+                  ),
+                  hh('button', { type: 'button', onClick: function() { remove(item); }, 'aria-label': 'Delete brain dump item: ' + itemName, 'data-ll-focusable': true,
+                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: '1px solid rgba(252,165,165,0.55)', borderRadius: 6, color: '#fecaca', fontSize: 14, cursor: 'pointer', padding: 8, flexShrink: 0 } }, hh('span', { 'aria-hidden': 'true' }, '✕'))
+                );
+              })
+            )
+      ),
+
+      hh('aside', { 'aria-labelledby': 'learning-lab-brain-dump-note-heading', style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.45)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-brain-dump-note-heading', style: { margin: '0 0 4px', color: '#bfdbfe', fontSize: 12 } }, hh('span', { 'aria-hidden': 'true' }, '🧠 '), 'Why writing things down may help'),
+        'Working-memory capacity is limited, although estimates and models vary. Writing an item down may reduce the need to keep rehearsing it and can make later review easier. This is an optional organization and reflection tool, not a treatment or a guarantee that distress or distraction will stop.'
       )
     );
   }
