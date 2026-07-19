@@ -7103,94 +7103,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // L. PERSONAL WEEKLY REFLECTION (Wave 3)
   function PersonalWeeklyReflection(props) {
     if (!R) return null;
-    var data = props.data || { entries: [] };
+    var data = props.data || {};
     var setData = props.setData;
-    var vs = R.useState('list');                       var view = vs[0];    var setView = vs[1];
-    var es = R.useState(null);                         var editingId = es[0]; var setEditingId = es[1];
-    var fs = R.useState({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 });
-    var form = fs[0];                                  var setForm = fs[1];
-    var rs = R.useState(null);                         var viewing = rs[0]; var setViewing = rs[1];
+    var emptyForm = { went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 };
+    var vs = R.useState('list');                         var view = vs[0]; var setView = vs[1];
+    var es = R.useState(null);                           var editingId = es[0]; var setEditingId = es[1];
+    var fs = R.useState(emptyForm);                      var form = fs[0]; var setForm = fs[1];
+    var rs = R.useState(null);                           var viewing = rs[0]; var setViewing = rs[1];
+    var ers = R.useState('');                            var formError = ers[0]; var setFormError = ers[1];
+    var fts = R.useState(null);                          var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var PROMPTS = [
-      { id: 'went_well',   icon: '✅', color: '#10b981', label: 'What went well this week?', help: 'Anything that worked. Small or large.' },
-      { id: 'stuck',       icon: '⚠️', color: '#fbbf24', label: 'Where did I get stuck?', help: 'A subject, a habit, a moment of overwhelm. No judgement.' },
-      { id: 'will_try',    icon: '🎯', color: '#3b82f6', label: 'What will I try next week?', help: 'One concrete experiment based on what I learned this week.' },
-      { id: 'wins',        icon: '🏆', color: '#a855f7', label: 'My 3 biggest wins this week', help: 'Anything you\'re glad happened. Tiny ones count.' },
-      { id: 'proud',       icon: '🌟', color: '#fb923c', label: 'What am I proud of?', help: 'Effort, choice, ask-for-help, follow-through. Not just outcome.' }
+      { id: 'went_well', icon: '\u2705', color: '#6ee7b7', label: 'What went well this week?', help: 'Anything that worked for you, small or large.' },
+      { id: 'stuck', icon: '\u26a0\ufe0f', color: '#fde68a', label: 'Where did I get stuck?', help: 'A subject, habit, or difficult moment. Describe only what you want to record.' },
+      { id: 'will_try', icon: '\ud83c\udfaf', color: '#93c5fd', label: 'What might I try next week?', help: 'One optional experiment based on what you noticed this week.' },
+      { id: 'wins', icon: '\ud83c\udfc6', color: '#d8b4fe', label: 'What were some wins this week?', help: 'Include any events or actions you want to remember.' },
+      { id: 'proud', icon: '\ud83c\udf1f', color: '#fdba74', label: 'What am I proud of?', help: 'This could relate to effort, a choice, asking for help, follow-through, or an outcome.' }
     ];
 
-    function save() {
-      var id = editingId || tkId();
-      var entry = Object.assign({ id: id, date: todayISO(), week: weekOf(todayISO()) }, form);
-      var entries = (data.entries || []).slice();
-      var i = entries.findIndex(function(e) { return e.id === id; });
-      if (i >= 0) entries[i] = entry;
-      else entries.unshift(entry);
-      setData({ entries: entries });
-      setForm({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 });
-      setEditingId(null);
-      setView('list');
+    R.useEffect(function() {
+      if (!focusTarget || typeof document === 'undefined') return;
+      var target = document.getElementById(focusTarget);
+      if (target && typeof target.focus === 'function') target.focus();
+      setFocusTarget(null);
+    }, [focusTarget, view]);
+
+    function isoDayNumber(iso) {
+      var parts = String(iso || '').split('-').map(Number);
+      return Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000);
     }
-    function remove(id) {
-      setData({ entries: (data.entries || []).filter(function(e) { return e.id !== id; }) });
+    function isoFromDayNumber(dayNumber) {
+      var date = new Date(dayNumber * 86400000);
+      return date.getUTCFullYear() + '-' + String(date.getUTCMonth() + 1).padStart(2, '0') + '-' + String(date.getUTCDate()).padStart(2, '0');
     }
     function weekOf(iso) {
-      var dt = new Date(iso + 'T12:00:00');
-      var d = new Date(dt.valueOf());
-      var dayOfYear = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / 86400000;
-      var weekNum = Math.ceil((dayOfYear + new Date(d.getFullYear(), 0, 1).getDay() + 1) / 7);
-      return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+      var parts = String(iso || '').split('-').map(Number);
+      var date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+      var weekday = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - weekday);
+      var weekYear = date.getUTCFullYear();
+      var yearStart = new Date(Date.UTC(weekYear, 0, 1));
+      var weekNumber = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+      return weekYear + '-W' + String(weekNumber).padStart(2, '0');
+    }
+    function firstResponse(entry) {
+      for (var i = 0; i < PROMPTS.length; i++) {
+        var value = String(entry[PROMPTS[i].id] || '').trim();
+        if (value) return value;
+      }
+      return '';
+    }
+    function openForm(entry) {
+      setEditingId(entry ? entry.id : null);
+      setForm(entry ? {
+        went_well: entry.went_well || '', stuck: entry.stuck || '', will_try: entry.will_try || '',
+        wins: entry.wins || '', proud: entry.proud || '', overall: Number(entry.overall) || 7
+      } : Object.assign({}, emptyForm));
+      setFormError('');
+      setView('new');
+      setFocusTarget('learning-lab-reflection-form-heading');
+    }
+    function cancelForm() {
+      setEditingId(null);
+      setFormError('');
+      setView('list');
+      setFocusTarget('learning-lab-reflection-heading');
+      llAnnounce('Reflection editing canceled.');
+    }
+    function saveReflection(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var hasResponse = PROMPTS.some(function(prompt) { return String(form[prompt.id] || '').trim().length > 0; });
+      if (!hasResponse) {
+        setFormError('Write a response to at least one prompt before saving.');
+        setFocusTarget('learning-lab-reflection-went_well');
+        llAnnounce('A response to at least one reflection prompt is required.');
+        return;
+      }
+      var entries = (data.entries || []).slice();
+      var index = entries.findIndex(function(entry) { return entry.id === editingId; });
+      var existing = index >= 0 ? entries[index] : null;
+      var date = existing && existing.date ? existing.date : todayISO();
+      var entry = Object.assign({}, existing || {}, form, {
+        id: existing ? existing.id : tkId(), date: date, week: weekOf(date),
+        went_well: String(form.went_well || '').trim(), stuck: String(form.stuck || '').trim(),
+        will_try: String(form.will_try || '').trim(), wins: String(form.wins || '').trim(),
+        proud: String(form.proud || '').trim(), overall: Number(form.overall) || 7
+      });
+      if (index >= 0) entries[index] = entry;
+      else entries.unshift(entry);
+      setData(Object.assign({}, data, { entries: entries }));
+      setForm(Object.assign({}, emptyForm));
+      setEditingId(null);
+      setFormError('');
+      setView('list');
+      setFocusTarget('learning-lab-reflection-heading');
+      llAnnounce(existing ? 'Reflection changes saved.' : 'Reflection saved.');
+    }
+    function openDetail(entry) {
+      setViewing(entry.id);
+      setView('detail');
+      setFocusTarget('learning-lab-reflection-detail-heading');
+    }
+    function closeDetail() {
+      setViewing(null);
+      setView('list');
+      setFocusTarget('learning-lab-reflection-heading');
+    }
+    async function removeReflection(entry) {
+      if (!(await askLearningLabConfirmation('This permanently removes the reflection from ' + entry.date + '.', {
+        title: 'Delete this reflection?', confirmText: 'Delete reflection'
+      }))) return;
+      var remaining = (data.entries || []).filter(function(candidate) { return candidate.id !== entry.id; });
+      setData(Object.assign({}, data, { entries: remaining }));
+      setViewing(null);
+      setView('list');
+      setFocusTarget(remaining.length ? 'learning-lab-reflection-history-heading' : 'learning-lab-reflection-start-button');
+      llAnnounce('Reflection deleted.');
     }
 
     var entries = data.entries || [];
-
-    // Weekly avg + streak
     var thisWeek = weekOf(todayISO());
-    var thisWeekEntry = entries.filter(function(e) { return e.week === thisWeek; })[0];
-    var weekStreak = (function() {
-      var weeks = entries.map(function(e) { return e.week; }).filter(function(w, i, arr) { return arr.indexOf(w) === i; }).sort();
-      if (weeks.length === 0) return 0;
-      // Walk back through consecutive weeks
-      var streak = 0;
-      for (var i = 0; i < 52; i++) {
-        var dt = new Date(); dt.setDate(dt.getDate() - i * 7);
-        var iso = dt.toISOString().slice(0, 10);
-        var wk = weekOf(iso);
-        if (weeks.indexOf(wk) >= 0) streak++;
-        else if (i > 0) break;
-      }
-      return streak;
-    })();
+    var thisWeekEntry = entries.filter(function(entry) { return entry.week === thisWeek || weekOf(entry.date) === thisWeek; })[0];
+    var uniqueWeeks = entries.map(function(entry) { return entry.week || weekOf(entry.date); }).filter(function(week, index, all) { return all.indexOf(week) === index; });
+    var currentDay = isoDayNumber(todayISO());
+    var weekStreak = 0;
+    for (var offset = 0; offset < 520; offset++) {
+      var week = weekOf(isoFromDayNumber(currentDay - offset * 7));
+      if (uniqueWeeks.indexOf(week) >= 0) weekStreak++;
+      else if (offset > 0) break;
+    }
+    var detailEntry = view === 'detail' ? entries.filter(function(entry) { return entry.id === viewing; })[0] : null;
 
-    if (view === 'detail' && viewing) {
-      var e = entries.filter(function(x) { return x.id === viewing; })[0];
-      if (!e) { setView('list'); return null; }
+    if (detailEntry) {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📔', 'Reflection from ' + e.date, e.week + ' · ' + relDate(e.date), '#f472b6'),
-
-        // Overall rating
-        hh('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.30)', marginBottom: 12, textAlign: 'center' } },
-          hh('div', { style: { fontSize: 10, color: '#f9a8d4', textTransform: 'uppercase', marginBottom: 4 } }, 'Overall week'),
-          hh('div', { style: { fontSize: 32, fontWeight: 900, color: '#f472b6', fontFamily: 'ui-monospace, Menlo, monospace' } }, e.overall + '/10')
+        tkSectionHeader('\ud83d\udcd4', 'Reflection from ' + detailEntry.date, 'Saved reflection. Review or edit only what is useful to you.', '#f9a8d4', 'learning-lab-reflection-detail-heading'),
+        hh('p', { style: { margin: '0 0 12px', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 11 } },
+          'Date: ', hh('time', { dateTime: detailEntry.date }, detailEntry.date), ' (', relDate(detailEntry.date), ')'
         ),
-
-        // Prompt responses
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          PROMPTS.map(function(p) {
-            var val = e[p.id];
-            if (!val) return null;
-            return hh('div', { key: 'd-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
-              hh('h3', { style: { margin: '0 0 6px', fontSize: 11, fontWeight: 800, color: p.color } }, p.icon + ' ' + p.label),
-              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, val)
-            );
-          }).filter(Boolean)
+        hh('section', { 'aria-labelledby': 'learning-lab-reflection-rating-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.45)', marginBottom: 12, textAlign: 'center' } },
+          hh('h3', { id: 'learning-lab-reflection-rating-heading', style: { margin: '0 0 4px', fontSize: 11, color: '#fbcfe8' } }, 'Overall week rating'),
+          hh('p', { style: { margin: 0, fontSize: 24, fontWeight: 900, color: '#f9a8d4', fontFamily: 'ui-monospace, Menlo, monospace' } }, detailEntry.overall + ' out of 10')
         ),
-
+        hh('section', { 'aria-labelledby': 'learning-lab-reflection-responses-heading' },
+          hh('h3', { id: 'learning-lab-reflection-responses-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#fbcfe8' } }, 'Saved responses'),
+          hh('dl', { style: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0 } },
+            PROMPTS.map(function(prompt) {
+              var value = String(detailEntry[prompt.id] || '').trim();
+              if (!value) return null;
+              return hh('div', { key: 'd-' + prompt.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + prompt.color } },
+                hh('dt', { style: { margin: '0 0 6px', fontSize: 11, fontWeight: 800, color: prompt.color } },
+                  hh('span', { 'aria-hidden': 'true' }, prompt.icon + ' '), prompt.label
+                ),
+                hh('dd', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, value)
+              );
+            }).filter(Boolean)
+          )
+        ),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14, flexWrap: 'wrap', gap: 8 } },
-          tkBtn('← Back to all', function() { setView('list'); setViewing(null); }, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn('✏ Edit', function() { setEditingId(e.id); setForm({ went_well: e.went_well || '', stuck: e.stuck || '', will_try: e.will_try || '', wins: e.wins || '', proud: e.proud || '', overall: e.overall || 7 }); setView('new'); }, 'secondary'),
-            tkBtn('🗑 Delete', async function() { if (await askLearningLabConfirmation('This permanently removes the reflection from ' + e.date + '.', { title: 'Delete this reflection?', confirmText: 'Delete reflection' })) { remove(e.id); setView('list'); } }, 'bad', { minHeight: 44 })
+          tkBtn('Back to reflections', closeDetail, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            tkBtn('Edit reflection', function() { openForm(detailEntry); }, 'secondary'),
+            hh('button', { type: 'button', onClick: function() { removeReflection(detailEntry); }, 'aria-label': 'Delete reflection from ' + detailEntry.date, 'data-ll-focusable': true,
+              style: { minWidth: 44, minHeight: 44, padding: '8px 16px', borderRadius: 8, background: 'rgba(239,68,68,0.10)', color: '#fca5a5', border: '1.5px solid rgba(239,68,68,0.55)', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Delete reflection')
           )
         )
       );
@@ -7198,95 +7272,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     if (view === 'new') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📔', editingId ? 'Edit reflection' : 'This week\'s reflection', '5 short prompts. 5 minutes. The highest-evidence metacognitive intervention.', '#f472b6'),
-
-        // Overall rating slider
-        tkCard('#f472b6',
-          hh('div', null,
-            hh('label', { htmlFor: 'learning-lab-reflection-overall', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#f472b6', marginBottom: 8 } }, 'Overall, how was this week?'),
-            hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-              hh('span', null, 'Rough'),
-              hh('strong', { style: { fontSize: 18, color: '#f472b6', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + '/10'),
-              hh('span', null, 'Great')
-            ),
-            hh('input', { id: 'learning-lab-reflection-overall', type: 'range', min: 1, max: 10, step: 1, value: form.overall, 'aria-valuetext': form.overall + ' out of 10',
-              onChange: function(e2) { setForm(Object.assign({}, form, { overall: parseInt(e2.target.value, 10) })); },
-              style: { width: '100%', minHeight: 44, accentColor: '#f472b6' }
+        tkSectionHeader('\ud83d\udcd4', editingId ? 'Edit reflection' : 'This week\'s reflection', 'Respond to any prompts that are useful. At least one response is needed to save.', '#f9a8d4', 'learning-lab-reflection-form-heading'),
+        hh('form', { 'aria-labelledby': 'learning-lab-reflection-form-heading', onSubmit: saveReflection },
+          tkCard('#f9a8d4',
+            hh('div', null,
+              hh('label', { htmlFor: 'learning-lab-reflection-overall', style: { display: 'block', fontSize: 12, fontWeight: 800, color: '#fbcfe8', marginBottom: 4 } }, 'Overall week rating'),
+              hh('p', { id: 'learning-lab-reflection-overall-help', style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Use 1 for very difficult and 10 for very positive.'),
+              hh('div', { 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
+                hh('span', null, '1 — very difficult'),
+                hh('strong', { style: { fontSize: 18, color: '#f9a8d4', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.overall + ' out of 10'),
+                hh('span', null, '10 — very positive')
+              ),
+              hh('input', { id: 'learning-lab-reflection-overall', type: 'range', min: 1, max: 10, step: 1, value: form.overall,
+                'aria-describedby': 'learning-lab-reflection-overall-help', 'aria-valuetext': form.overall + ' out of 10',
+                onChange: function(event) { setForm(Object.assign({}, form, { overall: parseInt(event.target.value, 10) })); },
+                style: { width: '100%', minHeight: 44, accentColor: '#f472b6' }
+              })
+            )
+          ),
+          formError ? hh('p', { id: 'learning-lab-reflection-form-error', role: 'alert', style: { margin: '0 0 10px', padding: 10, borderRadius: 6, background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formError) : null,
+          hh('ol', { 'aria-label': 'Reflection prompts', style: { display: 'flex', flexDirection: 'column', gap: 12, listStyle: 'none', padding: 0, margin: '0 0 14px' } },
+            PROMPTS.map(function(prompt) {
+              var helpId = 'learning-lab-reflection-help-' + prompt.id;
+              var describedBy = helpId + (formError ? ' learning-lab-reflection-form-error' : '');
+              return hh('li', { key: 'p-' + prompt.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + prompt.color } },
+                hh('label', { htmlFor: 'learning-lab-reflection-' + prompt.id, style: { display: 'block', fontSize: 12, fontWeight: 800, color: prompt.color, marginBottom: 2 } },
+                  hh('span', { 'aria-hidden': 'true' }, prompt.icon + ' '), prompt.label
+                ),
+                hh('p', { id: helpId, style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontStyle: 'italic' } }, prompt.help),
+                hh('textarea', { id: 'learning-lab-reflection-' + prompt.id, value: form[prompt.id], rows: 3, maxLength: 4000,
+                  'aria-describedby': describedBy, 'aria-invalid': formError ? 'true' : undefined,
+                  onChange: function(event) { var patch = {}; patch[prompt.id] = event.target.value; setForm(Object.assign({}, form, patch)); if (formError) setFormError(''); },
+                  style: { width: '100%', minHeight: 88, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(148,163,184,0.65)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }
+                })
+              );
             })
+          ),
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+            tkBtn('Cancel', cancelForm, 'ghost'),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #f9a8d4', background: '#9d174d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save reflection')
           )
-        ),
-
-        // Prompts
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 14 } },
-          PROMPTS.map(function(p) {
-            return hh('div', { key: 'p-' + p.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid ' + p.color } },
-              hh('label', { htmlFor: 'learning-lab-reflection-' + p.id, style: { display: 'block', fontSize: 12, fontWeight: 800, color: p.color, marginBottom: 2 } }, p.icon + ' ' + p.label),
-              hh('div', { id: 'learning-lab-reflection-help-' + p.id, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, p.help),
-              hh('textarea', { id: 'learning-lab-reflection-' + p.id, 'aria-describedby': 'learning-lab-reflection-help-' + p.id, value: form[p.id], rows: 3, onChange: function(e2) { var patch = {}; patch[p.id] = e2.target.value; setForm(Object.assign({}, form, patch)); }, style: { width: '100%', minHeight: 88, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' } })
-            );
-          })
-        ),
-
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('list'); setEditingId(null); }, 'ghost'),
-          tkBtn('💾 Save reflection', save, 'primary')
         )
       );
     }
 
+    var average = entries.length ? entries.reduce(function(total, entry) { return total + (Number(entry.overall) || 0); }, 0) / entries.length : null;
+    var stats = [
+      { label: 'Total reflections', value: String(entries.length), color: '#f9a8d4' },
+      { label: 'Current weekly streak', value: weekStreak + (weekStreak === 1 ? ' week' : ' weeks'), color: '#fde68a' },
+      { label: 'Average week rating', value: average === null ? 'No ratings yet' : average.toFixed(1) + ' out of 10', color: '#d8b4fe' }
+    ];
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📔', 'Weekly Reflection', 'Structured 5-prompt journal. Highest-evidence metacognitive growth tool there is (Zimmerman 2002).', '#f472b6'),
-
-      // Stats row
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 12 } },
-        [
-          { label: 'Total reflections', value: entries.length, color: '#f472b6', icon: '📔' },
-          { label: 'Week streak', value: weekStreak + 'w', color: '#fbbf24', icon: '🔥' },
-          { label: 'Avg week rating', value: entries.length > 0 ? (entries.reduce(function(s, e) { return s + (e.overall || 0); }, 0) / entries.length).toFixed(1) : '—', color: '#a855f7', icon: '⭐' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'rs-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { 'aria-hidden': 'true', style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
+      tkSectionHeader('\ud83d\udcd4', 'Weekly Reflection', 'An optional structured journal for reviewing a week and planning what to try next.', '#f9a8d4', 'learning-lab-reflection-heading'),
+      hh('ul', { 'aria-label': 'Reflection summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, listStyle: 'none', padding: 0, margin: '0 0 12px' } },
+        stats.map(function(stat, index) {
+          return hh('li', { key: 'rs-' + index, style: { padding: 10, borderRadius: 8, background: stat.color + '12', border: '1px solid ' + stat.color + '55', textAlign: 'center' } },
+            hh('span', { style: { display: 'block', fontSize: 16, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace', overflowWrap: 'anywhere' } }, stat.value),
+            hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, stat.label)
           );
         })
       ),
-
-      // This week status
-      thisWeekEntry ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-        hh('div', null,
-          hh('span', { style: { color: '#22c55e', fontWeight: 800, marginRight: 8 } }, '✓'),
-          hh('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 } }, 'You reflected this week. ', hh('em', { style: { color: '#22c55e' } }, 'Nice.'))
-        ),
-        tkBtn('View this week\'s reflection', function() { setViewing(thisWeekEntry.id); setView('detail'); }, 'secondary', { minHeight: 44, padding: '8px 12px', fontSize: 10 })
-      ) : hh('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(244,114,182,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(244,114,182,0.40)', marginBottom: 12, textAlign: 'center' } },
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'No reflection yet for ', hh('strong', null, thisWeek), '. 5 prompts. 5 minutes.'),
-        tkBtn('+ Start this week\'s reflection', function() { setForm({ went_well: '', stuck: '', will_try: '', wins: '', proud: '', overall: 7 }); setEditingId(null); setView('new'); }, 'primary')
+      hh('section', { 'aria-labelledby': 'learning-lab-reflection-week-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(244,114,182,0.10)', border: '1px solid rgba(244,114,182,0.45)', marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-reflection-week-heading', style: { margin: '0 0 6px', fontSize: 13, color: '#fbcfe8' } }, 'This week'),
+        thisWeekEntry ? hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+          hh('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 } }, 'A reflection is saved for the current week.'),
+          tkBtn('View this week\'s reflection', function() { openDetail(thisWeekEntry); }, 'secondary', { minHeight: 44, padding: '8px 12px' })
+        ) : hh('div', null,
+          hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 } }, 'No reflection is saved for the current week. Starting one is optional.'),
+          hh('button', { id: 'learning-lab-reflection-start-button', type: 'button', onClick: function() { openForm(null); }, 'data-ll-focusable': true,
+            style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1.5px solid #f9a8d4', background: '#9d174d', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start this week\'s reflection')
+        )
       ),
-
-      // History
-      entries.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 12, fontWeight: 800, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📚 Reflection history'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          entries.map(function(e) {
-            var preview = (e.went_well || e.stuck || e.proud || '').substring(0, 60);
-            return hh('button', { key: 'h-' + e.id, type: 'button',
-              onClick: function() { setViewing(e.id); setView('detail'); },
-              style: { display: 'block', textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(244,114,182,0.20)', borderLeft: '3px solid #f472b6', cursor: 'pointer' }
-            },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                hh('span', { style: { fontSize: 11, color: '#f472b6', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' } }, e.week + ' · ' + relDate(e.date)),
-                hh('span', { style: { padding: '2px 8px', borderRadius: 999, background: 'rgba(244,114,182,0.18)', color: '#f472b6', fontSize: 10, fontWeight: 800 } }, e.overall + '/10')
-              ),
-              preview ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '"' + preview + (preview.length === 60 ? '…' : '') + '"') : null
+      entries.length ? hh('section', { 'aria-labelledby': 'learning-lab-reflection-history-heading' },
+        hh('h3', { id: 'learning-lab-reflection-history-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 13, color: '#fbcfe8' } }, 'Reflection history'),
+        hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+          entries.map(function(entry) {
+            var preview = firstResponse(entry).slice(0, 100);
+            var rating = (Number(entry.overall) || 0) + ' out of 10';
+            return hh('li', { key: 'h-' + entry.id },
+              hh('button', { type: 'button', onClick: function() { openDetail(entry); },
+                'aria-label': 'View reflection from ' + entry.date + ', rating ' + rating,
+                style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(244,114,182,0.40)', borderLeft: '3px solid #f9a8d4', cursor: 'pointer' }
+              },
+                hh('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: preview ? 4 : 0, flexWrap: 'wrap' } },
+                  hh('time', { dateTime: entry.date, style: { fontSize: 11, color: '#fbcfe8', fontWeight: 700 } }, entry.date),
+                  hh('span', { style: { color: '#fbcfe8', fontSize: 10, fontWeight: 800 } }, rating)
+                ),
+                preview ? hh('span', { style: { display: 'block', fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', overflowWrap: 'anywhere' } }, preview + (firstResponse(entry).length > 100 ? '\u2026' : '')) : null
+              )
             );
           })
         )
-      ) : null
+      ) : null,
+      hh('aside', { 'aria-labelledby': 'learning-lab-reflection-evidence-heading', style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.35)' } },
+        hh('h3', { id: 'learning-lab-reflection-evidence-heading', style: { margin: '0 0 6px', fontSize: 12, color: '#fbcfe8' } }, 'Evidence and limits'),
+        hh('p', { style: { margin: 0, fontSize: 10, lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Structured reflection can support self-monitoring and planning in some learning contexts, but effects vary by design, population, guidance, and what learners do with the reflection. This optional journal is not an assessment, treatment, or guarantee of metacognitive growth. Zimmerman (2002) discusses self-regulated learning cycles; Sch\u00f6n (1983) discusses reflective practice.')
+      )
     );
   }
 
-  // ── M. PERSONAL STRATEGY WIZARD (Wave 3) ──
+  // M. PERSONAL STRATEGY WIZARD (Wave 3)
   // Adaptive recommendation engine. Input: subject + assessment type +
   // days until + prior knowledge level + preferred format. Output:
   // prioritized study strategies ranked by Dunlosky 2013 evidence + fit.
@@ -19699,7 +19784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkExam',   icon: '🎓', label: __alloT('stem.learning_lab.exam_prep', 'Exam Prep'),            desc: __alloT('stem.learning_lab.backwards_plan_from_exam_date_with_aut', 'Backwards-plan from exam date with auto-generated daily intensity.') },
               { id: 'mytkTasks',  icon: '✂', label: __alloT('stem.learning_lab.task_breaker', 'Task Breaker'),          desc: __alloT('stem.learning_lab.decompose_big_assignments_into_2_5_min', 'Decompose big assignments into 2-5 minute steps with time estimates.') },
               { id: 'mytkHabits', icon: '✅', label: __alloT('stem.learning_lab.habit_tracker', 'Habit Tracker'),        desc: __alloT('stem.learning_lab.daily_check_ins_streak_heatmap_lally_2', 'Daily check-ins + streak heatmap + Lally 2009 evidence.') },
-              { id: 'mytkReflect',icon: '📔', label: __alloT('stem.learning_lab.weekly_reflection', 'Weekly Reflection'),    desc: __alloT('stem.learning_lab.5_prompt_structured_journal_zimmerman_', '5-prompt structured journal — Zimmerman 2002 metacognitive growth.') },
+              { id: 'mytkReflect',icon: '📔', label: __alloT('stem.learning_lab.weekly_reflection', 'Weekly Reflection'),    desc: __alloT('stem.learning_lab.5_prompt_structured_journal_zimmerman_', 'Optional structured journal for reviewing a week and planning next steps.') },
               { id: 'mytkWizard', icon: '🪄', label: __alloT('stem.learning_lab.strategy_wizard', 'Strategy Wizard'),      desc: __alloT('stem.learning_lab.adaptive_study_plan_generator_based_on', 'Adaptive study-plan generator based on Dunlosky 2013 + your context.') },
               { id: 'mytkLoad',   icon: '⚖️', label: __alloT('stem.learning_lab.cog_load_monitor', 'Cog Load Monitor'),     desc: __alloT('stem.learning_lab.daily_check_in_on_sweller_s_3_load_typ', 'Daily check-in on Sweller\'s 3 load types + overwhelm triggers.') },
               { id: 'mytkMotiv',  icon: '🌟', label: __alloT('stem.learning_lab.motivation_audit', 'Motivation Audit'),     desc: __alloT('stem.learning_lab.self_determination_theory_check_autono', 'Self-Determination Theory check (autonomy / competence / relatedness).') },
