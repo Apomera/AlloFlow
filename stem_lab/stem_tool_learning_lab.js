@@ -11339,119 +11339,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { predictions: [] };
     var setData = props.setData;
-    var fs = R.useState({ task: '', predictedMin: 30 });
-    var form = fs[0]; var setForm = fs[1];
-    var tes = R.useState(''); var taskError = tes[0]; var setTaskError = tes[1];
+    var fs = R.useState({ task: '', predictedMin: '' }); var form = fs[0]; var setForm = fs[1];
+    var tes = R.useState({ task: '', predicted: '' }); var startErrors = tes[0]; var setStartErrors = tes[1];
     var as = R.useState(null); var activePrediction = as[0]; var setActivePrediction = as[1];
     var ss = R.useState(false); var isStopping = ss[0]; var setIsStopping = ss[1];
-    var es = R.useState({ actualMin: 30, notes: '' });
-    var endForm = es[0]; var setEndForm = es[1];
+    var es = R.useState({ actualMin: '', notes: '' }); var endForm = es[0]; var setEndForm = es[1];
     var aes = R.useState(''); var actualError = aes[0]; var setActualError = aes[1];
+    var focusTargetRef = R.useRef(null);
+    var fts = R.useState(0); var focusTick = fts[0]; var setFocusTick = fts[1];
+    var predictions = Array.isArray(data.predictions) ? data.predictions : [];
 
-    function focusById(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
+    R.useLayoutEffect(function() {
+      var targetId = focusTargetRef.current;
+      if (!targetId) return;
+      var target = document.getElementById(targetId);
+      if (target) {
+        target.focus();
+        focusTargetRef.current = null;
+      }
+    }, [activePrediction ? activePrediction.id + ':' + isStopping : 'none', predictions.length, focusTick]);
+    function queueFocus(id) {
+      focusTargetRef.current = id;
+      setFocusTick(function(value) { return value + 1; });
+    }
+
+    function dateInfo(prediction) {
+      var raw = prediction && (prediction.completedAt || prediction.date || prediction.startedAt);
+      if (!raw) return null;
+      var parsed = new Date(raw);
+      if (Number.isNaN(parsed.getTime())) return null;
+      return { dateTime: parsed.toISOString(), label: parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) };
     }
     function startTimer() {
-      var task = form.task.trim();
-      if (!task) {
-        setTaskError('Enter a task name before starting the timer.');
-        focusById('learning-lab-time-task');
+      var task = String(form.task || '').trim();
+      var predicted = Number(form.predictedMin);
+      var nextErrors = {
+        task: task ? '' : 'Enter a task name before starting the timer.',
+        predicted: Number.isFinite(predicted) && predicted >= 1 && predicted <= 1440 ? '' : 'Enter a predicted duration from 1 to 1,440 minutes.'
+      };
+      if (nextErrors.task || nextErrors.predicted) {
+        setStartErrors(nextErrors);
+        queueFocus(nextErrors.task ? 'learning-lab-time-task' : 'learning-lab-time-predicted');
         return;
       }
-      var predicted = Math.max(5, Math.min(180, Number(form.predictedMin) || 30));
+      predicted = Math.round(predicted);
       var prediction = { id: tkId(), task: task, predictedMin: predicted, startedAt: Date.now(), date: todayISO() };
       setActivePrediction(prediction);
       setIsStopping(false);
-      setEndForm({ actualMin: predicted, notes: '' });
+      setEndForm({ actualMin: '', notes: '' });
       setActualError('');
-      setForm({ task: '', predictedMin: 30 });
-      setTaskError('');
-      llAnnounce('Timer started for ' + task + '. Predicted time: ' + predicted + ' minutes.');
-      focusById('learning-lab-time-active-heading');
+      setForm({ task: '', predictedMin: '' });
+      setStartErrors({ task: '', predicted: '' });
+      queueFocus('learning-lab-time-active-heading');
+      llAnnounce('Timer started for ' + task + '. Predicted duration: ' + predicted + ' minutes.');
     }
     function stopTimer() {
       if (!activePrediction) return;
-      var actual = Math.max(1, Math.round((Date.now() - activePrediction.startedAt) / 60000));
-      setEndForm({ actualMin: actual, notes: '' });
+      var measured = Math.max(1, Math.round((Date.now() - activePrediction.startedAt) / 60000));
+      setEndForm({ actualMin: String(measured), notes: '' });
       setActualError('');
       setIsStopping(true);
-      llAnnounce('Timer stopped. Review and log the actual time.');
-      focusById('learning-lab-time-actual');
+      queueFocus('learning-lab-time-review-heading');
+      llAnnounce('Timer stopped. Review the recorded duration before saving.');
     }
-    function logComplete() {
+    function saveComparison() {
       if (!activePrediction) return;
       var actual = Number(endForm.actualMin);
       if (!Number.isFinite(actual) || actual < 1 || actual > 1440) {
-        setActualError('Enter an actual time from 1 to 1,440 minutes.');
-        focusById('learning-lab-time-actual');
+        setActualError('Enter a recorded duration from 1 to 1,440 minutes.');
+        queueFocus('learning-lab-time-actual');
         return;
       }
       actual = Math.round(actual);
-      var prediction = Object.assign({}, activePrediction, { actualMin: actual, notes: endForm.notes.trim(), completedAt: Date.now() });
-      setData(Object.assign({}, data, { predictions: [prediction].concat(data.predictions || []) }));
+      var prediction = Object.assign({}, activePrediction, { actualMin: actual, notes: String(endForm.notes || '').trim(), completedAt: Date.now() });
+      setData(Object.assign({}, data, { predictions: [prediction].concat(predictions) }));
       setActivePrediction(null);
       setIsStopping(false);
-      setEndForm({ actualMin: 30, notes: '' });
+      setEndForm({ actualMin: '', notes: '' });
       setActualError('');
-      llAnnounce('Time estimate logged for ' + prediction.task + '. Actual time: ' + actual + ' minutes.');
+      queueFocus('learning-lab-time-entry-heading-' + prediction.id);
+      llAnnounce('Time comparison saved for ' + prediction.task + '.');
     }
     async function cancelTimer() {
       if (!activePrediction) return;
-      if (!(await askLearningLabConfirmation('This stops timing "' + activePrediction.task + '" without saving a prediction.', {
+      if (!(await askLearningLabConfirmation('This closes the timer for “' + activePrediction.task + '” without saving a comparison.', {
         title: 'Cancel this timer?', confirmText: 'Cancel timer'
       }))) return;
       var task = activePrediction.task;
+      var predicted = activePrediction.predictedMin;
+      setForm({ task: task, predictedMin: String(predicted) });
       setActivePrediction(null);
       setIsStopping(false);
-      setEndForm({ actualMin: 30, notes: '' });
+      setEndForm({ actualMin: '', notes: '' });
       setActualError('');
-      llAnnounce('Timer canceled for ' + task + '.');
+      queueFocus('learning-lab-time-task');
+      llAnnounce('Timer canceled for ' + task + '. The task and prediction remain in the form.');
     }
-    async function remove(id) {
-      var prediction = (data.predictions || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes the saved estimate' + (prediction ? ' for "' + prediction.task + '"' : '') + '.', {
-        title: 'Delete this time estimate?', confirmText: 'Delete estimate'
+    async function removePrediction(prediction) {
+      var task = prediction && prediction.task ? String(prediction.task) : 'Untitled task';
+      if (!(await askLearningLabConfirmation('This permanently removes the saved time comparison for “' + task + '”.', {
+        title: 'Delete this time comparison?', confirmText: 'Delete comparison'
       }))) return;
-      setData(Object.assign({}, data, { predictions: (data.predictions || []).filter(function(item) { return item.id !== id; }) }));
-      llAnnounce('Time estimate deleted.');
+      setData(Object.assign({}, data, { predictions: predictions.filter(function(item) { return item !== prediction; }) }));
+      queueFocus('learning-lab-time-history-heading');
+      llAnnounce('Time comparison deleted.');
     }
 
-    var predictions = data.predictions || [];
-    var completed = predictions.filter(function(prediction) { return Number(prediction.predictedMin) > 0 && Number.isFinite(Number(prediction.actualMin)); });
-    var avgRatio = completed.length > 0 ? completed.reduce(function(sum, prediction) { return sum + (Number(prediction.actualMin) / Number(prediction.predictedMin)); }, 0) / completed.length : 0;
-    var avgRatioPct = avgRatio > 0 ? Math.round((avgRatio - 1) * 100) : 0;
-    var calibrationText = avgRatioPct > 30 ? 'Large under-estimate. Multiply your first estimate by about 1.5.'
-      : avgRatioPct > 10 ? 'Mild under-estimate. Add a buffer.'
-      : avgRatioPct < -10 ? 'Over-estimate. You are finishing faster than predicted.'
-      : 'Well calibrated.';
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid rgba(147,51,234,0.48)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
     var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', marginBottom: 4 };
+    var hintStyle = { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, margin: '4px 0 10px' };
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('⏱', 'Time Estimation Trainer', 'Predict how long. Log actual. Calibration improves with practice. ADHD students typically under-estimate by 30-100%.', '#9333ea'),
+      hh('header', null,
+        hh('h2', { id: 'learning-lab-time-heading', style: { fontSize: 18, color: '#d8b4fe', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '⏱ '), 'Optional Time Estimate Comparison'),
+        hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Compare one prediction with one recorded duration if that is useful. Differences are neutral observations, not scores or evidence of attention, executive function, effort, ability, or productivity. Tasks are not assumed to be comparable.'),
+        hh('p', { style: { margin: '0 0 14px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Task names and notes can reveal schedules, work, health information, or identity. They are stored with this Learning Lab data; saving here does not itself notify a teacher, school, employer, clinician, or family member. Use care on a shared or managed device, and delete entries you no longer want stored.')
+      ),
 
       activePrediction ? tkCard('#9333ea',
         hh('section', { 'aria-labelledby': 'learning-lab-time-active-heading' },
-          hh('h3', { id: 'learning-lab-time-active-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '⏱ Currently timing'),
-          hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', marginBottom: 12, textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, activePrediction.task),
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'You predicted: ', hh('strong', { style: { color: '#c084fc', fontSize: 14, fontFamily: 'ui-monospace, Menlo, monospace' } }, activePrediction.predictedMin + ' minutes'))
+          hh('h3', { id: 'learning-lab-time-active-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px', outlineOffset: 4 } }, isStopping ? 'Review this time comparison' : 'Timer running'),
+          hh('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(2,6,23,0.7)', marginBottom: 12 } },
+            hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 6px', overflowWrap: 'anywhere' } }, activePrediction.task),
+            hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, 'Predicted duration: ', hh('strong', { style: { color: '#d8b4fe', fontFamily: 'ui-monospace, Menlo, monospace' } }, activePrediction.predictedMin + ' minutes'))
           ),
-          isStopping ? hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); logComplete(); }, 'aria-labelledby': 'learning-lab-time-review-heading' },
-            hh('h4', { id: 'learning-lab-time-review-heading', style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 10px' } }, 'Review the actual time'),
-            hh('label', { htmlFor: 'learning-lab-time-actual', style: labelStyle }, 'Actual time taken in minutes (required)'),
-            hh('input', { id: 'learning-lab-time-actual', type: 'number', min: 1, max: 1440, step: 1, required: true, value: endForm.actualMin,
-              'aria-invalid': actualError ? 'true' : undefined, 'aria-describedby': actualError ? 'learning-lab-time-actual-error' : 'learning-lab-time-actual-help',
-              onChange: function(event) { setEndForm(Object.assign({}, endForm, { actualMin: event.target.value })); if (actualError) setActualError(''); },
-              style: Object.assign({}, fieldStyle, { color: '#c084fc', fontWeight: 800, marginBottom: 4 })
-            }),
-            hh('div', { id: 'learning-lab-time-actual-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: actualError ? 4 : 10 } }, 'Use your best estimate if the timer was not exact.'),
-            hh('div', { id: 'learning-lab-time-actual-error', role: 'alert', style: { minHeight: actualError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: actualError ? 10 : 0 } }, actualError),
-            hh('label', { htmlFor: 'learning-lab-time-notes', style: labelStyle }, 'Reflection notes (optional)'),
-            hh('textarea', { id: 'learning-lab-time-notes', value: endForm.notes, rows: 3, maxLength: 2000, placeholder: 'What surprised you?', onChange: function(event) { setEndForm(Object.assign({}, endForm, { notes: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical', marginBottom: 10 }) }),
+          isStopping ? hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); saveComparison(); }, 'aria-labelledby': 'learning-lab-time-review-heading' },
+            hh('h4', { id: 'learning-lab-time-review-heading', tabIndex: -1, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 10px', outlineOffset: 4 } }, 'Review the recorded duration'),
+            hh('label', { htmlFor: 'learning-lab-time-actual', style: labelStyle }, 'Recorded duration in minutes (required)'),
+            hh('input', { id: 'learning-lab-time-actual', type: 'number', min: 1, max: 1440, step: 1, inputMode: 'numeric', required: true, value: endForm.actualMin, 'aria-invalid': actualError ? 'true' : undefined, 'aria-describedby': 'learning-lab-time-actual-help' + (actualError ? ' learning-lab-time-actual-error' : ''), onChange: function(event) { setEndForm(Object.assign({}, endForm, { actualMin: event.target.value })); if (actualError) setActualError(''); }, style: fieldStyle }),
+            hh('p', { id: 'learning-lab-time-actual-help', style: hintStyle }, 'The timer supplies an initial whole-minute value. Change it if the timer did not represent the task duration you want to record.'),
+            actualError ? hh('p', { id: 'learning-lab-time-actual-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 10px' } }, actualError) : null,
+            hh('label', { htmlFor: 'learning-lab-time-notes', style: labelStyle }, 'Personal note (optional)'),
+            hh('textarea', { id: 'learning-lab-time-notes', value: endForm.notes, rows: 3, maxLength: 2000, 'aria-describedby': 'learning-lab-time-notes-help', onChange: function(event) { setEndForm(Object.assign({}, endForm, { notes: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical' }) }),
+            hh('p', { id: 'learning-lab-time-notes-help', style: hintStyle }, 'Up to 2,000 characters. Avoid private information you do not want stored here.'),
             hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
               hh('button', { type: 'button', onClick: cancelTimer, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel timer'),
-              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save time estimate')
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Save time comparison')
             )
           ) : hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
             hh('button', { type: 'button', onClick: cancelTimer, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel timer'),
@@ -11460,58 +11483,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         )
       ) : tkCard('#9333ea',
         hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); startTimer(); }, 'aria-labelledby': 'learning-lab-time-new-heading' },
-          hh('h3', { id: 'learning-lab-time-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 10px' } }, '⏱ New task — predict how long'),
+          hh('h3', { id: 'learning-lab-time-new-heading', tabIndex: -1, style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', margin: '0 0 10px', outlineOffset: 4 } }, 'Start an optional comparison'),
           hh('label', { htmlFor: 'learning-lab-time-task', style: labelStyle }, 'Task name (required)'),
-          hh('input', { id: 'learning-lab-time-task', type: 'text', required: true, maxLength: 240, value: form.task, 'aria-invalid': taskError ? 'true' : undefined, 'aria-describedby': taskError ? 'learning-lab-time-task-error' : undefined, placeholder: 'e.g., Write history outline', onChange: function(event) { setForm(Object.assign({}, form, { task: event.target.value })); if (taskError) setTaskError(''); }, style: Object.assign({}, fieldStyle, { marginBottom: taskError ? 4 : 10 }) }),
-          hh('div', { id: 'learning-lab-time-task-error', role: 'alert', style: { minHeight: taskError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: taskError ? 10 : 0 } }, taskError),
-          hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-            hh('label', { htmlFor: 'learning-lab-time-predicted', style: { fontWeight: 700 } }, 'Predicted duration'),
-            hh('output', { id: 'learning-lab-time-predicted-output', htmlFor: 'learning-lab-time-predicted', 'aria-live': 'polite', style: { color: '#c084fc', fontSize: 16, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, form.predictedMin + ' minutes')
-          ),
-          hh('input', { id: 'learning-lab-time-predicted', type: 'range', min: 5, max: 180, step: 5, value: form.predictedMin, 'aria-describedby': 'learning-lab-time-predicted-help', onChange: function(event) { setForm(Object.assign({}, form, { predictedMin: parseInt(event.target.value, 10) })); }, style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#9333ea', marginBottom: 2 } }),
-          hh('div', { id: 'learning-lab-time-predicted-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Choose from 5 to 180 minutes in 5-minute steps.'),
+          hh('input', { id: 'learning-lab-time-task', type: 'text', required: true, maxLength: 240, autoComplete: 'off', value: form.task, 'aria-invalid': startErrors.task ? 'true' : undefined, 'aria-describedby': 'learning-lab-time-task-help' + (startErrors.task ? ' learning-lab-time-task-error' : ''), onChange: function(event) { setForm(Object.assign({}, form, { task: event.target.value })); if (startErrors.task) setStartErrors(Object.assign({}, startErrors, { task: '' })); }, style: fieldStyle }),
+          hh('p', { id: 'learning-lab-time-task-help', style: hintStyle }, 'Up to 240 characters.'),
+          startErrors.task ? hh('p', { id: 'learning-lab-time-task-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 10px' } }, startErrors.task) : null,
+          hh('label', { htmlFor: 'learning-lab-time-predicted', style: labelStyle }, 'Predicted duration in minutes (required)'),
+          hh('input', { id: 'learning-lab-time-predicted', type: 'number', min: 1, max: 1440, step: 1, inputMode: 'numeric', required: true, value: form.predictedMin, 'aria-invalid': startErrors.predicted ? 'true' : undefined, 'aria-describedby': 'learning-lab-time-predicted-help' + (startErrors.predicted ? ' learning-lab-time-predicted-error' : ''), onChange: function(event) { setForm(Object.assign({}, form, { predictedMin: event.target.value })); if (startErrors.predicted) setStartErrors(Object.assign({}, startErrors, { predicted: '' })); }, style: fieldStyle }),
+          hh('p', { id: 'learning-lab-time-predicted-help', style: hintStyle }, 'Enter a deliberate whole-minute estimate from 1 to 1,440. No value is selected for you.'),
+          startErrors.predicted ? hh('p', { id: 'learning-lab-time-predicted-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, margin: '0 0 10px' } }, startErrors.predicted) : null,
           hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 18px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start timer')
         )
       ),
 
-      completed.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-time-calibration-heading', style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(147,51,234,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(147,51,234,0.40)', marginBottom: 12, textAlign: 'center' } },
-        hh('h3', { id: 'learning-lab-time-calibration-heading', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 4px' } }, 'Your calibration over ' + completed.length + ' tasks'),
-        hh('div', { style: { fontSize: 32, fontWeight: 900, color: avgRatioPct > 30 ? '#ef4444' : avgRatioPct > 10 ? '#fbbf24' : avgRatioPct < -10 ? '#60a5fa' : '#10b981', fontFamily: 'ui-monospace, Menlo, monospace' } }, avgRatioPct > 0 ? '+' + avgRatioPct + '%' : avgRatioPct + '%'),
-        hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', margin: '4px 0 0' } }, calibrationText)
-      ) : null,
-
-      predictions.length > 0 ? hh('section', { 'aria-labelledby': 'learning-lab-time-history-heading' },
-        hh('h3', { id: 'learning-lab-time-history-heading', style: { fontSize: 11, fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' } }, 'Past predictions'),
-        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-          predictions.slice(0, 15).map(function(prediction) {
-            var diff = Number(prediction.actualMin) - Number(prediction.predictedMin);
-            var diffPct = Number(prediction.predictedMin) > 0 ? Math.round((diff / Number(prediction.predictedMin)) * 100) : 0;
-            var accuracyLabel = Math.abs(diffPct) <= 10 ? 'close estimate' : Math.abs(diffPct) <= 30 ? 'moderate difference' : 'large difference';
-            var color = Math.abs(diffPct) <= 10 ? '#10b981' : Math.abs(diffPct) <= 30 ? '#fbbf24' : '#ef4444';
-            return hh('li', { key: 'pr-' + prediction.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + color } },
-              hh('article', { 'aria-label': prediction.task + '. Predicted ' + prediction.predictedMin + ' minutes; actual ' + prediction.actualMin + ' minutes; ' + accuracyLabel + '.' },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
-                  hh('div', { style: { flex: 1, minWidth: 0 } },
-                    hh('strong', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, prediction.task),
-                    hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
-                      'Predicted ' + prediction.predictedMin + ' min · actual ' + prediction.actualMin + ' min · ',
-                      hh('span', { style: { color: color, fontWeight: 800 } }, (diffPct > 0 ? '+' : '') + diffPct + '% (' + accuracyLabel + ')')
-                    )
+      hh('section', { 'aria-labelledby': 'learning-lab-time-history-heading', style: { marginTop: 14 } },
+        hh('h3', { id: 'learning-lab-time-history-heading', tabIndex: -1, style: { fontSize: 13, color: '#d8b4fe', margin: '0 0 8px', outlineOffset: 4 } }, 'Saved time comparisons'),
+        predictions.length === 0 ? tkEmptyState('⏱', 'No time comparisons saved.', null, null)
+        : hh('ul', { 'aria-label': 'All saved time comparisons', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+            predictions.map(function(prediction, index) {
+              prediction = prediction || {};
+              var task = String(prediction.task || '').trim() || 'Untitled task';
+              var predicted = Number(prediction.predictedMin);
+              var actual = Number(prediction.actualMin);
+              var hasPredicted = Number.isFinite(predicted) && predicted >= 1;
+              var hasActual = Number.isFinite(actual) && actual >= 1;
+              var differenceText = 'Difference not available.';
+              if (hasPredicted && hasActual) {
+                var difference = Math.round(actual - predicted);
+                differenceText = difference === 0 ? 'Recorded and predicted durations are the same.' : 'Recorded duration is ' + Math.abs(difference) + ' minute' + (Math.abs(difference) === 1 ? '' : 's') + (difference > 0 ? ' longer' : ' shorter') + ' than predicted.';
+              }
+              var date = dateInfo(prediction);
+              var itemKey = prediction.id ? String(prediction.id) : 'legacy-' + index;
+              var headingId = 'learning-lab-time-entry-heading-' + (prediction.id || itemKey);
+              return hh('li', { key: 'pr-' + itemKey, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a855f7', overflowWrap: 'anywhere' } },
+                hh('article', { 'aria-labelledby': headingId },
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                    hh('div', { style: { flex: 1, minWidth: 0 } },
+                      hh('h4', { id: headingId, tabIndex: -1, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 3px', outlineOffset: 4 } }, task),
+                      hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 3px' } }, hasPredicted ? 'Predicted duration: ' + Math.round(predicted) + ' minutes. ' : 'Predicted duration not recorded. ', hasActual ? 'Recorded duration: ' + Math.round(actual) + ' minutes.' : 'Recorded duration not recorded.'),
+                      hh('p', { style: { fontSize: 10, color: '#d8b4fe', margin: '0 0 3px' } }, differenceText),
+                      hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, date ? hh('time', { dateTime: date.dateTime }, date.label) : 'Date not recorded')
+                    ),
+                    hh('button', { type: 'button', 'aria-label': 'Delete time comparison for ' + task, onClick: function() { removePrediction(prediction); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16, cursor: 'pointer' } }, hh('span', { 'aria-hidden': 'true' }, '×'))
                   ),
-                  hh('button', { type: 'button', 'aria-label': 'Delete time estimate for ' + prediction.task, onClick: function() { remove(prediction.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
-                ),
-                prediction.notes ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', margin: '4px 0 0' } }, prediction.notes) : null
-              )
-            );
-          })
-        )
-      ) : null
+                  prediction.notes ? hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: '6px 0 0' } }, prediction.notes) : null
+                )
+              );
+            })
+          )
+      )
     );
   }
 
-  // ── GG. PERSONAL DISTRACTION LOG (Wave 7) ──
-  // When you notice you've been distracted, log it. Pattern reveals
-  // YOUR specific distractions. Surfacing the pattern is half the work.
+  // Optional, neutral comparison of predicted and recorded task durations.
   function PersonalDistractionLog(props) {
     if (!R) return null;
     var data = props.data || { events: [] };
@@ -20208,7 +20232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: 'live', cta: 'See progress' },
       { id: 'mytkChall',    icon: '🏆', label: 'Challenge Board',      color: '#fbbf24', desc: 'Optional challenges or practices with neutral check-ins',
         stat: ((data.mytkChall || {}).challenges || []).length + ' active', cta: 'Start a challenge' },
-      { id: 'mytkTime',     icon: '⏱', label: 'Time Estimator',       color: '#9333ea', desc: 'Predict + log time. Build calibration.',
+      { id: 'mytkTime',     icon: '⏱', label: 'Time Estimator',       color: '#9333ea', desc: 'Optional predicted and recorded task-duration comparisons',
         stat: ((data.mytkTime || {}).predictions || []).length + ' logged', cta: 'Time a task' },
       { id: 'mytkDist',     icon: '🚨', label: 'Distraction Log',      color: '#ef4444', desc: 'Log distractions, see your top 1-2',
         stat: ((data.mytkDist || {}).events || []).length + ' events', cta: 'Log a distraction' },
@@ -20533,7 +20557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Optional RAIN, supportive coach, and self-kindness reflection prompts.') },
               { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Neutral summary of selected personal tracker counts and 14-day saved activity.') },
               { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', 'Optional challenge or practice notes with editable, neutral check-ins.') },
-              { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Predict task time, log actual, see your calibration percentage.') },
+              { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Compare a predicted task duration with a recorded duration; no score.') },
               { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.') },
               { id: 'mytkSearch', icon: '🔎', label: __alloT('stem.learning_lab.search_my_toolkit', 'Search My Toolkit'),    desc: __alloT('stem.learning_lab.instant_full_text_search_across_notes_', 'Instant full-text search across notes, journal, reflections, prompts, goals, brain dumps.') },
               { id: 'mytkCheats', icon: '📋', label: __alloT('stem.learning_lab.cheat_sheet_builder', 'Cheat Sheet Builder'),  desc: __alloT('stem.learning_lab.build_1_page_cheat_sheets_per_topic_bu', 'Build 1-page cheat sheets per topic. Building IS the studying.') },
