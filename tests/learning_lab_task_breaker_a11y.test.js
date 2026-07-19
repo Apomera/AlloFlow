@@ -13,25 +13,25 @@ describe('Learning Lab Task Breaker accessibility', () => {
 
   it('associates the task fields and reports missing titles inline', () => {
     expect(taskBreaker).toContain("htmlFor: 'learning-lab-task-title'");
-    expect(taskBreaker).toContain("id: 'learning-lab-task-title', type: 'text', value: form.title, required: true");
+    expect(taskBreaker).toContain("id: 'learning-lab-task-title', required: true, maxLength: 240");
     expect(taskBreaker).toContain("htmlFor: 'learning-lab-task-due-date'");
-    expect(taskBreaker).toContain("id: 'learning-lab-task-error', role: 'alert'");
-    expect(taskBreaker).toContain("document.getElementById('learning-lab-task-title')");
+    expect(taskBreaker).toContain("id: 'learning-lab-task-title-error', role: 'alert'");
+    expect(taskBreaker).toContain("setFocusTarget(nextErrors.title ? 'learning-lab-task-title'");
     expect(taskBreaker).not.toContain("alert('Need a title.')");
   });
 
   it('gives every step description and estimate an associated label', () => {
-    expect(taskBreaker).toContain("htmlFor: 'learning-lab-task-step-' + s.id");
-    expect(taskBreaker).toContain("id: 'learning-lab-task-step-' + s.id");
-    expect(taskBreaker).toContain("htmlFor: 'learning-lab-task-estimate-' + s.id");
-    expect(taskBreaker).toContain("id: 'learning-lab-task-estimate-' + s.id");
+    expect(taskBreaker).toContain('htmlFor: descriptionId');
+    expect(taskBreaker).toContain('id: descriptionId');
+    expect(taskBreaker).toContain('htmlFor: estimateId');
+    expect(taskBreaker).toContain('id: estimateId');
   });
 
   it('names icon-only controls and supplies 44-pixel targets', () => {
-    expect(taskBreaker).toContain("'aria-label': 'Remove step ' + (i + 1)");
-    expect(taskBreaker).toContain("'aria-label': 'Edit task: ' + t.title");
-    expect(taskBreaker).toContain("'aria-label': 'Delete task: ' + t.title");
-    expect(taskBreaker.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(taskBreaker).toContain("'aria-label': 'Remove step ' + (index + 1)");
+    expect(taskBreaker).toContain("'aria-label': 'Edit task: ' + taskName");
+    expect(taskBreaker).toContain("'aria-label': 'Delete task: ' + taskName");
+    expect(taskBreaker.match(/minHeight: 44/g)?.length).toBeGreaterThanOrEqual(8);
   });
 
   it('uses the app confirmation service for destructive task deletion', () => {
@@ -41,9 +41,9 @@ describe('Learning Lab Task Breaker accessibility', () => {
 
   it('exposes completion progress and step toggle state', () => {
     expect(taskBreaker).toContain("role: 'progressbar'");
-    expect(taskBreaker).toContain("'aria-valuenow': pct");
-    expect(taskBreaker).toContain("type: 'button', 'aria-pressed': s.done");
-    expect(taskBreaker).toContain("'aria-label': (s.done ? 'Mark incomplete: ' : 'Mark complete: ')");
+    expect(taskBreaker).toContain("'aria-valuenow': percent");
+    expect(taskBreaker).toContain("type: 'button', 'aria-pressed': step.done ? 'true' : 'false'");
+    expect(taskBreaker).toContain("'aria-label': (step.done ? 'Mark incomplete: ' : 'Mark complete: ')");
   });
 
   it('keeps the deployed mirror identical', () => {
