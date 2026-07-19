@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import fs from 'node:fs';
 import {
   React,
   ReactDOMClient,
@@ -87,5 +88,14 @@ describe('Arithmetic Strategy Studio', () => {
     expect(latest._arithmeticStudio.attempts).toBe(1);
     expect(document.body.textContent).toContain('Correct. Your exact answer is reasonable');
     await React.act(async () => { root.unmount(); });
+  });
+  it('is wired into the host catalog, plugin allowlist, and lazy loader', () => {
+    const host = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
+    const deployedHost = fs.readFileSync('prismflow-deploy/public/stem_lab/stem_lab_module.js', 'utf8');
+    expect(host).toContain("id: 'arithmeticStudio'");
+    expect(host).toContain('arithmeticStudio: true');
+    expect(deployedHost).toBe(host);
+    expect(app).toContain("'stem_lab/stem_tool_arithmetic.js'");
   });
 });

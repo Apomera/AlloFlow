@@ -3452,6 +3452,14 @@
                 ready: true
               },
               {
+                id: 'arithmeticStudio',
+                icon: '\uD83E\uDDEE',
+                label: 'Arithmetic Strategy Studio',
+                desc: 'Learn all four operations through models, strategies, estimation, and mistake analysis.',
+                color: 'blue',
+                ready: true
+              },
+              {
                 id: 'fractionViz',
                 aliases: ['fractions'],
                 icon: '🍕',
@@ -5377,6 +5385,7 @@
             funcGrapher: true, geoSandbox: true, graphCalc: true, inequality: true,
             math: true, moneyMath: true, multtable: true, numberline: true,
             probability: true, protractor: true, volume: true,
+            arithmeticStudio: true,
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
