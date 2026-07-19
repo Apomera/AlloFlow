@@ -10968,134 +10968,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   function PersonalProgressDashboard(props) {
     if (!R) return null;
     var allData = props.allData || {};
+    function asArray(value) { return Array.isArray(value) ? value : []; }
+    function source(name) { return allData[name] && typeof allData[name] === 'object' ? allData[name] : {}; }
+    function localIso(date) {
+      var year = date.getFullYear();
+      var month = String(date.getMonth() + 1).padStart(2, '0');
+      var day = String(date.getDate()).padStart(2, '0');
+      return year + '-' + month + '-' + day;
+    }
 
-    var goals = ((allData.mytkGoals || {}).goals || []);
-    var activeGoals = goals.filter(function(g) { return g.status === 'active'; });
-    var doneGoals = goals.filter(function(g) { return g.status === 'done'; });
-    var avgGoalProgress = activeGoals.length > 0 ? Math.round(activeGoals.reduce(function(s, g) { return s + (g.progress || 0); }, 0) / activeGoals.length) : 0;
-
-    var focusSessions = ((allData.mytkFocus || {}).sessions || []);
+    var goals = asArray(source('mytkGoals').goals);
+    var activeGoals = goals.filter(function(goal) { return goal && goal.status === 'active'; });
+    var doneGoals = goals.filter(function(goal) { return goal && goal.status === 'done'; });
+    var focusSessions = asArray(source('mytkFocus').sessions);
+    var brainItems = asArray(source('mytkBrain').items);
+    var habits = asArray(source('mytkHabits').habits);
+    var habitLogs = source('mytkHabits').logs && typeof source('mytkHabits').logs === 'object' ? source('mytkHabits').logs : {};
+    var reflections = asArray(source('mytkReflect').entries);
+    var prompts = asArray(source('mytkPrompts').responses);
+    var journal = asArray(source('mytkJournal').entries);
+    var appreciations = asArray(source('mytkGrat').entries);
+    var flashCards = asArray(source('mytkFlash').cards);
+    var sleepEntries = asArray(source('mytkSleep').entries);
+    var tasks = asArray(source('mytkTasks').tasks);
+    var efReflections = asArray(source('mytkEF').ratings);
+    var emotionChecks = asArray(source('mytkEmotion').checks);
     var today = todayISO();
-    var todayFocus = focusSessions.filter(function(s) { return s.date === today; }).reduce(function(s, x) { return s + (x.workMin || 0); }, 0);
-    var weekFocus = 0;
-    for (var i = 0; i < 7; i++) {
-      var dt = new Date(); dt.setDate(dt.getDate() - i);
-      var iso = dt.toISOString().slice(0, 10);
-      weekFocus += focusSessions.filter(function(s) { return s.date === iso; }).reduce(function(s, x) { return s + (x.workMin || 0); }, 0);
-    }
-
-    var brain = ((allData.mytkBrain || {}).items || []);
-    var brainOpen = brain.filter(function(it) { return !it.done; }).length;
-
-    var habits = ((allData.mytkHabits || {}).habits || []);
-    var habitLogs = ((allData.mytkHabits || {}).logs || {});
-    var habitsToday = habits.filter(function(h) { return (habitLogs[h.id] || []).indexOf(today) >= 0; }).length;
-
-    var reflections = ((allData.mytkReflect || {}).entries || []);
-    var prompts = ((allData.mytkPrompts || {}).responses || []);
-    var journal = ((allData.mytkJournal || {}).entries || []);
-    var gratitudes = ((allData.mytkGrat || {}).entries || []);
-
-    var flashCards = ((allData.mytkFlash || {}).cards || []);
-    var flashDue = flashCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; }).length;
-
-    var sleep = ((allData.mytkSleep || {}).entries || []);
-    var avgSleep = sleep.slice(0, 7).length > 0 ? (sleep.slice(0, 7).reduce(function(s, e) { return s + (e.hours || 0); }, 0) / sleep.slice(0, 7).length).toFixed(1) : '—';
-
-    var tasks = ((allData.mytkTasks || {}).tasks || []);
-    var openTaskCount = tasks.filter(function(t) {
-      var done = (t.steps || []).filter(function(s) { return s.done; }).length;
-      return done < (t.steps || []).length;
-    }).length;
-
-    var ef = ((allData.mytkEF || {}).ratings || []);
-    var latestEF = ef[0];
-    var efAvg = latestEF ? ['initiation', 'planning', 'attention', 'workingmemory', 'flexibility', 'emotion', 'selfmonitor', 'organization'].reduce(function(s, k) { return s + (latestEF[k] || 0); }, 0) / 8 : 0;
-
-    var emo = ((allData.mytkEmotion || {}).checks || []);
-
-    function bigStat(label, value, color, icon, progress) {
-      return hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + color + '20, rgba(15,23,42,0.7))', border: '1px solid ' + color + '40' } },
-        hh('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 4 } }, icon),
-        hh('dt', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label),
-        hh('dd', { style: { margin: '4px 0 0', fontSize: 26, fontWeight: 900, color: color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, value),
-        progress !== undefined ? hh('div', { role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress, style: { height: 6, marginTop: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(15,23,42,0.65)' } },
-          hh('div', { 'aria-hidden': 'true', style: { width: progress + '%', height: '100%', background: color } })
-        ) : null
-      );
-    }
 
     var activityDays = [];
     for (var dayIndex = 13; dayIndex >= 0; dayIndex--) {
-      var activityDate = new Date(); activityDate.setDate(activityDate.getDate() - dayIndex);
-      var activityIso = activityDate.toISOString().slice(0, 10);
+      var activityDate = new Date();
+      activityDate.setHours(12, 0, 0, 0);
+      activityDate.setDate(activityDate.getDate() - dayIndex);
+      var activityIso = localIso(activityDate);
       var activities = [];
-      if (focusSessions.some(function(session) { return session.date === activityIso; })) activities.push('focus session');
-      if (habits.some(function(habit) { return (habitLogs[habit.id] || []).indexOf(activityIso) >= 0; })) activities.push('habit');
-      if (reflections.some(function(reflection) { return reflection.date === activityIso; })) activities.push('reflection');
-      if (gratitudes.some(function(gratitude) { return gratitude.date === activityIso; })) activities.push('gratitude log');
-      if (journal.some(function(entry) { return entry.date === activityIso; })) activities.push('journal entry');
-      activityDays.push({ iso: activityIso, label: activityDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), activities: activities, isToday: activityIso === today });
+      if (focusSessions.some(function(session) { return session && session.date === activityIso; })) activities.push('focus log');
+      if (habits.some(function(habit) { return habit && asArray(habitLogs[habit.id]).indexOf(activityIso) >= 0; })) activities.push('habit check-in');
+      if (reflections.some(function(reflection) { return reflection && reflection.date === activityIso; })) activities.push('weekly reflection');
+      if (prompts.some(function(response) { return response && response.date === activityIso; })) activities.push('prompt response');
+      if (appreciations.some(function(entry) { return entry && (entry.date || entry.createdAt) === activityIso; })) activities.push('appreciation note');
+      if (journal.some(function(entry) { return entry && entry.date === activityIso; })) activities.push('journal entry');
+      if (sleepEntries.some(function(entry) { return entry && (entry.date || entry.createdAt) === activityIso; })) activities.push('sleep log');
+      if (emotionChecks.some(function(check) { return check && (check.date || check.createdAt) === activityIso; })) activities.push('emotion check-in');
+      activityDays.push({
+        iso: activityIso,
+        label: activityDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        activities: activities,
+        isToday: activityIso === today
+      });
     }
 
-    var suggestions = [];
-    if (flashDue > 0) suggestions.push(flashDue + ' flashcard' + (flashDue !== 1 ? 's' : '') + ' due today. A quick review session may help.');
-    if (habitsToday < habits.length) suggestions.push('Habits left to check today: ' + (habits.length - habitsToday) + '.');
-    if (openTaskCount > 3) suggestions.push(openTaskCount + ' open tasks. Consider closing one or two today to maintain momentum.');
-    if (avgSleep !== '—' && parseFloat(avgSleep) < 7) suggestions.push('Average sleep is ' + avgSleep + ' hours, below seven. Consider what could shift earlier tonight.');
-    if (reflections.length === 0) suggestions.push('No weekly reflections yet. A five-minute reflection can support metacognition.');
-    if (suggestions.length === 0) suggestions.push('Your tracked items look current. Choose the next action that best supports your goals.');
+    var recentSeven = activityDays.slice(-7).map(function(day) { return day.iso; });
+    var recentFocusMinutes = focusSessions.reduce(function(total, session) {
+      if (!session || recentSeven.indexOf(session.date) < 0) return total;
+      var minutes = Number(session.workMin);
+      return total + (Number.isFinite(minutes) && minutes > 0 ? minutes : 0);
+    }, 0);
+    var habitsToday = habits.filter(function(habit) {
+      return habit && asArray(habitLogs[habit.id]).indexOf(today) >= 0;
+    }).length;
+    var openTaskCount = tasks.filter(function(task) {
+      var steps = asArray(task && task.steps);
+      if (steps.length === 0) return true;
+      return steps.some(function(step) { return !step || !step.done; });
+    }).length;
+    var brainOpen = brainItems.filter(function(item) { return item && !item.done; }).length;
+
+    function bigStat(label, value, color, icon, detail) {
+      return hh('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, ' + color + '20, rgba(15,23,42,0.7))', border: '1px solid ' + color + '40', overflowWrap: 'anywhere' } },
+        hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 22, marginBottom: 4 } }, icon),
+        hh('dt', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 6 } }, label),
+        hh('dd', { style: { margin: '4px 0 0', fontSize: 24, fontWeight: 900, color: color, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.1 } }, value),
+        detail ? hh('p', { style: { margin: '6px 0 0', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, detail) : null
+      );
+    }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📊', 'My Progress Dashboard', 'A single-screen summary of how everything is tracking. Review weekly to spot trends.', '#10b981'),
-
-      hh('dl', { 'aria-label': 'Progress summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, margin: '0 0 16px' } },
-        bigStat('Active goals', activeGoals.length, '#9333ea', '🎯'),
-        bigStat('Average goal progress', avgGoalProgress + '%', '#a855f7', '📈', avgGoalProgress),
-        bigStat('Focus this week', Math.round(weekFocus / 60 * 10) / 10 + 'h', '#ef4444', '⏱'),
-        bigStat('Habits today', habitsToday + '/' + habits.length, '#10b981', '✅', habits.length > 0 ? Math.round(habitsToday / habits.length * 100) : 0),
-        bigStat('Sleep average, 7 days', avgSleep + 'h', '#3b82f6', '😴'),
-        bigStat('Cards due', flashDue, '#06b6d4', '🃏'),
-        bigStat('Open tasks', openTaskCount, '#f97316', '✂'),
-        bigStat('Open brain dumps', brainOpen, '#60a5fa', '🧠'),
-        bigStat('Executive function average', latestEF ? efAvg.toFixed(1) + '/10' : '—', '#a855f7', '🧩'),
-        bigStat('Reflections', reflections.length, '#f472b6', '📔'),
-        bigStat('Journal entries', journal.length, '#ec4899', '📓'),
-        bigStat('Gratitude logs', gratitudes.length, '#10b981', '🙏')
+      hh('header', null,
+        hh('h2', { id: 'learning-lab-progress-heading', style: { fontSize: 18, color: '#6ee7b7', margin: '0 0 6px' } }, hh('span', { 'aria-hidden': 'true' }, '📊 '), 'Optional Personal Tracker Summary'),
+        hh('p', { style: { margin: '0 0 8px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'A neutral summary of selected information you chose to save in Learning Lab tools. Counts, blanks, and higher or lower values are not grades, diagnoses, comparisons, productivity scores, or judgments about progress.'),
+        hh('p', { style: { margin: '0 0 14px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'This view combines potentially sensitive records, including reflections, sleep logs, and emotion check-ins. It is stored with this Learning Lab data and does not itself notify a teacher, school, counselor, clinician, or family member. Use care on a shared or managed device; edit or delete records in their source tool.')
       ),
 
-      doneGoals.length > 0 ? hh('section', { role: 'status', 'aria-label': doneGoals.length + ' goals completed total', style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.7))', border: '2px solid #22c55e', marginBottom: 14, textAlign: 'center' } },
-        hh('div', { 'aria-hidden': 'true', style: { fontSize: 32, marginBottom: 6 } }, '🏆'),
-        hh('div', { style: { fontSize: 24, fontWeight: 900, color: '#22c55e', fontFamily: 'ui-monospace, Menlo, monospace' } }, doneGoals.length),
-        hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4 } }, 'goals completed total. ', hh('strong', { style: { color: '#22c55e' } }, 'You have done this before. You can do it again.'))
-      ) : null,
+      hh('section', { 'aria-labelledby': 'learning-lab-progress-summary-heading' },
+        hh('h3', { id: 'learning-lab-progress-summary-heading', style: { fontSize: 13, color: '#6ee7b7', margin: '0 0 8px' } }, 'Self-entered summary'),
+        hh('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, margin: '0 0 16px' } },
+          bigStat('Active goal entries', activeGoals.length, '#c084fc', '🎯', 'Status saved in Goal Tracker.'),
+          bigStat('Finished goal entries', doneGoals.length, '#86efac', '✓', 'A saved status, not a performance score.'),
+          bigStat('Focus minutes logged, 7 days', Math.round(recentFocusMinutes), '#fca5a5', '⏱', 'Self-entered time; not a productivity measure.'),
+          bigStat('Habit check-ins today', habitsToday + ' of ' + habits.length, '#6ee7b7', '✅', 'No daily completion is required.'),
+          bigStat('Sleep logs saved', sleepEntries.length, '#93c5fd', '😴', 'No duration threshold or health judgment is applied.'),
+          bigStat('Flashcards saved', flashCards.length, '#67e8f9', '🃏', null),
+          bigStat('Open task plans', openTaskCount, '#fdba74', '✂', 'Includes plans with unfinished or no saved steps.'),
+          bigStat('Brain-dump items not marked done', brainOpen, '#93c5fd', '🧠', null),
+          bigStat('Executive-function reflections', efReflections.length, '#d8b4fe', '🧩', 'Ratings are not averaged across different domains.'),
+          bigStat('Weekly reflections saved', reflections.length, '#f9a8d4', '📔', null),
+          bigStat('Prompt responses saved', prompts.length, '#f0abfc', '💬', null),
+          bigStat('Journal entries saved', journal.length, '#f9a8d4', '📓', null),
+          bigStat('Appreciation notes saved', appreciations.length, '#86efac', '📝', 'Optional entries; no streak or positivity target.')
+        )
+      ),
 
       hh('section', { 'aria-labelledby': 'learning-lab-progress-activity-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.5)', marginBottom: 14 } },
-        hh('h3', { id: 'learning-lab-progress-activity-heading', style: { fontSize: 11, fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' } }, '📅 Last 14 days activity'),
-        hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 3 } },
+        hh('h3', { id: 'learning-lab-progress-activity-heading', style: { fontSize: 13, color: '#6ee7b7', margin: '0 0 4px' } }, 'Saved activity by date: last 14 calendar days'),
+        hh('p', { id: 'learning-lab-progress-activity-hint', style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45 } }, 'This list shows only recognized dates in selected personal tools. “No recognized activity” can also mean that nothing was saved, a date is missing, or a different tool was used.'),
+        hh('ul', { 'aria-describedby': 'learning-lab-progress-activity-hint', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6 } },
           activityDays.map(function(day) {
-            var hasActivity = day.activities.length > 0;
-            var dayDescription = day.label + (day.isToday ? ', today' : '') + ': ' + (hasActivity ? day.activities.join(', ') : 'no tracked activity');
-            return hh('li', { key: 'da-' + day.iso, 'aria-label': dayDescription, style: { flex: 1, minWidth: 0 } },
-              hh('div', { 'aria-hidden': 'true', style: { height: 32, background: hasActivity ? 'rgba(16,185,129,0.40)' : 'rgba(100,116,139,0.15)', color: hasActivity ? '#ecfdf5' : '#cbd5e1', borderRadius: 3, border: day.isToday ? '2px solid #10b981' : '1px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 } }, hasActivity ? '✓' : '—')
+            var description = day.activities.length > 0 ? day.activities.join(', ') : 'No recognized activity';
+            return hh('li', { key: 'da-' + day.iso, style: { minHeight: 64, padding: 8, borderRadius: 6, background: day.activities.length > 0 ? 'rgba(16,185,129,0.14)' : 'rgba(100,116,139,0.10)', border: day.isToday ? '2px solid #6ee7b7' : '1px solid rgba(100,116,139,0.28)', overflowWrap: 'anywhere' } },
+              hh('article', { 'aria-label': day.label + (day.isToday ? ', today' : '') + ': ' + description },
+                hh('time', { dateTime: day.iso, style: { display: 'block', fontSize: 11, fontWeight: 800, color: day.isToday ? '#6ee7b7' : 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, day.label, day.isToday ? ' (today)' : ''),
+                hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.35 } }, description)
+              )
             );
           })
-        ),
-        hh('div', { style: { marginTop: 8, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '✓ tracked activity · — no tracked activity · outlined square is today')
+        )
       ),
 
-      hh('section', { 'aria-labelledby': 'learning-lab-progress-suggestions-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
-        hh('h3', { id: 'learning-lab-progress-suggestions-heading', style: { fontSize: 12, fontWeight: 800, color: '#c084fc', margin: '0 0 8px' } }, '✨ What might be useful right now'),
+      hh('section', { 'aria-labelledby': 'learning-lab-progress-interpretation-heading', style: { padding: 12, borderRadius: 10, background: 'rgba(147,51,234,0.10)', border: '1px solid rgba(147,51,234,0.30)' } },
+        hh('h3', { id: 'learning-lab-progress-interpretation-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'How to interpret this view'),
         hh('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
-          suggestions.map(function(suggestion, index) { return hh('li', { key: 'suggestion-' + index }, suggestion); })
+          hh('li', null, 'The dashboard does not verify that records are current, complete, or comparable.'),
+          hh('li', null, 'It does not recommend a sleep duration, habit target, task count, or reflection schedule.'),
+          hh('li', null, 'Choose whether any source tool or record is useful; no action is required from this summary.')
         )
       )
     );
   }
 
-  // Declare a personal challenge (book in a month, learn a skill, save
-  // money, etc.). Log daily progress. Mark complete or extend. Inspired
-  // by 30-day challenges + Tiny Habits (Fogg 2019).
+  // Neutral summary of selected, self-entered personal tracker records.
   function PersonalChallengeBoard(props) {
     if (!R) return null;
     var data = props.data || { challenges: [] };
@@ -20121,7 +20122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         stat: ((data.mytkRead || {}).books || []).filter(function(b) { return b.status === 'done'; }).length + ' read', cta: 'Track a book' },
       { id: 'mytkCompass',  icon: '💖', label: 'Self-Compassion',      color: '#f472b6', desc: 'Optional RAIN + supportive reflection prompts',
         stat: ((data.mytkCompass || {}).sessions || []).length + ' practices', cta: 'Practice now' },
-      { id: 'mytkDash',     icon: '📊', label: 'Progress Dashboard',   color: '#10b981', desc: 'All toolkit stats + trends in one view',
+      { id: 'mytkDash',     icon: '📊', label: 'Progress Dashboard',   color: '#10b981', desc: 'Optional summary of selected personal tracker data',
         stat: 'live', cta: 'See progress' },
       { id: 'mytkChall',    icon: '🏆', label: 'Challenge Board',      color: '#fbbf24', desc: '30-day challenges with daily action log',
         stat: ((data.mytkChall || {}).challenges || []).length + ' active', cta: 'Start a challenge' },
@@ -20448,7 +20449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkGrat',   icon: '🙏', label: __alloT('stem.learning_lab.gratitude_log', 'Gratitude Log'),        desc: __alloT('stem.learning_lab.3_daily_gratitudes_emmons_mccullough_2', 'Optional appreciation notes with privacy and non-treatment guidance; use only when this reflection fits.') },
               { id: 'mytkRead',   icon: '📚', label: __alloT('stem.learning_lab.reading_tracker', 'Reading Tracker'),      desc: __alloT('stem.learning_lab.books_read_want_to_read_reflections_pa', 'Optional personal reading list, status, page notes, and reflections.') },
               { id: 'mytkCompass',icon: '💖', label: 'Self-Compassion',      desc: __alloT('stem.learning_lab.guided_rain_inner_coach_self_compassio', 'Optional RAIN, supportive coach, and self-kindness reflection prompts.') },
-              { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Single overview of every toolkit tool with 14-day activity strip + suggestions.') },
+              { id: 'mytkDash',   icon: '📊', label: __alloT('stem.learning_lab.progress_dashboard', 'Progress Dashboard'),   desc: __alloT('stem.learning_lab.single_overview_of_every_toolkit_tool_', 'Neutral summary of selected personal tracker counts and 14-day saved activity.') },
               { id: 'mytkChall',  icon: '🏆', label: __alloT('stem.learning_lab.challenge_board', 'Challenge Board'),      desc: __alloT('stem.learning_lab.30_day_challenges_with_daily_action_lo', '30-day challenges with daily action log + Fogg 2019 Tiny Habits.') },
               { id: 'mytkTime',   icon: '⏱', label: __alloT('stem.learning_lab.time_estimator', 'Time Estimator'),       desc: __alloT('stem.learning_lab.predict_task_time_log_actual_see_your_', 'Predict task time, log actual, see your calibration percentage.') },
               { id: 'mytkDist',   icon: '🚨', label: __alloT('stem.learning_lab.distraction_log', 'Distraction Log'),      desc: __alloT('stem.learning_lab.log_distractions_across_8_sources_surf', 'Log distractions across 8 sources. Surfaces YOUR pattern, not generic advice.') },

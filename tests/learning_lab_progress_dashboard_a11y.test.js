@@ -11,61 +11,77 @@ describe('Learning Lab Progress Dashboard accessibility', () => {
   const end = source.indexOf('  function PersonalChallengeBoard(props) {', start);
   const dashboard = source.slice(start, end);
 
-  it('uses definition-list structure for progress statistics', () => {
-    expect(dashboard).toContain("hh('dl', { 'aria-label': 'Progress summary'");
+  it('frames the dashboard as optional, self-entered, and non-evaluative', () => {
+    expect(dashboard).toContain('A neutral summary of selected information you chose to save');
+    expect(dashboard).toContain('not grades, diagnoses, comparisons, productivity scores, or judgments about progress');
+    expect(dashboard).toContain('no action is required from this summary');
+  });
+
+  it('warns that the combined view can expose sensitive personal records', () => {
+    expect(dashboard).toContain('This view combines potentially sensitive records');
+    expect(dashboard).toContain('does not itself notify a teacher, school, counselor, clinician, or family member');
+    expect(dashboard).toContain('edit or delete records in their source tool');
+  });
+
+  it('uses a semantic definition list without score-like progress bars', () => {
+    expect(dashboard).toContain("'aria-labelledby': 'learning-lab-progress-summary-heading'");
+    expect(dashboard).toContain("hh('dl'");
     expect(dashboard).toContain("hh('dt'");
     expect(dashboard).toContain("hh('dd'");
+    expect(dashboard).not.toContain("role: 'progressbar'");
   });
 
-  it('hides decorative statistic icons', () => {
-    expect(dashboard).toContain("'aria-hidden': 'true'");
-    expect(dashboard).toContain("fontSize: 22, marginBottom: 4");
+  it('does not average unlike goal or executive-function ratings', () => {
+    expect(dashboard).not.toContain('avgGoalProgress');
+    expect(dashboard).not.toContain('efAvg');
+    expect(dashboard).not.toContain('Average goal progress');
+    expect(dashboard).not.toContain('Executive function average');
+    expect(dashboard).toContain("bigStat('Executive-function reflections'");
   });
 
-  it('gives goal and habit visual bars progress semantics', () => {
-    expect(dashboard).toContain("role: 'progressbar'");
-    expect(dashboard).toContain("'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress");
-    expect(dashboard).toContain("bigStat('Average goal progress'");
-    expect(dashboard).toContain("bigStat('Habits today'");
+  it('does not infer sleep quality or apply a duration threshold', () => {
+    expect(dashboard).toContain("bigStat('Sleep logs saved'");
+    expect(dashboard).toContain('No duration threshold or health judgment is applied.');
+    expect(dashboard).not.toContain('Sleep average');
+    expect(dashboard).not.toContain('below seven');
+    expect(dashboard).not.toContain('shift earlier tonight');
   });
 
-  it('exposes completed-goal celebration as status', () => {
-    expect(dashboard).toContain("role: 'status', 'aria-label': doneGoals.length + ' goals completed total'");
-    expect(dashboard).toContain("'You have done this before. You can do it again.'");
+  it('removes coercive recommendation rules', () => {
+    expect(dashboard).toContain('It does not recommend a sleep duration, habit target, task count, or reflection schedule.');
+    expect(dashboard).not.toContain('Habits left to check today');
+    expect(dashboard).not.toContain('Consider closing one or two');
+    expect(dashboard).not.toContain('No weekly reflections yet');
+    expect(dashboard).not.toContain('What might be useful right now');
   });
 
-  it('builds a text description for every activity day', () => {
-    expect(dashboard).toContain("activities.push('focus session')");
-    expect(dashboard).toContain("activities.push('habit')");
-    expect(dashboard).toContain("activities.push('reflection')");
-    expect(dashboard).toContain("activities.push('gratitude log')");
-    expect(dashboard).toContain("activities.push('journal entry')");
-    expect(dashboard).toContain("'aria-label': dayDescription");
+  it('normalizes numeric focus data and open task plans', () => {
+    expect(dashboard).toContain('var minutes = Number(session.workMin);');
+    expect(dashboard).toContain('Number.isFinite(minutes) && minutes > 0');
+    expect(dashboard).toContain('if (steps.length === 0) return true;');
+    expect(dashboard).toContain('steps.some(function(step) { return !step || !step.done; })');
   });
 
-  it('does not rely on color alone in the activity strip', () => {
-    expect(dashboard).toContain("hasActivity ? '✓' : '—'");
-    expect(dashboard).toContain("'✓ tracked activity · — no tracked activity · outlined square is today'");
-    expect(dashboard).not.toContain("title: iso");
+  it('renders every activity date and description visibly with time semantics', () => {
+    expect(dashboard).toContain("'Saved activity by date: last 14 calendar days'");
+    expect(dashboard).toContain('activityDays.map(function(day)');
+    expect(dashboard).toContain("hh('time', { dateTime: day.iso");
+    expect(dashboard).toContain("day.activities.join(', ')");
+    expect(dashboard).toContain("'No recognized activity'");
+    expect(dashboard).toContain("activities.push('appreciation note')");
+    expect(dashboard).not.toContain("'aria-hidden': 'true', style: { height: 32");
   });
 
-  it('uses a semantic heading and list for recent activity', () => {
-    expect(dashboard).toContain("'aria-labelledby': 'learning-lab-progress-activity-heading'");
-    expect(dashboard).toContain("id: 'learning-lab-progress-activity-heading'");
-    expect(dashboard).toContain("activityDays.map(function(day)");
+  it('uses local calendar dates rather than UTC slicing', () => {
+    expect(dashboard).toContain('function localIso(date)');
+    expect(dashboard).toContain("activityDate.setHours(12, 0, 0, 0)");
+    expect(dashboard).not.toContain("activityDate.toISOString().slice(0, 10)");
   });
 
-  it('uses a semantic heading and populated list for suggestions', () => {
-    expect(dashboard).toContain("'aria-labelledby': 'learning-lab-progress-suggestions-heading'");
-    expect(dashboard).toContain("id: 'learning-lab-progress-suggestions-heading'");
-    expect(dashboard).toContain("if (suggestions.length === 0) suggestions.push");
-    expect(dashboard).toContain("suggestions.map(function(suggestion, index)");
-  });
-
-  it('uses readable full labels instead of abbreviation-only names', () => {
-    expect(dashboard).toContain("'Sleep average, 7 days'");
-    expect(dashboard).toContain("'Executive function average'");
-    expect(dashboard).toContain("'Open brain dumps'");
+  it('updates the catalog to describe selected rather than every tool', () => {
+    expect(source).toContain("desc: 'Optional summary of selected personal tracker data'");
+    expect(source).toContain("'Neutral summary of selected personal tracker counts and 14-day saved activity.'");
+    expect(source).not.toContain('Single overview of every toolkit tool');
   });
 
   it('keeps the deployed mirror identical', () => {
