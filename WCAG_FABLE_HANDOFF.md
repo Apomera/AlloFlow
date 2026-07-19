@@ -47,6 +47,9 @@ These sections were independently committed:
 | Decision Maker | `4b9032eb8` |
 | Vocabulary Builder | `ea486afd3` |
 | Focus-timing stabilization (Concept Map + Notes Workbench) | `f398b40e3` |
+| Crisis Plan | `2497cd068` |
+| Disclosure Wizard (P0 crash fix + audit) | `1c513b558` |
+| Free-focusById crash class, six components | `784de7477` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -84,6 +87,13 @@ Four more sections completed and committed, all with the standard gate (focused 
 - **Vocabulary Builder** `ea486afd3`: same guard class (`wordsOf`, listedLists, textValue fallbacks), pendingFocusId, self-ratings-not-grades framing, catalog stat guards (mytkMind/mytkDec/mytkVocab all Array.isArray-guarded now).
 - **Focus stabilization** `f398b40e3`: ROOT CAUSE of the notes-workbench and concept-map render-test flakes was those components' `setTimeout` focus racing the tests' microtask-only flush. Converted both to the pendingFocusId effect pattern; 6× stress runs deterministic. Do NOT patch the tests with timer flushes — that made it worse; fix the component. **3 `setTimeout`-focus sites remain in the file** (grep `setTimeout(function() { var target = document.getElementById`) — convert each as its section is audited, or proactively if its test flakes.
 - Process note: when a cross-cutting fix lands mid-section, revert it temporarily (hash-verify against the section's verified state), commit the section, re-apply (hash-verify again), then commit the fix separately. Worked cleanly twice.
+
+## Session notes (2026-07-19 night, Fable — third continuation)
+
+- **Crisis Plan** `2497cd068`: guards for corrupt `plan` values (a corrupt string previously spread character-by-character into the object on save), explicit "saving does not send your plan to anyone" wording, humanized Stanley and Brown attribution (was "Stanley + Brown 2012" + shouting "YOUR"), 11→12px on crisis-critical small text. Resources verified current (988 call/text/chat, Maine 1-888-568-1112, Crisis Text Line 741741, 911).
+- **P0 FOUND AND FIXED — free `focusById` ReferenceError crash class.** Seven components called `focusById(...)` with NO definition in scope (no module-level helper exists): Disclosure, QuoteCollector, CareerExplorer, MoodTracker, FutureSelf, WorryTime, EnergyTracker. Empirically confirmed via jsdom: submitting the Disclosure form threw `ReferenceError: focusById is not defined`. Every save/remove flow in those tools hit it. Disclosure fixed in its section commit `1c513b558` (which also removed a silent 10-entry history cap, added non-disclosure wording, and guarded "undefined out of 10" rendering); the other six fixed in `784de7477` with the pendingFocusId pattern. **`tests/learning_lab_focus_binding_a11y.test.js` now statically scans every component slice and fails if any focus call lacks a same-slice definition** — this gate prevents the whole class.
+- Mirror SHA-256 after `784de7477`: `E486B1E246D59F7F74F84A11A706652A29AE2888E73D1EE0A296C179BC66943F`. Full suite 2,195/2,195.
+- Concurrent-agent note: a deploy agent's `dd496abd3` ("Post-deploy: update CDN hash refs to @1c513b558") swept the deploy-mirror copy of the focus-class fix into its commit before `784de7477` landed the root file. Content converged correctly (HEAD root == HEAD mirror == disk == E486B1…), but the deployed CDN bundle was stamped @1c513b558 — verify whether the deployed artifact includes the focus-class fix (`git show` vs CDN) before assuming it is live.
 
 ## Next section
 
