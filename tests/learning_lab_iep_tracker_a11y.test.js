@@ -5,84 +5,71 @@ import { describe, expect, it } from 'vitest';
 const root = process.cwd();
 const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
 
-describe('Learning Lab IEP Tracker accessibility', () => {
+describe('Learning Lab IEP planning notes accessibility', () => {
   const source = read('stem_lab/stem_tool_learning_lab.js');
   const start = source.indexOf('  function PersonalIEPTracker(props) {');
   const end = source.indexOf('  function PersonalSubjectMastery(props) {', start);
   const tracker = source.slice(start, end);
 
-  it('reports a missing annual goal inline and focuses its field', () => {
-    expect(tracker).toContain("setGoalError('Annual goal statement is required.')");
-    expect(tracker).toContain("document.getElementById('learning-lab-iep-annual-goal')");
-    expect(tracker).toContain("id: 'learning-lab-iep-goal-error', role: 'alert'");
-    expect(tracker).not.toContain("alert('Need an annual goal statement.')");
+  it('uses individualized, non-coercive participation and accurate scope language', () => {
+    expect(tracker).toContain('These are personal planning notes, not the official IEP.');
+    expect(tracker).toContain('Participation can be individualized.');
+    expect(tracker).toContain('There is no required level or pace of participation in this tool.');
+    expect(tracker).not.toContain('By high school you should');
+    expect(tracker).not.toContain('Your IEP. Your control.');
   });
 
-  it('associates the required annual goal and clears its error on input', () => {
-    expect(tracker).toContain("htmlFor: 'learning-lab-iep-annual-goal'");
-    expect(tracker).toContain("id: 'learning-lab-iep-annual-goal', 'data-ll-focusable': true, required: true");
-    expect(tracker).toContain("'aria-invalid': goalError ? 'true' : undefined");
-    expect(tracker).toContain("if (goalError) setGoalError('')");
+  it('explains sensitive-data boundaries without claiming automatic FERPA coverage', () => {
+    expect(tracker).toContain('This app does not automatically share or monitor these entries.');
+    expect(tracker).toContain('approved-app and privacy procedures');
+    expect(tracker).toContain('Avoid names, student IDs, and unnecessary details');
+    expect(tracker).not.toMatch(/FERPA protected|FERPA compliant/i);
   });
 
-  it('associates measurement and service fields with their labels', () => {
-    expect(tracker).toContain("htmlFor: 'learning-lab-iep-measurement'");
-    expect(tracker).toContain("id: 'learning-lab-iep-measurement', 'data-ll-focusable': true");
-    expect(tracker).toContain("htmlFor: 'learning-lab-iep-services'");
-    expect(tracker).toContain("id: 'learning-lab-iep-services', 'data-ll-focusable': true");
+  it('uses native forms, select, checkboxes, and conditional alerts', () => {
+    expect(tracker).toContain("hh('form', { id: 'learning-lab-iep-goal-form'");
+    expect(tracker).toContain("hh('form', { id: 'learning-lab-iep-meeting-form'");
+    expect(tracker).toContain("hh('select', { id: 'learning-lab-iep-area'");
+    expect(tracker).toContain("hh('input', { type: 'checkbox', checked: !!subgoal.done");
+    expect(tracker).not.toContain("role: 'checkbox'");
+    expect(tracker).toContain("goalError ? hh('div', { id: 'learning-lab-iep-goal-error', role: 'alert'");
   });
 
-  it('exposes the goal area as a named group with selected state', () => {
-    expect(tracker).toContain("role: 'group', 'aria-labelledby': 'learning-lab-iep-area-label'");
-    expect(tracker).toContain("'aria-pressed': goalForm.area === a.id ? 'true' : 'false'");
-    expect(tracker).toContain("minHeight: 44, padding: '6px 10px'");
+  it('bounds sensitive narrative fields and removes blank sub-goals before saving', () => {
+    expect(tracker.match(/maxLength: 4000/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(tracker).toContain('maxLength: 500');
+    expect(tracker).toContain("filter(function(s) { return s.text; })");
   });
 
-  it('provides named, focus-visible sub-goal form controls', () => {
-    expect(tracker).toContain("'aria-labelledby': 'learning-lab-iep-subgoals-label'");
-    expect(tracker).toContain("'aria-label': 'Sub-goal ' + (i + 1)");
-    expect(tracker).toContain("'aria-label': 'Remove sub-goal ' + (i + 1)");
-    expect(tracker).toContain("minWidth: 44, minHeight: 44");
+  it('provides semantic goal, progress, and meeting histories with robust dates', () => {
+    expect(tracker).toContain("'aria-label': 'Personal IEP goal notes'");
+    expect(tracker).toContain("'aria-labelledby': 'learning-lab-iep-progress-heading-' + goal.id");
+    expect(tracker).toContain("'aria-label': 'Personal IEP meeting notes'");
+    expect(tracker).toContain("hh('time', { dateTime: meeting.date }");
+    expect(tracker).toContain("hh('dl'");
   });
 
-  it('reports a missing meeting date inline and focuses its field', () => {
-    expect(tracker).toContain("setMeetingError('Meeting date is required.')");
-    expect(tracker).toContain("document.getElementById('learning-lab-iep-meeting-date')");
-    expect(tracker).toContain("id: 'learning-lab-iep-meeting-error', role: 'alert'");
-    expect(tracker).not.toContain("alert('Need a meeting date.')");
+  it('supports deletion of every sensitive record type', () => {
+    expect(tracker).toContain('async function removeGoal(id)');
+    expect(tracker).toContain('async function removeProgress(goalId, progressId, legacyEntry)');
+    expect(tracker).toContain('async function removeMeeting(id)');
+    expect(tracker).toContain("title: 'Delete progress entry?', confirmText: 'Delete entry'");
+    expect(tracker).toContain("title: 'Delete meeting note?', confirmText: 'Delete meeting note'");
   });
 
-  it('associates the meeting date and narrative fields', () => {
-    expect(tracker).toContain("htmlFor: 'learning-lab-iep-meeting-date'");
-    expect(tracker).toContain("id: 'learning-lab-iep-meeting-date', type: 'date'");
-    expect(tracker).toContain("htmlFor: 'learning-lab-iep-meeting-' + f.id");
-    expect(tracker).toContain("id: 'learning-lab-iep-meeting-' + f.id, 'data-ll-focusable': true");
-    expect(tracker).toContain("if (meetingError) setMeetingError('')");
+  it('restores focus after view changes, additions, saves, and deletions', () => {
+    expect(tracker).toContain('var pendingFocusRef = R.useRef(null);');
+    expect(tracker).toContain('R.useLayoutEffect(function()');
+    expect(tracker).toContain("requestFocus('learning-lab-iep-goal-editor-heading')");
+    expect(tracker).toContain("requestFocus('learning-lab-iep-meeting-editor-heading')");
+    expect(tracker).toContain("requestFocus('learning-lab-iep-add-subgoal')");
+    expect(tracker).toContain("requestFocus('learning-lab-iep-goals-heading')");
   });
 
-  it('provides named 44-pixel goal edit and delete actions', () => {
-    expect(tracker).toContain("'aria-label': 'Edit IEP goal: ' + g.annual");
-    expect(tracker).toContain("'aria-label': 'Delete IEP goal: ' + g.annual");
-    expect(tracker.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(4);
-  });
-
-  it('exposes sub-goal completion as checkbox state', () => {
-    expect(tracker).toContain("role: 'checkbox', 'aria-checked': sg.done ? 'true' : 'false'");
-    expect(tracker).toContain("'aria-label': (sg.done ? 'Mark sub-goal incomplete: ' : 'Mark sub-goal complete: ') + sg.text");
-  });
-
-  it('names progress controls and exposes the latest update as status', () => {
-    expect(tracker).toContain("'aria-label': 'Record progress for ' + g.annual");
-    expect(tracker).toContain("lastProgress ? hh('div', { role: 'status'");
-    expect(tracker.match(/minHeight: 44, padding: '4px 10px'/g)?.length).toBe(3);
-  });
-
-  it('confirms goal deletion and announces state-changing actions', () => {
-    expect(tracker).toContain("title: 'Delete this IEP goal?', confirmText: 'Delete goal'");
-    expect(tracker).not.toContain("confirm('Delete this IEP goal");
-    expect(tracker).toContain("llAnnounce('IEP goal saved.')");
-    expect(tracker).toContain("llAnnounce('IEP meeting log saved.')");
-    expect(tracker).toContain("llAnnounce('Goal progress updated: '");
+  it('preserves existing creation dates and sibling data during updates', () => {
+    expect(tracker).toContain('createdAt: existing && existing.createdAt ? existing.createdAt : todayISO()');
+    expect(tracker).toContain("setData(Object.assign({}, data, { goals: goals }))");
+    expect(tracker).toContain("setData(Object.assign({}, data, { meetings:");
   });
 
   it('keeps the deployed mirror identical', () => {

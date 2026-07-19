@@ -9422,250 +9422,342 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (!R) return null;
     var data = props.data || { goals: [], meetings: [] };
     var setData = props.setData;
+    var EMPTY_GOAL = { area: 'academic', annual: '', subgoals: [], measurable: '', services: '' };
+    var EMPTY_MEETING = { date: '', whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' };
     var vs = R.useState('list');                  var view = vs[0];   var setView = vs[1];
-    var fg = R.useState({ area: 'academic', annual: '', subgoals: [], measurable: '', services: '' });
-    var goalForm = fg[0];                          var setGoalForm = fg[1];
-    var ms = R.useState({ date: '', whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' });
-    var meetForm = ms[0];                          var setMeetForm = ms[1];
-    var es = R.useState(null);                     var editingGoal = es[0]; var setEditingGoal = es[1];
-    var ges = R.useState('');                       var goalError = ges[0]; var setGoalError = ges[1];
-    var mes = R.useState('');                       var meetingError = mes[0]; var setMeetingError = mes[1];
+    var fg = R.useState(EMPTY_GOAL);              var goalForm = fg[0]; var setGoalForm = fg[1];
+    var ms = R.useState(EMPTY_MEETING);           var meetForm = ms[0]; var setMeetForm = ms[1];
+    var es = R.useState(null);                    var editingGoal = es[0]; var setEditingGoal = es[1];
+    var ges = R.useState('');                     var goalError = ges[0]; var setGoalError = ges[1];
+    var mes = R.useState('');                     var meetingError = mes[0]; var setMeetingError = mes[1];
+    var pendingFocusRef = R.useRef(null);
 
     var AREAS = [
-      { id: 'academic', label: 'Academic', icon: '📚', color: '#3b82f6' },
-      { id: 'behavior', label: 'Behavior', icon: '🧩', color: '#ef4444' },
-      { id: 'social',   label: 'Social',   icon: '🤝', color: '#10b981' },
-      { id: 'communication', label: 'Communication', icon: '💬', color: '#fbbf24' },
-      { id: 'ef',       label: 'Executive function', icon: '🧠', color: '#a855f7' },
-      { id: 'sensory',  label: 'Sensory regulation', icon: '🎧', color: '#ec4899' },
-      { id: 'lifeskills', label: 'Life skills',  icon: '🏠', color: '#06b6d4' }
+      { id: 'academic', label: 'Academic', color: '#60a5fa' },
+      { id: 'behavior', label: 'Behavior or support', color: '#fca5a5' },
+      { id: 'social', label: 'Social', color: '#6ee7b7' },
+      { id: 'communication', label: 'Communication', color: '#fde68a' },
+      { id: 'ef', label: 'Executive function', color: '#d8b4fe' },
+      { id: 'sensory', label: 'Sensory access', color: '#f9a8d4' },
+      { id: 'lifeskills', label: 'Life skills', color: '#67e8f9' }
     ];
+    var PROGRESS_LABELS = {
+      'as-expected': 'Going as expected',
+      mixed: 'Mixed progress',
+      support: 'I want support',
+      'on-track': 'On track',
+      'some-progress': 'Some progress',
+      'need-help': 'Need help'
+    };
 
-    function saveGoal() {
+    function requestFocus(id) { pendingFocusRef.current = id; }
+    R.useLayoutEffect(function() {
+      var id = pendingFocusRef.current;
+      if (!id) return;
+      pendingFocusRef.current = null;
+      var node = document.getElementById(id);
+      if (node && typeof node.focus === 'function') node.focus();
+    });
+
+    function actionButton(label, onClick, kind, extra) {
+      var palette = kind === 'primary'
+        ? { background: '#0e7490', color: '#ffffff', border: '#22d3ee' }
+        : kind === 'danger'
+          ? { background: 'rgba(127,29,29,0.35)', color: '#fecaca', border: '#f87171' }
+          : { background: 'rgba(15,23,42,0.65)', color: '#e2e8f0', border: '#64748b' };
+      return hh('button', Object.assign({
+        type: 'button', onClick: onClick, 'data-ll-focusable': true,
+        style: Object.assign({ minWidth: 44, minHeight: 44, padding: '8px 14px', borderRadius: 8,
+          background: palette.background, color: palette.color, border: '1.5px solid ' + palette.border,
+          fontSize: 11, fontWeight: 800, cursor: 'pointer' }, extra && extra.style)
+      }, extra && extra.props), label);
+    }
+
+    function goalDraft(goal) {
+      return goal ? { area: goal.area || 'academic', annual: goal.annual || '', subgoals: (goal.subgoals || []).map(function(s) { return Object.assign({}, s); }), measurable: goal.measurable || '', services: goal.services || '' } : EMPTY_GOAL;
+    }
+    function goalChanged() {
+      var existing = (data.goals || []).filter(function(g) { return g.id === editingGoal; })[0];
+      return JSON.stringify(goalForm) !== JSON.stringify(goalDraft(existing));
+    }
+    function meetingChanged() { return JSON.stringify(meetForm) !== JSON.stringify(Object.assign({}, EMPTY_MEETING, { date: todayISO() })); }
+    function openNewGoal() {
+      setGoalError(''); setGoalForm(EMPTY_GOAL); setEditingGoal(null); requestFocus('learning-lab-iep-goal-editor-heading'); setView('newGoal');
+    }
+    function openEditGoal(goal) {
+      setGoalError(''); setEditingGoal(goal.id); setGoalForm(goalDraft(goal)); requestFocus('learning-lab-iep-goal-editor-heading'); setView('newGoal');
+    }
+    function openMeeting() {
+      setMeetingError(''); setMeetForm(Object.assign({}, EMPTY_MEETING, { date: todayISO() })); requestFocus('learning-lab-iep-meeting-editor-heading'); setView('newMeeting');
+    }
+    async function cancelGoal() {
+      if (goalChanged() && !(await askLearningLabConfirmation('Your changes have not been saved.', { title: 'Discard goal changes?', confirmText: 'Discard changes' }))) return;
+      setGoalError(''); setEditingGoal(null); requestFocus('learning-lab-iep-dashboard-heading'); setView('list');
+    }
+    async function cancelMeeting() {
+      if (meetingChanged() && !(await askLearningLabConfirmation('Your meeting notes have not been saved.', { title: 'Discard meeting notes?', confirmText: 'Discard changes' }))) return;
+      setMeetingError(''); requestFocus('learning-lab-iep-dashboard-heading'); setView('list');
+    }
+
+    function saveGoal(event) {
+      if (event) event.preventDefault();
       if (!goalForm.annual.trim()) {
         setGoalError('Annual goal statement is required.');
-        setTimeout(function() { var field = document.getElementById('learning-lab-iep-annual-goal'); if (field) field.focus(); }, 0);
+        requestFocus('learning-lab-iep-annual-goal');
         return;
       }
       var id = editingGoal || tkId();
-      var goal = Object.assign({ id: id, createdAt: todayISO(), progress: [] }, goalForm, { annual: goalForm.annual.trim() });
       var goals = (data.goals || []).slice();
-      var i = goals.findIndex(function(g) { return g.id === id; });
-      if (i >= 0) goals[i] = Object.assign({}, goals[i], goal);
-      else goals.unshift(goal);
+      var index = goals.findIndex(function(g) { return g.id === id; });
+      var existing = index >= 0 ? goals[index] : null;
+      var normalizedSubgoals = (goalForm.subgoals || []).map(function(s) {
+        return Object.assign({}, s, { text: (s.text || '').trim() });
+      }).filter(function(s) { return s.text; });
+      var goal = Object.assign({}, existing || {}, {
+        id: id, area: goalForm.area, annual: goalForm.annual.trim(), subgoals: normalizedSubgoals,
+        measurable: goalForm.measurable.trim(), services: goalForm.services.trim(),
+        createdAt: existing && existing.createdAt ? existing.createdAt : todayISO(),
+        progress: existing && existing.progress ? existing.progress : [], updatedAt: Date.now()
+      });
+      if (index >= 0) goals[index] = goal; else goals.unshift(goal);
       setData(Object.assign({}, data, { goals: goals }));
-      setGoalForm({ area: 'academic', annual: '', subgoals: [], measurable: '', services: '' });
-      setEditingGoal(null);
-      setGoalError('');
-      setView('list');
-      llAnnounce('IEP goal saved.');
+      setGoalForm(EMPTY_GOAL); setEditingGoal(null); setGoalError(''); requestFocus('learning-lab-iep-goals-heading'); setView('list');
+      llAnnounce('Personal IEP goal note saved. This did not change the official IEP.');
     }
     async function removeGoal(id) {
       var goal = (data.goals || []).filter(function(g) { return g.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This removes' + (goal ? ' "' + goal.annual + '"' : ' this goal') + ' from your personal tracker. It does not affect the official IEP.', {
-        title: 'Delete this IEP goal?', confirmText: 'Delete goal'
-      }))) return;
-      setData(Object.assign({}, data, { goals: (data.goals || []).filter(function(g) { return g.id !== id; }) }));
-      llAnnounce('IEP goal deleted from your personal tracker.');
+      if (!(await askLearningLabConfirmation('This removes' + (goal ? ' "' + goal.annual + '"' : ' this goal') + ' and its progress history from this personal tracker. It does not affect the official IEP.', { title: 'Delete this goal note?', confirmText: 'Delete goal note' }))) return;
+      var remaining = (data.goals || []).filter(function(g) { return g.id !== id; });
+      setData(Object.assign({}, data, { goals: remaining }));
+      requestFocus(remaining.length ? 'learning-lab-iep-goals-heading' : 'learning-lab-new-iep-goal');
+      llAnnounce('Personal goal note and its progress history deleted.');
     }
-    function recordProgress(goalId, status, note) {
-      var goals = (data.goals || []).map(function(g) {
-        if (g.id !== goalId) return g;
-        return Object.assign({}, g, { progress: (g.progress || []).concat([{ date: todayISO(), status: status, note: note }]) });
-      });
-      setData(Object.assign({}, data, { goals: goals }));
-      llAnnounce('Goal progress updated: ' + status.replace(/-/g, ' ') + '.');
+    function toggleSubgoal(goalId, subgoalId) {
+      setData(Object.assign({}, data, { goals: (data.goals || []).map(function(goal) {
+        if (goal.id !== goalId) return goal;
+        return Object.assign({}, goal, { subgoals: (goal.subgoals || []).map(function(subgoal) {
+          return subgoal.id === subgoalId ? Object.assign({}, subgoal, { done: !subgoal.done }) : subgoal;
+        }) });
+      }) }));
     }
-    function saveMeeting() {
-      if (!meetForm.date) {
-        setMeetingError('Meeting date is required.');
-        setTimeout(function() { var field = document.getElementById('learning-lab-iep-meeting-date'); if (field) field.focus(); }, 0);
-        return;
-      }
-      var meeting = Object.assign({ id: tkId() }, meetForm);
+    function recordProgress(goalId, status) {
+      var entry = { id: tkId(), date: todayISO(), time: Date.now(), status: status, note: '' };
+      setData(Object.assign({}, data, { goals: (data.goals || []).map(function(goal) {
+        return goal.id === goalId ? Object.assign({}, goal, { progress: (goal.progress || []).concat([entry]) }) : goal;
+      }) }));
+      requestFocus('learning-lab-iep-progress-heading-' + goalId);
+      llAnnounce('Personal progress note added: ' + PROGRESS_LABELS[status] + '.');
+    }
+    async function removeProgress(goalId, progressId, legacyEntry) {
+      if (!(await askLearningLabConfirmation('This removes this progress entry from your personal tracker.', { title: 'Delete progress entry?', confirmText: 'Delete entry' }))) return;
+      setData(Object.assign({}, data, { goals: (data.goals || []).map(function(goal) {
+        return goal.id === goalId ? Object.assign({}, goal, { progress: (goal.progress || []).filter(function(entry) { return progressId ? entry.id !== progressId : entry !== legacyEntry; }) }) : goal;
+      }) }));
+      requestFocus('learning-lab-iep-progress-heading-' + goalId);
+      llAnnounce('Personal progress entry deleted.');
+    }
+    function saveMeeting(event) {
+      if (event) event.preventDefault();
+      if (!meetForm.date) { setMeetingError('Meeting date is required.'); requestFocus('learning-lab-iep-meeting-date'); return; }
+      var meeting = Object.assign({ id: tkId(), createdAt: Date.now() }, meetForm);
       setData(Object.assign({}, data, { meetings: [meeting].concat(data.meetings || []) }));
-      setMeetForm({ date: '', whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' });
-      setMeetingError('');
-      setView('list');
-      llAnnounce('IEP meeting log saved.');
+      setMeetForm(EMPTY_MEETING); setMeetingError(''); requestFocus('learning-lab-iep-meetings-heading'); setView('list');
+      llAnnounce('Personal meeting note saved. This did not change or notify the official IEP team.');
     }
-
+    async function removeMeeting(id) {
+      if (!(await askLearningLabConfirmation('This removes the meeting note from this personal tracker only.', { title: 'Delete meeting note?', confirmText: 'Delete meeting note' }))) return;
+      var remaining = (data.meetings || []).filter(function(m) { return m.id !== id; });
+      setData(Object.assign({}, data, { meetings: remaining }));
+      requestFocus(remaining.length ? 'learning-lab-iep-meetings-heading' : 'learning-lab-new-iep-meeting');
+      llAnnounce('Personal meeting note deleted.');
+    }
+    function progressDateTime(entry) {
+      if (entry && entry.time) {
+        var parsed = new Date(entry.time);
+        if (!isNaN(parsed.getTime())) return parsed.toISOString();
+      }
+      return entry && /^\d{4}-\d{2}-\d{2}$/.test(entry.date || '') ? entry.date : undefined;
+    }
     function addSubgoal() {
-      setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).concat([{ id: tkId(), text: '', done: false }]) }));
+      var id = tkId();
+      setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).concat([{ id: id, text: '', done: false }]) }));
+      requestFocus('learning-lab-iep-subgoal-' + id);
     }
-    function updateSubgoal(i, patch) {
-      var sg = (goalForm.subgoals || []).slice();
-      sg[i] = Object.assign({}, sg[i], patch);
-      setGoalForm(Object.assign({}, goalForm, { subgoals: sg }));
+    function updateSubgoal(index, patch) {
+      var subgoals = (goalForm.subgoals || []).slice(); subgoals[index] = Object.assign({}, subgoals[index], patch);
+      setGoalForm(Object.assign({}, goalForm, { subgoals: subgoals }));
     }
-    function removeSubgoal(i) {
-      setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).filter(function(_, j) { return j !== i; }) }));
+    function removeSubgoal(index) {
+      setGoalForm(Object.assign({}, goalForm, { subgoals: (goalForm.subgoals || []).filter(function(_, i) { return i !== index; }) }));
+      requestFocus('learning-lab-iep-add-subgoal');
+      llAnnounce('Sub-goal field removed.');
     }
 
     var goals = data.goals || [];
     var meetings = data.meetings || [];
+    var wrapText = { overflowWrap: 'anywhere', wordBreak: 'break-word' };
 
     if (view === 'newGoal') {
-      var area = AREAS.filter(function(a) { return a.id === goalForm.area; })[0];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🎓', editingGoal ? 'Edit IEP goal' : 'New IEP goal', 'Track your IEP goals YOUR way. This is your copy.', '#06b6d4'),
-        tkCard('#06b6d4',
-          hh('div', null,
-            hh('div', { id: 'learning-lab-iep-area-label', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4 } }, 'Goal area'),
-            hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-iep-area-label', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
-              AREAS.map(function(a) {
-                return hh('button', { key: 'ar-' + a.id, type: 'button', 'aria-pressed': goalForm.area === a.id ? 'true' : 'false',
-                  onClick: function() { setGoalForm(Object.assign({}, goalForm, { area: a.id })); }, 'data-ll-focusable': true,
-                  style: { minHeight: 44, padding: '6px 10px', borderRadius: 6, background: goalForm.area === a.id ? a.color + '30' : 'rgba(15,23,42,0.5)', color: goalForm.area === a.id ? a.color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid ' + (goalForm.area === a.id ? a.color : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                }, a.icon + ' ' + a.label);
-              })
+        tkSectionHeader('\uD83C\uDF93', editingGoal ? 'Edit personal goal note' : 'New personal goal note', 'Copy only what is useful. Saving here does not change the official IEP.', '#06b6d4', 'learning-lab-iep-goal-editor-heading'),
+        hh('form', { id: 'learning-lab-iep-goal-form', 'aria-labelledby': 'learning-lab-iep-goal-editor-heading', noValidate: true, onSubmit: saveGoal },
+          tkCard('#06b6d4', hh('div', null,
+            hh('label', { htmlFor: 'learning-lab-iep-area', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', display: 'block', marginBottom: 4 } }, 'Goal area'),
+            hh('select', { id: 'learning-lab-iep-area', value: goalForm.area, onChange: function(e) { setGoalForm(Object.assign({}, goalForm, { area: e.target.value })); }, 'data-ll-focusable': true,
+              style: { width: '100%', minHeight: 44, padding: '8px 10px', marginBottom: 14, borderRadius: 6, color: '#e2e8f0', background: '#0f172a', border: '1px solid #64748b' }
+            }, AREAS.map(function(area) { return hh('option', { key: area.id, value: area.id }, area.label); })),
+            hh('label', { htmlFor: 'learning-lab-iep-annual-goal', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', display: 'block', marginBottom: 4 } }, 'Annual goal statement (required)'),
+            tkTextarea(goalForm.annual, function(value) { setGoalForm(Object.assign({}, goalForm, { annual: value })); if (goalError) setGoalError(''); }, 'Enter the goal wording you want in your personal notes.', 4, { id: 'learning-lab-iep-annual-goal', required: true, maxLength: 4000, 'aria-invalid': goalError ? 'true' : undefined, 'aria-describedby': goalError ? 'learning-lab-iep-goal-error learning-lab-iep-goal-limit' : 'learning-lab-iep-goal-limit', marginBottom: 4, minHeight: 96 }),
+            goalError ? hh('div', { id: 'learning-lab-iep-goal-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: 4 } }, goalError) : null,
+            hh('div', { id: 'learning-lab-iep-goal-limit', style: { fontSize: 10, color: '#cbd5e1', marginBottom: 12 } }, 'Up to 4,000 characters.'),
+            hh('label', { htmlFor: 'learning-lab-iep-measurement', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', display: 'block', marginBottom: 4 } }, 'How progress is measured (optional)'),
+            tkTextarea(goalForm.measurable, function(value) { setGoalForm(Object.assign({}, goalForm, { measurable: value })); }, '', 3, { id: 'learning-lab-iep-measurement', maxLength: 4000, 'aria-describedby': 'learning-lab-iep-measurement-limit', marginBottom: 4, minHeight: 72 }),
+            hh('div', { id: 'learning-lab-iep-measurement-limit', style: { fontSize: 10, color: '#cbd5e1', marginBottom: 12 } }, 'Up to 4,000 characters.'),
+            hh('label', { htmlFor: 'learning-lab-iep-services', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', display: 'block', marginBottom: 4 } }, 'Services or supports in your notes (optional)'),
+            tkTextarea(goalForm.services, function(value) { setGoalForm(Object.assign({}, goalForm, { services: value })); }, '', 3, { id: 'learning-lab-iep-services', maxLength: 4000, 'aria-describedby': 'learning-lab-iep-services-limit', marginBottom: 4, minHeight: 72 }),
+            hh('div', { id: 'learning-lab-iep-services-limit', style: { fontSize: 10, color: '#cbd5e1', marginBottom: 12 } }, 'Up to 4,000 characters.'),
+            hh('h3', { id: 'learning-lab-iep-subgoals-heading', tabIndex: -1, style: { fontSize: 12, color: '#a5f3fc', margin: '0 0 6px' } }, 'Optional sub-goals'),
+            hh('ul', { 'aria-labelledby': 'learning-lab-iep-subgoals-heading', style: { listStyle: 'none', padding: 0, margin: '0 0 8px', display: 'flex', flexDirection: 'column', gap: 6 } },
+              (goalForm.subgoals || []).map(function(subgoal, index) { return hh('li', { key: subgoal.id, style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                hh('label', { htmlFor: 'learning-lab-iep-subgoal-' + subgoal.id, style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' } }, 'Sub-goal ' + (index + 1)),
+                tkInput(subgoal.text, function(value) { updateSubgoal(index, { text: value }); }, 'Sub-goal ' + (index + 1), { id: 'learning-lab-iep-subgoal-' + subgoal.id, maxLength: 500, 'aria-label': 'Sub-goal ' + (index + 1), flex: 1 }),
+                actionButton('Remove', function() { removeSubgoal(index); }, 'secondary', { props: { 'aria-label': 'Remove sub-goal ' + (index + 1) } })
+              ); })
             ),
-            hh('label', { htmlFor: 'learning-lab-iep-annual-goal', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🎯 Annual goal (as written on the IEP) (required)'),
-            tkTextarea(goalForm.annual, function(v) { setGoalForm(Object.assign({}, goalForm, { annual: v })); if (goalError) setGoalError(''); }, 'e.g., "By end of school year, will complete written assignments with appropriate organization, demonstrating 4 of 5 elements (intro, supporting paragraphs, conclusion, transitions, mechanics) in 4/5 trials with 1 verbal prompt."', 4, { id: 'learning-lab-iep-annual-goal', 'data-ll-focusable': true, required: true, 'aria-invalid': goalError ? 'true' : undefined, 'aria-describedby': goalError ? 'learning-lab-iep-goal-error' : undefined, marginBottom: goalError ? 4 : 12, minHeight: 96 }),
-            hh('div', { id: 'learning-lab-iep-goal-error', role: 'alert', style: { minHeight: goalError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: goalError ? 8 : 0 } }, goalError),
-
-            hh('label', { htmlFor: 'learning-lab-iep-measurement', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '📊 How will progress be measured?'),
-            tkTextarea(goalForm.measurable, function(v) { setGoalForm(Object.assign({}, goalForm, { measurable: v })); }, 'e.g., "Quarterly writing samples scored on rubric. Reported on progress report each marking period."', 2, { id: 'learning-lab-iep-measurement', 'data-ll-focusable': true, marginBottom: 12, minHeight: 64 }),
-
-            hh('label', { htmlFor: 'learning-lab-iep-services', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, '🛠 Services + supports involved'),
-            tkTextarea(goalForm.services, function(v) { setGoalForm(Object.assign({}, goalForm, { services: v })); }, 'e.g., "Resource room 30 min/week. Speech-language consult 1x/month. Accommodations: extended time, graphic organizer."', 2, { id: 'learning-lab-iep-services', 'data-ll-focusable': true, marginBottom: 12, minHeight: 64 }),
-
-            hh('div', { id: 'learning-lab-iep-subgoals-label', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 6 } }, '✂ My sub-goals (what I\'ll do in chunks)'),
-            hh('div', { role: 'group', 'aria-labelledby': 'learning-lab-iep-subgoals-label', style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 } },
-              (goalForm.subgoals || []).map(function(sg, i) {
-                return hh('div', { key: 'sg-' + sg.id, style: { display: 'flex', gap: 6, alignItems: 'center', padding: 6, borderRadius: 6, background: 'rgba(2,6,23,0.4)', borderLeft: '2px solid #06b6d4' } },
-                  hh('span', { style: { fontSize: 11, color: '#67e8f9', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 20 } }, (i + 1) + '.'),
-                  tkInput(sg.text, function(v) { updateSubgoal(i, { text: v }); }, 'sub-goal step', { id: 'learning-lab-iep-subgoal-' + sg.id, 'data-ll-focusable': true, 'aria-label': 'Sub-goal ' + (i + 1), flex: 1, fontSize: 11, minHeight: 44 }),
-                  hh('button', { type: 'button', 'aria-label': 'Remove sub-goal ' + (i + 1), onClick: function() { removeSubgoal(i); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer', padding: 8 } }, '✕')
-                );
-              })
-            ),
-            tkBtn('+ Add sub-goal', addSubgoal, 'secondary', { minHeight: 44, fontSize: 10, padding: '6px 12px' })
+            actionButton('+ Add sub-goal', addSubgoal, 'secondary', { props: { id: 'learning-lab-iep-add-subgoal' } })
+          )),
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+            actionButton('Cancel', cancelGoal, 'secondary'),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: '8px 16px', borderRadius: 8, background: '#0e7490', color: '#fff', border: '1.5px solid #22d3ee', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Save personal goal note')
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setGoalError(''); setView('list'); setEditingGoal(null); }, 'ghost', { minHeight: 44 }),
-          tkBtn('💾 Save IEP goal', saveGoal, 'primary', { minHeight: 44 })
         )
       );
     }
 
     if (view === 'newMeeting') {
+      var meetingFields = [
+        { id: 'whatChanged', label: 'What was discussed or changed?' },
+        { id: 'myInput', label: 'What did I share, ask, or choose not to discuss?' },
+        { id: 'whatWorked', label: 'What has been working?' },
+        { id: 'whatToTry', label: 'What might be tried next?' }
+      ];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('📅', 'IEP meeting log', 'Capture what happened, what I said, what changed.', '#06b6d4'),
-        tkCard('#06b6d4',
-          hh('div', null,
-            hh('label', { htmlFor: 'learning-lab-iep-meeting-date', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Meeting date (required)'),
-            hh('input', { id: 'learning-lab-iep-meeting-date', type: 'date', value: meetForm.date, 'data-ll-focusable': true, required: true, 'aria-invalid': meetingError ? 'true' : undefined, 'aria-describedby': meetingError ? 'learning-lab-iep-meeting-error' : undefined,
+        tkSectionHeader('\uD83D\uDCC5', 'Personal meeting note', 'A private preparation or memory aid, not an official meeting record.', '#06b6d4', 'learning-lab-iep-meeting-editor-heading'),
+        hh('form', { id: 'learning-lab-iep-meeting-form', 'aria-labelledby': 'learning-lab-iep-meeting-editor-heading', noValidate: true, onSubmit: saveMeeting },
+          tkCard('#06b6d4', hh('div', null,
+            hh('label', { htmlFor: 'learning-lab-iep-meeting-date', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', display: 'block', marginBottom: 4 } }, 'Meeting date (required)'),
+            hh('input', { id: 'learning-lab-iep-meeting-date', type: 'date', value: meetForm.date, required: true, 'data-ll-focusable': true, 'aria-invalid': meetingError ? 'true' : undefined, 'aria-describedby': meetingError ? 'learning-lab-iep-meeting-error' : undefined,
               onChange: function(e) { setMeetForm(Object.assign({}, meetForm, { date: e.target.value })); if (meetingError) setMeetingError(''); },
-              style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, boxSizing: 'border-box', marginBottom: meetingError ? 4 : 14 }
+              style: { width: '100%', minHeight: 44, padding: '10px 12px', fontSize: 12, color: '#e2e8f0', background: '#0f172a', border: '1px solid #64748b', borderRadius: 6, boxSizing: 'border-box', marginBottom: meetingError ? 4 : 14 }
             }),
-            hh('div', { id: 'learning-lab-iep-meeting-error', role: 'alert', style: { minHeight: meetingError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: meetingError ? 8 : 0 } }, meetingError),
-            [
-              { id: 'whatChanged', label: '📝 What changed in my IEP at this meeting?' },
-              { id: 'myInput', label: '🗣 What did I say or ask for?' },
-              { id: 'whatWorked', label: '✅ What\'s been working since last meeting?' },
-              { id: 'whatToTry', label: '🎯 What we agreed to try next' }
-            ].map(function(f) {
-              return hh('div', { key: 'mf-' + f.id, style: { marginBottom: 10 } },
-                hh('label', { htmlFor: 'learning-lab-iep-meeting-' + f.id, style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, f.label),
-                tkTextarea(meetForm[f.id], function(v) { setMeetForm(Object.assign({}, meetForm, (function() { var o = {}; o[f.id] = v; return o; })())); }, '', 3, { id: 'learning-lab-iep-meeting-' + f.id, 'data-ll-focusable': true, minHeight: 72 })
-              );
-            })
+            meetingError ? hh('div', { id: 'learning-lab-iep-meeting-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 700, marginBottom: 8 } }, meetingError) : null,
+            meetingFields.map(function(field) { return hh('div', { key: field.id, style: { marginBottom: 12 } },
+              hh('label', { htmlFor: 'learning-lab-iep-meeting-' + field.id, style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', display: 'block', marginBottom: 4 } }, field.label),
+              tkTextarea(meetForm[field.id], function(value) { var patch = {}; patch[field.id] = value; setMeetForm(Object.assign({}, meetForm, patch)); }, '', 3, { id: 'learning-lab-iep-meeting-' + field.id, maxLength: 4000, 'aria-describedby': 'learning-lab-iep-meeting-' + field.id + '-limit', minHeight: 72, marginBottom: 4 }),
+              hh('div', { id: 'learning-lab-iep-meeting-' + field.id + '-limit', style: { fontSize: 10, color: '#cbd5e1' } }, 'Up to 4,000 characters.')
+            ); })
+          )),
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+            actionButton('Cancel', cancelMeeting, 'secondary'),
+            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: '8px 16px', borderRadius: 8, background: '#0e7490', color: '#fff', border: '1.5px solid #22d3ee', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Save personal meeting note')
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setMeetingError(''); setView('list'); }, 'ghost', { minHeight: 44 }),
-          tkBtn('💾 Save meeting log', saveMeeting, 'primary', { minHeight: 44 })
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🎓', 'My IEP Tracker', 'YOUR copy of your IEP goals + meeting log. Build self-advocacy by knowing your own plan.', '#06b6d4'),
-
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 14 } },
-        hh('strong', { style: { color: '#06b6d4' } }, '🛡 Your IEP. Your control. '),
-        'This is YOUR copy of your IEP goals — not the official document. Use it to track YOUR progress, what worked, what didn\'t, and prep for meetings. By high school you should be able to lead parts of your own IEP meeting. This tool helps you build that skill.'
+      tkSectionHeader('\uD83C\uDF93', 'My IEP planning notes', 'Optional personal notes for reviewing goals and preparing for conversations.', '#06b6d4', 'learning-lab-iep-dashboard-heading'),
+      hh('section', { id: 'learning-lab-iep-guidance', 'aria-labelledby': 'learning-lab-iep-guidance-heading', style: { padding: 12, borderRadius: 8, background: 'rgba(6,182,212,0.10)', border: '1px solid rgba(34,211,238,0.50)', fontSize: 11, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 14 } },
+        hh('h3', { id: 'learning-lab-iep-guidance-heading', style: { margin: '0 0 6px', color: '#a5f3fc', fontSize: 12 } }, 'Scope, choice, and privacy'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'These are personal planning notes, not the official IEP. Entries here do not change the official document, notify an IEP team, request a service, or confirm that a change was approved. Use your school\'s process for official questions, requests, or changes.'),
+        hh('p', { style: { margin: '0 0 6px' } }, 'Participation can be individualized. It may mean attending, sharing preferences or interests, choosing how to contribute, asking for support, or deciding not to lead a discussion. There is no required level or pace of participation in this tool.'),
+        hh('p', { style: { margin: 0 } }, 'IEP goals, services, and meeting notes can identify a student. This app does not automatically share or monitor these entries. Avoid names, student IDs, and unnecessary details on shared or unapproved devices. When using a school-managed device or account, follow the school or district\'s approved-app and privacy procedures.')
       ),
-
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14, flexWrap: 'wrap' } },
-        tkBtn('+ New IEP goal', function() { setGoalError(''); setGoalForm({ area: 'academic', annual: '', subgoals: [], measurable: '', services: '' }); setEditingGoal(null); setView('newGoal'); }, 'primary', { minHeight: 44 }),
-        tkBtn('+ Log a meeting', function() { setMeetingError(''); setMeetForm({ date: todayISO(), whatChanged: '', myInput: '', whatWorked: '', whatToTry: '' }); setView('newMeeting'); }, 'secondary', { minHeight: 44 })
+        actionButton('+ New personal goal note', openNewGoal, 'primary', { props: { id: 'learning-lab-new-iep-goal' } }),
+        actionButton('+ New personal meeting note', openMeeting, 'secondary', { props: { id: 'learning-lab-new-iep-meeting' } })
       ),
-
-      // Goals
-      goals.length === 0 ? tkEmptyState('🎓', 'No IEP goals tracked yet. Add your goals from your IEP — this becomes your reference + self-advocacy tool.', null, null)
-      : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-          goals.map(function(g) {
-            var area = AREAS.filter(function(a) { return a.id === g.area; })[0] || AREAS[0];
-            var doneSubgoals = (g.subgoals || []).filter(function(s) { return s.done; }).length;
-            var totalSubgoals = (g.subgoals || []).length;
-            var lastProgress = (g.progress || []).slice(-1)[0];
-            return hh('article', { key: 'g-' + g.id, 'aria-label': area.label + ' IEP goal: ' + g.annual, style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, ' + area.color + '15, rgba(15,23,42,0.7))', border: '1px solid ' + area.color + '40', borderLeft: '4px solid ' + area.color } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
-                hh('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  hh('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, area.icon),
-                  hh('strong', { style: { fontSize: 12, color: area.color, textTransform: 'uppercase', letterSpacing: '0.06em' } }, area.label)
+      hh('section', { 'aria-labelledby': 'learning-lab-iep-goals-heading', style: { marginBottom: 16 } },
+        hh('h3', { id: 'learning-lab-iep-goals-heading', tabIndex: -1, style: { fontSize: 13, color: '#a5f3fc', margin: '0 0 8px' } }, 'Personal goal notes'),
+        goals.length === 0 ? tkEmptyState('\uD83C\uDF93', 'No personal goal notes yet. Add only information that is useful and appropriate for this device.', null, null)
+        : hh('ul', { 'aria-label': 'Personal IEP goal notes', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
+          goals.map(function(goal) {
+            var area = AREAS.filter(function(candidate) { return candidate.id === goal.area; })[0] || AREAS[0];
+            var completed = (goal.subgoals || []).filter(function(subgoal) { return subgoal.done; }).length;
+            return hh('li', { key: goal.id }, hh('article', { 'aria-labelledby': 'learning-lab-iep-goal-heading-' + goal.id, style: { padding: 12, borderRadius: 12, background: 'rgba(15,23,42,0.75)', border: '1px solid #64748b', borderLeft: '4px solid ' + area.color } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
+                hh('div', null,
+                  hh('div', { style: { fontSize: 11, color: area.color, fontWeight: 800 } }, area.label),
+                  hh('h4', { id: 'learning-lab-iep-goal-heading-' + goal.id, tabIndex: -1, style: Object.assign({ margin: '4px 0 8px', fontSize: 13, color: '#f8fafc', lineHeight: 1.5 }, wrapText) }, goal.annual)
                 ),
-                hh('div', { style: { display: 'flex', gap: 4 } },
-                  hh('button', { type: 'button', 'aria-label': 'Edit IEP goal: ' + g.annual, onClick: function() { setEditingGoal(g.id); setGoalForm({ area: g.area, annual: g.annual, subgoals: g.subgoals || [], measurable: g.measurable || '', services: g.services || '' }); setView('newGoal'); },
-                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: area.color, fontSize: 14, cursor: 'pointer', padding: 8 } }, '✏'),
-                  hh('button', { type: 'button', 'aria-label': 'Delete IEP goal: ' + g.annual, onClick: function() { removeGoal(g.id); },
-                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer', padding: 8 } }, '✕')
+                hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                  actionButton('Edit', function() { openEditGoal(goal); }, 'secondary', { props: { 'aria-label': 'Edit personal goal note: ' + goal.annual } }),
+                  actionButton('Delete', function() { removeGoal(goal.id); }, 'danger', { props: { 'aria-label': 'Delete personal goal note: ' + goal.annual } })
                 )
               ),
-              hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 8 } }, g.annual),
-              g.subgoals && g.subgoals.length > 0 ? hh('div', { style: { marginBottom: 8 } },
-                hh('div', { style: { fontSize: 10, fontWeight: 700, color: area.color, marginBottom: 4 } }, '✂ Sub-goals (' + doneSubgoals + '/' + totalSubgoals + ')'),
-                hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
-                  g.subgoals.map(function(sg) {
-                    return hh('div', { key: 'gs-' + sg.id, style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 8px', borderRadius: 4, background: 'rgba(2,6,23,0.4)' } },
-                      hh('button', { type: 'button', role: 'checkbox', 'aria-checked': sg.done ? 'true' : 'false', 'aria-label': (sg.done ? 'Mark sub-goal incomplete: ' : 'Mark sub-goal complete: ') + sg.text, onClick: function() {
-                          setData(Object.assign({}, data, { goals: goals.map(function(gg) {
-                            if (gg.id !== g.id) return gg;
-                            return Object.assign({}, gg, { subgoals: gg.subgoals.map(function(s) { return s.id === sg.id ? Object.assign({}, s, { done: !s.done }) : s; }) });
-                          }) }));
-                        },
-                        style: { minWidth: 44, minHeight: 44, borderRadius: 6, border: '1.5px solid ' + area.color, background: sg.done ? area.color : 'transparent', color: '#0f172a', fontSize: 10, fontWeight: 900, cursor: 'pointer', flexShrink: 0 }
-                      }, sg.done ? '✓' : ''),
-                      hh('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', textDecoration: sg.done ? 'line-through' : 'none', opacity: sg.done ? 0.6 : 1 } }, sg.text)
-                    );
-                  })
-                )
+              goal.subgoals && goal.subgoals.length ? hh('section', { 'aria-labelledby': 'learning-lab-iep-subgoal-list-heading-' + goal.id, style: { marginBottom: 8 } },
+                hh('h5', { id: 'learning-lab-iep-subgoal-list-heading-' + goal.id, style: { margin: '0 0 4px', fontSize: 11, color: area.color } }, 'Sub-goals: ' + completed + ' of ' + goal.subgoals.length + ' marked complete'),
+                hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } }, goal.subgoals.map(function(subgoal) {
+                  return hh('li', { key: subgoal.id, style: { display: 'flex', gap: 8, alignItems: 'center' } },
+                    hh('input', { type: 'checkbox', checked: !!subgoal.done, onChange: function() { toggleSubgoal(goal.id, subgoal.id); }, 'aria-label': (subgoal.done ? 'Mark incomplete: ' : 'Mark complete: ') + subgoal.text, 'data-ll-focusable': true,
+                      style: { width: 44, height: 44, margin: 0, accentColor: '#0891b2', flexShrink: 0, cursor: 'pointer' } }),
+                    hh('span', { style: Object.assign({ fontSize: 11, color: '#e2e8f0', textDecoration: subgoal.done ? 'line-through' : 'none' }, wrapText) }, subgoal.text)
+                  );
+                }))
               ) : null,
-              g.measurable ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 4 } }, '📊 ' + g.measurable) : null,
-              g.services ? hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '🛠 ' + g.services) : null,
-              hh('div', { role: 'group', 'aria-label': 'Record progress for ' + g.annual, style: { display: 'flex', justifyContent: 'flex-end', gap: 4, marginTop: 8, flexWrap: 'wrap' } },
-                tkBtn('🟢 On track', function() { recordProgress(g.id, 'on-track', ''); }, 'good', { minHeight: 44, padding: '4px 10px', fontSize: 10 }),
-                tkBtn('🟡 Some progress', function() { recordProgress(g.id, 'some-progress', ''); }, 'warn', { minHeight: 44, padding: '4px 10px', fontSize: 10 }),
-                tkBtn('🔴 Need help', function() { recordProgress(g.id, 'need-help', ''); }, 'bad', { minHeight: 44, padding: '4px 10px', fontSize: 10 })
+              goal.measurable ? hh('section', { style: { marginBottom: 6 } }, hh('h5', { style: { display: 'inline', fontSize: 11, color: '#a5f3fc' } }, 'Measurement: '), hh('span', { style: Object.assign({ fontSize: 11, color: '#e2e8f0' }, wrapText) }, goal.measurable)) : null,
+              goal.services ? hh('section', { style: { marginBottom: 6 } }, hh('h5', { style: { display: 'inline', fontSize: 11, color: '#a5f3fc' } }, 'Services or supports in these notes: '), hh('span', { style: Object.assign({ fontSize: 11, color: '#e2e8f0' }, wrapText) }, goal.services)) : null,
+              hh('fieldset', { style: { margin: '10px 0 0', padding: 8, border: '1px solid #475569', borderRadius: 8 } },
+                hh('legend', { style: { padding: '0 4px', fontSize: 11, fontWeight: 800, color: '#a5f3fc' } }, 'Add an optional personal progress note'),
+                hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  actionButton('Going as expected', function() { recordProgress(goal.id, 'as-expected'); }, 'secondary'),
+                  actionButton('Mixed progress', function() { recordProgress(goal.id, 'mixed'); }, 'secondary'),
+                  actionButton('I want support', function() { recordProgress(goal.id, 'support'); }, 'secondary')
+                ),
+                hh('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#cbd5e1' } }, 'Choose what fits today. This is not a score, evaluation, or automatic message to anyone.')
               ),
-              lastProgress ? hh('div', { role: 'status', style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'right', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'Last update: ' + lastProgress.status + ' on ' + lastProgress.date) : null
-            );
-          })
-        ),
-
-      // Meetings
-      meetings.length > 0 ? hh('div', null,
-        hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, '📅 IEP meeting log'),
-        hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-          meetings.map(function(m) {
-            return hh('div', { key: 'mt-' + m.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #06b6d4' } },
-              hh('div', { style: { fontSize: 11, color: '#06b6d4', fontWeight: 700, marginBottom: 4 } }, '📅 ' + m.date + ' · ' + relDate(m.date)),
-              m.whatChanged ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Changed: '), m.whatChanged) : null,
-              m.myInput ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'I said: '), m.myInput) : null,
-              m.whatToTry ? hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginTop: 4 } }, hh('strong', { style: { color: '#67e8f9' } }, 'Trying next: '), m.whatToTry) : null
-            );
+              hh('section', { 'aria-labelledby': 'learning-lab-iep-progress-heading-' + goal.id, style: { marginTop: 10 } },
+                hh('h5', { id: 'learning-lab-iep-progress-heading-' + goal.id, tabIndex: -1, style: { margin: '0 0 4px', fontSize: 11, color: '#a5f3fc' } }, 'Personal progress history'),
+                !goal.progress || !goal.progress.length ? hh('p', { style: { margin: 0, fontSize: 10, color: '#cbd5e1' } }, 'No progress notes yet.')
+                : hh('ul', { style: { margin: 0, paddingLeft: 20 } }, goal.progress.slice().reverse().map(function(entry, index) {
+                  var entryId = entry.id || (goal.id + '-legacy-' + index);
+                  var dateTime = progressDateTime(entry);
+                  return hh('li', { key: entryId, style: { marginBottom: 6 } },
+                    hh('span', { style: { fontSize: 11, color: '#e2e8f0' } }, (PROGRESS_LABELS[entry.status] || entry.status || 'Progress note') + ' - '),
+                    hh('time', { dateTime: dateTime, style: { fontSize: 11, color: '#cbd5e1' } }, entry.date || 'Date not recorded'),
+                    actionButton('Delete entry', function() { removeProgress(goal.id, entry.id, entry); }, 'danger', { props: { 'aria-label': 'Delete progress entry from ' + (entry.date || 'unknown date') }, style: { marginLeft: 6 } })
+                  );
+                }))
+              )
+            ));
           })
         )
-      ) : null
+      ),
+      hh('section', { 'aria-labelledby': 'learning-lab-iep-meetings-heading' },
+        hh('h3', { id: 'learning-lab-iep-meetings-heading', tabIndex: -1, style: { fontSize: 13, color: '#a5f3fc', margin: '0 0 8px' } }, 'Personal meeting notes'),
+        meetings.length === 0 ? hh('p', { style: { fontSize: 11, color: '#cbd5e1' } }, 'No personal meeting notes yet.')
+        : hh('ul', { 'aria-label': 'Personal IEP meeting notes', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } }, meetings.map(function(meeting) {
+          var fields = [
+            { key: 'whatChanged', label: 'Discussed or changed' }, { key: 'myInput', label: 'What I shared or asked' },
+            { key: 'whatWorked', label: 'What was working' }, { key: 'whatToTry', label: 'What might be tried next' }
+          ];
+          return hh('li', { key: meeting.id }, hh('article', { 'aria-labelledby': 'learning-lab-iep-meeting-heading-' + meeting.id, style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.65)', borderLeft: '3px solid #22d3ee' } },
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' } },
+              hh('h4', { id: 'learning-lab-iep-meeting-heading-' + meeting.id, style: { margin: 0, fontSize: 12, color: '#a5f3fc' } }, 'Meeting note for ', hh('time', { dateTime: meeting.date }, meeting.date || 'date not recorded')),
+              actionButton('Delete', function() { removeMeeting(meeting.id); }, 'danger', { props: { 'aria-label': 'Delete personal meeting note from ' + (meeting.date || 'unknown date') } })
+            ),
+            hh('dl', { style: { margin: '8px 0 0' } }, fields.map(function(field) {
+              return meeting[field.key] ? hh('div', { key: field.key, style: { marginTop: 6 } },
+                hh('dt', { style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc' } }, field.label),
+                hh('dd', { style: Object.assign({ margin: '2px 0 0', fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 }, wrapText) }, meeting[field.key])
+              ) : null;
+            }))
+          ));
+        }))
+      )
     );
   }
 
-  // ── X. PERSONAL SUBJECT MASTERY TRACKER (Wave 5) ──
-  // Track mastery per topic per subject. Each topic: status (new / learning /
-  // shaky / solid / mastered). Builds an evidence-aligned progression view.
   function PersonalSubjectMastery(props) {
     if (!R) return null;
     var data = props.data || { subjects: [] };
@@ -20122,7 +20214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'mytkAgenda', icon: '📋', label: __alloT('stem.learning_lab.today', 'Today'),                desc: __alloT('stem.learning_lab.today_s_pulled_together_agenda_habits_', 'Today\'s pulled-together agenda — habits + tasks + scheduled blocks + extras.') },
               { id: 'mytkEmotion',icon: '💖', label: __alloT('stem.learning_lab.emotion_grounding', 'Emotion + Grounding'),  desc: __alloT('stem.learning_lab.quick_emotion_check_box_breathing_5_4_', 'Private emotion check-in with optional paced breathing and adaptable grounding prompts.') },
               { id: 'mytkEF',     icon: '🧩', label: __alloT('stem.learning_lab.ef_dashboard', 'EF Dashboard'),         desc: __alloT('stem.learning_lab.8_executive_function_dimensions_tracke', 'Optional context-dependent self-reflection across eight dimensions with adaptable strategy ideas.') },
-              { id: 'mytkIEP',    icon: '🎓', label: __alloT('stem.learning_lab.my_iep_tracker', 'My IEP Tracker'),       desc: __alloT('stem.learning_lab.your_own_copy_of_your_iep_goals_sub_go', 'Your own copy of your IEP goals + sub-goal tracking + meeting log. Self-advocacy tool.') },
+              { id: 'mytkIEP',    icon: '🎓', label: __alloT('stem.learning_lab.my_iep_tracker', 'My IEP Tracker'),       desc: __alloT('stem.learning_lab.your_own_copy_of_your_iep_goals_sub_go', 'Optional personal notes for reviewing IEP goals and preparing for meetings; not the official IEP.') },
               { id: 'mytkMastery',icon: '📚', label: __alloT('stem.learning_lab.subject_mastery', 'Subject Mastery'),      desc: __alloT('stem.learning_lab.track_mastery_per_topic_per_subject_ac', 'Track mastery per topic per subject across 5 levels (new → mastered).') },
               { id: 'mytkSleep',  icon: '😴', label: __alloT('stem.learning_lab.sleep_log', 'Sleep Log'),            desc: __alloT('stem.learning_lab.daily_bedtime_waketime_quality_log_8_s', 'Daily bedtime/waketime/quality log + 8 sleep-factor check-ins + trend chart.') },
               { id: 'mytkJournal',icon: '📓', label: __alloT('stem.learning_lab.learning_journal', 'Learning Journal'),     desc: __alloT('stem.learning_lab.free_form_journal_with_subject_mood_ta', 'Free-form journal with subject + mood tags. Search across all entries.') },
