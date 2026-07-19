@@ -690,7 +690,7 @@ const createTTS = (deps) => {
                     console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
                     _kokoroDeferredToGemini = true;
                 }
-            } else {
+            } else if (window._isDesktopBundledApp) {
                 // Engine missing OR loaded-but-never-ready: kick a background
                 // (re)load for future calls. The ready gate matters — a failed
                 // first init (e.g. the ~86MB voice download racing a multi-GB
@@ -706,6 +706,14 @@ const createTTS = (deps) => {
                     Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
                 }
                 _routeNote('kokoro-not-ready', 'engine preparing — background (re)init kicked');
+                _kokoroDeferredToGemini = true;
+            } else {
+                // Off-desktop (CDN student shell, hosted origins, Canvas) the
+                // ~88MB engine must NEVER download without an explicit user
+                // action (voice picker, offer modal, Word Sounds button) —
+                // QR students on phones were getting silent model downloads.
+                // This call falls through to provider/cloud/browser voices.
+                _routeNote('kokoro-not-ready', 'engine not downloaded — automatic download is desktop-only');
                 _kokoroDeferredToGemini = true;
             }
         }
@@ -896,10 +904,12 @@ const createTTS = (deps) => {
                     const kokoroBotUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
                     if (kokoroBotUrl) { _routeNoteBot('kokoro'); return kokoroBotUrl; }
                 } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message); _routeNoteBot('kokoro-failed', e?.message); }
-            } else if (botKokoroLang === 'en') {
+            } else if (botKokoroLang === 'en' && window._isDesktopBundledApp) {
                 // Missing or never-ready engine: background (re)init, same as
                 // callTTS — a failed first init otherwise pins every bot line
-                // to the browser voice with no path back to Kokoro.
+                // to the browser voice with no path back to Kokoro. Desktop
+                // only: off-desktop the engine never downloads without an
+                // explicit user action (same policy as callTTS above).
                 if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
                     window.__kokoroTTSDownloading = true;
                     Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
