@@ -146,135 +146,557 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     return out;
   }
 
-  // A per-resource store: sentenceKey → { b64, mime, url }.
+  // V4 identity is resource-agnostic. The controller owns one store per
+  // resource; this portable identity only locates a segment inside that store.
+  function isIdentityTarget(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function normalizeIdentity(value) {
+    if (!isIdentityTarget(value)) return null;
+    var identityVersion = Number(value.identityVersion == null ? 4 : value.identityVersion);
+    if (identityVersion !== 4) return null;
+    var adapterId = String(value.adapterId || '').trim().slice(0, 160);
+    var scopeId = String(value.scopeId == null ? 'main' : value.scopeId).trim().slice(0, 240);
+    var segmentId = String(value.segmentId || '').trim().slice(0, 240);
+    var spokenText = String(value.spokenText == null ? '' : value.spokenText).trim();
+    if (!adapterId || !scopeId || !segmentId || !spokenText) return null;
+    var adapterVersion = Number(value.adapterVersion == null ? 1 : value.adapterVersion);
+    if (!isFinite(adapterVersion) || adapterVersion <= 0) adapterVersion = 1;
+    var spokenFingerprint = String(value.spokenFingerprint == null ? '' : value.spokenFingerprint).trim().slice(0, 240);
+    if (!spokenFingerprint) spokenFingerprint = keyFor(spokenText);
+    return {
+      identityVersion: 4,
+      adapterId: adapterId,
+      adapterVersion: adapterVersion,
+      scopeId: scopeId,
+      segmentId: segmentId,
+      spokenFingerprint: spokenFingerprint,
+      spokenText: spokenText
+    };
+  }
+
+  function portableKeyForIdentity(value) {
+    var identity = normalizeIdentity(value);
+    if (!identity) return '';
+    // Fingerprints are compatibility data, not locator data. A text edit makes
+    // a stable segment stale instead of leaving an unreachable old entry.
+    return JSON.stringify([identity.adapterId, identity.adapterVersion, identity.scopeId, identity.segmentId]);
+  }
+
+  function normalizeSynthesisProfile(profile) {
+    if (!profile || typeof profile !== 'object') return null;
+    var out = {};
+    ['voice', 'language', 'provider', 'directionFingerprint'].forEach(function (key) {
+      if (profile[key] != null && String(profile[key]).trim()) out[key] = String(profile[key]).slice(0, 240);
+    });
+    var synthesisRate = Number(profile.synthesisRate != null ? profile.synthesisRate : profile.speed);
+    if (isFinite(synthesisRate) && synthesisRate > 0 && synthesisRate <= 4) out.synthesisRate = synthesisRate;
+    var voiceResolverVersion = Number(profile.voiceResolverVersion);
+    if (isFinite(voiceResolverVersion) && voiceResolverVersion > 0) out.voiceResolverVersion = voiceResolverVersion;
+    return Object.keys(out).length ? out : null;
+  }
+
+  function metadataToProfile(metadata) { return normalizeSynthesisProfile(metadata); }
+
+  function profileToMetadata(profile, createdAt) {
+    var out = {};
+    var normalized = normalizeSynthesisProfile(profile);
+    if (normalized) Object.keys(normalized).forEach(function (key) {
+      out[key === 'synthesisRate' ? 'speed' : key] = normalized[key];
+    });
+    if (createdAt) out.createdAt = createdAt;
+    return Object.keys(out).length ? out : null;
+  }
+
+  function isHuman(entry) {
+    return !!entry && String(entry.source || 'ai').indexOf('human') === 0;
+  }
+
+  function profilesCompatible(entry, requested) {
+    if (!entry) return false;
+    if (isHuman(entry)) return true;
+    var stored = entry.synthesisProfile || metadataToProfile(entry.metadata);
+    var wanted = normalizeSynthesisProfile(requested) || {};
+    // V2 remains the default for legacy callers; version-aware callers may
+    // explicitly request a newer resolver contract.
+    var requestedResolverVersion = wanted.voiceResolverVersion == null
+      ? 2 : Number(wanted.voiceResolverVersion);
+    if (!stored || Number(stored.voiceResolverVersion) !== requestedResolverVersion) return false;
+    if (wanted.voice && (!stored.voice || String(stored.voice).toLowerCase() !== String(wanted.voice).toLowerCase())) return false;
+    if (wanted.synthesisRate != null && stored.synthesisRate != null &&
+        Math.abs(Number(stored.synthesisRate) - Number(wanted.synthesisRate)) > 0.001) return false;
+    if (wanted.language && stored.language &&
+        String(stored.language).toLowerCase() !== String(wanted.language).toLowerCase()) return false;
+    if (wanted.directionFingerprint &&
+        (!stored.directionFingerprint || String(stored.directionFingerprint) !== String(wanted.directionFingerprint))) return false;
+    return true;
+  }
+
+  function identitiesCompatible(stored, requested) {
+    var a = normalizeIdentity(stored);
+    var b = normalizeIdentity(requested);
+    return !!(a && b && portableKeyForIdentity(a) === portableKeyForIdentity(b) &&
+      String(a.spokenFingerprint) === String(b.spokenFingerprint) &&
+      keyFor(a.spokenText) === keyFor(b.spokenText));
+  }
+
+  // A per-resource store with V4 identity and V1-V3 legacy lanes. Legacy-only
+  // callers retain their exact V3 wire format; identity lookups lazily promote
+  // compatible exact sentence matches.
   function createStore() {
-    var map = new Map();
+    var identities = new Map();
+    var legacy = new Map();
     var lastPutError = null;
-    var _revoke = function (entry) { if (entry && entry.url) { try { URL.revokeObjectURL(entry.url); } catch (_) {} } };
+    var _revoke = function (entry) {
+      if (entry && entry.url) { try { URL.revokeObjectURL(entry.url); } catch (_) {} }
+    };
     var _estimateBytes = function () {
       var n = 0;
-      map.forEach(function (entry) { n += base64ByteLength(entry.b64); });
+      identities.forEach(function (entry) { n += base64ByteLength(entry.b64); });
+      legacy.forEach(function (entry) { n += base64ByteLength(entry.b64); });
+      return n;
+    };
+
+    var _identityEntriesForText = function (text) {
+      var wanted = keyFor(text);
+      var matches = [];
+      identities.forEach(function (entry) {
+        if (keyFor(entry.identity && entry.identity.spokenText) === wanted) matches.push(entry);
+      });
+      matches.sort(function (a, b) {
+        var aKey = portableKeyForIdentity(a.identity);
+        var bKey = portableKeyForIdentity(b.identity);
+        return aKey < bKey ? -1 : (aKey > bKey ? 1 : 0);
+      });
+      return matches;
+    };
+
+    // Legacy string reads remain available during a partial service rollout.
+    // Human audio wins; otherwise use the first deterministic compatible V4
+    // entry. Removal deliberately uses the stricter unique-only helper below.
+    var _preferredIdentityEntryForText = function (text, requestedProfile, requireCompatible) {
+      var matches = _identityEntriesForText(text);
+      if (requireCompatible) matches = matches.filter(function (entry) {
+        return profilesCompatible(entry, requestedProfile);
+      });
+      if (!matches.length) return null;
+      for (var i = 0; i < matches.length; i++) if (isHuman(matches[i])) return matches[i];
+      return matches[0];
+    };
+
+    var _uniqueIdentityEntryForText = function (text) {
+      var matches = _identityEntriesForText(text);
+      return matches.length === 1 ? matches[0] : null;
+    };
+    var _entryFor = function (target) {
+      var identity = normalizeIdentity(target);
+      if (identity) return identities.get(portableKeyForIdentity(identity)) ||
+        legacy.get(keyFor(identity.spokenText)) || null;
+      if (isIdentityTarget(target)) return null;
+      return legacy.get(keyFor(target)) || _preferredIdentityEntryForText(target, null, false);
+    };
+
+    var _promoteLegacy = function (identity, entry) {
+      // Human legacy audio is a read-only dual-read hit. Never duplicate it
+      // merely because inspect()/summary asked about a stable identity.
+      if (!entry || isHuman(entry)) return entry || null;
+      var identityKey = portableKeyForIdentity(identity);
+      var legacyKey = keyFor(identity.spokenText);
+      legacy.delete(legacyKey);
+      entry.identity = Object.assign({}, identity);
+      entry.synthesisProfile = entry.synthesisProfile || metadataToProfile(entry.metadata);
+      identities.set(identityKey, entry);
+      return entry;
+    };
+
+    var _inspect = function (target, requestedProfile, promote) {
+      var identity = normalizeIdentity(target);
+      if (identity) {
+        var direct = identities.get(portableKeyForIdentity(identity));
+        if (direct) {
+          var ready = identitiesCompatible(direct.identity, identity) &&
+            profilesCompatible(direct, requestedProfile);
+          return {
+            status: ready ? 'ready' : 'stale',
+            url: ready ? direct.url : null,
+            source: direct.source || 'ai',
+            identity: Object.assign({}, direct.identity),
+            synthesisProfile: direct.synthesisProfile ? Object.assign({}, direct.synthesisProfile) : null,
+            legacy: false
+          };
+        }
+        var legacyEntry = legacy.get(keyFor(identity.spokenText));
+        if (!legacyEntry) return {
+          status: 'missing', url: null, source: null, identity: Object.assign({}, identity),
+          synthesisProfile: null, legacy: false
+        };
+        if (!profilesCompatible(legacyEntry, requestedProfile)) return {
+          status: 'stale', url: null, source: legacyEntry.source || 'ai',
+          identity: Object.assign({}, identity),
+          synthesisProfile: metadataToProfile(legacyEntry.metadata), legacy: true
+        };
+        var shouldPromote = promote && !isHuman(legacyEntry);
+        var resolved = shouldPromote ? _promoteLegacy(identity, legacyEntry) : legacyEntry;
+        if (!resolved) return {
+          status: 'missing', url: null, source: null, identity: Object.assign({}, identity),
+          synthesisProfile: null, legacy: true
+        };
+        return {
+          status: 'ready',
+          url: resolved.url,
+          source: resolved.source || 'ai',
+          identity: Object.assign({}, identity),
+          synthesisProfile: resolved.synthesisProfile
+            ? Object.assign({}, resolved.synthesisProfile)
+            : metadataToProfile(resolved.metadata),
+          legacy: !shouldPromote
+        };
+      }
+
+      if (isIdentityTarget(target)) return {
+        status: 'missing', url: null, source: null, identity: null,
+        synthesisProfile: null, legacy: false
+      };
+      var entry = legacy.get(keyFor(target));
+      if (!entry) {
+        var identityMatches = _identityEntriesForText(target);
+        if (identityMatches.length) {
+          entry = _preferredIdentityEntryForText(target, requestedProfile, true) ||
+            _preferredIdentityEntryForText(target, requestedProfile, false);
+        }
+      }
+      if (!entry) return {
+        status: 'missing', url: null, source: null, identity: null,
+        synthesisProfile: null, legacy: true
+      };
+      var compatible = profilesCompatible(entry, requestedProfile);
+      return {
+        status: compatible ? 'ready' : 'stale',
+        url: compatible ? entry.url : null,
+        source: entry.source || 'ai',
+        identity: entry.identity ? Object.assign({}, entry.identity) : null,
+        synthesisProfile: entry.synthesisProfile
+          ? Object.assign({}, entry.synthesisProfile)
+          : metadataToProfile(entry.metadata),
+        legacy: !entry.identity
+      };
+    };
+
+    var _serializeLegacy = function () {
+      var sentences = {};
+      var mimes = {};
+      var sources = {};
+      var metadata = {};
+      legacy.forEach(function (entry, key) {
+        sentences[key] = entry.b64;
+        mimes[key] = entry.mime || 'audio/mpeg';
+        sources[key] = entry.source || 'ai';
+        if (entry.metadata) metadata[key] = Object.assign({}, entry.metadata);
+      });
+      return {
+        format: 'per-entry', version: 3, sentences: sentences, mimes: mimes,
+        sources: sources, metadata: metadata
+      };
+    };
+
+    var _hydrateLimits = function (options) {
+      return {
+        maxBytes: Math.max(1024, Number(options && options.maxBytes) || DEFAULT_MAX_BYTES),
+        maxClipBytes: Math.max(1024, Number(options && options.maxClipBytes) || DEFAULT_MAX_CLIP_BYTES)
+      };
+    };
+
+    var _fitsHydrateBudget = function (clean, existing, limits) {
+      var clipBytes = base64ByteLength(clean);
+      if (clipBytes > limits.maxClipBytes) return false;
+      var existingBytes = existing ? base64ByteLength(existing.b64) : 0;
+      return _estimateBytes() - existingBytes + clipBytes <= limits.maxBytes;
+    };
+
+    var _hydrateLegacy = function (obj, limits) {
+      if (!obj || !obj.sentences || typeof obj.sentences !== 'object') return 0;
+      var n = 0;
+      var mimes = (obj.mimes && typeof obj.mimes === 'object') ? obj.mimes : {};
+      var sources = (obj.sources && typeof obj.sources === 'object') ? obj.sources : {};
+      var metadata = (obj.metadata && typeof obj.metadata === 'object') ? obj.metadata : {};
+      var fallbackMime = obj.format === 'wav' ? 'audio/wav' : 'audio/mpeg';
+      var keys = Object.keys(obj.sentences).sort();
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        try {
+          var normalizedKey = keyFor(key);
+          if (!normalizedKey) continue;
+          var existing = legacy.get(normalizedKey);
+          var incomingSource = sources[key] || 'ai';
+          if (existing && isHuman(existing) &&
+              String(incomingSource).indexOf('human') !== 0) continue;
+          var clean = cleanBase64(obj.sentences[key]);
+          if (!clean || !_fitsHydrateBudget(clean, existing, limits)) continue;
+          var mime = mimes[key] || fallbackMime;
+          // Limits are checked before decoding or creating a Blob URL.
+          var url = b64ToUrl(clean, mime);
+          if (!url) continue;
+          _revoke(existing);
+          legacy.set(normalizedKey, {
+            b64: clean,
+            mime: mime,
+            url: url,
+            source: incomingSource,
+            metadata: normalizeMetadata(metadata[key]),
+            synthesisProfile: metadataToProfile(metadata[key])
+          });
+          n++;
+        } catch (_) {}
+      }
       return n;
     };
     return {
-      // Playable URL for a sentence, or null if not vetted/stored.
-      get: function (sentence) { var e = map.get(keyFor(sentence)); return e ? e.url : null; },
-      has: function (sentence) { return map.has(keyFor(sentence)); },
-      // Store (or replace) one sentence's audio. `source` records provenance
-      // by construction — 'ai' (default), 'human-teacher', 'human-student', etc.
-      // — so the UI can honestly show whose voice a student hears. Returns the
-      // new blob URL.
-      put: function (sentence, b64, mime, source, metadata, options) {
-        var k = keyFor(sentence);
+      // Raw getters remain for legacy UI/diagnostics. Playback should prefer
+      // getCompatible(), which applies voice/profile compatibility.
+      get: function (target) {
+        var entry = _entryFor(target);
+        return entry ? entry.url : null;
+      },
+      has: function (target) { return !!_entryFor(target); },
+
+      // Existing positional signature is preserved. For an identity target,
+      // argument five is serialized as the separate synthesisProfile.
+      put: function (target, b64, mime, source, metadata, options) {
+        var identity = normalizeIdentity(target);
+        var key = identity ? portableKeyForIdentity(identity) :
+          (isIdentityTarget(target) ? '' : keyFor(target));
+        if (!key) {
+          lastPutError = {
+            code: 'invalid-identity', clipBytes: 0, currentBytes: _estimateBytes(),
+            maxBytes: DEFAULT_MAX_BYTES, maxClipBytes: DEFAULT_MAX_CLIP_BYTES
+          };
+          return null;
+        }
         var clean = cleanBase64(b64);
         var clipBytes = base64ByteLength(clean);
-        var previous = map.get(k);
+        var lane = identity ? identities : legacy;
+        var previous = lane.get(key);
         var previousBytes = previous ? base64ByteLength(previous.b64) : 0;
+        var legacyReplacement = identity ? legacy.get(keyFor(identity.spokenText)) : null;
+        var incomingSource = source || 'ai';
+        var incomingIsHuman = String(incomingSource).indexOf('human') === 0;
+        var allowReplaceHuman = !!(options && options.allowReplaceHuman === true);
+        var reclaimLegacyBytes = legacyReplacement &&
+          (!isHuman(legacyReplacement) || allowReplaceHuman)
+          ? base64ByteLength(legacyReplacement.b64) : 0;
         var maxBytes = Math.max(1024, Number(options && options.maxBytes) || DEFAULT_MAX_BYTES);
         var maxClipBytes = Math.max(1024, Number(options && options.maxClipBytes) || DEFAULT_MAX_CLIP_BYTES);
         var currentBytes = _estimateBytes();
-        if (clipBytes > maxClipBytes) {
-          lastPutError = { code: 'clip-too-large', clipBytes: clipBytes, currentBytes: currentBytes, maxBytes: maxBytes, maxClipBytes: maxClipBytes };
+        if (!incomingIsHuman && !allowReplaceHuman &&
+            (isHuman(previous) || isHuman(legacyReplacement))) {
+          lastPutError = {
+            code: 'human-recording-protected', clipBytes: clipBytes, currentBytes: currentBytes,
+            maxBytes: maxBytes, maxClipBytes: maxClipBytes
+          };
           return null;
         }
-        if (currentBytes - previousBytes + clipBytes > maxBytes) {
-          lastPutError = { code: 'resource-limit', clipBytes: clipBytes, currentBytes: currentBytes, maxBytes: maxBytes, maxClipBytes: maxClipBytes };
+        if (clipBytes > maxClipBytes) {
+          lastPutError = {
+            code: 'clip-too-large', clipBytes: clipBytes, currentBytes: currentBytes,
+            maxBytes: maxBytes, maxClipBytes: maxClipBytes
+          };
+          return null;
+        }
+        if (currentBytes - previousBytes - reclaimLegacyBytes + clipBytes > maxBytes) {
+          lastPutError = {
+            code: 'resource-limit', clipBytes: clipBytes, currentBytes: currentBytes,
+            maxBytes: maxBytes, maxClipBytes: maxClipBytes
+          };
           return null;
         }
         var url = null;
         try { url = b64ToUrl(clean, mime); } catch (_) {}
         if (!url) {
-          lastPutError = { code: 'invalid-audio', clipBytes: clipBytes, currentBytes: currentBytes, maxBytes: maxBytes, maxClipBytes: maxClipBytes };
+          lastPutError = {
+            code: 'invalid-audio', clipBytes: clipBytes, currentBytes: currentBytes,
+            maxBytes: maxBytes, maxClipBytes: maxClipBytes
+          };
           return null;
         }
-        _revoke(previous); // replacing a bad take frees the old blob only after the new one is valid
-        map.set(k, { b64: clean, mime: mime || 'audio/mpeg', url: url, source: source || 'ai', metadata: normalizeMetadata(metadata) });
+        _revoke(previous);
+        var normalizedMetadata = normalizeMetadata(metadata);
+        var entry = {
+          b64: clean,
+          mime: mime || 'audio/mpeg',
+          url: url,
+          source: incomingSource,
+          metadata: normalizedMetadata,
+          synthesisProfile: identity
+            ? normalizeSynthesisProfile(metadata)
+            : metadataToProfile(normalizedMetadata)
+        };
+        if (identity) {
+          entry.identity = Object.assign({}, identity);
+          entry.createdAt = (normalizedMetadata && normalizedMetadata.createdAt) || new Date().toISOString();
+        }
+        lane.set(key, entry);
+        if (identity && legacyReplacement && (!isHuman(legacyReplacement) || allowReplaceHuman)) {
+          _revoke(legacyReplacement);
+          legacy.delete(keyFor(identity.spokenText));
+        }
         lastPutError = null;
         return url;
       },
-      // Provenance of a stored sentence ('ai' | 'human-teacher' | ...) or null.
-      sourceOf: function (sentence) { var e = map.get(keyFor(sentence)); return e ? (e.source || 'ai') : null; },
-      metadataOf: function (sentence) { var e = map.get(keyFor(sentence)); return e && e.metadata ? Object.assign({}, e.metadata) : null; },
-      // THE shared stored-clip compatibility guard (2026-07-17). Human
-      // recordings are voice-setting-independent and always play. AI clips
-      // only count as a hit when their stored metadata matches the ACTIVE
-      // request (voice, and speed/language when both sides carry them) —
-      // otherwise a session switched to Kore keeps replaying clips captured
-      // under Puck. Legacy AI entries without voice metadata count as a
-      // mismatch so one playthrough re-synthesizes and self-heals them.
-      // Used by phase_k playback AND the karaoke overlay resolver; do not
-      // add a surface that reads .get() directly for AI playback.
-      getCompatible: function (sentence, opts) {
-        var e = map.get(keyFor(sentence));
-        if (!e) return null;
-        if (String(e.source || 'ai').indexOf('human') === 0) return e.url;
-        var o = opts || {};
-        var meta = e.metadata || null;
-        if (!meta || Number(meta.voiceResolverVersion) !== 2) return null;
-        if (o.voice) {
-          if (!meta || !meta.voice || String(meta.voice).toLowerCase() !== String(o.voice).toLowerCase()) return null;
+
+      sourceOf: function (target) {
+        var entry = _entryFor(target);
+        return entry ? (entry.source || 'ai') : null;
+      },
+      metadataOf: function (target) {
+        var entry = _entryFor(target);
+        if (!entry) return null;
+        return entry.metadata
+          ? Object.assign({}, entry.metadata)
+          : profileToMetadata(entry.synthesisProfile, entry.createdAt);
+      },
+      synthesisProfileOf: function (target) {
+        var entry = _entryFor(target);
+        return entry && entry.synthesisProfile
+          ? Object.assign({}, entry.synthesisProfile)
+          : null;
+      },
+
+      // Returns a structured status so counters can distinguish stale audio
+      // from truly missing audio. A ready legacy identity match is promoted.
+      inspect: function (target, synthesisProfile) {
+        return _inspect(target, synthesisProfile, true);
+      },
+      getCompatible: function (target, synthesisProfile) {
+        var result = _inspect(target, synthesisProfile, true);
+        return result.status === 'ready' ? result.url : null;
+      },
+
+      lastPutError: function () {
+        return lastPutError ? Object.assign({}, lastPutError) : null;
+      },
+      limits: function () {
+        return { maxBytes: DEFAULT_MAX_BYTES, maxClipBytes: DEFAULT_MAX_CLIP_BYTES };
+      },
+      remove: function (target) {
+        var identity = normalizeIdentity(target);
+        if (!identity && isIdentityTarget(target)) return;
+        if (identity) {
+          var identityKey = portableKeyForIdentity(identity);
+          _revoke(identities.get(identityKey));
+          identities.delete(identityKey);
+          return;
         }
-        if (o.speed != null && meta && meta.speed != null && Math.abs(Number(meta.speed) - Number(o.speed)) > 0.001) return null;
-        if (o.language && meta && meta.language && String(meta.language).toLowerCase() !== String(o.language).toLowerCase()) return null;
-        return e.url;
+        var legacyKey = keyFor(target);
+        _revoke(legacy.get(legacyKey));
+        legacy.delete(legacyKey);
+        // Preserve legacy Edit Audio removal during a partial service rollout:
+        // a string can remove one unambiguous V4 spelling, never guess among
+        // repeated-text identities.
+        var uniqueIdentityEntry = _uniqueIdentityEntryForText(target);
+        if (uniqueIdentityEntry) {
+          var uniqueIdentityKey = portableKeyForIdentity(uniqueIdentityEntry.identity);
+          _revoke(uniqueIdentityEntry);
+          identities.delete(uniqueIdentityKey);
+        }
       },
-      lastPutError: function () { return lastPutError ? Object.assign({}, lastPutError) : null; },
-      limits: function () { return { maxBytes: DEFAULT_MAX_BYTES, maxClipBytes: DEFAULT_MAX_CLIP_BYTES }; },
-      remove: function (sentence) { var k = keyFor(sentence); _revoke(map.get(k)); map.delete(k); },
-      size: function () { return map.size; },
-      clear: function () { map.forEach(_revoke); map.clear(); },
-      // For the prep UI: which of these sentences still need audio.
-      missing: function (sentences) {
-        var self = this;
-        return (Array.isArray(sentences) ? sentences : []).filter(function (s) { return !self.has(s); });
+      size: function () { return identities.size + legacy.size; },
+      clear: function () {
+        identities.forEach(_revoke);
+        legacy.forEach(_revoke);
+        identities.clear();
+        legacy.clear();
       },
-      // → resource JSON. Per-entry mime (v2) so a resource can mix cloud-MP3
-      // and keyless-WAV takes and still hydrate each correctly. v1 payloads
-      // (single top-level format, no mimes) still hydrate via the fallback.
-      serialize: function () {
-        var sentences = {};
-        var mimes = {};
-        var sources = {};
-        var metadata = {};
-        map.forEach(function (e, k) {
-          sentences[k] = e.b64;
-          mimes[k] = e.mime || 'audio/mpeg';
-          sources[k] = e.source || 'ai';
-          if (e.metadata) metadata[k] = Object.assign({}, e.metadata);
+
+      // With no profile this preserves V3's raw-presence behavior. Supplying a
+      // profile makes stale audio part of the missing/preparation list.
+      missing: function (targets, synthesisProfile) {
+        var checkCompatibility = arguments.length > 1;
+        return (Array.isArray(targets) ? targets : []).filter(function (target) {
+          return checkCompatibility
+            ? _inspect(target, synthesisProfile, true).status !== 'ready'
+            : !_entryFor(target);
         });
-        return { format: 'per-entry', version: 3, sentences: sentences, mimes: mimes, sources: sources, metadata: metadata };
       },
-      // resource JSON → memory. Returns count hydrated. Keys are re-run
-      // through keyFor so payloads saved under an older normalization
-      // (e.g. pre-punctuation-spacing keys from the overlay) migrate to
-      // the current key space on load instead of being orphaned.
-      hydrate: function (obj) {
-        if (!obj || !obj.sentences || typeof obj.sentences !== 'object') return 0;
+
+      // Legacy-only stores remain byte-for-byte shape-compatible with V3.
+      // Once identities exist, V4 owns the portable entries and retains only
+      // unmatched legacy data (plus human legacy takes, which are never
+      // automatically discarded).
+      serialize: function () {
+        if (!identities.size) return _serializeLegacy();
+        var entries = {};
+        identities.forEach(function (entry, key) {
+          entries[key] = {
+            identity: Object.assign({}, entry.identity),
+            audio: entry.b64,
+            mime: entry.mime || 'audio/mpeg',
+            source: entry.source || 'ai',
+            synthesisProfile: entry.synthesisProfile
+              ? Object.assign({}, entry.synthesisProfile)
+              : null,
+            createdAt: entry.createdAt ||
+              (entry.metadata && entry.metadata.createdAt) ||
+              new Date().toISOString()
+          };
+        });
+        return {
+          format: 'per-entry',
+          version: 4,
+          entries: entries,
+          legacy: _serializeLegacy()
+        };
+      },
+
+      // V1-V3 hydrate into the legacy lane. V4 hydrates both lanes and accepts
+      // transitional entries arrays or top-level V3 mirrors.
+      hydrate: function (obj, options) {
+        if (!obj || typeof obj !== 'object') return 0;
+        var limits = _hydrateLimits(options);
+        if (Number(obj.version) !== 4) return _hydrateLegacy(obj, limits);
         var n = 0;
-        var mimes = (obj.mimes && typeof obj.mimes === 'object') ? obj.mimes : {};
-        var sources = (obj.sources && typeof obj.sources === 'object') ? obj.sources : {};
-        var metadata = (obj.metadata && typeof obj.metadata === 'object') ? obj.metadata : {};
-        var fallbackMime = obj.format === 'wav' ? 'audio/wav' : 'audio/mpeg';
-        for (var k in obj.sentences) {
-          if (!Object.prototype.hasOwnProperty.call(obj.sentences, k)) continue;
+        var entries = obj.entries && typeof obj.entries === 'object' ? obj.entries : {};
+        var list = Array.isArray(entries)
+          ? entries.slice()
+          : Object.keys(entries).sort().map(function (key) { return entries[key]; });
+        for (var i = 0; i < list.length; i++) {
+          var raw = list[i];
+          if (!raw || typeof raw !== 'object') continue;
           try {
-            var kk = keyFor(k);
-            if (!kk) continue;
-            // Never let a stale-keyed AI clip overwrite a human take that
-            // normalized onto the same key.
-            var existing = map.get(kk);
-            if (existing && String(existing.source || '').indexOf('human') === 0 && String(sources[k] || 'ai').indexOf('human') !== 0) continue;
-            var mime = mimes[k] || fallbackMime;
-            var url = b64ToUrl(obj.sentences[k], mime);
-            if (url) { _revoke(existing); map.set(kk, { b64: cleanBase64(obj.sentences[k]), mime: mime, url: url, source: sources[k] || 'ai', metadata: normalizeMetadata(metadata[k]) }); n++; }
+            var identity = normalizeIdentity(raw.identity);
+            var identityKey = portableKeyForIdentity(identity);
+            if (!identity || !identityKey) continue;
+            var existing = identities.get(identityKey);
+            var incomingSource = raw.source || 'ai';
+            if (existing && isHuman(existing) &&
+                String(incomingSource).indexOf('human') !== 0) continue;
+            var clean = cleanBase64(raw.audio != null ? raw.audio : raw.b64);
+            if (!clean || !_fitsHydrateBudget(clean, existing, limits)) continue;
+            var mime = raw.mime || 'audio/mpeg';
+            // Limits and provenance protection are checked before Blob creation.
+            var url = b64ToUrl(clean, mime);
+            if (!url) continue;
+            _revoke(existing);
+            var profile = normalizeSynthesisProfile(raw.synthesisProfile || raw.metadata);
+            var createdAt = raw.createdAt ? String(raw.createdAt).slice(0, 160) : null;
+            identities.set(identityKey, {
+              identity: identity,
+              b64: clean,
+              mime: mime,
+              url: url,
+              source: incomingSource,
+              synthesisProfile: profile,
+              metadata: profileToMetadata(profile, createdAt),
+              createdAt: createdAt
+            });
+            n++;
           } catch (_) {}
         }
+        n += _hydrateLegacy(obj.legacy, limits);
+        if (obj.sentences) n += _hydrateLegacy(obj, limits);
         return n;
       },
-      // Rough embedded size (bytes) for the teacher-facing size estimate.
-      estimateBytes: function () {
-        return _estimateBytes();
-      }
+      estimateBytes: function () { return _estimateBytes(); }
     };
   }
 
@@ -283,6 +705,9 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     keyFor: keyFor,
     splitSentences: splitSentences,
     b64ToUrl: b64ToUrl,
+    normalizeIdentity: normalizeIdentity,
+    portableKeyForIdentity: portableKeyForIdentity,
+    normalizeSynthesisProfile: normalizeSynthesisProfile,
     createStore: createStore,
     // Two parallel lanes for the active resource, both keyed by sentence:
     //  • current        = the MODEL/reference read-aloud (AI takes + the

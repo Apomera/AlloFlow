@@ -8185,7 +8185,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=a1627a42e');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=a1627a42e');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=a1627a42e');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=f46a89d4');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=1d1891ac');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=a1627a42e');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=a1627a42e');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=a1627a42e');
@@ -8199,7 +8200,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=a1627a42e');
     loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=a1627a42e');
     loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=a1627a42e');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=a1627a42e');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
     loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=a1627a42e');
     loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=a1627a42e');
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=a1627a42e');
@@ -22518,7 +22519,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const resourceId = generatedContent && generatedContent.id;
     const out = await _synthSentenceForStore(sentence);
     if (!out || !out.b64) return null;
-    const url = st.put(sentence, out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'));
+    const url = st.put(sentence, out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'), { allowReplaceHuman: true });
     if (!url) {
       const detail = _karaokePutFailureDetail(st);
       _notifyKaraokeAudioCapture(sentence, detail.retryable ? 'error' : 'limit', resourceId, detail);
@@ -22746,6 +22747,171 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     } catch (_) {
       return false;
     }
+  };
+  // One-release compatibility bridge: the existing views and Phase K keep
+  // their __allo* call sites, while the shared service owns durable orchestration
+  // and V4 segment identity. The legacy functions above remain the live fallback
+  // if the asynchronously loaded service is unavailable.
+  const _legacyReadAloudApi = {
+    regenerate: window.__alloRegenerateSentenceAudio,
+    prepare: window.__alloPrepareReadAloud,
+    capturePlayed: window.__alloCaptureKaraokeAudio,
+    saveStudentRecording: window.__alloStoreStudentSentenceAudio,
+    saveRecording: window.__alloStoreRecordedSentenceAudio,
+    remove: window.__alloRemoveSentenceAudio,
+  };
+  const _normalizeReadAloudBridgeText = (value) => {
+    try {
+      const phaseK = window.AlloModules && window.AlloModules.PhaseKHelpers;
+      if (phaseK && typeof phaseK.toSpokenText === 'function') return phaseK.toSpokenText(value);
+    } catch (_) {}
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  };
+  const _enumerateReadAloudResourceSegments = (resource) => {
+    if (!resource || (resource.type !== 'simplified' && resource.type !== 'faq')) return [];
+    const splitPart = (part) => {
+      try {
+        const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+        if (KS && typeof KS.splitSentences === 'function') return KS.splitSentences(part);
+      } catch (_) {}
+      return splitTextToSentences(String(part || ''));
+    };
+    const segments = [];
+    const addPart = (part, prefix) => {
+      if (!part || String(part).trim().startsWith('|') || String(part).includes('\n|')) return;
+      splitPart(part).forEach((text, sentenceIndex) => {
+        if (String(text || '').trim()) segments.push({ text, segmentId: prefix + '/' + sentenceIndex, scopeId: 'main' });
+      });
+    };
+    if (resource.type === 'faq') {
+      (Array.isArray(resource.data) ? resource.data : []).forEach((item, faqIndex) => {
+        if (!item) return;
+        addPart(item.question, 'faq/' + faqIndex + '/question');
+        addPart(item.answer, 'faq/' + faqIndex + '/answer');
+      });
+      return segments;
+    }
+    const raw = typeof resource.data === 'string' ? resource.data : String(resource.data || '');
+    const paired = getSideBySideContent(raw);
+    if (paired) {
+      (paired.source || []).forEach((part, paragraphIndex) => addPart(part, 'source/' + paragraphIndex));
+      (paired.target || []).forEach((part, paragraphIndex) => addPart(part, 'target/' + paragraphIndex));
+    } else {
+      raw.split(/\n{2,}/).forEach((part, paragraphIndex) => addPart(part, 'body/' + paragraphIndex));
+    }
+    return segments;
+  };
+  const _encodeReadAloudBridgeAudio = async (audio) => {
+    if (audio && typeof audio === 'object') {
+      const encoded = audio.b64 || audio.base64 || audio.data;
+      if (typeof encoded === 'string' && encoded.trim()) {
+        return {
+          b64: encoded.replace(/^data:[^,]*,/, '').replace(/\s+/g, ''),
+          mime: audio.mime || audio.type || 'audio/mpeg',
+        };
+      }
+    }
+    if (typeof Blob !== 'undefined' && audio instanceof Blob) {
+      return _normalizeRecordedAudioForStore(audio);
+    }
+    const url = typeof audio === 'string'
+      ? audio
+      : (audio && (audio.url || audio.audioUrl || audio.objectUrl));
+    if (!url) throw new Error('A playable read-aloud clip was not provided.');
+    const buffer = await _fetchKaraokeCaptureBuffer(url);
+    const bytes = new Uint8Array(buffer);
+    const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 &&
+      bytes[2] === 0x46 && bytes[3] === 0x46;
+    const audioHelpers = window.AlloModules && window.AlloModules.AudioHelpers;
+    if (isWav && window.lamejs && audioHelpers &&
+        (typeof audioHelpers.pcmToMp3Async === 'function' || typeof audioHelpers.pcmToMp3 === 'function')) {
+      try {
+        const mp3Blob = await _encodeKaraokeMp3(new Uint8Array(buffer, 44), 24000, 64);
+        return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
+      } catch (_) {}
+    }
+    const blob = new Blob([buffer], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
+    return { b64: await _blobToBase64(blob), mime: blob.type };
+  };
+  const _getReadAloudBridge = () => {
+    const createBridge = window.AlloModules && window.AlloModules.createReadAloudLegacyBridge;
+    if (typeof createBridge !== 'function') return null;
+    return createBridge({
+      getResource: () => generatedContent,
+      getStore: (lane) => _ensureKaraokeStore(lane === 'student' ? 'student' : 'reference'),
+      getProfile: () => ({
+        voice: selectedVoice || window.__alloSelectedVoice || 'Kore',
+        language: leveledTextLanguage || currentUiLanguage || 'English',
+        speed: (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1,
+        synthesisRate: (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1,
+        voiceResolverVersion: 2,
+      }),
+      synthesize: ({ text }) => _synthSentenceForStore(text),
+      encode: _encodeReadAloudBridgeAudio,
+      persist: ({ lane, payload, resourceId }) => {
+        const field = lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio';
+        _persistKaraokeAudioField(field, payload, resourceId);
+      },
+      normalize: _normalizeReadAloudBridgeText,
+      notify: _notifyKaraokeAudioCapture,
+      enumerateResourceSegments: _enumerateReadAloudResourceSegments,
+      isCancelled: () => window.__alloPrepareReadAloudCancel === true,
+    });
+  };
+  window.__alloGetReadAloudAudioBridge = _getReadAloudBridge;
+  window.__alloRegenerateSentenceAudio = async (sentence) => {
+    const bridge = _getReadAloudBridge();
+    return bridge ? bridge.regenerate(sentence) : _legacyReadAloudApi.regenerate(sentence);
+  };
+  window.__alloPrepareReadAloud = async (sentences, onProgress) => {
+    const bridge = _getReadAloudBridge();
+    if (!bridge) return _legacyReadAloudApi.prepare(sentences, onProgress);
+    window.__alloPrepareReadAloudCancel = false;
+    try {
+      return await bridge.prepare(sentences, onProgress, {
+        isCancelled: () => window.__alloPrepareReadAloudCancel === true,
+      });
+    } finally {
+      window.__alloPrepareReadAloudCancel = false;
+    }
+  };
+  window.__alloCaptureKaraokeAudio = async (sentence, url) => {
+    const bridge = _getReadAloudBridge();
+    if (!bridge) return _legacyReadAloudApi.capturePlayed(sentence, url);
+    const resourceId = generatedContent && generatedContent.id;
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    const sentenceKey = KS && typeof KS.keyFor === 'function'
+      ? KS.keyFor(sentence)
+      : String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
+    if (_karaokeCaptureInFlight.has(captureKey)) return _karaokeCaptureInFlight.get(captureKey);
+    const capture = Promise.resolve(bridge.capturePlayed(sentence, url));
+    _karaokeCaptureInFlight.set(captureKey, capture);
+    try {
+      return await capture;
+    } finally {
+      if (_karaokeCaptureInFlight.get(captureKey) === capture) _karaokeCaptureInFlight.delete(captureKey);
+    }
+  };
+  window.__alloStoreStudentSentenceAudio = async (sentence, blob) => {
+    const bridge = _getReadAloudBridge();
+    return bridge
+      ? bridge.saveRecording(sentence, blob, 'human-student', 'student')
+      : _legacyReadAloudApi.saveStudentRecording(sentence, blob);
+  };
+  window.__alloStoreRecordedSentenceAudio = async (sentence, blob, source) => {
+    const bridge = _getReadAloudBridge();
+    return bridge
+      ? bridge.saveRecording(sentence, blob, source || 'human-teacher', 'reference')
+      : _legacyReadAloudApi.saveRecording(sentence, blob, source);
+  };
+  window.__alloRemoveSentenceAudio = async (sentence) => {
+    const bridge = _getReadAloudBridge();
+    return bridge ? bridge.remove(sentence, 'reference') : _legacyReadAloudApi.remove(sentence);
+  };
+  window.__alloGetReadAloudAudioSummary = (sentences, lane) => {
+    const bridge = _getReadAloudBridge();
+    return bridge ? bridge.summary(sentences, lane || 'reference') : null;
   };
   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
@@ -37101,6 +37267,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {activeView === 'faq' && window.AlloModules && window.AlloModules.FaqView && React.createElement(window.AlloModules.FaqView, {
                     t, generatedContent, isPlaying, playingContentId, voiceSpeed,
                     isTeacherMode, isEditingFaq, leveledTextLanguage, playbackState,
+                    isGeneratingAudio, selectedVoice,
+                    effectiveLanguage: leveledTextLanguage || currentUiLanguage || 'English',
                     audioRef, playbackSessionRef,
                     setVoiceSpeed, setIsPlaying, setPlayingContentId,
                     handleToggleIsEditingFaq, handleFaqChange, handleSpeak,

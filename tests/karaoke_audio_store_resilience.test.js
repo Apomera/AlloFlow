@@ -227,6 +227,403 @@ describe('KaraokeAudioStore resilience', () => {
   });
 });
 
+describe('KaraokeAudioStore v4 identity migration', () => {
+  const profile = {
+    voice: 'Kore',
+    language: 'English',
+    synthesisRate: 1,
+    provider: 'gemini',
+    voiceResolverVersion: 2,
+  };
+  const segment = (overrides = {}) => ({
+    identityVersion: 4,
+    adapterId: 'faq',
+    adapterVersion: 1,
+    scopeId: 'main',
+    segmentId: 'answer/0',
+    spokenFingerprint: 'sha256:answer-zero',
+    spokenText: 'An exact spoken answer.',
+    ...overrides,
+  });
+
+  it('isolates repeated text by stable segment identity without resource ids in the portable key', () => {
+    const store = KS.createStore();
+    const first = segment({ segmentId: 'answer/0' });
+    const second = segment({ segmentId: 'answer/1' });
+
+    expect(store.put(first, b64(32, 65), 'audio/mpeg', 'ai', profile)).toMatch(/^blob:stored-/);
+    expect(store.put(second, b64(32, 66), 'audio/wav', 'human-teacher', null)).toMatch(/^blob:stored-/);
+    expect(store.size()).toBe(2);
+    expect(store.getCompatible(first, profile)).toMatch(/^blob:stored-/);
+    expect(store.getCompatible(second, { voice: 'Puck' })).toMatch(/^blob:stored-/);
+
+    const payload = store.serialize();
+    expect(payload.version).toBe(4);
+    expect(Object.values(payload.entries)).toHaveLength(2);
+    expect(Object.values(payload.entries).map(entry => entry.mime).sort()).toEqual(['audio/mpeg', 'audio/wav']);
+    expect(Object.values(payload.entries).find(entry => entry.identity.segmentId === 'answer/0')).toMatchObject({
+      source: 'ai',
+      synthesisProfile: {
+        voice: 'Kore',
+        language: 'English',
+        synthesisRate: 1,
+        provider: 'gemini',
+        voiceResolverVersion: 2,
+      },
+    });
+
+    expect(KS.portableKeyForIdentity({ ...first, resourceId: 'resource-a' }))
+      .toBe(KS.portableKeyForIdentity({ ...first, resourceId: 'resource-b' }));
+    const otherResourceStore = KS.createStore();
+    expect(otherResourceStore.has(first)).toBe(false);
+  });
+
+  it('round-trips v4 entries together with unmatched legacy audio', () => {
+    const writer = KS.createStore();
+    const identity = segment();
+    expect(writer.put('A legacy teacher note.', b64(24), 'audio/wav', 'human-teacher')).toBeTruthy();
+    expect(writer.put(identity, b64(48), 'audio/mpeg', 'ai-played', profile)).toBeTruthy();
+
+    const payload = JSON.parse(JSON.stringify(writer.serialize()));
+    expect(payload.version).toBe(4);
+    expect(payload.legacy.version).toBe(3);
+    expect(payload.legacy.sources[KS.keyFor('A legacy teacher note.')]).toBe('human-teacher');
+
+    const reader = KS.createStore();
+    expect(reader.hydrate(payload)).toBe(2);
+    expect(reader.getCompatible(identity, profile)).toMatch(/^blob:stored-/);
+    expect(reader.sourceOf(identity)).toBe('ai-played');
+    expect(reader.get('A legacy teacher note.')).toMatch(/^blob:stored-/);
+    expect(reader.sourceOf('A legacy teacher note.')).toBe('human-teacher');
+    expect(reader.serialize().version).toBe(4);
+  });
+
+  it('promotes only compatible exact legacy AI matches and leaves stale clips in the legacy lane', () => {
+    const sentence = 'Promote this exact sentence.';
+    const legacyWriter = KS.createStore();
+    expect(legacyWriter.put(sentence, b64(32), 'audio/mpeg', 'ai', {
+      voice: 'Kore',
+      speed: 1,
+      language: 'English',
+      voiceResolverVersion: 2,
+    })).toBeTruthy();
+
+    const readyStore = KS.createStore();
+    expect(readyStore.hydrate(legacyWriter.serialize())).toBe(1);
+    const identity = segment({ spokenText: sentence, spokenFingerprint: 'sha256:promote' });
+    expect(readyStore.inspect(identity, profile)).toMatchObject({
+      status: 'ready',
+      source: 'ai',
+      legacy: false,
+    });
+    const promoted = readyStore.serialize();
+    expect(promoted.version).toBe(4);
+    expect(Object.values(promoted.entries)).toHaveLength(1);
+    expect(promoted.legacy.sentences).not.toHaveProperty(KS.keyFor(sentence));
+
+    const staleStore = KS.createStore();
+    expect(staleStore.hydrate(legacyWriter.serialize())).toBe(1);
+    expect(staleStore.getCompatible(identity, { ...profile, voice: 'Puck' })).toBeNull();
+    expect(staleStore.inspect(identity, { ...profile, voice: 'Puck' }).status).toBe('stale');
+    expect(staleStore.serialize().version).toBe(3);
+    expect(staleStore.has(sentence)).toBe(true);
+  });
+
+  it('reads a compatible legacy human recording without promotion or payload growth', () => {
+    const sentence = 'Keep the teacher recording.';
+    const legacyWriter = KS.createStore();
+    expect(legacyWriter.put(sentence, b64(32), 'audio/wav', 'human-teacher')).toBeTruthy();
+
+    const store = KS.createStore();
+    expect(store.hydrate(legacyWriter.serialize())).toBe(1);
+    const identity = segment({ spokenText: sentence, spokenFingerprint: 'sha256:human' });
+    const beforeSize = store.size();
+    const beforeBytes = store.estimateBytes();
+    const beforePayload = store.serialize();
+    const beforeBlobCount = URL.createObjectURL.mock.calls.length;
+
+    expect(store.inspect(identity, { voice: 'Puck' })).toMatchObject({
+      status: 'ready',
+      source: 'human-teacher',
+      legacy: true,
+    });
+    expect(store.getCompatible(identity, { voice: 'Kore' })).toMatch(/^blob:stored-/);
+    expect(store.has(identity)).toBe(true);
+    expect(store.size()).toBe(beforeSize);
+    expect(store.estimateBytes()).toBe(beforeBytes);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(beforeBlobCount);
+    expect(store.serialize()).toEqual(beforePayload);
+    expect(store.serialize()).toMatchObject({ version: 3 });
+    expect(store.serialize()).not.toHaveProperty('entries');
+  });
+  it('protects an identity human recording from automatic AI replacement', () => {
+    const store = KS.createStore();
+    const identity = segment();
+    const humanUrl = store.put(identity, b64(32, 65), 'audio/wav', 'human-teacher');
+    expect(humanUrl).toBeTruthy();
+
+    expect(store.put(identity, b64(32, 66), 'audio/mpeg', 'ai', profile)).toBeNull();
+    expect(store.lastPutError()).toMatchObject({ code: 'human-recording-protected' });
+    expect(store.get(identity)).toBe(humanUrl);
+    expect(store.sourceOf(identity)).toBe('human-teacher');
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+
+    // A deliberate replacement with another human take remains safe.
+    expect(store.put(identity, b64(32, 67), 'audio/wav', 'human-student')).toBeTruthy();
+    expect(store.sourceOf(identity)).toBe('human-student');
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(humanUrl);
+  });
+
+  it('allows an explicit AI replacement when allowReplaceHuman is true', () => {
+    const store = KS.createStore();
+    const identity = segment();
+    const humanUrl = store.put(identity, b64(32), 'audio/wav', 'human-teacher');
+    expect(humanUrl).toBeTruthy();
+
+    const aiUrl = store.put(identity, b64(48), 'audio/mpeg', 'ai', profile, {
+      allowReplaceHuman: true,
+    });
+    expect(aiUrl).toBeTruthy();
+    expect(aiUrl).not.toBe(humanUrl);
+    expect(store.sourceOf(identity)).toBe('ai');
+    expect(store.getCompatible(identity, profile)).toBe(aiUrl);
+    expect(store.lastPutError()).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(humanUrl);
+  });
+
+  it('protects human recordings in the legacy lane, including identity writes with matching text', () => {
+    const sentence = 'A protected legacy recording.';
+    const sameLane = KS.createStore();
+    const humanUrl = sameLane.put(sentence, b64(32), 'audio/wav', 'human-teacher');
+    expect(humanUrl).toBeTruthy();
+    expect(sameLane.put(sentence, b64(32, 66), 'audio/mpeg', 'ai', profile)).toBeNull();
+    expect(sameLane.lastPutError()).toMatchObject({ code: 'human-recording-protected' });
+    expect(sameLane.get(sentence)).toBe(humanUrl);
+    expect(sameLane.sourceOf(sentence)).toBe('human-teacher');
+
+    const crossLane = KS.createStore();
+    expect(crossLane.put(sentence, b64(32), 'audio/wav', 'human-teacher')).toBeTruthy();
+    const identity = segment({ spokenText: sentence, spokenFingerprint: 'sha256:protected-legacy' });
+    expect(crossLane.put(identity, b64(32, 66), 'audio/mpeg', 'ai', profile)).toBeNull();
+    expect(crossLane.lastPutError()).toMatchObject({ code: 'human-recording-protected' });
+    expect(crossLane.size()).toBe(1);
+
+    expect(crossLane.put(identity, b64(32, 67), 'audio/mpeg', 'ai', profile, {
+      allowReplaceHuman: true,
+    })).toBeTruthy();
+    expect(crossLane.size()).toBe(1);
+    expect(crossLane.sourceOf(identity)).toBe('ai');
+    expect(crossLane.serialize().legacy.sentences).not.toHaveProperty(KS.keyFor(sentence));
+  });
+
+  it('lets legacy string removal delete one unique v4 match but never guess among repeated text', () => {
+    const sentence = 'Remove this portable segment.';
+    const uniqueStore = KS.createStore();
+    const uniqueIdentity = segment({
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:unique-removal',
+    });
+    expect(uniqueStore.put(sentence, b64(24), 'audio/wav', 'human-teacher')).toBeTruthy();
+    expect(uniqueStore.put(uniqueIdentity, b64(32), 'audio/wav', 'human-teacher')).toBeTruthy();
+    expect(uniqueStore.size()).toBe(2);
+
+    uniqueStore.remove(sentence);
+    expect(uniqueStore.size()).toBe(0);
+    expect(uniqueStore.has(uniqueIdentity)).toBe(false);
+    expect(uniqueStore.get(sentence)).toBeNull();
+
+    const repeatedStore = KS.createStore();
+    const first = segment({
+      segmentId: 'repeat/0',
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:repeat-zero',
+    });
+    const second = segment({
+      segmentId: 'repeat/1',
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:repeat-one',
+    });
+    expect(repeatedStore.put(first, b64(32, 65), 'audio/mpeg', 'ai', profile)).toBeTruthy();
+    expect(repeatedStore.put(second, b64(32, 66), 'audio/mpeg', 'ai', profile)).toBeTruthy();
+
+    repeatedStore.remove(sentence);
+    expect(repeatedStore.size()).toBe(2);
+    expect(repeatedStore.has(first)).toBe(true);
+    expect(repeatedStore.has(second)).toBe(true);
+  });
+  it('enforces clip and resource limits before creating legacy hydration blobs', () => {
+    const store = KS.createStore();
+    const payload = {
+      version: 3,
+      format: 'per-entry',
+      sentences: {
+        'Zulu later.': b64(700, 90),
+        'Alpha first.': b64(700, 65),
+        'Oversized clip.': b64(1200, 79),
+      },
+      mimes: {
+        'Zulu later.': 'audio/mpeg',
+        'Alpha first.': 'audio/wav',
+        'Oversized clip.': 'audio/mpeg',
+      },
+      sources: {
+        'Zulu later.': 'ai',
+        'Alpha first.': 'human-teacher',
+        'Oversized clip.': 'ai',
+      },
+    };
+
+    expect(store.hydrate(payload, { maxBytes: 1024, maxClipBytes: 1024 })).toBe(1);
+    expect(store.has('Alpha first.')).toBe(true);
+    expect(store.sourceOf('Alpha first.')).toBe('human-teacher');
+    expect(store.has('Zulu later.')).toBe(false);
+    expect(store.has('Oversized clip.')).toBe(false);
+    expect(store.estimateBytes()).toBe(700);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('enforces clip and resource limits before creating v4 hydration blobs', () => {
+    const alpha = segment({
+      segmentId: 'hydrate/a',
+      spokenText: 'Alpha portable clip.',
+      spokenFingerprint: 'sha256:hydrate-alpha',
+    });
+    const zulu = segment({
+      segmentId: 'hydrate/z',
+      spokenText: 'Zulu portable clip.',
+      spokenFingerprint: 'sha256:hydrate-zulu',
+    });
+    const oversized = segment({
+      segmentId: 'hydrate/oversized',
+      spokenText: 'Oversized portable clip.',
+      spokenFingerprint: 'sha256:hydrate-oversized',
+    });
+    const entry = (identity, audio) => ({
+      identity,
+      audio,
+      mime: 'audio/mpeg',
+      source: 'ai',
+      synthesisProfile: profile,
+    });
+    const payload = {
+      version: 4,
+      format: 'per-entry',
+      entries: {
+        'z-entry': entry(zulu, b64(700, 90)),
+        'a-entry': entry(alpha, b64(700, 65)),
+        'oversized-entry': entry(oversized, b64(1200, 79)),
+      },
+      legacy: {
+        version: 3,
+        format: 'per-entry',
+        sentences: {},
+        mimes: {},
+        sources: {},
+        metadata: {},
+      },
+    };
+
+    const store = KS.createStore();
+    expect(store.hydrate(payload, { maxBytes: 1024, maxClipBytes: 1024 })).toBe(1);
+    expect(store.has(alpha)).toBe(true);
+    expect(store.has(zulu)).toBe(false);
+    expect(store.has(oversized)).toBe(false);
+    expect(store.estimateBytes()).toBe(700);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('matches an explicitly requested resolver version and defaults legacy callers to v2', () => {
+    const v3Profile = { ...profile, voiceResolverVersion: 3 };
+    const identityStore = KS.createStore();
+    const identity = segment({ segmentId: 'resolver/v3' });
+    const identityUrl = identityStore.put(identity, b64(32), 'audio/mpeg', 'ai', v3Profile);
+    expect(identityUrl).toBeTruthy();
+    expect(identityStore.getCompatible(identity, v3Profile)).toBe(identityUrl);
+    expect(identityStore.getCompatible(identity, { ...profile, voiceResolverVersion: 2 })).toBeNull();
+    expect(identityStore.getCompatible(identity, { voice: 'Kore' })).toBeNull();
+
+    const legacyStore = KS.createStore();
+    const sentence = 'Resolver version three.';
+    const legacyUrl = legacyStore.put(sentence, b64(32), 'audio/mpeg', 'ai', {
+      voice: 'Kore',
+      speed: 1,
+      language: 'English',
+      voiceResolverVersion: 3,
+    });
+    expect(legacyStore.getCompatible(sentence, v3Profile)).toBe(legacyUrl);
+    expect(legacyStore.getCompatible(sentence, { voice: 'Kore' })).toBeNull();
+  });
+
+  it('keeps repeated-text identities exact while legacy string reads choose a compatible entry', () => {
+    const sentence = 'The same words can belong to distinct segments.';
+    const aiIdentity = segment({
+      segmentId: 'repeat/a-ai',
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:repeat-ai',
+    });
+    const humanIdentity = segment({
+      segmentId: 'repeat/z-human',
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:repeat-human',
+    });
+    const store = KS.createStore();
+    const aiUrl = store.put(aiIdentity, b64(32, 65), 'audio/mpeg', 'ai', {
+      ...profile,
+      voice: 'Puck',
+    });
+    const humanUrl = store.put(humanIdentity, b64(32, 66), 'audio/wav', 'human-teacher');
+    expect(store.get(aiIdentity)).toBe(aiUrl);
+    expect(store.get(humanIdentity)).toBe(humanUrl);
+    expect(store.has(sentence)).toBe(true);
+    expect(store.get(sentence)).toBe(humanUrl);
+    expect(store.getCompatible(sentence, { voice: 'Kore' })).toBe(humanUrl);
+    expect(store.sourceOf(sentence)).toBe('human-teacher');
+    expect(store.metadataOf(sentence)).toEqual({ createdAt: expect.any(String) });
+
+    store.remove(sentence);
+    expect(store.size()).toBe(2);
+    expect(store.has(aiIdentity)).toBe(true);
+    expect(store.has(humanIdentity)).toBe(true);
+
+    const aiOnly = KS.createStore();
+    const puckIdentity = segment({
+      segmentId: 'compatible/a-puck',
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:compatible-puck',
+    });
+    const koreIdentity = segment({
+      segmentId: 'compatible/z-kore',
+      spokenText: sentence,
+      spokenFingerprint: 'sha256:compatible-kore',
+    });
+    const puckUrl = aiOnly.put(puckIdentity, b64(32, 67), 'audio/mpeg', 'ai', {
+      ...profile,
+      voice: 'Puck',
+    });
+    const koreUrl = aiOnly.put(koreIdentity, b64(32, 68), 'audio/mpeg', 'ai', profile);
+    expect(aiOnly.get(sentence)).toBe(puckUrl);
+    expect(aiOnly.getCompatible(sentence, profile)).toBe(koreUrl);
+    expect(aiOnly.metadataOf(sentence)).toMatchObject({ voice: 'Puck' });
+  });
+  it('reports stale identity fingerprints and lets identity removal clear the stable locator', () => {
+    const store = KS.createStore();
+    const original = segment();
+    const edited = segment({
+      spokenFingerprint: 'sha256:edited',
+      spokenText: 'An edited spoken answer.',
+    });
+    expect(store.put(original, b64(32), 'audio/mpeg', 'ai', profile)).toBeTruthy();
+    expect(store.has(edited)).toBe(true);
+    expect(store.sourceOf(edited)).toBe('ai');
+    expect(store.metadataOf(edited)).toMatchObject({ voice: 'Kore' });
+    expect(store.inspect(edited, profile).status).toBe('stale');
+    expect(store.missing([edited], profile)).toEqual([edited]);
+
+    store.remove(edited);
+    expect(store.size()).toBe(0);
+    expect(store.inspect(original, profile).status).toBe('missing');
+  });
+});
 describe('karaoke capture integration contracts', () => {
   it('coalesces duplicate captures, retries transient reads, and preserves resource identity', () => {
     const host = read('AlloFlowANTI.txt');

@@ -255,6 +255,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ReadAloudAudioServiceModule',
+        filename: 'read_aloud_audio_service_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'GenerationHelpersModule',
         filename: 'generation_helpers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1698,6 +1703,8 @@ const CONTENT_HASH_PINNED = new Set([
     'view_student_save_adventure_module.js',
     'view_socratic_chat_module.js',
     'karaoke_audio_store_module.js',
+    'read_aloud_audio_service_module.js',
+    'view_faq_module.js',
     'immersive_reader_module.js',
     'view_simplified_module.js',
 ]);

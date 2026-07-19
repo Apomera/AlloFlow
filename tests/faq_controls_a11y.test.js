@@ -21,4 +21,26 @@ describe('FAQ keyboard and control semantics', () => {
     expect(source).toContain('focus:ring-2 focus:ring-cyan-500');
     expect(fs.readFileSync('prismflow-deploy/public/view_faq_module.js', 'utf8')).toBe(fs.readFileSync('view_faq_module.js', 'utf8'));
   });
+
+  it('announces FAQ audio loading with a motion-safe busy status', () => {
+    expect(source).toContain('var isGeneratingAudio = !!props.isGeneratingAudio;');
+    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true" aria-busy={isGeneratingAudio}');
+    expect(source).toContain('Loading FAQ audio...');
+    expect(source).toContain('animate-spin motion-reduce:animate-none text-cyan-600');
+    expect(source).toContain('animate-pulse motion-reduce:animate-none');
+    expect(source).toContain('prepState.busy ? `${prepState.done}/${prepState.total');
+  });
+
+  it('uses the shared sanitizer and compatibility-aware audio statuses', () => {
+    expect(source).toContain("typeof phaseK.toSpokenText === 'function'");
+    expect(source).toContain('return phaseK.toSpokenText(sentence);');
+    expect(source).toContain("return String(sentence || '').replace(");
+    expect(source).toContain('st.getCompatible(sentence, {');
+    expect(source).toContain('voice: selectedVoice');
+    expect(source).toContain('language: effectiveLanguage');
+    expect(source).toContain("return compatible ? 'ready' : 'stale';");
+    expect(source).toContain('TTS {summary.ready}/{summary.total} ready');
+    expect(source).not.toContain('summary.saved');
+    expect(source).not.toContain('hasStoredReadAloudAudio');
+  });
 });

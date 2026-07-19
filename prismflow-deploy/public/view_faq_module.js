@@ -61,6 +61,9 @@ function FaqView(props) {
   var isTeacherMode = props.isTeacherMode;
   var isEditingFaq = props.isEditingFaq;
   var leveledTextLanguage = props.leveledTextLanguage;
+  var isGeneratingAudio = !!props.isGeneratingAudio;
+  var selectedVoice = props.selectedVoice;
+  var effectiveLanguage = props.effectiveLanguage || leveledTextLanguage || 'English';
   var playbackState = props.playbackState;
   // Refs
   var audioRef = props.audioRef;
@@ -101,6 +104,12 @@ function FaqView(props) {
     };
   }, []);
   var cleanSentenceForAudio = function (sentence) {
+    try {
+      var phaseK = window.AlloModules && window.AlloModules.PhaseKHelpers;
+      if (phaseK && typeof phaseK.toSpokenText === 'function') {
+        return phaseK.toSpokenText(sentence);
+      }
+    } catch (_) {}
     // Must mirror playSequence's textToSpeak cleaning (phase_k) — the store
     // key is derived from the cleaned sentence on BOTH sides, so a rule
     // present in one place but not the other orphans that sentence's audio.
@@ -113,23 +122,34 @@ function FaqView(props) {
       return null;
     }
   };
-  var hasStoredReadAloudAudio = function (sentence) {
+  var getReadAloudAudioStatus = function (sentence) {
     var st = getReadAloudStore();
+    if (!st) return 'missing';
     try {
-      return !!(st && st.has(sentence));
+      var stored = !!st.has(sentence);
+      if (!stored) return 'missing';
+      if (typeof st.getCompatible !== 'function') return 'ready';
+      var compatible = st.getCompatible(sentence, {
+        voice: selectedVoice,
+        language: effectiveLanguage
+      });
+      return compatible ? 'ready' : 'stale';
     } catch (_) {
-      return false;
+      return 'missing';
     }
   };
   var getReadAloudAudioSummary = function (sentences) {
     var list = Array.isArray(sentences) ? sentences : [];
-    var saved = list.reduce(function (n, sentence) {
-      return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0);
-    }, 0);
-    return {
-      saved: saved,
+    return list.reduce(function (summary, sentence) {
+      var status = getReadAloudAudioStatus(sentence);
+      summary[status] += 1;
+      return summary;
+    }, {
+      ready: 0,
+      stale: 0,
+      missing: 0,
       total: list.length
-    };
+    });
   };
   var getFaqAudioSentences = function () {
     var data = generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data : [];
@@ -187,24 +207,26 @@ function FaqView(props) {
       className: "flex flex-wrap gap-1.5 pt-1"
     }, /*#__PURE__*/React.createElement("div", {
       className: "w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-cyan-700"
-    }, /*#__PURE__*/React.createElement("span", null, "TTS ", summary.saved, "/", summary.total, " saved"), /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("span", null, "TTS ", summary.ready, "/", summary.total, " ready", summary.stale > 0 ? `; ${summary.stale} stale` : ''), /*#__PURE__*/React.createElement("span", {
       className: "text-slate-500 normal-case font-semibold"
     }, "Click to regenerate")), sentences.map(function (sentence, sIdx) {
       var key = keyPrefix + '-' + sIdx;
       var busy = regenAudioKey === key;
-      var isSaved = hasStoredReadAloudAudio(sentence);
+      var audioStatus = getReadAloudAudioStatus(sentence);
       return /*#__PURE__*/React.createElement("button", {
         key: key,
         type: "button",
         onClick: () => handleRegenerateFaqAudioSentence(sentence, key),
         disabled: !!regenAudioKey,
-        className: `inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'}`,
-        title: `${isSaved ? 'TTS saved' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`,
-        "aria-label": `${isSaved ? 'Saved TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`
+        className: `inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none ${audioStatus === 'ready' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : audioStatus === 'stale' ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`,
+        title: `${audioStatus === 'ready' ? 'TTS ready' : audioStatus === 'stale' ? 'TTS saved with different settings' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`,
+        "aria-label": `${audioStatus === 'ready' ? 'Ready TTS' : audioStatus === 'stale' ? 'Stale TTS' : 'Missing TTS'} for FAQ sentence ${sIdx + 1}. Regenerate audio.`
       }, busy ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
-        className: "animate-spin"
-      }) : isSaved ? /*#__PURE__*/React.createElement(CheckCircle2, {
+        className: "animate-spin motion-reduce:animate-none"
+      }) : audioStatus === 'ready' ? /*#__PURE__*/React.createElement(CheckCircle2, {
+        size: 12
+      }) : audioStatus === 'stale' ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12
       }) : /*#__PURE__*/React.createElement(Volume2, {
         size: 12
@@ -214,14 +236,26 @@ function FaqView(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, isPlaying && playingContentId === 'faq-active' && /*#__PURE__*/React.createElement("div", {
-    className: "sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in fade-in slide-in-from-top-2"
+    className: "sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in motion-reduce:animate-none fade-in slide-in-from-top-2",
+    "aria-busy": isGeneratingAudio
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "h-2 w-2 rounded-full bg-cyan-500 animate-pulse"
+    className: "flex items-center gap-3",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    "aria-busy": isGeneratingAudio
+  }, isGeneratingAudio ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 15,
+    className: "animate-spin motion-reduce:animate-none text-cyan-600 shrink-0",
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-medium text-cyan-800"
-  }, "Reading FAQ...")), /*#__PURE__*/React.createElement("div", {
+  }, "Loading FAQ audio...")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "h-2 w-2 rounded-full bg-cyan-500 animate-pulse motion-reduce:animate-none",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-medium text-cyan-800"
+  }, "Reading FAQ..."))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"
