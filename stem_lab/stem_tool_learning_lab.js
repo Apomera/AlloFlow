@@ -6138,21 +6138,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { blocks: [], subjects: ['Math', 'English', 'Science', 'History', 'Other'] };
     var setData = props.setData;
 
-    var vs = R.useState('week');     var view = vs[0];     var setView = vs[1]; // week | add
+    var vs = R.useState('week');       var view = vs[0];       var setView = vs[1];
     var fs = R.useState({ day: 1, hour: 16, duration: 60, subject: 'Math', task: '', recurring: true });
-    var form = fs[0];                var setForm = fs[1];
+    var form = fs[0];                  var setForm = fs[1];
+    var fts = R.useState('');          var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
-    var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var DAYS = [
+      { short: 'Sun', full: 'Sunday' }, { short: 'Mon', full: 'Monday' },
+      { short: 'Tue', full: 'Tuesday' }, { short: 'Wed', full: 'Wednesday' },
+      { short: 'Thu', full: 'Thursday' }, { short: 'Fri', full: 'Friday' },
+      { short: 'Sat', full: 'Saturday' }
+    ];
     var HOURS = [];
-    for (var h = 6; h <= 22; h++) HOURS.push(h);
+    for (var hour = 6; hour <= 22; hour++) HOURS.push(hour);
 
-    function fmtHour(h) { return (h % 12 || 12) + (h < 12 ? 'a' : 'p'); }
-    function addBlock(b) {
-      var blocks = (data.blocks || []).concat([Object.assign({ id: tkId(), createdAt: todayISO() }, b)]);
-      setData(Object.assign({}, data, { blocks: blocks }));
+    var blocks = data.blocks || [];
+    var subjects = data.subjects && data.subjects.length ? data.subjects : ['Other'];
+    var SUBJECT_COLORS = ['#c4b5fd', '#fca5a5', '#6ee7b7', '#fde68a', '#67e8f9', '#ddd6fe', '#fdba74', '#93c5fd'];
+
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
+      }
+      setFocusTarget('');
+    }, [focusTarget]);
+
+    function formatHour(value) {
+      var suffix = value < 12 ? 'AM' : 'PM';
+      return (value % 12 || 12) + ':00 ' + suffix;
     }
-    function removeBlock(id) {
-      setData(Object.assign({}, data, { blocks: (data.blocks || []).filter(function(b) { return b.id !== id; }) }));
+    function formatMinutes(value) {
+      var minutes = Math.max(0, Math.round(Number(value) || 0));
+      var hours = Math.floor(minutes / 60);
+      var remainder = minutes % 60;
+      if (!hours) return minutes + (minutes === 1 ? ' minute' : ' minutes');
+      if (!remainder) return hours + (hours === 1 ? ' hour' : ' hours');
+      return hours + (hours === 1 ? ' hour ' : ' hours ') + remainder + (remainder === 1 ? ' minute' : ' minutes');
+    }
+    function subjectColor(subject) {
+      var index = subjects.indexOf(subject);
+      return SUBJECT_COLORS[(index < 0 ? 0 : index) % SUBJECT_COLORS.length];
+    }
+    function openAdd() {
+      var fallbackSubject = subjects.indexOf(form.subject) >= 0 ? form.subject : subjects[0];
+      setForm(Object.assign({}, form, { subject: fallbackSubject }));
+      setView('add');
+      setFocusTarget('learning-lab-study-form-heading');
+    }
+    function cancelAdd() {
+      setView('week');
+      setFocusTarget('learning-lab-study-heading');
+      llAnnounce('Study block creation canceled.');
+    }
+    function addBlock(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var block = Object.assign({}, form, { id: tkId(), createdAt: todayISO() });
+      setData(Object.assign({}, data, { blocks: blocks.concat([block]) }));
+      setView('week');
+      setFocusTarget('learning-lab-study-schedule-heading');
+      llAnnounce('Study block added for ' + DAYS[block.day].full + ' at ' + formatHour(block.hour) + '.');
+    }
+    async function removeBlock(block) {
+      if (!(await askLearningLabConfirmation('This permanently removes the selected study block from the planner.', {
+        title: 'Remove this study block?', confirmText: 'Remove block'
+      }))) return;
+      var remaining = blocks.filter(function(candidate) { return candidate.id !== block.id; });
+      setData(Object.assign({}, data, { blocks: remaining }));
+      setFocusTarget(remaining.length ? 'learning-lab-study-schedule-heading' : 'learning-lab-study-add-button');
+      llAnnounce('Study block removed.');
     }
     async function addSubject() {
       var values = await askLearningLabForm({
@@ -6161,180 +6216,177 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         submitText: 'Add subject',
         fields: [{ name: 'name', label: 'Subject name', required: true, maxLength: 60 }],
         validate: function(result) {
-          return (data.subjects || []).some(function(existing) { return existing.toLowerCase() === result.name.toLowerCase(); }) ? 'That subject is already in the planner.' : '';
+          return subjects.some(function(existing) { return existing.toLowerCase() === result.name.toLowerCase(); }) ? 'That subject is already in the planner.' : '';
         }
       });
       if (!values) return;
-      var name = values.name;
-      setData(Object.assign({}, data, { subjects: (data.subjects || []).concat([name]) }));
+      var name = String(values.name || '').trim();
+      setData(Object.assign({}, data, { subjects: subjects.concat([name]) }));
+      setForm(Object.assign({}, form, { subject: name }));
+      setFocusTarget('learning-lab-study-subject-heading');
+      llAnnounce('Study subject added and selected: ' + name + '.');
     }
 
-    var blocks = data.blocks || [];
-    var subjects = data.subjects && data.subjects.length ? data.subjects : ['Other'];
-
-    var SUBJ_COLORS = ['#9333ea', '#ef4444', '#10b981', '#fbbf24', '#06b6d4', '#a78bfa', '#f97316', '#3b82f6'];
-    function subColor(s) {
-      var idx = subjects.indexOf(s);
-      return SUBJ_COLORS[idx % SUBJ_COLORS.length] || '#94a3b8';
-    }
-
-    var totalWeekMin = blocks.reduce(function(sum, b) { return sum + (b.duration || 0); }, 0);
-    var totalWeekHr = (totalWeekMin / 60).toFixed(1);
-    var bySubject = subjects.map(function(s) {
-      var min = blocks.filter(function(b) { return b.subject === s; }).reduce(function(sum, b) { return sum + (b.duration || 0); }, 0);
-      return { subject: s, min: min, color: subColor(s) };
+    var totalWeekMinutes = blocks.reduce(function(sum, block) { return sum + (Number(block.duration) || 0); }, 0);
+    var bySubject = subjects.map(function(subject) {
+      var minutes = blocks.filter(function(block) { return block.subject === subject; }).reduce(function(sum, block) { return sum + (Number(block.duration) || 0); }, 0);
+      return { subject: subject, minutes: minutes, color: subjectColor(subject) };
     });
+    var usedSubjects = bySubject.filter(function(item) { return item.minutes > 0; });
 
     if (view === 'add') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('+', 'Add study block', 'When + what + how long.', '#3b82f6'),
+        tkSectionHeader('➕', 'Add study block', 'Choose a day, start time, duration, and subject. A task description is optional.', '#3b82f6', 'learning-lab-study-form-heading'),
         tkCard('#3b82f6',
-          hh('div', null,
-            hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
-              hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Day of week'),
+          hh('form', { 'aria-labelledby': 'learning-lab-study-form-heading', onSubmit: addBlock },
+            hh('fieldset', { style: { border: '1px solid rgba(147,197,253,0.45)', borderRadius: 8, padding: 10, margin: '0 0 12px' } },
+              hh('legend', { style: { padding: '0 5px', fontSize: 11, fontWeight: 800, color: '#bfdbfe' } }, 'Day of week'),
               hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                DAYS.map(function(d, i) {
-                  return hh('button', { key: 'd-' + i, type: 'button', 'aria-pressed': form.day === i,
-                    onClick: function() { setForm(Object.assign({}, form, { day: i })); },
-                    style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 6, background: form.day === i ? '#3b82f6' : 'rgba(59,130,246,0.10)', color: form.day === i ? '#fff' : '#60a5fa', border: '1px solid rgba(59,130,246,0.40)', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
-                  }, d);
+                DAYS.map(function(day, index) {
+                  var selected = form.day === index;
+                  return hh('button', { key: 'd-' + index, type: 'button', 'aria-pressed': selected ? 'true' : 'false', 'data-ll-focusable': true,
+                    onClick: function() { setForm(Object.assign({}, form, { day: index })); },
+                    style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 6, background: selected ? '#2563eb' : 'rgba(59,130,246,0.10)', color: selected ? '#fff' : '#bfdbfe', border: '1px solid #60a5fa', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                  }, day.full);
                 })
               )
             ),
-            hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 } },
+            hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 12 } },
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-study-start-time', style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Start time'),
-                hh('select', {
-                  id: 'learning-lab-study-start-time',
-                  value: form.hour, onChange: function(e) { setForm(Object.assign({}, form, { hour: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', minHeight: 44, padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
-                }, HOURS.map(function(h) { return hh('option', { key: 'h-' + h, value: h }, fmtHour(h)); }))
+                hh('label', { htmlFor: 'learning-lab-study-start-time', style: { fontSize: 11, fontWeight: 800, color: '#bfdbfe', display: 'block', marginBottom: 4 } }, 'Start time'),
+                hh('select', { id: 'learning-lab-study-start-time', value: form.hour, 'data-ll-focusable': true,
+                  onChange: function(event) { setForm(Object.assign({}, form, { hour: parseInt(event.target.value, 10) })); },
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid #60a5fa', borderRadius: 6 }
+                }, HOURS.map(function(value) { return hh('option', { key: 'h-' + value, value: value }, formatHour(value)); }))
               ),
               hh('div', null,
-                hh('label', { htmlFor: 'learning-lab-study-duration', style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Duration'),
-                hh('select', {
-                  id: 'learning-lab-study-duration',
-                  value: form.duration, onChange: function(e) { setForm(Object.assign({}, form, { duration: parseInt(e.target.value, 10) })); },
-                  style: { width: '100%', minHeight: 44, padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6 }
-                }, [25, 45, 60, 90, 120].map(function(m) { return hh('option', { key: 'm-' + m, value: m }, m + ' min'); }))
+                hh('label', { htmlFor: 'learning-lab-study-duration', style: { fontSize: 11, fontWeight: 800, color: '#bfdbfe', display: 'block', marginBottom: 4 } }, 'Duration'),
+                hh('select', { id: 'learning-lab-study-duration', value: form.duration, 'data-ll-focusable': true,
+                  onChange: function(event) { setForm(Object.assign({}, form, { duration: parseInt(event.target.value, 10) })); },
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid #60a5fa', borderRadius: 6 }
+                }, [25, 45, 60, 90, 120].map(function(minutes) { return hh('option', { key: 'm-' + minutes, value: minutes }, formatMinutes(minutes)); }))
               )
             ),
-            hh('fieldset', { style: { border: 0, padding: 0, margin: '0 0 12px' } },
-              hh('legend', { style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Subject'),
+            hh('fieldset', { style: { border: '1px solid rgba(147,197,253,0.45)', borderRadius: 8, padding: 10, margin: '0 0 12px' } },
+              hh('legend', { id: 'learning-lab-study-subject-heading', tabIndex: -1, style: { padding: '0 5px', fontSize: 11, fontWeight: 800, color: '#bfdbfe' } }, 'Subject'),
               hh('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
-                subjects.map(function(s) {
-                  var col = subColor(s);
-                  return hh('button', { key: 'su-' + s, type: 'button', 'aria-pressed': form.subject === s,
-                    onClick: function() { setForm(Object.assign({}, form, { subject: s })); },
-                    style: { minHeight: 44, padding: '6px 12px', borderRadius: 6, background: form.subject === s ? col + '30' : 'rgba(15,23,42,0.5)', color: form.subject === s ? col : '#94a3b8', border: '1px solid ' + (form.subject === s ? col : 'rgba(100,116,139,0.30)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                  }, s);
+                subjects.map(function(subject) {
+                  var color = subjectColor(subject);
+                  var selected = form.subject === subject;
+                  return hh('button', { key: 'su-' + subject, type: 'button', 'aria-pressed': selected ? 'true' : 'false', 'data-ll-focusable': true,
+                    onClick: function() { setForm(Object.assign({}, form, { subject: subject })); },
+                    style: { minHeight: 44, padding: '6px 12px', borderRadius: 6, background: selected ? color + '25' : 'rgba(15,23,42,0.5)', color: selected ? color : 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + (selected ? color : 'rgba(148,163,184,0.60)'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, subject);
                 }),
-                hh('button', { type: 'button', onClick: addSubject, style: { minHeight: 44, padding: '6px 12px', borderRadius: 6, background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px dashed rgba(148,163,184,0.40)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '+ Add subject')
+                hh('button', { type: 'button', onClick: addSubject, 'data-ll-focusable': true, style: { minHeight: 44, padding: '6px 12px', borderRadius: 6, background: 'transparent', color: '#cbd5e1', border: '1px dashed rgba(203,213,225,0.65)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, 'Add subject')
               )
             ),
-            hh('label', { htmlFor: 'learning-lab-study-task', style: { fontSize: 10, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', display: 'block', marginBottom: 4 } }, 'Task or topic (optional)'),
-            hh('input', { id: 'learning-lab-study-task', type: 'text', value: form.task, onChange: function(e) { setForm(Object.assign({}, form, { task: e.target.value })); }, placeholder: 'e.g., "Chapter 5 problem set"', style: { width: '100%', minHeight: 44, padding: '10px 12px', marginBottom: 12, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, outline: 'none', boxSizing: 'border-box' } }),
-            hh('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer' } },
-              hh('input', { type: 'checkbox', checked: form.recurring, onChange: function(e) { setForm(Object.assign({}, form, { recurring: e.target.checked })); } }),
-              'Repeat weekly'
+            hh('label', { htmlFor: 'learning-lab-study-task', style: { fontSize: 11, fontWeight: 800, color: '#bfdbfe', display: 'block', marginBottom: 4 } }, 'Task or topic (optional)'),
+            tkInput(form.task, function(value) { setForm(Object.assign({}, form, { task: value })); }, 'For example: Chapter 5 problem set', { id: 'learning-lab-study-task', maxLength: 500, marginBottom: 12 }),
+            hh('label', { htmlFor: 'learning-lab-study-recurring', style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '4px 0', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', marginBottom: 10 } },
+              hh('input', { id: 'learning-lab-study-recurring', type: 'checkbox', checked: !!form.recurring, 'data-ll-focusable': true,
+                onChange: function(event) { setForm(Object.assign({}, form, { recurring: event.target.checked })); },
+                style: { width: 20, height: 20, accentColor: '#2563eb' }
+              }),
+              'Repeat this block each week'
+            ),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              tkBtn('Cancel', cancelAdd, 'ghost'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add study block')
             )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('week'); }, 'ghost'),
-          tkBtn('💾 Add block', function() { addBlock(form); setView('week'); }, 'primary')
         )
       );
     }
 
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('📅', 'Weekly Study Planner', 'Visual schedule of your study blocks. Click a cell to add. Recurring slots build the routine.', '#3b82f6'),
+      tkSectionHeader('📅', 'Weekly Study Planner', 'A table of scheduled study blocks. Use the Add study block button to create an entry.', '#3b82f6', 'learning-lab-study-heading'),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8, marginBottom: 14 } },
+      hh('ul', { 'aria-label': 'Weekly study summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, listStyle: 'none', padding: 0, margin: '0 0 14px' } },
         [
-          { label: 'Total this week', value: totalWeekHr + 'h', color: '#3b82f6', icon: '⏱' },
-          { label: 'Active blocks', value: blocks.length, color: '#9333ea', icon: '📦' },
-          { label: 'Subjects', value: subjects.length, color: '#10b981', icon: '📚' }
-        ].map(function(s, i) {
-          return hh('div', { key: 'ws-' + i, style: { padding: 10, borderRadius: 8, background: s.color + '12', border: '1px solid ' + s.color + '30', textAlign: 'center' } },
-            hh('div', { style: { fontSize: 14, marginBottom: 2 } }, s.icon),
-            hh('div', { style: { fontSize: 18, fontWeight: 900, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, s.value),
-            hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, s.label)
+          { label: 'Total scheduled time', value: formatMinutes(totalWeekMinutes), color: '#93c5fd', icon: '⏱' },
+          { label: 'Scheduled blocks', value: String(blocks.length), color: '#c4b5fd', icon: '📦' },
+          { label: 'Available subjects', value: String(subjects.length), color: '#6ee7b7', icon: '📚' }
+        ].map(function(summary, index) {
+          return hh('li', { key: 'ws-' + index, style: { padding: 10, borderRadius: 8, background: summary.color + '12', border: '1px solid ' + summary.color + '55', textAlign: 'center' } },
+            hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 14, marginBottom: 2 } }, summary.icon),
+            hh('span', { style: { display: 'block', fontSize: 18, fontWeight: 900, color: summary.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, summary.value),
+            hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, summary.label)
           );
         })
       ),
 
       hh('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 } },
-        tkBtn('+ Add block', function() { setView('add'); }, 'primary')
+        hh('button', { id: 'learning-lab-study-add-button', type: 'button', onClick: openAdd, 'data-ll-focusable': true,
+          style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1.5px solid #93c5fd', background: '#1d4ed8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add study block')
       ),
 
-      // Week grid
-      hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 8, marginBottom: 12, overflowX: 'auto' } },
-        hh('div', { style: { display: 'grid', gridTemplateColumns: '50px repeat(7, minmax(60px, 1fr))', gap: 2, minWidth: 500 } },
-          // Header row
-          [hh('div', { key: 'tl' }, '')].concat(DAYS.map(function(d) {
-            return hh('div', { key: 'd-' + d, style: { textAlign: 'center', fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: 4 } }, d);
-          })),
-          // Hour rows
-          HOURS.flatMap(function(h) {
-            return [hh('div', { key: 'h-' + h, style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', textAlign: 'right', padding: '4px 6px', fontFamily: 'ui-monospace, Menlo, monospace' } }, fmtHour(h))]
-              .concat(DAYS.map(function(d, di) {
-                var cellBlocks = blocks.filter(function(b) { return b.day === di && b.hour <= h && (b.hour + (b.duration / 60)) > h; });
-                var firstHere = blocks.filter(function(b) { return b.day === di && b.hour === h; })[0];
-                if (firstHere) {
-                  var col = subColor(firstHere.subject);
-                  var cellHeight = Math.max(28, (firstHere.duration / 60) * 28);
-                  return hh('div', { key: 'c-' + di + '-' + h, style: { position: 'relative', minHeight: 28 } },
-                    hh('button', {
-                      type: 'button',
-                      'aria-label': 'Remove ' + firstHere.subject + ' study block on ' + DAYS[di] + ' at ' + fmtHour(firstHere.hour),
-                      title: firstHere.subject + (firstHere.task ? ' — ' + firstHere.task : ''),
-                      style: {
-                        position: 'absolute', top: 0, left: 0, right: 0,
-                        height: cellHeight - 2 + 'px',
-                        background: col + '30', border: '1px solid ' + col, borderLeft: '3px solid ' + col,
-                        borderRadius: 4, padding: 4, overflow: 'hidden',
-                        fontSize: 9, color: col, fontWeight: 700, cursor: 'pointer', minWidth: 24, minHeight: 24, textAlign: 'left'
-                      },
-                      onClick: async function() { if (await askLearningLabConfirmation('This removes the ' + firstHere.subject + ' study block on ' + DAYS[di] + ' at ' + fmtHour(firstHere.hour) + '.', { title: 'Remove this study block?', confirmText: 'Remove block' })) removeBlock(firstHere.id); }
-                    },
-                      hh('div', { style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.subject),
-                      cellHeight > 40 && firstHere.task ? hh('div', { style: { fontSize: 8, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 500, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, firstHere.task) : null
-                    )
-                  );
-                }
-                if (cellBlocks.length > 0) return hh('div', { key: 'c-' + di + '-' + h, style: { minHeight: 28 } });
-                return hh('div', { key: 'c-' + di + '-' + h, style: { minHeight: 28, background: 'rgba(15,23,42,0.4)', borderRadius: 4 } });
-              }));
-          })
+      hh('section', { 'aria-labelledby': 'learning-lab-study-schedule-heading', style: { marginBottom: 12 } },
+        hh('h3', { id: 'learning-lab-study-schedule-heading', tabIndex: -1, style: { margin: '0 0 4px', fontSize: 13, color: '#bfdbfe' } }, 'Weekly schedule'),
+        hh('p', { id: 'learning-lab-study-schedule-help', style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Blocks appear at their start time. Each block states its duration and whether it repeats weekly.'),
+        hh('div', { style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 8, overflowX: 'auto' } },
+          hh('table', { 'aria-labelledby': 'learning-lab-study-schedule-heading', 'aria-describedby': 'learning-lab-study-schedule-help', style: { width: '100%', minWidth: 900, borderCollapse: 'separate', borderSpacing: 3, tableLayout: 'fixed' } },
+            hh('thead', null,
+              hh('tr', null,
+                hh('th', { scope: 'col', style: { width: 86, padding: 6, color: '#cbd5e1', fontSize: 10, textAlign: 'left' } }, 'Start time'),
+                DAYS.map(function(day) { return hh('th', { key: 'head-' + day.short, scope: 'col', style: { padding: 6, color: '#cbd5e1', fontSize: 10, textAlign: 'center' } }, day.full); })
+              )
+            ),
+            hh('tbody', null,
+              HOURS.map(function(value) {
+                return hh('tr', { key: 'row-' + value },
+                  hh('th', { scope: 'row', style: { padding: 6, color: '#94a3b8', fontSize: 10, textAlign: 'left', fontFamily: 'ui-monospace, Menlo, monospace', verticalAlign: 'top' } }, formatHour(value)),
+                  DAYS.map(function(day, dayIndex) {
+                    var cellBlocks = blocks.filter(function(block) { return block.day === dayIndex && block.hour === value; });
+                    return hh('td', { key: 'cell-' + dayIndex + '-' + value, style: { minHeight: 48, padding: 4, borderRadius: 5, background: 'rgba(15,23,42,0.45)', verticalAlign: 'top' } },
+                      cellBlocks.length
+                        ? hh('ul', { 'aria-label': day.full + ' at ' + formatHour(value), style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+                            cellBlocks.map(function(block) {
+                              var color = subjectColor(block.subject);
+                              var blockName = block.subject + ' on ' + day.full + ' at ' + formatHour(value);
+                              return hh('li', { key: 'block-' + block.id, style: { padding: 6, borderRadius: 5, background: color + '20', borderLeft: '3px solid ' + color, color: 'var(--allo-stem-text, #e2e8f0)', overflowWrap: 'anywhere' } },
+                                hh('div', { style: { fontSize: 10, fontWeight: 800, color: color } }, block.subject),
+                                block.task ? hh('div', { style: { marginTop: 2, fontSize: 9, whiteSpace: 'pre-wrap' } }, block.task) : null,
+                                hh('div', { style: { marginTop: 3, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, formatMinutes(block.duration) + ' · ' + (block.recurring ? 'Repeats weekly' : 'This week only')),
+                                hh('button', { type: 'button', onClick: function() { removeBlock(block); }, 'aria-label': 'Remove study block: ' + blockName, 'data-ll-focusable': true,
+                                  style: { width: '100%', minHeight: 44, marginTop: 5, padding: '6px 8px', borderRadius: 5, border: '1px solid rgba(252,165,165,0.65)', background: 'rgba(127,29,29,0.20)', color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Remove')
+                              );
+                            })
+                          )
+                        : hh('span', { 'aria-hidden': 'true', style: { color: '#475569' } }, '—')
+                    );
+                  })
+                );
+              })
+            )
+          )
         )
       ),
 
-      // Subject breakdown
-      bySubject.filter(function(s) { return s.min > 0; }).length > 0 ? tkCard('#a78bfa',
-        hh('div', null,
-          hh('div', { style: { fontSize: 11, fontWeight: 800, color: '#c084fc', marginBottom: 8 } }, '📊 Weekly time by subject'),
-          bySubject.filter(function(s) { return s.min > 0; }).map(function(s) {
-            var pct = totalWeekMin > 0 ? (s.min / totalWeekMin * 100) : 0;
-            return hh('div', { key: 'sb-' + s.subject, style: { marginBottom: 8 } },
-              hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } },
-                hh('span', { style: { color: s.color, fontWeight: 700 } }, s.subject),
-                hh('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(s.min) + 'm · ' + Math.round(pct) + '%')
-              ),
-              hh('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden' } },
-                hh('div', { style: { width: pct + '%', height: '100%', background: s.color, transition: 'width 300ms ease' } })
-              )
-            );
-          })
+      usedSubjects.length > 0 ? tkCard('#a78bfa',
+        hh('section', { 'aria-labelledby': 'learning-lab-study-breakdown-heading' },
+          hh('h3', { id: 'learning-lab-study-breakdown-heading', style: { margin: '0 0 8px', fontSize: 13, color: '#ddd6fe' } }, hh('span', { 'aria-hidden': 'true' }, '📊 '), 'Scheduled time by subject'),
+          hh('ul', { 'aria-labelledby': 'learning-lab-study-breakdown-heading', style: { listStyle: 'none', padding: 0, margin: 0 } },
+            usedSubjects.map(function(item) {
+              var percent = totalWeekMinutes > 0 ? Math.round(item.minutes / totalWeekMinutes * 100) : 0;
+              return hh('li', { key: 'sb-' + item.subject, style: { marginBottom: 10 } },
+                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4, flexWrap: 'wrap' } },
+                  hh('span', { style: { color: item.color, fontWeight: 800, overflowWrap: 'anywhere' } }, item.subject),
+                  hh('span', null, formatMinutes(item.minutes) + ' · ' + percent + ' percent of scheduled time')
+                ),
+                hh('div', { role: 'progressbar', 'aria-label': item.subject + ' share of scheduled study time', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': percent,
+                  style: { height: 8, background: 'rgba(15,23,42,0.8)', borderRadius: 4, overflow: 'hidden' } },
+                  hh('div', { 'aria-hidden': 'true', style: { width: percent + '%', height: '100%', background: item.color, transition: 'width 300ms ease' } })
+                )
+              );
+            })
+          )
         )
       ) : null
     );
   }
 
-  // ── I. PERSONAL EXAM PREP PLANNER (Wave 2) ──
-  // Backwards-plan from exam date. Generates daily blocks distributed
-  // over the available days using spaced practice (more frequent close
-  // to exam, fewer further out). Saves the plan.
+  // I. PERSONAL EXAM PREP PLANNER (Wave 2)
   function PersonalExamPrep(props) {
     if (!R) return null;
     var data = props.data || { exams: [] };
