@@ -36,17 +36,19 @@ describe('Learning Lab flashcard accessibility', () => {
   it('associates required card fields with inline errors and focuses the first invalid field', () => {
     expect(source).toContain("htmlFor: 'learning-lab-flashcard-front'");
     expect(source).toContain("htmlFor: 'learning-lab-flashcard-back'");
-    expect(source).toContain("id: 'learning-lab-flashcard-error', role: 'alert'");
-    expect(source).toContain("'aria-describedby': formError ? 'learning-lab-flashcard-error' : undefined");
-    expect(source).toContain("document.getElementById(!form.front.trim() ? 'learning-lab-flashcard-front' : 'learning-lab-flashcard-back')");
+    expect(source).toContain("id: 'learning-lab-flashcard-front-error', role: 'alert'");
+    expect(source).toContain("id: 'learning-lab-flashcard-back-error', role: 'alert'");
+    expect(source).toContain("'aria-describedby': 'learning-lab-flashcard-front-help' +");
+    expect(source).toContain("'aria-describedby': 'learning-lab-flashcard-back-help' +");
+    expect(source).toContain("setFocusTarget(errors.front ? 'learning-lab-flashcard-front' : 'learning-lab-flashcard-back')");
     expect(source).not.toContain("alert('Both front and back are required.')");
   });
 
   it('uses accessible confirmations and 44-pixel real buttons for destructive actions', () => {
-    expect(source).toContain(`title: 'Delete "' + name + '" deck?'`);
+    expect(source).toContain("title: 'Delete this flashcard deck?', confirmText: 'Delete deck'");
     expect(source).toContain("title: 'Delete this flashcard?'");
-    expect(source).toContain("'aria-label': 'Delete flashcard: ' + c.front");
-    expect(source).toContain("'aria-label': 'Delete deck ' + deckName");
+    expect(source).toContain("'aria-label': 'Delete flashcard: ' + itemName");
+    expect(source).toContain("'aria-label': 'Delete flashcard deck: ' + deckName");
     expect(source).toContain('minWidth: 44, minHeight: 44');
     expect(source).not.toContain("confirm('Delete this card?')");
     expect(source).not.toContain("alert('Cannot delete Default deck.')");

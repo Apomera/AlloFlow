@@ -5802,39 +5802,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var data = props.data || { cards: [], decks: ['Default'] };
     var setData = props.setData;
 
-    var vs = R.useState('decks');     var view = vs[0];     var setView = vs[1]; // decks | cards | review | add
-    var ds = R.useState('Default');   var deck = ds[0];     var setDeck = ds[1];
+    var vs = R.useState('decks');       var view = vs[0];       var setView = vs[1];
+    var ds = R.useState('Default');     var deck = ds[0];       var setDeck = ds[1];
     var fs = R.useState({ front: '', back: '' });
-    var form = fs[0];                 var setForm = fs[1];
-    var es = R.useState(null);        var editing = es[0];  var setEditing = es[1];
-    var ves = R.useState('');         var formError = ves[0]; var setFormError = ves[1];
-    var rs = R.useState(0);           var revIdx = rs[0];   var setRevIdx = rs[1];
-    var ss = R.useState(false);       var showBack = ss[0]; var setShowBack = ss[1];
-    var revStats = R.useState({ correct: 0, total: 0 });
-    var stats = revStats[0];          var setStats = revStats[1];
+    var form = fs[0];                   var setForm = fs[1];
+    var es = R.useState(null);          var editing = es[0];    var setEditing = es[1];
+    var ves = R.useState({ front: '', back: '' });
+    var formErrors = ves[0];            var setFormErrors = ves[1];
+    var rs = R.useState(0);             var revIdx = rs[0];     var setRevIdx = rs[1];
+    var ss = R.useState(false);         var showBack = ss[0];   var setShowBack = ss[1];
+    var qis = R.useState([]);           var reviewIds = qis[0]; var setReviewIds = qis[1];
+    var sts = R.useState({ remembered: 0, total: 0 });
+    var stats = sts[0];                 var setStats = sts[1];
+    var fts = R.useState('');           var focusTarget = fts[0]; var setFocusTarget = fts[1];
 
     var cards = data.cards || [];
     var decks = data.decks && data.decks.length ? data.decks : ['Default'];
-    var deckCards = cards.filter(function(c) { return c.deck === deck; });
+    var deckCards = cards.filter(function(card) { return card.deck === deck; });
     var today = todayISO();
-    var dueCards = deckCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; });
+    var dueCards = deckCards.filter(function(card) { return !card.nextDue || card.nextDue <= today; });
+    var reviewCards = reviewIds.map(function(id) {
+      return cards.filter(function(card) { return card.id === id; })[0];
+    }).filter(Boolean);
 
-    function saveCard(card) {
-      var arr = cards.slice();
-      if (card.id) {
-        var i = arr.findIndex(function(c) { return c.id === card.id; });
-        if (i >= 0) arr[i] = card;
-      } else {
-        card.id = tkId();
-        card.createdAt = today;
-        card.ease = 2.5; card.interval = 0; card.nextDue = today;
-        card.reviewCount = 0;
-        arr.unshift(card);
+    R.useEffect(function() {
+      if (!focusTarget) return;
+      if (typeof document !== 'undefined') {
+        var target = document.getElementById(focusTarget);
+        if (target && typeof target.focus === 'function') target.focus();
       }
-      setData(Object.assign({}, data, { cards: arr }));
+      setFocusTarget('');
+    }, [focusTarget]);
+
+    function persistCards(nextCards) {
+      setData(Object.assign({}, data, { cards: nextCards }));
     }
-    function removeCard(id) {
-      setData(Object.assign({}, data, { cards: cards.filter(function(c) { return c.id !== id; }) }));
+    function saveCard(card) {
+      var nextCards = cards.slice();
+      var saved;
+      if (card.id) {
+        var index = nextCards.findIndex(function(candidate) { return candidate.id === card.id; });
+        saved = Object.assign({}, card);
+        if (index >= 0) nextCards[index] = saved;
+      } else {
+        saved = Object.assign({}, card, {
+          id: tkId(), createdAt: today, ease: 2.5, interval: 0,
+          nextDue: today, reviewCount: 0
+        });
+        nextCards.unshift(saved);
+      }
+      persistCards(nextCards);
+      return saved;
+    }
+    async function removeCard(card) {
+      if (!(await askLearningLabConfirmation('This permanently removes the selected flashcard.', {
+        title: 'Delete this flashcard?', confirmText: 'Delete card'
+      }))) return;
+      persistCards(cards.filter(function(candidate) { return candidate.id !== card.id; }));
+      setFocusTarget('learning-lab-flashcards-cards-heading');
+      llAnnounce('Flashcard deleted.');
     }
     async function addDeck() {
       var values = await askLearningLabForm({
@@ -5847,26 +5873,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         }
       });
       if (!values) return;
-      var name = values.name;
-      var newDecks = decks.concat([name]);
-      setData(Object.assign({}, data, { decks: newDecks }));
+      var name = String(values.name || '').trim();
+      setData(Object.assign({}, data, { decks: decks.concat([name]) }));
       setDeck(name);
+      setView('cards');
+      setFocusTarget('learning-lab-flashcards-cards-heading');
+      llAnnounce('Flashcard deck created: ' + name + '.');
     }
     async function removeDeck(name) {
       if (name === 'Default') return;
-      if (!(await askLearningLabConfirmation('This permanently removes every card in the "' + name + '" deck.', {
-        title: 'Delete "' + name + '" deck?', confirmText: 'Delete deck'
+      if (!(await askLearningLabConfirmation('This permanently removes every card in the selected deck.', {
+        title: 'Delete this flashcard deck?', confirmText: 'Delete deck'
       }))) return;
       setData(Object.assign({}, data, {
-        decks: decks.filter(function(d) { return d !== name; }),
-        cards: cards.filter(function(c) { return c.deck !== name; })
+        decks: decks.filter(function(candidate) { return candidate !== name; }),
+        cards: cards.filter(function(card) { return card.deck !== name; })
       }));
       setDeck('Default');
+      setFocusTarget('learning-lab-flashcards-heading');
+      llAnnounce('Flashcard deck deleted: ' + name + '.');
+    }
+    function openDeck(name) {
+      setDeck(name);
+      setView('cards');
+      setFocusTarget('learning-lab-flashcards-cards-heading');
+    }
+    function openCardForm(card) {
+      setEditing(card || null);
+      setForm(card ? { front: card.front || '', back: card.back || '' } : { front: '', back: '' });
+      setFormErrors({ front: '', back: '' });
+      setView('add');
+      setFocusTarget('learning-lab-flashcards-form-heading');
+    }
+    function cancelCardForm() {
+      setForm({ front: '', back: '' });
+      setEditing(null);
+      setFormErrors({ front: '', back: '' });
+      setView('cards');
+      setFocusTarget('learning-lab-flashcards-cards-heading');
+      llAnnounce('Flashcard editing canceled.');
+    }
+    function submitCard(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+      var front = String(form.front || '').trim();
+      var back = String(form.back || '').trim();
+      var errors = {
+        front: front ? '' : 'Enter the question or prompt for the front of the card.',
+        back: back ? '' : 'Enter the answer for the back of the card.'
+      };
+      setFormErrors(errors);
+      if (errors.front || errors.back) {
+        setFocusTarget(errors.front ? 'learning-lab-flashcard-front' : 'learning-lab-flashcard-back');
+        llAnnounce('The flashcard has missing required information.');
+        return;
+      }
+      saveCard(Object.assign({}, editing || {}, { front: front, back: back, deck: deck }));
+      var wasEditing = !!editing;
+      setForm({ front: '', back: '' });
+      setEditing(null);
+      setFormErrors({ front: '', back: '' });
+      setView('cards');
+      setFocusTarget('learning-lab-flashcards-cards-heading');
+      llAnnounce(wasEditing ? 'Flashcard updated.' : 'Flashcard saved.');
+    }
+    function startReview() {
+      var ids = dueCards.map(function(card) { return card.id; });
+      if (!ids.length) return;
+      setReviewIds(ids);
+      setRevIdx(0);
+      setShowBack(false);
+      setStats({ remembered: 0, total: 0 });
+      setView('review');
+      setFocusTarget('learning-lab-flashcards-review-card-heading');
+      llAnnounce('Review session started with ' + ids.length + (ids.length === 1 ? ' card.' : ' cards.'));
+    }
+    function revealAnswer() {
+      setShowBack(true);
+      setFocusTarget('learning-lab-flashcards-rating-heading');
+      llAnnounce('Answer shown. Choose a recall rating.');
+    }
+    function endReview() {
+      setView('cards');
+      setReviewIds([]);
+      setRevIdx(0);
+      setShowBack(false);
+      setFocusTarget('learning-lab-flashcards-cards-heading');
+      llAnnounce('Review session ended.');
     }
 
-    // SM-2-lite scheduling
+    // Simplified spaced-repetition scheduling. Ratings change the next review date.
     function rate(card, quality) {
-      // quality: 0=Again, 1=Hard, 2=Good, 3=Easy
       var newEase = Math.max(1.3, (card.ease || 2.5) + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02)));
       var newInterval;
       if (quality === 0) newInterval = 1;
@@ -5877,169 +5973,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       var nextDueISO = nextDate.toISOString().slice(0, 10);
       saveCard(Object.assign({}, card, {
         ease: newEase, interval: newInterval, nextDue: nextDueISO,
-        reviewCount: (card.reviewCount || 0) + 1,
-        lastReviewed: today
+        reviewCount: (card.reviewCount || 0) + 1, lastReviewed: today
       }));
-      setStats({ correct: stats.correct + (quality >= 2 ? 1 : 0), total: stats.total + 1 });
-      // Advance
-      if (revIdx + 1 >= dueCards.length) {
-        setView('decks');
+      var nextStats = { remembered: stats.remembered + (quality >= 2 ? 1 : 0), total: stats.total + 1 };
+      setStats(nextStats);
+      if (revIdx + 1 >= reviewIds.length) {
+        setView('cards');
+        setReviewIds([]);
         setRevIdx(0);
+        setShowBack(false);
+        setFocusTarget('learning-lab-flashcards-cards-heading');
+        llAnnounce('Review complete. ' + nextStats.remembered + ' of ' + nextStats.total + ' cards rated Good or Easy.');
       } else {
         setRevIdx(revIdx + 1);
         setShowBack(false);
+        setFocusTarget('learning-lab-flashcards-review-card-heading');
+        llAnnounce('Rating saved. Moving to card ' + (revIdx + 2) + ' of ' + reviewIds.length + '.');
       }
     }
 
-    if (view === 'review' && dueCards.length > 0) {
-      var card = dueCards[revIdx] || dueCards[0];
+    if (view === 'review' && reviewCards.length > 0) {
+      var reviewCard = reviewCards[revIdx] || reviewCards[0];
+      var ratingOptions = [
+        { label: 'Again', color: '#fca5a5', quality: 0, info: 'Review again soon' },
+        { label: 'Hard',  color: '#fdba74', quality: 1, info: 'Use a short interval' },
+        { label: 'Good',  color: '#6ee7b7', quality: 2, info: 'Use a medium interval' },
+        { label: 'Easy',  color: '#67e8f9', quality: 3, info: 'Use a longer interval' }
+      ];
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🃏', 'Reviewing: ' + deck, 'Card ' + (revIdx + 1) + ' of ' + dueCards.length + ' due · ' + stats.correct + '/' + stats.total + ' correct this session', '#06b6d4'),
+        tkSectionHeader('🃏', 'Reviewing: ' + deck, 'Card ' + (revIdx + 1) + ' of ' + reviewIds.length + '. Session ratings: ' + stats.remembered + ' Good or Easy out of ' + stats.total + '.', '#06b6d4', 'learning-lab-flashcards-review-heading'),
 
-        hh('div', { style: { padding: 30, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', borderRadius: 14, border: '2px solid #06b6d4', marginBottom: 12, minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
-          hh('div', { style: { fontSize: 9, color: '#67e8f9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, textAlign: 'center' } }, showBack ? 'BACK' : 'FRONT'),
-          hh('div', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.5, fontWeight: showBack ? 600 : 700 } }, showBack ? card.back : card.front)
+        hh('section', { 'aria-labelledby': 'learning-lab-flashcards-review-card-heading', style: { padding: 24, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', borderRadius: 14, border: '2px solid #22d3ee', marginBottom: 12, minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'center' } },
+          hh('h3', { id: 'learning-lab-flashcards-review-card-heading', tabIndex: -1, style: { margin: '0 0 8px', fontSize: 11, color: '#a5f3fc', textAlign: 'center' } }, showBack ? 'Answer' : 'Question or prompt'),
+          hh('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'center', lineHeight: 1.5, fontWeight: showBack ? 600 : 700, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } }, showBack ? reviewCard.back : reviewCard.front)
         ),
 
-        !showBack ? hh('div', { style: { textAlign: 'center', marginBottom: 12 } },
-          tkBtn('👁 Show answer', function() { setShowBack(true); }, 'primary', { padding: '12px 32px', fontSize: 13 })
-        ) : hh('div', null,
-          hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginBottom: 8 } }, 'How well did you know it?'),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 } },
-            [
-              { label: 'Again', color: '#ef4444', q: 0, info: 'no recall' },
-              { label: 'Hard',  color: '#f97316', q: 1, info: '+1d' },
-              { label: 'Good',  color: '#10b981', q: 2, info: '+3-5d' },
-              { label: 'Easy',  color: '#06b6d4', q: 3, info: '+5-10d' }
-            ].map(function(b) {
-              return hh('button', { key: 'rt-' + b.q,
-                onClick: function() { rate(card, b.q); },
-                style: { padding: '12px 8px', borderRadius: 8, background: b.color + '15', color: b.color, border: '1.5px solid ' + b.color, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
-              },
-                hh('div', null, b.label),
-                hh('div', { style: { fontSize: 8, opacity: 0.8, marginTop: 2 } }, b.info)
-              );
-            })
-          )
-        ),
+        !showBack
+          ? hh('div', { style: { textAlign: 'center', marginBottom: 12 } }, tkBtn('Show answer', revealAnswer, 'primary', { padding: '12px 32px', fontSize: 13 }))
+          : hh('fieldset', { 'aria-describedby': 'learning-lab-flashcards-rating-help', style: { border: '1px solid rgba(103,232,249,0.45)', borderRadius: 10, padding: 10, margin: '0 0 12px' } },
+              hh('legend', { id: 'learning-lab-flashcards-rating-heading', tabIndex: -1, style: { padding: '0 6px', fontSize: 11, color: '#cffafe', fontWeight: 800 } }, 'How well did you remember the answer?'),
+              hh('p', { id: 'learning-lab-flashcards-rating-help', style: { margin: '0 0 8px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, 'Your rating changes when this card is scheduled for review.'),
+              hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 6 } },
+                ratingOptions.map(function(option) {
+                  return hh('button', { key: 'rt-' + option.quality, type: 'button', onClick: function() { rate(reviewCard, option.quality); }, 'aria-label': option.label + ': ' + option.info, 'data-ll-focusable': true,
+                    style: { minHeight: 52, padding: '10px 8px', borderRadius: 8, background: option.color + '18', color: option.color, border: '1.5px solid ' + option.color, fontSize: 11, fontWeight: 800, cursor: 'pointer' } },
+                    hh('span', { style: { display: 'block' } }, option.label),
+                    hh('span', { style: { display: 'block', fontSize: 9, marginTop: 3, fontWeight: 600 } }, option.info)
+                  );
+                })
+              )
+            ),
 
-        hh('div', { style: { textAlign: 'center', marginTop: 10 } },
-          tkBtn('End session', function() { setView('decks'); setRevIdx(0); }, 'ghost')
-        )
+        hh('div', { style: { textAlign: 'center', marginTop: 10 } }, tkBtn('End review session', endReview, 'ghost'))
       );
     }
 
     if (view === 'add') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('+', editing ? 'Edit card' : 'New flashcard', 'Front = the question or prompt. Back = the answer.', '#06b6d4'),
+        tkSectionHeader('➕', editing ? 'Edit flashcard' : 'New flashcard', 'Enter a question or prompt and its answer. Both fields are required.', '#06b6d4', 'learning-lab-flashcards-form-heading'),
         tkCard('#06b6d4',
-          hh('div', null,
-            hh('label', { htmlFor: 'learning-lab-flashcard-front', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Front (required)'),
-            hh('textarea', { id: 'learning-lab-flashcard-front', value: form.front, required: true, 'aria-invalid': formError && !form.front.trim() ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-flashcard-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { front: e.target.value })); setFormError(''); }, placeholder: 'e.g., "What is the function of mitochondria?"', rows: 3, style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 } }),
-            hh('label', { htmlFor: 'learning-lab-flashcard-back', style: { fontSize: 10, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase', marginBottom: 4, display: 'block' } }, 'Back (required)'),
-            hh('textarea', { id: 'learning-lab-flashcard-back', value: form.back, required: true, 'aria-invalid': formError && !form.back.trim() ? 'true' : undefined, 'aria-describedby': formError ? 'learning-lab-flashcard-error' : undefined, onChange: function(e) { setForm(Object.assign({}, form, { back: e.target.value })); setFormError(''); }, placeholder: 'e.g., "Powerhouse of the cell — produces ATP via oxidative phosphorylation"', rows: 3, style: { width: '100%', padding: '10px 12px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)', borderRadius: 6, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 } }),
-            formError ? hh('div', { id: 'learning-lab-flashcard-error', role: 'alert', style: { color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: 10 } }, formError) : null,
-            hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Deck: ', hh('strong', { style: { color: '#67e8f9' } }, deck))
+          hh('form', { 'aria-labelledby': 'learning-lab-flashcards-form-heading', onSubmit: submitCard },
+            hh('label', { htmlFor: 'learning-lab-flashcard-front', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', marginBottom: 4, display: 'block' } }, 'Question or prompt'),
+            hh('p', { id: 'learning-lab-flashcard-front-help', style: { margin: '0 0 6px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Write what you want to retrieve from memory.'),
+            tkTextarea(form.front, function(value) { setForm(Object.assign({}, form, { front: value })); if (formErrors.front) setFormErrors(Object.assign({}, formErrors, { front: '' })); }, 'For example: What is the function of mitochondria?', 3, {
+              id: 'learning-lab-flashcard-front', required: true, maxLength: 8000,
+              'aria-invalid': formErrors.front ? 'true' : undefined,
+              'aria-describedby': 'learning-lab-flashcard-front-help' + (formErrors.front ? ' learning-lab-flashcard-front-error' : ''),
+              minHeight: 96, marginBottom: formErrors.front ? 4 : 10
+            }),
+            formErrors.front ? hh('p', { id: 'learning-lab-flashcard-front-error', role: 'alert', style: { margin: '0 0 10px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formErrors.front) : null,
+            hh('label', { htmlFor: 'learning-lab-flashcard-back', style: { fontSize: 11, fontWeight: 800, color: '#a5f3fc', marginBottom: 4, display: 'block' } }, 'Answer'),
+            hh('p', { id: 'learning-lab-flashcard-back-help', style: { margin: '0 0 6px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Write the answer you will check after trying to recall it.'),
+            tkTextarea(form.back, function(value) { setForm(Object.assign({}, form, { back: value })); if (formErrors.back) setFormErrors(Object.assign({}, formErrors, { back: '' })); }, 'For example: It produces ATP through cellular respiration.', 3, {
+              id: 'learning-lab-flashcard-back', required: true, maxLength: 8000,
+              'aria-invalid': formErrors.back ? 'true' : undefined,
+              'aria-describedby': 'learning-lab-flashcard-back-help' + (formErrors.back ? ' learning-lab-flashcard-back-error' : ''),
+              minHeight: 96, marginBottom: formErrors.back ? 4 : 10
+            }),
+            formErrors.back ? hh('p', { id: 'learning-lab-flashcard-back-error', role: 'alert', style: { margin: '0 0 10px', color: '#fecaca', fontSize: 11, fontWeight: 800 } }, formErrors.back) : null,
+            hh('p', { style: { margin: '0 0 12px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Deck: ', hh('strong', { style: { color: '#a5f3fc' } }, deck)),
+            hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              tkBtn('Cancel', cancelCardForm, 'ghost'),
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1.5px solid #22d3ee', background: '#0e7490', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, editing ? 'Save changes' : 'Save card')
+            )
           )
-        ),
-        hh('div', { style: { display: 'flex', justifyContent: 'space-between' } },
-          tkBtn('← Cancel', function() { setView('decks'); setForm({ front: '', back: '' }); setEditing(null); setFormError(''); }, 'ghost'),
-          tkBtn('💾 Save card', function() {
-            if (!form.front.trim() || !form.back.trim()) {
-              var missing = !form.front.trim() && !form.back.trim() ? 'Front and back are required.' : (!form.front.trim() ? 'Front is required.' : 'Back is required.');
-              setFormError(missing);
-              setTimeout(function() { var target = document.getElementById(!form.front.trim() ? 'learning-lab-flashcard-front' : 'learning-lab-flashcard-back'); if (target) target.focus(); }, 0);
-              return;
-            }
-            saveCard(Object.assign({}, editing || {}, { front: form.front.trim(), back: form.back.trim(), deck: deck }));
-            setForm({ front: '', back: '' }); setEditing(null); setFormError(''); setView('decks');
-          }, 'primary')
         )
       );
     }
 
     if (view === 'cards') {
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('🃏', deck + ' deck', deckCards.length + ' cards · ' + dueCards.length + ' due today', '#06b6d4'),
+        tkSectionHeader('🃏', deck + ' deck', deckCards.length + (deckCards.length === 1 ? ' card. ' : ' cards. ') + dueCards.length + (dueCards.length === 1 ? ' due today.' : ' due today.'), '#06b6d4', 'learning-lab-flashcards-cards-heading'),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 12, gap: 6, flexWrap: 'wrap' } },
-          tkBtn('← All decks', function() { setView('decks'); }, 'ghost'),
-          hh('div', { style: { display: 'flex', gap: 6 } },
-            tkBtn('+ New card', function() { setForm({ front: '', back: '' }); setEditing(null); setView('add'); }, 'secondary'),
-            dueCards.length > 0 ? tkBtn('▶ Review ' + dueCards.length, function() { setView('review'); setRevIdx(0); setShowBack(false); setStats({ correct: 0, total: 0 }); }, 'primary') : null
+          tkBtn('All decks', function() { setView('decks'); setFocusTarget('learning-lab-flashcards-heading'); }, 'ghost'),
+          hh('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            tkBtn('New card', function() { openCardForm(null); }, 'secondary'),
+            dueCards.length > 0 ? tkBtn('Review ' + dueCards.length + (dueCards.length === 1 ? ' due card' : ' due cards'), startReview, 'primary') : null
           )
         ),
-        deckCards.length === 0 ? tkEmptyState('🃏', 'No cards in this deck yet.', '+ Create your first card', function() { setForm({ front: '', back: '' }); setEditing(null); setView('add'); })
-        : hh('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-            deckCards.map(function(c) {
-              var due = !c.nextDue || c.nextDue <= today;
-              return hh('div', { key: 'c-' + c.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(6,182,212,0.30)', borderLeft: '3px solid ' + (due ? '#06b6d4' : '#64748b') } },
-                hh('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 } },
-                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, flex: 1 } }, c.front),
-                  hh('div', { style: { display: 'flex', gap: 4, alignItems: 'flex-start' } },
-                    hh('span', { style: { padding: '2px 6px', borderRadius: 999, background: due ? 'rgba(6,182,212,0.18)' : 'rgba(100,116,139,0.18)', color: due ? '#06b6d4' : '#94a3b8', fontSize: 9, fontWeight: 800 } },
-                      due ? 'DUE' : 'in ' + (Math.max(0, daysAgo(today) - daysAgo(c.nextDue) || 0)) + 'd'),
-                    hh('button', { type: 'button', 'aria-label': 'Delete flashcard: ' + c.front, onClick: async function() { if (await askLearningLabConfirmation('This permanently removes the flashcard "' + c.front + '".', { title: 'Delete this flashcard?', confirmText: 'Delete card' })) removeCard(c.id); },
-                      style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14, minWidth: 44, minHeight: 44, padding: 8 }
-                    }, '✕')
+        deckCards.length === 0
+          ? tkEmptyState('🃏', 'No cards in this deck yet.', 'Create your first card', function() { openCardForm(null); })
+          : hh('ul', { 'aria-labelledby': 'learning-lab-flashcards-cards-heading', style: { display: 'flex', flexDirection: 'column', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
+              deckCards.map(function(card) {
+                var due = !card.nextDue || card.nextDue <= today;
+                var itemName = String(card.front || '').slice(0, 160);
+                return hh('li', { key: 'c-' + card.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderTop: '1px solid rgba(34,211,238,0.40)', borderRight: '1px solid rgba(34,211,238,0.40)', borderBottom: '1px solid rgba(34,211,238,0.40)', borderLeft: '3px solid ' + (due ? '#22d3ee' : '#64748b') } },
+                  hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } }, card.front),
+                  hh('div', { style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } }, 'Answer: ' + card.back),
+                  hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' } },
+                    hh('p', { style: { margin: 0, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                      due ? hh('span', null, 'Due for review today') : hh(React.Fragment, null, 'Next review: ', hh('time', { dateTime: card.nextDue }, card.nextDue)),
+                      ' · Reviews completed: ' + (card.reviewCount || 0)
+                    ),
+                    hh('div', { role: 'group', 'aria-label': 'Actions for flashcard: ' + itemName, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                      hh('button', { type: 'button', onClick: function() { openCardForm(card); }, 'aria-label': 'Edit flashcard: ' + itemName, 'data-ll-focusable': true,
+                        style: { minHeight: 44, padding: '8px 11px', borderRadius: 6, border: '1px solid rgba(165,243,252,0.60)', background: 'transparent', color: '#a5f3fc', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Edit'),
+                      hh('button', { type: 'button', onClick: function() { removeCard(card); }, 'aria-label': 'Delete flashcard: ' + itemName, 'data-ll-focusable': true,
+                        style: { minHeight: 44, padding: '8px 11px', borderRadius: 6, border: '1px solid rgba(252,165,165,0.65)', background: 'transparent', color: '#fecaca', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, 'Delete')
+                    )
                   )
-                ),
-                hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '→ ' + c.back),
-                hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'reviewed ' + (c.reviewCount || 0) + 'x · ease ' + (c.ease || 2.5).toFixed(2))
-              );
-            })
-          )
+                );
+              })
+            )
       );
     }
 
-    // Decks view
     return hh('div', { style: { padding: 14 } },
-      tkSectionHeader('🃏', 'My Flashcard Decks', 'Create decks + cards. Review uses spaced repetition (SM-2 simplified). Reviewed cards reappear on a schedule that matches your retention.', '#06b6d4'),
+      tkSectionHeader('🃏', 'My Flashcard Decks', 'Create question-and-answer cards and optionally review due cards with a simplified spaced-repetition schedule.', '#06b6d4', 'learning-lab-flashcards-heading'),
 
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+      hh('ul', { 'aria-labelledby': 'learning-lab-flashcards-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, listStyle: 'none', padding: 0, margin: '0 0 14px' } },
         decks.map(function(deckName) {
-          var dCards = cards.filter(function(c) { return c.deck === deckName; });
-          var dDue = dCards.filter(function(c) { return !c.nextDue || c.nextDue <= today; });
-          var deckSummary = [
-            hh('div', { key: 'title', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 } },
-              hh('div', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9' } }, '🃏 ' + deckName)
+          var deckItems = cards.filter(function(card) { return card.deck === deckName; });
+          var deckDue = deckItems.filter(function(card) { return !card.nextDue || card.nextDue <= today; });
+          var safeId = String(deckName).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'deck';
+          var titleId = 'learning-lab-flashcards-deck-' + safeId + '-title';
+          var summaryId = 'learning-lab-flashcards-deck-' + safeId + '-summary';
+          return hh('li', { key: 'd-' + deckName, style: { position: 'relative', borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', borderTop: '1px solid rgba(34,211,238,0.45)', borderRight: '1px solid rgba(34,211,238,0.45)', borderBottom: '1px solid rgba(34,211,238,0.45)', borderLeft: '4px solid #22d3ee' } },
+            hh('button', { type: 'button', onClick: function() { openDeck(deckName); }, 'aria-labelledby': titleId, 'aria-describedby': summaryId, 'data-ll-focusable': true,
+              style: { display: 'block', width: '100%', minHeight: 96, textAlign: 'left', padding: deckName === 'Default' ? 14 : '14px 58px 14px 14px', border: 'none', borderRadius: 12, background: 'transparent', color: 'inherit', cursor: 'pointer' } },
+              hh('span', { id: titleId, style: { display: 'block', fontSize: 14, fontWeight: 800, color: '#a5f3fc', marginBottom: 6, overflowWrap: 'anywhere' } }, hh('span', { 'aria-hidden': 'true' }, '🃏 '), deckName),
+              hh('span', { id: summaryId, style: { display: 'block', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                deckItems.length + (deckItems.length === 1 ? ' card. ' : ' cards. '), deckDue.length + (deckDue.length === 1 ? ' due today.' : ' due today.'))
             ),
-            hh('div', { key: 'count', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, dCards.length + ' card' + (dCards.length !== 1 ? 's' : '')),
-            hh('div', { key: 'due', style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: dDue.length > 0 ? 'rgba(6,182,212,0.20)' : 'rgba(100,116,139,0.10)', color: dDue.length > 0 ? '#06b6d4' : '#64748b', fontSize: 10, fontWeight: 800, textAlign: 'center' } },
-              dDue.length > 0 ? '▶ ' + dDue.length + ' due today' : 'no cards due')
-          ];
-          if (deckName !== 'Default') {
-            return hh('div', { key: 'd-' + deckName, style: { position: 'relative', borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))', border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4' } },
-              hh('button', { type: 'button', onClick: function() { setDeck(deckName); setView('cards'); }, style: { display: 'block', width: '100%', minHeight: 80, textAlign: 'left', padding: '14px 58px 14px 14px', border: 'none', borderRadius: 12, background: 'transparent', color: 'inherit', cursor: 'pointer' } }, deckSummary),
-              hh('button', { type: 'button', 'aria-label': 'Delete deck ' + deckName, onClick: function() { removeDeck(deckName); }, style: { position: 'absolute', top: 6, right: 6, minWidth: 44, minHeight: 44, border: 'none', borderRadius: 8, background: 'rgba(2,6,23,0.75)', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 14 } }, '✕')
-            );
-          }
-          return hh('button', { key: 'd-' + deckName,
-            onClick: function() { setDeck(deckName); setView('cards'); },
-            style: {
-              display: 'block', textAlign: 'left', padding: 14, borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(15,23,42,0.7))',
-              border: '1px solid rgba(6,182,212,0.40)', borderLeft: '4px solid #06b6d4',
-              cursor: 'pointer', transition: 'all 200ms ease'
-            }
-          }, deckSummary);
-        }),
-        hh('button', {
-          onClick: addDeck,
-          style: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(6,182,212,0.40)', color: '#67e8f9', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 80 }
-        }, '+ New deck')
+            deckName !== 'Default' ? hh('button', { type: 'button', onClick: function() { removeDeck(deckName); }, 'aria-label': 'Delete flashcard deck: ' + deckName, 'data-ll-focusable': true,
+              style: { position: 'absolute', top: 6, right: 6, minWidth: 44, minHeight: 44, border: '1px solid rgba(252,165,165,0.55)', borderRadius: 8, background: 'rgba(2,6,23,0.85)', color: '#fecaca', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Delete') : null
+          );
+        })
+      ),
+      hh('div', { style: { marginBottom: 14 } },
+        hh('button', { type: 'button', onClick: addDeck, 'data-ll-focusable': true,
+          style: { width: '100%', minHeight: 48, padding: 12, borderRadius: 10, background: 'rgba(2,6,23,0.4)', border: '1px dashed rgba(103,232,249,0.60)', color: '#a5f3fc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'New deck')
       ),
 
-      // Lesson card
-      hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#06b6d4' } }, '🎓 Why flashcards work (when done right): '),
-        'Cards force RETRIEVAL practice (Karpicke + Roediger 2006) — pulling info out of memory is what consolidates it. Spaced repetition (Ebbinghaus 1885; modern SM-2 algorithm Wozniak 1990) shows each card just before you would forget it. Cramming 50 cards in one night = practice testing without the spacing benefit. 5 cards per day for 10 days produces 4-5× better long-term retention than 50 cards in one night for the same total effort.'
+      hh('aside', { 'aria-labelledby': 'learning-lab-flashcards-evidence-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(103,232,249,0.45)', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+        hh('h3', { id: 'learning-lab-flashcards-evidence-heading', style: { margin: '0 0 4px', color: '#a5f3fc', fontSize: 12 } }, hh('span', { 'aria-hidden': 'true' }, '🎓 '), 'Research context'),
+        'Retrieval practice and spacing are well-supported learning strategies, although outcomes vary by material, learner, timing, and study design. Flashcards are generally more useful when you try to recall an answer before revealing it, correct errors, and combine cards with other study methods. This simplified schedule is not a precise model of when an individual will forget. Sources include Roediger and Karpicke (2006) on test-enhanced learning and Cepeda et al. (2006) on distributed practice.'
       )
     );
   }
 
-  // ── H. PERSONAL STUDY PLANNER (Wave 2) ──
-  // Weekly schedule with study blocks. Drag-free interface (click cells).
-  // Recurring slots + one-off blocks. Subject tagging. Total weekly minutes.
+  // H. PERSONAL STUDY PLANNER (Wave 2)
   function PersonalStudyPlanner(props) {
     if (!R) return null;
     var data = props.data || { blocks: [], subjects: ['Math', 'English', 'Science', 'History', 'Other'] };
