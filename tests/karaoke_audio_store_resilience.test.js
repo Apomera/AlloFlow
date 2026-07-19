@@ -631,7 +631,8 @@ describe('karaoke capture integration contracts', () => {
     expect(host).toContain('for (let attempt = 0; attempt < 2; attempt++)');
     expect(host).toContain("const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;");
     expect(host).toContain("_persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);");
-    expect(host).toContain("if (resourceId && gc.id !== resourceId) return gc;");
+    expect(host).toContain("if (resourceId && currentId && String(currentId) !== String(resourceId)) return gc;");
+    expect(host).toContain("return _legacyReadAloudApi.capturePlayed(sentence, url);");
   });
 
   it('re-synthesizes stored AI takes when the selected voice changes, never human takes', () => {
@@ -674,6 +675,7 @@ describe('karaoke capture integration contracts', () => {
     const build = read('build.js');
     [
       'karaoke_audio_store_module.js',
+      'tts_module.js',
       'immersive_reader_module.js',
       'view_simplified_module.js',
     ].forEach((file) => {

@@ -423,6 +423,52 @@ describe('ReadAloudAudioService structured store inspection', () => {
 });
 
 describe('ReadAloudAudioService legacy compatibility bridge', () => {
+  it('captures a played URL into the real v4 store and persists the resource payload', async () => {
+    let persistedResource = {
+      id: 'simple-played-capture',
+      type: 'simplified',
+      data: 'Played sentence.',
+    };
+    const persist = vi.fn(async ({ payload, resourceId }) => {
+      expect(resourceId).toBe('simple-played-capture');
+      persistedResource = { ...persistedResource, karaokeAudio: payload };
+    });
+    const harness = makeLegacyBridgeHarness({
+      resource: persistedResource,
+      persist,
+      enumerateResourceSegments: () => [{
+        spokenText: 'Played sentence.',
+        segmentId: 'body/0/sentence/0',
+        scopeId: 'main',
+      }],
+    });
+
+    expect(await harness.bridge.capturePlayed('Played sentence.', 'blob:played-url')).toBe(true);
+    expect(harness.referenceStore.has('Played sentence.')).toBe(true);
+    expect(persistedResource.karaokeAudio).toMatchObject({ version: 4 });
+    expect(Object.values(persistedResource.karaokeAudio.entries)[0]).toMatchObject({
+      source: 'ai-played',
+      identity: {
+        identityVersion: 4,
+        adapterId: 'alloflow.simplified.read-aloud',
+        segmentId: 'body/0/sentence/0',
+        spokenText: 'Played sentence.',
+      },
+    });
+    expect(harness.bridge.summary(['Played sentence.'])).toMatchObject({
+      total: 1,
+      ready: 1,
+      stale: 0,
+      missing: 0,
+    });
+    expect(harness.notify).toHaveBeenCalledWith(
+      'Played sentence.',
+      'saved',
+      'simple-played-capture',
+      expect.any(Object),
+    );
+  });
+
   it('writes a deterministic v4 identity for the same normalized sentence', async () => {
     const harness = makeLegacyBridgeHarness();
 

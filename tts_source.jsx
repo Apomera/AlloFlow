@@ -139,12 +139,21 @@ const createTTS = (deps) => {
         };
     } catch (_) {}
 
-    const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null) => {
+    const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal') => {
         // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
         const safeVoice = _resolveGeminiVoice(voiceName);
         if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
         debugLog("[fetchTTSBytes] text:", text?.substring(0, 30), "lang:", language);
-        const queuedTask = state.queue.then(async () => {
+        // Foreground read-aloud must not wait behind speculative/bulk preloads.
+        // Keep one serialized lane for interactive playback and one for normal
+        // background work. This deliberately caps cloud concurrency at two while
+        // preventing a Word Sounds/glossary warm-up backlog from making a Play
+        // click appear frozen. Each lane preserves the existing settle gap.
+        const queueSlot = requestPriority === 'interactive' ? 'interactiveQueue' : 'queue';
+        if (!state[queueSlot] || typeof state[queueSlot].then !== 'function') {
+            state[queueSlot] = Promise.resolve();
+        }
+        const queuedTask = state[queueSlot].then(async () => {
             const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
             const url = `${baseUrl}?key=${apiKey || ''}`;
             const decodeBase64 = (base64) => {
@@ -297,7 +306,7 @@ const createTTS = (deps) => {
         // (before the next serialized fetch), not on the caller's await —
         // moving it off the critical path (2026-07-17) shaves 150ms from
         // every time-to-first-audio without changing inter-request spacing.
-        state.queue = queuedTask.catch(() => {}).then(() => new Promise(r => setTimeout(r, 150)));
+        state[queueSlot] = queuedTask.catch(() => {}).then(() => new Promise(r => setTimeout(r, 150)));
         return queuedTask;
     };
 
@@ -418,10 +427,10 @@ const createTTS = (deps) => {
                 const canvasMaxAttempts = 3;
                 let canvasLastErr = null;
                 const fetchCanvasTTSBytes = async () => {
-                    if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal);
+                    if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
                     let inFlight = callTTSInFlight.get(canvasCacheKey);
                     if (!inFlight) {
-                        inFlight = fetchTTSBytes(text, voiceName, speed, _language, null);
+                        inFlight = fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority);
                         callTTSInFlight.set(canvasCacheKey, inFlight);
                     } else {
                         debugLog('callTTS Canvas in-flight JOIN:', text?.substring(0, 30));
@@ -634,10 +643,10 @@ const createTTS = (deps) => {
             return state.urlCache.get(cacheKey);
         }
         const fetchSharedTTSBytes = async () => {
-            if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal);
+            if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
             let inFlight = callTTSInFlight.get(cacheKey);
             if (!inFlight) {
-                inFlight = fetchTTSBytes(text, voiceName, speed, _language, null);
+                inFlight = fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority);
                 callTTSInFlight.set(cacheKey, inFlight);
             } else {
                 debugLog('callTTS in-flight JOIN:', text?.substring(0, 30));

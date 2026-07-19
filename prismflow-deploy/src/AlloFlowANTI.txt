@@ -8489,7 +8489,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=d2c66e384');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=d2c66e384');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=d2c66e384');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=d2c66e384');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=17bb1829');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=2a953579');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=d2c66e384');
@@ -8631,7 +8631,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=8c891bde');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d33bb476');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=d2c66e384');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=d2c66e384');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -8672,7 +8672,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=d2c66e384');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=d2c66e384');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=d2c66e384');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=4d7e68c6');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=89dd7997');
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=d2c66e384');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=d2c66e384');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=d2c66e384');
@@ -23265,18 +23265,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     } catch (_) { return null; }
   };
   const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
-    const resourceId = targetResourceId || (generatedContent && generatedContent.id);
+    const liveResourceId = generatedContent && (generatedContent.id || generatedContent.resourceId);
+    const resourceId = targetResourceId && targetResourceId !== 'unsaved'
+      ? targetResourceId
+      : (liveResourceId || null);
     try {
       setGeneratedContent(gc => {
         if (!gc) return gc;
-        if (resourceId && gc.id !== resourceId) return gc;
+        const currentId = gc.id || gc.resourceId || null;
+        if (resourceId && currentId && String(currentId) !== String(resourceId)) return gc;
         return Object.assign({}, gc, { [field]: payload });
       });
     } catch (_) {}
     try {
       if (resourceId) {
         setHistory(prev => Array.isArray(prev)
-          ? prev.map(item => item && item.id === resourceId ? Object.assign({}, item, { [field]: payload }) : item)
+          ? prev.map(item => item && String(item.id || item.resourceId || '') === String(resourceId)
+            ? Object.assign({}, item, { [field]: payload })
+            : item)
           : prev);
       }
     } catch (_) {}
@@ -23658,13 +23664,21 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       : String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
     const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
     if (_karaokeCaptureInFlight.has(captureKey)) return _karaokeCaptureInFlight.get(captureKey);
-    const capture = Promise.resolve(bridge.capturePlayed(sentence, url));
+    const capture = Promise.resolve().then(() => bridge.capturePlayed(sentence, url));
     _karaokeCaptureInFlight.set(captureKey, capture);
+    let saved = false;
     try {
-      return await capture;
+      saved = !!(await capture);
     } finally {
       if (_karaokeCaptureInFlight.get(captureKey) === capture) _karaokeCaptureInFlight.delete(captureKey);
     }
+    // A bridge runtime failure must not silently turn "Save played TTS" into
+    // a no-op. The retained legacy implementation snapshots the same played URL
+    // and is the compatibility path for this release. Avoid duplicate work when
+    // the bridge did store the clip but returned false.
+    const store = _ensureKaraokeStore('reference');
+    if (saved || (store && store.has(sentence) && !_karaokeAiVoiceMismatch(store, sentence))) return true;
+    return _legacyReadAloudApi.capturePlayed(sentence, url);
   };
   window.__alloStoreStudentSentenceAudio = async (sentence, blob) => {
     const bridge = _getReadAloudBridge();

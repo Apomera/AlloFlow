@@ -868,6 +868,9 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   const [sweepPct, setSweepPct] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [isPreparingFirstAudio, setIsPreparingFirstAudio] = useState(false);
+  const [playbackFallbackNotice, setPlaybackFallbackNotice] = useState("");
+  const isAudioLoading = isGeneratingAudio || isPreparingFirstAudio;
   const [currentAudioReadyIdx, setCurrentAudioReadyIdx] = useState(-1);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [theme, setTheme] = useState("warm");
@@ -892,8 +895,9 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   const playTokenRef = useRef(0);
   const getAudioUrlRef = useRef(getAudioUrl);
   getAudioUrlRef.current = getAudioUrl;
+  const audioRequestAbortRef = useRef(null);
   const warmedRef = useRef(/* @__PURE__ */ new Set());
-  const capturedWarmRef = useRef(/* @__PURE__ */ new Set());
+  const warmPromisesRef = useRef(/* @__PURE__ */ new Map());
   const captureRetryRef = useRef(/* @__PURE__ */ new Map());
   const capturePendingRef = useRef(/* @__PURE__ */ new Set());
   const captureIssueRef = useRef({ limit: false, message: "" });
@@ -918,6 +922,11 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   const reducedMotion = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   const hardStop = useCallback(() => {
     playTokenRef.current++;
+    try {
+      if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort();
+    } catch (e) {
+    }
+    audioRequestAbortRef.current = null;
     setIsGeneratingAudio(false);
     setCurrentAudioReadyIdx(-1);
     try {
@@ -1018,7 +1027,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       setSentenceIdx(0);
       setSweepPct(0);
       warmedRef.current = /* @__PURE__ */ new Set();
-      capturedWarmRef.current = /* @__PURE__ */ new Set();
+      warmPromisesRef.current = /* @__PURE__ */ new Map();
       return;
     }
     if (!text) {
@@ -1033,7 +1042,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       setSentenceIdx(0);
       setSweepPct(0);
       warmedRef.current = /* @__PURE__ */ new Set();
-      capturedWarmRef.current = /* @__PURE__ */ new Set();
+      warmPromisesRef.current = /* @__PURE__ */ new Map();
       return;
     }
     const parts = cleaned.split(/([.!?]+["'\u201D\u2019]?)(\s+|$)/);
@@ -1053,45 +1062,72 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     setSentenceIdx(0);
     setSweepPct(0);
     warmedRef.current = /* @__PURE__ */ new Set();
-    capturedWarmRef.current = /* @__PURE__ */ new Set();
+    warmPromisesRef.current = /* @__PURE__ */ new Map();
   }, [text, sentenceList]);
   useEffect(() => {
     warmedRef.current = /* @__PURE__ */ new Set();
-    capturedWarmRef.current = /* @__PURE__ */ new Set();
+    warmPromisesRef.current = /* @__PURE__ */ new Map();
   }, [getAudioUrl]);
+  useEffect(() => {
+    if (!isOpen || isPlaying || isGeneratingAudio || !sentences.length || typeof getAudioUrlRef.current !== "function") return;
+    if (warmedRef.current.has(0) && warmPromisesRef.current.has(0)) return;
+    let cancelled = false;
+    const resolver = getAudioUrlRef.current;
+    warmedRef.current.add(0);
+    setIsPreparingFirstAudio(true);
+    const request = Promise.resolve(resolver(sentences[0], {
+      priority: "interactive",
+      maxRetries: 1,
+      reason: "karaoke-open-warm"
+    })).then((url) => {
+      if (!url && warmPromisesRef.current.get(0) === request) {
+        warmedRef.current.delete(0);
+        warmPromisesRef.current.delete(0);
+      }
+      return url || null;
+    }).catch(() => {
+      if (warmPromisesRef.current.get(0) === request) {
+        warmedRef.current.delete(0);
+        warmPromisesRef.current.delete(0);
+      }
+      return null;
+    }).finally(() => {
+      if (!cancelled) setIsPreparingFirstAudio(false);
+    });
+    warmPromisesRef.current.set(0, request);
+    return () => {
+      cancelled = true;
+      setIsPreparingFirstAudio(false);
+    };
+  }, [isOpen, isPlaying, isGeneratingAudio, sentences, getAudioUrl]);
   useEffect(() => {
     if (!isOpen || !isPlaying || currentAudioReadyIdx !== sentenceIdx || sentences.length === 0) return;
     const resolver = getAudioUrlRef.current;
     if (typeof resolver !== "function") return;
     let cancelled = false;
-    const LOOKAHEAD = 3;
+    const LOOKAHEAD = 1;
     const run = async () => {
       for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
         if (cancelled) return;
         const alreadyWarmed = warmedRef.current.has(i);
-        const needsDurableCapture = captureOn && !capturedWarmRef.current.has(i);
-        if (alreadyWarmed && !needsDurableCapture) continue;
-        if (!alreadyWarmed) warmedRef.current.add(i);
+        if (alreadyWarmed) continue;
+        warmedRef.current.add(i);
         try {
-          const warmedUrl = await resolver(sentences[i]);
+          const request = Promise.resolve(resolver(sentences[i], {
+            priority: "background",
+            maxRetries: 0,
+            reason: "karaoke-lookahead"
+          }));
+          warmPromisesRef.current.set(i, request);
+          const warmedUrl = await request;
           if (cancelled) return;
           if (!warmedUrl) {
             warmedRef.current.delete(i);
-            capturedWarmRef.current.delete(i);
-          } else if (needsDurableCapture) {
-            scheduleCaptureForStorage(sentences[i], warmedUrl).then((captured) => {
-              let stored = false;
-              try {
-                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-                stored = !!(st && st.has(sentences[i]));
-              } catch (e) {
-              }
-              if (captured || stored) capturedWarmRef.current.add(i);
-            });
+            warmPromisesRef.current.delete(i);
           }
         } catch (e) {
           warmedRef.current.delete(i);
-          capturedWarmRef.current.delete(i);
+          warmPromisesRef.current.delete(i);
         }
       }
     };
@@ -1100,7 +1136,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage, getAudioUrl]);
+  }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, getAudioUrl]);
   const previousCaptureOnRef = useRef(captureOn);
   useEffect(() => {
     const justEnabled = !previousCaptureOnRef.current && captureOn;
@@ -1113,6 +1149,11 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   useEffect(() => {
     if (!isOpen) {
       playTokenRef.current++;
+      try {
+        if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort();
+      } catch (e) {
+      }
+      audioRequestAbortRef.current = null;
       try {
         if (audioRef.current) {
           audioRef.current.pause();
@@ -1130,11 +1171,18 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       }
       setIsPlaying(false);
       setIsGeneratingAudio(false);
+      setIsPreparingFirstAudio(false);
+      setPlaybackFallbackNotice("");
       setCurrentAudioReadyIdx(-1);
       setSweepPct(0);
     }
     return () => {
       playTokenRef.current++;
+      try {
+        if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort();
+      } catch (e) {
+      }
+      audioRequestAbortRef.current = null;
       try {
         if (audioRef.current) {
           audioRef.current.pause();
@@ -1161,6 +1209,11 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   const playSentence = useCallback(async (idx) => {
     if (idx < 0 || idx >= sentences.length) return;
     try {
+      if (audioRequestAbortRef.current) audioRequestAbortRef.current.abort();
+    } catch (e) {
+    }
+    audioRequestAbortRef.current = null;
+    try {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -1177,6 +1230,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     }
     setSweepPct(0);
     setIsGeneratingAudio(false);
+    setPlaybackFallbackNotice("");
     setCurrentAudioReadyIdx(-1);
     const sentenceText = sentences[idx];
     const token = ++playTokenRef.current;
@@ -1184,12 +1238,26 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     const resolver = getAudioUrlRef.current;
     if (typeof resolver === "function") {
       setIsGeneratingAudio(true);
+      let requestController = null;
       try {
-        url = await resolver(sentenceText);
+        const warmRequest = warmPromisesRef.current.get(idx);
+        if (warmRequest) {
+          url = await warmRequest;
+        } else {
+          requestController = typeof AbortController !== "undefined" ? new AbortController() : null;
+          audioRequestAbortRef.current = requestController;
+          url = await resolver(sentenceText, {
+            priority: "interactive",
+            maxRetries: 1,
+            signal: requestController ? requestController.signal : null,
+            reason: "karaoke-play"
+          });
+        }
       } catch (e) {
         url = null;
         console.warn("[Karaoke] Generated audio request failed; using browser fallback.", e?.message || e);
       } finally {
+        if (audioRequestAbortRef.current === requestController) audioRequestAbortRef.current = null;
         if (token === playTokenRef.current) {
           setIsGeneratingAudio(false);
           if (url) setCurrentAudioReadyIdx(idx);
@@ -1198,6 +1266,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     }
     if (token !== playTokenRef.current) return;
     if (url) {
+      setPlaybackFallbackNotice("");
       const audio = new Audio(url);
       audio.playbackRate = playbackSpeedRef.current || 1;
       audioRef.current = audio;
@@ -1237,6 +1306,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       } catch (e) {
         if (token !== playTokenRef.current) return;
         console.warn("[Karaoke] Generated audio could not start; using browser speech fallback.", e?.message || e);
+        setPlaybackFallbackNotice(captureOn ? "Using this device's voice. Browser fallback audio cannot be saved; retry when generated audio is available." : "Using this device's voice because generated audio is unavailable.");
         try {
           audio.pause();
         } catch (_) {
@@ -1245,6 +1315,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       }
     }
     if (typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined") {
+      setPlaybackFallbackNotice(captureOn ? "Using this device's voice. Browser fallback audio cannot be saved; retry when generated audio is available." : "Using this device's voice because generated audio is unavailable.");
       try {
         const u = new SpeechSynthesisUtterance(sentenceText);
         u.rate = 0.95 * (playbackSpeedRef.current || 1);
@@ -1288,7 +1359,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       if (autoAdvance && idx < sentences.length - 1) setSentenceIdx(idx + 1);
       else setIsPlaying(false);
     }, 1500);
-  }, [sentences, autoAdvance, reducedMotion, scheduleCaptureForStorage]);
+  }, [sentences, autoAdvance, reducedMotion, scheduleCaptureForStorage, captureOn]);
   const regenerateCurrent = useCallback(async () => {
     const sentence = sentences[sentenceIdx];
     if (regenBusy || !sentence || typeof window.__alloRegenerateSentenceAudio !== "function") return;
@@ -1296,6 +1367,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     try {
       await window.__alloRegenerateSentenceAudio(sentence);
       warmedRef.current.delete(sentenceIdx);
+      warmPromisesRef.current.delete(sentenceIdx);
       setSweepPct(0);
       playSentence(sentenceIdx);
     } catch (e) {
@@ -1376,6 +1448,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             const ok = await window.__alloStoreRecordedSentenceAudio(sentence, blob, "human-teacher");
             if (ok) {
               warmedRef.current.delete(sentenceIdx);
+              warmPromisesRef.current.delete(sentenceIdx);
               setSweepPct(0);
               playSentence(sentenceIdx);
             }
@@ -1560,7 +1633,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     } catch (e) {
       return false;
     }
-  })() ? " \xB7 \u{1F3A4} your voice" : ""), isGeneratingAudio && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-xs font-semibold", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { color: c.sweep } }, /* @__PURE__ */ React.createElement(Loader2, { size: 13, className: "animate-spin motion-reduce:animate-none shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, "Generating audio...")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => setCaptureOn(e.target.checked), "aria-label": safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen") }), /* @__PURE__ */ React.createElement("span", null, "\u{1F4BE}", " ", safeT(t, "immersive.save_readaloud", "Save read-aloud"))), captureSaveState.pending > 0 && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", style: { color: c.sweep } }, safeT(t, "immersive.saving_readaloud", "Saving"), " ", captureSaveState.pending), captureSaveState.failed > 0 && captureSaveState.limit && /* @__PURE__ */ React.createElement("span", { role: "alert", title: captureSaveState.message, style: { color: "#b45309" } }, safeT(t, "immersive.readaloud_limit", "Storage limit reached"), " \xB7 ", captureSaveState.failed), captureSaveState.failed > 0 && !captureSaveState.limit && /* @__PURE__ */ React.createElement(
+  })() ? " \xB7 \u{1F3A4} your voice" : ""), isAudioLoading && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-xs font-semibold", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { color: c.sweep } }, /* @__PURE__ */ React.createElement(Loader2, { size: 13, className: "animate-spin motion-reduce:animate-none shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, isGeneratingAudio ? "Generating audio..." : "Preparing first sentence...")), playbackFallbackNotice ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold max-w-xl", role: "status", "aria-live": "polite", style: { color: c.sweep } }, playbackFallbackNotice) : null)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => setCaptureOn(e.target.checked), "aria-label": safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen") }), /* @__PURE__ */ React.createElement("span", null, "\u{1F4BE}", " ", safeT(t, "immersive.save_readaloud", "Save read-aloud"))), captureSaveState.pending > 0 && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", style: { color: c.sweep } }, safeT(t, "immersive.saving_readaloud", "Saving"), " ", captureSaveState.pending), captureSaveState.failed > 0 && captureSaveState.limit && /* @__PURE__ */ React.createElement("span", { role: "alert", title: captureSaveState.message, style: { color: "#b45309" } }, safeT(t, "immersive.readaloud_limit", "Storage limit reached"), " \xB7 ", captureSaveState.failed), captureSaveState.failed > 0 && !captureSaveState.limit && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1669,7 +1742,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       },
       "aria-label": isGeneratingAudio ? "Stop generating audio" : isPlaying ? "Pause" : "Play",
       "aria-pressed": isPlaying,
-      "aria-busy": isGeneratingAudio,
+      "aria-busy": isAudioLoading,
       className: "px-3 py-1.5 rounded-full",
       style: { background: c.accent, color: c.ink }
     },

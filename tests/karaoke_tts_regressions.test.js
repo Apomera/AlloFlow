@@ -120,7 +120,11 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       await vi.advanceTimersByTimeAsync(500);
     });
 
-    expect(getAudioUrl).not.toHaveBeenCalled();
+    expect(getAudioUrl).toHaveBeenCalledTimes(1);
+    expect(getAudioUrl).toHaveBeenCalledWith('First sentence.', expect.objectContaining({
+      priority: 'interactive',
+      reason: 'karaoke-open-warm',
+    }));
   });
 
   it('does not restart an in-flight sentence when the parent supplies an equivalent new resolver', async () => {
@@ -178,6 +182,10 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       getAudioUrl: () => pendingAudio,
     }));
 
+    const preparingStatus = Array.from(host.querySelectorAll('[role="status"]'))
+      .find((node) => node.textContent.includes('Preparing first sentence...'));
+    expect(preparingStatus).toBeTruthy();
+
     const play = host.querySelector('button[aria-label="Play"]');
     await act(async () => { play.click(); });
 
@@ -223,7 +231,7 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(capture).toHaveBeenCalledWith('Capture this sentence.', 'blob:Capture this sentence.');
   });
 
-  it('persists look-ahead sentences instead of leaving them only in the temporary TTS cache', async () => {
+  it('warms one look-ahead sentence but persists only audio that actually plays', async () => {
     vi.useFakeTimers();
     audioInstances = [];
     global.Audio = window.Audio = FakeAudio;
@@ -244,9 +252,13 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     });
 
     expect(capture).toHaveBeenCalledWith('First sentence.', 'blob:First sentence.');
-    expect(capture).toHaveBeenCalledWith('Second sentence.', 'blob:Second sentence.');
-    expect(capture).toHaveBeenCalledWith('Third sentence.', 'blob:Third sentence.');
-    expect(capture).toHaveBeenCalledWith('Fourth sentence.', 'blob:Fourth sentence.');
+    expect(capture).toHaveBeenCalledTimes(1);
+    expect(getAudioUrl).toHaveBeenCalledWith('Second sentence.', expect.objectContaining({
+      priority: 'background',
+      maxRetries: 0,
+    }));
+    expect(getAudioUrl.mock.calls.map((call) => call[0])).not.toContain('Third sentence.');
+    expect(getAudioUrl.mock.calls.map((call) => call[0])).not.toContain('Fourth sentence.');
   });
 
   it('uses the canonical leveled-text sentence list when supplied', async () => {
@@ -267,7 +279,9 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       await Promise.resolve();
     });
 
-    expect(getAudioUrl).toHaveBeenCalledWith('Heading');
+    expect(getAudioUrl).toHaveBeenCalledWith('Heading', expect.objectContaining({
+      priority: 'interactive',
+    }));
     expect(getAudioUrl).not.toHaveBeenCalledWith('Heading First sentence.');
   });
 
@@ -357,7 +371,9 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
       await Promise.resolve();
     });
 
-    expect(getAudioUrl).toHaveBeenCalledWith('Already saved.');
+    expect(getAudioUrl).toHaveBeenCalledWith('Already saved.', expect.objectContaining({
+      priority: 'interactive',
+    }));
     expect(synthesize).not.toHaveBeenCalled();
     expect(audioInstances).toHaveLength(1);
     expect(audioInstances[0].src).toBe('blob:rehydrated-read-aloud');

@@ -360,6 +360,28 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     expect(settled).toBe(true);
   });
 
+  it('starts interactive karaoke audio while the background TTS lane is occupied', async () => {
+    const neverFinishes = new Promise(() => {});
+    const state = {
+      queue: neverFinishes,
+      botQueue: Promise.resolve(),
+      urlCache: new Map(),
+      rateLimitedUntil: 0,
+    };
+    stubSynthesis();
+    const { callTTS } = makeTTS(state);
+
+    const url = await callTTS('Foreground karaoke sentence.', 'Kore', 1, {
+      language: 'English',
+      maxRetries: 0,
+      priority: 'interactive',
+    });
+
+    expect(url).toBe('blob:new-clip');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(state.interactiveQueue).toBeTruthy();
+  });
+
   it('uses the live selected Gemini voice when VoiceConfig loads after the TTS factory', async () => {
     let liveVoices = [];
     let selectedVoice = 'Aoede';

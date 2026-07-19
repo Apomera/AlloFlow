@@ -472,7 +472,12 @@
         return null;
       }
     };
-    var getKaraokeAudioUrl = React.useCallback(function (sentenceText) {
+    // The host can refresh callTTS while modules finish loading. Keep the
+    // resolver identity tied only to the actual voice profile so capture-status
+    // renders do not repeatedly invalidate karaoke's warm cache.
+    var karaokeCallTTSRef = React.useRef(callTTS);
+    karaokeCallTTSRef.current = callTTS;
+    var getKaraokeAudioUrl = React.useCallback(function (sentenceText, requestOptions) {
       var voice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
       var language = leveledTextLanguage || 'English';
@@ -494,9 +499,16 @@
           }
         }
       } catch (_) {}
-      if (typeof callTTS !== 'function') return Promise.resolve(null);
-      return Promise.resolve(callTTS(sentenceText, voice, speed, { language: language }, language)).catch(function () { return null; });
-    }, [callTTS, selectedVoice, voiceSpeed, leveledTextLanguage]);
+      var resolver = karaokeCallTTSRef.current;
+      if (typeof resolver !== 'function') return Promise.resolve(null);
+      var options = Object.assign({
+        language: language,
+        maxRetries: 1,
+        priority: 'interactive'
+      }, requestOptions || {});
+      options.language = language;
+      return Promise.resolve(resolver(sentenceText, voice, speed, options, language)).catch(function () { return null; });
+    }, [selectedVoice, voiceSpeed, leveledTextLanguage]);
     var getReadAloudAudioProvenance = function (sentence) {
       var st = getReadAloudStore();
       var source = null;
