@@ -3468,6 +3468,14 @@
                 ready: true
               },
               {
+                id: 'areaPerimeter',
+                icon: '\uD83D\uDCD0',
+                label: 'Area & Perimeter Lab',
+                desc: 'Tile, compare, decompose, and investigate 2-D shapes while building measurement reasoning.',
+                color: 'teal',
+                ready: true
+              },
+              {
                 id: 'fractionViz',
                 aliases: ['fractions'],
                 icon: '🍕',
@@ -5395,6 +5403,7 @@
             probability: true, protractor: true, volume: true,
             arithmeticStudio: true,
             ratioLab: true,
+            areaPerimeter: true,
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
