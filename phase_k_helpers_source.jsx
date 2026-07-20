@@ -101,6 +101,30 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
     }
 };
 
+// Sequence-player diagnostics: events land in the SAME window.__alloTtsTrace
+// ring the TTS module and karaoke overlay write, so one "Copy diagnostics"
+// snapshot shows the in-view read-aloud (playSequence) chain too — which
+// surface asked, where a sentence resolved from, and why one stalled/skipped.
+const PK_TRACE_MAX = 150;
+const _pkTrace = (event, detail) => {
+    try {
+        const buffer = window.__alloTtsTrace || (window.__alloTtsTrace = []);
+        buffer.push({ at: Date.now(), event: event, detail: detail || null });
+        while (buffer.length > PK_TRACE_MAX) buffer.shift();
+    } catch (_) {}
+};
+
+// Resolution wait budget. 90s exists for the in-browser Kokoro engine's slow
+// first generations — but only when the engine is actually READY to serve;
+// a merely-present (still downloading / failed-init) engine used to inflate
+// every cloud wait to 90s, which read as "TTS is stuck".
+const _pkAudioLoadTimeoutMs = () => {
+    try {
+        if (window._kokoroTTS && window._kokoroTTS.ready) return 90000;
+        return (window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs) || 15000;
+    } catch (_) { return 15000; }
+};
+
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
     if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
     // Capture-as-you-play is ON by default (2026-07-09): the clip already
@@ -114,14 +138,26 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
 };
 
 const captureReadAloudClip = (contentId, mode, sentence, url) => {
-    if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) return;
+    if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) {
+        _pkTrace('pk:capture-skip', {
+            contentId: contentId || null,
+            storePath: shouldUseReadAloudStore(contentId, mode),
+            hasCaptureFn: typeof window.__alloCaptureKaraokeAudio === 'function',
+        });
+        return;
+    }
     // Invoke immediately — playSequence revokes the clip's blob URL when
     // playback ends, so a deferred call here loses very short sentences.
     // __alloCaptureKaraokeAudio snapshots the bytes up front and defers the
     // heavy MP3 encode to an idle slot itself.
     try {
         const result = window.__alloCaptureKaraokeAudio(sentence, url);
-        if (result && typeof result.catch === 'function') result.catch(() => {});
+        if (result && typeof result.then === 'function') {
+            result.then(
+                (saved) => _pkTrace('pk:capture-result', { saved: !!saved, sentence: String(sentence || '').substring(0, 40) }),
+                () => _pkTrace('pk:capture-error', { sentence: String(sentence || '').substring(0, 40) })
+            );
+        }
     } catch (_) {}
 };
 
@@ -459,6 +495,12 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               if (_errorHandled) return;
               _errorHandled = true;
               warnLog(`Playback error at index ${index} (Retry ${retryCount}):`, err);
+              _pkTrace('pk:error', {
+                  idx: index,
+                  retry: retryCount,
+                  error: String((err && err.message) || (err && err.type) || err).substring(0, 120),
+                  willRetry: retryCount < 3,
+              });
               if (audioUrl) {
                   releaseBlob(audioUrl);
               }
@@ -495,13 +537,15 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               }
           };
           if (preloadedAudio) {
+              _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'preloaded' });
               audio = preloadedAudio;
               if (audio instanceof Promise) {
                   try {
-                      const _tOut = window._kokoroTTS ? 90000 : ((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs) || 15000);
+                      const _tOut = _pkAudioLoadTimeoutMs();
                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut));
                       audio = await Promise.race([audio, timeoutPromise]);
                   } catch (e) {
+                      _pkTrace('pk:resolve-timeout', { idx: index, source: 'preloaded' });
                       handlePlaybackError(e);
                       return;
                   }
@@ -517,18 +561,22 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               audio.muted = false;
           } else {
               if (storedReadAloudUrl) {
+                  _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'stored' });
                   audioUrl = storedReadAloudUrl;
                   usingStoredReadAloud = true;
               } else if (audioBufferRef.current[bufferKey]) {
+                  _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'buffer' });
                   try {
-                      const _tOut2 = window._kokoroTTS ? 90000 : ((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs) || 15000);
+                      const _tOut2 = _pkAudioLoadTimeoutMs();
                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut2));
                       audioUrl = await Promise.race([audioBufferRef.current[bufferKey], timeoutPromise]);
                   } catch (e) {
+                      _pkTrace('pk:resolve-timeout', { idx: index, source: 'buffer' });
                       handlePlaybackError(e);
                       return;
                   }
               } else {
+                  _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'fresh' });
                   const promise = callTTS(
                       textToSpeak,
                       currentVoice,
@@ -540,15 +588,27 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   });
                   audioBufferRef.current[bufferKey] = promise;
                   try {
-                      const _tOut3 = window._kokoroTTS ? 90000 : ((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs) || 15000);
+                      const _tOut3 = _pkAudioLoadTimeoutMs();
                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut3));
                       audioUrl = await Promise.race([promise, timeoutPromise]);
                   } catch (e) {
+                      _pkTrace('pk:resolve-timeout', { idx: index, source: 'fresh' });
                       handlePlaybackError(e);
                       return;
                   }
               }
               if (playbackSessionRef.current !== sessionId) return;
+              if (!audioUrl) {
+                  // callTTS resolves NULL when every provider leg declined
+                  // (rate-limit cooldown with no local engine, muted, auth).
+                  // new Audio(null) relied on a media error event that some
+                  // embeds never fire — the sequence froze instead of
+                  // retrying/skipping. Treat no-URL as a real failure.
+                  _pkTrace('pk:null-url', { idx: index });
+                  delete audioBufferRef.current[bufferKey];
+                  handlePlaybackError(new Error('TTS returned no audio (provider unavailable)'));
+                  return;
+              }
               audio = new Audio(audioUrl);
               audio.playbackRate = playbackRateRef.current;
               audio.preload = 'auto';
@@ -733,20 +793,38 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                       if (!usingStoredReadAloud) {
                           captureReadAloudClip(contentId, mode, audioStoreSentence, audioUrl);
                       }
-                      const duration = audio.duration;
-                      if (duration && isFinite(duration)) {
-                          const safeDuration = (duration * 1000) / playbackRateRef.current;
+                      const armWatchdog = (ms) => {
+                          if (watchdogTimer) clearTimeout(watchdogTimer);
                           watchdogTimer = setTimeout(() => {
                               warnLog(`Watchdog triggered for segment ${index}`);
+                              _pkTrace('pk:watchdog-fired', { idx: index });
                               if (playbackSessionRef.current === sessionId && audioRef.current === audio) {
                                   audio.pause();
                                   audio.onended();
                               }
-                          }, safeDuration + 2000);
+                          }, ms);
+                      };
+                      const duration = audio.duration;
+                      if (duration && isFinite(duration)) {
+                          armWatchdog((duration * 1000) / playbackRateRef.current + 2000);
+                      } else {
+                          // Duration unknown at play-start (metadata not yet
+                          // loaded) used to mean NO watchdog at all — if
+                          // onended then never fired (dead element in some
+                          // embeds), the sequence froze forever. Arm a
+                          // text-length estimate now and tighten to the real
+                          // duration the moment metadata arrives.
+                          armWatchdog(Math.max(8000, (String(textToSpeak || '').length * 90) / (playbackRateRef.current || 1) + 4000));
+                          audio.addEventListener('loadedmetadata', () => {
+                              if (audio.duration && isFinite(audio.duration) && audioRef.current === audio) {
+                                  armWatchdog(((audio.duration - audio.currentTime) * 1000) / (playbackRateRef.current || 1) + 2000);
+                              }
+                          }, { once: true });
                       }
                   })
                   .catch(error => {
                       if (watchdogTimer) clearTimeout(watchdogTimer);
+                      _pkTrace('pk:play-fail', { idx: index, error: String(error && error.message || error).substring(0, 100) });
                       if (error.name !== 'AbortError') {
                           handlePlaybackError(error);
                       }

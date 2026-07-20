@@ -68,6 +68,23 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence, currentVoice) => {
     return null;
   }
 };
+const PK_TRACE_MAX = 150;
+const _pkTrace = (event, detail) => {
+  try {
+    const buffer = window.__alloTtsTrace || (window.__alloTtsTrace = []);
+    buffer.push({ at: Date.now(), event, detail: detail || null });
+    while (buffer.length > PK_TRACE_MAX) buffer.shift();
+  } catch (_) {
+  }
+};
+const _pkAudioLoadTimeoutMs = () => {
+  try {
+    if (window._kokoroTTS && window._kokoroTTS.ready) return 9e4;
+    return window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
+  } catch (_) {
+    return 15e3;
+  }
+};
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
   if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
   try {
@@ -77,11 +94,22 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
   return typeof window.__alloCaptureKaraokeAudio === "function";
 };
 const captureReadAloudClip = (contentId, mode, sentence, url) => {
-  if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) return;
+  if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) {
+    _pkTrace("pk:capture-skip", {
+      contentId: contentId || null,
+      storePath: shouldUseReadAloudStore(contentId, mode),
+      hasCaptureFn: typeof window.__alloCaptureKaraokeAudio === "function"
+    });
+    return;
+  }
   try {
     const result = window.__alloCaptureKaraokeAudio(sentence, url);
-    if (result && typeof result.catch === "function") result.catch(() => {
-    });
+    if (result && typeof result.then === "function") {
+      result.then(
+        (saved) => _pkTrace("pk:capture-result", { saved: !!saved, sentence: String(sentence || "").substring(0, 40) }),
+        () => _pkTrace("pk:capture-error", { sentence: String(sentence || "").substring(0, 40) })
+      );
+    }
   } catch (_) {
   }
 };
@@ -370,6 +398,12 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       if (_errorHandled) return;
       _errorHandled = true;
       warnLog(`Playback error at index ${index} (Retry ${retryCount}):`, err);
+      _pkTrace("pk:error", {
+        idx: index,
+        retry: retryCount,
+        error: String(err && err.message || err && err.type || err).substring(0, 120),
+        willRetry: retryCount < 3
+      });
       if (audioUrl) {
         releaseBlob(audioUrl);
       }
@@ -406,13 +440,15 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       }
     };
     if (preloadedAudio) {
+      _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "preloaded" });
       audio = preloadedAudio;
       if (audio instanceof Promise) {
         try {
-          const _tOut = window._kokoroTTS ? 9e4 : window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
+          const _tOut = _pkAudioLoadTimeoutMs();
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut));
           audio = await Promise.race([audio, timeoutPromise]);
         } catch (e) {
+          _pkTrace("pk:resolve-timeout", { idx: index, source: "preloaded" });
           handlePlaybackError(e);
           return;
         }
@@ -428,18 +464,22 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       audio.muted = false;
     } else {
       if (storedReadAloudUrl) {
+        _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "stored" });
         audioUrl = storedReadAloudUrl;
         usingStoredReadAloud = true;
       } else if (audioBufferRef.current[bufferKey]) {
+        _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "buffer" });
         try {
-          const _tOut2 = window._kokoroTTS ? 9e4 : window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
+          const _tOut2 = _pkAudioLoadTimeoutMs();
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut2));
           audioUrl = await Promise.race([audioBufferRef.current[bufferKey], timeoutPromise]);
         } catch (e) {
+          _pkTrace("pk:resolve-timeout", { idx: index, source: "buffer" });
           handlePlaybackError(e);
           return;
         }
       } else {
+        _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "fresh" });
         const promise = callTTS(
           textToSpeak,
           currentVoice,
@@ -451,15 +491,22 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         });
         audioBufferRef.current[bufferKey] = promise;
         try {
-          const _tOut3 = window._kokoroTTS ? 9e4 : window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.audioLoadMs || 15e3;
+          const _tOut3 = _pkAudioLoadTimeoutMs();
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut3));
           audioUrl = await Promise.race([promise, timeoutPromise]);
         } catch (e) {
+          _pkTrace("pk:resolve-timeout", { idx: index, source: "fresh" });
           handlePlaybackError(e);
           return;
         }
       }
       if (playbackSessionRef.current !== sessionId) return;
+      if (!audioUrl) {
+        _pkTrace("pk:null-url", { idx: index });
+        delete audioBufferRef.current[bufferKey];
+        handlePlaybackError(new Error("TTS returned no audio (provider unavailable)"));
+        return;
+      }
       audio = new Audio(audioUrl);
       audio.playbackRate = playbackRateRef.current;
       audio.preload = "auto";
@@ -633,19 +680,31 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         if (!usingStoredReadAloud) {
           captureReadAloudClip(contentId, mode, audioStoreSentence, audioUrl);
         }
-        const duration = audio.duration;
-        if (duration && isFinite(duration)) {
-          const safeDuration = duration * 1e3 / playbackRateRef.current;
+        const armWatchdog = (ms) => {
+          if (watchdogTimer) clearTimeout(watchdogTimer);
           watchdogTimer = setTimeout(() => {
             warnLog(`Watchdog triggered for segment ${index}`);
+            _pkTrace("pk:watchdog-fired", { idx: index });
             if (playbackSessionRef.current === sessionId && audioRef.current === audio) {
               audio.pause();
               audio.onended();
             }
-          }, safeDuration + 2e3);
+          }, ms);
+        };
+        const duration = audio.duration;
+        if (duration && isFinite(duration)) {
+          armWatchdog(duration * 1e3 / playbackRateRef.current + 2e3);
+        } else {
+          armWatchdog(Math.max(8e3, String(textToSpeak || "").length * 90 / (playbackRateRef.current || 1) + 4e3));
+          audio.addEventListener("loadedmetadata", () => {
+            if (audio.duration && isFinite(audio.duration) && audioRef.current === audio) {
+              armWatchdog((audio.duration - audio.currentTime) * 1e3 / (playbackRateRef.current || 1) + 2e3);
+            }
+          }, { once: true });
         }
       }).catch((error) => {
         if (watchdogTimer) clearTimeout(watchdogTimer);
+        _pkTrace("pk:play-fail", { idx: index, error: String(error && error.message || error).substring(0, 100) });
         if (error.name !== "AbortError") {
           handlePlaybackError(error);
         }

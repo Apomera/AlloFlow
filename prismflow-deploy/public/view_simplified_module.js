@@ -355,6 +355,68 @@ function SimplifiedView(props) {
   });
   var saveTtsAsPlayed = saveTtsAsPlayed_state[0];
   var setSaveTtsAsPlayed = saveTtsAsPlayed_state[1];
+  // "Copy diagnostics" for the IN-VIEW read-aloud (playSequence path): the
+  // karaoke overlay has its own button, but leveled-text playback happens
+  // right here — surface the shared window.__alloTtsTrace ring where the
+  // teacher is actually looking when audio gets stuck.
+  var ttsDiagCopied_state = React.useState(false);
+  var ttsDiagCopied = ttsDiagCopied_state[0];
+  var setTtsDiagCopied = ttsDiagCopied_state[1];
+  var _fallbackCopyTtsDiag = function (text) {
+    try {
+      var scratch = document.createElement('textarea');
+      scratch.value = text;
+      scratch.setAttribute('readonly', '');
+      scratch.style.position = 'fixed';
+      scratch.style.opacity = '0';
+      document.body.appendChild(scratch);
+      scratch.select();
+      var ok = document.execCommand('copy');
+      scratch.remove();
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  };
+  var copyTtsDiagnostics = function () {
+    var payload;
+    try {
+      payload = JSON.stringify({
+        at: new Date().toISOString(),
+        surface: 'leveled-text',
+        userAgent: typeof navigator !== 'undefined' ? String(navigator.userAgent || '').substring(0, 120) : '',
+        flags: {
+          geminiQuotaFailed: !!window.__ttsGeminiQuotaFailed,
+          geminiAuthFailed: !!window.__ttsGeminiAuthFailed,
+          kokoroPresent: !!window._kokoroTTS,
+          kokoroReady: !!(window._kokoroTTS && window._kokoroTTS.ready),
+          sharedResolver: typeof window.__alloResolveReadAloudAudio === 'function'
+        },
+        lastRoute: window.__ttsLastRoute || null,
+        trace: (window.__alloTtsTrace || []).slice(-120)
+      }, null, 2);
+    } catch (e) {
+      payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e);
+    }
+    var done = function (ok) {
+      if (!ok) return;
+      setTtsDiagCopied(true);
+      setTimeout(function () {
+        setTtsDiagCopied(false);
+      }, 2000);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(payload).then(function () {
+          done(true);
+        }, function () {
+          done(_fallbackCopyTtsDiag(payload));
+        });
+        return;
+      }
+    } catch (e) {}
+    done(_fallbackCopyTtsDiag(payload));
+  };
   var savingAudioKeys_state = React.useState({});
   var savingAudioKeys = savingAudioKeys_state[0];
   var setSavingAudioKeys = savingAudioKeys_state[1];
@@ -1121,7 +1183,13 @@ function SimplifiedView(props) {
       className: "inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"
     }, /*#__PURE__*/React.createElement(AlertCircle, {
       size: 10
-    }), " ", captureErrorCount, " save ", captureErrorCount === 1 ? 'issue' : 'issues'), /*#__PURE__*/React.createElement("label", {
+    }), " ", captureErrorCount, " save ", captureErrorCount === 1 ? 'issue' : 'issues'), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: copyTtsDiagnostics,
+      "aria-label": "Copy read-aloud diagnostics to clipboard",
+      title: "Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck.",
+      className: "inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+    }, ttsDiagCopied ? '✓ Copied' : '🩺 Diagnostics'), /*#__PURE__*/React.createElement("label", {
       className: "inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",

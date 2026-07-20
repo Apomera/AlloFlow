@@ -291,6 +291,58 @@
     });
     var saveTtsAsPlayed = saveTtsAsPlayed_state[0];
     var setSaveTtsAsPlayed = saveTtsAsPlayed_state[1];
+    // "Copy diagnostics" for the IN-VIEW read-aloud (playSequence path): the
+    // karaoke overlay has its own button, but leveled-text playback happens
+    // right here — surface the shared window.__alloTtsTrace ring where the
+    // teacher is actually looking when audio gets stuck.
+    var ttsDiagCopied_state = React.useState(false);
+    var ttsDiagCopied = ttsDiagCopied_state[0];
+    var setTtsDiagCopied = ttsDiagCopied_state[1];
+    var _fallbackCopyTtsDiag = function (text) {
+      try {
+        var scratch = document.createElement('textarea');
+        scratch.value = text;
+        scratch.setAttribute('readonly', '');
+        scratch.style.position = 'fixed';
+        scratch.style.opacity = '0';
+        document.body.appendChild(scratch);
+        scratch.select();
+        var ok = document.execCommand('copy');
+        scratch.remove();
+        return ok;
+      } catch (e) { return false; }
+    };
+    var copyTtsDiagnostics = function () {
+      var payload;
+      try {
+        payload = JSON.stringify({
+          at: new Date().toISOString(),
+          surface: 'leveled-text',
+          userAgent: typeof navigator !== 'undefined' ? String(navigator.userAgent || '').substring(0, 120) : '',
+          flags: {
+            geminiQuotaFailed: !!window.__ttsGeminiQuotaFailed,
+            geminiAuthFailed: !!window.__ttsGeminiAuthFailed,
+            kokoroPresent: !!window._kokoroTTS,
+            kokoroReady: !!(window._kokoroTTS && window._kokoroTTS.ready),
+            sharedResolver: typeof window.__alloResolveReadAloudAudio === 'function',
+          },
+          lastRoute: window.__ttsLastRoute || null,
+          trace: (window.__alloTtsTrace || []).slice(-120),
+        }, null, 2);
+      } catch (e) { payload = 'diagnostics-serialize-failed: ' + String((e && e.message) || e); }
+      var done = function (ok) {
+        if (!ok) return;
+        setTtsDiagCopied(true);
+        setTimeout(function () { setTtsDiagCopied(false); }, 2000);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(payload).then(function () { done(true); }, function () { done(_fallbackCopyTtsDiag(payload)); });
+          return;
+        }
+      } catch (e) {}
+      done(_fallbackCopyTtsDiag(payload));
+    };
     var savingAudioKeys_state = React.useState({});
     var savingAudioKeys = savingAudioKeys_state[0];
     var setSavingAudioKeys = savingAudioKeys_state[1];
@@ -910,7 +962,7 @@
       var captureErrorCount = Object.keys(captureAudioErrors || {}).length;
       var panelId = 'allo-edit-audio-' + String((generatedContent && generatedContent.id) || 'current').replace(/[^a-z0-9_-]/gi, '-');
       var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey;
-      return <div className="border-t border-orange-100 bg-orange-50/80"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"><button type="button" onClick={handleToggleEditAudioPanel} aria-expanded={editAudioOpen} aria-controls={panelId} aria-label={`Edit audio. ${summary.saved} of ${summary.total} sentences saved.`} className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"><Volume2 size={14} /><span>Edit audio</span><span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case">{summary.saved}/{summary.total} saved{summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''}</span>{editAudioOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button><div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">{savingCount > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"><RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> Saving {savingCount}</span>}{captureErrorCount > 0 && <span role="alert" className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"><AlertCircle size={10} /> {captureErrorCount} save {captureErrorCount === 1 ? 'issue' : 'issues'}</span>}<label className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (event) { setSaveTtsAsPlayedEnabled(event.target.checked); }} className="accent-orange-600" aria-label="Save played TTS into this resource" /><span>Save played TTS</span></label></div></div>{editAudioOpen && <div id={panelId} role="region" aria-label="Sentence audio editor" className="border-t border-orange-100 bg-white p-3"><div className="flex items-start gap-2 mb-3 text-xs text-slate-600"><Mic size={14} className="mt-0.5 shrink-0 text-orange-700" /><p>Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.</p></div>{editAudioNotice && <div role="status" aria-live="polite" className="mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800">{editAudioNotice}</div>}<div className="space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar">{sentences.map(function (sentence, i) {
+      return <div className="border-t border-orange-100 bg-orange-50/80"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"><button type="button" onClick={handleToggleEditAudioPanel} aria-expanded={editAudioOpen} aria-controls={panelId} aria-label={`Edit audio. ${summary.saved} of ${summary.total} sentences saved.`} className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"><Volume2 size={14} /><span>Edit audio</span><span className="rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case">{summary.saved}/{summary.total} saved{summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''}</span>{editAudioOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</button><div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">{savingCount > 0 && <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"><RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> Saving {savingCount}</span>}{captureErrorCount > 0 && <span role="alert" className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"><AlertCircle size={10} /> {captureErrorCount} save {captureErrorCount === 1 ? 'issue' : 'issues'}</span>}<button type="button" onClick={copyTtsDiagnostics} aria-label="Copy read-aloud diagnostics to clipboard" title="Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck." className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">{ttsDiagCopied ? '✓ Copied' : '🩺 Diagnostics'}</button><label className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (event) { setSaveTtsAsPlayedEnabled(event.target.checked); }} className="accent-orange-600" aria-label="Save played TTS into this resource" /><span>Save played TTS</span></label></div></div>{editAudioOpen && <div id={panelId} role="region" aria-label="Sentence audio editor" className="border-t border-orange-100 bg-white p-3"><div className="flex items-start gap-2 mb-3 text-xs text-slate-600"><Mic size={14} className="mt-0.5 shrink-0 text-orange-700" /><p>Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.</p></div>{editAudioNotice && <div role="status" aria-live="polite" className="mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800">{editAudioNotice}</div>}<div className="space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar">{sentences.map(function (sentence, i) {
         var key = 'simplified-' + i;
         var sentenceNumber = i + 1;
         var audioKey = getReadAloudAudioKey(sentence);

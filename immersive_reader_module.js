@@ -844,7 +844,7 @@ const karaokeTrace = (event, detail) => {
   } catch (e) {
   }
 };
-const KARAOKE_RESOLVE_WATCHDOG_MS = 45e3;
+const KARAOKE_RESOLVE_WATCHDOG_MS = 2e4;
 const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
   const { t } = useContext(LanguageContext);
   const dialogRef = useOverlayDialogFocus(isOpen);

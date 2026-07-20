@@ -1027,8 +1027,9 @@ const karaokeTrace = (event, detail) => {
 // A resolution that never settles (hung queue, stalled plugin load, dead
 // provider) must not spin the overlay forever OR poison the warm cache so
 // every later Play re-joins the same hang. After this window the player
-// falls back to the device voice and the next Play starts FRESH.
-const KARAOKE_RESOLVE_WATCHDOG_MS = 45000;
+// falls back to the device voice and the next Play starts FRESH. 20s: real
+// generation lands in 2–8s; nobody in a classroom waits 45.
+const KARAOKE_RESOLVE_WATCHDOG_MS = 20000;
 const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
     const { t } = useContext(LanguageContext);
     const dialogRef = useOverlayDialogFocus(isOpen);
