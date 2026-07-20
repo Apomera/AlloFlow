@@ -16,6 +16,13 @@ beforeAll(() => {
     { at: Date.now(), event: 'pk:seq', detail: { idx: 0, source: 'fresh' } },
     { at: Date.now(), event: 'fetch:timeout', detail: { afterMs: 60000 } },
   ];
+  window.__alloSessionSyncTrace = [
+    { at: Date.now(), event: 'sync:resources-prepared', detail: { kept: 4, of: 5, dropped: 1, bytes: 12000 } },
+    { at: Date.now(), event: 'sync:REFUSED-tier2', detail: { fields: ['aiPolicy'] } },
+  ];
+  window.__alloSessionHealth = { code: 'ABC123', transport: 'firebase', role: 'teacher', roster: 3, resources: 4, at: Date.now() };
+  window.__alloBuildStamp = { hash: 'deadbeef1', surface: 'canvas', at: Date.now() };
+  window.__alloModuleSnapshot = () => ({ pending: [], failed: ['TTS'] });
   const src = fs.readFileSync(path.join(ROOT, 'error_reporter_module.js'), 'utf8');
   // eslint-disable-next-line no-new-func
   new Function(src)();
@@ -56,5 +63,44 @@ describe('error reporter TTS tab', () => {
     window.__alloOpenDiagnosticsLog('errors');
     expect(document.getElementById('allo-err-panel')).toBeTruthy();
     expect(document.getElementById('aer-send')).toBeTruthy();
+  });
+
+  it('session tab shows health summary + sync trace incl. privacy refusals', () => {
+    window.__alloOpenDiagnosticsLog('session');
+    const panel = document.getElementById('allo-err-panel');
+    expect(panel.textContent).toContain('Session ABC123');
+    expect(panel.textContent).toContain('firebase');
+    expect(panel.textContent).toContain('sync:REFUSED-tier2');
+    expect(panel.textContent).toContain('sync:resources-prepared');
+    expect(document.getElementById('aer-sess-copy')).toBeTruthy();
+  });
+
+  it('identity line shows build/surface and failed modules in the header', () => {
+    const panel = document.getElementById('allo-err-panel');
+    expect(panel.textContent).toContain('build deadbeef1 · canvas');
+    expect(panel.textContent).toContain('1 module(s) FAILED: TTS');
+  });
+
+  it('Send-to-Developers payload carries identity + both trace tails', () => {
+    // The clear-trace test above emptied the ring; repopulate so the report
+    // has a read-aloud tail to attach.
+    window.__alloTtsTrace.push({ at: Date.now(), event: 'pk:seq', detail: { idx: 1, source: 'buffer' } });
+    // The report body is what reaches the bug form/worker — drive it via the
+    // Copy log button, which renders the same payload.
+    document.getElementById('aer-tab-errors').click();
+    let copied = '';
+    window.navigator.clipboard || Object.defineProperty(window.navigator, 'clipboard', { value: {}, configurable: true });
+    Object.defineProperty(window.navigator, 'clipboard', {
+      value: { writeText: (t) => { copied = t; return Promise.resolve(); } },
+      configurable: true,
+    });
+    document.getElementById('aer-copy').click();
+    return Promise.resolve().then(() => {
+      expect(copied).toContain('== Diagnostics: build deadbeef1 · canvas');
+      expect(copied).toContain('Read-aloud trace');
+      expect(copied).toContain('pk:seq');
+      expect(copied).toContain('Session sync trace');
+      expect(copied).toContain('sync:REFUSED-tier2');
+    });
   });
 });

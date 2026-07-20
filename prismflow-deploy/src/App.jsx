@@ -5880,6 +5880,19 @@ if (typeof window !== 'undefined') {
   window.__alloQueueHavenClassroomRewards = queueAlloHavenClassroomRewards;
 }
 
+// Session-sync diagnostics ring (2026-07-20): writeToSession outcomes,
+// privacy-gate refusals, and mailbox pack-sync cycles land at
+// window.__alloSessionSyncTrace so the Diagnostics panel's Session tab can
+// show WHY resources aren't reaching students. (The aiPolicy Tier-2 refusal
+// silently killed resource sync for 2.5 days — sync failures must never be
+// console-only again.)
+const _alloSessionSyncTrace = (event, detail) => {
+  try {
+    const buffer = window.__alloSessionSyncTrace || (window.__alloSessionSyncTrace = []);
+    buffer.push({ at: Date.now(), event: event, detail: detail || null });
+    while (buffer.length > 80) buffer.shift();
+  } catch (_) {}
+};
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
     return Promise.reject(new Error('writeToSession: invalid arguments'));
@@ -5888,6 +5901,7 @@ const writeToSession = async (sessionRef, payload) => {
   if (Array.isArray(payload.resources)) {
     const prepared = prepareSessionResourcesForWrite(payload.resources);
     safePayload = { ...payload, resources: prepared.resources };
+    _alloSessionSyncTrace('sync:resources-prepared', { kept: prepared.keptCount, of: prepared.originalCount, dropped: prepared.droppedCount, bytes: prepared.byteLength, overLimit: prepared.overLimit });
     if (prepared.droppedCount > 0 || prepared.overLimit) {
       warnLog(
         `[Session Sync] Resource payload trimmed: kept ${prepared.keptCount}/${prepared.originalCount}, ${prepared.byteLength}/${prepared.maxBytes} bytes.`
@@ -5919,9 +5933,13 @@ const writeToSession = async (sessionRef, payload) => {
       '[AlloFlow Privacy] Refusing Tier-2 sync to session doc. Fields:', violations,
       '\nKeep this data local-only, add the field to SESSION_TIER1_LEAVES with justification, or use a WebRTC peer channel.'
     );
+    _alloSessionSyncTrace('sync:REFUSED-tier2', { fields: violations });
     return Promise.reject(new Error('Tier-2 sync refused: ' + violations.join(', ')));
   }
-  return updateDoc(sessionRef, safePayload);
+  return updateDoc(sessionRef, safePayload).then(
+    (result) => { _alloSessionSyncTrace('sync:write-ok', { keys: Object.keys(safePayload).slice(0, 12) }); return result; },
+    (error) => { _alloSessionSyncTrace('sync:write-failed', { keys: Object.keys(safePayload).slice(0, 12), error: String((error && error.message) || error).substring(0, 120) }); throw error; }
+  );
 };
 if (typeof window !== 'undefined') {
   window.__alloWriteToSession = writeToSession;
@@ -8275,6 +8293,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
     var pluginCdnBase = isDesktopBundledApp ? './' : 'https://alloflow-cdn.pages.dev/';
+    // Diagnostics identity stamp (2026-07-20): the Diagnostics panel shows
+    // which build + surface this session actually runs — ends the "are you
+    // on the new version?" dance across Canvas pastes, the deployed app,
+    // and the desktop bundle.
+    try { window.__alloBuildStamp = { hash: pluginCdnVersion, surface: isDesktopBundledApp ? 'desktop' : (_isCanvasEnv ? 'canvas' : 'deployed'), at: Date.now() }; } catch (e) {}
     var localizeModuleUrl = function(url) {
       if (!isDesktopBundledApp || typeof url !== 'string') return url;
       return url.replace(/^https:\/\/alloflow-cdn\.pages\.dev\//, './');
@@ -14444,6 +14467,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   addToast(t('session.toast_connected'), "success");
               }
               setSessionData(data);
+              // Diagnostics: live session identity + counts for the panel's
+              // Session tab (both roles run this listener).
+              try {
+                  window.__alloSessionHealth = {
+                      code: activeSessionCode,
+                      transport: _alloMbBridgeActive() ? 'mailbox' : 'firebase',
+                      role: isTeacherMode ? 'teacher' : 'student',
+                      roster: Object.keys(data.roster || {}).length,
+                      resources: Array.isArray(data.resources) ? data.resources.length : (data.packRef ? 'packRef:' + (data.packRef.n || '?') : 0),
+                      at: Date.now(),
+                  };
+              } catch (_) {}
               // Stale bridge-payload cleanup (24h TTL) runs on BOTH roles: under
               // Firestore rules only the session host's delete succeeds (students'
               // attempts fail silently via the .catch), so this must not live in
@@ -16341,6 +16376,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   removedIds.forEach(id => { delete seen[id]; });
                   await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
               }
+              let _mbPushedCount = 0;
+              let _mbFailedCount = 0;
               for (const item of candidates) {
                   const fp = _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || '');
                   if (seen[item.id] === fp) continue;
@@ -16350,9 +16387,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   try {
                       await _mbPushOneResource(item, { open: false, quiet: true });
                       seen[item.id] = fp;
+                      _mbPushedCount += 1;
                   } catch (itemErr) {
+                      _mbFailedCount += 1;
                       warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message);
                   }
+              }
+              if (_mbPushedCount || _mbFailedCount || removedIds.length) {
+                  _alloSessionSyncTrace('mailbox:pack-cycle', { candidates: candidates.length, pushed: _mbPushedCount, failed: _mbFailedCount, removed: removedIds.length });
               }
               // Durable full-set store (the Firebase data.resources analogue):
               // host the whole student-safe pack to the teacher's own Drive via

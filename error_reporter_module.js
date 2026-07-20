@@ -216,6 +216,52 @@
   };
 
   // ── Build a Google-Form prefilled URL from current buffer ──
+  // Compact one-line-per-event rendering of a diagnostics ring for reports.
+  function traceLinesForReport(entries, cap) {
+    return (entries || []).slice(-(cap || 25)).map(function (e) {
+      var when = '';
+      try { when = new Date(e.at).toISOString().slice(11, 19); } catch (_) {}
+      var detail = '';
+      try { if (e.detail != null) detail = JSON.stringify(e.detail); } catch (_) { detail = '[unserializable]'; }
+      if (detail.length > 110) detail = detail.slice(0, 110) + '…';
+      return when + ' ' + String(e.event || '') + ' ' + detail;
+    }).join('\n');
+  }
+
+  function identityLine() {
+    var bits = [];
+    try {
+      var stamp = window.__alloBuildStamp;
+      if (stamp && stamp.hash) bits.push('build ' + stamp.hash + (stamp.surface ? ' · ' + stamp.surface : ''));
+    } catch (_) {}
+    bits.push(APP_BUILD_TAG);
+    try {
+      if (typeof window.__alloModuleSnapshot === 'function') {
+        var snap = window.__alloModuleSnapshot();
+        if (snap.failed.length) bits.push(snap.failed.length + ' module(s) FAILED: ' + snap.failed.join(', '));
+        else if (snap.pending.length) bits.push(snap.pending.length + ' module(s) still loading');
+        else bits.push('all modules loaded');
+      }
+    } catch (_) {}
+    return bits.join(' · ');
+  }
+
+  // Appended to every report: which build/surface this is, plus the tails of
+  // the read-aloud and session-sync traces. A stuck read-aloud or a silent
+  // sync refusal rarely THROWS — without these, reports arrived blind.
+  function buildReportExtras() {
+    var parts = ['== Diagnostics: ' + identityLine() + ' =='];
+    try {
+      var tts = (window.__alloTtsTrace || []);
+      if (tts.length) parts.push('-- Read-aloud trace (last ' + Math.min(tts.length, 25) + ') --\n' + traceLinesForReport(tts, 25));
+    } catch (_) {}
+    try {
+      var sess = (window.__alloSessionSyncTrace || []);
+      if (sess.length) parts.push('-- Session sync trace (last ' + Math.min(sess.length, 15) + ') --\n' + traceLinesForReport(sess, 15));
+    } catch (_) {}
+    return parts.join('\n\n');
+  }
+
   function buildReportPayload() {
     var ua = navigator.userAgent;
     var browserDevice = ua + ' · ' + (window.screen ? (window.screen.width + 'x' + window.screen.height) : '?') +
@@ -229,6 +275,7 @@
       return head;
     }).join('\n\n---\n\n');
     if (!what) what = '(No errors captured. Sending a manual report.)';
+    try { what += '\n\n' + buildReportExtras(); } catch (_) {}
 
     var steps = 'URL: ' + window.location.href;
     if (window.location.hash) steps += '\nHash: ' + window.location.hash;
@@ -392,6 +439,58 @@
     return payload;
   }
 
+  // ── Session sync tab (2026-07-20) ──
+  // Live-session delivery failures are usually SILENT (a privacy-gate
+  // refusal once killed resource sync for 2.5 days with only a console
+  // line). writeToSession + the mailbox pack sync now trace into
+  // window.__alloSessionSyncTrace; the host's snapshot listener stamps
+  // window.__alloSessionHealth.
+  function sessionHealthSummary() {
+    try {
+      var h = window.__alloSessionHealth;
+      if (!h || !h.code) return 'No live session joined this browser session.';
+      var age = h.at ? Math.round((Date.now() - h.at) / 1000) : null;
+      return 'Session ' + h.code + ' · ' + (h.transport || '?') + ' · ' + (h.role || '?') +
+        ' · roster ' + (h.roster != null ? h.roster : '?') +
+        ' · resources ' + (h.resources != null ? h.resources : '?') +
+        (age != null ? ' · updated ' + age + 's ago' : '');
+    } catch (_) { return 'Session state unavailable.'; }
+  }
+
+  function sessionTraceEntries() {
+    try { return (window.__alloSessionSyncTrace || []).slice(-80); } catch (_) { return []; }
+  }
+
+  function buildSessionDiagText() {
+    var payload;
+    try {
+      payload = JSON.stringify({
+        at: new Date().toISOString(),
+        surface: 'error-reporter',
+        identity: identityLine(),
+        health: window.__alloSessionHealth || null,
+        trace: sessionTraceEntries()
+      }, null, 2);
+    } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
+    return payload;
+  }
+
+  function sessionTabHtml() {
+    var entries = sessionTraceEntries();
+    var rows = entries.length === 0
+      ? '<p style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;margin:0;">No session sync activity recorded yet. Start or join a live session and sync events will appear here.</p>'
+      : entries.slice().reverse().map(ttsEntryHtml).join('');
+    return '<div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
+        '<span style="font:600 11px/1.4 system-ui,sans-serif;color:#475569;flex:1;min-width:200px;">' + escapeHtml(sessionHealthSummary()) + '</span>' +
+        '<button id="aer-sess-refresh" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Refresh</button>' +
+        '<button id="aer-sess-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy diagnostics</button>' +
+      '</div>' +
+      '<div role="region" aria-label="Session sync diagnostic events" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' + rows + '</div>' +
+      '<footer style="padding:10px 18px;border-top:1px solid #e2e8f0;background:#fff;">' +
+        '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Shows what actually synced to students (resource counts, trims, privacy-gate refusals, mailbox pack pushes) — check here when students are missing resources.</p>' +
+      '</footer>';
+  }
+
   function ttsTabHtml() {
     var entries = ttsTraceEntries();
     var rows = entries.length === 0
@@ -418,7 +517,7 @@
       : visible.slice().reverse().map(logEntryHtml).join('');
 
     var filterVal = prefs.filter || 'errors';
-    var onErrors = activeTab !== 'tts';
+    var onErrors = activeTab !== 'tts' && activeTab !== 'session';
     var tabStyle = function (on) {
       return 'padding:7px 14px;border:none;border-bottom:2px solid ' + (on ? '#0d9488' : 'transparent') + ';background:transparent;color:' + (on ? '#0f172a' : '#64748b') + ';font:700 12px/1 system-ui,sans-serif;cursor:pointer;';
     };
@@ -455,6 +554,8 @@
         '</p>' +
         '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
       '</footer>';
+    } else if (activeTab === 'session') {
+      body = sessionTabHtml();
     } else {
       body = ttsTabHtml();
     }
@@ -465,13 +566,15 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
           '<div>' +
             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
-            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : 'Read-aloud & text-to-speech activity for this session.') + '</p>' +
+            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : 'Read-aloud & text-to-speech activity for this session.')) + '</p>' +
+            '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
           '</div>' +
           '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
         '</div>' +
         '<div role="tablist" aria-label="Diagnostics sections" style="display:flex;gap:4px;margin-top:8px;">' +
           '<button id="aer-tab-errors" type="button" role="tab" aria-selected="' + (onErrors ? 'true' : 'false') + '" style="' + tabStyle(onErrors) + '">⚠ Errors</button>' +
-          '<button id="aer-tab-tts" type="button" role="tab" aria-selected="' + (!onErrors ? 'true' : 'false') + '" style="' + tabStyle(!onErrors) + '">🔊 Read-aloud</button>' +
+          '<button id="aer-tab-tts" type="button" role="tab" aria-selected="' + (activeTab === 'tts' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'tts') + '">🔊 Read-aloud</button>' +
+          '<button id="aer-tab-session" type="button" role="tab" aria-selected="' + (activeTab === 'session' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'session') + '">🛰 Session</button>' +
         '</div>' +
       '</header>' +
       body +
@@ -480,7 +583,7 @@
 
 
   function openPanel(tab) {
-    if (tab === 'tts' || tab === 'errors') activeTab = tab;
+    if (tab === 'tts' || tab === 'errors' || tab === 'session') activeTab = tab;
     if (panel) {
       // Already open: a tab request switches tabs instead of toggling closed.
       if (tab) { refreshPanelIfOpen(); return; }
@@ -529,6 +632,36 @@
     };
     if ($('aer-tab-tts')) $('aer-tab-tts').onclick = function () {
       if (activeTab !== 'tts') { activeTab = 'tts'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-tab-session')) $('aer-tab-session').onclick = function () {
+      if (activeTab !== 'session') { activeTab = 'session'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-sess-refresh')) $('aer-sess-refresh').onclick = refreshPanelIfOpen;
+    if ($('aer-sess-copy')) $('aer-sess-copy').onclick = function () {
+      var text = buildSessionDiagText();
+      var btn = $('aer-sess-copy');
+      var flash = function (label) {
+        if (!btn) return;
+        btn.textContent = label;
+        setTimeout(function () { var b = $('aer-sess-copy'); if (b) b.textContent = 'Copy diagnostics'; }, 1500);
+      };
+      var fallback = function () {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          flash(ok ? 'Copied ✓' : 'Copy failed');
+        } catch (_) { flash('Copy failed'); }
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { flash('Copied ✓'); }).catch(fallback);
+        } else fallback();
+      } catch (_) { fallback(); }
     };
     if ($('aer-tts-refresh')) $('aer-tts-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-tts-clear')) $('aer-tts-clear').onclick = function () {
@@ -677,7 +810,7 @@
     openManualReport: openPanel
   };
   // Global convenience hook for host surfaces (settings panels, help flows).
-  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' ? 'tts' : 'errors'); }; } catch (_) {}
+  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' ? tab : 'errors'); }; } catch (_) {}
 
   // Show the badge if there are pre-existing errors from a previous session.
   // document.body may not be ready yet during early load; defer.
