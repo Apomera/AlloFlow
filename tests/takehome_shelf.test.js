@@ -18,10 +18,43 @@ describe('take-home: teacher side', () => {
     expect(anti).toMatch(/sendPackHome[\s\S]{0,600}?!TEACHER_ONLY_TYPES\.includes\(h\.type\)/);
   });
   it('directions composer writes a NORMAL student-safe history item (auto-sync carries it)', () => {
-    expect(anti).toContain("const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md };");
-    expect(anti).toMatch(/addDirectionsToPack[\s\S]{0,900}?setHistory\(prev => \[\.\.\.\(Array\.isArray\(prev\) \? prev : \[\]\), item\]\)/);
+    // v2: derivation provenance rides meta.derivedFrom — a one-way snapshot marker, never a live link.
+    expect(anti).toContain("const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };");
+    expect(anti).toMatch(/addDirectionsToPack[\s\S]{0,1100}?setHistory\(prev => \[\.\.\.\(Array\.isArray\(prev\) \? prev : \[\]\), item\]\)/);
     // due date is markdown INSIDE the body — no new schema field to drift
     expect(anti).toContain("(due ? '**Due:** ' + due + '\\n\\n' : '') + body");
+  });
+  it('v2: the composer is ALWAYS available — palette card after Lesson Plan opens the modal', () => {
+    expect(anti).toContain('id="tour-tool-directions"');
+    // card sits AFTER the lesson-plan card and BEFORE the full-pack card
+    const lp = anti.indexOf('id="tour-tool-lesson-plan"');
+    const dir = anti.indexOf('id="tour-tool-directions"');
+    const fp = anti.indexOf('id="tour-tool-fullpack"');
+    expect(lp).toBeGreaterThan(0);
+    expect(dir).toBeGreaterThan(lp);
+    expect(fp).toBeGreaterThan(dir);
+    expect(anti).toContain('setShowDirectionsComposer(true)');
+  });
+  it('v2: derivation context = lesson plan (intent) + STUDENT-SAFE pack manifest (tasks), with the privacy rule pinned', () => {
+    const idx = anti.indexOf('const deriveDirectionsDraft = useCallback(');
+    expect(idx).toBeGreaterThan(0);
+    const body = anti.slice(idx, idx + 3200);
+    // manifest excludes teacher-only items AND prior directions; titles/types only, no content
+    expect(body).toContain("h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)");
+    expect(body).toContain("'- ' + String(it.title || it.type).slice(0, 120) + ' (' + it.type + ')'");
+    // the non-negotiable privacy line travels IN the prompt
+    expect(body).toContain('PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.');
+    // plan text is context-only and quarantined as such
+    expect(body).toContain('TEACHER LESSON PLAN (context only');
+    // works plan-less: only bails when BOTH context sources are empty
+    expect(body).toContain('if (!planText && !manifest) {');
+    // review-before-share: a draft lands in the EDITABLE composer, never straight into the pack
+    expect(body).toContain('setMbDirectionsDraft(prev => ({');
+    expect(body).not.toContain('setHistory');
+  });
+  it('v2: delivery rule — the QR assignment loader opens directions FIRST (storage order untouched)', () => {
+    expect(anti).toContain("const _dirFirst = restoredResources.find(item => item && item.type === 'directions');");
+    expect(anti).toContain('const firstResource = _dirFirst || restoredResources.find(item => item && item.id === firstId) || restoredResources[0];');
   });
   it("'directions' is student-safe (NOT in TEACHER_ONLY_TYPES) and registered (icon + title)", () => {
     const teacherOnly = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES = ['), anti.indexOf('const TEACHER_ONLY_TYPES = [') + 600);

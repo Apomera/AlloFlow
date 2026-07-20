@@ -15732,7 +15732,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // state path the homework-QR assignment loader uses. Directions ride the pack as a
   // normal 'directions' resource (markdown body → default renderer + read-aloud for free).
   const [homeworkShelf, setHomeworkShelf] = useState(null);
-  const [mbDirectionsDraft, setMbDirectionsDraft] = useState(null); // null = composer closed; {title, body, due}
+  const [mbDirectionsDraft, setMbDirectionsDraft] = useState(null); // null = composer closed; {title, body, due, derivedFrom}
+  // Directions v2 (2026-07-19): always-available composer (palette card after Lesson Plan +
+  // the session panel) with AI drafting. Derivation context = the latest lesson plan (intent,
+  // when one exists) PLUS a student-safe pack MANIFEST (titles/types only — the pack is what
+  // students actually DO; works plan-less). One-way snapshot: the teacher reviews and edits;
+  // regenerating never clobbers an added resource. Provenance rides meta.derivedFrom.
+  const [showDirectionsComposer, setShowDirectionsComposer] = useState(false);
+  const [directionsDeriving, setDirectionsDeriving] = useState(false);
   useEffect(() => {
       let cancelled = false;
       (async () => {
@@ -16338,11 +16345,48 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!body) { addToast(t('takehome.directions_empty') || 'Write the directions first — students see them as the front page of the assignment.', 'info'); return; }
       const due = String(d.due || '').trim().slice(0, 80);
       const md = (due ? '**Due:** ' + due + '\n\n' : '') + body;
-      const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md };
+      const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };
       setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
       setMbDirectionsDraft(null);
+      setShowDirectionsComposer(false);
       addToast(t('takehome.directions_added') || 'Directions added to the class pack — they sync to students automatically.', 'success');
   }, [mbDirectionsDraft, addToast, t]);
+  const deriveDirectionsDraft = useCallback(async () => {
+      if (directionsDeriving) return;
+      setDirectionsDeriving(true);
+      try {
+          const plan = (Array.isArray(history) ? history : []).slice().reverse().find(h => h && h.type === 'lesson-plan');
+          const planText = plan ? String(typeof plan.data === 'string' ? plan.data : JSON.stringify(plan.data || '')).slice(0, 8000) : '';
+          const packItems = (Array.isArray(history) ? history : []).filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type));
+          const manifest = packItems.map(it => '- ' + String(it.title || it.type).slice(0, 120) + ' (' + it.type + ')').join('\n');
+          if (!planText && !manifest) {
+              addToast(t('takehome.derive_nothing') || 'Nothing to draft from yet — generate a lesson plan or add resources first.', 'info');
+              setDirectionsDeriving(false);
+              return;
+          }
+          const prompt = 'You write short, warm, student-facing assignment directions for a K-12 class.\n' +
+              'Write directions for students working through the resources below' + (planText ? ", guided by the teacher's lesson plan" : '') + '.\n' +
+              'RULES: Speak directly to the student ("you"). Short imperative steps in the order the resources should be used. Reference ONLY the student resources listed. 120 words max. Plain markdown: one intro line, a numbered list, one encouraging closer. No headings.\n' +
+              'PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.\n' +
+              (manifest ? '\nSTUDENT RESOURCES:\n' + manifest + '\n' : '') +
+              (planText ? '\nTEACHER LESSON PLAN (context only — never quote it or surface teacher-only details):\n"""\n' + planText + '\n"""\n' : '') +
+              '\nReturn ONLY the directions markdown.';
+          const out = await callGemini(prompt);
+          const body = String(out || '').trim();
+          if (!body) throw new Error('The draft came back empty.');
+          setMbDirectionsDraft(prev => ({
+              ...(prev || {}),
+              body,
+              title: (prev && prev.title) || (plan && plan.title ? String(plan.title).slice(0, 120) : ''),
+              derivedFrom: plan ? plan.id : 'pack-manifest',
+          }));
+          addToast(t('takehome.derive_done') || 'Draft ready — review and edit before adding. You know your students; the AI does not.', 'success');
+      } catch (e) {
+          warnLog('Directions draft failed', e);
+          addToast((t('takehome.derive_failed') || 'Drafting failed — write the directions manually, or try again: ') + (e?.message || e), 'error');
+      }
+      setDirectionsDeriving(false);
+  }, [history, directionsDeriving, addToast, t]);
   const sendPackHome = useCallback(async () => {
       if (!mbLive || !mbConfig?.url) return;
       const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
@@ -28306,7 +28350,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   if (cancelled) return;
                   setHistory(restoredResources);
                   const firstId = packet.currentResourceId || restoredResources[0]?.id;
-                  const firstResource = restoredResources.find(item => item && item.id === firstId) || restoredResources[0];
+                  // Directions v2 delivery rule: the assignment brief is the front page at every
+                  // student consumption point — a DELIVERY rule, not a storage reorder, so the
+                  // teacher's history/hand-ordering stays untouched. (Shelf open does the same.)
+                  const _dirFirst = restoredResources.find(item => item && item.type === 'directions');
+                  const firstResource = _dirFirst || restoredResources.find(item => item && item.id === firstId) || restoredResources[0];
                   if (!firstResource) throw new Error('Assignment has no openable resource');
                   setPendingQrAssignmentResource(firstResource);
                   addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
@@ -36811,6 +36859,31 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <p className="text-[11px] opacity-70 mt-2">{t('lms.audit_queue_help') || 'Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.'}</p>
         </div>
       )}
+      {showDirectionsComposer && (
+        <div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); setShowDirectionsComposer(false); } }}>
+          <div role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Assignment Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
+              <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Assignment Directions'}</h2>
+              <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
+            </div>
+            <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
+            <div className="space-y-2">
+              <input autoFocus value={mbDirectionsDraft?.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder="Title (e.g. Tonight's homework)" aria-label="Directions title" className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <textarea value={mbDirectionsDraft?.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder="Directions for students — steps, what finished work looks like…" aria-label="Directions for students" rows={6} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <input value={mbDirectionsDraft?.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder="Due (optional, e.g. Friday)" aria-label="Due date" className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
+                <Sparkles size={13} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
+              </button>
+              <div className="flex gap-2">
+                <button onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
+                <button onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>
+              </div>
+              <p className="text-[10px] text-slate-400 text-center">{t('directions.review_note') || 'AI drafts are a starting point — review before adding. You know your students; the AI does not.'}</p>
+            </div>
+          </div>
+        </div>
+      )}
       {homeworkShelf && Array.isArray(homeworkShelf.resources) && homeworkShelf.resources.length > 0 && !mbLive && !mbStudent && !activeSessionCode && !isTeacherMode && (
         <div role="region" aria-label={t('takehome.banner_label') || 'Saved homework'} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[390] w-full max-w-md px-4">
           <div className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border bg-white border-amber-300 text-amber-900">
@@ -37158,6 +37231,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       <input value={mbDirectionsDraft.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder="Title (e.g. Tonight's homework)" aria-label="Directions title" className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
                       <textarea value={mbDirectionsDraft.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder="Directions for students — steps, what finished work looks like…" aria-label="Directions for students" rows={3} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
                       <input value={mbDirectionsDraft.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder="Due (optional, e.g. Friday)" aria-label="Due date" className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
+                      <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-60">
+                        <Sparkles size={12} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
+                      </button>
                       <div className="flex gap-1">
                         <button onClick={addDirectionsToPack} className="flex-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all">Add to pack</button>
                         <button onClick={() => setMbDirectionsDraft(null)} className="text-[11px] text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all">Cancel</button>
@@ -38916,6 +38992,22 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           expandedTools, activeView, handleGenerateLessonPlan, hasSourceOrAnalysis, isProcessing,
           lessonCustomAdditions, setLessonCustomAdditions, t
                  })}
+            </div>
+            {/* Directions v2: teacher-AUTHORED (not generated) — the card opens the composer
+                instead of a generation panel. Student-facing by design; sits after Lesson Plan
+                as its student-voice counterpart. */}
+            <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all bg-white overflow-hidden">
+              <button
+                  data-help-key="tool_directions"
+                  onClick={() => { setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
+                  className="w-full p-3 bg-slate-50 flex justify-between items-center hover:bg-amber-50 transition-colors"
+              >
+                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                  <ClipboardList size={16} className="text-amber-600"/>
+                  {t('directions.title') || 'Assignment Directions'}
+                </div>
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{t('directions.badge') || 'you write it'}</span>
+              </button>
             </div>
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
                 <div className="flex items-center justify-between mb-1 px-3 pt-2 text-white/90">
