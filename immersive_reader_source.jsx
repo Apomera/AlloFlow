@@ -1126,6 +1126,12 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     // request (important because cancellable requests intentionally do not share
     // callTTS's global in-flight entry).
     const warmPromisesRef = useRef(new Map());
+    // Per-sentence audio-derived word timings (WordTiming module): sentence
+    // idx → mapping. When present, the sweep clock follows REAL word
+    // boundaries from the clip's energy envelope instead of a linear
+    // time→weight estimate. Cleared whenever the resolver identity or the
+    // sentence list changes (a new voice means new clips).
+    const wordTimingsRef = useRef(new Map());
     const captureRetryRef = useRef(new Map());
     const capturePendingRef = useRef(new Set());
     const captureIssueRef = useRef({ limit: false, message: '' });
@@ -1334,6 +1340,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             setSentenceIdx(0); setSweepPct(0);
             warmedRef.current = new Set();
             warmPromisesRef.current = new Map();
+            wordTimingsRef.current = new Map();
             return;
         }
         if (!text) { setSentences([]); return; }
@@ -1380,6 +1387,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     useEffect(() => {
         warmedRef.current = new Set();
         warmPromisesRef.current = new Map();
+        wordTimingsRef.current = new Map();
     }, [getAudioUrl]);
 
     // Warm the first sentence while the learner is orienting to the overlay.
@@ -1643,15 +1651,33 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
 
         if (url) {
             setPlaybackFallbackNotice('');
+            // Audio-derived word timings (non-blocking): decode the clip's
+            // energy envelope once and snap word boundaries to real valleys.
+            // Until (or unless) the mapping lands, the sweep uses the linear
+            // estimate below — same visuals, coarser clock.
+            try {
+                const WT = window.AlloModules && window.AlloModules.WordTiming;
+                if (WT && typeof WT.timingsForUrl === 'function' && !wordTimingsRef.current.has(idx)) {
+                    WT.timingsForUrl(url, sentenceText).then((mapping) => {
+                        if (mapping && token === playTokenRef.current) wordTimingsRef.current.set(idx, mapping);
+                    }).catch(() => {});
+                }
+            } catch (e) {}
             const audio = new Audio(url);
             audio.playbackRate = playbackSpeedRef.current || 1;
             audioRef.current = audio;
             audio.addEventListener('playing', () => finishAudioLoad(audioLoadOwner));
             const updateSweep = () => {
                 if (!audioRef.current || audioRef.current !== audio) return;
+                const WT = window.AlloModules && window.AlloModules.WordTiming;
+                const mapping = wordTimingsRef.current.get(idx);
                 const dur = audio.duration;
                 let pct;
-                if (isFinite(dur) && dur > 0) {
+                if (WT && mapping && typeof WT.weightPctAtTime === 'function') {
+                    // True word-by-word clock: currentTime is in the clip's own
+                    // timeline, so playbackRate needs no compensation.
+                    pct = WT.weightPctAtTime(mapping, audio.currentTime);
+                } else if (isFinite(dur) && dur > 0) {
                     pct = Math.min(100, (audio.currentTime / dur) * 100);
                 } else {
                     // Unknown duration — approximate from char count at ~15 chars/sec
@@ -1716,6 +1742,19 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             try {
                 const u = new SpeechSynthesisUtterance(sentenceText);
                 u.onstart = () => finishAudioLoad(audioLoadOwner);
+                // Native word-boundary events give the device voice TRUE word
+                // timing for free (charIndex = the word about to be spoken).
+                // Once one fires, the elapsed-time estimate tick stands down.
+                let boundarySeen = false;
+                u.onboundary = (event) => {
+                    try {
+                        const WT = window.AlloModules && window.AlloModules.WordTiming;
+                        if (!WT || typeof event.charIndex !== 'number' || token !== playTokenRef.current) return;
+                        boundarySeen = true;
+                        const pct = WT.weightPctAtCharIndex(sentenceText, event.charIndex);
+                        setSweepPct(reducedMotion ? (pct > 5 ? 100 : 0) : pct);
+                    } catch (e) {}
+                };
                 // Browser TTS: multiply the natural 0.95 base by the user's
                 // playback speed. speechSynthesis rate is clamped by the browser
                 // to roughly [0.1, 10], so 0.95 * 0.75 = 0.7125 and 0.95 * 1.5 =
@@ -1727,7 +1766,8 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                 const tick = () => {
                     const elapsed = performance.now() - startTs;
                     const pct = Math.min(100, (elapsed / estMs) * 100);
-                    setSweepPct(reducedMotion ? (pct > 5 ? 100 : 0) : pct);
+                    // Boundary events (real word starts) outrank the estimate.
+                    if (!boundarySeen) setSweepPct(reducedMotion ? (pct > 5 ? 100 : 0) : pct);
                     if (pct < 100) rafRef.current = requestAnimationFrame(tick);
                 };
                 u.onend = () => {
@@ -1906,23 +1946,40 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
             // in the space, then resumes on the next word — instead of the sweep
             // running ahead through the silence. Weights are character-equivalents;
             // the bonuses mirror the Focus Reader's chunkDelayFor punctuation tiers.
-            const parts = sText.split(/(\s+)/); // keep whitespace tokens so wrap points/spacing survive
-            const pauseBonus = (word) => {
-                const tail = String(word).replace(/["'”’\)\]]*$/, '').slice(-1);
-                if (/[.!?]/.test(tail)) return 5;   // sentence-ending: longest rest
-                if (/[,;:]/.test(tail)) return 3;   // clause break
-                if (/[—–]/.test(tail)) return 3;    // dash
-                return 0;
-            };
-            // First pass: weight each token. A whitespace gap inherits the pause
-            // bonus of the word immediately before it.
-            let prevWord = '';
-            const weights = parts.map((part) => {
-                if (/^\s+$/.test(part)) return part.length + pauseBonus(prevWord);
-                if (part !== '') prevWord = part;
-                return part.length;
-            });
-            const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+            // Token weights come from the WordTiming module when loaded — the
+            // SAME model that maps audio time → sweep pct, so the painted fill
+            // and the derived timings can never disagree. The inline fallback
+            // below must stay rule-identical to WordTiming.tokenWeights.
+            let parts, weights, totalWeight;
+            const _wordTimingModel = (() => {
+                try {
+                    const WT = window.AlloModules && window.AlloModules.WordTiming;
+                    return WT && typeof WT.tokenWeights === 'function' ? WT.tokenWeights(sText) : null;
+                } catch (e) { return null; }
+            })();
+            if (_wordTimingModel) {
+                parts = _wordTimingModel.parts;
+                weights = _wordTimingModel.weights;
+                totalWeight = _wordTimingModel.totalWeight;
+            } else {
+                parts = sText.split(/(\s+)/); // keep whitespace tokens so wrap points/spacing survive
+                const pauseBonus = (word) => {
+                    const tail = String(word).replace(/["'”’\)\]]*$/, '').slice(-1);
+                    if (/[.!?]/.test(tail)) return 5;   // sentence-ending: longest rest
+                    if (/[,;:]/.test(tail)) return 3;   // clause break
+                    if (/[—–]/.test(tail)) return 3;    // dash
+                    return 0;
+                };
+                // First pass: weight each token. A whitespace gap inherits the pause
+                // bonus of the word immediately before it.
+                let prevWord = '';
+                weights = parts.map((part) => {
+                    if (/^\s+$/.test(part)) return part.length + pauseBonus(prevWord);
+                    if (part !== '') prevWord = part;
+                    return part.length;
+                });
+                totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+            }
             const filledChars = (pct / 100) * totalWeight; // "filled weight" in the same units
             let charAcc = 0;
             return (

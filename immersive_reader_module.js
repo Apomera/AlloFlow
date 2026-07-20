@@ -926,6 +926,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   const audioRequestAbortRef = useRef(null);
   const warmedRef = useRef(/* @__PURE__ */ new Set());
   const warmPromisesRef = useRef(/* @__PURE__ */ new Map());
+  const wordTimingsRef = useRef(/* @__PURE__ */ new Map());
   const captureRetryRef = useRef(/* @__PURE__ */ new Map());
   const capturePendingRef = useRef(/* @__PURE__ */ new Set());
   const captureIssueRef = useRef({ limit: false, message: "" });
@@ -1128,6 +1129,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       setSweepPct(0);
       warmedRef.current = /* @__PURE__ */ new Set();
       warmPromisesRef.current = /* @__PURE__ */ new Map();
+      wordTimingsRef.current = /* @__PURE__ */ new Map();
       return;
     }
     if (!text) {
@@ -1167,6 +1169,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
   useEffect(() => {
     warmedRef.current = /* @__PURE__ */ new Set();
     warmPromisesRef.current = /* @__PURE__ */ new Map();
+    wordTimingsRef.current = /* @__PURE__ */ new Map();
   }, [getAudioUrl]);
   useEffect(() => {
     if (!isOpen || isPlaying || isGeneratingAudio || !sentences.length || typeof getAudioUrlRef.current !== "function") return;
@@ -1420,15 +1423,29 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     }
     if (url) {
       setPlaybackFallbackNotice("");
+      try {
+        const WT = window.AlloModules && window.AlloModules.WordTiming;
+        if (WT && typeof WT.timingsForUrl === "function" && !wordTimingsRef.current.has(idx)) {
+          WT.timingsForUrl(url, sentenceText).then((mapping) => {
+            if (mapping && token === playTokenRef.current) wordTimingsRef.current.set(idx, mapping);
+          }).catch(() => {
+          });
+        }
+      } catch (e) {
+      }
       const audio = new Audio(url);
       audio.playbackRate = playbackSpeedRef.current || 1;
       audioRef.current = audio;
       audio.addEventListener("playing", () => finishAudioLoad(audioLoadOwner));
       const updateSweep = () => {
         if (!audioRef.current || audioRef.current !== audio) return;
+        const WT = window.AlloModules && window.AlloModules.WordTiming;
+        const mapping = wordTimingsRef.current.get(idx);
         const dur = audio.duration;
         let pct;
-        if (isFinite(dur) && dur > 0) {
+        if (WT && mapping && typeof WT.weightPctAtTime === "function") {
+          pct = WT.weightPctAtTime(mapping, audio.currentTime);
+        } else if (isFinite(dur) && dur > 0) {
           pct = Math.min(100, audio.currentTime / dur * 100);
         } else {
           const estSec = Math.max(1.5, sentenceText.length / 15);
@@ -1491,6 +1508,17 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
       try {
         const u = new SpeechSynthesisUtterance(sentenceText);
         u.onstart = () => finishAudioLoad(audioLoadOwner);
+        let boundarySeen = false;
+        u.onboundary = (event) => {
+          try {
+            const WT = window.AlloModules && window.AlloModules.WordTiming;
+            if (!WT || typeof event.charIndex !== "number" || token !== playTokenRef.current) return;
+            boundarySeen = true;
+            const pct = WT.weightPctAtCharIndex(sentenceText, event.charIndex);
+            setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
+          } catch (e) {
+          }
+        };
         u.rate = 0.95 * (playbackSpeedRef.current || 1);
         u.pitch = 1;
         u.volume = 0.95;
@@ -1499,7 +1527,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         const tick = () => {
           const elapsed = performance.now() - startTs;
           const pct = Math.min(100, elapsed / estMs * 100);
-          setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
+          if (!boundarySeen) setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
           if (pct < 100) rafRef.current = requestAnimationFrame(tick);
         };
         u.onend = () => {
@@ -1701,21 +1729,36 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     const isPast = idx < sentenceIdx;
     if (isActive) {
       const pct = sweepPct;
-      const parts = sText.split(/(\s+)/);
-      const pauseBonus = (word) => {
-        const tail = String(word).replace(/["'”’\)\]]*$/, "").slice(-1);
-        if (/[.!?]/.test(tail)) return 5;
-        if (/[,;:]/.test(tail)) return 3;
-        if (/[—–]/.test(tail)) return 3;
-        return 0;
-      };
-      let prevWord = "";
-      const weights = parts.map((part) => {
-        if (/^\s+$/.test(part)) return part.length + pauseBonus(prevWord);
-        if (part !== "") prevWord = part;
-        return part.length;
-      });
-      const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+      let parts, weights, totalWeight;
+      const _wordTimingModel = (() => {
+        try {
+          const WT = window.AlloModules && window.AlloModules.WordTiming;
+          return WT && typeof WT.tokenWeights === "function" ? WT.tokenWeights(sText) : null;
+        } catch (e) {
+          return null;
+        }
+      })();
+      if (_wordTimingModel) {
+        parts = _wordTimingModel.parts;
+        weights = _wordTimingModel.weights;
+        totalWeight = _wordTimingModel.totalWeight;
+      } else {
+        parts = sText.split(/(\s+)/);
+        const pauseBonus = (word) => {
+          const tail = String(word).replace(/["'”’\)\]]*$/, "").slice(-1);
+          if (/[.!?]/.test(tail)) return 5;
+          if (/[,;:]/.test(tail)) return 3;
+          if (/[—–]/.test(tail)) return 3;
+          return 0;
+        };
+        let prevWord = "";
+        weights = parts.map((part) => {
+          if (/^\s+$/.test(part)) return part.length + pauseBonus(prevWord);
+          if (part !== "") prevWord = part;
+          return part.length;
+        });
+        totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+      }
       const filledChars = pct / 100 * totalWeight;
       let charAcc = 0;
       return /* @__PURE__ */ React.createElement(
