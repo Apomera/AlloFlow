@@ -4,8 +4,8 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const CACHE_NAME = 'alloflow-student-shell-v1784521840217';
-const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.1caa1ba3.js","./static/css/main.a5759233.css"];
+const CACHE_NAME = 'alloflow-student-shell-v1784560357094';
+const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.9542dd93.js","./static/css/main.a5759233.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
 
@@ -62,7 +62,14 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(
         fetch(event.request).then((response) => {
-            if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+            // Clone synchronously BEFORE returning: caches.open() resolves in a
+            // later microtask, by which time the page may have consumed the body
+            // and clone() throws "Response body is already used" (cache write
+            // silently failed on every request). Same pattern as the handlers above.
+            if (response.ok) {
+                const copy = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            }
             return response;
         }).catch(() => caches.match(event.request).then((response) => response || new Response(
             'Network error and no cache available.',
