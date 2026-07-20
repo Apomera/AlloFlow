@@ -3293,6 +3293,50 @@ const TEACHER_ONLY_TYPES = [
     'persona-session',
     'persona-session-read-aloud'
 ];
+// ── Directions objectives (Phase 1, 2026-07-19) — pure helpers ─────────────
+// Backward-compatible: directions.data is a legacy markdown STRING or
+// { body, objectives[] }. One normalizer for every reader; one pure evaluator
+// (signals = { globalPoints, gameCompletions }) so behavior is unit-testable.
+// NO GATING lives here by design — the checklist informs and celebrates.
+function _alloNormalizeDirectionsData(data) {
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+        const body = typeof data.body === 'string' ? data.body : '';
+        const objectives = Array.isArray(data.objectives)
+            ? data.objectives.filter(o => o && typeof o === 'object' && o.id && typeof o.label === 'string' && o.label && ['xp', 'game', 'manual'].includes(o.kind))
+            : [];
+        // softGate (Phase 2): a GENTLE nudge flag — suggests finishing goals before the rest
+        // of the pack. Never blocks anything; hard gates are Phase 3, opt-in, with a recorded
+        // escape hatch.
+        return { body, objectives, softGate: data.softGate === true };
+    }
+    return { body: typeof data === 'string' ? data : '', objectives: [], softGate: false };
+}
+function _alloEvaluateObjectives(objectives, signals, progress) {
+    const s = signals || {};
+    const p = progress || {};
+    const manual = p.manual || {};
+    const startedAt = p.startedAt || null;
+    const xpBaseline = (typeof p.xpBaseline === 'number') ? p.xpBaseline : null;
+    return (Array.isArray(objectives) ? objectives : []).map(o => {
+        if (!o || !o.id) return null;
+        let done = false;
+        let progressText = '';
+        if (o.kind === 'manual') {
+            done = manual[o.id] === true;
+        } else if (o.kind === 'xp') {
+            // DELTA from the first-view baseline — lifetime XP must never auto-complete
+            // "earn N XP tonight". No baseline yet (first render) → progress reads 0.
+            const amount = Math.max(1, Number(o.amount) || 0);
+            const cur = (typeof s.globalPoints === 'number' && xpBaseline !== null) ? Math.max(0, s.globalPoints - xpBaseline) : 0;
+            done = cur >= amount;
+            progressText = Math.min(cur, amount) + '/' + amount + ' XP';
+        } else if (o.kind === 'game') {
+            const entries = (s.gameCompletions && Array.isArray(s.gameCompletions[o.gameType])) ? s.gameCompletions[o.gameType] : [];
+            done = entries.some(e => e && (!startedAt || (e.completedAt && e.completedAt >= startedAt)) && (!o.resourceRef || e.resourceId === o.resourceRef));
+        }
+        return { id: o.id, label: o.label, kind: o.kind, done, progressText };
+    }).filter(Boolean);
+}
 let globalAudioCtx = null;
 let globalTtsUrlCache = _ttsState.urlCache;
 if (typeof window !== 'undefined') {
@@ -8288,7 +8332,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '095dcfce7';
+    var pluginCdnVersion = 'd3c1fedb6';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -8530,38 +8574,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=095dcfce7');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=095dcfce7');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=095dcfce7');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=095dcfce7');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=095dcfce7');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=d3c1fedb6');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=d3c1fedb6');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=d3c1fedb6');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=d3c1fedb6');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=d3c1fedb6');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=04c6710a');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=095dcfce7');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=095dcfce7');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=095dcfce7');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=095dcfce7');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=095dcfce7');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=095dcfce7');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=85217dd2');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=d3c1fedb6');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=d3c1fedb6');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=d3c1fedb6');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=d3c1fedb6');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=d3c1fedb6');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=d3c1fedb6');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=4def6c67');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6d41dc65');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=095dcfce7');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=095dcfce7');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=095dcfce7');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=095dcfce7');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=095dcfce7');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=095dcfce7');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=095dcfce7');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=095dcfce7');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=095dcfce7');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=d3c1fedb6');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=d3c1fedb6');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=d3c1fedb6');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=d3c1fedb6');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=d3c1fedb6');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=d3c1fedb6');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=d3c1fedb6');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=d3c1fedb6');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=d3c1fedb6');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=095dcfce7'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=d3c1fedb6'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=095dcfce7'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=d3c1fedb6'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -8570,84 +8614,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=095dcfce7');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=095dcfce7');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=095dcfce7');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=095dcfce7');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=095dcfce7');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=095dcfce7');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=095dcfce7');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=095dcfce7');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=095dcfce7');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=095dcfce7');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=095dcfce7');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=095dcfce7');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=095dcfce7');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=095dcfce7'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=d3c1fedb6');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=d3c1fedb6');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=d3c1fedb6');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=d3c1fedb6');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=d3c1fedb6');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=d3c1fedb6');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=d3c1fedb6');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=d3c1fedb6');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=d3c1fedb6');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=d3c1fedb6');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=d3c1fedb6');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=d3c1fedb6');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=d3c1fedb6');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=d3c1fedb6'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=095dcfce7');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=095dcfce7');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=095dcfce7');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=d3c1fedb6');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=d3c1fedb6');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=d3c1fedb6');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=095dcfce7');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=095dcfce7');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=095dcfce7');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=095dcfce7');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=095dcfce7');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=d3c1fedb6');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=d3c1fedb6');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=d3c1fedb6');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=d3c1fedb6');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=d3c1fedb6');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=095dcfce7'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=d3c1fedb6'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=095dcfce7');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=d3c1fedb6');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=095dcfce7');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=095dcfce7'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=d3c1fedb6');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=d3c1fedb6'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=095dcfce7'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=095dcfce7'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=d3c1fedb6'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=095dcfce7'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=095dcfce7');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=095dcfce7');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=d3c1fedb6'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=d3c1fedb6');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=d3c1fedb6');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=095dcfce7');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=095dcfce7');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=095dcfce7');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=095dcfce7');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=095dcfce7');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=095dcfce7'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=095dcfce7'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=095dcfce7'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=095dcfce7'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=095dcfce7'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=095dcfce7');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=095dcfce7');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=095dcfce7');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=d3c1fedb6');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=d3c1fedb6');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=d3c1fedb6');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=d3c1fedb6');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=d3c1fedb6');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=d3c1fedb6'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=d3c1fedb6'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=d3c1fedb6'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=d3c1fedb6'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=d3c1fedb6'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=d3c1fedb6');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=d3c1fedb6');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=d3c1fedb6');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=095dcfce7');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=095dcfce7');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=095dcfce7');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=095dcfce7');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=095dcfce7');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=095dcfce7');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=095dcfce7');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=095dcfce7');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=095dcfce7');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=095dcfce7');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=095dcfce7');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=d3c1fedb6');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=d3c1fedb6');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=d3c1fedb6');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=d3c1fedb6');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=d3c1fedb6');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=d3c1fedb6');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=d3c1fedb6');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=d3c1fedb6');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=d3c1fedb6');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=d3c1fedb6');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=d3c1fedb6');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -8685,70 +8729,70 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=7d2c3155');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=095dcfce7');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=095dcfce7');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=d3c1fedb6');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=d3c1fedb6');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=095dcfce7');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=095dcfce7');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=095dcfce7');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=095dcfce7');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=095dcfce7');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=095dcfce7');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=095dcfce7');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=095dcfce7');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=095dcfce7');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=095dcfce7');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=095dcfce7');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=095dcfce7');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=095dcfce7');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=d3c1fedb6');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=d3c1fedb6');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=d3c1fedb6');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=d3c1fedb6');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=d3c1fedb6');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=d3c1fedb6');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=d3c1fedb6');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=d3c1fedb6');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=d3c1fedb6');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=d3c1fedb6');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=d3c1fedb6');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=d3c1fedb6');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=d3c1fedb6');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=095dcfce7');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=095dcfce7');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=095dcfce7');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=095dcfce7');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=095dcfce7');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=095dcfce7');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=d3c1fedb6');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=d3c1fedb6');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=d3c1fedb6');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=d3c1fedb6');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=d3c1fedb6');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=d3c1fedb6');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=93cdd04c');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=095dcfce7');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=095dcfce7');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=095dcfce7');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=095dcfce7');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=095dcfce7');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=095dcfce7');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=d3c1fedb6');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=d3c1fedb6');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=d3c1fedb6');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=d3c1fedb6');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=d3c1fedb6');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=d3c1fedb6');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=095dcfce7');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=095dcfce7');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=095dcfce7');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=095dcfce7');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=095dcfce7');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=d3c1fedb6');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=d3c1fedb6');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=d3c1fedb6');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=d3c1fedb6');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=d3c1fedb6');
     loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=5bd0659f');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=095dcfce7');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=095dcfce7');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=095dcfce7');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=095dcfce7');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=095dcfce7');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=095dcfce7');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=d3c1fedb6');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=d3c1fedb6');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=d3c1fedb6');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=d3c1fedb6');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=d3c1fedb6');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=d3c1fedb6');
     loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=d12e82b7');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=095dcfce7');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=095dcfce7');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=095dcfce7');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=d3c1fedb6');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=d3c1fedb6');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=d3c1fedb6');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=095dcfce7');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=095dcfce7');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=095dcfce7');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=095dcfce7');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=095dcfce7');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=095dcfce7');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=095dcfce7');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=095dcfce7');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=095dcfce7');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=095dcfce7');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=d3c1fedb6');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=d3c1fedb6');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=d3c1fedb6');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=d3c1fedb6');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=d3c1fedb6');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=d3c1fedb6');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=d3c1fedb6');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=d3c1fedb6');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=d3c1fedb6');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=d3c1fedb6');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -15732,7 +15776,69 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // state path the homework-QR assignment loader uses. Directions ride the pack as a
   // normal 'directions' resource (markdown body → default renderer + read-aloud for free).
   const [homeworkShelf, setHomeworkShelf] = useState(null);
-  const [mbDirectionsDraft, setMbDirectionsDraft] = useState(null); // null = composer closed; {title, body, due}
+  const [mbDirectionsDraft, setMbDirectionsDraft] = useState(null); // null = composer closed; {title, body, due, derivedFrom}
+  // Directions v2 (2026-07-19): always-available composer (palette card after Lesson Plan +
+  // the session panel) with AI drafting. Derivation context = the latest lesson plan (intent,
+  // when one exists) PLUS a student-safe pack MANIFEST (titles/types only — the pack is what
+  // students actually DO; works plan-less). One-way snapshot: the teacher reviews and edits;
+  // regenerating never clobbers an added resource. Provenance rides meta.derivedFrom.
+  const [showDirectionsComposer, setShowDirectionsComposer] = useState(false);
+  const [directionsDeriving, setDirectionsDeriving] = useState(false);
+  // Objectives Phase 1: per-directions progress { [dirId]: { startedAt, xpBaseline, manual: {objId:true}, celebrated } }.
+  // Device-local (storageDB) — a formative guide, never a grade; Phase 2 syncs evidence at next join.
+  const [directionsProgress, setDirectionsProgress] = useState({});
+  const _directionsProgressLoadedRef = useRef(false);
+  // Phase 2: teacher-side homework check-ins (uid|directionsId -> evidence snapshot) and the
+  // student-side once-per-resource soft-gate nudge tracker.
+  const [mbHwEvidence, setMbHwEvidence] = useState({});
+  const _softGateNudgedRef = useRef(new Set());
+  useEffect(() => {
+      let cancelled = false;
+      (async () => {
+          try {
+              const saved = await storageDB.get('allo_directions_progress_v1');
+              if (!cancelled && saved && typeof saved === 'object') setDirectionsProgress(saved);
+          } catch (_) {}
+          if (!cancelled) _directionsProgressLoadedRef.current = true;
+      })();
+      return () => { cancelled = true; };
+  }, []);
+  useEffect(() => {
+      if (!_directionsProgressLoadedRef.current) return; // never clobber storage with the initial {}
+      try { storageDB.set('allo_directions_progress_v1', directionsProgress); } catch (_) {}
+  }, [directionsProgress]);
+  const toggleManualObjective = useCallback((dirId, objId) => {
+      if (!dirId || !objId) return;
+      setDirectionsProgress(prev => {
+          const cur = prev[dirId] || {};
+          const manual = { ...(cur.manual || {}) };
+          manual[objId] = !manual[objId];
+          return { ...prev, [dirId]: { ...cur, manual } };
+      });
+  }, []);
+  // Baseline capture on FIRST view of a directions checklist: XP objectives measure a
+  // delta from here; game objectives only count completions after here.
+  useEffect(() => {
+      if (activeView !== 'directions' || !generatedContent || generatedContent.type !== 'directions' || !generatedContent.id) return;
+      const dirId = generatedContent.id;
+      setDirectionsProgress(prev => {
+          if (prev[dirId] && prev[dirId].startedAt) return prev;
+          return { ...prev, [dirId]: { ...(prev[dirId] || {}), startedAt: new Date().toISOString(), xpBaseline: (typeof globalPoints === 'number' ? globalPoints : 0) } };
+      });
+  }, [activeView, generatedContent, globalPoints]);
+  // Celebrate ONCE when every objective is done (confetti via the existing bot event).
+  useEffect(() => {
+      if (activeView !== 'directions' || !generatedContent || generatedContent.type !== 'directions' || !generatedContent.id) return;
+      const dirId = generatedContent.id;
+      const _dir = _alloNormalizeDirectionsData(generatedContent.data);
+      if (!_dir.objectives.length) return;
+      const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, directionsProgress[dirId]);
+      if (!_evald.length || !_evald.every(o => o.done)) return;
+      if (directionsProgress[dirId] && directionsProgress[dirId].celebrated) return;
+      setDirectionsProgress(prev => ({ ...prev, [dirId]: { ...(prev[dirId] || {}), celebrated: true } }));
+      try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } })); } catch (_) {}
+      addToast(t('directions.all_done') || '🎉 Every goal complete — amazing work!', 'success');
+  }, [activeView, generatedContent, globalPoints, gameCompletions, directionsProgress, addToast, t]);
   useEffect(() => {
       let cancelled = false;
       (async () => {
@@ -15817,6 +15923,56 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbHandUp, setMbHandUp] = useState(false);
   const mbStudentCursorRef = useRef(0);
   const mbStudentConnectedRef = useRef(false);
+  // Phase 2 return path (student side): when connected to a session, report homework-goal
+  // progress for every directions item this device has STARTED — once per snapshot
+  // (re-sends only when doneCount changes; the marker persists in the progress map).
+  // Channel-first like presence; debounced so mid-game signal churn doesn't spam the mailbox.
+  useEffect(() => {
+      if (!mbStudent || isTeacherMode) return undefined;
+      const timer = setTimeout(async () => {
+          try {
+              const pool = [
+                  ...(Array.isArray(history) ? history : []),
+                  ...((homeworkShelf && Array.isArray(homeworkShelf.resources)) ? homeworkShelf.resources : []),
+              ];
+              const seen = new Set();
+              for (const it of pool) {
+                  if (!it || it.type !== 'directions' || !it.id || seen.has(it.id)) continue;
+                  seen.add(it.id);
+                  const prog = directionsProgress[it.id];
+                  if (!prog || !prog.startedAt) continue; // never started here — nothing honest to report
+                  const norm = _alloNormalizeDirectionsData(it.data);
+                  if (!norm.objectives.length) continue;
+                  const evald = _alloEvaluateObjectives(norm.objectives, { globalPoints, gameCompletions }, prog);
+                  const doneCount = evald.filter(o => o.done).length;
+                  const sent = prog.evidenceSent || {};
+                  if (sent.code === mbStudent.code && sent.doneCount === doneCount) continue;
+                  const payload = {
+                      kind: 'hw-evidence',
+                      uid: mbStudent.uid,
+                      name: (mbNicknameRef.current || 'Student'),
+                      directionsId: it.id,
+                      title: String(it.title || 'Homework').slice(0, 140),
+                      doneCount,
+                      total: evald.length,
+                      xpEarned: (typeof prog.xpBaseline === 'number' && typeof globalPoints === 'number') ? Math.max(0, globalPoints - prog.xpBaseline) : 0,
+                      objectives: evald.map(o => ({ label: String(o.label).slice(0, 80), kind: o.kind, done: o.done })),
+                      reportedAt: new Date().toISOString(),
+                  };
+                  const dc = mbRtcRef.current?.dc;
+                  let delivered = false;
+                  if (dc && dc.readyState === 'open') {
+                      try { dc.send(JSON.stringify(payload)); delivered = true; } catch (_) {}
+                  }
+                  if (!delivered) {
+                      await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: payload });
+                  }
+                  setDirectionsProgress(prev => ({ ...prev, [it.id]: { ...(prev[it.id] || {}), evidenceSent: { code: mbStudent.code, doneCount } } }));
+              }
+          } catch (e) { warnLog('Homework evidence report failed (will retry on next change)', e); }
+      }, 1500);
+      return () => clearTimeout(timer);
+  }, [mbStudent, isTeacherMode, history, homeworkShelf, directionsProgress, globalPoints, gameCompletions]);
   const mbChunkStoreRef = useRef(null);
   const mbRtcRef = useRef(null);
   const mbNicknameRef = useRef('Student');
@@ -16338,11 +16494,67 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!body) { addToast(t('takehome.directions_empty') || 'Write the directions first — students see them as the front page of the assignment.', 'info'); return; }
       const due = String(d.due || '').trim().slice(0, 80);
       const md = (due ? '**Due:** ' + due + '\n\n' : '') + body;
-      const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md };
+      // Objectives Phase 1: structured data only when goals exist — a plain string
+      // otherwise, so v2 items and every legacy reader stay byte-compatible.
+      const _objectives = _alloNormalizeDirectionsData({ body: md, objectives: d.objectives }).objectives;
+      const _dirData = _objectives.length ? { body: md, objectives: _objectives, ...(d.softGate ? { softGate: true } : {}) } : md;
+      const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: _dirData, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };
       setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
       setMbDirectionsDraft(null);
+      setShowDirectionsComposer(false);
       addToast(t('takehome.directions_added') || 'Directions added to the class pack — they sync to students automatically.', 'success');
   }, [mbDirectionsDraft, addToast, t]);
+  const deriveDirectionsDraft = useCallback(async () => {
+      if (directionsDeriving) return;
+      setDirectionsDeriving(true);
+      try {
+          const plan = (Array.isArray(history) ? history : []).slice().reverse().find(h => h && h.type === 'lesson-plan');
+          const planText = plan ? String(typeof plan.data === 'string' ? plan.data : JSON.stringify(plan.data || '')).slice(0, 8000) : '';
+          const packItems = (Array.isArray(history) ? history : []).filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type));
+          // Context widening (Aaron 2026-07-19): each STUDENT-SAFE resource contributes a short
+          // plain-text excerpt (tags stripped, ~250 chars, ~6k total budget) so drafts can say
+          // what the activities actually contain — teacher-only items still contribute NOTHING.
+          const _excerptOf = (it) => {
+              try {
+                  let txt = typeof it.data === 'string' ? it.data : (it.data ? JSON.stringify(it.data) : '');
+                  txt = String(txt).replace(/<[^>]+>/g, ' ').replace(/[{}"\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+                  return txt.slice(0, 250);
+              } catch (_) { return ''; }
+          };
+          let _excerptBudget = 6000;
+          const manifest = packItems.map(it => {
+              const _ex = _excerptBudget > 0 ? _excerptOf(it) : '';
+              _excerptBudget -= _ex.length;
+              return '- ' + String(it.title || it.type).slice(0, 120) + ' (' + it.type + ')' + (_ex ? ' — ' + _ex : '');
+          }).join('\n');
+          if (!planText && !manifest) {
+              addToast(t('takehome.derive_nothing') || 'Nothing to draft from yet — generate a lesson plan or add resources first.', 'info');
+              setDirectionsDeriving(false);
+              return;
+          }
+          const prompt = 'You write short, warm, student-facing assignment directions for a K-12 class.\n' +
+              'Write directions for students working through the resources below' + (planText ? ", guided by the teacher's lesson plan" : '') + '.\n' +
+              'RULES: Speak directly to the student ("you"). Short imperative steps in the order the resources should be used. Reference ONLY the student resources listed. 120 words max. Plain markdown: one intro line, a numbered list, one encouraging closer. No headings.\n' +
+              'PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.\n' +
+              (manifest ? '\nSTUDENT RESOURCES:\n' + manifest + '\n' : '') +
+              (planText ? '\nTEACHER LESSON PLAN (context only — never quote it or surface teacher-only details):\n"""\n' + planText + '\n"""\n' : '') +
+              '\nReturn ONLY the directions markdown.';
+          const out = await callGemini(prompt);
+          const body = String(out || '').trim();
+          if (!body) throw new Error('The draft came back empty.');
+          setMbDirectionsDraft(prev => ({
+              ...(prev || {}),
+              body,
+              title: (prev && prev.title) || (plan && plan.title ? String(plan.title).slice(0, 120) : ''),
+              derivedFrom: plan ? plan.id : 'pack-manifest',
+          }));
+          addToast(t('takehome.derive_done') || 'Draft ready — review and edit before adding. You know your students; the AI does not.', 'success');
+      } catch (e) {
+          warnLog('Directions draft failed', e);
+          addToast((t('takehome.derive_failed') || 'Drafting failed — write the directions manually, or try again: ') + (e?.message || e), 'error');
+      }
+      setDirectionsDeriving(false);
+  }, [history, directionsDeriving, addToast, t]);
   const sendPackHome = useCallback(async () => {
       if (!mbLive || !mbConfig?.url) return;
       const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
@@ -16438,6 +16650,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (!v || v.kind !== 'student' || !v.uid) return;
           setMbRoster(prev => ({ ...prev, [v.uid]: { ...(prev[v.uid] || {}), name: String(v.name || 'Student').slice(0, 40), hand: !!v.hand, at: at || Date.now(), rtc: (mbPeersRef.current[v.uid]?.dc?.readyState === 'open') } }));
       };
+      // Phase 2 return path: homework evidence reported by the student's DEVICE (formative,
+      // never a grade). Keyed uid+directionsId so a re-send with more goals done replaces
+      // the earlier snapshot instead of duplicating it.
+      const applyHwEvidence = (v) => {
+          if (!v || v.kind !== 'hw-evidence' || !v.uid || !v.directionsId) return;
+          setMbHwEvidence(prev => ({
+              ...prev,
+              [v.uid + '|' + v.directionsId]: {
+                  uid: String(v.uid).slice(0, 60),
+                  name: String(v.name || 'Student').slice(0, 40),
+                  directionsId: String(v.directionsId).slice(0, 60),
+                  title: String(v.title || 'Homework').slice(0, 140),
+                  doneCount: Math.max(0, Number(v.doneCount) || 0),
+                  total: Math.max(0, Number(v.total) || 0),
+                  xpEarned: Math.max(0, Number(v.xpEarned) || 0),
+                  objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done) })),
+                  at: Date.now(),
+              },
+          }));
+      };
       const answerRtcOffer = async (v) => {
           const uid = String(v.uid || '');
           if (!uid || !v.sdp || v.sdp.type !== 'offer' || typeof RTCPeerConnection !== 'function') return;
@@ -16456,6 +16688,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           // Bridge nudge: a student just wrote to the session
                           // doc store — pull it now, not on the next poll.
                           if (parsed && parsed.kind === 'sdocv') { _alloMbNudge(); return; }
+                          if (parsed && parsed.kind === 'hw-evidence') { applyHwEvidence(parsed); return; }
                           applyStudentUpdate(parsed, Date.now());
                       } catch (_) {}
                   };
@@ -16519,6 +16752,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           const v = msg && msg.v;
                           if (!v) continue;
                           if (v.kind === 'student') applyStudentUpdate(v, msg.t);
+                          else if (v.kind === 'hw-evidence') applyHwEvidence(v);
                           else if (v.kind === 'rtc') await answerRtcOffer(v);
                       }
                   }
@@ -28175,6 +28409,23 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           addToast('Video transcript loaded into Source. Use the existing quiz and support tools from there.', 'success');
           return;
       }
+      // Phase 2 SOFT gate: a once-per-resource friendly tip when the teacher asked students to
+      // finish goals first. Purely informational — the open proceeds unconditionally below
+      // (hard gates are Phase 3, opt-in, with a recorded escape hatch).
+      if (!isTeacherMode && item && item.id && item.type !== 'directions') {
+          try {
+              const _sgDir = (Array.isArray(history) ? history : []).find(h => h && h.type === 'directions' && _alloNormalizeDirectionsData(h.data).softGate);
+              if (_sgDir && !_softGateNudgedRef.current.has(item.id)) {
+                  const _sgNorm = _alloNormalizeDirectionsData(_sgDir.data);
+                  const _sgEval = _alloEvaluateObjectives(_sgNorm.objectives, { globalPoints, gameCompletions }, directionsProgress[_sgDir.id] || {});
+                  const _sgDone = _sgEval.filter(o => o.done).length;
+                  if (_sgEval.length && _sgDone < _sgEval.length) {
+                      _softGateNudgedRef.current.add(item.id);
+                      addToast(t('directions.soft_gate_nudge', { done: _sgDone, total: _sgEval.length }) || ('💡 Tip from your teacher: finish your goals first (' + _sgDone + '/' + _sgEval.length + ' done). You can keep going!'), 'info');
+                  }
+              }
+          } catch (_) {}
+      }
       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
       setActiveView(item.type === 'word-sounds' ? 'word-sounds-generator' : item.type);
       setIsMapLocked(false);
@@ -28306,7 +28557,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   if (cancelled) return;
                   setHistory(restoredResources);
                   const firstId = packet.currentResourceId || restoredResources[0]?.id;
-                  const firstResource = restoredResources.find(item => item && item.id === firstId) || restoredResources[0];
+                  // Directions v2 delivery rule: the assignment brief is the front page at every
+                  // student consumption point — a DELIVERY rule, not a storage reorder, so the
+                  // teacher's history/hand-ordering stays untouched. (Shelf open does the same.)
+                  const _dirFirst = restoredResources.find(item => item && item.type === 'directions');
+                  const firstResource = _dirFirst || restoredResources.find(item => item && item.id === firstId) || restoredResources[0];
                   if (!firstResource) throw new Error('Assignment has no openable resource');
                   setPendingQrAssignmentResource(firstResource);
                   addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
@@ -36811,6 +37066,56 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <p className="text-[11px] opacity-70 mt-2">{t('lms.audit_queue_help') || 'Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.'}</p>
         </div>
       )}
+      {showDirectionsComposer && (
+        <div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); setShowDirectionsComposer(false); } }}>
+          <div role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Assignment Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
+              <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Assignment Directions'}</h2>
+              <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
+            </div>
+            <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
+            <div className="space-y-2">
+              <input autoFocus value={mbDirectionsDraft?.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder="Title (e.g. Tonight's homework)" aria-label="Directions title" className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <textarea value={mbDirectionsDraft?.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder="Directions for students — steps, what finished work looks like…" aria-label="Directions for students" rows={6} className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <input value={mbDirectionsDraft?.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder="Due (optional, e.g. Friday)" aria-label="Due date" className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800" />
+              <div className="border-t border-slate-100 pt-2">
+                <p className="text-[11px] font-bold text-slate-600 mb-1">{t('directions.objectives') || 'Goals (auto-check where possible)'}</p>
+                {(mbDirectionsDraft?.objectives || []).map((o, oi) => (
+                  <div key={o.id} className="flex items-center gap-1.5 mb-1">
+                    <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : o.kind}</span>
+                    <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
+                    {o.kind === 'xp' && <input type="number" min="1" max="1000" value={o.amount || 25} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const amt = Math.max(1, Math.min(1000, Number(e.target.value) || 1)); list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
+                    <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-400 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
+                  </div>
+                ))}
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {[['crossword', 'Crossword'], ['wordScramble', 'Word Scramble'], ['memory', 'Memory'], ['matching', 'Matching'], ['bingo', 'Bingo']].map(([gt, glabel]) => (
+                    <button key={gt} onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'game', gameType: gt, label: 'Complete the ' + glabel }] }))} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-full px-2 py-0.5 transition-all">+ {glabel}</button>
+                  ))}
+                  <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: 'Earn 25 XP' }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">+ XP</button>
+                  <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: 'I finished my work' }] }))} className="text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 hover:border-slate-400 rounded-full px-2 py-0.5 transition-all">+ {t('directions.chip_manual') || 'Self-check'}</button>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
+                {(mbDirectionsDraft?.objectives || []).length > 0 && (
+                  <label className="flex items-center gap-1.5 mt-1 cursor-pointer select-none">
+                    <input type="checkbox" checked={mbDirectionsDraft?.softGate === true} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), softGate: e.target.checked }))} className="w-3.5 h-3.5 accent-amber-600" />
+                    <span className="text-[10px] text-slate-600">{t('directions.soft_gate_label') || 'Gently suggest finishing goals before the rest of the pack (a friendly tip — never a lock)'}</span>
+                  </label>
+                )}
+              </div>
+              <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
+                <Sparkles size={13} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
+              </button>
+              <div className="flex gap-2">
+                <button onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
+                <button onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>
+              </div>
+              <p className="text-[10px] text-slate-400 text-center">{t('directions.review_note') || 'AI drafts are a starting point — review before adding. You know your students; the AI does not.'}</p>
+            </div>
+          </div>
+        </div>
+      )}
       {homeworkShelf && Array.isArray(homeworkShelf.resources) && homeworkShelf.resources.length > 0 && !mbLive && !mbStudent && !activeSessionCode && !isTeacherMode && (
         <div role="region" aria-label={t('takehome.banner_label') || 'Saved homework'} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[390] w-full max-w-md px-4">
           <div className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border bg-white border-amber-300 text-amber-900">
@@ -37158,6 +37463,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       <input value={mbDirectionsDraft.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder="Title (e.g. Tonight's homework)" aria-label="Directions title" className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
                       <textarea value={mbDirectionsDraft.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder="Directions for students — steps, what finished work looks like…" aria-label="Directions for students" rows={3} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
                       <input value={mbDirectionsDraft.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder="Due (optional, e.g. Friday)" aria-label="Due date" className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
+                      <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-60">
+                        <Sparkles size={12} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
+                      </button>
+                      <button onClick={() => setShowDirectionsComposer(true)} className="w-full text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:border-amber-400 rounded-lg p-1 transition-all">
+                        🎯 {(mbDirectionsDraft?.objectives?.length ? (t('directions.edit_goals_n', { count: mbDirectionsDraft.objectives.length }) || (mbDirectionsDraft.objectives.length + ' goal(s) — edit in full composer')) : (t('directions.add_goals') || 'Add auto-checking goals (full composer)'))}
+                      </button>
                       <div className="flex gap-1">
                         <button onClick={addDirectionsToPack} className="flex-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all">Add to pack</button>
                         <button onClick={() => setMbDirectionsDraft(null)} className="text-[11px] text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all">Cancel</button>
@@ -37172,6 +37483,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <FolderDown size={13} /> Send home (saves on student devices)
                   </button>
                   <p className="text-[10px] text-slate-400 mt-1 text-center">Students keep the pack + directions on their device for homework — no code needed at home.</p>
+                  {Object.keys(mbHwEvidence).length > 0 && (
+                    <div className="border-t border-indigo-100 pt-2 mt-2" role="region" aria-label={t('takehome.evidence_title') || 'Homework check-ins'}>
+                      <p className="text-[10px] font-bold text-indigo-700 mb-1">📥 {t('takehome.evidence_title') || 'Homework check-ins'} <span className="font-normal text-slate-400">({t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade'})</span></p>
+                      {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => (
+                        <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label).join('\n')}>
+                          <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
+                          {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
+                          {ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : ''}
+                          {' · ' + ev.title}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
               </div>
@@ -38917,6 +39241,22 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           lessonCustomAdditions, setLessonCustomAdditions, t
                  })}
             </div>
+            {/* Directions v2: teacher-AUTHORED (not generated) — the card opens the composer
+                instead of a generation panel. Student-facing by design; sits after Lesson Plan
+                as its student-voice counterpart. */}
+            <div style={{display: (isTeacherMode && (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final')) ? undefined : 'none'}} id="tour-tool-directions" data-help-key="tool_directions" className="rounded-3xl border-2 border-slate-200 hover:border-amber-300 shadow-lg shadow-amber-500/10 transition-all bg-white overflow-hidden">
+              <button
+                  data-help-key="tool_directions"
+                  onClick={() => { setMbDirectionsDraft(p => p || {}); setShowDirectionsComposer(true); }}
+                  className="w-full p-3 bg-slate-50 flex justify-between items-center hover:bg-amber-50 transition-colors"
+              >
+                <div className="text-sm font-bold text-slate-700 flex gap-2 items-center">
+                  <ClipboardList size={16} className="text-amber-600"/>
+                  {t('directions.title') || 'Assignment Directions'}
+                </div>
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{t('directions.badge') || 'you write it'}</span>
+              </button>
+            </div>
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
                 <div className="flex items-center justify-between mb-1 px-3 pt-2 text-white/90">
                     <div className="flex items-center gap-2">
@@ -39707,6 +40047,51 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     StudentBingoGame: window.AlloModules && window.AlloModules.StudentBingoGame,
                     WordScrambleGame: window.AlloModules && window.AlloModules.WordScrambleGame
                 })}
+                {/* Directions view (Phase 1): the type had NO view branch before — activeView is set
+                    to the resource TYPE on open, and unmatched types rendered a blank content area.
+                    Body markdown + live objectives checklist. NO gating: informs + celebrates only. */}
+                {activeView === 'directions' && generatedContent?.type === 'directions' && (() => {
+                    const _dir = _alloNormalizeDirectionsData(generatedContent.data);
+                    const _dirProg = directionsProgress[generatedContent.id] || {};
+                    const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, _dirProg);
+                    const _doneCount = _evald.filter(o => o.done).length;
+                    return (
+                        <div className="max-w-2xl mx-auto p-4">
+                            <div className="bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-5">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <ClipboardList size={20} className="text-amber-600" aria-hidden="true" />
+                                    <h1 className="text-lg font-bold text-slate-800">{generatedContent.title || (t('directions.title') || 'Assignment Directions')}</h1>
+                                </div>
+                                {_dir.body && <div className="prose prose-sm max-w-none text-slate-700 mb-4" dangerouslySetInnerHTML={{ __html: parseMarkdownToHTML(_dir.body) }} />}
+                                {_evald.length > 0 && (
+                                    <div className="border-t border-amber-100 pt-3" role="group" aria-label={t('directions.your_goals') || 'Your goals'}>
+                                        <p className="text-xs font-bold text-amber-700 mb-2" aria-live="polite">{(t('directions.your_goals') || 'Your goals')} · {_doneCount}/{_evald.length}</p>
+                                        <ul className="space-y-2 list-none p-0 m-0">
+                                            {_evald.map(o => (
+                                                <li key={o.id} className="flex items-center gap-2">
+                                                    {o.kind === 'manual' ? (
+                                                        <input type="checkbox" checked={o.done} onChange={() => toggleManualObjective(generatedContent.id, o.id)} aria-label={o.label} className="w-4 h-4 accent-emerald-600 flex-shrink-0" />
+                                                    ) : (
+                                                        o.done
+                                                            ? <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0" aria-hidden="true" />
+                                                            : <span className="w-4 h-4 rounded-full border-2 border-slate-300 inline-block flex-shrink-0" aria-hidden="true" />
+                                                    )}
+                                                    <span className={'text-sm ' + (o.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')}>
+                                                        {o.label}
+                                                        {o.kind !== 'manual' && <span className="sr-only">{o.done ? (t('directions.goal_done') || ' — complete') : (t('directions.goal_open') || ' — not yet complete')}</span>}
+                                                    </span>
+                                                    {o.progressText && !o.done && <span className="text-[11px] text-amber-600 font-bold ml-auto flex-shrink-0">{o.progressText}</span>}
+                                                    {o.done && <span className="text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0" aria-hidden="true">✓</span>}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <p className="text-[10px] text-slate-400 mt-3">{t('directions.signals_note') || 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.'}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })()}
                 {activeView === 'simplified' && window.AlloModules && window.AlloModules.SimplifiedView && React.createElement(window.AlloModules.SimplifiedView, {
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
                     studentInterests, standardsInput, sourceTopic,
