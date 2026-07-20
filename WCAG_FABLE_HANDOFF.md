@@ -50,6 +50,8 @@ These sections were independently committed:
 | Crisis Plan | `2497cd068` |
 | Disclosure Wizard (P0 crash fix + audit) | `1c513b558` |
 | Free-focusById crash class, six components | `784de7477` |
+| Class Roster | `af9d66ecc` |
+| Mood Tracker (+ UTC-date fix) | `d7fc7b751` |
 
 The most recently completed section, Personal Reference Sheet Builder, passed:
 
@@ -94,6 +96,12 @@ Four more sections completed and committed, all with the standard gate (focused 
 - **P0 FOUND AND FIXED — free `focusById` ReferenceError crash class.** Seven components called `focusById(...)` with NO definition in scope (no module-level helper exists): Disclosure, QuoteCollector, CareerExplorer, MoodTracker, FutureSelf, WorryTime, EnergyTracker. Empirically confirmed via jsdom: submitting the Disclosure form threw `ReferenceError: focusById is not defined`. Every save/remove flow in those tools hit it. Disclosure fixed in its section commit `1c513b558` (which also removed a silent 10-entry history cap, added non-disclosure wording, and guarded "undefined out of 10" rendering); the other six fixed in `784de7477` with the pendingFocusId pattern. **`tests/learning_lab_focus_binding_a11y.test.js` now statically scans every component slice and fails if any focus call lacks a same-slice definition** — this gate prevents the whole class.
 - Mirror SHA-256 after `784de7477`: `E486B1E246D59F7F74F84A11A706652A29AE2888E73D1EE0A296C179BC66943F`. Full suite 2,195/2,195.
 - Concurrent-agent note: a deploy agent's `dd496abd3` ("Post-deploy: update CDN hash refs to @1c513b558") swept the deploy-mirror copy of the focus-class fix into its commit before `784de7477` landed the root file. Content converged correctly (HEAD root == HEAD mirror == disk == E486B1…), but the deployed CDN bundle was stamped @1c513b558 — verify whether the deployed artifact includes the focus-class fix (`git show` vs CDN) before assuming it is live.
+
+## Session notes (2026-07-20, Fable — fourth continuation)
+
+- **Class Roster** `af9d66ecc`: standard wave (pendingFocusId, isRecord/textValue guards incl. a real crash where `startEdit` on a legacy record with a non-string name blew up the next save, Untitled fallbacks, privacy guidance about naming other people, 10/11→12px). Mirror SHA-256 `131512308677CC702AB02A3E04A34C80153B8180BAC7CEF5EEB217351A6A4068` at that commit.
+- **Mood Tracker** `d7fc7b751`: standard wave PLUS a real data-honesty bug — the 14-day chart derived dates via `toISOString().slice(0,10)` (UTC) while entries save with local `todayISO()`, so evening check-ins (US timezones) disappeared from the chart. Now built from local date parts; regression-tested. Removed silent 20-entry cap; `ratingOf` clamps malformed mood/energy; added optional/non-notification/no-target framing plus a gentle talk-to-someone nudge. Mirror SHA-256 after commit: `A617F60176899558D9DAE26B919188F4F69FDE7F1A4ED1EA44974E31F87E634E`. Full suite 2,212/2,212.
+- **NEW BUG CLASS FLAGGED — UTC date derivation.** `grep "toISOString().slice(0, 10)"` still hits 5 sites (~lines 5355, 5975, 6419, 6910, 16994 — Focus Timer/Study Planner/Exam Prep/Habit Tracker regions and one later component). Each compares or buckets against local `todayISO()` dates, so the same evening-shift bug likely applies. Fix each as its section is audited (convert to local `getFullYear/getMonth/getDate` parts like todayISO), or as a dedicated class commit.
 
 ## Next section
 
