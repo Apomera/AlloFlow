@@ -11,8 +11,11 @@
 //     and the commutator flips the current every half-turn to keep it spinning.
 //   • Generator (Induction) — Faraday's law ε = −N·ΔΦ/Δt: drag a magnet
 //     through a coil to light a bulb; still magnet = zero volts; Lenz's law.
+//     Plus a voltage scope (wiggle rhythmically and you have drawn AC) and
+//     the classic eddy-current copper-vs-plastic tube race.
 //   • Materials — predict-then-test sorter: only iron/nickel/cobalt (and
-//     alloys like steel) stick — most metals do NOT.
+//     alloys like steel) stick — most metals do NOT. A domain visualizer
+//     shows WHY (stroke aligns domains; heat past Curie 770°C scrambles).
 //   • Crane — junkyard mini-game: an electromagnet with an off switch
 //     grabs ONLY the steel; recycle all 4 magnetic items into the bin.
 //   • Transformer — mutual induction V₂/V₁ = N₂/N₁, AC-only (DC → 0 V),
@@ -140,6 +143,16 @@
   var CRANE_ORDER = ['nail', 'foil', 'clip', 'penny', 'nickel', 'ruler', 'cobalt', 'pencil'];
   var BIN_SLOT = 8; // rightmost position, one past the last item slot
 
+  // ── Magnetic domains ───────────────────────────────────────────────────
+  // Angle of domain i at alignment level a (0 = fully scrambled, 1 = fully
+  // aligned pointing right). The scrambled base angle comes from a hash, not
+  // Math.random, so every render (and every test) sees the same jumble.
+  function domainAngle(i, align) {
+    var frac = Math.abs(Math.sin(i * 12.9898 + 4.1414) * 43758.5453) % 1;
+    var base = (frac * 2 - 1) * Math.PI; // −π … π
+    return base * (1 - Math.max(0, Math.min(1, align)));
+  }
+
   // ── Magnetic materials (predict-then-test) ─────────────────────────────
   // Only the ferromagnetic trio (iron, nickel, cobalt) and their alloys stick
   // to an everyday magnet — the classic misconception is "all metals do".
@@ -205,6 +218,7 @@
       { id: 'mag_induce', label: 'Generate electricity by moving a magnet', icon: '⚡', check: function (d) { var s = (d && d.magnetism) || {}; return (s.peakEMF || 0) >= 0.5; } },
       { id: 'mag_materials', label: 'Sort all 8 materials correctly', icon: '🔩', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.matPerfect; } },
       { id: 'mag_crane', label: 'Recycle all 4 steel items with the crane', icon: '🏗️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.craneDone; } },
+      { id: 'mag_domains', label: 'Fully magnetize the iron (align every domain)', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.domainsFull; } },
       { id: 'mag_quiz', label: 'Score 9+ on the magnetism quiz', icon: '🧠', check: function (d) { var s = (d && d.magnetism) || {}; return (s.quizBest || 0) >= 9; } }
     ],
     render: function (ctx) {
@@ -243,6 +257,11 @@
         earthSeen: false, declination: 12,
         // Induction (generator)
         induceX: -100, inducePrevX: -100, induceTurns: 50, lastEMF: 0, peakEMF: 0,
+        emfTrace: [],
+        // Eddy-current tube race
+        tubeProg: { cu: 0, pl: 0 }, tubeRunning: false, tubeDone: false,
+        // Magnetic domains
+        domainAlign: 0, domainsFull: false,
         // Materials sorter
         matGuesses: {}, matRevealed: false, matPerfect: false,
         // Junkyard crane
@@ -566,7 +585,11 @@
         // induce more. Held still (no change events) → EMF decays to 0.
         var emf = induceEMF(d.induceTurns, d.induceX, nx, 1, 40) * 4; // display-scaled volts
         var peak = Math.max(d.peakEMF || 0, Math.abs(emf));
-        upd({ inducePrevX: d.induceX, induceX: nx, lastEMF: emf, peakEMF: peak });
+        // Rolling scope trace: wiggle the magnet back and forth and the trace
+        // you draw IS an AC waveform — that discovery belongs to the student.
+        var trace = (d.emfTrace || []).concat([emf]);
+        if (trace.length > 72) trace = trace.slice(trace.length - 72);
+        upd({ inducePrevX: d.induceX, induceX: nx, lastEMF: emf, peakEMF: peak, emfTrace: trace });
       }
 
       function induceSVG() {
@@ -625,10 +648,95 @@
             h('div', { style: { color: SOFT, fontSize: 12, lineHeight: 1.5 } },
               h('b', { style: { color: TEXT } }, 'Lenz’s law: '), 'the induced current flows ', lenz, ' — nature resists the change, which is why generators take real effort to crank.')
           ), '#fbbf24'),
+          scopeCard(),
+          eddyCard(),
           card('Why this runs the world', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
             'Nearly every power plant — coal, gas, nuclear, hydro, wind — is just something spinning a magnet near coils. Only solar panels make electricity without this trick. The motor and generator are the same machine run in opposite directions.'), '#fbbf24'),
           disclosure('The flux curve is a smooth schematic (Gaussian) model of a magnet entering a coil, and volts shown are display-scaled. The law itself — EMF = −N·ΔΦ/Δt, zero when nothing changes, sign by Lenz — is the real thing.')
         );
+      }
+
+      // ── Oscilloscope: the EMF history the student drew ────────────────
+      function scopeCard() {
+        var trace = d.emfTrace || [];
+        var W = 320, HH = 90, mid = HH / 2;
+        var maxV = 2; // display clamp
+        var pts = trace.map(function (v, i) {
+          var x = trace.length > 1 ? (i / (trace.length - 1)) * (W - 16) + 8 : 8;
+          var y = mid - Math.max(-maxV, Math.min(maxV, v)) / maxV * (mid - 8);
+          return x.toFixed(1) + ',' + y.toFixed(1);
+        });
+        // "AC achieved" = the student has produced meaningful swings BOTH ways
+        var pos = trace.some(function (v) { return v > 0.4; });
+        var neg = trace.some(function (v) { return v < -0.4; });
+        return card('Voltage scope — what you just drew', h('div', null,
+          h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 380, display: 'block', margin: '0 auto 8px' }, role: 'img',
+            'aria-label': trace.length < 2 ? 'Empty voltage scope — move the magnet to draw a trace' : 'Voltage trace of your last ' + trace.length + ' magnet movements' },
+            h('rect', { x: 0, y: 0, width: W, height: HH, fill: '#0b1220', rx: 8 }),
+            h('line', { x1: 8, y1: mid, x2: W - 8, y2: mid, stroke: '#334155', strokeWidth: 1, strokeDasharray: '4 4' }),
+            h('text', { x: 12, y: 14, fill: '#475569', fontSize: 9 }, '+' + maxV + ' V'),
+            h('text', { x: 12, y: HH - 6, fill: '#475569', fontSize: 9 }, '−' + maxV + ' V'),
+            pts.length > 1 ? h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinejoin: 'round' }) : null,
+            pts.length <= 1 ? h('text', { x: W / 2, y: mid - 6, fill: '#475569', fontSize: 11, textAnchor: 'middle' }, 'move the magnet to draw your trace…') : null),
+          h('p', { style: { color: SOFT, fontSize: 12.5, margin: 0, lineHeight: 1.5 } },
+            (pos && neg)
+              ? h('span', null, h('b', { style: { color: '#34d399' } }, '⚡ You just generated AC. '), 'Push in = one sign, pull out = the other. Wiggle the magnet rhythmically and this trace becomes the alternating wave that comes out of every wall socket — a power-plant turbine is doing exactly this, 60 times a second.')
+              : 'Wiggle the magnet in AND out, back and forth. Watch the trace cross the zero line both ways — that alternation has a famous name.'),
+          h('div', { style: { textAlign: 'right', marginTop: 6 } },
+            h('button', { onClick: function () { upd({ emfTrace: [] }); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: SOFT, fontSize: 12, cursor: 'pointer' } }, 'Clear trace'))
+        ), '#fbbf24');
+      }
+
+      // ── Eddy-current tube race (Lenz's law you can feel) ──────────────
+      var TUBE_CU_MS = 2600, TUBE_PL_MS = 650; // classroom-demo-scale timings
+      function startTubeRace() {
+        if (d.tubeRunning) return;
+        if (_prefersReducedMotion) {
+          // No animation: jump straight to the result, same physics story.
+          upd({ tubeProg: { cu: 1, pl: 1 }, tubeRunning: false, tubeDone: true });
+          announceToSR('Race finished: the plastic-tube magnet dropped in well under a second; the copper-tube magnet took about four times longer.');
+          return;
+        }
+        upd({ tubeProg: { cu: 0, pl: 0 }, tubeRunning: true, tubeDone: false });
+        var t0 = null;
+        function frame(ts) {
+          var cur = (ctx.toolData && ctx.toolData.magnetism) || {};
+          if (!cur.tubeRunning) return;
+          if (t0 == null) t0 = ts;
+          var el = ts - t0;
+          var cu = Math.min(1, el / TUBE_CU_MS), pl = Math.min(1, el / TUBE_PL_MS);
+          if (cu >= 1 && pl >= 1) {
+            upd({ tubeProg: { cu: 1, pl: 1 }, tubeRunning: false, tubeDone: true });
+            announceToSR('Race finished: copper tube far slower — the falling magnet induced eddy currents that pushed back on it.');
+            return;
+          }
+          upd({ tubeProg: { cu: cu, pl: pl } });
+          window.requestAnimationFrame(frame);
+        }
+        window.requestAnimationFrame(frame);
+      }
+
+      function eddyCard() {
+        var prog = d.tubeProg || { cu: 0, pl: 0 };
+        function tube(x, label, p, tint) {
+          return h('g', { key: label },
+            h('rect', { x: x - 13, y: 16, width: 26, height: 96, rx: 4, fill: 'none', stroke: tint, strokeWidth: 3, opacity: 0.85 }),
+            h('rect', { x: x - 9, y: 20 + p * 78, width: 18, height: 12, rx: 2, fill: '#ef4444' }),
+            h('text', { x: x, y: 128, fill: SOFT, fontSize: 10, textAnchor: 'middle' }, label));
+        }
+        return card('The eddy-current tube race', h('div', null,
+          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Drop identical magnets down a ', h('b', { style: { color: '#f97316' } }, 'copper'), ' tube and a ', h('b', null, 'plastic'), ' tube. Copper is not magnetic — so why does its magnet crawl?'),
+          h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } },
+            h('svg', { viewBox: '0 0 200 134', width: '100%', style: { maxWidth: 240 }, role: 'img',
+              'aria-label': 'Two vertical tubes, copper and plastic, with a magnet falling in each. Copper progress ' + Math.round(prog.cu * 100) + ' percent, plastic ' + Math.round(prog.pl * 100) + ' percent.' },
+              h('rect', { x: 0, y: 0, width: 200, height: 134, fill: '#0b1220', rx: 10 }),
+              tube(70, 'copper', prog.cu, '#f97316'),
+              tube(130, 'plastic', prog.pl, '#64748b'))),
+          h('div', { style: { textAlign: 'center', marginBottom: 8 } },
+            h('button', { disabled: d.tubeRunning, onClick: startTubeRace, style: btn(true) }, d.tubeRunning ? '…falling' : (d.tubeDone ? '↻ Drop again' : '🏁 Drop both magnets'))),
+          d.tubeDone ? h('p', { style: { color: SOFT, fontSize: 12.5, margin: 0, lineHeight: 1.5 } },
+            h('b', { style: { color: TEXT } }, 'Lenz strikes again: '), 'the falling magnet’s moving field induces swirling ', h('b', null, 'eddy currents'), ' in the copper walls, and their field pushes back on the magnet the whole way down. No steel involved — just induction. Roller-coaster and high-speed-train brakes stop tonnes this way, with nothing touching.') : null
+        ), '#f97316');
       }
 
       // ── Magnetic materials (predict-then-test) ────────────────────────
@@ -671,8 +779,51 @@
                 h('button', { onClick: function () { upd({ matGuesses: {}, matRevealed: false }); }, style: btn() }, '↻ Sort again'))
           ), '#a3e635'),
           card('The rule underneath', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
-            'Only three elements are ferromagnetic at room temperature: ', h('b', { style: { color: TEXT } }, 'iron, nickel, and cobalt'), '. Their atoms are tiny magnets that can lock into alignment. Steel sticks because it is mostly iron; aluminum and copper are metals whose atomic magnets cannot line up this way.'), '#a3e635')
+            'Only three elements are ferromagnetic at room temperature: ', h('b', { style: { color: TEXT } }, 'iron, nickel, and cobalt'), '. Their atoms are tiny magnets that can lock into alignment. Steel sticks because it is mostly iron; aluminum and copper are metals whose atomic magnets cannot line up this way.'), '#a3e635'),
+          domainsCard()
         );
+      }
+
+      // ── Domain visualizer: WHY iron can be magnetized (and un-) ───────
+      function domainsCard() {
+        var a = d.domainAlign || 0;
+        var COLS = 8, ROWS = 5, CW = 34, CH = 24;
+        var arrows = [];
+        for (var i = 0; i < COLS * ROWS; i++) {
+          var ang = domainAngle(i, a) * 180 / Math.PI;
+          var ax = 14 + (i % COLS) * CW, ay = 14 + Math.floor(i / COLS) * CH;
+          arrows.push(h('g', { key: 'd' + i, transform: 'translate(' + ax + ',' + ay + ') rotate(' + ang.toFixed(1) + ')' },
+            h('line', { x1: -8, y1: 0, x2: 6, y2: 0, stroke: a >= 1 ? '#f43f5e' : '#94a3b8', strokeWidth: 2.2 }),
+            h('polygon', { points: '10,0 4,-3.4 4,3.4', fill: a >= 1 ? '#f43f5e' : '#94a3b8' })));
+        }
+        function setAlign(na, msg) {
+          na = Math.max(0, Math.min(1, na));
+          var patch = { domainAlign: na };
+          if (na >= 1 && !d.domainsFull) {
+            patch.domainsFull = true;
+            awardXP(10); addToast('🧲 Fully magnetized! +10 XP', 'success');
+          }
+          upd(patch);
+          announceToSR(msg + ' Alignment now ' + Math.round(na * 100) + ' percent.');
+        }
+        return card('Inside the iron: magnetic domains', h('div', null,
+          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A chunk of iron is made of tiny regions called ', h('b', null, 'domains'), ' — each one already a little magnet, but all pointing different ways they cancel out. Stroke it with a magnet and they line up; the iron itself becomes a magnet.'),
+          h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } },
+            h('svg', { viewBox: '0 0 280 130', width: '100%', style: { maxWidth: 320 }, role: 'img',
+              'aria-label': 'Grid of ' + (COLS * ROWS) + ' domain arrows, ' + Math.round(a * 100) + ' percent aligned' },
+              h('rect', { x: 0, y: 0, width: 280, height: 130, fill: '#0b1220', rx: 10 }),
+              arrows)),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+            h('span', { style: { color: SOFT, fontSize: 11, whiteSpace: 'nowrap' } }, 'net magnetism'),
+            h('div', { style: { flex: 1, height: 10, borderRadius: 5, background: '#1f2937', overflow: 'hidden' } },
+              h('div', { style: { width: (a * 100).toFixed(0) + '%', height: '100%', background: a >= 1 ? '#f43f5e' : '#94a3b8', transition: _prefersReducedMotion ? 'none' : 'width 0.3s' } })),
+            h('span', { style: { color: a >= 1 ? '#f43f5e' : SOFT, fontSize: 11, fontWeight: 700, minWidth: 34, textAlign: 'right' } }, Math.round(a * 100) + '%')),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
+            h('button', { onClick: function () { setAlign(a + 0.25, 'Stroked with a magnet.'); }, style: btn() }, '🧲 Stroke with magnet'),
+            h('button', { onClick: function () { setAlign(0, 'Heated past the Curie point — domains scrambled.'); }, style: btn() }, '🔥 Heat it'),
+            h('button', { onClick: function () { setAlign(a - 0.5, 'Hammered — jolted domains out of line.'); }, style: btn() }, '🔨 Hammer it')),
+          h('p', { style: { color: SOFT, fontSize: 12, margin: '10px 0 0', lineHeight: 1.5 } }, 'This is why heat or a hard drop can kill a magnet: above iron’s ', h('b', null, 'Curie temperature'), ' (770 °C) the atomic jostling wins completely and ANY iron magnet demagnetizes. It is also how magnets are born — factories align domains with a monster coil.')
+        ), '#a3e635');
       }
 
       // ── Junkyard crane (electromagnet + materials, applied) ───────────
@@ -999,6 +1150,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, MATERIALS: MATERIALS, QUIZ: QUIZ, MU0: MU0 };
+    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, MATERIALS: MATERIALS, QUIZ: QUIZ, MU0: MU0 };
   }
 })();

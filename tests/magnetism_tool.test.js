@@ -65,7 +65,7 @@ const BASE = {
 };
 
 describe('magnetism tool — registration + structure', () => {
-  it('registers id "magnetism" with nine quest hooks and nine tabs', () => {
+  it('registers id "magnetism" with ten quest hooks and nine tabs', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain("window.StemLab.registerTool('magnetism'");
@@ -73,7 +73,7 @@ describe('magnetism tool — registration + structure', () => {
       ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'transformer', 'earth', 'quiz'].forEach((tabId) => {
         expect(source).toContain("id: '" + tabId + "'");
       });
-      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_crane', 'mag_quiz'].forEach((q) => {
+      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_crane', 'mag_domains', 'mag_quiz'].forEach((q) => {
         expect(source).toContain("id: '" + q + "'");
       });
       // host-guarded registration (does not early-return the whole module)
@@ -182,6 +182,9 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'electro' }))).toContain('Turns of wire');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor' }))).toContain('commutator');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'crane' }))).toContain('♻️');
+    expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce' }))).toContain('Voltage scope');
+    expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce' }))).toContain('eddy-current');
+    expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'materials' }))).toContain('magnetic domains');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'transformer' }))).toContain('120 V →');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'earth' }))).toContain('magnetosphere');
   });
@@ -206,6 +209,8 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(hooks.mag_materials({ magnetism: {} })).toBe(false);
     expect(hooks.mag_crane({ magnetism: { craneDone: true } })).toBe(true);
     expect(hooks.mag_crane({ magnetism: {} })).toBe(false);
+    expect(hooks.mag_domains({ magnetism: { domainsFull: true } })).toBe(true);
+    expect(hooks.mag_domains({ magnetism: {} })).toBe(false);
     expect(hooks.mag_quiz({ magnetism: { quizBest: 9 } })).toBe(true);
     expect(hooks.mag_quiz({ magnetism: { quizBest: 8 } })).toBe(false);
   });
@@ -292,5 +297,41 @@ describe('magnetism tool — junkyard crane', () => {
     const source = readFileSync(TOOL_PATHS[0], 'utf8');
     expect(source).toContain('a magnet with an off switch');
     expect(source).toContain('is not ferromagnetic, so the field slides right past it');
+  });
+});
+
+describe('magnetism tool — domains, scope, eddy (R4)', () => {
+  it('domain angles are deterministic (hash, not Math.random) and scrambled at 0', () => {
+    expect(physics.domainAngle(7, 0)).toBe(physics.domainAngle(7, 0));
+    const angles = [...Array(40)].map((_, i) => physics.domainAngle(i, 0));
+    expect(angles.some((a) => a > 0.5)).toBe(true);   // both signs present:
+    expect(angles.some((a) => a < -0.5)).toBe(true);  // a genuine jumble
+  });
+
+  it('alignment interpolates linearly to zero (fully magnetized)', () => {
+    const base = physics.domainAngle(7, 0);
+    expect(physics.domainAngle(7, 0.5)).toBeCloseTo(base / 2, 12);
+    expect(Math.abs(physics.domainAngle(7, 1))).toBe(0);   // ±0 both fine
+    expect(Math.abs(physics.domainAngle(23, 1))).toBe(0);
+    // clamped outside [0,1]
+    expect(Math.abs(physics.domainAngle(7, 2))).toBe(0);
+    expect(physics.domainAngle(7, -1)).toBeCloseTo(base, 12);
+  });
+
+  it('the EMF scope trace is rolling-capped and the AC discovery is student-earned', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('if (trace.length > 72)');
+    expect(source).toContain('You just generated AC');
+    // the AC banner requires swings in BOTH directions, not one big pull
+    expect(source).toContain('v > 0.4');
+    expect(source).toContain('v < -0.4');
+  });
+
+  it('the eddy race respects reduced motion and stays honest about scale', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('classroom-demo-scale timings');
+    expect(source).toContain('_prefersReducedMotion) {');
+    expect(source).toContain('eddy currents');
+    expect(source).toContain('Curie');
   });
 });
