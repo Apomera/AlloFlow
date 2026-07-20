@@ -40,6 +40,7 @@ const MODULE_SOURCES = {
   GenerationHelpers: 'generation_helpers_source.jsx',
   TextUtilityHelpers: 'text_utility_helpers_source.jsx',
   AudioHelpers: 'audio_helpers_source.jsx',
+  ExportPreviewHelpers: 'view_export_preview_source.jsx',
 };
 
 // Known-intentional signature differences: 'Module.fn': 'reason'.

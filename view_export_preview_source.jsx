@@ -2483,3 +2483,379 @@ const _downloadBRF = (brf) => {
           </div>
   );
 }
+
+
+// ─── updateExportPreview (extracted from AlloFlowANTI.txt 2026-07-20) ───────
+// The Document Builder preview writer: renders getExportPreviewHTML() into the
+// preview iframe, arms designMode editing with the edit-loss guard, wires
+// builder image-crop affordances, and applies the a11y inspector. Pure DOM —
+// every host binding arrives via deps (contract-gated wrapper in the host).
+function updateExportPreview(deps) {
+  const {
+    exportPreviewRef, _exportPreviewErrorRef, _builderRecoverySaveTimerRef,
+    getExportPreviewHTML, t, addToast, warnLog, setCanvasRecoveryRevision,
+    isCanvas, a11yInspectMode,
+  } = deps;
+
+    if (!exportPreviewRef.current) return;
+    const iframe = exportPreviewRef.current;
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+    // Check the live dirty flag BEFORE generating replacement HTML. This avoids
+    // expensive duplicate generation and ensures a cancelled refresh consumes no draft.
+    try {
+      if (doc.body && doc.body.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1') {
+        const _canAsk = typeof window !== 'undefined' && typeof window.confirm === 'function';
+        const _proceed = _canAsk
+          ? window.confirm(t('export_preview.rerender_confirm') || 'Re-rendering the preview will replace your manual edits with freshly generated content.\n\nContinue and discard the edits? (Cancel keeps them - export or close the builder to save first.)')
+          : false;
+        if (!_proceed) {
+          addToast && addToast(t('toasts.builder_edits_preserved') || 'Kept your manual edits - the preview was not re-rendered. Export or close the builder to save them, then change settings.', 'info');
+          return;
+        }
+      }
+    } catch (_) {}
+    let html;
+    try {
+      html = getExportPreviewHTML();
+      _exportPreviewErrorRef.current = null;
+    } catch (err) {
+      const msg = (err && err.message) ? err.message : String(err);
+      warnLog('[Export preview] getExportPreviewHTML threw:', err);
+      if (_exportPreviewErrorRef.current !== msg) {
+        _exportPreviewErrorRef.current = msg;
+        addToast && addToast(t('toasts.preview_failed_render_document_pipeline'), 'error');
+      }
+      const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      html = `<!DOCTYPE html><html><body data-allo-preview-error="1" style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
+    }
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    // Initialize edit mode in the iframe doc directly here
+    try {
+      doc.designMode = 'on';
+      if (doc.body) doc.body.spellcheck = true;
+      // Make preview images keyboard-reachable while editing. The marker lets
+      // every serialization seam remove editor-only tabindex/key hints.
+      const _wireBuilderCropImage = (img) => {
+        if (!img || img.hasAttribute('data-allo-crop-tabindex-added')) return;
+        const hadTabindex = img.hasAttribute('tabindex');
+        if (!hadTabindex) img.setAttribute('tabindex', '0');
+        img.setAttribute('data-allo-crop-tabindex-added', hadTabindex ? 'preserved' : 'added');
+        img.setAttribute('aria-keyshortcuts', 'Enter Space');
+      };
+      doc.querySelectorAll('img').forEach(_wireBuilderCropImage);
+      // Dirty flag for the edit-loss guard above: any user edit marks the
+      // body so settings-driven re-renders can't silently wipe hand edits.
+      try { doc.addEventListener('input', function () {
+        try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+        if (isCanvas) {
+          if (_builderRecoverySaveTimerRef.current) clearTimeout(_builderRecoverySaveTimerRef.current);
+          _builderRecoverySaveTimerRef.current = setTimeout(() => {
+            _builderRecoverySaveTimerRef.current = null;
+            setCanvasRecoveryRevision(value => value + 1);
+          }, 500);
+        }
+      }); } catch (_) {}
+      const editStyle = doc.createElement('style');
+      // The id lets export paths strip this editor-only CSS so it never
+      // ships inside a student-facing document.
+      editStyle.id = 'allo-builder-edit-css';
+      editStyle.textContent = `
+        [contenteditable]:focus, *:focus { outline: 2px solid #6366f1 !important; outline-offset: 2px; border-radius: 4px; }
+        img { cursor: move; transition: outline 0.2s; }
+        img:hover { outline: 2px dashed #6366f1; }
+        ::selection { background: #c7d2fe; }
+      `;
+      doc.head.appendChild(editStyle);
+      doc.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          // WCAG 2.1.2 escape hatch: Escape was dead inside the editing
+          // iframe — a keyboard trap. Move focus back to the builder chrome.
+          try { e.preventDefault(); const _cb = document.querySelector('[aria-label="' + (t('a11y.close_doc_builder') || 'Close document builder') + '"]'); if (_cb && _cb.focus) _cb.focus(); } catch (_) {}
+          return;
+        }
+        if (e.key === 'Tab') {
+          // Key events inside an iframe do not bubble to the parent dialog.
+          // Hand focus across the iframe boundary at either edge so the modal
+          // remains a single, closed keyboard loop.
+          try {
+            const inner = Array.from(doc.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0 && !el.closest('[aria-hidden="true"]'));
+            const active = doc.activeElement;
+            const atStart = !inner.length || active === doc.body || active === inner[0];
+            const atEnd = !inner.length || active === doc.body || active === inner[inner.length - 1];
+            if ((e.shiftKey && atStart) || (!e.shiftKey && atEnd)) {
+              const frame = exportPreviewRef.current;
+              const dialog = frame && frame.closest('[role="dialog"]');
+              const outer = dialog ? Array.from(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),iframe,[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0) : [];
+              const frameIndex = outer.indexOf(frame);
+              const target = e.shiftKey ? outer[Math.max(0, frameIndex - 1)] : outer[0];
+              if (target && target.focus) { e.preventDefault(); target.focus(); return; }
+            }
+          } catch (_) {}
+        }
+        if ((e.key === 'Enter' || e.key === ' ') && e.target && (e.target.tagName || '').toUpperCase() === 'IMG') {
+          e.preventDefault(); e.stopPropagation(); _openBuilderCropModal(e.target); return;
+        }
+        if (e.ctrlKey || e.metaKey) {
+          if (e.key === '1') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h1>'); }
+          else if (e.key === '2') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h2>'); }
+          else if (e.key === '3') { e.preventDefault(); doc.execCommand('formatBlock', false, '<h3>'); }
+          else if (e.key === '0') { e.preventDefault(); doc.execCommand('formatBlock', false, '<p>'); }
+          else if (e.key === 'k' || e.key === 'K') { e.preventDefault(); var url = prompt(t('toasts.link_url_prompt') || 'Enter link URL:'); if (url) doc.execCommand('createLink', false, url); }
+          else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }
+          else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); doc.execCommand('insertOrderedList', false, null); }
+        }
+      });
+      // ── Image crop (Tier 1, 2026-07-02) ── Click any image in the preview →
+      // floating "✂ Crop" button → drag-select modal → the image's src is
+      // replaced with the cropped pixels. Unlike the remediated-doc "Adjust
+      // Crop" (which re-crops from the cached PDF PAGE canvas and only exists
+      // on extracted images carrying data-crop), this works on ANY <img> —
+      // uploaded, AI-generated, or generated-content — by cropping the image's
+      // own pixels. PRIVACY: the pre-crop original deliberately never enters
+      // the DOM — teachers crop to REMOVE content (a student name, a stray
+      // face), and an attribute-stashed original would silently ship those
+      // pixels inside every export. Originals live in
+      // window.__alloBuilderCropOriginals (session-only, FIFO-capped like the
+      // page re-crop cache), keyed via data-allo-crop-id, so re-crop starts
+      // from the full image while serialized output only ever carries the
+      // cropped result. All crop chrome is tagged data-allo-crop-ui: the
+      // floating button self-expires, and _removeBuilderCropUi() + the
+      // write-back clone-strip sweep it at every serialization seam this file
+      // owns. (The view module's Workbench/copy paths serialize too — chrome
+      // there is a transient cosmetic risk only, never a pixel leak.)
+      const _cropOrigStore = () => {
+        if (!window.__alloBuilderCropOriginals) window.__alloBuilderCropOriginals = { map: {}, order: [] };
+        return window.__alloBuilderCropOriginals;
+      };
+      const _openBuilderCropModal = (img) => {
+        try { const _old = doc.getElementById('allo-crop-overlay'); if (_old) _old.remove(); } catch (_) {}
+        const returnFocus = img;
+        const store = _cropOrigStore();
+        const keyExisting = img.getAttribute('data-allo-crop-id');
+        // Crop from the ORIGINAL when we still have it (non-destructive
+        // re-crop); otherwise from the current (possibly already-cropped) src.
+        const srcFull = (keyExisting && store.map[keyExisting]) || img.src;
+        const overlay = doc.createElement('div');
+        overlay.id = 'allo-crop-overlay';
+        overlay.setAttribute('data-allo-crop-ui', '1');
+        overlay.setAttribute('contenteditable', 'false');
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-label', t('export_preview.crop_dialog') || 'Crop image');
+        overlay.setAttribute('aria-describedby', 'allo-crop-instructions');
+        overlay.setAttribute('tabindex', '-1');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,0.78);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;font-family:system-ui,sans-serif';
+        const header = doc.createElement('div');
+        header.id = 'allo-crop-instructions';
+        header.style.cssText = 'color:#fff;font-size:13px;font-weight:700;margin-bottom:8px;text-align:center;max-width:86vw';
+        header.textContent = t('export_preview.crop_instructions') || 'Drag to select the part to keep — arrow keys nudge the selection, Shift+arrows resize it. Apply replaces the image in every export.';
+        overlay.appendChild(header);
+        const wrapper = doc.createElement('div');
+        wrapper.style.cssText = 'position:relative;max-width:90vw;max-height:66vh;overflow:auto;background:#1e293b;border-radius:8px;border:2px solid #64748b;cursor:crosshair;touch-action:none';
+        overlay.appendChild(wrapper);
+        const pic = doc.createElement('img');
+        pic.alt = '';
+        pic.draggable = false;
+        pic.style.cssText = 'display:block;max-width:86vw;max-height:62vh;user-select:none;-webkit-user-drag:none';
+        pic.src = srcFull;
+        wrapper.appendChild(pic);
+        const sel = doc.createElement('div');
+        sel.style.cssText = 'position:absolute;border:2px dashed #60a5fa;background:rgba(37,99,235,0.18);pointer-events:none;display:none';
+        wrapper.appendChild(sel);
+        const statusEl = doc.createElement('div');
+        statusEl.setAttribute('role', 'status');
+        statusEl.style.cssText = 'color:#fde68a;font-size:12px;font-weight:600;min-height:16px;margin-top:6px;text-align:center;max-width:86vw';
+        const _status = (msg) => { statusEl.textContent = msg || ''; };
+        // Pre-position the selection to the previous crop of the SAME original
+        // (skipped when the original was FIFO-evicted — the stored rect would
+        // be in the wrong coordinate space).
+        pic.onload = () => {
+          try {
+            const prev = JSON.parse(img.getAttribute('data-allo-crop') || 'null');
+            if (prev && prev.nw === pic.naturalWidth && prev.nh === pic.naturalHeight) {
+              const kx = pic.clientWidth / prev.nw, ky = pic.clientHeight / prev.nh;
+              sel.style.left = (prev.x * kx) + 'px';
+              sel.style.top = (prev.y * ky) + 'px';
+              sel.style.width = (prev.w * kx) + 'px';
+              sel.style.height = (prev.h * ky) + 'px';
+              sel.style.display = 'block';
+            }
+          } catch (_) {}
+        };
+        pic.onerror = () => { _status(t('export_preview.crop_load_failed') || 'The image failed to load — close this and try again.'); };
+        // Pointer (mouse/touch/pen) drag-select — same math as the remediated
+        // doc's __pdfCropImage, upgraded to pointer events + capture.
+        let _dragging = false, _startX = 0, _startY = 0;
+        wrapper.addEventListener('pointerdown', (e) => {
+          if (e.target !== pic && e.target !== wrapper) return;
+          const r = pic.getBoundingClientRect();
+          _startX = Math.max(0, Math.min(e.clientX - r.left, pic.clientWidth));
+          _startY = Math.max(0, Math.min(e.clientY - r.top, pic.clientHeight));
+          _dragging = true;
+          try { wrapper.setPointerCapture(e.pointerId); } catch (_) {}
+          sel.style.left = _startX + 'px'; sel.style.top = _startY + 'px';
+          sel.style.width = '0'; sel.style.height = '0';
+          sel.style.display = 'block';
+          _status('');
+          e.preventDefault(); // also keeps focus on the buttons so arrow keys keep working
+        });
+        wrapper.addEventListener('pointermove', (e) => {
+          if (!_dragging) return;
+          const r = pic.getBoundingClientRect();
+          const cx = Math.max(0, Math.min(e.clientX - r.left, pic.clientWidth));
+          const cy = Math.max(0, Math.min(e.clientY - r.top, pic.clientHeight));
+          sel.style.left = Math.min(_startX, cx) + 'px';
+          sel.style.top = Math.min(_startY, cy) + 'px';
+          sel.style.width = Math.abs(cx - _startX) + 'px';
+          sel.style.height = Math.abs(cy - _startY) + 'px';
+        });
+        wrapper.addEventListener('pointerup', () => { _dragging = false; });
+        const _close = () => { try { overlay.remove(); } catch (_) {} try { if (returnFocus && returnFocus.isConnected && returnFocus.focus) returnFocus.focus(); else if (doc.body && doc.body.focus) doc.body.focus(); } catch (_) {} };
+        overlay.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); _close(); return; }
+          if (e.key === 'Tab') {
+            const controls = Array.from(overlay.querySelectorAll('button:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0);
+            if (!controls.length) { e.preventDefault(); overlay.focus(); return; }
+            const first = controls[0], last = controls[controls.length - 1];
+            if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); return; }
+            if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); return; }
+          }
+          const moves = { ArrowLeft: [-4, 0], ArrowRight: [4, 0], ArrowUp: [0, -4], ArrowDown: [0, 4] };
+          const d = moves[e.key];
+          if (!d || sel.style.display === 'none') return;
+          e.preventDefault(); e.stopPropagation(); // don't scroll the wrapper / trip the doc-level Escape handler
+          let L = parseFloat(sel.style.left) || 0, T = parseFloat(sel.style.top) || 0;
+          let W = parseFloat(sel.style.width) || 0, H = parseFloat(sel.style.height) || 0;
+          if (e.shiftKey) {
+            W = Math.max(8, Math.min(pic.clientWidth - L, W + d[0]));
+            H = Math.max(8, Math.min(pic.clientHeight - T, H + d[1]));
+          } else {
+            L = Math.max(0, Math.min(pic.clientWidth - W, L + d[0]));
+            T = Math.max(0, Math.min(pic.clientHeight - H, T + d[1]));
+          }
+          sel.style.left = L + 'px'; sel.style.top = T + 'px'; sel.style.width = W + 'px'; sel.style.height = H + 'px';
+        });
+        const btnRow = doc.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center';
+        const _mkBtn = (label, bg, border) => {
+          const b = doc.createElement('button');
+          b.type = 'button';
+          b.textContent = label;
+          b.style.cssText = 'padding:8px 20px;background:' + bg + ';color:#fff;border:1px solid ' + border + ';border-radius:8px;font-weight:700;font-size:13px;cursor:pointer';
+          btnRow.appendChild(b);
+          return b;
+        };
+        const applyBtn = _mkBtn(t('export_preview.crop_apply') || 'Apply Crop', '#2563eb', '#1e3a8a');
+        applyBtn.onclick = () => {
+          if (sel.style.display === 'none') { _status(t('export_preview.crop_none') || 'Drag a selection first.'); return; }
+          if (!pic.naturalWidth || !pic.clientWidth) { _status(t('export_preview.crop_load_failed') || 'The image failed to load — close this and try again.'); return; }
+          const kx = pic.naturalWidth / pic.clientWidth, ky = pic.naturalHeight / pic.clientHeight;
+          let sx = (parseFloat(sel.style.left) || 0) * kx, sy = (parseFloat(sel.style.top) || 0) * ky;
+          let sw = (parseFloat(sel.style.width) || 0) * kx, sh = (parseFloat(sel.style.height) || 0) * ky;
+          sx = Math.max(0, Math.min(sx, pic.naturalWidth - 1)); sy = Math.max(0, Math.min(sy, pic.naturalHeight - 1));
+          sw = Math.min(sw, pic.naturalWidth - sx); sh = Math.min(sh, pic.naturalHeight - sy);
+          if (sw < 8 || sh < 8) { _status(t('export_preview.crop_too_small') || 'That selection is too small — drag a larger area.'); return; }
+          const c = doc.createElement('canvas');
+          c.width = Math.round(sw); c.height = Math.round(sh);
+          let out;
+          try {
+            c.getContext('2d').drawImage(pic, sx, sy, sw, sh, 0, 0, c.width, c.height);
+            // JPEG only when the source already was one (photos stay small);
+            // everything else stays PNG so transparency survives the crop.
+            const asJpeg = /^data:image\/jpe?g/i.test(srcFull) || /\.jpe?g([?#]|$)/i.test(srcFull);
+            out = c.toDataURL(asJpeg ? 'image/jpeg' : 'image/png', 0.92);
+          } catch (_taintErr) {
+            _status(t('export_preview.crop_blocked') || 'This image comes from another website, so the browser blocks cropping it here. Save it to your device, upload it, then crop.');
+            return;
+          }
+          let key = img.getAttribute('data-allo-crop-id');
+          if (!key) {
+            window.__alloBuilderCropSeq = (window.__alloBuilderCropSeq || 0) + 1;
+            key = 'c' + window.__alloBuilderCropSeq;
+            img.setAttribute('data-allo-crop-id', key);
+          }
+          if (!store.map[key]) {
+            store.map[key] = srcFull;
+            store.order.push(key);
+            while (store.order.length > 30) delete store.map[store.order.shift()]; // FIFO cap — same rationale as the page re-crop cache
+          }
+          img.src = out;
+          img.setAttribute('data-allo-crop', JSON.stringify({ x: Math.round(sx), y: Math.round(sy), w: Math.round(sw), h: Math.round(sh), nw: pic.naturalWidth, nh: pic.naturalHeight }));
+          // Programmatic src swaps don't fire the 'input' listener, so arm the
+          // edit-loss guard by hand — a settings re-render must not silently
+          // wipe the crop.
+          try { if (doc.body) { doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } } catch (_) {}
+          _close();
+          addToast(t('toasts.image_cropped') || '✂️ Image cropped — the change rides every export. Click the image again to re-crop or restore the original.', 'success');
+        };
+        if (keyExisting && store.map[keyExisting]) {
+          const resetBtn = _mkBtn(t('export_preview.crop_reset') || 'Restore original', '#b45309', '#92400e');
+          resetBtn.onclick = () => {
+            img.src = store.map[keyExisting];
+            img.removeAttribute('data-allo-crop');
+            img.removeAttribute('data-allo-crop-id');
+            try { if (doc.body) { doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } } catch (_) {}
+            _close();
+            addToast(t('toasts.image_crop_reset') || '↩️ Original image restored.', 'success');
+          };
+        }
+        const cancelBtn = _mkBtn(t('export_preview.crop_cancel') || 'Cancel', '#64748b', '#475569');
+        cancelBtn.onclick = _close;
+        overlay.appendChild(btnRow);
+        overlay.appendChild(statusEl);
+        doc.body.appendChild(overlay);
+        try { applyBtn.focus(); } catch (_) {}
+      };
+      const _dismissCropBtn = () => { try { const b = doc.getElementById('allo-crop-btn'); if (b) b.remove(); } catch (_) {} };
+      doc.addEventListener('scroll', _dismissCropBtn, true); // scrolled = the absolute-positioned button no longer hugs its image
+      doc.addEventListener('click', (ev) => {
+        try {
+          const el = ev.target;
+          if (el && el.closest && el.closest('[data-allo-crop-ui]')) return; // crop chrome handles its own clicks
+          _dismissCropBtn();
+          if (!el || (el.tagName || '').toUpperCase() !== 'IMG') return;
+          if (!el.src || !el.naturalWidth || el.naturalWidth < 16 || el.naturalHeight < 16) return; // icons / broken images
+          const btn = doc.createElement('button');
+          btn.id = 'allo-crop-btn';
+          btn.type = 'button';
+          btn.setAttribute('data-allo-crop-ui', '1');
+          btn.setAttribute('contenteditable', 'false');
+          btn.textContent = '✂ ' + (t('export_preview.crop_button') || 'Crop');
+          btn.title = t('export_preview.crop_button_title') || 'Crop this image (persists in every export)';
+          const r = el.getBoundingClientRect();
+          const w = doc.defaultView;
+          btn.style.cssText = 'position:absolute;z-index:2147482000;left:' + Math.max(0, r.left + (w ? w.pageXOffset : 0) + 6) + 'px;top:' + Math.max(0, r.top + (w ? w.pageYOffset : 0) + 6) + 'px;padding:5px 12px;background:#4f46e5;color:#fff;border:1px solid #3730a3;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,0.35);font-family:system-ui,sans-serif';
+          btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); _dismissCropBtn(); _openBuilderCropModal(el); };
+          doc.body.appendChild(btn);
+          // TTL: the button is chrome inside a serializable DOM — never leave
+          // it parked. Each button removes only ITSELF (a fresh button on
+          // another image must not be reaped by a stale timer).
+          setTimeout(() => { try { if (btn.parentNode) btn.remove(); } catch (_) {} }, 10000);
+        } catch (_) {}
+      });
+    } catch (_editorErr) {
+      warnLog('[Export preview] failed to initialize editor in iframe:', _editorErr);
+    }
+
+    // If the user has the A11y inspector toggled on, re-paint it now —
+    // doc.write() just wiped every badge/style/legend from the iframe.
+    // Without this, the inspector flashes briefly and disappears whenever
+    // any state change (history bumps, theme tweaks, audio caching, etc.)
+    // re-runs updateExportPreview — which is constant traffic for AlloFlow-
+    // generated docs. PDF remediation didn't hit this because its preview
+    // payload is static after the initial render.
+    if (a11yInspectMode) {
+      try {
+        const _eh = window.AlloModules && window.AlloModules.ExportHandlers;
+        if (_eh && typeof _eh.applyA11yInspector === 'function') {
+          _eh.applyA11yInspector({ exportPreviewRef: exportPreviewRef, enabled: true });
+        }
+      } catch (_inspErr) {
+        warnLog('[Export preview] applyA11yInspector failed:', _inspErr);
+      }
+    }
+}

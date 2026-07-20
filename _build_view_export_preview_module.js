@@ -57,6 +57,7 @@ var X = _lazyIcon('X');
 ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.ExportPreviewView = (typeof ExportPreviewView !== 'undefined') ? ExportPreviewView : null;
+window.AlloModules.ExportPreviewHelpers = (typeof updateExportPreview !== 'undefined') ? { updateExportPreview: updateExportPreview } : null;
 window.AlloModules.ViewExportPreviewModule = true;
 console.log('[CDN] ViewExportPreviewModule loaded — ExportPreviewView registered');
 })();
