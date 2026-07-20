@@ -19,17 +19,20 @@ const { normalize, evaluate } = new Function(
 
 describe('normalizer: one reader contract for legacy strings AND structured data', () => {
   it('legacy v2 markdown string → {body, []} (backward compatible both directions)', () => {
-    expect(normalize('**Due:** Friday\n\nRead the text.')).toEqual({ body: '**Due:** Friday\n\nRead the text.', objectives: [] });
-    expect(normalize('')).toEqual({ body: '', objectives: [] });
-    expect(normalize(null)).toEqual({ body: '', objectives: [] });
-    expect(normalize(42)).toEqual({ body: '', objectives: [] });
+    expect(normalize('**Due:** Friday\n\nRead the text.')).toEqual({ body: '**Due:** Friday\n\nRead the text.', objectives: [], softGate: false });
+    expect(normalize('')).toEqual({ body: '', objectives: [], softGate: false });
+    expect(normalize(null)).toEqual({ body: '', objectives: [], softGate: false });
+    expect(normalize(42)).toEqual({ body: '', objectives: [], softGate: false });
   });
   it('structured data passes through; malformed objectives are dropped, never crash', () => {
     const good = { id: 'a', label: 'Earn 25 XP', kind: 'xp', amount: 25 };
     const out = normalize({ body: 'Do the things.', objectives: [good, null, { id: 'b' }, { id: 'c', label: 'x', kind: 'teleport' }, 'junk'] });
     expect(out.body).toBe('Do the things.');
     expect(out.objectives).toEqual([good]);
-    expect(normalize({ body: 7, objectives: 'nope' })).toEqual({ body: '', objectives: [] });
+    expect(normalize({ body: 7, objectives: 'nope' })).toEqual({ body: '', objectives: [], softGate: false });
+    // softGate only passes through as the LITERAL true — anything else normalizes to false
+    expect(normalize({ body: 'x', objectives: [], softGate: true }).softGate).toBe(true);
+    expect(normalize({ body: 'x', objectives: [], softGate: 'yes' }).softGate).toBe(false);
   });
 });
 
@@ -69,7 +72,7 @@ describe('evaluator: game completions count only AFTER the assignment started', 
 
 describe('wiring pins', () => {
   it('composer builds structured data ONLY when goals exist (plain string otherwise)', () => {
-    expect(anti).toContain("const _dirData = _objectives.length ? { body: md, objectives: _objectives } : md;");
+    expect(anti).toContain("const _dirData = _objectives.length ? { body: md, objectives: _objectives, ...(d.softGate ? { softGate: true } : {}) } : md;");
     expect(anti).toContain("data: _dirData,");
   });
   it("the 'directions' view branch exists (the type previously rendered a BLANK content area)", () => {
@@ -101,6 +104,31 @@ describe('wiring pins', () => {
     expect(anti).toMatch(/packItems = \(Array\.isArray\(history\) \? history : \[\]\)\.filter\(h => h && h\.id && h\.type && h\.type !== 'directions' && !TEACHER_ONLY_TYPES\.includes\(h\.type\)\);[\s\S]{0,1200}?packItems\.map\(it =>/);
     // privacy line untouched
     expect(anti).toContain('PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.');
+  });
+  it('P2: evidence rides BOTH transports and the teacher normalizes it defensively', () => {
+    // student side: channel-first, mailbox fallback, once per snapshot (re-send only on change)
+    expect(anti).toContain("kind: 'hw-evidence',");
+    expect(anti).toContain('if (sent.code === mbStudent.code && sent.doneCount === doneCount) continue;');
+    expect(anti).toContain("if (!prog || !prog.startedAt) continue; // never started here — nothing honest to report");
+    expect(anti).toContain("evidenceSent: { code: mbStudent.code, doneCount }");
+    // teacher side: dispatched from the RTC datachannel AND the mailbox up-pump
+    expect(anti).toContain("if (parsed && parsed.kind === 'hw-evidence') { applyHwEvidence(parsed); return; }");
+    expect(anti).toContain("else if (v.kind === 'hw-evidence') applyHwEvidence(v);");
+    // bounded, sanitized snapshot keyed uid|directionsId (re-sends replace, never duplicate)
+    expect(anti).toContain("[v.uid + '|' + v.directionsId]:");
+    expect(anti).toMatch(/objectives: \(Array\.isArray\(v\.objectives\) \? v\.objectives : \[\]\)\.slice\(0, 20\)/);
+    // the panel says what it is: device-reported, formative, not a grade
+    expect(anti).toContain('student-device reported — formative, not a grade');
+  });
+  it('P2: the soft gate NUDGES and never blocks — the open proceeds unconditionally', () => {
+    const idx = anti.indexOf('Phase 2 SOFT gate');
+    expect(idx).toBeGreaterThan(0);
+    const slice = anti.slice(idx, idx + 1600);
+    expect(slice).toContain('_softGateNudgedRef.current.add(item.id);'); // once per resource
+    expect(slice).toContain('You can keep going!');
+    expect(slice).not.toMatch(/return;\s*\}\s*\}\s*catch/); // no early-return escape from the open
+    // the very next statements after the nudge block ARE the open (unconditional)
+    expect(slice).toContain('setGeneratedContent({ ...item,');
   });
   it('mirror parity', () => {
     expect(mirror).toBe(anti);
