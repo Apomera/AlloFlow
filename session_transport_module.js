@@ -187,7 +187,23 @@
   }
 
   window.AlloModules = window.AlloModules || {};
+  // ── Class-follow pointer (stage 3) ──
+  // The teacher-paced "class follows me to this resource" write, with a
+  // Session-tab trace. Pointer channels (currentResourceId, group/student
+  // roster fields) ride the SHARED session doc on BOTH transports by design —
+  // only the content channel differs — so one write op serves everyone.
+  function followResource(item, ops) {
+    if (!item || !item.id || !ops || typeof ops.write !== 'function') return Promise.resolve(false);
+    return Promise.resolve(ops.write(item)).then(function () {
+      if (typeof ops.trace === 'function') {
+        ops.trace('sync:follow', { id: String(item.id).slice(0, 40), type: item.type || null });
+      }
+      return true;
+    });
+  }
+
   window.AlloModules.SessionTransport = {
+    followResource: followResource,
     studentSafeResources: studentSafeResources,
     selectTransportKind: selectTransportKind,
     createFirebaseTransport: createFirebaseTransport,

@@ -8763,7 +8763,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=8eb72ef9');
+    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=415b9b14');
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
@@ -16638,59 +16638,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   await transport.publishResources(history);
                   return;
               }
-              const seen = mbSentPacksRef.current;
-              const currentIds = new Set(candidates.map(item => item.id));
-              const removedIds = Object.keys(seen).filter(id => !currentIds.has(id));
-              if (removedIds.length) {
-                  removedIds.forEach(id => { delete seen[id]; });
-                  await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
-              }
-              let _mbPushedCount = 0;
-              let _mbFailedCount = 0;
-              for (const item of candidates) {
-                  const fp = _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || '');
-                  if (seen[item.id] === fp) continue;
-                  // Per-item isolation: one failed push (rate-limit/too-big/network)
-                  // must not strand the rest of the pack. Record the fingerprint
-                  // only on success so a failed item retries next cycle.
-                  try {
-                      await _mbPushOneResource(item, { open: false, quiet: true });
-                      seen[item.id] = fp;
-                      _mbPushedCount += 1;
-                  } catch (itemErr) {
-                      _mbFailedCount += 1;
-                      warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message);
-                  }
-              }
-              if (_mbPushedCount || _mbFailedCount || removedIds.length) {
-                  _alloSessionSyncTrace('mailbox:pack-cycle', { candidates: candidates.length, pushed: _mbPushedCount, failed: _mbFailedCount, removed: removedIds.length });
-              }
-              // Durable full-set store (the Firebase data.resources analogue):
-              // host the whole student-safe pack to the teacher's own Drive via
-              // putpack and advertise a tiny packRef in the session doc. Students
-              // re-derive the COMPLETE set from it on every snapshot, so a history
-              // wipe / late join / polling-only student that missed ring messages
-              // self-heals — the property Firebase gets for free and the
-              // consume-once mailbox message channel lacks. Fingerprint-gated:
-              // zero Drive writes when the student-safe set is unchanged.
-              if (candidates.length) {
-                  const packFp = _alloQuickHash(candidates.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(it)) || '') || '')).join('|'));
-                  if (packFp !== mbHostedPackFpRef.current) {
-                      if (!mbLivePackRef.current) mbLivePackRef.current = { id: 'PK-' + generateUUID(), k: _alloRandomToken(16) };
-                      const { id, k } = mbLivePackRef.current;
-                      const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: candidates[0]?.id || null, resources: candidates.map(it => _alloSerializeResourceForStudentPack(it)).filter(Boolean) });
-                      const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
-                      const parts = _alloSplitPackChunks(encoded);
-                      for (let i = 0; i < parts.length; i += 1) {
-                          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i] });
-                      }
-                      mbHostedPackFpRef.current = packFp;
-                      try {
-                          const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', mbLive.code);
-                          await updateDoc(sessionRef, { packRef: { id, k, n: candidates.length, t: Date.now() } });
-                      } catch (prefErr) { warnLog('packRef publish failed:', prefErr?.message); }
-                  }
-              }
+              // Stage 3: inline pack-cycle fallback retired (module-owned since
+              // stage 2). A not-yet-loaded module self-heals on the next
+              // history change; surface the miss for the Session tab.
+              _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'mailbox' });
+              warnLog('SessionTransport module not loaded yet; mailbox pack sync deferred to the next history change.');
           } catch (e) {
               warnLog('Mailbox auto pack sync failed:', e?.message);
           }
@@ -26315,19 +26267,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   debugLog("Session resources synced:", result.kept, "of", result.candidates, "bytes", result.bytes);
                   return;
               }
-              // Module-not-loaded fallback: identical behavior, inline.
-              const resourcesToUpload = _alloStudentSafeResources(history);
-              const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, activeSessionCode);
-              const prepared = prepareSessionResourcesForWrite(lightweightResources);
-              const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-              await writeToSession(sessionRef, {
-                  resources: prepared.resources,
-                  aiPolicy: { studentAi: studentAiPolicyForShare },
-              });
-              debugLog("Session resources synced:", prepared.keptCount, "of", prepared.originalCount, "bytes", prepared.byteLength);
-              if (prepared.droppedCount > 0 || prepared.overLimit) {
-                  addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info');
-              }
+              // Stage 3: the inline fallback is retired — SessionTransport is
+              // CONTENT_HASH_PINNED in the loader cascade, and this effect
+              // re-fires on every history change, so a not-yet-loaded module
+              // self-heals on the next tick. Surface the miss instead of
+              // silently duplicating the algorithm.
+              _alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase' });
+              warnLog('SessionTransport module not loaded yet; resource sync deferred to the next history change.');
           } catch (e) {
               warnLog("Failed to sync resources to session:", e);
           }
@@ -28447,18 +28393,45 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return true;
   }
 
+  // ONE class-follow pointer for live sessions (SessionTransport stage 3).
+  // Firebase-paced classes read currentResourceId off the session doc;
+  // mailbox sync-mode classes get a silent ring push. Teacher-only types
+  // never follow. Fixes a drift where readingBook/manipulative opens
+  // followed on Firebase but never on mailbox sync-mode.
+  const _alloFollowResourceLive = (item, options = {}) => {
+      if (!isTeacherMode || !item || !item.id) return false;
+      const liveChannel = activeSessionCode || (mbLive && mbMode === 'sync');
+      if (!liveChannel) return false;
+      if (TEACHER_ONLY_TYPES.includes(item.type)) {
+          if (options.blockedToast) addToast(options.blockedToast, 'info');
+          return false;
+      }
+      if (activeSessionCode) {
+          try {
+              const followWrite = () => {
+                  const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                  return updateDoc(sessionRef, { currentResourceId: item.id });
+              };
+              const ST = window.AlloModules && window.AlloModules.SessionTransport;
+              if (ST && typeof ST.followResource === 'function') {
+                  ST.followResource(item, { write: followWrite, trace: (event, detail) => _alloSessionSyncTrace(event, detail) }).catch(e => warnLog('Sync error:', e));
+              } else {
+                  followWrite().catch(e => warnLog('Sync error:', e));
+              }
+          } catch (e) { warnLog('Sync error:', e); }
+      }
+      if (mbLive && mbMode === 'sync') {
+          try { pushResourceToMailbox(item, { silentTeacher: true }); } catch (e) { warnLog('Mailbox follow error:', e?.message); }
+      }
+      return true;
+  };
   const handleRestoreView = (item) => {
       // Reading Library book pinned to the lesson (2026-07-05): open the reader
       // on the saved book. Surface-opener — early return, no activeView swap.
       if (item && item.type === 'readingBook' && item.data && item.data.slug) {
           setPendingReadingBookSlug(item.data.slug);
           setIsReadingLibraryOpen(true);
-          if (isTeacherMode && activeSessionCode && !TEACHER_ONLY_TYPES.includes(item.type)) {
-              try {
-                  const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                  updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog('Sync error:', e));
-              } catch (e) { warnLog('Sync error:', e); }
-          }
+          _alloFollowResourceLive(item);
           return;
       }
       // Phase 2 — DA-generated math manipulative resource. Open the STEM Lab to
@@ -28475,12 +28448,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setShowStemLab(true);
           setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
           // Teacher-mode session push so DA-generated manipulatives appear on student devices.
-          if (isTeacherMode && activeSessionCode && !TEACHER_ONLY_TYPES.includes(item.type)) {
-              try {
-                  const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                  updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog('Sync error:', e));
-              } catch (e) { warnLog('Sync error:', e); }
-          }
+          _alloFollowResourceLive(item);
           return; // do NOT fall through to the default activeView swap
       }
       if (item && item.type === 'video-ref') {
@@ -28581,22 +28549,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (item.type === 'litlab-config' || item.type === 'litlab-submission') {
           setShowLitLab(true);
       }
-      if (isTeacherMode && activeSessionCode) {
-          if (!TEACHER_ONLY_TYPES.includes(item.type)) {
-              const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-              updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog("Sync error:", e));
-          } else {
-              addToast(t('adventure.toasts.teacher_sync_warning'), "info");
-          }
-      }
-      // Mailbox sync-mode parity: opening a resource while a mailbox live
-      // session runs in teacher-paced mode auto-follows the class to it,
-      // exactly like the Firestore currentResourceId sync above (silent — no
-      // toast per navigation). Student-paced mode leaves views alone; the
-      // pack itself always auto-syncs via the incremental effect.
-      if (isTeacherMode && mbLive && mbMode === 'sync' && item && !TEACHER_ONLY_TYPES.includes(item.type)) {
-          pushResourceToMailbox(item, { silentTeacher: true });
-      }
+      _alloFollowResourceLive(item, { blockedToast: t('adventure.toasts.teacher_sync_warning') });
   };
   useEffect(() => {
       if (!pendingQrAssignmentResource || isTeacherMode) return;
@@ -35360,14 +35313,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setActiveView(targetItem.type);
           setStickers([]);
           stopPlayback();
-          if (isTeacherMode && activeSessionCode) {
-              if (!TEACHER_ONLY_TYPES.includes(targetItem.type)) {
-                  const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                  updateDoc(sessionRef, { currentResourceId: targetItem.id }).catch(e => warnLog("Sync error:", e));
-              } else {
-                  addToast(t('toasts.teacher_view_only'), "info");
-              }
-          }
+          _alloFollowResourceLive(targetItem, { blockedToast: t('toasts.teacher_view_only') });
       }
   };
   const handleContentClick = (e) => {

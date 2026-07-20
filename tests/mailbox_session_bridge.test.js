@@ -657,8 +657,13 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
         NEW_COPIES.forEach(source => {
             // Teacher: fingerprint-gated whole-pack host + tiny pointer publish.
             expect(source).toContain("a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i]");
-            expect(source).toContain('await updateDoc(sessionRef, { packRef: { id, k, n: candidates.length, t: Date.now() } });');
-            expect(source).toContain('if (packFp !== mbHostedPackFpRef.current) {');
+            // Stage 3: packRef write = injected publishPackRef op (cycle
+            // algorithm module-owned in SessionTransport).
+            expect(source).toContain('await updateDoc(sessionRef, { packRef: { id: ref.id, k: ref.k, n: ref.n, t: ref.t } });');
+            // Stage 3: the fingerprint gate lives in SessionTransport's
+            // runMailboxPackCycle; the host injects get/setHostedFp.
+            expect(source).toContain('getHostedFp: () => mbHostedPackFpRef.current');
+            expect(source).toContain('setHostedFp: (fp) => { mbHostedPackFpRef.current = fp; }');
             // Student: self-heal branch reads packRef and rebuilds via getpack.
             expect(source).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
             expect(source).toContain("a: 'getpack', id: data.packRef.id, k: data.packRef.k, part");
@@ -671,13 +676,14 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
         });
     });
 
-    it('every copy isolates per-item push failures in the auto-sync loop', () => {
+    it('every copy routes the auto-sync loop through the module-owned cycle (stage 3)', () => {
+        // Per-item failure isolation now lives in SessionTransport's
+        // runMailboxPackCycle (unit-tested in tests/session_transport.test.js);
+        // the host injects the push primitive + error hook.
         NEW_COPIES.forEach(source => {
-            const loop = sliceBetween(source, 'if (seen[item.id] === fp) continue;', '// Durable full-set store');
-            expect(loop).toContain('try {');
-            expect(loop).toContain('await _mbPushOneResource(item, { open: false, quiet: true });');
-            expect(loop).toContain('seen[item.id] = fp;');
-            expect(loop).toContain('} catch (itemErr) {');
+            expect(source).toContain("pushItem: (item) => _mbPushOneResource(item, { open: false, quiet: true })");
+            expect(source).toContain("onItemError: (item, itemErr) => warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message)");
+            expect(source).toContain('typeof _stMb.runMailboxPackCycle === ');
         });
     });
 

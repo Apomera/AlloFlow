@@ -489,7 +489,9 @@ describe('ANTI wiring pins', () => {
     it('live sessions host a durable pack + advertise packRef, and students getpack-heal it', () => {
         // Teacher publishes a tiny pointer to a putpack-hosted full pack (the
         // durable data.resources analogue that makes the mailbox self-healing).
-        expect(anti).toContain('await updateDoc(sessionRef, { packRef: { id, k, n: candidates.length, t: Date.now() } });');
+        // Stage 3: the packRef write is the injected publishPackRef op; the
+        // cycle algorithm (incl. WHEN to publish) lives in SessionTransport.
+        expect(anti).toContain('await updateDoc(sessionRef, { packRef: { id: ref.id, k: ref.k, n: ref.n, t: ref.t } });');
         expect(anti).toContain("a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i]");
         // Student self-heal branch reassembles the full set from packRef via getpack.
         expect(anti).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');

@@ -220,12 +220,46 @@ describe('mailbox pack cycle (stage 2 — the algorithm, module-owned)', () => {
   });
 });
 
+describe('followResource (stage 3 — class-follow pointer)', () => {
+  it('writes the pointer and traces a follow event', async () => {
+    const write = vi.fn(async () => {});
+    const trace = vi.fn();
+    const ok = await ST.followResource({ id: 'res-1', type: 'simplified' }, { write, trace });
+    expect(ok).toBe(true);
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(trace).toHaveBeenCalledWith('sync:follow', { id: 'res-1', type: 'simplified' });
+  });
+
+  it('refuses malformed input without touching the write op', async () => {
+    const write = vi.fn();
+    expect(await ST.followResource(null, { write })).toBe(false);
+    expect(await ST.followResource({ type: 'simplified' }, { write })).toBe(false);
+    expect(write).not.toHaveBeenCalled();
+  });
+});
+
 describe('ANTI wiring pins', () => {
-  it('the Firebase resources effect routes through SessionTransport with an identical inline fallback', () => {
+  it('all class-follow sites route through the ONE live-follow helper', () => {
+    // 4 call sites (readingBook, manipulative, restore-view tail, navigation)
+    // — the raw currentResourceId write survives ONLY inside the helper.
+    const calls = anti.split('_alloFollowResourceLive(').length - 1;
+    expect(calls).toBe(4);
+    expect(anti.split('currentResourceId: item.id').length - 1).toBe(1);
+    expect(anti).toContain('const _alloFollowResourceLive = (item, options = {}) => {');
+  });
+
+  it('the inline sync fallbacks are retired: transport-unavailable is surfaced, not duplicated', () => {
+    expect(anti).toContain("_alloSessionSyncTrace('sync:transport-unavailable', { channel: 'firebase' })");
+    expect(anti).toContain("_alloSessionSyncTrace('sync:transport-unavailable', { channel: 'mailbox' })");
+    // The retired inline bodies must be gone.
+    expect(anti).not.toContain('// Module-not-loaded fallback: identical behavior, inline.');
+    expect(anti).not.toContain('const seen = mbSentPacksRef.current;');
+  });
+  it('the Firebase resources effect routes through SessionTransport (fallback retired in stage 3)', () => {
     expect(anti).toContain('ST.createFirebaseTransport({');
-    expect(anti).toContain('const resourcesToUpload = _alloStudentSafeResources(history);');
-    // The old unfiltered candidate rule must be gone.
+    // The old unfiltered candidate rule and the inline fallback are both gone.
     expect(anti).not.toContain('const resourcesToUpload = history.filter(h => h.id);');
+    expect(anti).not.toContain('const resourcesToUpload = _alloStudentSafeResources(history);');
   });
 
   it('the mailbox pack effect routes through the module-owned cycle (stage 2)', () => {
