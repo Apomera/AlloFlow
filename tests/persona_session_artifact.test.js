@@ -164,6 +164,45 @@ describe('PersonaSessionArtifact private persistence and owner export', () => {
     expect(result.bytes).toBeGreaterThan(0);
   });
 
+  it('builds a self-contained owner HTML page with embedded narration players', async () => {
+    const built = await Runtime.buildPrivateSessionArtifact(singleInput(), {
+      maxChunkChars: 200,
+      prepareNarration: async () => audio('clip'),
+    });
+    const page = Runtime.buildOwnerHtmlDocument(built.artifact);
+    expect(page.stats.messages).toBe(2);
+    expect(page.stats.audioClips).toBeGreaterThan(0);
+    expect(page.html).toContain('<!DOCTYPE html>');
+    expect(page.html).toContain('data:audio/mpeg;base64,');
+    expect(page.html).toContain('Ada Lovelace');
+    expect(page.html).toContain('What is an algorithm?');
+    expect(page.html).toContain('Private owner copy');
+    // Self-contained: nothing loads from the network.
+    expect(page.html).not.toMatch(/src="https?:/);
+    expect(page.html).not.toMatch(/<script src/);
+  });
+
+  it('HTML download requires an owner gesture and produces an .html file', async () => {
+    const built = await Runtime.buildPrivateSessionArtifact(singleInput(), {
+      maxChunkChars: 200,
+      prepareNarration: async () => audio('clip'),
+    });
+    expect(() => Runtime.downloadOwnerHtmlCopy(built.artifact)).toThrowError(
+      expect.objectContaining({ code: 'owner-gesture-required' })
+    );
+    const anchor = { click: vi.fn(), remove: vi.fn() };
+    const fakeDocument = { body: { appendChild: vi.fn() }, createElement: vi.fn(() => anchor) };
+    const fakeUrl = { createObjectURL: vi.fn(() => 'blob:private-html'), revokeObjectURL: vi.fn() };
+    const result = Runtime.downloadOwnerHtmlCopy(built.artifact, {
+      ownerInitiated: true, document: fakeDocument, URL: fakeUrl, Blob,
+    });
+    expect(anchor.click).toHaveBeenCalledTimes(1);
+    expect(result.filename).toMatch(/\.html$/);
+    expect(result.filename).not.toMatch(/\.allopersona\.json/);
+    expect(result.bytes).toBeGreaterThan(0);
+    expect(result.stats.audioClips).toBeGreaterThan(0);
+  });
+
   it('contains no fallback voice literal or browser/resource-store persistence path', () => {
     const source = read('persona_session_artifact_source.jsx');
     expect(source).not.toMatch(/\bPuck\b/);

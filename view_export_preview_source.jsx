@@ -1071,11 +1071,19 @@ function ExportPreviewView(props) {
                 {(() => {
                   const skipped = getSkippedResources();
                   if (skipped.length === 0) return null;
+                  // Adventure/persona DO have static permanent products — they
+                  // just live in their own flows (finished storybook / private
+                  // session page), so point there instead of dead-ending.
+                  const skippedTypes = new Set((Array.isArray(history) ? history : [])
+                    .filter(item => item && (item.type === 'adventure' || item.type === 'persona'))
+                    .map(item => item.type));
                   return (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
                       <p className="text-[11px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
                       <p className="text-[11px] text-amber-600">{skipped.join(', ')}</p>
                       <p className="text-[11px] text-amber-700 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                      {skippedTypes.has('adventure') && <p className="text-[11px] text-amber-800 mt-1">📖 Adventure stories have their own export: open the adventure and use <strong>Export Storybook</strong> for a finished, self-contained HTML book (optionally narrated with saved TTS).</p>}
+                      {skippedTypes.has('persona') && <p className="text-[11px] text-amber-800 mt-1">🎭 Persona conversations: use <strong>Save private session</strong> in the persona view — downloads a private JSON artifact plus a read-anywhere HTML transcript with narration.</p>}
                     </div>
                   );
                 })()}

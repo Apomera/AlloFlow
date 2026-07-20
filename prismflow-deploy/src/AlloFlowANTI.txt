@@ -8685,7 +8685,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=d3c1fedb6');
     loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=d3c1fedb6');
     loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=d3c1fedb6');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=d3c1fedb6');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=ce861233');
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=d3c1fedb6');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=d3c1fedb6');
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=d3c1fedb6');
@@ -8749,7 +8749,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83');
+    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=d3c1fedb6');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=d3c1fedb6');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=d3c1fedb6');
@@ -25369,12 +25369,27 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               downloadError = error;
               warnLog('[PersonaArtifact] Owner download failed', error);
           }
+          // HTML permanent product (2026-07-20): human-readable transcript page
+          // with embedded narration players, downloaded ALONGSIDE the JSON
+          // artifact (which stays the re-importable source of truth).
+          let htmlDownload = null;
+          try {
+              if (typeof runtime.downloadOwnerHtmlCopy === 'function') {
+                  htmlDownload = runtime.downloadOwnerHtmlCopy(built.artifact, {
+                      ownerInitiated: true,
+                      filename: built.artifact.title,
+                  });
+              }
+          } catch (error) {
+              warnLog('[PersonaArtifact] HTML permanent product download failed', error);
+          }
           if (!persistence && !download) throw (persistenceError || downloadError || new Error('Private session could not be saved.'));
           const clipMessage = built.narration.failures.length
               ? ' ' + built.narration.embedded + '/' + built.narration.attempted + ' narration clips were included.'
               : ' ' + built.narration.embedded + ' narration clips were included.';
+          const htmlMessage = htmlDownload ? ' A read-anywhere HTML page was also downloaded.' : '';
           if (persistence && download) {
-              addToast('Private Persona session saved on this device and downloaded.' + clipMessage, 'success');
+              addToast('Private Persona session saved on this device and downloaded.' + clipMessage + htmlMessage, 'success');
           } else if (download) {
               addToast('Private Persona session downloaded; on-device persistence was unavailable.' + clipMessage, 'warning');
           } else {
