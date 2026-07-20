@@ -259,6 +259,10 @@
   window.hydrateHistory = hydrateHistory;
   window.estimateJsonBytes = estimateJsonBytes;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
+  // Exposed for the student-pack serializer (mailbox/QR channels): packs must
+  // apply the SAME binary-null + string-trim pass the Firebase session path
+  // gets, instead of narrowing items to a five-field allowlist.
+  window.sanitizeSessionValue = sanitizeSessionValue;
 
   // Trigger the monolith's swap-in of shim references.
   if (typeof window._upgradeFirestoreSync === 'function') {

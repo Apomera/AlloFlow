@@ -16136,11 +16136,42 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // sharing. Real-time channels get chunks instantly; the mailbox ALWAYS gets
   // a copy (replay log for late joiners + delivery when P2P is blocked) and
   // students dedup by rid. opts.open=false delivers into the student's pack
+  // Full-fidelity student-pack serialization (2026-07-19). The pack channels
+  // (mailbox per-item push, mailbox hosted pack, late-join re-send, QR and
+  // homework links) used to narrow every resource to {id,type,title,meta,data},
+  // silently stripping the top-level fields a resource needs to actually WORK
+  // on the student device: word-sounds lost lessonPlanSequence/lessonPlanConfig
+  // and its probe flags (probes could not run at all), games lost gameData.
+  // Serialize the FULL item through the same sanitizers the Firebase
+  // live-session path uses — sanitizeHistoryForCloud (private-item filter +
+  // known binary strips) then sanitizeSessionValue (nulls *image/*audio/*blob
+  // suffixed payloads, trims oversize strings) — so pack students receive
+  // exactly what live-session students receive. karaokeStudentAudio (a child's
+  // recorded voice — biometric-class) is force-stripped regardless of what
+  // future sanitizer changes allow.
+  const _alloSerializeResourceForStudentPack = (item) => {
+      if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+      let cleaned = item;
+      try {
+          const viaCloud = sanitizeHistoryForCloud([item]);
+          if (!Array.isArray(viaCloud) || viaCloud.length === 0) return null; // private item — never packs
+          cleaned = viaCloud[0] || item;
+      } catch (_) {}
+      try {
+          if (typeof window !== 'undefined' && typeof window.sanitizeSessionValue === 'function') {
+              cleaned = window.sanitizeSessionValue(cleaned, 'resource');
+          }
+      } catch (_) {}
+      const { karaokeStudentAudio, ...safe } = cleaned || {};
+      return stripUndefined(safe);
+  };
   // without yanking their view; opts.quiet=true suppresses per-item toasts.
   const _mbPushOneResource = useCallback(async (item, opts = {}) => {
       if (!mbLive || !mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
       const flags = { open: opts.open !== false, quiet: opts.quiet === true };
-      const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+      const packItem = _alloSerializeResourceForStudentPack(item);
+      if (!packItem) return { rtcCount: 0 };
+      const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
       const parts = _alloSplitPackChunks(encoded);
       const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       let rtcCount = 0;
@@ -16225,7 +16256,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
               }
               for (const item of candidates) {
-                  const fp = _alloQuickHash(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })) || '');
+                  const fp = _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || '');
                   if (seen[item.id] === fp) continue;
                   // Per-item isolation: one failed push (rate-limit/too-big/network)
                   // must not strand the rest of the pack. Record the fingerprint
@@ -16246,11 +16277,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               // consume-once mailbox message channel lacks. Fingerprint-gated:
               // zero Drive writes when the student-safe set is unchanged.
               if (candidates.length) {
-                  const packFp = _alloQuickHash(candidates.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(stripUndefined({ id: it.id, type: it.type, title: it.title, meta: it.meta, data: it.data })) || '') || '')).join('|'));
+                  const packFp = _alloQuickHash(candidates.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(it)) || '') || '')).join('|'));
                   if (packFp !== mbHostedPackFpRef.current) {
                       if (!mbLivePackRef.current) mbLivePackRef.current = { id: 'PK-' + generateUUID(), k: _alloRandomToken(16) };
                       const { id, k } = mbLivePackRef.current;
-                      const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: candidates[0]?.id || null, resources: candidates.map(it => ({ id: it.id, type: it.type, title: it.title, meta: it.meta, data: it.data })) });
+                      const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: candidates[0]?.id || null, resources: candidates.map(it => _alloSerializeResourceForStudentPack(it)).filter(Boolean) });
                       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
                       const parts = _alloSplitPackChunks(encoded);
                       for (let i = 0; i < parts.length; i += 1) {
@@ -16309,7 +16340,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       (async () => {
                           try {
                               for (const item of (mbPackItemsRef.current || [])) {
-                                  const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+                                  const packItem = _alloSerializeResourceForStudentPack(item);
+                                  if (!packItem) continue;
+                                  const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
                                   const parts = _alloSplitPackChunks(encoded);
                                   const rid = 'W' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
                                   for (let i = 0; i < parts.length; i += 1) {
@@ -16426,7 +16459,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
       const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
-      const resources = resourcesToAssign.map(item => ({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data }));
+      const resources = resourcesToAssign.map(item => _alloSerializeResourceForStudentPack(item)).filter(Boolean);
       const packet = stripUndefined({
           v: 1,
           kind: 'assignment',

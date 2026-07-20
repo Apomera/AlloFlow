@@ -502,3 +502,64 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain("|| _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp'))) {");
     });
 });
+
+describe('student-pack serialization (full-fidelity)', () => {
+    it('no pack channel narrows resources to the five-field allowlist any more', () => {
+        // The {id,type,title,meta,data} narrowing silently stripped top-level
+        // fields resources need to WORK (word-sounds lessonPlanSequence/probe
+        // flags, games gameData). Every pack site must use the serializer.
+        expect(anti).not.toContain('meta: item.meta, data: item.data');
+        expect(anti).not.toContain('meta: it.meta, data: it.data');
+        const uses = anti.split('_alloSerializeResourceForStudentPack').length - 1;
+        expect(uses).toBeGreaterThanOrEqual(7); // 1 definition + 6 call sites
+    });
+
+    it('keeps lesson-plan/probe/game fields, strips student audio, nulls binary payloads', () => {
+        // Run the REAL helper (extracted from ANTI) against the REAL
+        // firestore_sync sanitizers.
+        const win = {};
+        const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
+        new Function('window', syncSrc)(win);
+        expect(typeof win.sanitizeHistoryForCloud).toBe('function');
+        expect(typeof win.sanitizeSessionValue).toBe('function');
+        expect(typeof win.stripUndefined).toBe('function');
+
+        const start = anti.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
+        const end = anti.indexOf('\n  };', start);
+        expect(start).toBeGreaterThan(-1);
+        expect(end).toBeGreaterThan(start);
+        const helperSrc = anti.slice(start, end + 5);
+        const helper = new Function(
+            'sanitizeHistoryForCloud', 'stripUndefined', 'window',
+            helperSrc + '\nreturn _alloSerializeResourceForStudentPack;'
+        )(win.sanitizeHistoryForCloud, win.stripUndefined, win);
+
+        const packed = helper({
+            id: 'ws-1', type: 'word-sounds', title: 'Word Sounds (3 words)',
+            data: [{ word: 'cat' }, { word: 'dog' }, { word: 'sun' }],
+            lessonPlanSequence: ['counting', 'blending'],
+            lessonPlanConfig: { focus: 'short vowels' },
+            configSummary: 'Planned practice',
+            isProbeMode: true,
+            probeActivity: 'blending',
+            gameData: { board: [1, 2, 3] },
+            karaokeAudio: { version: 4, entries: {} },
+            karaokeStudentAudio: { version: 4, entries: { x: { audio: 'base64' } } },
+        });
+
+        // The fields the student device needs to run the assignment SURVIVE:
+        expect(packed.lessonPlanSequence).toEqual(['counting', 'blending']);
+        expect(packed.lessonPlanConfig).toEqual({ focus: 'short vowels' });
+        expect(packed.isProbeMode).toBe(true);
+        expect(packed.probeActivity).toBe('blending');
+        expect(packed.gameData).toEqual({ board: [1, 2, 3] });
+        expect(packed.data).toHaveLength(3);
+        // A child's recorded voice never travels in a pack:
+        expect(packed).not.toHaveProperty('karaokeStudentAudio');
+        // Binary/audio payloads are nulled exactly like the Firebase path:
+        expect(packed.karaokeAudio == null).toBe(true);
+        // Malformed/private inputs fail closed:
+        expect(helper(null)).toBe(null);
+        expect(helper({ type: 'word-sounds' })).toBe(null);
+    });
+});
