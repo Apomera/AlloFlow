@@ -41,7 +41,7 @@ describe('Learning Lab Class Roster accessibility', () => {
 
   it('preserves unrelated section data when saving and deleting', () => {
     expect(roster).toContain("setData(Object.assign({}, data, { classes: classes }))");
-    expect(roster).toContain("setData(Object.assign({}, data, { classes: (data.classes || []).filter");
+    expect(roster).toContain("setData(Object.assign({}, data, { classes: rawClasses.filter");
   });
 
   it('confirms removal in an accessible app dialog', () => {
@@ -63,9 +63,9 @@ describe('Learning Lab Class Roster accessibility', () => {
   });
 
   it('provides a named action group for each class', () => {
-    expect(roster).toContain("role: 'group', 'aria-label': 'Actions for ' + classRecord.name");
-    expect(roster).toContain("'aria-label': 'Edit class: ' + classRecord.name");
-    expect(roster).toContain("'aria-label': 'Remove class: ' + classRecord.name");
+    expect(roster).toContain("role: 'group', 'aria-label': 'Actions for ' + className");
+    expect(roster).toContain("'aria-label': 'Edit class: ' + className");
+    expect(roster).toContain("'aria-label': 'Remove class: ' + className");
   });
 
   it('moves focus into editing and restores it after update or cancellation', () => {
@@ -91,6 +91,26 @@ describe('Learning Lab Class Roster accessibility', () => {
     expect(roster).toContain('minWidth: 44, minHeight: 44');
     expect(roster).toContain("minHeight: 44, padding: '9px 14px'");
     expect(roster).toContain("width: '100%', minHeight: 44");
+  });
+
+  it('handles malformed legacy roster data without crashing', () => {
+    expect(roster).toContain('var rawClasses = Array.isArray(data.classes) ? data.classes : [];');
+    expect(roster).toContain('var classes = rawClasses.filter(isRecord);');
+    expect(roster).toContain("var className = textValue(classRecord.name).trim() || 'Untitled class';");
+    expect(roster).toContain('setForm({ name: textValue(classRecord.name), teacher: textValue(classRecord.teacher)');
+    expect(source).toContain("stat: (Array.isArray((data.mytkRoster || {}).classes) ? (data.mytkRoster || {}).classes.length : 0) + ' classes'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(roster).toContain('if (!pendingFocusId) return;');
+    expect(roster).toContain('var target = document.getElementById(pendingFocusId);');
+    expect(roster).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(roster).not.toContain('setTimeout');
+  });
+
+  it('explains local-only saving and care when naming other people', () => {
+    expect(roster).toContain('saved only in your Personal Toolkit and is not shared with or sent to anyone');
+    expect(roster).toContain('record only what you would be comfortable with them reading');
   });
 
   it('keeps the deployed mirror identical', () => {

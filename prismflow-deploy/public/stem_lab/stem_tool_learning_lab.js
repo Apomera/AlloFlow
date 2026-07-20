@@ -13481,16 +13481,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Track class names, teachers, periods, locations, and classmates.
   function PersonalClassRoster(props) {
     if (!R) return null;
-    var data = props.data || { classes: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { classes: [] };
     var setData = props.setData;
     var fs = R.useState({ name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' });
     var form = fs[0]; var setForm = fs[1];
     var es = R.useState(null); var editing = es[0]; var setEditing = es[1];
     var nes = R.useState(''); var nameError = nes[0]; var setNameError = nes[1];
+    var pfr = R.useState(''); var pendingFocusId = pfr[0]; var setPendingFocusId = pfr[1];
+    var rawClasses = Array.isArray(data.classes) ? data.classes : [];
 
-    function focusById(id) {
-      setTimeout(function() { var target = document.getElementById(id); if (target) target.focus(); }, 0);
-    }
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, editing, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
+    function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+    function textValue(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); }
     function emptyForm() { return { name: '', teacher: '', period: '', room: '', day: '', friend: '', notes: '' }; }
     function saveClass() {
       var name = form.name.trim();
@@ -13500,8 +13510,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var id = editing || tkId();
-      var classes = (data.classes || []).slice();
-      var index = classes.findIndex(function(item) { return item.id === id; });
+      var classes = rawClasses.slice();
+      var index = classes.findIndex(function(item) { return isRecord(item) && item.id === id; });
       var existing = index >= 0 ? classes[index] : null;
       var classRecord = {
         id: id,
@@ -13525,11 +13535,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById(wasEditing ? 'learning-lab-class-edit-' + wasEditing : 'learning-lab-class-name');
     }
     async function remove(id) {
-      var classRecord = (data.classes || []).filter(function(item) { return item.id === id; })[0];
-      if (!(await askLearningLabConfirmation('This permanently removes' + (classRecord ? ' "' + classRecord.name + '" from your roster' : ' this class') + '.', {
+      var classRecord = rawClasses.filter(function(item) { return isRecord(item) && item.id === id; })[0];
+      var className = classRecord ? textValue(classRecord.name).trim() : '';
+      if (!(await askLearningLabConfirmation('This permanently removes' + (className ? ' "' + className + '" from your roster' : ' this class') + '.', {
         title: 'Remove this class?', confirmText: 'Remove class'
       }))) return;
-      setData(Object.assign({}, data, { classes: (data.classes || []).filter(function(item) { return item.id !== id; }) }));
+      setData(Object.assign({}, data, { classes: rawClasses.filter(function(item) { return !(isRecord(item) && item.id === id); }) }));
       if (editing === id) {
         setEditing(null);
         setForm(emptyForm());
@@ -13540,9 +13551,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function startEdit(classRecord) {
       setEditing(classRecord.id);
-      setForm({ name: classRecord.name, teacher: classRecord.teacher || '', period: classRecord.period || '', room: classRecord.room || '', day: classRecord.day || '', friend: classRecord.friend || '', notes: classRecord.notes || '' });
+      setForm({ name: textValue(classRecord.name), teacher: textValue(classRecord.teacher), period: textValue(classRecord.period), room: textValue(classRecord.room), day: textValue(classRecord.day), friend: textValue(classRecord.friend), notes: textValue(classRecord.notes) });
       setNameError('');
-      llAnnounce('Editing class: ' + classRecord.name + '.');
+      llAnnounce('Editing class: ' + (textValue(classRecord.name).trim() || 'untitled class') + '.');
       focusById('learning-lab-class-name');
     }
     function cancelEdit() {
@@ -13554,9 +13565,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-class-edit-' + previousId);
     }
 
-    var classes = data.classes || [];
+    var classes = rawClasses.filter(isRecord);
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 7, border: '1px solid rgba(59,130,246,0.55)', background: 'rgba(2,6,23,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', marginBottom: 4 };
 
     function field(id, label, key, placeholder, required) {
       return hh('div', null,
@@ -13567,6 +13578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🎒', 'My Class Roster', 'Keep class names, teachers, schedules, room numbers, classmates, and notes in one reference.', '#3b82f6'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'Your roster is saved only in your Personal Toolkit and is not shared with or sent to anyone. Because it can mention other people by name, record only what you would be comfortable with them reading.'),
 
       tkCard('#3b82f6',
         hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); saveClass(); }, 'aria-labelledby': 'learning-lab-class-form-heading' },
@@ -13598,30 +13610,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       classes.length === 0 ? tkEmptyState('🎒', 'No classes added yet.', null, null)
       : hh('ul', { 'aria-label': 'Class roster', style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
           classes.map(function(classRecord) {
+            var className = textValue(classRecord.name).trim() || 'Untitled class';
             var details = [
-              { label: 'Teacher', value: classRecord.teacher },
-              { label: 'Period', value: classRecord.period },
-              { label: 'Room', value: classRecord.room },
-              { label: 'Meeting days', value: classRecord.day },
-              { label: 'Classmate or friend', value: classRecord.friend }
+              { label: 'Teacher', value: textValue(classRecord.teacher).trim() },
+              { label: 'Period', value: textValue(classRecord.period).trim() },
+              { label: 'Room', value: textValue(classRecord.room).trim() },
+              { label: 'Meeting days', value: textValue(classRecord.day).trim() },
+              { label: 'Classmate or friend', value: textValue(classRecord.friend).trim() }
             ].filter(function(detail) { return detail.value; });
             return hh('li', { key: 'cl-' + classRecord.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid #3b82f6' } },
               hh('article', { 'aria-labelledby': 'learning-lab-class-heading-' + classRecord.id },
                 hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 } },
-                  hh('h3', { id: 'learning-lab-class-heading-' + classRecord.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🎒 '), classRecord.name),
-                  hh('div', { role: 'group', 'aria-label': 'Actions for ' + classRecord.name, style: { display: 'flex', gap: 4 } },
-                    hh('button', { id: 'learning-lab-class-edit-' + classRecord.id, type: 'button', 'aria-label': 'Edit class: ' + classRecord.name, onClick: function() { startEdit(classRecord); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: '#93c5fd', fontSize: 14, cursor: 'pointer' } }, '✎'),
-                    hh('button', { type: 'button', 'aria-label': 'Remove class: ' + classRecord.name, onClick: function() { remove(classRecord.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                  hh('h3', { id: 'learning-lab-class-heading-' + classRecord.id, style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, hh('span', { 'aria-hidden': 'true' }, '🎒 '), className),
+                  hh('div', { role: 'group', 'aria-label': 'Actions for ' + className, style: { display: 'flex', gap: 4 } },
+                    hh('button', { id: 'learning-lab-class-edit-' + classRecord.id, type: 'button', 'aria-label': 'Edit class: ' + className, onClick: function() { startEdit(classRecord); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: '#93c5fd', fontSize: 14, cursor: 'pointer' } }, '✎'),
+                    hh('button', { type: 'button', 'aria-label': 'Remove class: ' + className, onClick: function() { remove(classRecord.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                   )
                 ),
-                details.length ? hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', margin: 0, fontSize: 11 } },
+                details.length ? hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 8px', margin: 0, fontSize: 12 } },
                   details.reduce(function(items, detail, index) {
                     items.push(hh('dt', { key: 'dt-' + index, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, detail.label));
                     items.push(hh('dd', { key: 'dd-' + index, style: { margin: 0, color: 'var(--allo-stem-text, #cbd5e1)' } }, detail.value));
                     return items;
                   }, [])
                 ) : null,
-                classRecord.notes ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', margin: '6px 0 0', fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, 'Notes: ' + classRecord.notes) : null
+                textValue(classRecord.notes).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', margin: '6px 0 0', fontStyle: 'italic', padding: 6, background: 'rgba(2,6,23,0.4)', borderRadius: 4 } }, 'Notes: ' + textValue(classRecord.notes).trim()) : null
               )
             );
           })
@@ -20656,7 +20669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkPalace',   icon: '🏛', label: 'Memory Palace',        color: '#a855f7', desc: 'Method of loci — ancient + research-supported',
         stat: ((data.mytkPalace || {}).palaces || []).length + ' palaces', cta: 'Build a palace' },
       { id: 'mytkRoster',   icon: '🎒', label: 'My Class Roster',      color: '#3b82f6', desc: 'Classes, teachers, periods, rooms, friends',
-        stat: ((data.mytkRoster || {}).classes || []).length + ' classes', cta: 'Track classes' },
+        stat: (Array.isArray((data.mytkRoster || {}).classes) ? (data.mytkRoster || {}).classes.length : 0) + ' classes', cta: 'Track classes' },
       { id: 'mytkQuote',    icon: '💭', label: 'Quote Collector',      color: '#fbbf24', desc: 'Save quotes that matter — your personal library',
         stat: ((data.mytkQuote || {}).quotes || []).length + ' quotes', cta: 'Collect quotes' },
       { id: 'mytkCrisis',   icon: '🛡', label: 'My Crisis Plan',       color: '#ef4444', desc: 'A private safety plan you control',
