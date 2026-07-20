@@ -2,6 +2,15 @@
 
 This is the current everyday local-first AlloFlow path. It runs as a native Electron shell, serves the bundled app locally, manages local AI pieces, and can produce Windows desktop artifacts.
 
+## Install-step experiences
+
+The Windows installer's "Choose your experience" page offers two ways to run the same AlloFlow Desktop install:
+
+- **Full AlloFlow Desktop** (default) - the complete app.
+- **Document remediation only** - boots straight into the focused batch document-remediation screen (`?mode=remediation`); the rest of the app stays hidden. This replaces the old standalone "AlloFlow Remediation" build.
+
+The choice is stored as `%APPDATA%\alloflow-desktop\desktop-edition.json` (read by `desktop/electron/main.cjs`), so silent auto-updates never reset it. Re-running the installer changes it; `ALLOFLOW_DESKTOP_EDITION=remediation` overrides it for dev runs.
+
 ## Desktop vs School Box
 
 AlloFlow Desktop is the recommended path for a teacher laptop or personal workstation. It does not require Docker for the bundled app, the command center, local keys, the built-in AI engine, offline speech-to-text, Kokoro voice support, or same-room LAN classroom sessions.
@@ -83,12 +92,19 @@ Package desktop artifacts:
 
 ```powershell
 Set-Location desktop
+# The shipped product — bakes the desktop edition (guided first-run wizard,
+# full-screen app boot, "Choose your experience" installer page):
+npm.cmd run package:desktop:win
+npm.cmd run package:desktop:win-x64
+npm.cmd run package:desktop:mac
+# Admin Server flavor:
+npm.cmd run package:admin:win
+# Unflavored upstream-parity builds (dev only — boots into the console,
+# no guided first-run; do not ship as AlloFlow Desktop):
 npm.cmd run package:win
 npm.cmd run package:win-arm64
 npm.cmd run package:win-x64
 npm.cmd run package:mac
-npm.cmd run package:mac-arm64
-npm.cmd run package:mac-x64
 npm.cmd run verify:artifacts:win
 # On macOS: npm run verify:artifacts:mac
 ```

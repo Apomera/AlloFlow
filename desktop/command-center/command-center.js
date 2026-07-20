@@ -68,6 +68,17 @@
     }
   }
 
+  // The URL the app frame (and the open-in-browser link) should load. The
+  // remediation edition boots the bundled app into its focused document-
+  // remediation screen via ?mode=remediation (read by the app at startup).
+  function bundledAppLaunchUrl() {
+    const base = state.health?.appUrl || '';
+    if (!base) return '';
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    if (edition !== 'remediation') return base;
+    return base + (base.indexOf('?') === -1 ? '?' : '&') + 'mode=remediation';
+  }
+
   function getAppBridgeTarget() {
     const frame = $('#app-frame');
     const origin = expectedAppOrigin();
@@ -320,9 +331,9 @@
       : 'Waiting for ' + state.health.appUrl;
     setText('#app-status', appStatus);
     $('#app-url').value = state.health.appUrl || '';
-    $('#open-app-link').href = state.health.appUrl || '#';
+    $('#open-app-link').href = bundledAppLaunchUrl() || '#';
     const frame = $('#app-frame');
-    const nextFrameUrl = state.health.appReachable ? state.health.appUrl : 'about:blank';
+    const nextFrameUrl = state.health.appReachable ? bundledAppLaunchUrl() : 'about:blank';
     if (frame && frame.src !== nextFrameUrl) {
       resetAppBridge();
       frame.src = nextFrameUrl;
@@ -933,7 +944,7 @@
     frame.src = 'about:blank';
     resetAppBridge();
     setTimeout(() => {
-      frame.src = state.health.appUrl;
+      frame.src = bundledAppLaunchUrl();
     }, 30);
   }
 
@@ -1622,6 +1633,9 @@
     await saveConfig({
       selectedProvider: id,
       providers: { [id]: { baseUrl } },
+      // Explicitly picking a provider counts as finishing first-run setup,
+      // whether it happened inside the wizard or from the console's AI tab.
+      setup: { completed: true },
     });
     if (apiKey) {
       await api('/api/secrets/' + encodeURIComponent(id), {
@@ -1640,14 +1654,172 @@
       return;
     }
 
+    // The wizard owns the modal while the user is inside it — refresh() runs
+    // every few seconds and must not yank them back to the first step.
+    if (state.wizardActive) return;
     const provider = selectedProvider();
-    if (providerNeedsKey(provider)) {
-      renderSetupProviderSelect();
+    // Show until AI setup has actually been completed once, not just when the
+    // selected provider is missing a key. A leftover config from a previous
+    // install can point at a keyless provider (LM Studio/Ollama) and would
+    // otherwise silently skip the guided first-run for a fresh install.
+    const setupCompleted = Boolean(state.config?.setup?.completed);
+    if (providerNeedsKey(provider) || !setupCompleted) {
+      wizardGo('choose');
       modal.classList.remove('hidden');
-      setTimeout(() => $('#setup-api-key')?.focus(), 0);
     } else {
       modal.classList.add('hidden');
     }
+  }
+
+  // ── First-run setup wizard ─────────────────────────────────────────────────
+  // Multi-step guided flow covering every AI option the app supports. Design
+  // notes: plain language for non-technical users, hardware requirements
+  // stated up front for local options, and live progress for the built-in
+  // engine download (the old flow started a ~2 GB download with no feedback).
+  const WIZ_CONNECT_APPS = {
+    lmstudio: {
+      label: 'LM Studio',
+      providerId: 'lmstudio',
+      steps: [
+        'Install LM Studio from <a href="https://lmstudio.ai" target="_blank" rel="noreferrer">lmstudio.ai ↗</a> (free).',
+        'Open it, use its search to download a model — “Qwen 2.5 7B Instruct” is a good start.',
+        'In LM Studio, open the <strong>Developer / Local Server</strong> tab and press <strong>Start</strong>.',
+        'Press <strong>Test connection</strong> below.',
+      ],
+    },
+    ollama: {
+      label: 'Ollama',
+      providerId: 'ollama',
+      steps: [
+        'Install Ollama from <a href="https://ollama.com" target="_blank" rel="noreferrer">ollama.com ↗</a> (free).',
+        'Open a terminal and run: <code>ollama pull qwen2.5</code>',
+        'Ollama serves automatically once installed.',
+        'Press <strong>Test connection</strong> below.',
+      ],
+    },
+    localai: {
+      label: 'LocalAI',
+      providerId: 'localai',
+      steps: [
+        'Follow the install guide at <a href="https://localai.io" target="_blank" rel="noreferrer">localai.io ↗</a>.',
+        'Start the LocalAI server with at least one chat model.',
+        'Press <strong>Test connection</strong> below.',
+      ],
+    },
+    custom: {
+      label: 'Custom endpoint',
+      providerId: 'custom',
+      needsKeyField: true,
+      steps: [
+        'Enter the address of any OpenAI-compatible server (for example, a school-hosted AI).',
+        'Add an API key below only if that server requires one.',
+        'Press <strong>Test connection</strong> below.',
+      ],
+    },
+  };
+
+  const WIZ_STEP_COPY = {
+    choose: ['First-time setup', 'Choose your AI', 'AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you\'d like it to work — you can change this any time under ⚙ Settings → AI.'],
+    gemini: ['Step 2 of 2 · Google Gemini', 'Get your free key', 'Four small steps — about two minutes. You only do this once.'],
+    builtin: ['Step 2 of 2 · Built-in private AI', 'Before you turn it on', 'A quick look at what this option means for your computer.'],
+    connect: ['Step 2 of 3 · Connect an AI app', 'Which app do you use?', 'Pick the AI software running on this computer.'],
+    'connect-detail': ['Step 3 of 3 · Connect an AI app', 'Connect it', ''],
+    done: ['Setup complete', 'You\'re ready! 🎉', ''],
+  };
+
+  function wizardGo(step) {
+    state.wizardActive = step !== 'choose';
+    $$('[data-wizard-step]').forEach((node) => {
+      node.classList.toggle('hidden', node.dataset.wizardStep !== step);
+    });
+    const copy = WIZ_STEP_COPY[step] || WIZ_STEP_COPY.choose;
+    setText('#wiz-kicker', copy[0]);
+    setText('#wiz-title', copy[1]);
+    setText('#wiz-copy', copy[2]);
+    setText('#wiz-error', '');
+    if (step === 'builtin') {
+      // Friendly hardware self-check. navigator.deviceMemory is capped at 8 by
+      // Chromium, so phrase it as "at least".
+      const mem = Number(navigator.deviceMemory || 0);
+      setText('#wiz-builtin-hw', mem >= 8
+        ? '✅ This computer reports at least ' + mem + ' GB of memory — you\'re good to go.'
+        : (mem > 0
+          ? '⚠️ This computer reports about ' + mem + ' GB of memory. The built-in AI will run, but expect slower answers — Google Gemini may feel better here.'
+          : ''));
+    }
+  }
+
+  function wizardDone(label) {
+    setText('#wiz-done-msg', '✅ You\'re all set — AlloFlow is using ' + label + '.');
+    wizardGo('done');
+    // Remember that setup finished so the wizard stops greeting every launch
+    // (it still reappears if the selected provider later needs a key).
+    saveConfig({ setup: { completed: true } }).catch(() => {});
+  }
+
+  function wizardFail(message) {
+    setText('#wiz-error', message);
+  }
+
+  function wizardOpenConnectDetail(appId) {
+    const app = WIZ_CONNECT_APPS[appId];
+    if (!app) return;
+    state.wizardConnectApp = appId;
+    const list = $('#wiz-connect-steps');
+    if (list) list.innerHTML = app.steps.map((step) => '<li>' + step + '</li>').join('');
+    const preset = providerById(app.providerId);
+    const urlInput = $('#wiz-connect-url');
+    if (urlInput) urlInput.value = (preset && preset.baseUrl) || '';
+    $('#wiz-connect-key-wrap')?.classList.toggle('hidden', !app.needsKeyField);
+    $('#wiz-connect-use')?.classList.add('hidden');
+    setText('#wiz-connect-result', '');
+    wizardGo('connect-detail');
+    setText('#wiz-title', 'Connect ' + app.label);
+  }
+
+  let wizardEnginePoll = null;
+  function wizardStopEnginePoll() {
+    if (wizardEnginePoll) { clearInterval(wizardEnginePoll); wizardEnginePoll = null; }
+  }
+
+  async function wizardStartBuiltin() {
+    const startBtn = $('#wiz-builtin-start');
+    if (startBtn) { startBtn.disabled = true; startBtn.textContent = 'Working…'; }
+    $('#wiz-builtin-progress')?.classList.remove('hidden');
+    setText('#wiz-builtin-status', 'Starting the built-in engine…');
+    try {
+      await saveConfig({ selectedProvider: 'alloflow-local' });
+      await api('/api/engine/start', { method: 'POST' });
+    } catch (error) {
+      wizardFail('Could not start: ' + error.message);
+      if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Download & turn on'; }
+      return;
+    }
+    wizardStopEnginePoll();
+    wizardEnginePoll = setInterval(async () => {
+      let eng = null;
+      try { eng = await api('/api/engine/status'); } catch (_) { return; }
+      const bar = $('#wiz-builtin-bar');
+      if (eng.running) {
+        wizardStopEnginePoll();
+        if (bar) bar.style.width = '100%';
+        const model = eng.model && eng.model.name ? eng.model.name.replace(/\.gguf$/i, '') : 'the local model';
+        setText('#wiz-builtin-status', 'Running — ' + model);
+        await refresh();
+        reloadAppFrame();
+        wizardDone('the built-in private AI');
+      } else if (eng.download && eng.download.totalBytes) {
+        const pct = Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100);
+        if (bar) bar.style.width = pct + '%';
+        setText('#wiz-builtin-status', 'Downloading the AI model — ' + pct + '% (keep the app open)');
+      } else if (eng.phase && eng.phase !== 'stopped') {
+        setText('#wiz-builtin-status', eng.phase.replace(/-/g, ' ') + '…');
+      } else if (eng.lastError) {
+        wizardStopEnginePoll();
+        wizardFail('The engine could not start: ' + eng.lastError);
+        if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Try again'; }
+      }
+    }, 2000);
   }
 
   // â”€â”€ Local Images (SD-Turbo) panel â€” AI tab twin of the Voice panel â”€â”€
@@ -1999,6 +2171,79 @@
     healthPollTimer = setInterval(refreshSetupHealth, 4000);
   }
 
+  // ── Build editions (desktop | admin | remediation) ─────────────────────────
+  // The runtime reports the baked edition in /api/health. Desktop boots
+  // straight into the app view full-bleed (console behind the ⚙ gear); admin
+  // shows the school-server "teachers connect here" banner with the join PIN.
+  // Remediation is the desktop posture with the app frame locked to the
+  // focused document-remediation screen (see bundledAppLaunchUrl).
+  // Unflavored builds change nothing.
+  function applyEditionPosture() {
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    document.body.classList.toggle('edition-admin', edition === 'admin');
+    document.body.classList.toggle('edition-desktop', edition === 'desktop' || edition === 'remediation');
+    document.body.classList.toggle('edition-remediation', edition === 'remediation');
+    if ((edition === 'desktop' || edition === 'remediation') && !state.editionBooted) {
+      state.editionBooted = true;
+      // CSS-only full-bleed — no forced OS fullscreen; the Full Screen control
+      // still does that on demand.
+      setAppFocusMode(true, { syncWindow: false });
+    }
+    renderAdminConnectBanner().catch(() => {});
+  }
+
+  async function renderAdminConnectBanner() {
+    const banner = $('#admin-connect-banner');
+    if (!banner) return;
+    const edition = String((state.health && state.health.edition) || '').toLowerCase();
+    if (edition !== 'admin') {
+      banner.classList.add('hidden');
+      return;
+    }
+    banner.classList.remove('hidden');
+    const lan = (((state.config || {}).liveSession || {}).lan || {});
+    const pin = String(lan.pin || '').trim();
+    setText('#admin-connect-pin', pin || 'not set');
+    let share = null;
+    try { share = await api('/api/lan-share/status'); } catch (_) {}
+    // Public address (domain / reverse-proxy deployments) leads; LAN URLs follow.
+    const publicUrl = String(lan.publicUrl || '').trim().replace(/\/+$/, '');
+    const urls = (share && Array.isArray(share.appUrls)) ? share.appUrls : [];
+    const displayUrls = (publicUrl ? [publicUrl + '/app/'] : []).concat(urls);
+    setText('#admin-connect-urls', displayUrls.length
+      ? displayUrls.join('  ·  ')
+      : 'LAN Share is not running — start it from the Server tab (or restart the app).');
+    setText('#admin-connect-state', share && share.active ? 'serving' : 'stopped');
+    const urlInput = $('#admin-public-url-input');
+    if (urlInput && document.activeElement !== urlInput) urlInput.value = publicUrl;
+    // User roster — per-user join PINs (Google Classroom sync can fill this later).
+    const list = $('#admin-users-list');
+    if (list) {
+      let users = [];
+      try { users = (await api('/api/users')).users || []; } catch (_) {}
+      list.innerHTML = '';
+      if (!users.length) {
+        const empty = document.createElement('li');
+        empty.className = 'admin-users-empty';
+        empty.textContent = 'No users yet — add one below, or share the admin PIN.';
+        list.appendChild(empty);
+      }
+      for (const user of users) {
+        const item = document.createElement('li');
+        const name = document.createElement('span');
+        name.textContent = user.name || '(unnamed)';
+        const pinCode = document.createElement('code');
+        pinCode.textContent = user.pin || '';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.dataset.userId = user.id || '';
+        remove.textContent = 'Remove';
+        item.append(name, pinCode, remove);
+        list.appendChild(item);
+      }
+    }
+  }
+
   async function refresh() {
     const [health, config, providerResponse, appResponse, logsResponse, schoolBoxResponse, schoolBoxLogsResponse, liveSessionResponse] = await Promise.all([
       api('/api/health'),
@@ -2035,6 +2280,7 @@
     renderLiveSession();
     renderLanClassroom();
     renderClassroomWizard();
+    applyEditionPosture();
     maybeShowApiKeySetup();
     refreshSetupHealth().catch(() => {});
     inspectSdTurbo().catch(() => {});
@@ -2097,6 +2343,14 @@
     });
     $('#exit-app-focus').addEventListener('mouseenter', showAppFocusControls);
     $('#exit-app-focus').addEventListener('focus', showAppFocusControls);
+    // Teacher edition: the console lives behind this gear — leave the app view
+    // and land on the Settings pane.
+    $('#focus-settings-gear')?.addEventListener('click', () => {
+      setAppFocusMode(false);
+      selectPane('settings', true);
+    });
+    $('#focus-settings-gear')?.addEventListener('mouseenter', showAppFocusControls);
+    $('#focus-settings-gear')?.addEventListener('focus', showAppFocusControls);
     document.addEventListener('mousemove', showAppFocusControls, { passive: true });
     document.addEventListener('pointerdown', showAppFocusControls, { passive: true });
 
@@ -2190,10 +2444,109 @@
     });
 
     $('#provider-select').addEventListener('change', renderProviderEditor);
-    $('#setup-provider-select').addEventListener('change', renderSetupCopy);
-    $('#setup-later').addEventListener('click', () => {
+    // ── First-run wizard bindings ──
+    $('#wiz-later')?.addEventListener('click', () => {
       sessionStorage.setItem(SETUP_SNOOZE_KEY, '1');
+      state.wizardActive = false;
+      wizardStopEnginePoll();
       $('#api-key-setup').classList.add('hidden');
+    });
+    // Step navigation (any element carrying data-wiz-go).
+    $$('[data-wiz-go]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        wizardStopEnginePoll();
+        wizardGo(btn.dataset.wizGo);
+      });
+    });
+    // Connect step: pick which local AI app to link.
+    $$('[data-wiz-app]').forEach((btn) => {
+      btn.addEventListener('click', () => wizardOpenConnectDetail(btn.dataset.wizApp));
+    });
+    $('#wiz-gemini-save')?.addEventListener('click', async () => {
+      const key = $('#wiz-gemini-key')?.value.trim() || '';
+      if (!key) { wizardFail('Paste your API key first — step 4 above.'); return; }
+      try {
+        await saveProviderSettings('gemini', providerById('gemini')?.baseUrl || '', key);
+        sessionStorage.removeItem(SETUP_SNOOZE_KEY);
+        if ($('#wiz-gemini-key')) $('#wiz-gemini-key').value = '';
+        await refresh();
+        reloadAppFrame();
+        wizardDone('Google Gemini');
+      } catch (error) {
+        wizardFail('Could not save the key: ' + error.message);
+      }
+    });
+    $('#wiz-builtin-start')?.addEventListener('click', wizardStartBuiltin);
+    $('#wiz-connect-test')?.addEventListener('click', async () => {
+      const app = WIZ_CONNECT_APPS[state.wizardConnectApp];
+      if (!app) return;
+      const baseUrl = $('#wiz-connect-url')?.value.trim() || '';
+      setText('#wiz-connect-result', 'Testing…');
+      try {
+        const result = await api('/api/providers/test', {
+          method: 'POST',
+          body: JSON.stringify({ id: app.providerId, baseUrl }),
+        });
+        const probe = result.provider || {};
+        if (probe.reachable) {
+          const models = (probe.models || []).slice(0, 4).join(', ');
+          setText('#wiz-connect-result', '✅ Connected! ' + (models ? 'Models found: ' + models : 'The server answered.'));
+          $('#wiz-connect-use')?.classList.remove('hidden');
+        } else {
+          setText('#wiz-connect-result', '❌ No answer at that address. Is ' + app.label + ' running? Check its server is started, then try again.');
+          $('#wiz-connect-use')?.classList.add('hidden');
+        }
+      } catch (error) {
+        setText('#wiz-connect-result', '❌ Test failed: ' + error.message);
+      }
+    });
+    $('#wiz-connect-use')?.addEventListener('click', async () => {
+      const app = WIZ_CONNECT_APPS[state.wizardConnectApp];
+      if (!app) return;
+      const baseUrl = $('#wiz-connect-url')?.value.trim() || '';
+      const key = $('#wiz-connect-key')?.value.trim() || '';
+      try {
+        await saveProviderSettings(app.providerId, baseUrl, key);
+        sessionStorage.removeItem(SETUP_SNOOZE_KEY);
+        await refresh();
+        reloadAppFrame();
+        wizardDone(app.label);
+      } catch (error) {
+        wizardFail('Could not save: ' + error.message);
+      }
+    });
+    $('#wiz-finish')?.addEventListener('click', () => {
+      state.wizardActive = false;
+      $('#api-key-setup').classList.add('hidden');
+      if (document.body.classList.contains('edition-desktop')) {
+        setAppFocusMode(true, { syncWindow: false });
+      }
+    });
+
+    // Desktop edition: obvious way home from the console.
+    $('#back-to-app')?.addEventListener('click', () => {
+      setAppFocusMode(true, { syncWindow: false });
+    });
+
+    // Admin edition: public address + user roster (per-user join PINs).
+    $('#admin-public-url-save')?.addEventListener('click', async () => {
+      const value = $('#admin-public-url-input')?.value.trim() || '';
+      await saveConfig({ liveSession: { lan: { publicUrl: value } } });
+      renderAdminConnectBanner().catch(() => {});
+    });
+    $('#admin-user-add')?.addEventListener('click', async () => {
+      const input = $('#admin-user-name');
+      const name = input?.value.trim() || '';
+      if (!name) { input?.focus(); return; }
+      await api('/api/users', { method: 'POST', body: JSON.stringify({ name }) });
+      if (input) input.value = '';
+      renderAdminConnectBanner().catch(() => {});
+    });
+    $('#admin-users-list')?.addEventListener('click', async (event) => {
+      const btn = event.target.closest('button[data-user-id]');
+      if (!btn) return;
+      await api('/api/users/' + encodeURIComponent(btn.dataset.userId), { method: 'DELETE' });
+      renderAdminConnectBanner().catch(() => {});
     });
 
     $('#save-provider').addEventListener('click', async () => {
@@ -2202,23 +2555,6 @@
       const apiKey = $('#provider-api-key').value;
       await saveProviderSettings(id, baseUrl, apiKey);
       $('#provider-result').textContent = 'Saved.';
-      await refresh();
-      reloadAppFrame();
-    });
-
-    $('#setup-save-key').addEventListener('click', async () => {
-      const id = $('#setup-provider-select').value;
-      const provider = providerById(id);
-      const apiKey = $('#setup-api-key').value.trim();
-      if (!apiKey) {
-        setText('#setup-result', 'Paste an API key first.');
-        return;
-      }
-      setText('#setup-result', 'Saving key');
-      await saveProviderSettings(id, provider?.baseUrl || '', apiKey);
-      sessionStorage.removeItem(SETUP_SNOOZE_KEY);
-      $('#setup-api-key').value = '';
-      $('#api-key-setup').classList.add('hidden');
       await refresh();
       reloadAppFrame();
     });

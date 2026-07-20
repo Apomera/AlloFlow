@@ -77,7 +77,11 @@ jobs:
         shell: pwsh
         run: |
           if (-not $env:CSC_LINK) { Remove-Item Env:CSC_LINK,Env:CSC_KEY_PASSWORD -ErrorAction SilentlyContinue }
-          npm run package:win:ci
+          # Flavored desktop edition — the shipped product (guided first-run
+          # wizard, full-screen app boot, "Choose your experience" installer
+          # page). The unflavored package:win:ci build boots into the console
+          # and must not be released as AlloFlow Desktop.
+          npm run package:desktop:win
       - name: Drill packaged Windows app layouts
         working-directory: desktop
         run: npm run verify:package-layout:win
@@ -180,7 +184,8 @@ jobs:
           # Missing secrets arrive as EMPTY env vars; electron-builder treats an
           # empty CSC_LINK as a real path and dies with "<projectDir> not a file".
           if [ -z "$CSC_LINK" ]; then unset CSC_LINK CSC_KEY_PASSWORD; fi
-          npm run package:mac:ci
+          # Flavored desktop edition — see the Windows job note.
+          npm run package:desktop:mac
       - name: Drill packaged macOS app layouts
         working-directory: desktop
         run: npm run verify:package-layout:mac

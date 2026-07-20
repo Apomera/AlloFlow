@@ -838,3 +838,380 @@ body.app-focus-mode .focus-exit:focus-visible::before {
   font-size: 11px;
   padding: 4px 9px;
 }
+
+/* ── Build editions (teacher | admin) ──────────────────────────────────────
+   Teacher: the console lives behind the ⚙ gear while the app view is
+   full-bleed; the gear docks just below the exit handle and shares all its
+   auto-hide behavior (.focus-exit rules above).
+   Admin: the "teachers connect here" banner is the school-server front door. */
+body.app-focus-mode .focus-gear {
+  top: calc(50% + 88px);
+}
+
+.admin-connect-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 18px;
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(31, 122, 90, 0.45);
+  background: rgba(31, 122, 90, 0.08);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.admin-connect-banner.hidden {
+  display: none;
+}
+
+.admin-connect-main,
+.admin-connect-pin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+#admin-connect-urls {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+#admin-connect-pin {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  background: rgba(31, 122, 90, 0.16);
+}
+
+.admin-connect-state {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* ── First-run setup wizard ─────────────────────────────────────────────────
+   Self-contained styles: the app-wide button rules (min-widths, flex rows)
+   overflowed the narrow dialog, so every wizard control is namespaced .wiz-*
+   and sized to stay inside the card at any width. */
+.setup-dialog.wiz {
+  width: min(600px, calc(100vw - 32px));
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.wiz *,
+.wiz *::before,
+.wiz *::after {
+  box-sizing: border-box;
+}
+
+/* The app-wide `button { white-space: nowrap }` rule (upstream) turns the
+   wizard's card buttons into one unwrappable line and overflows the dialog
+   sideways — every wizard button must wrap like prose. */
+.setup-dialog.wiz button {
+  white-space: normal;
+}
+
+.wiz-step {
+  display: grid;
+  gap: 10px;
+}
+
+.wiz-step.hidden {
+  display: none;
+}
+
+.wiz-card {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid rgba(31, 122, 90, 0.4);
+  border-radius: 10px;
+  background: rgba(31, 122, 90, 0.05);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  min-width: 0;
+}
+
+.wiz-card:hover,
+.wiz-card:focus-visible {
+  border-color: rgba(31, 122, 90, 0.95);
+  background: rgba(31, 122, 90, 0.12);
+}
+
+.wiz-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wiz-card-head strong {
+  font-size: 15.5px;
+}
+
+.wiz-badge {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(90, 100, 110, 0.14);
+  color: var(--muted);
+}
+
+.wiz-badge-reco {
+  background: rgba(31, 122, 90, 0.18);
+  color: var(--accent-2);
+}
+
+.wiz-card-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.wiz-card-req {
+  font-size: 11.5px;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.wiz-mini-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.wiz-list {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.wiz-list-plain {
+  list-style: none;
+  padding-left: 2px;
+}
+
+.wiz-list code {
+  background: rgba(31, 122, 90, 0.1);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.wiz-btn-link {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid rgba(31, 122, 90, 0.5);
+  border-radius: 8px;
+  background: rgba(31, 122, 90, 0.1);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.wiz-label {
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+.wiz input[type="password"],
+.wiz input[type="url"],
+.wiz input[type="text"] {
+  width: 100%;
+  min-width: 0;
+}
+
+.wiz-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.wiz-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.wiz-foot > :first-child {
+  margin-right: auto;
+}
+
+.wiz-btn {
+  font: inherit;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.wiz-btn-primary {
+  border-color: rgba(31, 122, 90, 0.9);
+  background: rgba(31, 122, 90, 0.92);
+  color: #fff;
+}
+
+.wiz-btn:hover {
+  border-color: rgba(31, 122, 90, 0.9);
+}
+
+.wiz-link {
+  font: inherit;
+  font-size: 12.5px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.wiz-progress-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(31, 122, 90, 0.14);
+  overflow: hidden;
+}
+
+.wiz-progress-bar > div {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: rgba(31, 122, 90, 0.9);
+  transition: width 400ms ease;
+}
+
+.wiz-progress.hidden {
+  display: none;
+}
+
+.wiz-done {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.wiz-error {
+  color: #b3372f;
+  font-size: 12.5px;
+  min-height: 1em;
+  margin: 6px 0 0;
+}
+
+#wiz-connect-key-wrap.hidden,
+#wiz-connect-use.hidden {
+  display: none;
+}
+
+/* Teacher edition: "Back to App" pinned at the top of the rail */
+.back-to-app {
+  display: none;
+}
+
+body.edition-desktop .back-to-app {
+  display: block;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  width: 100%;
+  border: 1px solid rgba(31, 122, 90, 0.5);
+  border-radius: 10px;
+  background: rgba(31, 122, 90, 0.14);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.edition-desktop .back-to-app:hover {
+  background: rgba(31, 122, 90, 0.24);
+}
+
+/* Admin edition: public address + user roster inside the connect banner */
+.admin-public-url,
+.admin-users {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-public-url input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.admin-users {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-users-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.admin-users-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.admin-users-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(31, 122, 90, 0.07);
+}
+
+.admin-users-list li span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.admin-users-list li code {
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.admin-users-empty {
+  opacity: 0.7;
+  font-size: 12.5px;
+}
+
+.admin-users-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-users-add input {
+  flex: 1;
+  min-width: 180px;
+}

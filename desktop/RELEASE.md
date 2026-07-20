@@ -4,12 +4,12 @@ This file tracks the release path for signed installers, auto-updates, and cross
 
 ## Build Artifacts
 
-Use the combined architecture scripts for release candidates:
+**Ship the flavored desktop edition.** `package:desktop:*` bakes `alloEdition: desktop`, which is what gives users the guided first-run AI wizard, the full-screen app boot (console behind the ⚙ gear / Exit Full Screen), and the installer's "Choose your experience" page including Document remediation. The unflavored `package:win` build keeps pure upstream behavior (boots into the command center console) and must NOT be shipped as AlloFlow Desktop.
 
 ```powershell
 Set-Location desktop
 npm.cmd run verify:release
-npm.cmd run package:win
+npm.cmd run package:desktop:win
 npm.cmd run verify:artifacts:win
 ```
 
@@ -26,11 +26,13 @@ The separate architecture scripts are useful for local testing:
 
 ```powershell
 Set-Location desktop
+npm.cmd run package:desktop:win-x64
+# unflavored upstream-parity builds (dev only, not for release):
 npm.cmd run package:win-arm64
 npm.cmd run package:win-x64
 ```
 
-Release artifacts are written to `desktop/dist/`.
+Desktop artifacts (flavored and unflavored alike) are written to `desktop/dist/`; the Admin Server flavor goes to `desktop/dist/admin/`.
 
 Local `package:win` builds are staged outside synchronized folders to prevent OneDrive or antivirus file locks from truncating a large NSIS executable. The wrapper verifies both packaged architectures, binds each updater entry to its exact SHA-512, and validates the exact SHA-256 manifest before publishing files into `desktop/dist/`. CI uses `package:win:ci` on its clean, non-synchronized runner, then runs `verify:installer:win`: it first requires the ARM64-only installer to reject x64 Windows with exit code 2, then installs and uninstalls the combined setup. The smoke test refuses to run if it detects an existing AlloFlow installation.
 

@@ -3,9 +3,85 @@
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, safeStorage, shell } = require('electron');
+const os = require('os');
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
+
+// ── Build edition ('desktop' | 'admin' | 'remediation' | '' = unflavored) ───
+// Baked at package time by scripts/build-edition.cjs via electron-builder
+// extraMetadata.alloEdition; ALLOFLOW_DESKTOP_EDITION env overrides for dev.
+//   desktop     — boots straight into the web app full-bleed (single teacher).
+//   admin       — school-server posture: boots into the command center and
+//                 auto-starts LAN Share with a required join PIN, so teachers
+//                 reach the app from browsers at http://<server-ip>:32175/app/.
+//   remediation — desktop posture, but the app frame boots into the focused
+//                 document-remediation screen (?mode=remediation) and never
+//                 exposes the full app. Selected during the Windows install
+//                 step (see readInstallEditionChoice below), not a separate
+//                 build.
+// Unflavored builds keep pure upstream behavior.
+const KNOWN_EDITIONS = ['desktop', 'admin', 'remediation'];
+
+// The Windows installer's "Choose your experience" page (build-resources/
+// installer.nsh) writes { "edition": "remediation" | "desktop", "installedAt":
+// "<stamp>" } here on every interactive install. It lives in userData, not
+// $INSTDIR, so auto-updates (which replace the install dir) never reset the
+// choice; a later interactive reinstall rewrites it.
+function readInstallMarker() {
+  try {
+    const markerPath = path.join(app.getPath('userData'), 'desktop-edition.json');
+    return JSON.parse(fs.readFileSync(markerPath, 'utf8')) || {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function readInstallEditionChoice() {
+  const choice = String(readInstallMarker().edition || '').toLowerCase();
+  return KNOWN_EDITIONS.includes(choice) ? choice : '';
+}
+
+// Reinstalling must bring the guided AI setup back (user requirement,
+// 2026-07-16): the installer stamps each interactive install with
+// installedAt, and when that stamp differs from the one recorded in the
+// runtime config we clear setup.completed so the wizard greets again.
+// Silent auto-updates never restamp, so updates stay quiet.
+function ensureFreshInstallSetupReset() {
+  try {
+    const installId = String(readInstallMarker().installedAt || '');
+    if (!installId) return;
+    const config = runtime.readConfig();
+    const setup = config.setup || {};
+    if (String(setup.installId || '') === installId) return;
+    runtime.writeConfig({
+      ...config,
+      setup: { ...setup, completed: false, installId },
+    });
+    logLine('Fresh interactive install detected (' + installId + '): AI setup wizard re-armed.');
+  } catch (error) {
+    logLine('Install-stamp check skipped: ' + (error && error.message ? error.message : error));
+  }
+}
+
+function getEdition() {
+  const fromEnv = String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase();
+  if (KNOWN_EDITIONS.includes(fromEnv)) return fromEnv;
+  // The install-step choice outranks the baked flavor: the desktop installer
+  // bakes alloEdition 'desktop', and the marker is how a user turns that
+  // install into the remediation experience (or back).
+  const fromInstaller = readInstallEditionChoice();
+  if (fromInstaller) return fromInstaller;
+  try {
+    const fromPkg = String(require('../package.json').alloEdition || '').toLowerCase();
+    if (KNOWN_EDITIONS.includes(fromPkg)) return fromPkg;
+  } catch (_) {}
+  return '';
+}
+const DESKTOP_EDITION = getEdition();
+// Expose to the runtime (it reports the edition in /api/health so the command
+// center can adapt its boot view without a new IPC surface).
+if (DESKTOP_EDITION) process.env.ALLOFLOW_DESKTOP_EDITION = DESKTOP_EDITION;
 
 let autoUpdater = null;
 let electronLog = null;
@@ -445,6 +521,10 @@ function createMainWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      // Run the preload in the same-origin #app-frame iframe too, so the web
+      // app sees window.alloAPI (save-to-folder bridge). IPC handlers still
+      // verify the sender frame's origin via assertTrustedIpcSender.
+      nodeIntegrationInSubFrames: true,
     },
   });
 
@@ -457,6 +537,12 @@ function createMainWindow() {
   mainWindow.on('leave-full-screen', () => notifyFullScreenChange(false));
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // In-app popup views (accessibility reports, print previews, export
+    // windows) open via window.open with about:blank/blob:/data: URLs —
+    // allow those as child windows; real external links open in the browser.
+    if (url === 'about:blank' || url.startsWith('blob:') || url.startsWith('data:')) {
+      return { action: 'allow' };
+    }
     openExternalIfSafe(url);
     return { action: 'deny' };
   });
@@ -566,14 +652,157 @@ handleTrustedIpc('alloflow-desktop:is-full-screen', async () => (
   mainWindow ? mainWindow.isFullScreen() : false
 ));
 
+// ── Save remediated documents to a local folder ─────────────────────────────
+// Ported from the AlloFlow Admin app (the doc pipeline's batch export checks
+// window.alloAPI.remediation.saveFiles and prefers a folder of files over a
+// browser ZIP download when the bridge exists — see doc_pipeline_source.jsx).
+// payload = { folderName?: string, files: [{ name, data, encoding: 'base64'|'utf8' }] }
+// Returns { canceled } | { folder, saved } | { error }.
+handleTrustedIpc('remediation:save-files', async (_event, payload) => {
+  try {
+    const files = (payload && Array.isArray(payload.files)) ? payload.files : [];
+    if (files.length === 0) return { error: 'No files to save' };
+
+    const result = await dialog.showOpenDialog(mainWindow, {
+      defaultPath: os.homedir(),
+      properties: ['openDirectory', 'createDirectory'],
+      title: 'Choose where to save the files',
+      buttonLabel: 'Save Here',
+    });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+    const rawName = (payload && payload.folderName) || 'AlloFlow_Export';
+    const folderName = String(rawName).replace(/[\\/:*?"<>|]/g, '_').slice(0, 120) || 'AlloFlow_Export';
+    const baseDir = path.join(result.filePaths[0], folderName);
+    fs.mkdirSync(baseDir, { recursive: true });
+
+    let saved = 0;
+    for (const f of files) {
+      if (!f || !f.name || typeof f.data !== 'string') continue;
+      const safe = String(f.name).replace(/[\\/:*?"<>|]/g, '_');
+      const buf = f.encoding === 'utf8' ? Buffer.from(f.data, 'utf8') : Buffer.from(f.data, 'base64');
+      fs.writeFileSync(path.join(baseDir, safe), buf);
+      saved++;
+    }
+
+    logLine(`Saved ${saved} file(s) to ${baseDir}`);
+    return { canceled: false, folder: baseDir, saved };
+  } catch (error) {
+    return { error: String((error && error.message) || error) };
+  }
+});
+
+// Reveal a saved folder/file in the OS file manager.
+handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
+  try {
+    if (typeof targetPath !== 'string' || !fs.existsSync(targetPath)) {
+      return { error: 'Path not found' };
+    }
+    await shell.openPath(targetPath);
+    return { success: true };
+  } catch (error) {
+    return { error: String((error && error.message) || error) };
+  }
+});
+
+// ── Remediation folder ingestion (ported from the AlloFlow Admin app) ──────
+// Powers the batch screen's "Scan Folder" button (view_pdf_audit_source.jsx
+// gates it on window.alloAPI.remediation.selectFolder). Returns file metadata
+// only — contents are fetched on demand via remediation:read-file-base64 to
+// keep the IPC payload small.
+const REMEDIATION_EXTS = new Set(['.pdf', '.docx', '.pptx']);
+
+handleTrustedIpc('remediation:select-folder', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      defaultPath: os.homedir(),
+      properties: ['openDirectory'],
+      title: 'Choose a folder of documents to remediate',
+    });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+
+    const root = result.filePaths[0];
+    const files = [];
+    const MAX_FILES = 1000; // safety cap
+
+    const walk = (dir) => {
+      if (files.length >= MAX_FILES) return;
+      let entries;
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+      catch { return; }
+      for (const entry of entries) {
+        if (files.length >= MAX_FILES) break;
+        if (entry.name.startsWith('.')) continue; // skip hidden / dotfiles
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === 'node_modules') continue;
+          walk(full);
+        } else if (entry.isFile() && REMEDIATION_EXTS.has(path.extname(entry.name).toLowerCase())) {
+          let sizeBytes = 0;
+          try { sizeBytes = fs.statSync(full).size; } catch (_) {}
+          files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes });
+        }
+      }
+    };
+    walk(root);
+
+    logLine(`remediation:select-folder ${root} -> ${files.length} document(s)`);
+    return { canceled: false, root, files };
+  } catch (error) {
+    return { canceled: true, error: String((error && error.message) || error) };
+  }
+});
+
+// Read one document (by absolute path) and return its base64 contents on
+// demand. Only paths with remediation-supported extensions are served — the
+// renderer never gets a generic read-any-file primitive from this bridge.
+handleTrustedIpc('remediation:read-file-base64', async (_event, filePath) => {
+  try {
+    if (typeof filePath !== 'string' || !REMEDIATION_EXTS.has(path.extname(filePath).toLowerCase()) || !fs.existsSync(filePath)) {
+      return { error: 'File not found' };
+    }
+    const buf = fs.readFileSync(filePath);
+    return { base64: buf.toString('base64'), sizeBytes: buf.length };
+  } catch (error) {
+    return { error: String((error && error.message) || error) };
+  }
+});
+
+// Admin edition: the server is only useful when teachers can reach it, so LAN
+// Share auto-starts at boot — and never without a join PIN. If no PIN is set,
+// generate a 6-digit one and persist it (shown in the command center banner).
+async function ensureAdminServerPosture() {
+  if (DESKTOP_EDITION !== 'admin') return;
+  try {
+    let config = runtime.readConfig();
+    const lan = (config.liveSession && config.liveSession.lan) || {};
+    if (!String(lan.pin || '').trim()) {
+      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      config = runtime.writeConfig({
+        ...config,
+        liveSession: { ...config.liveSession, lan: { ...lan, pin } },
+      });
+      logLine('Admin edition: generated LAN join PIN (shown in the command center).');
+    }
+    const status = await runtime.startLanShare(config);
+    const urls = (status && status.appUrls) || [];
+    logLine('Admin edition: LAN Share started — teachers connect at ' + (urls.join(' | ') || '(no LAN address detected)'));
+  } catch (error) {
+    // Non-fatal: the command center still shows LAN Share controls for manual start.
+    logLine('Admin edition: LAN Share autostart failed: ' + (error && error.message ? error.message : error));
+  }
+}
+
 app.whenReady().then(async () => {
   configureDesktopSecretStorage();
   runtime.configurePrivateApiToken(PRIVATE_API_TOKEN);
   prepareDesktopRuntimeHome();
-  logLine('Launching AlloFlow Desktop');
+  ensureFreshInstallSetupReset();
+  logLine('Launching AlloFlow Desktop' + (DESKTOP_EDITION ? ` (${DESKTOP_EDITION} edition)` : ''));
   logLine('Runtime data dir: ' + runtime.getDataDir());
   await ensureRuntime();
   await autoStartAlloFlowApp();
+  await ensureAdminServerPosture();
   configureUpdates();
   createMainWindow();
 

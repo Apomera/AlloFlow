@@ -202,6 +202,13 @@ const LIVE_SESSION_MODES = {
 
 const DEFAULT_CONFIG = {
   version: 1,
+  // School-server user roster (admin edition). Each user gets their own join
+  // PIN, accepted by the LAN share gate alongside the master lan.pin. Records
+  // carry source/externalId so a roster sync (e.g. Google Classroom) can
+  // populate them later without a schema change:
+  //   { id, name, pin, role: 'teacher', source: 'manual'|'google-classroom',
+  //     externalId: null, createdAt }
+  users: [],
   appUrl: process.env.ALLOFLOW_APP_URL || 'http://localhost:3000',
   app: {
     mode: process.env.ALLOFLOW_DESKTOP_APP_MODE || 'auto',
@@ -214,6 +221,15 @@ const DEFAULT_CONFIG = {
     startupTimeoutMs: 30000,
   },
   selectedProvider: 'gemini',
+  // First-run guided AI setup. completed flips to true when the user finishes
+  // (or explicitly saves a provider); until then the command center shows the
+  // setup wizard on every launch — even if a leftover config points at a
+  // keyless provider such as LM Studio (field-caught 2026-07-16: an uninstall
+  // leaves this config behind, and a stale lmstudio selection silently
+  // suppressed the wizard for reinstalls).
+  setup: {
+    completed: false,
+  },
   providers: Object.fromEntries(PROVIDER_PRESETS.map((provider) => [
     provider.id,
     { baseUrl: provider.baseUrl, enabled: true },
@@ -275,7 +291,15 @@ const DEFAULT_CONFIG = {
       // Optional classroom join PIN. Empty = no PIN. Latched when LAN sharing
       // starts (change the PIN, then restart sharing to apply). Gates the
       // public join page and the student-safe session read/patch endpoints.
+      // Per-user PINs (config.users) are also accepted, and are read live —
+      // adding a user does not require restarting the share.
       pin: '',
+      // Optional public address for server deployments behind a domain /
+      // reverse proxy (e.g. "https://alloflow.myschool.org"). Display-level:
+      // the admin console shows it as the primary connect URL. Actual external
+      // exposure is done by pointing the proxy (Caddy/nginx/Cloudflare Tunnel)
+      // at the LAN share port; this server does not validate Host headers.
+      publicUrl: '',
     },
     firebase: {
       projectId: '',
@@ -594,7 +618,7 @@ function assertAllowedObject(source, allowedKeys, label) {
 
 function sanitizeConfigPatch(input) {
   if (!isPlainObject(input)) throw new Error('Configuration changes must be an object.');
-  const allowedTopLevel = ['appUrl', 'selectedProvider', 'providers', 'localEngine', 'updates', 'liveSession', 'schoolBox'];
+  const allowedTopLevel = ['appUrl', 'selectedProvider', 'providers', 'localEngine', 'updates', 'liveSession', 'schoolBox', 'setup'];
   const unknownTopLevel = Object.keys(input).filter((key) => !allowedTopLevel.includes(key));
   if (unknownTopLevel.length) throw new Error('Unsupported config field: ' + unknownTopLevel[0] + '.');
   const patch = {};
@@ -648,6 +672,11 @@ function sanitizeConfigPatch(input) {
     assertAllowedObject(input.updates, ['channel'], 'updates');
     if (!['latest', 'beta'].includes(input.updates.channel)) throw new Error('Unknown update channel.');
     patch.updates = { channel: input.updates.channel };
+  }
+  if (Object.prototype.hasOwnProperty.call(input, 'setup')) {
+    assertAllowedObject(input.setup, ['completed'], 'setup');
+    if (typeof input.setup.completed !== 'boolean') throw new Error('Setup completed must be true or false.');
+    patch.setup = { completed: input.setup.completed };
   }
   if (Object.prototype.hasOwnProperty.call(input, 'liveSession')) {
     assertAllowedObject(input.liveSession, ['mode', 'requireExplicitCloud', 'lan'], 'live session');
@@ -1362,10 +1391,7 @@ function getActiveLanPin() {
   return managedLanShare.server ? (managedLanShare.pin || '') : '';
 }
 
-function lanPinMatches(givenPin) {
-  const required = getActiveLanPin();
-  if (!required) return true;
-  const given = String(givenPin || '');
+function pinEquals(given, required) {
   try {
     const a = crypto.createHash('sha256').update(given).digest();
     const b = crypto.createHash('sha256').update(required).digest();
@@ -1627,6 +1653,25 @@ function validateParticipantLanUpdates(updates, auth) {
   return updates;
 }
 
+
+function lanPinMatches(givenPin) {
+  const required = getActiveLanPin();
+  if (!required) return true;
+  const given = String(givenPin || '');
+  if (pinEquals(given, required)) return true;
+  // Per-user PINs (school-server roster) are read live from config so a user
+  // added in the admin console can join without restarting the share. Every
+  // candidate is compared (no early exit) to keep timing uniform.
+  let matched = false;
+  try {
+    const users = readConfig().users || [];
+    for (const user of users) {
+      const pin = String((user && user.pin) || '');
+      if (pin && pinEquals(given, pin)) matched = true;
+    }
+  } catch (_) {}
+  return matched;
+}
 
 function getLanShareStatus(config = readConfig(), origin = getDefaultRuntimeOrigin()) {
   const shareConfig = getLanShareConfig(config);
@@ -4254,6 +4299,11 @@ async function handleApi(req, res, url) {
       name: 'AlloFlow Desktop Runtime',
       version: VERSION,
       status: 'ok',
+      // Build edition ('desktop' | 'admin' | 'remediation' | '') — set by
+      // electron/main.cjs (baked extraMetadata.alloEdition, or the installer's
+      // "Choose your experience" marker); the command center adapts its boot
+      // view to it.
+      edition: String(process.env.ALLOFLOW_DESKTOP_EDITION || '').toLowerCase(),
       privateApiAuth: privateApiToken ? 'launch-token' : 'development-unlocked',
       appUrl: getAppUrl(config, origin),
       appReachable: appProbe.reachable,
@@ -4379,6 +4429,58 @@ async function handleApi(req, res, url) {
     }
     const saved = writeConfig(next);
     jsonResponse(res, 200, redactConfig(saved));
+    return;
+  }
+
+  // ── School-server user roster (admin edition) ─────────────────────────────
+  // Private (loopback-only) API: the admin console manages users whose PINs
+  // the LAN share gate accepts. source/externalId leave room for a Google
+  // Classroom roster sync later. PINs are visible here by design — this API is
+  // only reachable from the admin machine, and the console must display them.
+  if (req.method === 'GET' && url.pathname === '/api/users') {
+    jsonResponse(res, 200, { users: config.users || [] });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/users') {
+    const body = await readRequestJson(req);
+    const name = String((body && body.name) || '').trim().slice(0, 80);
+    if (!name) {
+      jsonResponse(res, 400, { error: 'A user name is required.' });
+      return;
+    }
+    const users = Array.isArray(config.users) ? [...config.users] : [];
+    const taken = new Set(users.map((user) => String((user && user.pin) || '')));
+    taken.add(String((((config.liveSession || {}).lan) || {}).pin || ''));
+    let pin = '';
+    for (let attempt = 0; attempt < 50 && !pin; attempt++) {
+      const candidate = String(crypto.randomInt(100000, 1000000));
+      if (!taken.has(candidate)) pin = candidate;
+    }
+    if (!pin) {
+      jsonResponse(res, 500, { error: 'Could not generate a unique PIN.' });
+      return;
+    }
+    const user = {
+      id: crypto.randomUUID(),
+      name,
+      pin,
+      role: String((body && body.role) || 'teacher'),
+      source: 'manual',
+      externalId: null,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(user);
+    writeConfig({ ...config, users });
+    jsonResponse(res, 200, { user, users });
+    return;
+  }
+
+  if (req.method === 'DELETE' && url.pathname.startsWith('/api/users/')) {
+    const userId = decodeURIComponent(url.pathname.replace('/api/users/', ''));
+    const users = (Array.isArray(config.users) ? config.users : []).filter((user) => user && user.id !== userId);
+    writeConfig({ ...config, users });
+    jsonResponse(res, 200, { users });
     return;
   }
 

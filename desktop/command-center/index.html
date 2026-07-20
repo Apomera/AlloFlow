@@ -17,6 +17,10 @@
           <small>Desktop</small>
         </span>
       </div>
+      <!-- Teacher edition only (CSS-gated on body.edition-teacher): after the
+           gear drops a teacher into the console, this is the obvious way home —
+           returns to the full-bleed app view. -->
+      <button id="back-to-app" class="back-to-app" type="button">◀ Back to App</button>
       <nav class="tabs" aria-label="Command center"><div role="tablist" aria-label="Desktop sections">
         <button class="tab active" id="tab-app" data-tab="app" type="button" role="tab" aria-controls="pane-app" aria-selected="true" tabindex="0">App</button>
         <button class="tab" id="tab-ai" data-tab="ai" type="button" role="tab" aria-controls="pane-ai" aria-selected="false" tabindex="-1">AI</button>
@@ -43,6 +47,43 @@
             <button id="toggle-app-focus" type="button" aria-pressed="false">Full Screen</button>
           </div>
         </header>
+        <!-- Admin edition only (hidden otherwise): the school-server "front door".
+             Shows the LAN URL teachers open in their browsers plus the join PIN
+             that gates it. Populated by renderAdminConnectBanner(). -->
+        <section class="panel admin-connect-banner hidden" id="admin-connect-banner" aria-label="Teacher access">
+          <div class="admin-connect-main">
+            <strong>Teachers connect at:</strong>
+            <span id="admin-connect-urls">—</span>
+          </div>
+          <div class="admin-connect-pin">
+            <strong>Admin PIN:</strong>
+            <code id="admin-connect-pin">—</code>
+            <span id="admin-connect-state" class="admin-connect-state">checking…</span>
+          </div>
+          <!-- Server deployments behind a domain / reverse proxy: display-level
+               address teachers are told to use. Point the proxy at the LAN
+               share port (default 32175); no Host restrictions apply. -->
+          <div class="admin-public-url">
+            <label for="admin-public-url-input"><strong>Public address (optional):</strong></label>
+            <input id="admin-public-url-input" type="url" placeholder="https://alloflow.yourschool.org">
+            <button id="admin-public-url-save" type="button">Save</button>
+          </div>
+          <!-- User roster: each user gets a personal join PIN accepted by the
+               LAN gate. source/externalId fields already exist on records so a
+               Google Classroom sync can populate this list later. -->
+          <div class="admin-users">
+            <div class="admin-users-head">
+              <strong>Users</strong>
+              <span class="admin-connect-state">each user signs in with their own PIN</span>
+            </div>
+            <ul id="admin-users-list" class="admin-users-list"></ul>
+            <div class="admin-users-add">
+              <input id="admin-user-name" type="text" placeholder="Name (e.g. Ms. Rivera)" maxlength="80">
+              <button id="admin-user-add" type="button">Add User</button>
+              <button id="admin-users-import-classroom" type="button" disabled title="Roster sync from Google Classroom is planned — user records already carry the fields it needs.">Import from Google Classroom (soon)</button>
+            </div>
+          </div>
+        </section>
         <!-- Setup Health: one glance answers "is this machine actually ready?"
              Field-test lesson (0.2.0â€“0.2.2): every failure so far LOOKED like
              silence â€” engine unused, voice falling back, images impossible â€”
@@ -382,23 +423,135 @@
   </div>
 
   <button id="exit-app-focus" class="focus-exit" type="button">Exit Full Screen</button>
+  <!-- Teacher edition: the console lives behind this gear. Same auto-hide
+       visibility rules as the exit control (see .focus-exit CSS). -->
+  <button id="focus-settings-gear" class="focus-exit focus-gear" type="button" aria-label="Open settings">⚙ Settings</button>
 
-  <div class="setup-modal hidden" id="api-key-setup" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
-    <section class="setup-dialog">
-      <header>
-        <span class="setup-kicker">First Run</span>
-        <h2 id="api-key-title">Connect Gemini</h2>
-        <p id="api-key-copy">Add your API key to enable cloud AI features in this desktop copy.</p>
+  <!-- ── First-run setup wizard ──────────────────────────────────────────────
+       Multi-step, self-contained (own .wiz-* CSS — app-wide button styles were
+       overflowing the old 460px dialog). Walks a non-technical user through
+       every AI option the app supports: Gemini (cloud), the built-in local
+       engine (with live download progress), LM Studio / Ollama / LocalAI, and
+       a custom endpoint — including hardware requirements for local options.
+       Driven by wizardGo()/handlers in command-center.js. -->
+  <div class="setup-modal hidden" id="api-key-setup" role="dialog" aria-modal="true" aria-labelledby="wiz-title">
+    <section class="setup-dialog wiz">
+      <header class="wiz-head">
+        <span class="setup-kicker" id="wiz-kicker">First-time setup</span>
+        <h2 id="wiz-title">Choose your AI</h2>
+        <p id="wiz-copy">AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work — you can change this any time under ⚙ Settings → AI.</p>
       </header>
-      <label for="setup-provider-select">Provider</label>
-      <select id="setup-provider-select"></select>
-      <label for="setup-api-key">API key</label>
-      <input id="setup-api-key" type="password" autocomplete="off" placeholder="Paste key">
-      <div class="button-row setup-actions">
-        <button id="setup-save-key" class="primary" type="button">Save Key</button>
-        <button id="setup-later" type="button">Later</button>
+
+      <!-- Step: choose -->
+      <div class="wiz-step" data-wizard-step="choose">
+        <button class="wiz-card" type="button" data-wiz-go="gemini">
+          <span class="wiz-card-head"><strong>☁️ Google Gemini</strong><em class="wiz-badge wiz-badge-reco">Recommended</em></span>
+          <span class="wiz-card-body">Best quality and speed. The AI runs in Google's cloud with a <strong>free key</strong> — we'll walk you through getting one (about 2 minutes).</span>
+          <span class="wiz-card-req">Works on any computer · needs internet</span>
+        </button>
+        <button class="wiz-card" type="button" data-wiz-go="builtin">
+          <span class="wiz-card-head"><strong>🔒 Built-in private AI</strong><em class="wiz-badge">Most private</em></span>
+          <span class="wiz-card-body">Everything stays on this computer — no account, no internet needed after setup. One click downloads a starter AI model.</span>
+          <span class="wiz-card-req">Needs: 8 GB+ memory recommended · ~2.5 GB disk · one-time download</span>
+        </button>
+        <button class="wiz-card" type="button" data-wiz-go="connect">
+          <span class="wiz-card-head"><strong>🔌 An AI app I already run</strong></span>
+          <span class="wiz-card-body">Already use LM Studio, Ollama, or LocalAI on this computer? Connect it.</span>
+          <span class="wiz-card-req">For users who have set up local AI software before</span>
+        </button>
+        <div class="wiz-foot">
+          <button class="wiz-link" id="wiz-later" type="button">Skip for now — I'll set this up later</button>
+        </div>
       </div>
-      <p id="setup-result" class="inline-status" aria-live="polite"></p>
+
+      <!-- Step: gemini -->
+      <div class="wiz-step hidden" data-wizard-step="gemini">
+        <ol class="wiz-list">
+          <li><a class="wiz-btn-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Open Google AI Studio ↗</a> — it opens in your web browser.</li>
+          <li>Sign in with any Google account (a school or personal Gmail both work).</li>
+          <li>Click <strong>“Create API key”</strong>, then click the <strong>copy</strong> button next to the new key.</li>
+          <li>Come back here and paste it below.</li>
+        </ol>
+        <label class="wiz-label" for="wiz-gemini-key">Your API key</label>
+        <input id="wiz-gemini-key" type="password" autocomplete="off" placeholder="Paste the key here (starts with AIza…)">
+        <p class="wiz-note">The key is stored only on this computer, in protected storage. The free tier is enough for everyday classroom use.</p>
+        <div class="wiz-foot">
+          <button class="wiz-btn" type="button" data-wiz-go="choose">◀ Back</button>
+          <button class="wiz-btn wiz-btn-primary" id="wiz-gemini-save" type="button">Save key & finish</button>
+        </div>
+      </div>
+
+      <!-- Step: builtin -->
+      <div class="wiz-step hidden" data-wizard-step="builtin">
+        <ul class="wiz-list wiz-list-plain">
+          <li>✅ <strong>Private:</strong> lessons and student text never leave this computer.</li>
+          <li>📥 <strong>One-time download:</strong> a starter AI model (Qwen 2.5, about 2 GB). Keep the app open until it finishes.</li>
+          <li>🖥️ <strong>Hardware:</strong> works best with 8 GB+ memory and ~2.5 GB free disk space. On older computers it runs, just more slowly.</li>
+          <li>⏱️ <strong>Speed:</strong> answers take a bit longer than cloud AI — that's the privacy trade.</li>
+        </ul>
+        <p class="wiz-note" id="wiz-builtin-hw"></p>
+        <div class="wiz-progress hidden" id="wiz-builtin-progress">
+          <div class="wiz-progress-bar"><div id="wiz-builtin-bar"></div></div>
+          <p class="wiz-note" id="wiz-builtin-status">Starting…</p>
+        </div>
+        <div class="wiz-foot">
+          <button class="wiz-btn" type="button" data-wiz-go="choose">◀ Back</button>
+          <button class="wiz-btn wiz-btn-primary" id="wiz-builtin-start" type="button">Download & turn on</button>
+        </div>
+      </div>
+
+      <!-- Step: connect (existing local AI apps + custom endpoint) -->
+      <div class="wiz-step hidden" data-wizard-step="connect">
+        <div class="wiz-mini-cards" id="wiz-connect-apps">
+          <button class="wiz-card wiz-card-mini" type="button" data-wiz-app="lmstudio">
+            <span class="wiz-card-head"><strong>LM Studio</strong></span>
+            <span class="wiz-card-body">Friendly desktop app with a built-in model store.</span>
+          </button>
+          <button class="wiz-card wiz-card-mini" type="button" data-wiz-app="ollama">
+            <span class="wiz-card-head"><strong>Ollama</strong></span>
+            <span class="wiz-card-body">Popular command-line model runner.</span>
+          </button>
+          <button class="wiz-card wiz-card-mini" type="button" data-wiz-app="localai">
+            <span class="wiz-card-head"><strong>LocalAI</strong></span>
+            <span class="wiz-card-body">Self-hosted OpenAI-compatible server.</span>
+          </button>
+          <button class="wiz-card wiz-card-mini" type="button" data-wiz-app="custom">
+            <span class="wiz-card-head"><strong>Custom endpoint</strong></span>
+            <span class="wiz-card-body">Any other OpenAI-compatible address.</span>
+          </button>
+        </div>
+        <div class="wiz-foot">
+          <button class="wiz-btn" type="button" data-wiz-go="choose">◀ Back</button>
+        </div>
+      </div>
+
+      <!-- Step: connect-detail (filled by JS for the picked app) -->
+      <div class="wiz-step hidden" data-wizard-step="connect-detail">
+        <ol class="wiz-list" id="wiz-connect-steps"></ol>
+        <label class="wiz-label" for="wiz-connect-url">Server address</label>
+        <input id="wiz-connect-url" type="url" autocomplete="off">
+        <div id="wiz-connect-key-wrap" class="hidden">
+          <label class="wiz-label" for="wiz-connect-key">API key (only if your server needs one)</label>
+          <input id="wiz-connect-key" type="password" autocomplete="off" placeholder="Optional">
+        </div>
+        <p class="wiz-note" id="wiz-connect-result" aria-live="polite"></p>
+        <div class="wiz-foot">
+          <button class="wiz-btn" type="button" data-wiz-go="connect">◀ Back</button>
+          <button class="wiz-btn" id="wiz-connect-test" type="button">Test connection</button>
+          <button class="wiz-btn wiz-btn-primary hidden" id="wiz-connect-use" type="button">Use this AI</button>
+        </div>
+      </div>
+
+      <!-- Step: done -->
+      <div class="wiz-step hidden" data-wizard-step="done">
+        <p class="wiz-done" id="wiz-done-msg">✅ You're all set.</p>
+        <p class="wiz-note">You can switch AI engines any time under ⚙ Settings → AI.</p>
+        <div class="wiz-foot">
+          <button class="wiz-btn wiz-btn-primary" id="wiz-finish" type="button">Start using AlloFlow</button>
+        </div>
+      </div>
+
+      <p id="wiz-error" class="wiz-error" aria-live="polite"></p>
     </section>
   </div>
 

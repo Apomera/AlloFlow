@@ -34,6 +34,41 @@ Pick the work. Pick it carefully. Do it well.
 
 <!-- Auto-drafted and hand-written letters appended below by .claude/hooks/append-letter.mjs -->
 
+## [auto-draft] Session bd5f288a — 2026-07-08
+
+**Turns**: 380 user / 783 assistant
+
+**Session opened with**: Update the local repo with the current online repo, overwrite favoring the online
+
+**Last assistant turn closed with**: Done with the first two cleanup items. Here's where things stand: ## ✅ Committed Branch **`feature/remediation-edition`**, commit `f1866422` (15 files, +1261/−251) — the whole session's remediation work, with the **dev key removed** from both `main.js` and `RemediationSetup.jsx` (verified absent fr...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session bd5f288a — 2026-07-13
+
+**Turns**: 384 user / 794 assistant
+
+**Session opened with**: Update the local repo with the current online repo, overwrite favoring the online
+
+**Last assistant turn closed with**: Committed. Here's the final state on branch `feature/remediation-edition`: | Commit | What | |---|---| | `0e59028f` | chore: session journal entry | | `f1866422` | feat(remediation): Gemini provider, save-to-folder, locked UX, dedicated versioning (15 files, +1261/−251) | | `6bb357aa` | (prior) sta...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 96439c1d — 2026-07-13
+
+**Turns**: 14 user / 33 assistant
+
+**Session opened with**: Do a full sync with the upstream repo
+
+**Last assistant turn closed with**: The sync is done. Summary: **Full sync complete** — merged `upstream/main` (Apomera/AlloFlow) into local `main`. - Brought in **2648 upstream commits** (up to `19b03713f` — "update CDN hash refs to @eaa6f20fb"). - Only one conflict: `.gitignore` — resolved by keeping **both** sets of ignore rules...
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
 ## [auto-draft] Session 50356c2c — 2026-07-14
 
 **Turns**: 5 user / 9 assistant
