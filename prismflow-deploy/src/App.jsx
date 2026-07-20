@@ -3297,6 +3297,16 @@ const TEACHER_ONLY_TYPES = [
     'persona-session',
     'persona-session-read-aloud'
 ];
+// ONE student-safe candidate rule for every live-session content channel
+// (SessionTransport stage 1). The Firebase resources sync used to send every
+// resource with an id — teacher-only types included, merely hidden
+// client-side — while the mailbox pack excluded them entirely. All channels
+// now share this rule (module-backed, inline fallback identical).
+const _alloStudentSafeResources = (items) => {
+    const ST = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
+    if (ST && typeof ST.studentSafeResources === 'function') return ST.studentSafeResources(items, TEACHER_ONLY_TYPES);
+    return (Array.isArray(items) ? items : []).filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type));
+};
 // ── Directions objectives (Phase 1, 2026-07-19) — pure helpers ─────────────
 // Backward-compatible: directions.data is a legacy markdown STRING or
 // { body, objectives[] }. One normalizer for every reader; one pure evaluator
@@ -8752,6 +8762,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    // Unified live-session content channel (SessionTransport stage 1).
+    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=7342b6c3');
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
@@ -16444,7 +16456,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [mbLive, mbConfig]);
   const pushResourceToMailbox = useCallback(async (targetItem, opts = {}) => {
       if (!mbLive || !mbConfig?.url) return;
-      const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+      const candidates = _alloStudentSafeResources(history);
       const item = (targetItem && targetItem.id && !TEACHER_ONLY_TYPES.includes(targetItem.type))
           ? targetItem
           : ((generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type))
@@ -16471,7 +16483,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // to explore freely (delivered quietly, without yanking anyone's view).
   const shareFullPackToMailbox = useCallback(async () => {
       if (!mbLive || !mbConfig?.url) return;
-      const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+      const candidates = _alloStudentSafeResources(history);
       if (!candidates.length) {
           addToast('No student-safe resources to share yet.', 'info');
           return;
@@ -16516,7 +16528,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       try {
           const plan = (Array.isArray(history) ? history : []).slice().reverse().find(h => h && h.type === 'lesson-plan');
           const planText = plan ? String(typeof plan.data === 'string' ? plan.data : JSON.stringify(plan.data || '')).slice(0, 8000) : '';
-          const packItems = (Array.isArray(history) ? history : []).filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type));
+          const packItems = _alloStudentSafeResources(history).filter(h => h.type !== 'directions');
           // Context widening (Aaron 2026-07-19): each STUDENT-SAFE resource contributes a short
           // plain-text excerpt (tags stripped, ~250 chars, ~6k total budget) so drafts can say
           // what the activities actually contain — teacher-only items still contribute NOTHING.
@@ -16563,7 +16575,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [history, directionsDeriving, addToast, t]);
   const sendPackHome = useCallback(async () => {
       if (!mbLive || !mbConfig?.url) return;
-      const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+      const candidates = _alloStudentSafeResources(history);
       if (!candidates.length) { addToast(t('takehome.nothing_to_send') || 'Nothing student-safe to send home yet — create or share a resource first.', 'info'); return; }
       setMbBusy(true);
       try {
@@ -16585,7 +16597,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!mbLive || !isTeacherMode || !mbConfig?.url) return undefined;
       const timeoutId = setTimeout(async () => {
           try {
-              const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+              const candidates = _alloStudentSafeResources(history);
               mbPackItemsRef.current = candidates;
               const seen = mbSentPacksRef.current;
               const currentIds = new Set(candidates.map(item => item.id));
@@ -16820,7 +16832,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // Shared packet builder for both self-contained links and mailbox hosting.
   const buildAssignmentPackEncoded = useCallback(async () => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
-      const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
+      const resourceCandidates = _alloStudentSafeResources(history);
       const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
       if (!resourcesToAssign.length) {
           addToast('Create or restore a teacher resource before making a homework link.', 'info');
@@ -17056,7 +17068,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [addToast]);
   const createHomeworkAssignmentLink = useCallback(async () => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
-      const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
+      const resourceCandidates = _alloStudentSafeResources(history);
       const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
       if (!resourcesToAssign.length) {
           addToast('Create or restore a teacher resource before making a homework QR.', 'info');
@@ -26246,7 +26258,26 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (!activeSessionCode || !isTeacherMode || history.length === 0) return;
       const syncResourcesToSession = async () => {
           try {
-              const resourcesToUpload = history.filter(h => h.id);
+              // Unified content channel (SessionTransport stage 1): the SAME
+              // student-safe candidate rule as the mailbox pack. Teacher-only
+              // types (lesson plans, analyses, persona records) no longer sync
+              // to the session doc AT ALL — they used to ride along hidden.
+              const ST = window.AlloModules && window.AlloModules.SessionTransport;
+              if (ST && typeof ST.createFirebaseTransport === 'function') {
+                  const transport = ST.createFirebaseTransport({
+                      teacherOnlyTypes: TEACHER_ONLY_TYPES,
+                      uploadAssets: (items) => uploadSessionAssets(appId, items, activeSessionCode),
+                      prepareResources: (items) => prepareSessionResourcesForWrite(items),
+                      write: (payload) => writeToSession(doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode), payload),
+                      policy: () => ({ studentAi: studentAiPolicyForShare }),
+                      onTrimmed: () => addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info'),
+                  });
+                  const result = await transport.publishResources(history);
+                  debugLog("Session resources synced:", result.kept, "of", result.candidates, "bytes", result.bytes);
+                  return;
+              }
+              // Module-not-loaded fallback: identical behavior, inline.
+              const resourcesToUpload = _alloStudentSafeResources(history);
               const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, activeSessionCode);
               const prepared = prepareSessionResourcesForWrite(lightweightResources);
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);

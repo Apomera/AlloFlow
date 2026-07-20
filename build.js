@@ -260,6 +260,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'SessionTransportModule',
+        filename: 'session_transport_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ReadAloudAudioServiceModule',
         filename: 'read_aloud_audio_service_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1728,6 +1733,7 @@ const CONTENT_HASH_PINNED = new Set([
     'view_socratic_chat_module.js',
     'karaoke_audio_store_module.js',
     'word_timing_module.js',
+    'session_transport_module.js',
     // tts + phase_k joined 2026-07-20: the karaoke resilience gate asserts
     // content-hash pins for the whole read-aloud runtime, but every deploy
     // restamped these two to the git hash and re-broke the gate.
