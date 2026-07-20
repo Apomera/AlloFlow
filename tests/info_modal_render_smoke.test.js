@@ -70,8 +70,10 @@ describe('Info modal executable render smoke', () => {
       const rendered = JSON.stringify(tree);
       expect(rendered).toContain('Feature Guide');
       expect(rendered).toContain('Search guided workflows');
-      expect(rendered).toContain('120 current STEM catalog entries');
-      expect(rendered).toContain('69 current SEL catalog entries');
+      // Count-agnostic (2026-07-20): exact counts staled every time a session
+      // registered a tool; the invariant is that LIVE derived counts render.
+      expect(rendered).toMatch(/\d+ current STEM catalog entries/);
+      expect(rendered).toMatch(/\d+ current SEL catalog entries/);
     } finally {
       if (previousReact === undefined) delete host.React;
       else host.React = previousReact;

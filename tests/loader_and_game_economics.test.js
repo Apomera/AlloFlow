@@ -84,8 +84,11 @@ describe('mailbox live-session parity', () => {
     });
 
     it('teacher resource-open auto-follows the mailbox class (sync parity)', () => {
-        expect(anti).toMatch(/Mailbox sync-mode parity/);
-        expect(anti).toMatch(/pushResourceToMailbox\(item, \{ silentTeacher: true \}\)/);
+        // 2026-07-20: follow parity unified into _alloFollowResourceLive
+        // (SessionTransport stage 3) — one helper serves resource-open,
+        // readingBook, manipulative, and navigation follow sites.
+        expect(anti).toMatch(/const _alloFollowResourceLive = \(item, options = \{\}\) => \{/);
+        expect(anti).toMatch(/if \(mbLive && mbMode === 'sync'\) \{\s*\n\s*try \{ pushResourceToMailbox\(item, \{ silentTeacher: true \}\); \}/);
     });
 
     it('full-pack sharing delivers quietly without yanking the student view (async parity)', () => {
@@ -97,8 +100,9 @@ describe('mailbox live-session parity', () => {
 
     it('pack auto-syncs like syncResourcesToSession: incremental, removals, no button needed', () => {
         expect(anti).toMatch(/the exact analogue\s*\n\s*\/\/ of syncResourcesToSession/);
-        expect(anti).toMatch(/_alloQuickHash\(JSON\.stringify\(stripUndefined/);
-        expect(anti).toMatch(/kind: 'res-remove', ids: removedIds/);
+        // 2026-07-20: fingerprints ride SessionTransport ops (serialize-based).
+        expect(anti).toMatch(/fingerprint: \(item\) => _alloQuickHash\(JSON\.stringify\(_alloSerializeResourceForStudentPack\(item\)\)/);
+        expect(anti).toMatch(/kind: 'res-remove', ids/);
         expect(anti).toMatch(/v\.kind === 'res-remove' && Array\.isArray\(v\.ids\)/);
         // Late joiners get the pack over their own channel (post-45min replay).
         expect(anti).toMatch(/Late-joiner welcome/);
