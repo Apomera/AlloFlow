@@ -19,7 +19,9 @@ describe('take-home: teacher side', () => {
   });
   it('directions composer writes a NORMAL student-safe history item (auto-sync carries it)', () => {
     // v2: derivation provenance rides meta.derivedFrom — a one-way snapshot marker, never a live link.
-    expect(anti).toContain("const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };");
+    // Objectives Phase 1: data is the plain markdown string UNLESS goals exist (structured build
+    // pinned in tests/directions_objectives.test.js).
+    expect(anti).toContain("const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: _dirData, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };");
     expect(anti).toMatch(/addDirectionsToPack[\s\S]{0,1100}?setHistory\(prev => \[\.\.\.\(Array\.isArray\(prev\) \? prev : \[\]\), item\]\)/);
     // due date is markdown INSIDE the body — no new schema field to drift
     expect(anti).toContain("(due ? '**Due:** ' + due + '\\n\\n' : '') + body");
