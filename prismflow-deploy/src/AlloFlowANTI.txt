@@ -8630,7 +8630,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=19f576a9a');
     loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=19f576a9a');
     loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=19f576a9a');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=19f576a9a');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=d3e4da49');
     loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=19f576a9a');
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=19f576a9a');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=19f576a9a');
@@ -8645,7 +8645,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=19f576a9a');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=19f576a9a');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=eccdd609');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=19f576a9a');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=19f576a9a');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=19f576a9a');
@@ -23128,288 +23128,39 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
-    // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's
-    // rounds would interleave with the first and its finally would clobber
-    // the first loop's flags.
-    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return; }
-    pdfAutoContinueAbortRef.current = false;
-    const _abortCtrl = new AbortController();
-    pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
-    // M11 (2026-07-13): save/restore the shared slot like the per-file controller does.
-    // Batch + auto-continue overlap is explicitly supported; overwriting without saving
-    // left the batch's per-call aborts dead for its remaining files once this loop
-    // finished (the slot was nulled, never restored).
-    const _prevAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
-    if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
-    // Run-generation guard (acl-1, 2026-06-21): capture the gen at entry. The watchdog fire() bumps
-    // window.__alloPdfRunGen when it invalidates a stalled run; if a NEW run then starts, this loop's
-    // late rounds must NOT write stale results over the fresh state. fixAndVerifyPdf already has this
-    // guard — runAutoFixLoop did not, so a post-watchdog round could stomp a teacher's next document.
-    const _myRunGen = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
-    const _genStale = () => (typeof window !== 'undefined') && ((window.__alloPdfRunGen || 0) !== _myRunGen);
-    setPdfAutoContinueRunning(true);
-    let cur = pdfFixResultRef.current;
-    const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
-    const _plainTextOf = (html) => { try { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body && d.body.textContent || '').trim(); } catch (_) { return null; } };
-    const _isCanonicalComplete = (c) => !!(c && c.verificationState === 'complete' && c.afterScoreVerified === true && !c.requiresManualReview && isLiveVerificationHtmlBound(c, c.accessibleHtml));
-    try {
-      let lastViolations = Infinity;
-      let lastScore = -1;
-      let lastDet = -1;
-      let lastIssues = Infinity;
-      let stagnantRounds = 0;
-      for (let round = 0; round < maxRounds; round++) {
-        if (pdfAutoContinueAbortRef.current || _genStale()) break;
-        if (!cur || !cur.accessibleHtml) break;
-        const _roundHtmlRevision = pdfHtmlRevisionRef.current;
-        // A high score may stop accessibility work, but it is celebratory only
-        // after the final review gate below confirms no expert/fidelity concern.
-        if ((cur.afterScore || 0) >= pdfTargetScore && _isCanonicalComplete(cur)) break;
-        const _vio = (cur.axeAudit && typeof cur.axeAudit.totalViolations === 'number') ? cur.axeAudit.totalViolations : 0;
-        const _aiIssues = _aiIssuesOf(cur);
-        // Sweep 2026-06-11 [0]: axe-clean used to END the loop even below
-        // target — the AI-rubric half of the score had NO fixer. Now an
-        // axe-clean round feeds the AI-flagged issues to aiFixChunked
-        // (mirroring fixAndVerifyPdf's internal pass loop).
-        // Finding 7 (ChatGPT review 2026-07-10): Equal Access GOVERNS the headline (min of the two
-        // engines) but its CONFIRMED failures didn't participate in the stop condition — the loop
-        // could declare itself done (axe clean + AI clean) while EA failures still held the score
-        // below target. EA-clean now joins the stop gate WHEN EA ran (an unavailable EA must not
-        // block — that state is already disclosed as verification-incomplete elsewhere), and the
-        // confirmed failures feed the next round's fix instructions below. Bounded: EA fails flow
-        // into _det = min(axe, EA), so a genuinely unfixable EA rule shows no det progress and the
-        // existing two-stall guard ends the loop.
-        const _eaFails = (cur.secondEngineAudit && typeof cur.secondEngineAudit.failViolations === 'number') ? cur.secondEngineAudit.failViolations : 0;
-        if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && _isCanonicalComplete(cur)) break;
-        // NOISE-AWARE PROGRESS (loop fix, 2026-06-15): the blended afterScore is half AI-rubric,
-        // which is run-to-run NOISY (SD ~5). Score-only progress let that noise fake a stall in the
-        // axe-clean phase (and oscillate the stall-counter). Count progress ONLY from reliable
-        // signals — fewer axe violations, a MEANINGFULLY higher deterministic score (±1 tolerance),
-        // or fewer AI-flagged issues; the noisy blend is deliberately NOT a progress signal. Two
-        // stalls still stop. _curDet = the PRIOR round's deterministic component: prefer the exact
-        // value stamped last round (_detScore), else min(axe, EqualAccess) from the audit OBJECTS that
-        // actually exist on a fresh fix (cur.axeAudit.score — guarded above — NOT a top-level
-        // cur.axeScore, which is undefined pre-loop → would fabricate 100 and revert every genuine
-        // round). Fall back to whichever engine is present, never to a fabricated 100. (review F1/F2/F3/F6/F9)
-        const _curAxe = (cur.axeAudit && typeof cur.axeAudit.score === 'number') ? cur.axeAudit.score : null;
-        const _curEa = (cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number') ? cur.secondEngineAudit.score : null;
-        const _curDet = (typeof cur._detScore === 'number') ? cur._detScore
-          : ((_curAxe !== null) ? (_curEa !== null ? Math.min(_curAxe, _curEa) : _curAxe) : _curEa); // null when NEITHER engine scored — never a fabricated 100 (review #3)
-        // det progress only when the baseline is a real number; gate the AI-issue term to the axe-CLEAN
-        // branch so noisy AI enumeration in the violation branch can't reset the stall counter (review #2).
-        const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);
-        if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
-        else stagnantRounds = 0;
-        lastViolations = _vio;
-        lastScore = cur.afterScore || 0;
-        lastDet = _curDet;
-        lastIssues = _aiIssues.length;
-        setPdfFixLoading(true);
-        // Storm-aware WAIT-not-stop (2026-07-05, maintainer): never fire a round into an active
-        // Canvas rate-limit storm — on the 7/5 run those calls each failed after ~150s AND extended
-        // the throttle window, until the 12-min dead-man switch killed the whole loop. Waiting is not
-        // stopping: nothing is skipped and no target is abandoned — the round runs at full strength
-        // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
-        // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
-        try {
-          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => pdfAutoContinueAbortRef.current || _genStale(), onTick: (w) => {
-            const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
-            setPdfFixStep(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
-          } });
-        } catch (_) {}
-        // H3 (deep dive 2026-07-09): the storm wait can hold this spot for up to 4 minutes — a Stop
-        // press or watchdog invalidation DURING it used to go unnoticed until AFTER the next full
-        // round had fired into the storm (and the post-round check then discarded its work anyway).
-        // Re-check before firing; shouldAbort above also exits the wait itself within seconds.
-        if (pdfAutoContinueAbortRef.current || _genStale()
-            || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
-          cur = pdfFixResultRef.current;
-          break;
-        }
-        const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);
-        // A3 (2026-07-13): when the ONLY thing between this doc and 'complete' is the
-        // Equal Access engine and that engine is environmentally unavailable (Canvas
-        // CSP blocks both CDN mirrors), the refresh's full AI audit is guaranteed
-        // futile — it can never yield 'complete'. Skip the spend; the state is
-        // already disclosed as partial with EA unavailable.
-        if (_auditOnlyRefresh) {
-          const _covA3 = cur.verificationCoverage || {};
-          const _eaDead = !!(_docPipeline && typeof _docPipeline.equalAccessUnavailable === 'function' && _docPipeline.equalAccessUnavailable());
-          if (_eaDead && _covA3.ai === 'complete' && _covA3.axe === 'complete' && _covA3.equalAccess !== 'complete') {
-            warnLog('[AutoContinue] verification refresh skipped: the Equal Access engine cannot load in this environment, so a refresh cannot reach complete.');
-            break;
-          }
-        }
-        const _acDetail = _auditOnlyRefresh
-          ? 'verification refresh (no content rewrite)'
-          : (_vio > 0
-            ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
-            : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))));
-        setPdfFixStep(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
-        let result;
-        if (_vio > 0) {
-          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
-        } else if (_auditOnlyRefresh) {
-          // No confirmed fixable issue remains. Refresh all verification evidence
-          // once without sending clean content through an empty AI rewrite.
-          let _refreshAxe = null;
-          try { _refreshAxe = await runAxeAudit(cur.accessibleHtml); } catch (_) {}
-          result = { html: cur.accessibleHtml, axe: _refreshAxe, passes: 0, _auditOnly: true };
-        } else {
-          // Finding 7 (2026-07-10): EA's CONFIRMED failures join the fix instructions — previously
-          // the engine that governs the headline had no voice in what the fixer was told to fix.
-          const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
-            .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
-          const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
-          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
-          // CONTRAST ROUTING (loop fix, 2026-06-15): a WCAG 1.4.3 contrast issue is a CSS/style
-          // problem the generic chunk rewriter rarely fixes — route it to the deterministic,
-          // background-aware contrast fixer (sanitizeStyleForWCAG -> fixContrastViolations) as the
-          // last word, so the axe-clean phase actually CLEARS AI-flagged contrast instead of
-          // spinning on it (axe couldn't compute it here, so autoFixAxeViolations never fired).
-          const _hasContrast = _aiIssues.some((i) => { const _s = (typeof i === 'string') ? i : (((i.wcag || '') + ' ' + (i.issue || i.description || ''))); return /1\.4\.3|contrast/i.test(_s); });
-          if (_hasContrast) { try { const _sr = sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
-          const _freshAxe = await runAxeAudit(_fixedHtml);
-          result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
-        }
-        if (pdfAutoContinueAbortRef.current || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
-          cur = pdfFixResultRef.current;
-          break;
-        }
-        const reVerify = await auditOutputAccessibility(result.html);
-        if (!reVerify) {
-          warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
-          if (typeof addToast === 'function') {
-            addToast(t('toasts.accessibility_verification_unavailable_auto_contin'), 'warning');
-          }
-          break;
-        }
-        // Sweep 2026-06-11 [1]: keep afterScore's SEMANTICS stable across rounds. fixAndVerifyPdf writes
-        // the weakest-layer headline min(AI content, min(axe, EqualAccess)); rounds used to overwrite it
-        // with a raw single AI score — the target check then compared apples to oranges and the consensus
-        // panel showed stale engine results. Recompute the SAME governing-layer score (min, NOT a mean —
-        // weakest-layer-governs, 2026-06-21; this loop had been left on the old /2 mean) with fresh
-        // deterministic runs each round.
-        let _ea = null;
-        try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
-        // #6-full (2026-07-16): ALL round-evidence assembly — scored-audit validity gating,
-        // audit-only inheritance (C6), weakest-layer score, fidelity recompute-and-merge,
-        // verification snapshot + SHA binding, expert-review base separation — now happens in
-        // the engine's ONE canonical reducer (finalizeRemediationRound). The host keeps only
-        // loop POLICY: the noise-aware revert, gen guards, proof attachment, and toasts. The
-        // reducer returns the merged candidate; a reverted round simply discards it.
-        const _finalizeRound = _docPipeline && _docPipeline.finalizeRemediationRound;
-        if (typeof _finalizeRound !== 'function') {
-          // Module older than this host build (mismatched deploy) — stop improving rather than
-          // hand-merge with drift risk; the primary fixAndVerifyPdf result stands untouched.
-          warnLog('[AutoContinue] finalizeRemediationRound unavailable (engine module predates this host) — stopping the loop; the primary result stands.');
-          break;
-        }
-        // Recompute Issue-Resolution against THIS round's fresh audit so fixed issues drop off
-        // the Newly-Introduced / Remaining lists (baseline rides on cur.issueResolution).
-        let _roundIR = cur.issueResolution;
-        try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
-        let _mergedRound = null;
-        try {
-          _mergedRound = await _finalizeRound(cur, {
-            html: result.html, aiAudit: reVerify, axeAudit: result.axe, eaAudit: _ea,
-            auditOnly: !!result._auditOnly, sourceText: cur.sourceText, issueResolution: _roundIR,
-            plainText: _plainTextOf(result.html), passes: result.passes || 0,
-            chunkState: result.chunkState, chunkWeightedScore: result.chunkWeightedScore,
-          });
-        } catch (_finErr) {
-          warnLog('[AutoContinue] round merge failed (' + ((_finErr && _finErr.message) || _finErr) + ') — preserving prior state and stopping the loop.');
-          break;
-        }
-        const _det = _mergedRound._detScore;
-        const newScore = _mergedRound.afterScore;
-        // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
-        // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
-        // mere AI wobble and stalled the loop short of target. Revert ONLY on a REAL regression: the
-        // DETERMINISTIC component (axe ∧ EqualAccess — reproducible) dropped, OR the AI flagged
-        // strictly MORE issues than before. A blend dip with deterministic held and no new issues is
-        // noise — keep the round. (Content loss is gated INSIDE aiFixChunked, not here.)
-        const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);
-        // Gate AI-issue count ONLY in the axe-CLEAN (AI-fix) branch — in the axe-violation branch the
-        // fix is deterministic, so AI-enumeration noise must not revert a legit axe fix (review F5).
-        const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
-        if (!result._auditOnly && (_detRegressed || _moreIssues)) {
-          warnLog('[AutoContinue] round ' + (round + 1) + ' REAL regression (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ') — reverting this round.');
-          // Do NOT increment stagnantRounds here — the revert leaves `cur` unchanged, so the next
-          // round's top-of-loop no-progress check counts this stall exactly once (avoids the old
-          // double-count that abandoned the loop on a single wobble).
-          continue;
-        }
-        // Commit: the reducer already assembled the complete next result for this round.
-        cur = _mergedRound;
-        if (cur.verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {
-          cur = enforceVerificationHtmlBinding(cur, 'verification-html-binding-unavailable');
-        }
-        const snapshot = cur;
-        // Gen guard (acl-1): a fresh run started while this round was in flight → discard this stale
-        // round's writes instead of stomping the new run's state, and stop looping.
-        if (_genStale() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
-          cur = pdfFixResultRef.current;
-          break;
-        }
-        // Sweep 2026-06-11 [3]: sync the ref NOW — the finally-block
-        // auto-save reads pdfFixResultRef and was one render behind,
-        // silently missing the last round's improvements.
-        setPdfFixResult(snapshot);
-        // An audit-only refresh is deliberately single-shot. Whether it recovered
-        // full evidence or remained partial, the final branch gives the honest result.
-        if (result._auditOnly) break;
-      }
-      const _canonicalComplete = _isCanonicalComplete(cur);
-      const _expertOrFidelityReview = !!(cur && (cur.needsExpertReview || cur.fidelityLimited));
-      const _humanReviewRequired = !!(cur && (!_canonicalComplete || _expertOrFidelityReview));
-      if (pdfAutoContinueAbortRef.current) {
-        addToast(t('toasts.auto_continue_stopped'), 'info');
-      } else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview) {
-        if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
-          addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
-        } else {
-          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
-        }
-      } else if (cur && _humanReviewRequired) {
-        const _reviewReasons = Array.isArray(cur.verificationReasons) ? cur.verificationReasons.filter(Boolean) : [];
-        const _readableReasons = _reviewReasons.map(formatVerificationReason).filter(Boolean);
-        if (_expertOrFidelityReview && !_readableReasons.some((reason) => /content|fidelity/i.test(reason))) {
-          _readableReasons.push('Content fidelity or another expert-review concern still needs confirmation.');
-        }
-        const _reviewCount = Number.isFinite(cur.verificationReviewCount) ? cur.verificationReviewCount : 0;
-        const _reviewDetail = _readableReasons.length
-          ? ' ' + Array.from(new Set(_readableReasons)).slice(0, 3).join(' ')
-          : ' Review the verification and fidelity details before distributing this document.';
-        addToast('Human review required at score ' + (cur.afterScore == null ? 'not available' : (cur.afterScore + '/100')) + (_reviewCount > 0 ? ' (' + _reviewCount + ' review item' + (_reviewCount === 1 ? '' : 's') + ').' : '.') + _reviewDetail, 'warning');
-      } else if (cur) {
-        const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
-        addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
-      }
-    } finally {
-      // M9 (deep dive 2026-07-09): guard the UI writes — a STALE loop's exit (watchdog invalidated
-      // it, teacher already started run B) used to wipe B's spinner and status line mid-run, and
-      // because the 8-min watchdog effect is gated on pdfFixLoading, B silently lost its watchdog
-      // too. The running flag clears on OWNERSHIP (this loop's ctrl, or a vacant slot), not gen — a
-      // fresh loop that has already taken the slot owns the flag; with no successor it must still
-      // clear so the results buttons don't stay latched.
-      if (!_genStale()) {
-        setPdfFixLoading(false);
-        setPdfFixStep('');
-      } else {
-        warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
-      }
-      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl || pdfAutoContinueAbortCtrlRef.current === null) {
-        setPdfAutoContinueRunning(false);
-      }
-      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl) {
-        pdfAutoContinueAbortCtrlRef.current = null;
-      }
-      if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
-        window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
-      }
-      if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
-    }
+    const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+    if (_m && typeof _m.runAutoFixLoop === 'function') return _m.runAutoFixLoop(maxRounds, {
+        pdfAutoContinueAbortCtrlRef,
+        pdfAutoContinueAbortRef,
+        pdfFixResultRef,
+        pdfHtmlRevisionRef,
+        setPdfAutoContinueRunning,
+        setPdfFixLoading,
+        setPdfFixResult,
+        setPdfFixStep,
+        pdfFixLoading,
+        pdfTargetScore,
+        pdfAutoFixPasses,
+        autoFixAxeViolations,
+        aiFixChunked,
+        waitForGeminiCalm,
+        runAxeAudit,
+        runEqualAccessAudit,
+        deriveVerificationState,
+        createVerificationHtmlBinding,
+        applyVerificationHtmlBinding,
+        isLiveVerificationHtmlBound,
+        enforceVerificationHtmlBinding,
+        formatVerificationReason,
+        auditOutputAccessibility,
+        recomputeIssueResolution,
+        recomputeContentFidelity,
+        addToast,
+        pdfAutoSaveProject,
+        t,
+        warnLog,
+    });
+    throw new Error('[runAutoFixLoop] MiscHandlers module not loaded - reload the page');
   }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto, _override) => {
@@ -28954,268 +28705,29 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     throw new Error("[handleSendUDLMessage] UdlChat module not loaded - reload the page");
   };
   const handleSendUDLMessage = async (manualText = null) => {
-    const _AC = window.AlloModules && window.AlloModules.AlloCommands;
-    const _rawUtter = (manualText != null ? manualText : udlInput) || '';
-    const _previousBotPlanning = _botCommandPlanningRef.current || {};
-    if (_previousBotPlanning.controller) { try { _previousBotPlanning.controller.abort(); } catch (_) {} }
-    const _botPlanningSerial = (Number(_previousBotPlanning.serial) || 0) + 1;
-    _botCommandPlanningRef.current = { controller: null, serial: _botPlanningSerial };
-    // (0) Single-flight guard (2026-07-10): while a plan is EXECUTING, the
-    // only message honored is a stop request — anything else would race the
-    // running steps (a second plan, a conflicting command, a chat reply
-    // that mutates the same state).
-    if (_planRunRef.current.running) {
-      const _stopReply = String(_rawUtter).trim().toLowerCase();
-      if (_rawUtter === '__allo_plan_stop' || /^stop( the)?( plan| everything)?[.!]?$/.test(_stopReply)) {
-        _planRunRef.current.stop = true;
-        setUdlInput('');
-        setUdlMessages(prev => [...prev, { role: 'model', text: '🛑 ' + (t('chat_guide.plan_stopping') || 'Stopping after the current step finishes — nothing is cut off mid-generation.') }]);
-        return;
-      }
-      setUdlInput('');
-      setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (t('chat_guide.plan_busy') || 'A plan is still running — say “stop” to end it after the current step, or wait for it to finish.') }]);
-      return;
-    }
-    // Stray plan sentinels with no pending plan (e.g. a double-click on an
-    // old chip after the run ended): swallow them instead of leaking the
-    // literal "__allo_plan_run" into the chat/router.
-    if (!_pendingBotPlanRef.current && (_rawUtter === '__allo_plan_run' || _rawUtter === '__allo_plan_skip' || _rawUtter === '__allo_plan_stop')) {
-      setUdlInput('');
-      return;
-    }
-    // Undo-plan (2026-07-10): restore the snapshot taken before the plan's
-    // first step — content (generatedContent / history / activeView) plus
-    // the settings intent snapshot. One level; honest about staleness: the
-    // chip says exactly what it restores.
-    if (_rawUtter === '__allo_plan_undo') {
-      setUdlInput('');
-      _pendingBotPlanRef.current = null;
-      const _snap = _planUndoRef.current;
-      if (!_snap) {
-        setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.plan_undo_none') || 'There’s nothing from a plan to undo right now.') }]);
-        return;
-      }
-      _planUndoRef.current = null;
-      try {
-        setGeneratedContent(_snap.generatedContent);
-        setHistory(_snap.history);
-        setActiveView(_snap.activeView);
-        if (_snap.settings) {
-          lastIntentSnapshotRef.current = _snap.settings;
-          try { restoreIntentSnapshot(); } catch (_) {}
-        }
-        setUdlMessages(prev => [...prev, { role: 'model', text: '↩ ' + (t('chat_guide.plan_undone') || 'Restored your content and settings to the moment before the plan ran.') }]);
-        try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_undone') || 'Plan undone — content and settings restored.'); } catch (_) {}
-      } catch (_) {
-        setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_undo_failed') || 'The undo didn’t fully apply — check your content before continuing.') }]);
-      }
-      return;
-    }
-    // ── Command confirmation (2026-07-06) ──
-    // The bot chat used to RUN an app command the instant the router matched one.
-    // A short opener ("hi", "bot", "assistant") matched `toggle_bot`, which hid the
-    // bot and — via the isBotVisible→showUDLGuide effect — slammed the chat shut,
-    // looking like "talking to AlloBot closes it". Now a match only PROPOSES: we
-    // post a confirm chip and run the command only on an explicit "Do it". The
-    // Ctrl+K palette and voice loop still execute directly (explicit surfaces).
-
-    // (1) Resolving a confirm chip we posted on the previous turn.
-    const _pending = _pendingBotCmdRef.current;
-    if (_pending) {
-      const _reply = String(_rawUtter).trim().toLowerCase();
-      const _isDo = _rawUtter === '__allo_do' || ['yes','yeah','yep','ok','okay','do it','sure','confirm','run it','go'].indexOf(_reply) >= 0;
-      const _isSkip = _rawUtter === '__allo_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
-      if (_isDo || _isSkip) {
-        _pendingBotCmdRef.current = null;
-        setUdlInput('');
-        if (_isDo && _AC && typeof _AC.runCommandById === 'function') {
-          try {
-            const _res = await _AC.runCommandById(_alloCmdCtx(), _pending.commandId, _pending.params, { confirmed: true });
-            const _narr = (_res && _res.narration) || (t('chat_guide.cmd_done') || 'Done.');
-            setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + _narr }]);
-            try { if (window.alloAnnounce) window.alloAnnounce(_narr); } catch (_) {}
-          } catch (_) {
-            setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.cmd_failed') || "I couldn't run that — try the ⌘K command menu.") }]);
-          }
-          return;
-        }
-        // "Just chat" — answer the original message conversationally.
-        return _sendUdlToChat(_pending.originalText);
-      }
-      // Any other message cancels the pending confirmation and is handled below.
-      _pendingBotCmdRef.current = null;
-    }
-
-    // (1.5) Resolving a pending multi-step PLAN chip (agentic plans,
-    // 2026-07-07). Same consent contract as the single-command chip: the
-    // plan proposed in the previous turn runs ONLY on an explicit confirm.
-    // Steps execute sequentially through runPlan (fresh ctx + when-guard
-    // re-check per step; destructive steps never auto-run), and each
-    // step's start/finish is narrated into the chat as it happens.
-    const _pendingPlan = _pendingBotPlanRef.current;
-    if (_pendingPlan) {
-      const _reply = String(_rawUtter).trim().toLowerCase();
-      const _isRun = _rawUtter === '__allo_plan_run' || ['yes','yeah','yep','ok','okay','do it','run it','run all','go'].indexOf(_reply) >= 0;
-      const _isSkip = _rawUtter === '__allo_plan_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
-      if (_isRun || _isSkip) {
-        _pendingBotPlanRef.current = null;
-        setUdlInput('');
-        if (_isRun && _AC && typeof _AC.runPlan === 'function') {
-          const _steps = _pendingPlan.steps;
-          _planRunRef.current = { running: true, stop: false };
-          // A resumed remainder is still the same plan. Preserve the original
-          // restore point so Undo returns to the state before step one, not
-          // merely to the state before the continuation.
-          if (!_pendingPlan.resume || !_planUndoRef.current) {
-            try {
-              captureIntentSnapshot('plan');
-              _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
-            } catch (_) { _planUndoRef.current = null; }
-          }
-          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
-            { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
-          ] }]);
-          try {
-            const _pr = await _AC.runPlan(() => _alloCmdCtx(), _steps, {
-              shouldStop: () => _planRunRef.current.stop,
-              onStep: (i, phase, cmd, narr) => {
-                if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '…' }]); }
-                else {
-                  setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + (i + 1) + '/' + _steps.length + ' — ' + (narr || 'Done.') }]);
-                  try { if (window.alloAnnounce) window.alloAnnounce(narr || (((cmd && cmd.label) || 'Step') + ' done.')); } catch (_) {}
-                }
-              }
-            });
-            if (_pr && _pr.ok) {
-              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.'), choices: [
-                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
-              ] }]);
-              try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
-            } else {
-              const _remaining = (_pr && Array.isArray(_pr.remainingSteps)) ? _pr.remainingSteps : [];
-              const _hasFinished = !!(_pr && Array.isArray(_pr.results) && _pr.results.length);
-              const _canResume = _remaining.length > 0 && !(_pr && _pr.timedOut);
-              if (_canResume) {
-                _pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true };
-                const _countLabel = _remaining.length + ' remaining step' + (_remaining.length === 1 ? '' : 's');
-                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_exact') || 'The finished steps are kept. You can resume the exact remaining sequence without re-entering it.'), choices: [
-                  { label: '▶ ' + (t('chat_guide.plan_resume') || 'Resume') + ' (' + _countLabel + ')', value: '__allo_plan_run' },
-                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
-                ] }]);
-              } else if (_hasFinished) {
-                const _held = _remaining.length ? (' ' + _remaining.length + ' later step' + (_remaining.length === 1 ? ' is' : 's are') + ' still held.') : '';
-                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + _held + ' ' + ((_pr && _pr.timedOut) ? (t('chat_guide.plan_timeout_wait') || 'Wait for the current background task to finish before starting another command.') : (t('chat_guide.plan_resume_hint') || 'The finished steps are kept.')), choices: [
-                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
-                ] }]);
-              } else {
-                setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + (_remaining.length ? ' The remaining sequence is preserved; resolve the blocker and ask to run it again.' : '') }]);
-              }
-            }
-          } catch (_) {
-            setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
-          } finally {
-            _planRunRef.current = { running: false, stop: false };
-          }
-          return;
-        }
-        // "Just chat" — answer the original message conversationally.
-        return _sendUdlToChat(_pendingPlan.originalText);
-      }
-      // Any other message cancels the pending plan and is handled below.
-      _pendingBotPlanRef.current = null;
-    }
-
-    // (2) If the last bot message is an on-screen chooser (the pack-choice
-    //     buttons OR our own confirm chip), the reply belongs to that chooser —
-    //     hand it straight to the chat module, never the command router.
-    const _lastMsg = (Array.isArray(udlMessages) && udlMessages.length) ? udlMessages[udlMessages.length - 1] : null;
-    const _awaitingChoice = !!(_lastMsg && _lastMsg.role === 'model' && _lastMsg.type === 'choices');
-
-    // (3) Command PREVIEW — a match only PROPOSES a confirm chip; nothing runs
-    //     until the user clicks "Do it".
-    if (!_awaitingChoice && _rawUtter !== '__allo_do' && _rawUtter !== '__allo_skip') {
-      const _botPlanningController = typeof AbortController === 'function' ? new AbortController() : null;
-      const _botPlanningRequest = { controller: _botPlanningController, serial: _botPlanningSerial };
-      _botCommandPlanningRef.current = _botPlanningRequest;
-      const _botPlanningSignal = _botPlanningController ? _botPlanningController.signal : null;
-      const _isCurrentBotCommandPlanning = () => _botCommandPlanningRef.current === _botPlanningRequest &&
-        !(_botPlanningSignal && _botPlanningSignal.aborted);
-      const _releaseBotCommandPlanning = () => {
-        if (_botCommandPlanningRef.current === _botPlanningRequest) {
-          _botCommandPlanningRef.current = { controller: null, serial: _botPlanningSerial };
-        }
-      };
-      try {
-        if (_AC && typeof _AC.routeUtterance === 'function' && _rawUtter.trim()) {
-          const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });
-          if (!_isCurrentBotCommandPlanning()) return;
-          if (_match && _match.preview && _match.commandId) {
-            _releaseBotCommandPlanning();
-            _pendingBotCmdRef.current = { commandId: _match.commandId, params: _match.params || {}, label: _match.label, originalText: _rawUtter };
-            if (!manualText) setUdlInput('');
-            const _label = _match.label || (t('chat_guide.cmd_generic') || 'run a command');
-            const _q = (t('chat_guide.cmd_confirm_prompt') || 'It looks like you want to **{label}**. Run that, or keep chatting?').replace('{label}', _label);
-            setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: _q, choices: [
-              { label: '▶ ' + (t('chat_guide.cmd_confirm_do') || 'Do it'), value: '__allo_do' },
-              { label: '💬 ' + (t('chat_guide.cmd_confirm_skip') || 'Just chat'), value: '__allo_skip' }
-            ] }]);
-            try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.cmd_confirm_aria') || 'That looks like a command. Confirm to run it, or keep chatting.'); } catch (_) {}
-            return;
-          }
-          // Fallback for an older cached module without preview support: it would
-          // have EXECUTED the command already and returned {handled:true}; surface
-          // that result rather than double-processing the message.
-          if (_match && _match.handled && !_match.preview) {
-            _releaseBotCommandPlanning();
-            setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: '✅ ' + (_match.narration || 'Done.') }]);
-            if (!manualText) setUdlInput('');
-            try { if (window.alloAnnounce) window.alloAnnounce(_match.narration); } catch (_) {}
-            return;
-          }
-          // (3.5) Multi-step PLAN preview (agentic plans, 2026-07-07). Only
-          // when the single-command router found nothing, the utterance
-          // reads as a sequence (cheap deterministic smell test — no AI
-          // call otherwise), and we're in teacher mode. planUtterance maps
-          // the ask to 2–6 registry commands; like the single-command chip,
-          // a plan only PROPOSES — nothing runs until "Run all".
-          if ((!_match || (!_match.preview && !_match.handled)) &&
-              typeof _AC.planUtterance === 'function' && typeof _AC.looksMultiStep === 'function' &&
-              _AC.looksMultiStep(_rawUtter)) {
-            const _planCtx = _alloCmdCtx();
-            if (_planCtx.isTeacherMode) {
-              const _steps = await _AC.planUtterance(_planCtx, _rawUtter, { signal: _botPlanningSignal });
-              if (!_isCurrentBotCommandPlanning()) return;
-              if (_steps && _steps.length >= 2) {
-                _releaseBotCommandPlanning();
-                _pendingBotPlanRef.current = { steps: _steps, originalText: _rawUtter };
-                if (!manualText) setUdlInput('');
-                const _planCmds = (typeof _AC.buildAlloCommands === 'function') ? _AC.buildAlloCommands(_planCtx) : [];
-                const _planLines = _steps.map((s, i) => {
-                  const c = _planCmds.find((x) => x.id === s.commandId) || {};
-                  const pKeys = s.params ? Object.keys(s.params).filter((k) => s.params[k] != null && s.params[k] !== '') : [];
-                  const p = pKeys.length ? (' — ' + pKeys.map((k) => k + ': ' + s.params[k]).join(', ')) : '';
-                  return (i + 1) + '. ' + (c.icon ? c.icon + ' ' : '') + (c.label || s.commandId) + p;
-                }).join('\n');
-                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: (t('chat_guide.plan_confirm') || 'That takes a few steps. Here’s my plan:') + '\n\n' + _planLines + '\n\n' + (t('chat_guide.plan_confirm2') || 'Run all steps? I’ll report each one as it finishes.'), choices: [
-                  { label: '▶ ' + (t('chat_guide.plan_run') || 'Run all'), value: '__allo_plan_run' },
-                  { label: '💬 ' + (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
-                ] }]);
-                try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_confirm_aria') || 'I proposed a multi-step plan. Confirm to run it, or keep chatting.'); } catch (_) {}
-                return;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        const _staleBotPlanning = !_isCurrentBotCommandPlanning() || !!(error && error.name === 'AbortError');
-        _releaseBotCommandPlanning();
-        if (_staleBotPlanning) return;
-        /* the router must never break the chat */
-      }
-      _releaseBotCommandPlanning();
-    }
-
-    return _sendUdlToChat(manualText);
+    const _m = window.AlloModules && window.AlloModules.UdlChat;
+    if (_m && typeof _m.planAndSendUdlMessage === 'function') return _m.planAndSendUdlMessage(manualText, {
+        _alloCmdCtx,
+        _botCommandPlanningRef,
+        _pendingBotCmdRef,
+        _pendingBotPlanRef,
+        _planRunRef,
+        _planUndoRef,
+        lastIntentSnapshotRef,
+        setActiveView,
+        setGeneratedContent,
+        setHistory,
+        setUdlInput,
+        setUdlMessages,
+        udlInput,
+        udlMessages,
+        _sendUdlToChat,
+        activeView,
+        generatedContent,
+        history,
+        t,
+    });
+    throw new Error('[handleSendUDLMessage] UdlChat module not loaded - reload the page');
   };
   const handleSocraticSubmit = async (inputOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;

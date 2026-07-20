@@ -1180,7 +1180,279 @@ Return ONLY JSON.`;
 };
 
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.UdlChat = { handleSendUDLMessage };
+window.AlloModules.UdlChat = { planAndSendUdlMessage, handleSendUDLMessage };
+
+
+// AlloBot command-planning layer — extracted to UdlChat (2026-07-20).
+// Every host binding arrives via deps; the host wrapper is contract-gated.
+async function planAndSendUdlMessage(manualText, deps) {
+  const {
+    _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat, activeView, generatedContent, history, t,
+  } = deps;
+
+    const _AC = window.AlloModules && window.AlloModules.AlloCommands;
+    const _rawUtter = (manualText != null ? manualText : udlInput) || '';
+    const _previousBotPlanning = _botCommandPlanningRef.current || {};
+    if (_previousBotPlanning.controller) { try { _previousBotPlanning.controller.abort(); } catch (_) {} }
+    const _botPlanningSerial = (Number(_previousBotPlanning.serial) || 0) + 1;
+    _botCommandPlanningRef.current = { controller: null, serial: _botPlanningSerial };
+    // (0) Single-flight guard (2026-07-10): while a plan is EXECUTING, the
+    // only message honored is a stop request — anything else would race the
+    // running steps (a second plan, a conflicting command, a chat reply
+    // that mutates the same state).
+    if (_planRunRef.current.running) {
+      const _stopReply = String(_rawUtter).trim().toLowerCase();
+      if (_rawUtter === '__allo_plan_stop' || /^stop( the)?( plan| everything)?[.!]?$/.test(_stopReply)) {
+        _planRunRef.current.stop = true;
+        setUdlInput('');
+        setUdlMessages(prev => [...prev, { role: 'model', text: '🛑 ' + (t('chat_guide.plan_stopping') || 'Stopping after the current step finishes — nothing is cut off mid-generation.') }]);
+        return;
+      }
+      setUdlInput('');
+      setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (t('chat_guide.plan_busy') || 'A plan is still running — say “stop” to end it after the current step, or wait for it to finish.') }]);
+      return;
+    }
+    // Stray plan sentinels with no pending plan (e.g. a double-click on an
+    // old chip after the run ended): swallow them instead of leaking the
+    // literal "__allo_plan_run" into the chat/router.
+    if (!_pendingBotPlanRef.current && (_rawUtter === '__allo_plan_run' || _rawUtter === '__allo_plan_skip' || _rawUtter === '__allo_plan_stop')) {
+      setUdlInput('');
+      return;
+    }
+    // Undo-plan (2026-07-10): restore the snapshot taken before the plan's
+    // first step — content (generatedContent / history / activeView) plus
+    // the settings intent snapshot. One level; honest about staleness: the
+    // chip says exactly what it restores.
+    if (_rawUtter === '__allo_plan_undo') {
+      setUdlInput('');
+      _pendingBotPlanRef.current = null;
+      const _snap = _planUndoRef.current;
+      if (!_snap) {
+        setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.plan_undo_none') || 'There’s nothing from a plan to undo right now.') }]);
+        return;
+      }
+      _planUndoRef.current = null;
+      try {
+        setGeneratedContent(_snap.generatedContent);
+        setHistory(_snap.history);
+        setActiveView(_snap.activeView);
+        if (_snap.settings) {
+          lastIntentSnapshotRef.current = _snap.settings;
+          try { restoreIntentSnapshot(); } catch (_) {}
+        }
+        setUdlMessages(prev => [...prev, { role: 'model', text: '↩ ' + (t('chat_guide.plan_undone') || 'Restored your content and settings to the moment before the plan ran.') }]);
+        try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_undone') || 'Plan undone — content and settings restored.'); } catch (_) {}
+      } catch (_) {
+        setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_undo_failed') || 'The undo didn’t fully apply — check your content before continuing.') }]);
+      }
+      return;
+    }
+    // ── Command confirmation (2026-07-06) ──
+    // The bot chat used to RUN an app command the instant the router matched one.
+    // A short opener ("hi", "bot", "assistant") matched `toggle_bot`, which hid the
+    // bot and — via the isBotVisible→showUDLGuide effect — slammed the chat shut,
+    // looking like "talking to AlloBot closes it". Now a match only PROPOSES: we
+    // post a confirm chip and run the command only on an explicit "Do it". The
+    // Ctrl+K palette and voice loop still execute directly (explicit surfaces).
+
+    // (1) Resolving a confirm chip we posted on the previous turn.
+    const _pending = _pendingBotCmdRef.current;
+    if (_pending) {
+      const _reply = String(_rawUtter).trim().toLowerCase();
+      const _isDo = _rawUtter === '__allo_do' || ['yes','yeah','yep','ok','okay','do it','sure','confirm','run it','go'].indexOf(_reply) >= 0;
+      const _isSkip = _rawUtter === '__allo_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      if (_isDo || _isSkip) {
+        _pendingBotCmdRef.current = null;
+        setUdlInput('');
+        if (_isDo && _AC && typeof _AC.runCommandById === 'function') {
+          try {
+            const _res = await _AC.runCommandById(_alloCmdCtx(), _pending.commandId, _pending.params, { confirmed: true });
+            const _narr = (_res && _res.narration) || (t('chat_guide.cmd_done') || 'Done.');
+            setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + _narr }]);
+            try { if (window.alloAnnounce) window.alloAnnounce(_narr); } catch (_) {}
+          } catch (_) {
+            setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.cmd_failed') || "I couldn't run that — try the ⌘K command menu.") }]);
+          }
+          return;
+        }
+        // "Just chat" — answer the original message conversationally.
+        return _sendUdlToChat(_pending.originalText);
+      }
+      // Any other message cancels the pending confirmation and is handled below.
+      _pendingBotCmdRef.current = null;
+    }
+
+    // (1.5) Resolving a pending multi-step PLAN chip (agentic plans,
+    // 2026-07-07). Same consent contract as the single-command chip: the
+    // plan proposed in the previous turn runs ONLY on an explicit confirm.
+    // Steps execute sequentially through runPlan (fresh ctx + when-guard
+    // re-check per step; destructive steps never auto-run), and each
+    // step's start/finish is narrated into the chat as it happens.
+    const _pendingPlan = _pendingBotPlanRef.current;
+    if (_pendingPlan) {
+      const _reply = String(_rawUtter).trim().toLowerCase();
+      const _isRun = _rawUtter === '__allo_plan_run' || ['yes','yeah','yep','ok','okay','do it','run it','run all','go'].indexOf(_reply) >= 0;
+      const _isSkip = _rawUtter === '__allo_plan_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      if (_isRun || _isSkip) {
+        _pendingBotPlanRef.current = null;
+        setUdlInput('');
+        if (_isRun && _AC && typeof _AC.runPlan === 'function') {
+          const _steps = _pendingPlan.steps;
+          _planRunRef.current = { running: true, stop: false };
+          // A resumed remainder is still the same plan. Preserve the original
+          // restore point so Undo returns to the state before step one, not
+          // merely to the state before the continuation.
+          if (!_pendingPlan.resume || !_planUndoRef.current) {
+            try {
+              captureIntentSnapshot('plan');
+              _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
+            } catch (_) { _planUndoRef.current = null; }
+          }
+          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
+            { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
+          ] }]);
+          try {
+            const _pr = await _AC.runPlan(() => _alloCmdCtx(), _steps, {
+              shouldStop: () => _planRunRef.current.stop,
+              onStep: (i, phase, cmd, narr) => {
+                if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '…' }]); }
+                else {
+                  setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + (i + 1) + '/' + _steps.length + ' — ' + (narr || 'Done.') }]);
+                  try { if (window.alloAnnounce) window.alloAnnounce(narr || (((cmd && cmd.label) || 'Step') + ' done.')); } catch (_) {}
+                }
+              }
+            });
+            if (_pr && _pr.ok) {
+              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.'), choices: [
+                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+              ] }]);
+              try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
+            } else {
+              const _remaining = (_pr && Array.isArray(_pr.remainingSteps)) ? _pr.remainingSteps : [];
+              const _hasFinished = !!(_pr && Array.isArray(_pr.results) && _pr.results.length);
+              const _canResume = _remaining.length > 0 && !(_pr && _pr.timedOut);
+              if (_canResume) {
+                _pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true };
+                const _countLabel = _remaining.length + ' remaining step' + (_remaining.length === 1 ? '' : 's');
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_exact') || 'The finished steps are kept. You can resume the exact remaining sequence without re-entering it.'), choices: [
+                  { label: '▶ ' + (t('chat_guide.plan_resume') || 'Resume') + ' (' + _countLabel + ')', value: '__allo_plan_run' },
+                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                ] }]);
+              } else if (_hasFinished) {
+                const _held = _remaining.length ? (' ' + _remaining.length + ' later step' + (_remaining.length === 1 ? ' is' : 's are') + ' still held.') : '';
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + _held + ' ' + ((_pr && _pr.timedOut) ? (t('chat_guide.plan_timeout_wait') || 'Wait for the current background task to finish before starting another command.') : (t('chat_guide.plan_resume_hint') || 'The finished steps are kept.')), choices: [
+                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                ] }]);
+              } else {
+                setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + (_remaining.length ? ' The remaining sequence is preserved; resolve the blocker and ask to run it again.' : '') }]);
+              }
+            }
+          } catch (_) {
+            setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
+          } finally {
+            _planRunRef.current = { running: false, stop: false };
+          }
+          return;
+        }
+        // "Just chat" — answer the original message conversationally.
+        return _sendUdlToChat(_pendingPlan.originalText);
+      }
+      // Any other message cancels the pending plan and is handled below.
+      _pendingBotPlanRef.current = null;
+    }
+
+    // (2) If the last bot message is an on-screen chooser (the pack-choice
+    //     buttons OR our own confirm chip), the reply belongs to that chooser —
+    //     hand it straight to the chat module, never the command router.
+    const _lastMsg = (Array.isArray(udlMessages) && udlMessages.length) ? udlMessages[udlMessages.length - 1] : null;
+    const _awaitingChoice = !!(_lastMsg && _lastMsg.role === 'model' && _lastMsg.type === 'choices');
+
+    // (3) Command PREVIEW — a match only PROPOSES a confirm chip; nothing runs
+    //     until the user clicks "Do it".
+    if (!_awaitingChoice && _rawUtter !== '__allo_do' && _rawUtter !== '__allo_skip') {
+      const _botPlanningController = typeof AbortController === 'function' ? new AbortController() : null;
+      const _botPlanningRequest = { controller: _botPlanningController, serial: _botPlanningSerial };
+      _botCommandPlanningRef.current = _botPlanningRequest;
+      const _botPlanningSignal = _botPlanningController ? _botPlanningController.signal : null;
+      const _isCurrentBotCommandPlanning = () => _botCommandPlanningRef.current === _botPlanningRequest &&
+        !(_botPlanningSignal && _botPlanningSignal.aborted);
+      const _releaseBotCommandPlanning = () => {
+        if (_botCommandPlanningRef.current === _botPlanningRequest) {
+          _botCommandPlanningRef.current = { controller: null, serial: _botPlanningSerial };
+        }
+      };
+      try {
+        if (_AC && typeof _AC.routeUtterance === 'function' && _rawUtter.trim()) {
+          const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });
+          if (!_isCurrentBotCommandPlanning()) return;
+          if (_match && _match.preview && _match.commandId) {
+            _releaseBotCommandPlanning();
+            _pendingBotCmdRef.current = { commandId: _match.commandId, params: _match.params || {}, label: _match.label, originalText: _rawUtter };
+            if (!manualText) setUdlInput('');
+            const _label = _match.label || (t('chat_guide.cmd_generic') || 'run a command');
+            const _q = (t('chat_guide.cmd_confirm_prompt') || 'It looks like you want to **{label}**. Run that, or keep chatting?').replace('{label}', _label);
+            setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: _q, choices: [
+              { label: '▶ ' + (t('chat_guide.cmd_confirm_do') || 'Do it'), value: '__allo_do' },
+              { label: '💬 ' + (t('chat_guide.cmd_confirm_skip') || 'Just chat'), value: '__allo_skip' }
+            ] }]);
+            try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.cmd_confirm_aria') || 'That looks like a command. Confirm to run it, or keep chatting.'); } catch (_) {}
+            return;
+          }
+          // Fallback for an older cached module without preview support: it would
+          // have EXECUTED the command already and returned {handled:true}; surface
+          // that result rather than double-processing the message.
+          if (_match && _match.handled && !_match.preview) {
+            _releaseBotCommandPlanning();
+            setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: '✅ ' + (_match.narration || 'Done.') }]);
+            if (!manualText) setUdlInput('');
+            try { if (window.alloAnnounce) window.alloAnnounce(_match.narration); } catch (_) {}
+            return;
+          }
+          // (3.5) Multi-step PLAN preview (agentic plans, 2026-07-07). Only
+          // when the single-command router found nothing, the utterance
+          // reads as a sequence (cheap deterministic smell test — no AI
+          // call otherwise), and we're in teacher mode. planUtterance maps
+          // the ask to 2–6 registry commands; like the single-command chip,
+          // a plan only PROPOSES — nothing runs until "Run all".
+          if ((!_match || (!_match.preview && !_match.handled)) &&
+              typeof _AC.planUtterance === 'function' && typeof _AC.looksMultiStep === 'function' &&
+              _AC.looksMultiStep(_rawUtter)) {
+            const _planCtx = _alloCmdCtx();
+            if (_planCtx.isTeacherMode) {
+              const _steps = await _AC.planUtterance(_planCtx, _rawUtter, { signal: _botPlanningSignal });
+              if (!_isCurrentBotCommandPlanning()) return;
+              if (_steps && _steps.length >= 2) {
+                _releaseBotCommandPlanning();
+                _pendingBotPlanRef.current = { steps: _steps, originalText: _rawUtter };
+                if (!manualText) setUdlInput('');
+                const _planCmds = (typeof _AC.buildAlloCommands === 'function') ? _AC.buildAlloCommands(_planCtx) : [];
+                const _planLines = _steps.map((s, i) => {
+                  const c = _planCmds.find((x) => x.id === s.commandId) || {};
+                  const pKeys = s.params ? Object.keys(s.params).filter((k) => s.params[k] != null && s.params[k] !== '') : [];
+                  const p = pKeys.length ? (' — ' + pKeys.map((k) => k + ': ' + s.params[k]).join(', ')) : '';
+                  return (i + 1) + '. ' + (c.icon ? c.icon + ' ' : '') + (c.label || s.commandId) + p;
+                }).join('\n');
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: (t('chat_guide.plan_confirm') || 'That takes a few steps. Here’s my plan:') + '\n\n' + _planLines + '\n\n' + (t('chat_guide.plan_confirm2') || 'Run all steps? I’ll report each one as it finishes.'), choices: [
+                  { label: '▶ ' + (t('chat_guide.plan_run') || 'Run all'), value: '__allo_plan_run' },
+                  { label: '💬 ' + (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
+                ] }]);
+                try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_confirm_aria') || 'I proposed a multi-step plan. Confirm to run it, or keep chatting.'); } catch (_) {}
+                return;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        const _staleBotPlanning = !_isCurrentBotCommandPlanning() || !!(error && error.name === 'AbortError');
+        _releaseBotCommandPlanning();
+        if (_staleBotPlanning) return;
+        /* the router must never break the chat */
+      }
+      _releaseBotCommandPlanning();
+    }
+
+    return _sendUdlToChat(manualText);
+}
 
 window.AlloModules.UdlChatModule = true;
 console.log('[UdlChat] handleSendUDLMessage registered');

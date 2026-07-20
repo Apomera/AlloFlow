@@ -41,6 +41,8 @@ const MODULE_SOURCES = {
   TextUtilityHelpers: 'text_utility_helpers_source.jsx',
   AudioHelpers: 'audio_helpers_source.jsx',
   ExportPreviewHelpers: 'view_export_preview_source.jsx',
+  MiscHandlers: 'misc_handlers_source.jsx',
+  UdlChat: 'udl_chat_source.jsx',
 };
 
 // Known-intentional signature differences: 'Module.fn': 'reason'.

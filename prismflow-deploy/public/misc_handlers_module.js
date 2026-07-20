@@ -770,11 +770,303 @@ const detectClimaxArchetype = async (text, instructions, deps) => {
 };
 
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.MiscHandlers = {
+window.AlloModules.MiscHandlers = { runAutoFixLoop,
   handleFileUpload,
   handleLoadProject,
   detectClimaxArchetype,
 };
+
+
+// PDF auto-continue remediation loop — extracted to MiscHandlers (2026-07-20).
+// Every host binding arrives via deps; the host wrapper is contract-gated.
+async function runAutoFixLoop(maxRounds, deps) {
+  const {
+    pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfFixResultRef, pdfHtmlRevisionRef, setPdfAutoContinueRunning, setPdfFixLoading, setPdfFixResult, setPdfFixStep, pdfFixLoading, pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, addToast, pdfAutoSaveProject, t, warnLog,
+  } = deps;
+
+    // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's
+    // rounds would interleave with the first and its finally would clobber
+    // the first loop's flags.
+    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return; }
+    pdfAutoContinueAbortRef.current = false;
+    const _abortCtrl = new AbortController();
+    pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
+    // M11 (2026-07-13): save/restore the shared slot like the per-file controller does.
+    // Batch + auto-continue overlap is explicitly supported; overwriting without saving
+    // left the batch's per-call aborts dead for its remaining files once this loop
+    // finished (the slot was nulled, never restored).
+    const _prevAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
+    if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
+    // Run-generation guard (acl-1, 2026-06-21): capture the gen at entry. The watchdog fire() bumps
+    // window.__alloPdfRunGen when it invalidates a stalled run; if a NEW run then starts, this loop's
+    // late rounds must NOT write stale results over the fresh state. fixAndVerifyPdf already has this
+    // guard — runAutoFixLoop did not, so a post-watchdog round could stomp a teacher's next document.
+    const _myRunGen = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    const _genStale = () => (typeof window !== 'undefined') && ((window.__alloPdfRunGen || 0) !== _myRunGen);
+    setPdfAutoContinueRunning(true);
+    let cur = pdfFixResultRef.current;
+    const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
+    const _plainTextOf = (html) => { try { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body && d.body.textContent || '').trim(); } catch (_) { return null; } };
+    const _isCanonicalComplete = (c) => !!(c && c.verificationState === 'complete' && c.afterScoreVerified === true && !c.requiresManualReview && isLiveVerificationHtmlBound(c, c.accessibleHtml));
+    try {
+      let lastViolations = Infinity;
+      let lastScore = -1;
+      let lastDet = -1;
+      let lastIssues = Infinity;
+      let stagnantRounds = 0;
+      for (let round = 0; round < maxRounds; round++) {
+        if (pdfAutoContinueAbortRef.current || _genStale()) break;
+        if (!cur || !cur.accessibleHtml) break;
+        const _roundHtmlRevision = pdfHtmlRevisionRef.current;
+        // A high score may stop accessibility work, but it is celebratory only
+        // after the final review gate below confirms no expert/fidelity concern.
+        if ((cur.afterScore || 0) >= pdfTargetScore && _isCanonicalComplete(cur)) break;
+        const _vio = (cur.axeAudit && typeof cur.axeAudit.totalViolations === 'number') ? cur.axeAudit.totalViolations : 0;
+        const _aiIssues = _aiIssuesOf(cur);
+        // Sweep 2026-06-11 [0]: axe-clean used to END the loop even below
+        // target — the AI-rubric half of the score had NO fixer. Now an
+        // axe-clean round feeds the AI-flagged issues to aiFixChunked
+        // (mirroring fixAndVerifyPdf's internal pass loop).
+        // Finding 7 (ChatGPT review 2026-07-10): Equal Access GOVERNS the headline (min of the two
+        // engines) but its CONFIRMED failures didn't participate in the stop condition — the loop
+        // could declare itself done (axe clean + AI clean) while EA failures still held the score
+        // below target. EA-clean now joins the stop gate WHEN EA ran (an unavailable EA must not
+        // block — that state is already disclosed as verification-incomplete elsewhere), and the
+        // confirmed failures feed the next round's fix instructions below. Bounded: EA fails flow
+        // into _det = min(axe, EA), so a genuinely unfixable EA rule shows no det progress and the
+        // existing two-stall guard ends the loop.
+        const _eaFails = (cur.secondEngineAudit && typeof cur.secondEngineAudit.failViolations === 'number') ? cur.secondEngineAudit.failViolations : 0;
+        if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && _isCanonicalComplete(cur)) break;
+        // NOISE-AWARE PROGRESS (loop fix, 2026-06-15): the blended afterScore is half AI-rubric,
+        // which is run-to-run NOISY (SD ~5). Score-only progress let that noise fake a stall in the
+        // axe-clean phase (and oscillate the stall-counter). Count progress ONLY from reliable
+        // signals — fewer axe violations, a MEANINGFULLY higher deterministic score (±1 tolerance),
+        // or fewer AI-flagged issues; the noisy blend is deliberately NOT a progress signal. Two
+        // stalls still stop. _curDet = the PRIOR round's deterministic component: prefer the exact
+        // value stamped last round (_detScore), else min(axe, EqualAccess) from the audit OBJECTS that
+        // actually exist on a fresh fix (cur.axeAudit.score — guarded above — NOT a top-level
+        // cur.axeScore, which is undefined pre-loop → would fabricate 100 and revert every genuine
+        // round). Fall back to whichever engine is present, never to a fabricated 100. (review F1/F2/F3/F6/F9)
+        const _curAxe = (cur.axeAudit && typeof cur.axeAudit.score === 'number') ? cur.axeAudit.score : null;
+        const _curEa = (cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number') ? cur.secondEngineAudit.score : null;
+        const _curDet = (typeof cur._detScore === 'number') ? cur._detScore
+          : ((_curAxe !== null) ? (_curEa !== null ? Math.min(_curAxe, _curEa) : _curAxe) : _curEa); // null when NEITHER engine scored — never a fabricated 100 (review #3)
+        // det progress only when the baseline is a real number; gate the AI-issue term to the axe-CLEAN
+        // branch so noisy AI enumeration in the violation branch can't reset the stall counter (review #2).
+        const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);
+        if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
+        else stagnantRounds = 0;
+        lastViolations = _vio;
+        lastScore = cur.afterScore || 0;
+        lastDet = _curDet;
+        lastIssues = _aiIssues.length;
+        setPdfFixLoading(true);
+        // Storm-aware WAIT-not-stop (2026-07-05, maintainer): never fire a round into an active
+        // Canvas rate-limit storm — on the 7/5 run those calls each failed after ~150s AND extended
+        // the throttle window, until the 12-min dead-man switch killed the whole loop. Waiting is not
+        // stopping: nothing is skipped and no target is abandoned — the round runs at full strength
+        // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
+        // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
+        try {
+          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => pdfAutoContinueAbortRef.current || _genStale(), onTick: (w) => {
+            const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
+            setPdfFixStep(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
+          } });
+        } catch (_) {}
+        // H3 (deep dive 2026-07-09): the storm wait can hold this spot for up to 4 minutes — a Stop
+        // press or watchdog invalidation DURING it used to go unnoticed until AFTER the next full
+        // round had fired into the storm (and the post-round check then discarded its work anyway).
+        // Re-check before firing; shouldAbort above also exits the wait itself within seconds.
+        if (pdfAutoContinueAbortRef.current || _genStale()
+            || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current;
+          break;
+        }
+        const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);
+        // A3 (2026-07-13): when the ONLY thing between this doc and 'complete' is the
+        // Equal Access engine and that engine is environmentally unavailable (Canvas
+        // CSP blocks both CDN mirrors), the refresh's full AI audit is guaranteed
+        // futile — it can never yield 'complete'. Skip the spend; the state is
+        // already disclosed as partial with EA unavailable.
+        if (_auditOnlyRefresh) {
+          const _covA3 = cur.verificationCoverage || {};
+          const _eaDead = !!(_docPipeline && typeof _docPipeline.equalAccessUnavailable === 'function' && _docPipeline.equalAccessUnavailable());
+          if (_eaDead && _covA3.ai === 'complete' && _covA3.axe === 'complete' && _covA3.equalAccess !== 'complete') {
+            warnLog('[AutoContinue] verification refresh skipped: the Equal Access engine cannot load in this environment, so a refresh cannot reach complete.');
+            break;
+          }
+        }
+        const _acDetail = _auditOnlyRefresh
+          ? 'verification refresh (no content rewrite)'
+          : (_vio > 0
+            ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
+            : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))));
+        setPdfFixStep(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
+        let result;
+        if (_vio > 0) {
+          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+        } else if (_auditOnlyRefresh) {
+          // No confirmed fixable issue remains. Refresh all verification evidence
+          // once without sending clean content through an empty AI rewrite.
+          let _refreshAxe = null;
+          try { _refreshAxe = await runAxeAudit(cur.accessibleHtml); } catch (_) {}
+          result = { html: cur.accessibleHtml, axe: _refreshAxe, passes: 0, _auditOnly: true };
+        } else {
+          // Finding 7 (2026-07-10): EA's CONFIRMED failures join the fix instructions — previously
+          // the engine that governs the headline had no voice in what the fixer was told to fix.
+          const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
+            .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
+          const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
+          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          // CONTRAST ROUTING (loop fix, 2026-06-15): a WCAG 1.4.3 contrast issue is a CSS/style
+          // problem the generic chunk rewriter rarely fixes — route it to the deterministic,
+          // background-aware contrast fixer (sanitizeStyleForWCAG -> fixContrastViolations) as the
+          // last word, so the axe-clean phase actually CLEARS AI-flagged contrast instead of
+          // spinning on it (axe couldn't compute it here, so autoFixAxeViolations never fired).
+          const _hasContrast = _aiIssues.some((i) => { const _s = (typeof i === 'string') ? i : (((i.wcag || '') + ' ' + (i.issue || i.description || ''))); return /1\.4\.3|contrast/i.test(_s); });
+          if (_hasContrast) { try { const _sr = sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
+          const _freshAxe = await runAxeAudit(_fixedHtml);
+          result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
+        }
+        if (pdfAutoContinueAbortRef.current || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current;
+          break;
+        }
+        const reVerify = await auditOutputAccessibility(result.html);
+        if (!reVerify) {
+          warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
+          if (typeof addToast === 'function') {
+            addToast(t('toasts.accessibility_verification_unavailable_auto_contin'), 'warning');
+          }
+          break;
+        }
+        // Sweep 2026-06-11 [1]: keep afterScore's SEMANTICS stable across rounds. fixAndVerifyPdf writes
+        // the weakest-layer headline min(AI content, min(axe, EqualAccess)); rounds used to overwrite it
+        // with a raw single AI score — the target check then compared apples to oranges and the consensus
+        // panel showed stale engine results. Recompute the SAME governing-layer score (min, NOT a mean —
+        // weakest-layer-governs, 2026-06-21; this loop had been left on the old /2 mean) with fresh
+        // deterministic runs each round.
+        let _ea = null;
+        try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
+        // #6-full (2026-07-16): ALL round-evidence assembly — scored-audit validity gating,
+        // audit-only inheritance (C6), weakest-layer score, fidelity recompute-and-merge,
+        // verification snapshot + SHA binding, expert-review base separation — now happens in
+        // the engine's ONE canonical reducer (finalizeRemediationRound). The host keeps only
+        // loop POLICY: the noise-aware revert, gen guards, proof attachment, and toasts. The
+        // reducer returns the merged candidate; a reverted round simply discards it.
+        const _finalizeRound = _docPipeline && _docPipeline.finalizeRemediationRound;
+        if (typeof _finalizeRound !== 'function') {
+          // Module older than this host build (mismatched deploy) — stop improving rather than
+          // hand-merge with drift risk; the primary fixAndVerifyPdf result stands untouched.
+          warnLog('[AutoContinue] finalizeRemediationRound unavailable (engine module predates this host) — stopping the loop; the primary result stands.');
+          break;
+        }
+        // Recompute Issue-Resolution against THIS round's fresh audit so fixed issues drop off
+        // the Newly-Introduced / Remaining lists (baseline rides on cur.issueResolution).
+        let _roundIR = cur.issueResolution;
+        try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
+        let _mergedRound = null;
+        try {
+          _mergedRound = await _finalizeRound(cur, {
+            html: result.html, aiAudit: reVerify, axeAudit: result.axe, eaAudit: _ea,
+            auditOnly: !!result._auditOnly, sourceText: cur.sourceText, issueResolution: _roundIR,
+            plainText: _plainTextOf(result.html), passes: result.passes || 0,
+            chunkState: result.chunkState, chunkWeightedScore: result.chunkWeightedScore,
+          });
+        } catch (_finErr) {
+          warnLog('[AutoContinue] round merge failed (' + ((_finErr && _finErr.message) || _finErr) + ') — preserving prior state and stopping the loop.');
+          break;
+        }
+        const _det = _mergedRound._detScore;
+        const newScore = _mergedRound.afterScore;
+        // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
+        // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
+        // mere AI wobble and stalled the loop short of target. Revert ONLY on a REAL regression: the
+        // DETERMINISTIC component (axe ∧ EqualAccess — reproducible) dropped, OR the AI flagged
+        // strictly MORE issues than before. A blend dip with deterministic held and no new issues is
+        // noise — keep the round. (Content loss is gated INSIDE aiFixChunked, not here.)
+        const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);
+        // Gate AI-issue count ONLY in the axe-CLEAN (AI-fix) branch — in the axe-violation branch the
+        // fix is deterministic, so AI-enumeration noise must not revert a legit axe fix (review F5).
+        const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
+        if (!result._auditOnly && (_detRegressed || _moreIssues)) {
+          warnLog('[AutoContinue] round ' + (round + 1) + ' REAL regression (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ') — reverting this round.');
+          // Do NOT increment stagnantRounds here — the revert leaves `cur` unchanged, so the next
+          // round's top-of-loop no-progress check counts this stall exactly once (avoids the old
+          // double-count that abandoned the loop on a single wobble).
+          continue;
+        }
+        // Commit: the reducer already assembled the complete next result for this round.
+        cur = _mergedRound;
+        if (cur.verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {
+          cur = enforceVerificationHtmlBinding(cur, 'verification-html-binding-unavailable');
+        }
+        const snapshot = cur;
+        // Gen guard (acl-1): a fresh run started while this round was in flight → discard this stale
+        // round's writes instead of stomping the new run's state, and stop looping.
+        if (_genStale() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current;
+          break;
+        }
+        // Sweep 2026-06-11 [3]: sync the ref NOW — the finally-block
+        // auto-save reads pdfFixResultRef and was one render behind,
+        // silently missing the last round's improvements.
+        setPdfFixResult(snapshot);
+        // An audit-only refresh is deliberately single-shot. Whether it recovered
+        // full evidence or remained partial, the final branch gives the honest result.
+        if (result._auditOnly) break;
+      }
+      const _canonicalComplete = _isCanonicalComplete(cur);
+      const _expertOrFidelityReview = !!(cur && (cur.needsExpertReview || cur.fidelityLimited));
+      const _humanReviewRequired = !!(cur && (!_canonicalComplete || _expertOrFidelityReview));
+      if (pdfAutoContinueAbortRef.current) {
+        addToast(t('toasts.auto_continue_stopped'), 'info');
+      } else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview) {
+        if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
+          addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
+        } else {
+          addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
+        }
+      } else if (cur && _humanReviewRequired) {
+        const _reviewReasons = Array.isArray(cur.verificationReasons) ? cur.verificationReasons.filter(Boolean) : [];
+        const _readableReasons = _reviewReasons.map(formatVerificationReason).filter(Boolean);
+        if (_expertOrFidelityReview && !_readableReasons.some((reason) => /content|fidelity/i.test(reason))) {
+          _readableReasons.push('Content fidelity or another expert-review concern still needs confirmation.');
+        }
+        const _reviewCount = Number.isFinite(cur.verificationReviewCount) ? cur.verificationReviewCount : 0;
+        const _reviewDetail = _readableReasons.length
+          ? ' ' + Array.from(new Set(_readableReasons)).slice(0, 3).join(' ')
+          : ' Review the verification and fidelity details before distributing this document.';
+        addToast('Human review required at score ' + (cur.afterScore == null ? 'not available' : (cur.afterScore + '/100')) + (_reviewCount > 0 ? ' (' + _reviewCount + ' review item' + (_reviewCount === 1 ? '' : 's') + ').' : '.') + _reviewDetail, 'warning');
+      } else if (cur) {
+        const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
+        addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
+      }
+    } finally {
+      // M9 (deep dive 2026-07-09): guard the UI writes — a STALE loop's exit (watchdog invalidated
+      // it, teacher already started run B) used to wipe B's spinner and status line mid-run, and
+      // because the 8-min watchdog effect is gated on pdfFixLoading, B silently lost its watchdog
+      // too. The running flag clears on OWNERSHIP (this loop's ctrl, or a vacant slot), not gen — a
+      // fresh loop that has already taken the slot owns the flag; with no successor it must still
+      // clear so the results buttons don't stay latched.
+      if (!_genStale()) {
+        setPdfFixLoading(false);
+        setPdfFixStep('');
+      } else {
+        warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
+      }
+      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl || pdfAutoContinueAbortCtrlRef.current === null) {
+        setPdfAutoContinueRunning(false);
+      }
+      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl) {
+        pdfAutoContinueAbortCtrlRef.current = null;
+      }
+      if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
+        window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
+      }
+      if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
+    }
+}
 
 window.AlloModules.MiscHandlersModule = true;
 console.log('[MiscHandlers] 3 handlers registered (handleFileUpload + handleLoadProject + detectClimaxArchetype)');
