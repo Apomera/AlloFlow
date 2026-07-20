@@ -51,8 +51,9 @@
   // whose moment points along its `angle` (radians). Returns an UNnormalised
   // vector {x,y}; magnitude ∝ 1/r³ so nearby magnets dominate (as they do).
   function dipoleFieldAt(px, py, mag) {
-    var mx = Math.cos(mag.angle) * mag.polarity; // moment direction × N/S sign
-    var my = Math.sin(mag.angle) * mag.polarity;
+    var st = (mag.strength == null ? 1 : mag.strength); // moment magnitude (default 1)
+    var mx = Math.cos(mag.angle) * mag.polarity * st; // moment direction × N/S sign
+    var my = Math.sin(mag.angle) * mag.polarity * st;
     var rx = px - mag.x, ry = py - mag.y;
     var r2 = rx * rx + ry * ry;
     if (r2 < 1e-6) return { x: 0, y: 0 };
@@ -153,6 +154,42 @@
     return base * (1 - Math.max(0, Math.min(1, align)));
   }
 
+  // Count full alternation cycles in an EMF trace: consecutive sign flips
+  // among samples that clear a noise threshold; two flips ≈ one full cycle.
+  function countCycles(trace, thresh) {
+    var th = thresh == null ? 0.2 : thresh;
+    var signs = [];
+    for (var i = 0; i < (trace || []).length; i++) {
+      var v = trace[i];
+      if (v > th) signs.push(1); else if (v < -th) signs.push(-1);
+    }
+    var flips = 0;
+    for (var j = 1; j < signs.length; j++) if (signs[j] !== signs[j - 1]) flips++;
+    return Math.floor(flips / 2);
+  }
+
+  // ── Field Walk rounds ───────────────────────────────────────────────────
+  // Hidden-magnet presets in field coordinates (same frame fieldAt uses);
+  // start = grid cell [col,row] on an 11×8 board. Fixed list → deterministic.
+  var MAZE_COLS = 11, MAZE_ROWS = 8, MAZE_CELL = 22; // field units per cell
+  var MAZE_ROUNDS = [
+    { x: 66, y: -33, angle: 0, polarity: 1, start: [0, 7] },
+    { x: -66, y: 44, angle: Math.PI / 2, polarity: 1, start: [10, 0] },
+    { x: 44, y: 33, angle: Math.PI / 4, polarity: 1, start: [0, 0] },
+    { x: -44, y: -33, angle: -Math.PI / 3, polarity: 1, start: [10, 7] }
+  ];
+  // Grid cell → field coordinates (board centred on the origin).
+  function mazeCellToField(gx, gy) {
+    return { x: (gx - (MAZE_COLS - 1) / 2) * MAZE_CELL, y: (gy - (MAZE_ROWS - 1) / 2) * MAZE_CELL };
+  }
+  // Pole positions of a round's hidden magnet (pole offset matches the
+  // 16-unit half-length used by the Field Explorer's bar rendering).
+  function mazePoles(round) {
+    var r = MAZE_ROUNDS[round % MAZE_ROUNDS.length];
+    var ox = Math.cos(r.angle) * 16 * r.polarity, oy = Math.sin(r.angle) * 16 * r.polarity;
+    return { n: { x: r.x + ox, y: r.y + oy }, s: { x: r.x - ox, y: r.y - oy } };
+  }
+
   // ── Magnetic materials (predict-then-test) ─────────────────────────────
   // Only the ferromagnetic trio (iron, nickel, cobalt) and their alloys stick
   // to an everyday magnet — the classic misconception is "all metals do".
@@ -219,6 +256,7 @@
       { id: 'mag_materials', label: 'Sort all 8 materials correctly', icon: '🔩', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.matPerfect; } },
       { id: 'mag_crane', label: 'Recycle all 4 steel items with the crane', icon: '🏗️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.craneDone; } },
       { id: 'mag_domains', label: 'Fully magnetize the iron (align every domain)', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.domainsFull; } },
+      { id: 'mag_maze', label: 'Find the hidden magnet by compass alone', icon: '🧭', check: function (d) { var s = (d && d.magnetism) || {}; return (s.mazeWins || 0) >= 1; } },
       { id: 'mag_quiz', label: 'Score 9+ on the magnetism quiz', icon: '🧠', check: function (d) { var s = (d && d.magnetism) || {}; return (s.quizBest || 0) >= 9; } }
     ],
     render: function (ctx) {
@@ -262,6 +300,8 @@
         tubeProg: { cu: 0, pl: 0 }, tubeRunning: false, tubeDone: false,
         // Magnetic domains
         domainAlign: 0, domainsFull: false,
+        // Field Walk (hidden-magnet compass game)
+        mazeRound: 0, mazePx: 0, mazePy: 7, mazeSteps: 0, mazeWon: false, mazeWins: 0, mazeTrail: [],
         // Materials sorter
         matGuesses: {}, matRevealed: false, matPerfect: false,
         // Junkyard crane
@@ -314,6 +354,7 @@
         { id: 'induce', label: '⚡ Generator' },
         { id: 'materials', label: '🔩 Materials' },
         { id: 'crane', label: '🏗️ Crane' },
+        { id: 'maze', label: '🧭 Field Walk' },
         { id: 'transformer', label: '🔁 Transformer' },
         { id: 'earth', label: '🌍 Earth’s Field' },
         { id: 'quiz', label: '🧠 Quiz' }
@@ -427,6 +468,10 @@
                 h('span', { 'aria-hidden': 'true', style: { letterSpacing: 1, color: '#f43f5e' } }, '▮'.repeat(level + 1) + '▯'.repeat(5 - level)),
                 ' ' + words[level] + ' — try moving closer to a pole');
             })(),
+            slider('First magnet strength', (d.magnets[0] && d.magnets[0].strength) || 1, 0.5, 3, 0.5, function (v) {
+              var ms = d.magnets.map(function (m, i) { return i === 0 ? Object.assign({}, m, { strength: v }) : m; });
+              upd({ magnets: ms });
+            }),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' } },
               h('button', { onClick: function () {
                   var ms = d.magnets.map(function (m, i) { return i === 0 ? Object.assign({}, m, { polarity: -m.polarity }) : m; });
@@ -682,7 +727,8 @@
             (pos && neg)
               ? h('span', null, h('b', { style: { color: '#34d399' } }, '⚡ You just generated AC. '), 'Push in = one sign, pull out = the other. Wiggle the magnet rhythmically and this trace becomes the alternating wave that comes out of every wall socket — a power-plant turbine is doing exactly this, 60 times a second.')
               : 'Wiggle the magnet in AND out, back and forth. Watch the trace cross the zero line both ways — that alternation has a famous name.'),
-          h('div', { style: { textAlign: 'right', marginTop: 6 } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 } },
+            h('span', { style: { color: SOFT, fontSize: 11.5 } }, (function () { var cyc = countCycles(trace); return cyc >= 1 ? ('≈ ' + cyc + ' full cycle' + (cyc > 1 ? 's' : '') + ' in view — grid AC does 60 every second') : ''; })()),
             h('button', { onClick: function () { upd({ emfTrace: [] }); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: SOFT, fontSize: 12, cursor: 'pointer' } }, 'Clear trace'))
         ), '#fbbf24');
       }
@@ -947,6 +993,105 @@
         );
       }
 
+      // ── Field Walk: find the hidden magnet by compass alone ───────────
+      function mazeRoundDef() { return MAZE_ROUNDS[(d.mazeRound || 0) % MAZE_ROUNDS.length]; }
+      function mazeMagnet() { var r = mazeRoundDef(); return { x: r.x, y: r.y, angle: r.angle, polarity: r.polarity }; }
+
+      function mazeMove(dx, dy) {
+        if (d.mazeWon) return;
+        var nx = Math.max(0, Math.min(MAZE_COLS - 1, d.mazePx + dx));
+        var ny = Math.max(0, Math.min(MAZE_ROWS - 1, d.mazePy + dy));
+        if (nx === d.mazePx && ny === d.mazePy) return;
+        var trail = (d.mazeTrail || []).concat([nx + ',' + ny]);
+        if (trail.length > 200) trail = trail.slice(trail.length - 200);
+        var patch = { mazePx: nx, mazePy: ny, mazeSteps: (d.mazeSteps || 0) + 1, mazeTrail: trail };
+        var f = mazeCellToField(nx, ny);
+        var poles = mazePoles(d.mazeRound || 0);
+        var dS = Math.hypot(f.x - poles.s.x, f.y - poles.s.y);
+        var dN = Math.hypot(f.x - poles.n.x, f.y - poles.n.y);
+        if (dS < MAZE_CELL * 1.2) {
+          patch.mazeWon = true;
+          patch.mazeWins = (d.mazeWins || 0) + 1;
+          if ((d.mazeWins || 0) === 0) { awardXP(15); addToast('🧭 Found it by field alone! +15 XP', 'success'); }
+          announceToSR('Found the hidden magnet in ' + patch.mazeSteps + ' steps! You arrived at its SOUTH pole.');
+        } else if (dN < MAZE_CELL * 1.2) {
+          announceToSR('You are at the NORTH pole — the red needle end points away from here. Walk the way the red end points.');
+        }
+        upd(patch);
+      }
+
+      function mazeSVG() {
+        var PAD = 12, CS = 26; // px per cell on screen
+        var W = PAD * 2 + (MAZE_COLS - 1) * CS, HH = PAD * 2 + (MAZE_ROWS - 1) * CS;
+        function px(gx) { return PAD + gx * CS; }
+        function py(gy) { return PAD + gy * CS; }
+        var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: HH, fill: '#0b1220', rx: 10 })];
+        // faint grid dots
+        for (var gy = 0; gy < MAZE_ROWS; gy++) for (var gx = 0; gx < MAZE_COLS; gx++) {
+          kids.push(h('circle', { key: 'g' + gx + '_' + gy, cx: px(gx), cy: py(gy), r: 1.2, fill: '#1e293b' }));
+        }
+        // breadcrumb trail
+        (d.mazeTrail || []).forEach(function (c, i) {
+          var pp = c.split(',');
+          kids.push(h('circle', { key: 't' + i, cx: px(+pp[0]), cy: py(+pp[1]), r: 2.4, fill: 'rgba(244,63,94,0.28)' }));
+        });
+        var mag = mazeMagnet();
+        // reveal the magnet (and where its poles were) only after the win
+        if (d.mazeWon) {
+          var deg = mag.angle * 180 / Math.PI;
+          var sx = W / 2 + mag.x / MAZE_CELL * CS, sy = HH / 2 + mag.y / MAZE_CELL * CS;
+          kids.push(h('g', { key: 'mag', transform: 'translate(' + sx + ',' + sy + ') rotate(' + deg.toFixed(1) + ')' },
+            h('rect', { x: 0, y: -8, width: 20, height: 16, fill: '#ef4444' }),
+            h('rect', { x: -20, y: -8, width: 20, height: 16, fill: '#3b82f6' }),
+            h('text', { x: 10, y: 4, fill: '#fff', fontSize: 9, fontWeight: 800, textAnchor: 'middle' }, 'N'),
+            h('text', { x: -10, y: 4, fill: '#fff', fontSize: 9, fontWeight: 800, textAnchor: 'middle' }, 'S')));
+        }
+        // player compass: needle shows the REAL local field of the hidden magnet
+        var f0 = mazeCellToField(d.mazePx, d.mazePy);
+        var b = fieldAt(f0.x, f0.y, [mag]);
+        var bang = Math.atan2(b.y, b.x) * 180 / Math.PI;
+        kids.push(h('g', { key: 'player', transform: 'translate(' + px(d.mazePx) + ',' + py(d.mazePy) + ')' },
+          h('circle', { r: 12, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 1.4 }),
+          h('g', { transform: 'rotate(' + bang.toFixed(1) + ')' },
+            h('polygon', { points: '10,0 -2,-3 -2,3', fill: '#ef4444' }),
+            h('polygon', { points: '-10,0 2,-3 2,3', fill: '#e2e8f0' }))));
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 420 }, role: 'img',
+          'aria-label': 'Field Walk board. Your compass at column ' + (d.mazePx + 1) + ', row ' + (d.mazePy + 1) + (d.mazeWon ? '. Magnet revealed.' : '. The hidden magnet is not visible — follow the needle.') }, kids);
+      }
+
+      function mazeNextRound() {
+        var nr = ((d.mazeRound || 0) + 1) % MAZE_ROUNDS.length;
+        var st = MAZE_ROUNDS[nr].start;
+        upd({ mazeRound: nr, mazePx: st[0], mazePy: st[1], mazeSteps: 0, mazeWon: false, mazeTrail: [] });
+        announceToSR('New round — the magnet is hidden somewhere new.');
+      }
+
+      function mazeTab() {
+        return h('div', null,
+          card('Find the hidden magnet', h('div', null,
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Somewhere on this board a magnet is buried. Your only instrument is the compass under your feet. ', h('b', null, 'Walk the way the red end points'), ' — trust the field.'),
+            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 10 } }, mazeSVG()),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
+              h('span', null, ''),
+              h('button', { 'aria-label': 'Walk up', onClick: function () { mazeMove(0, -1); }, style: { width: 44, height: 44, borderRadius: 9, border: '1px solid ' + BORDER, background: PANEL, color: TEXT, fontSize: 18, cursor: 'pointer' } }, '↑'),
+              h('span', null, ''),
+              h('button', { 'aria-label': 'Walk left', onClick: function () { mazeMove(-1, 0); }, style: { width: 44, height: 44, borderRadius: 9, border: '1px solid ' + BORDER, background: PANEL, color: TEXT, fontSize: 18, cursor: 'pointer' } }, '←'),
+              h('span', { style: { textAlign: 'center', color: SOFT, fontSize: 11, alignSelf: 'center' } }, d.mazeSteps + ' steps'),
+              h('button', { 'aria-label': 'Walk right', onClick: function () { mazeMove(1, 0); }, style: { width: 44, height: 44, borderRadius: 9, border: '1px solid ' + BORDER, background: PANEL, color: TEXT, fontSize: 18, cursor: 'pointer' } }, '→'),
+              h('span', null, ''),
+              h('button', { 'aria-label': 'Walk down', onClick: function () { mazeMove(0, 1); }, style: { width: 44, height: 44, borderRadius: 9, border: '1px solid ' + BORDER, background: PANEL, color: TEXT, fontSize: 18, cursor: 'pointer' } }, '↓'),
+              h('span', null, '')),
+            d.mazeWon ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid #22c55e', marginBottom: 8 } },
+              h('p', { style: { color: TEXT, fontSize: 13, fontWeight: 700, margin: '0 0 6px' } }, '🏆 Found in ' + d.mazeSteps + ' steps!'),
+              h('p', { style: { color: SOFT, fontSize: 12.5, margin: 0, lineHeight: 1.5 } }, 'Notice WHERE you arrived: the ', h('b', { style: { color: '#3b82f6' } }, 'SOUTH pole'), '. Field lines flow into south poles, so following the red end always lands you there. This is Earth’s great naming joke — a compass points “north” because the spot we call the north magnetic pole is, magnetically, a ', h('b', null, 'south'), ' pole.'),
+              h('div', { style: { textAlign: 'center', marginTop: 8 } },
+                h('button', { onClick: mazeNextRound, style: btn(true) }, '▶ Next round'))) : null,
+            h('p', { style: { color: SOFT, fontSize: 12, margin: 0, lineHeight: 1.5 } }, 'Rounds won: ' + (d.mazeWins || 0) + '. The needle does NOT point straight at the magnet — it follows the curved field line through your square. Your breadcrumb trail will show the curve you walked.')
+          ), '#38bdf8'),
+          disclosure('The compass responds to the hidden magnet’s real dipole field, computed at your position — the same physics as the Field Explorer, just with the magnet invisible. Real magnetometer surveys (archaeology, shipwreck hunting, unexploded-ordnance clearing) work exactly this way.')
+        );
+      }
+
       // ── Transformer (mutual induction) ────────────────────────────────
       function transformerSVG() {
         var stepUp = d.xfmrN2 > d.xfmrN1;
@@ -1128,6 +1273,7 @@
         : d.tab === 'induce' ? induceTab()
         : d.tab === 'materials' ? materialsTab()
         : d.tab === 'crane' ? craneTab()
+        : d.tab === 'maze' ? mazeTab()
         : d.tab === 'transformer' ? transformerTab()
         : d.tab === 'earth' ? earthTab()
         : quizTab();
@@ -1150,6 +1296,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, MATERIALS: MATERIALS, QUIZ: QUIZ, MU0: MU0 };
+    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, MU0: MU0 };
   }
 })();

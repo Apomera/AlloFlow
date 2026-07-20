@@ -65,15 +65,15 @@ const BASE = {
 };
 
 describe('magnetism tool — registration + structure', () => {
-  it('registers id "magnetism" with ten quest hooks and nine tabs', () => {
+  it('registers id "magnetism" with eleven quest hooks and ten tabs', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain("window.StemLab.registerTool('magnetism'");
       expect(source).toContain('questHooks');
-      ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'transformer', 'earth', 'quiz'].forEach((tabId) => {
+      ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'maze', 'transformer', 'earth', 'quiz'].forEach((tabId) => {
         expect(source).toContain("id: '" + tabId + "'");
       });
-      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_crane', 'mag_domains', 'mag_quiz'].forEach((q) => {
+      ['mag_field', 'mag_pair', 'mag_electro', 'mag_motor', 'mag_earth', 'mag_induce', 'mag_materials', 'mag_crane', 'mag_domains', 'mag_maze', 'mag_quiz'].forEach((q) => {
         expect(source).toContain("id: '" + q + "'");
       });
       // host-guarded registration (does not early-return the whole module)
@@ -174,7 +174,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   });
 
   it('renders every tab under jsdom', () => {
-    ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'transformer', 'earth', 'quiz'].forEach((tab) => {
+    ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'maze', 'transformer', 'earth', 'quiz'].forEach((tab) => {
       const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab }));
       expect(html.length).toBeGreaterThan(200);
     });
@@ -185,6 +185,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce' }))).toContain('Voltage scope');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce' }))).toContain('eddy-current');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'materials' }))).toContain('magnetic domains');
+    expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'maze' }))).toContain('hidden magnet');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'transformer' }))).toContain('120 V →');
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'earth' }))).toContain('magnetosphere');
   });
@@ -211,6 +212,8 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(hooks.mag_crane({ magnetism: {} })).toBe(false);
     expect(hooks.mag_domains({ magnetism: { domainsFull: true } })).toBe(true);
     expect(hooks.mag_domains({ magnetism: {} })).toBe(false);
+    expect(hooks.mag_maze({ magnetism: { mazeWins: 1 } })).toBe(true);
+    expect(hooks.mag_maze({ magnetism: {} })).toBe(false);
     expect(hooks.mag_quiz({ magnetism: { quizBest: 9 } })).toBe(true);
     expect(hooks.mag_quiz({ magnetism: { quizBest: 8 } })).toBe(false);
   });
@@ -333,5 +336,59 @@ describe('magnetism tool — domains, scope, eddy (R4)', () => {
     expect(source).toContain('_prefersReducedMotion) {');
     expect(source).toContain('eddy currents');
     expect(source).toContain('Curie');
+  });
+});
+
+describe('magnetism tool — Field Walk + strength + cycles (R5)', () => {
+  it('magnet strength scales the dipole field linearly (default 1)', () => {
+    const f1 = physics.fieldAt(50, 0, [{ x: 0, y: 0, angle: 0, polarity: 1 }]);
+    const f2 = physics.fieldAt(50, 0, [{ x: 0, y: 0, angle: 0, polarity: 1, strength: 2 }]);
+    expect(f2.x / f1.x).toBeCloseTo(2, 12);
+    const f3 = physics.fieldAt(50, 0, [{ x: 0, y: 0, angle: 0, polarity: 1, strength: 1 }]);
+    expect(f3.x).toBeCloseTo(f1.x, 15); // explicit 1 === omitted
+  });
+
+  it('countCycles finds full alternations and ignores sub-threshold noise', () => {
+    expect(physics.countCycles([])).toBe(0);
+    expect(physics.countCycles([0.5, 0.8, 0.5])).toBe(0);           // one push, no cycle
+    expect(physics.countCycles([0.5, -0.5, 0.6, -0.6])).toBe(1);    // one full wiggle
+    expect(physics.countCycles([1, -1, 1, -1, 1])).toBe(2);         // two cycles
+    expect(physics.countCycles([0.1, -0.1, 0.1, -0.1])).toBe(0);    // noise < threshold
+  });
+
+  it('every Field Walk round keeps the magnet on the board and the start far from the target', () => {
+    physics.MAZE_ROUNDS.forEach((r, i) => {
+      expect(Math.abs(r.x)).toBeLessThanOrEqual(110);
+      expect(Math.abs(r.y)).toBeLessThanOrEqual(77);
+      const poles = physics.mazePoles(i);
+      const st = physics.mazeCellToField(r.start[0], r.start[1]);
+      const dS = Math.hypot(st.x - poles.s.x, st.y - poles.s.y);
+      expect(dS).toBeGreaterThan(22 * 3); // no instant wins
+    });
+  });
+
+  it('every round is WINNABLE by following the needle (the game honors its own physics)', () => {
+    // Walk downstream along the field from each start; must reach the S pole.
+    physics.MAZE_ROUNDS.forEach((r, i) => {
+      const mag = { x: r.x, y: r.y, angle: r.angle, polarity: r.polarity };
+      const poles = physics.mazePoles(i);
+      let p = physics.mazeCellToField(r.start[0], r.start[1]);
+      let reached = false;
+      for (let k = 0; k < 400; k++) {
+        const b = physics.fieldAt(p.x, p.y, [mag]);
+        const bm = Math.hypot(b.x, b.y);
+        if (bm < 1e-15) break;
+        p = { x: p.x + 6 * b.x / bm, y: p.y + 6 * b.y / bm };
+        if (Math.hypot(p.x - poles.s.x, p.y - poles.s.y) < 22 * 1.2) { reached = true; break; }
+      }
+      expect(reached).toBe(true);
+    });
+  });
+
+  it('the S-pole payoff and Earth naming-joke are in the win copy', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('Field lines flow into south poles');
+    expect(source).toContain('naming joke');
+    expect(source).toContain('magnetometer surveys');
   });
 });
