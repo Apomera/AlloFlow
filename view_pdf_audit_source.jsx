@@ -2685,7 +2685,7 @@ function PdfAuditView(props) {
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
     setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64,
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
-    pdfRunHistory, setPdfRunHistory
+    pdfRunHistory, setPdfRunHistory, _remediationMode
   } = props;
   const [remediationProgress, setRemediationProgress] = useState(null);
   const [showAgentTrace, setShowAgentTrace] = useState(false);
@@ -4841,14 +4841,16 @@ function PdfAuditView(props) {
             </div>
             {pdfAuditResult?._choosing ? (
               <div className="p-8 text-center">
-                {/* ── Batch Mode Toggle ── */}
-                <div className="flex justify-center mb-4">
+                {/* ── Batch Mode Toggle (hidden in the focused remediation
+                    mode — the desktop "Document remediation" install choice
+                    locks the app to the batch remediation home screen) ── */}
+                {!_remediationMode && <div className="flex justify-center mb-4">
                   <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
                     <button data-help-key="pdf_audit_view_mode_single_btn" onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📄 Single PDF</button>
                     <button data-help-key="pdf_audit_view_mode_batch_btn" onClick={() => { setPdfBatchMode(true); setPdfWebMode && setPdfWebMode(false); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfBatchMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>📂 Batch</button>
                     <button data-help-key="pdf_audit_view_mode_web_btn" onClick={() => { setPdfBatchMode(false); setPdfWebMode && setPdfWebMode(true); }} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${pdfWebMode ? 'bg-white shadow text-indigo-700' : 'text-slate-600 hover:text-slate-700'}`}>🌐 Website / HTML</button>
                   </div>
-                </div>
+                </div>}
                 {pdfWebMode ? (
                   <div className="text-left space-y-4">
                     <h3 className="text-lg font-black text-slate-800 mb-1 text-center">{t('pdf_audit.web.heading') || '🌐 Website & HTML Accessibility'}</h3>
@@ -5141,6 +5143,43 @@ function PdfAuditView(props) {
                           e.target.value = '';
                         }} />
                         <label data-help-key="pdf_audit_view_batch_browse_btn" htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>
+                      </div>
+                    )}
+
+                    {/* Scan Folder (Electron desktop shells that expose the
+                        remediation folder bridge — ported from the standalone
+                        AlloFlow Remediation build) */}
+                    {!pdfBatchProcessing && !pdfBatchSummary && window.alloAPI?.remediation?.selectFolder && (
+                      <div className="mb-4 text-center">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await window.alloAPI.remediation.selectFolder();
+                              if (!res || res.canceled) return;
+                              const docs = res.files || [];
+                              if (docs.length === 0) { addToast(t('pdf_audit.batch.folder_empty') || 'No PDF, DOCX, or PPTX files found in that folder', 'error'); return; }
+                              addToast((t('pdf_audit.batch.folder_loading') || 'Loading {count} document(s)...').replace('{count}', docs.length), 'info');
+                              const queue = [];
+                              for (const f of docs) {
+                                const r = await window.alloAPI.remediation.readFileBase64(f.path);
+                                if (r && r.base64) {
+                                  queue.push({ id: Date.now() + Math.random(), fileName: f.relPath || f.name, fileSize: f.sizeBytes || r.sizeBytes || 0, base64: r.base64, status: 'pending', result: null });
+                                }
+                              }
+                              if (queue.length === 0) { addToast(t('pdf_audit.batch.folder_unreadable') || 'Could not read any documents from that folder', 'error'); return; }
+                              setPdfBatchQueue(queue);
+                              addToast((t('pdf_audit.batch.folder_remediating') || 'Remediating {count} document(s)...').replace('{count}', queue.length), 'success');
+                              // Pass the queue explicitly to avoid a React state race.
+                              runPdfBatchRemediation({ resumeQueue: queue });
+                            } catch (e) {
+                              addToast((t('pdf_audit.batch.folder_scan_failed') || 'Folder scan failed: ') + (e.message || e), 'error');
+                            }
+                          }}
+                          className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
+                        >
+                          📂 {t('pdf_audit.batch.scan_folder') || 'Scan Folder (PDF, DOCX, PPTX, incl. subfolders)'}
+                        </button>
+                        <p className="text-xs text-slate-500 mt-2">{t('pdf_audit.batch.scan_folder_hint') || 'Pick a folder and AlloFlow will remediate every document, then give you a report.'}</p>
                       </div>
                     )}
 
@@ -6061,9 +6100,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); } if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
-                  <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
+                  {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" onClick={() => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
                     <Sparkles size={16} /> Skip to Text Extraction
-                  </button>
+                  </button>}
                 </div>
                 <p className="text-[11px] text-slate-600 text-center mt-2">{t('pdf_audit.manual_path_explainer') || '"Run Audit" scores the document and shows what needs fixing — you then review and click Fix & Verify yourself (step 2). "Make Accessible" above does both steps plus re-checking, automatically. "Text Extraction" just pulls the raw text for content generation.'}</p>
                 {/* Pre-flight triage panel — replaces the bare "estimated time"
@@ -8891,9 +8930,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                       </div>
                     </div>
-                    <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
+                    {!_remediationMode && <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
                       Text Extract
-                    </button>
+                    </button>}
                   </div>
                   <p className="text-[11px] text-slate-600 text-center">"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.</p>
 

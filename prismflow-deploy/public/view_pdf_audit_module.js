@@ -2770,7 +2770,8 @@ function PdfAuditView(props) {
     startNewPdfAudit,
     startPipelineTour,
     pdfRunHistory,
-    setPdfRunHistory
+    setPdfRunHistory,
+    _remediationMode
   } = props;
   const [remediationProgress, setRemediationProgress] = useState(null);
   const [showAgentTrace, setShowAgentTrace] = useState(false);
@@ -5251,7 +5252,7 @@ function PdfAuditView(props) {
         className: "pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
       },
       /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })
-    )), pdfAuditResult?._choosing ? /* @__PURE__ */ React.createElement("div", { className: "p-8 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex bg-slate-100 rounded-xl p-1 gap-1" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_single_btn", onClick: () => {
+    )), pdfAuditResult?._choosing ? /* @__PURE__ */ React.createElement("div", { className: "p-8 text-center" }, !_remediationMode && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex bg-slate-100 rounded-xl p-1 gap-1" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_single_btn", onClick: () => {
       setPdfBatchMode(false);
       setPdfWebMode && setPdfWebMode(false);
     }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C4} Single PDF"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_batch_btn", onClick: () => {
@@ -5534,7 +5535,42 @@ function PdfAuditView(props) {
         e.target.value = "";
       } }),
       /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_batch_browse_btn", htmlFor: "batch-pdf-input", className: "inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors" }, t("pdf_audit.batch.browse_files") || "Browse Files")
-    ), resumableBatch && pdfBatchQueue.length === 0 && !pdfBatchProcessing && !pdfBatchSummary && /* @__PURE__ */ React.createElement("div", { className: "mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl shrink-0", "aria-hidden": "true" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-800 mb-1" }, t("pdf_audit.batch.resume.title") || "Previous batch interrupted"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, t("pdf_audit.batch.resume.summary", { done: resumableBatch._doneCount, total: resumableBatch.files.length }) || `${resumableBatch._doneCount}/${resumableBatch.files.length} file(s) completed before the tab closed.`, " ", resumableBatch._incompleteCount > 0 && (t("pdf_audit.batch.resume.remaining", { n: resumableBatch._incompleteCount }) || `${resumableBatch._incompleteCount} remaining.`)), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mb-3 truncate", title: resumableBatch.files.map((f) => f.fileName).join(", ") }, t("pdf_audit.batch.resume.files_label") || "Files:", " ", resumableBatch.files.slice(0, 3).map((f) => f.fileName).join(", "), resumableBatch.files.length > 3 ? " " + (t("pdf_audit.batch.resume.files_more", { n: resumableBatch.files.length - 3 }) || `+ ${resumableBatch.files.length - 3} more`) : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    ), !pdfBatchProcessing && !pdfBatchSummary && window.alloAPI?.remediation?.selectFolder && /* @__PURE__ */ React.createElement("div", { className: "mb-4 text-center" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: async () => {
+          try {
+            const res = await window.alloAPI.remediation.selectFolder();
+            if (!res || res.canceled) return;
+            const docs = res.files || [];
+            if (docs.length === 0) {
+              addToast(t("pdf_audit.batch.folder_empty") || "No PDF, DOCX, or PPTX files found in that folder", "error");
+              return;
+            }
+            addToast((t("pdf_audit.batch.folder_loading") || "Loading {count} document(s)...").replace("{count}", docs.length), "info");
+            const queue = [];
+            for (const f of docs) {
+              const r = await window.alloAPI.remediation.readFileBase64(f.path);
+              if (r && r.base64) {
+                queue.push({ id: Date.now() + Math.random(), fileName: f.relPath || f.name, fileSize: f.sizeBytes || r.sizeBytes || 0, base64: r.base64, status: "pending", result: null });
+              }
+            }
+            if (queue.length === 0) {
+              addToast(t("pdf_audit.batch.folder_unreadable") || "Could not read any documents from that folder", "error");
+              return;
+            }
+            setPdfBatchQueue(queue);
+            addToast((t("pdf_audit.batch.folder_remediating") || "Remediating {count} document(s)...").replace("{count}", queue.length), "success");
+            runPdfBatchRemediation({ resumeQueue: queue });
+          } catch (e) {
+            addToast((t("pdf_audit.batch.folder_scan_failed") || "Folder scan failed: ") + (e.message || e), "error");
+          }
+        },
+        className: "px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
+      },
+      "\u{1F4C2} ",
+      t("pdf_audit.batch.scan_folder") || "Scan Folder (PDF, DOCX, PPTX, incl. subfolders)"
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("pdf_audit.batch.scan_folder_hint") || "Pick a folder and AlloFlow will remediate every document, then give you a report.")), resumableBatch && pdfBatchQueue.length === 0 && !pdfBatchProcessing && !pdfBatchSummary && /* @__PURE__ */ React.createElement("div", { className: "mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl shrink-0", "aria-hidden": "true" }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-black text-amber-800 mb-1" }, t("pdf_audit.batch.resume.title") || "Previous batch interrupted"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, t("pdf_audit.batch.resume.summary", { done: resumableBatch._doneCount, total: resumableBatch.files.length }) || `${resumableBatch._doneCount}/${resumableBatch.files.length} file(s) completed before the tab closed.`, " ", resumableBatch._incompleteCount > 0 && (t("pdf_audit.batch.resume.remaining", { n: resumableBatch._incompleteCount }) || `${resumableBatch._incompleteCount} remaining.`)), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mb-3 truncate", title: resumableBatch.files.map((f) => f.fileName).join(", ") }, t("pdf_audit.batch.resume.files_label") || "Files:", " ", resumableBatch.files.slice(0, 3).map((f) => f.fileName).join(", "), resumableBatch.files.length > 3 ? " " + (t("pdf_audit.batch.resume.files_more", { n: resumableBatch.files.length - 3 }) || `+ ${resumableBatch.files.length - 3} more`) : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -6223,7 +6259,7 @@ Return ONLY JSON:
           saveProjectToFile(true);
         }
       }, 150);
-    }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F ", t("pdf_audit.run_audit_label") || "Run Audit (step 1 of 2)"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
+    }, className: "px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2" }, "\u267F ", t("pdf_audit.run_audit_label") || "Run Audit (step 1 of 2)"), !_remediationMode && /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_skip_to_extract_btn", onClick: () => {
       if (pdfAuditResult?._mediaPending) {
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
@@ -7731,7 +7767,7 @@ Return ONLY JSON:
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       if (addToast) addToast(t("toasts.json_data_exported"), "success");
-    }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100" }, "\u{1F4CA} JSON Data (research)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2 border-t border-slate-100" }, "\u{1F4CA} JSON Data (research)"))), !_remediationMode && /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setPdfAuditResult(null);
       proceedWithPdfTransform();
     }, className: "px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors", title: t("pdf_audit.report.text_extract_title") || "Extract text for content generation" }, "Text Extract")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 text-center" }, '"Fix & Verify" transforms to accessible HTML with axe-core verification. "Text Extract" pulls raw text for differentiated material generation.'), chunkResumePrompt && /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-300 p-5 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, "\u{1F4BE}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, t("pdf_audit.resume.heading") || "Saved Progress Found"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1" }, chunkResumePrompt.completedChunks, " of ", chunkResumePrompt.totalChunks, " sections were completed", chunkResumePrompt.savedAt && /* @__PURE__ */ React.createElement("span", null, " (", Math.round((Date.now() - chunkResumePrompt.savedAt) / 6e4), " min ago)"), ". Resume where you left off or start fresh?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
