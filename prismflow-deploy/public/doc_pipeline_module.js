@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -4546,8 +4546,65 @@ var createDocPipeline = function(deps) {
       throw err;
     });
   } : null;
+  // ── Local-backend PDF reroute for Vision calls ─────────────────────────────
+  // Gemini ingests whole PDFs through its vision endpoint; every other backend
+  // we support (LM Studio / Ollama / LocalAI / built-in engine / custom
+  // OpenAI-compatible) cannot — the bridge wraps the PDF bytes in an image_url
+  // data URL that the server rejects at the socket, so every audit call died
+  // as "Failed to fetch" after minutes of doomed retries (field report
+  // 2026-07-16: LM Studio + gemma-3-4b). When a local text backend is active
+  // and the payload is a PDF, extract the text layer deterministically
+  // (pdf.js, extractPdfTextDeterministic) and run the SAME prompt against the
+  // local TEXT model. Scanned PDFs (no text layer) fail fast with a clear,
+  // non-retryable message. True image payloads (PNG/JPEG) keep using the
+  // local vision path — local multimodal models handle plain images fine.
+  var _localPdfTextCache = { key: '', extracted: null };
+  var _localPdfCacheKey = function (b64) {
+    try {
+      var s = typeof b64 === 'string' ? b64 : '';
+      return s ? (s.length + ':' + s.slice(0, 64) + ':' + s.slice(-64)) : '';
+    } catch (_) { return ''; }
+  };
+  var _visionViaLocalTextModel = async function (prompt, base64Data) {
+    var key = _localPdfCacheKey(base64Data);
+    var extracted = (key && _localPdfTextCache.key === key) ? _localPdfTextCache.extracted : null;
+    if (!extracted) {
+      extracted = await extractPdfTextDeterministic(base64Data);
+      if (key) { _localPdfTextCache.key = key; _localPdfTextCache.extracted = extracted; }
+    }
+    var fullText = (extracted && extracted.fullText) || '';
+    if (!fullText || fullText.length < 40 || (extracted && extracted.isScanned)) {
+      var scanErr = new Error('This PDF has no readable text layer (it looks scanned). The local AI model cannot read scanned pages — connect Google Gemini under AI settings to audit scanned documents, or run OCR on the file first.');
+      scanErr.isConfig = true; // permanent for this document — skip the retry storm
+      throw scanErr;
+    }
+    var profile = _localTextProfile();
+    var ctx = Math.max(2048, Number(profile && profile.contextWindow) || 4096);
+    var out = Math.max(900, Number(profile && (profile.outputTokenLimit || profile.jsonOutputTokenLimit)) || 1400);
+    var budget = Math.max(4000, Math.floor((ctx - out) * 3.4) - String(prompt || '').length);
+    var docText = fullText;
+    var truncNote = '';
+    if (docText.length > budget) {
+      docText = docText.slice(0, budget);
+      truncNote = '\n\n[Note: document text truncated to fit the local model\'s context window — ' + budget + ' of ' + fullText.length + ' characters shown. Describe findings for the included portion only.]';
+      _pipeLog('Vision·local', 'PDF text truncated for the local model: ' + budget + '/' + fullText.length + ' chars (ctx ' + ctx + ')');
+    }
+    var pageCount = (extracted && extracted.pageCount) || null;
+    var merged = String(prompt || '')
+      + '\n\n--- DOCUMENT TEXT (extracted from the PDF text layer' + (pageCount ? ', ' + pageCount + ' page(s)' : '') + ') ---\n'
+      + 'Note: you are reviewing extracted TEXT, not the rendered PDF. Purely visual checks (color contrast, whether images have alt text) cannot be verified from this view — do not fabricate findings for them.\n\n'
+      + docText + truncNote;
+    return callGemini(merged);
+  };
   var callGeminiVision = _rawCallGeminiVision ? function() {
     var args = arguments;
+    // Local text backends cannot ingest PDFs through the vision path —
+    // reroute to the text-layer + local text model (see above).
+    if (String(args[2] || '') === 'application/pdf' && _usesLocalTextBackend() && callGemini) {
+      var localCallNum = ++_pipelineStats.visionCalls;
+      _pipeLog('Vision→', 'callGeminiVision #' + localCallNum + ' — rerouted to the local text model (PDF text layer)');
+      return _visionViaLocalTextModel(args[0], args[1]);
+    }
     var callNum = ++_pipelineStats.visionCalls;
     _pipeLog('Vision→', 'callGeminiVision #' + callNum + ' queued');
     var t0 = performance.now();
@@ -4568,6 +4625,27 @@ var createDocPipeline = function(deps) {
   } : null;
   var callImagen = deps.callImagen;
   var addToast = deps.addToast;
+  // storageDB (batch-resume checkpoints + audit caches). The host monolith
+  // has its own binding, but this module referenced it as a bare global — a
+  // ReferenceError ("storageDB is not defined") that silently disabled batch
+  // resume checkpointing (field report 2026-07-16). Resolve lazily from deps
+  // or the UtilsPure module (which may register after this factory runs);
+  // fall back to a no-op store so checkpointing degrades quietly.
+  var _resolveStorageDb = function () {
+    try {
+      if (deps && deps.storageDB) return deps.storageDB;
+      var w = typeof window !== 'undefined' ? window : null;
+      var u = w && w.AlloModules && w.AlloModules.UtilsPure;
+      if (u && u.storageDB) return u.storageDB;
+    } catch (_) {}
+    return null;
+  };
+  var storageDB = {
+    get: async function (k) { var db = _resolveStorageDb(); return db ? db.get(k) : null; },
+    set: async function (k, v) { var db = _resolveStorageDb(); return db ? db.set(k, v) : undefined; },
+    del: async function (k) { var db = _resolveStorageDb(); return db ? db.del(k) : undefined; },
+    clear: async function () { var db = _resolveStorageDb(); return db ? db.clear() : undefined; },
+  };
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
   var updateExportPreview = deps.updateExportPreview || function() {};
@@ -13229,6 +13307,26 @@ Return ONLY valid JSON:
     const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">${done.length} Processed</span><span class="stat">\u2705 ${_zipVerificationSummary.fullyVerified || 0} Fully verified</span><span class="stat">\u26a0 ${_zipVerificationSummary.reviewRequired || 0} Need review</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipVerificationSummary.above90Verified || 0} verified at 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Verification</th><th>Tagged PDF</th><th>Processing Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const v=_zipVerificationFor(r);const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+', '+(r.secondEngineAudit.reviewFindingCount||0)+' review)') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+(v.verificationState==='complete'?'pass':'warn')+'">'+_escRpt(v.verificationState)+(v.reviewCount>0?' ('+v.reviewCount+' review)':'')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?(v.verificationState==='complete'?'\u2705 Processed · fully verified':'\u26a0 Processed · review required'):f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
+    // \u2500\u2500 Standalone remediation edition (Electron) \u2014 the ONLY deviation from the
+    // upstream pipeline: blob downloads don't work in the packaged app, so save
+    // the same artifact set to a user-chosen local folder via IPC instead.
+    // Web builds fall through to the stock ZIP download below.
+    if (window.alloAPI && window.alloAPI.remediation && window.alloAPI.remediation.saveFiles) {
+      const _payloadFiles = [];
+      for (const _zn of Object.keys(zip.files)) {
+        const _ze = zip.files[_zn];
+        if (_ze.dir) continue;
+        _payloadFiles.push({ name: _zn, data: await _ze.async('base64'), encoding: 'base64' });
+      }
+      const _saveRes = await window.alloAPI.remediation.saveFiles({
+        folderName: `AlloFlow_Remediated_${new Date().toISOString().slice(0, 10)}`,
+        files: _payloadFiles,
+      });
+      if (!_saveRes || _saveRes.canceled) return;
+      if (_saveRes.error) { addToast('Save failed: ' + _saveRes.error, 'error'); return; }
+      addToast(`\ud83d\udcc1 Saved ${_saveRes.saved} file(s) to ${_saveRes.folder}` + (_taggedCount > 0 ? ` (incl. ${_taggedCount} tagged PDF)` : '') + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+      try { window.alloAPI.remediation.revealPath && window.alloAPI.remediation.revealPath(_saveRes.folder); } catch (_) {}
+    } else {
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -13237,6 +13335,7 @@ Return ONLY valid JSON:
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} processed file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+    }
     // C5 (deep dive 2026-07-01 \u2192 fixed 2026-07-02): files whose tagged PDF was EXCLUDED
     // (failed verification) or failed to generate used to be disclosed only as a CSV notes
     // column \u2014 easy to miss on an unattended batch. Name them in their own warning toast.
@@ -35295,11 +35394,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
