@@ -3304,9 +3304,12 @@ function _alloNormalizeDirectionsData(data) {
         const objectives = Array.isArray(data.objectives)
             ? data.objectives.filter(o => o && typeof o === 'object' && o.id && typeof o.label === 'string' && o.label && ['xp', 'game', 'manual'].includes(o.kind))
             : [];
-        return { body, objectives };
+        // softGate (Phase 2): a GENTLE nudge flag — suggests finishing goals before the rest
+        // of the pack. Never blocks anything; hard gates are Phase 3, opt-in, with a recorded
+        // escape hatch.
+        return { body, objectives, softGate: data.softGate === true };
     }
-    return { body: typeof data === 'string' ? data : '', objectives: [] };
+    return { body: typeof data === 'string' ? data : '', objectives: [], softGate: false };
 }
 function _alloEvaluateObjectives(objectives, signals, progress) {
     const s = signals || {};
@@ -8583,7 +8586,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=095dcfce7');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=095dcfce7');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=095dcfce7');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=ae98eb30');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=85217dd2');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6d41dc65');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=095dcfce7');
@@ -15785,6 +15788,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // Device-local (storageDB) — a formative guide, never a grade; Phase 2 syncs evidence at next join.
   const [directionsProgress, setDirectionsProgress] = useState({});
   const _directionsProgressLoadedRef = useRef(false);
+  // Phase 2: teacher-side homework check-ins (uid|directionsId -> evidence snapshot) and the
+  // student-side once-per-resource soft-gate nudge tracker.
+  const [mbHwEvidence, setMbHwEvidence] = useState({});
+  const _softGateNudgedRef = useRef(new Set());
   useEffect(() => {
       let cancelled = false;
       (async () => {
@@ -16440,7 +16447,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // Objectives Phase 1: structured data only when goals exist — a plain string
       // otherwise, so v2 items and every legacy reader stay byte-compatible.
       const _objectives = _alloNormalizeDirectionsData({ body: md, objectives: d.objectives }).objectives;
-      const _dirData = _objectives.length ? { body: md, objectives: _objectives } : md;
+      const _dirData = _objectives.length ? { body: md, objectives: _objectives, ...(d.softGate ? { softGate: true } : {}) } : md;
       const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: _dirData, ...(d.derivedFrom ? { meta: { derivedFrom: d.derivedFrom } } : {}) };
       setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
       setMbDirectionsDraft(null);
@@ -16593,6 +16600,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (!v || v.kind !== 'student' || !v.uid) return;
           setMbRoster(prev => ({ ...prev, [v.uid]: { ...(prev[v.uid] || {}), name: String(v.name || 'Student').slice(0, 40), hand: !!v.hand, at: at || Date.now(), rtc: (mbPeersRef.current[v.uid]?.dc?.readyState === 'open') } }));
       };
+      // Phase 2 return path: homework evidence reported by the student's DEVICE (formative,
+      // never a grade). Keyed uid+directionsId so a re-send with more goals done replaces
+      // the earlier snapshot instead of duplicating it.
+      const applyHwEvidence = (v) => {
+          if (!v || v.kind !== 'hw-evidence' || !v.uid || !v.directionsId) return;
+          setMbHwEvidence(prev => ({
+              ...prev,
+              [v.uid + '|' + v.directionsId]: {
+                  uid: String(v.uid).slice(0, 60),
+                  name: String(v.name || 'Student').slice(0, 40),
+                  directionsId: String(v.directionsId).slice(0, 60),
+                  title: String(v.title || 'Homework').slice(0, 140),
+                  doneCount: Math.max(0, Number(v.doneCount) || 0),
+                  total: Math.max(0, Number(v.total) || 0),
+                  xpEarned: Math.max(0, Number(v.xpEarned) || 0),
+                  objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done) })),
+                  at: Date.now(),
+              },
+          }));
+      };
       const answerRtcOffer = async (v) => {
           const uid = String(v.uid || '');
           if (!uid || !v.sdp || v.sdp.type !== 'offer' || typeof RTCPeerConnection !== 'function') return;
@@ -16611,6 +16638,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           // Bridge nudge: a student just wrote to the session
                           // doc store — pull it now, not on the next poll.
                           if (parsed && parsed.kind === 'sdocv') { _alloMbNudge(); return; }
+                          if (parsed && parsed.kind === 'hw-evidence') { applyHwEvidence(parsed); return; }
                           applyStudentUpdate(parsed, Date.now());
                       } catch (_) {}
                   };
@@ -16674,6 +16702,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           const v = msg && msg.v;
                           if (!v) continue;
                           if (v.kind === 'student') applyStudentUpdate(v, msg.t);
+                          else if (v.kind === 'hw-evidence') applyHwEvidence(v);
                           else if (v.kind === 'rtc') await answerRtcOffer(v);
                       }
                   }

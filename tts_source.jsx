@@ -155,7 +155,16 @@ const createTTS = (deps) => {
     // A hung cloud request must fail loudly, not wedge the serialized TTS
     // queue forever (each lane is one promise chain — one stalled fetch used
     // to block EVERY later sentence, which read as "TTS is stuck").
-    const TTS_FETCH_TIMEOUT_MS = 60000;
+    // Tiered budgets (2026-07-20 field trace): real generations complete in
+    // 1.9–5.5s, but the Canvas proxy can HANG ~60s before failing with a 401.
+    // At the old 60s ceiling one zombie request cost a minute of dead air per
+    // retry; 12s interactive / 25s background kills zombies while covering
+    // slow-but-real generations with room to spare.
+    const TTS_FETCH_TIMEOUT_INTERACTIVE_MS = 12000;
+    const TTS_FETCH_TIMEOUT_MS = 25000;
+    // In-flight joins older than this are presumed wedged and REPLACED —
+    // background joiners must not inherit a zombie either.
+    const CALLTTS_JOIN_MAX_AGE_MS = 20000;
 
     const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal') => {
         // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
@@ -179,17 +188,18 @@ const createTTS = (deps) => {
         });
         const queuedTask = state[queueSlot].then(async () => {
             const taskStartedAt = Date.now();
-            // Watchdog: abort the network call after TTS_FETCH_TIMEOUT_MS.
+            // Watchdog: abort the network call after the lane's time budget.
             // Chained with the caller's signal; a watchdog abort is rethrown
             // as a REGULAR error (not AbortError) so retry/fallback engage
             // instead of being treated as a user cancel.
+            const fetchTimeoutMs = requestPriority === 'interactive' ? TTS_FETCH_TIMEOUT_INTERACTIVE_MS : TTS_FETCH_TIMEOUT_MS;
             let watchdogFired = false;
             const watchdogController = typeof AbortController !== 'undefined' ? new AbortController() : null;
             const watchdogTimer = watchdogController
                 ? setTimeout(() => {
                     watchdogFired = true;
                     try { watchdogController.abort(); } catch (_) {}
-                }, TTS_FETCH_TIMEOUT_MS)
+                }, fetchTimeoutMs)
                 : null;
             if (signal && watchdogController) {
                 try {
@@ -200,7 +210,7 @@ const createTTS = (deps) => {
             const fetchSignal = watchdogController ? watchdogController.signal : (signal || undefined);
             const rethrowWatchdog = (err) => {
                 if (watchdogFired && err && err.name === 'AbortError') {
-                    return new Error('TTS Transient Error (timeout after ' + Math.round(TTS_FETCH_TIMEOUT_MS / 1000) + 's)');
+                    return new Error('TTS Transient Error (timeout after ' + Math.round(fetchTimeoutMs / 1000) + 's)');
                 }
                 return err;
             };
@@ -518,18 +528,31 @@ const createTTS = (deps) => {
                 canvasLastErr = null;
                 const fetchCanvasTTSBytes = async () => {
                     if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
-                    let inFlight = callTTSInFlight.get(canvasCacheKey);
-                    if (!inFlight) {
-                        inFlight = fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority);
-                        callTTSInFlight.set(canvasCacheKey, inFlight);
+                    // A waiting learner must never be glued to someone else's
+                    // possibly-wedged request (field trace 2026-07-20: a Canvas
+                    // fetch hung 60s before its 401 and every playback retry
+                    // JOINED that zombie — a minute of dead air per join).
+                    // Interactive callers always issue their OWN request (still
+                    // registered, so background callers can piggyback on the
+                    // fast one); background callers join only entries younger
+                    // than the stale ceiling.
+                    const isInteractive = _callOpts.priority === 'interactive';
+                    let entry = callTTSInFlight.get(canvasCacheKey);
+                    const entryAge = entry ? Date.now() - entry.startedAt : 0;
+                    if (!entry || isInteractive || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
+                        if (entry && entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
+                            _ttsTrace('calltts:inflight-stale-replaced', { text: String(text || '').substring(0, 48), ageMs: entryAge });
+                        }
+                        entry = { promise: fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority), startedAt: Date.now() };
+                        callTTSInFlight.set(canvasCacheKey, entry);
                     } else {
                         debugLog('callTTS Canvas in-flight JOIN:', text?.substring(0, 30));
                         _ttsTrace('calltts:inflight-join', { text: String(text || '').substring(0, 48) });
                     }
                     try {
-                        return await inFlight;
+                        return await entry.promise;
                     } finally {
-                        if (callTTSInFlight.get(canvasCacheKey) === inFlight) {
+                        if (callTTSInFlight.get(canvasCacheKey) === entry) {
                             callTTSInFlight.delete(canvasCacheKey);
                         }
                     }
@@ -760,17 +783,21 @@ const createTTS = (deps) => {
         }
         const fetchSharedTTSBytes = async () => {
             if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
-            let inFlight = callTTSInFlight.get(cacheKey);
-            if (!inFlight) {
-                inFlight = fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority);
-                callTTSInFlight.set(cacheKey, inFlight);
+            // Same zombie-protection as the Canvas branch: interactive callers
+            // never join, background callers never join a stale entry.
+            const isInteractive = _callOpts.priority === 'interactive';
+            let entry = callTTSInFlight.get(cacheKey);
+            const entryAge = entry ? Date.now() - entry.startedAt : 0;
+            if (!entry || isInteractive || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
+                entry = { promise: fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority), startedAt: Date.now() };
+                callTTSInFlight.set(cacheKey, entry);
             } else {
                 debugLog('callTTS in-flight JOIN:', text?.substring(0, 30));
             }
             try {
-                return await inFlight;
+                return await entry.promise;
             } finally {
-                if (callTTSInFlight.get(cacheKey) === inFlight) callTTSInFlight.delete(cacheKey);
+                if (callTTSInFlight.get(cacheKey) === entry) callTTSInFlight.delete(cacheKey);
             }
         };
         let lastError = null;
