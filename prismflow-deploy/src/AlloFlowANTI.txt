@@ -4935,6 +4935,7 @@ const getIconForType = (type) => {
         case 'analysis': return <Search size={16} />;
         case 'udl-advice': return <HelpCircle size={16} />;
         case 'faq': return <FileQuestion size={16} />;
+        case 'directions': return <ClipboardList size={16} />;
         case 'brainstorm': return <Lightbulb size={16} />;
         case 'sentence-frames': return <Quote size={16} />;
         case 'adventure': return <MapIcon size={16} />;
@@ -15689,6 +15690,61 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   });
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
+  // ── Take-Home Pack v1 (2026-07-19): the teacher's live session doubles as the homework
+  // hand-off. "Send home" tells every joined student device to persist the session's
+  // student-safe pack into IndexedDB (storageDB — stable-origin, survives without the
+  // session or network); at home the Homework shelf banner rehydrates it through the SAME
+  // state path the homework-QR assignment loader uses. Directions ride the pack as a
+  // normal 'directions' resource (markdown body → default renderer + read-aloud for free).
+  const [homeworkShelf, setHomeworkShelf] = useState(null);
+  const [mbDirectionsDraft, setMbDirectionsDraft] = useState(null); // null = composer closed; {title, body, due}
+  useEffect(() => {
+      let cancelled = false;
+      (async () => {
+          try {
+              const saved = await storageDB.get('allo_homework_shelf_v1');
+              if (!cancelled && saved && Array.isArray(saved.resources) && saved.resources.length) setHomeworkShelf(saved);
+          } catch (_) {}
+      })();
+      return () => { cancelled = true; };
+  }, []);
+  const downloadHomeworkShelfJson = useCallback((shelf) => {
+      try {
+          const payload = shelf || homeworkShelf;
+          if (!payload) return;
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'alloflow-homework-' + String(payload.savedAt || '').slice(0, 10) + '.json';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (_) {} }, 4000);
+      } catch (e) { warnLog('Homework download failed', e); }
+  }, [homeworkShelf]);
+  const clearHomeworkShelf = useCallback(async () => {
+      setHomeworkShelf(null);
+      try { await storageDB.set('allo_homework_shelf_v1', null); } catch (_) {}
+  }, []);
+  const openHomeworkShelf = useCallback(() => {
+      const shelf = homeworkShelf;
+      if (!shelf || !Array.isArray(shelf.resources) || !shelf.resources.length) return;
+      // Mirror the homework-QR assignment loader's state sets (the proven at-home viewing
+      // mode) minus the network fetch — the shelf IS the already-hydrated packet.
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+      setShowWizard(false);
+      setShowStudentWelcome(false);
+      setIsTeacherMode(false);
+      setIsParentMode(false);
+      setIsIndependentMode(false);
+      setIsStudentLinkMode(true);
+      setShowStudentEntry(true);
+      setHistory(shelf.resources);
+      hydratedHistoryRef.current = shelf.resources;
+      // Directions first: the assignment brief is the front page of homework.
+      const first = shelf.resources.find(r => r && r.type === 'directions') || shelf.resources[0];
+      if (first) setPendingQrAssignmentResource(first);
+      addToast(t('takehome.loaded') || ('Homework loaded: ' + (shelf.title || 'saved pack')), 'success');
+  }, [homeworkShelf, addToast, t]);
   // Survive teacher refresh / Canvas re-render. localStorage is the fast path
   // BUT it is unavailable in the sandboxed Gemini Canvas iframe (setItem
   // throws, caught silently), so it only helps the standalone student shell.
@@ -16136,11 +16192,42 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // sharing. Real-time channels get chunks instantly; the mailbox ALWAYS gets
   // a copy (replay log for late joiners + delivery when P2P is blocked) and
   // students dedup by rid. opts.open=false delivers into the student's pack
+  // Full-fidelity student-pack serialization (2026-07-19). The pack channels
+  // (mailbox per-item push, mailbox hosted pack, late-join re-send, QR and
+  // homework links) used to narrow every resource to {id,type,title,meta,data},
+  // silently stripping the top-level fields a resource needs to actually WORK
+  // on the student device: word-sounds lost lessonPlanSequence/lessonPlanConfig
+  // and its probe flags (probes could not run at all), games lost gameData.
+  // Serialize the FULL item through the same sanitizers the Firebase
+  // live-session path uses — sanitizeHistoryForCloud (private-item filter +
+  // known binary strips) then sanitizeSessionValue (nulls *image/*audio/*blob
+  // suffixed payloads, trims oversize strings) — so pack students receive
+  // exactly what live-session students receive. karaokeStudentAudio (a child's
+  // recorded voice — biometric-class) is force-stripped regardless of what
+  // future sanitizer changes allow.
+  const _alloSerializeResourceForStudentPack = (item) => {
+      if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+      let cleaned = item;
+      try {
+          const viaCloud = sanitizeHistoryForCloud([item]);
+          if (!Array.isArray(viaCloud) || viaCloud.length === 0) return null; // private item — never packs
+          cleaned = viaCloud[0] || item;
+      } catch (_) {}
+      try {
+          if (typeof window !== 'undefined' && typeof window.sanitizeSessionValue === 'function') {
+              cleaned = window.sanitizeSessionValue(cleaned, 'resource');
+          }
+      } catch (_) {}
+      const { karaokeStudentAudio, ...safe } = cleaned || {};
+      return stripUndefined(safe);
+  };
   // without yanking their view; opts.quiet=true suppresses per-item toasts.
   const _mbPushOneResource = useCallback(async (item, opts = {}) => {
       if (!mbLive || !mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
       const flags = { open: opts.open !== false, quiet: opts.quiet === true };
-      const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+      const packItem = _alloSerializeResourceForStudentPack(item);
+      if (!packItem) return { rtcCount: 0 };
+      const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
       const parts = _alloSplitPackChunks(encoded);
       const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       let rtcCount = 0;
@@ -16206,6 +16293,36 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast('Shared ' + shared + ' of ' + candidates.length + ' resources with the class.', shared ? 'success' : 'error');
       setMbBusy(false);
   }, [mbLive, mbConfig, history, _mbPushOneResource]);
+  // Take-Home Pack v1: directions are a NORMAL student-safe resource (markdown body), so the
+  // existing auto pack-sync, homework QR, self-contained links, and read-aloud all carry them
+  // with zero extra plumbing. The composer just writes one history item.
+  const addDirectionsToPack = useCallback(() => {
+      const d = mbDirectionsDraft || {};
+      const title = String(d.title || '').trim().slice(0, 140) || 'Assignment Directions';
+      const body = String(d.body || '').trim();
+      if (!body) { addToast(t('takehome.directions_empty') || 'Write the directions first — students see them as the front page of the assignment.', 'info'); return; }
+      const due = String(d.due || '').trim().slice(0, 80);
+      const md = (due ? '**Due:** ' + due + '\n\n' : '') + body;
+      const item = { id: generateUUID(), type: 'directions', title, timestamp: new Date().toISOString(), data: md };
+      setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
+      setMbDirectionsDraft(null);
+      addToast(t('takehome.directions_added') || 'Directions added to the class pack — they sync to students automatically.', 'success');
+  }, [mbDirectionsDraft, addToast, t]);
+  const sendPackHome = useCallback(async () => {
+      if (!mbLive || !mbConfig?.url) return;
+      const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+      if (!candidates.length) { addToast(t('takehome.nothing_to_send') || 'Nothing student-safe to send home yet — create or share a resource first.', 'info'); return; }
+      setMbBusy(true);
+      try {
+          const title = String(sourceTopic || 'Homework').trim().slice(0, 140) || 'Homework';
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'takehome', title, at: Date.now() } });
+          addToast(t('takehome.sent') || '📥 Sent home — each connected device saves the pack for offline homework.', 'success');
+      } catch (e) {
+          warnLog('Send home failed', e);
+          addToast((t('takehome.send_failed') || 'Send home failed: ') + (e?.message || e), 'error');
+      }
+      setMbBusy(false);
+  }, [mbLive, mbConfig, history, sourceTopic, addToast, t]);
   // Firestore-parity: the class pack syncs AUTOMATICALLY — the exact analogue
   // of syncResourcesToSession (1.5s debounce on history changes), no button
   // press needed. Incremental: content fingerprints mean only new/changed
@@ -16225,7 +16342,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
               }
               for (const item of candidates) {
-                  const fp = _alloQuickHash(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })) || '');
+                  const fp = _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || '');
                   if (seen[item.id] === fp) continue;
                   // Per-item isolation: one failed push (rate-limit/too-big/network)
                   // must not strand the rest of the pack. Record the fingerprint
@@ -16246,11 +16363,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               // consume-once mailbox message channel lacks. Fingerprint-gated:
               // zero Drive writes when the student-safe set is unchanged.
               if (candidates.length) {
-                  const packFp = _alloQuickHash(candidates.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(stripUndefined({ id: it.id, type: it.type, title: it.title, meta: it.meta, data: it.data })) || '') || '')).join('|'));
+                  const packFp = _alloQuickHash(candidates.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(it)) || '') || '')).join('|'));
                   if (packFp !== mbHostedPackFpRef.current) {
                       if (!mbLivePackRef.current) mbLivePackRef.current = { id: 'PK-' + generateUUID(), k: _alloRandomToken(16) };
                       const { id, k } = mbLivePackRef.current;
-                      const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: candidates[0]?.id || null, resources: candidates.map(it => ({ id: it.id, type: it.type, title: it.title, meta: it.meta, data: it.data })) });
+                      const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: candidates[0]?.id || null, resources: candidates.map(it => _alloSerializeResourceForStudentPack(it)).filter(Boolean) });
                       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
                       const parts = _alloSplitPackChunks(encoded);
                       for (let i = 0; i < parts.length; i += 1) {
@@ -16309,7 +16426,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       (async () => {
                           try {
                               for (const item of (mbPackItemsRef.current || [])) {
-                                  const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+                                  const packItem = _alloSerializeResourceForStudentPack(item);
+                                  if (!packItem) continue;
+                                  const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
                                   const parts = _alloSplitPackChunks(encoded);
                                   const rid = 'W' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
                                   for (let i = 0; i < parts.length; i += 1) {
@@ -16426,7 +16545,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
       const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
-      const resources = resourcesToAssign.map(item => ({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data }));
+      const resources = resourcesToAssign.map(item => _alloSerializeResourceForStudentPack(item)).filter(Boolean);
       const packet = stripUndefined({
           v: 1,
           kind: 'assignment',
@@ -16587,6 +16706,33 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (v.kind === 'end') {
           addToast('The teacher ended this live session.', 'info');
           setMbStudent(null);
+          return;
+      }
+      if (v.kind === 'takehome') {
+          // Take-Home Pack v1: persist the CURRENT student-safe pack to this device so it
+          // survives the session (IndexedDB via storageDB — stable-origin). The pack channel
+          // already delivered/self-healed the resources; this message only flips persistence.
+          const items = (hydratedHistoryRef.current || []).filter(it => it && it.id && it.type && !TEACHER_ONLY_TYPES.includes(it.type));
+          if (!items.length) { addToast(t('takehome.empty_pack') || 'Your teacher sent homework, but no resources have arrived yet — stay connected a moment and ask them to resend.', 'info'); return; }
+          const shelf = {
+              v: 1,
+              savedAt: new Date().toISOString(),
+              code: (typeof mbLive === 'object' && mbLive) ? (mbLive.code || null) : null,
+              title: String(v.title || '').slice(0, 140) || 'Homework',
+              note: String(v.note || '').slice(0, 2000),
+              resources: items,
+          };
+          try {
+              const ok = await storageDB.set('allo_homework_shelf_v1', shelf);
+              if (ok === false) throw new Error('storage unavailable');
+              setHomeworkShelf(shelf);
+              addToast(t('takehome.saved') || ('📥 ' + shelf.title + ' saved to THIS device (' + items.length + ' resources). Open AlloFlow at home to continue — no code needed.'), 'success');
+          } catch (persistErr) {
+              // Honest fallback (shared/locked-down devices): storage refused — offer the file.
+              warnLog('Take-home persist failed', persistErr);
+              setHomeworkShelf(shelf); // in-memory for this visit so the banner's download button works
+              addToast(t('takehome.save_failed') || 'This device would not save the homework — use the Download button on the homework banner to keep a file copy.', 'warning');
+          }
           return;
       }
       if (v.kind === 'packdone') {
@@ -28581,6 +28727,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'analysis': return t('analysis.title');
           case 'udl-advice': return t('sidebar.ai_guide');
           case 'faq': return t('faq.title');
+          case 'directions': return t('directions.title') || 'Assignment Directions';
           case 'brainstorm': return t('brainstorm.title');
           case 'sentence-frames': return t('scaffolds.title');
           case 'adventure': return t('adventure.title');
@@ -36557,6 +36704,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <p className="text-[11px] opacity-70 mt-2">{t('lms.audit_queue_help') || 'Click a document to fetch and load it into the accessibility pipeline. Some LMS files may require you to be logged in to the LMS in this browser.'}</p>
         </div>
       )}
+      {homeworkShelf && Array.isArray(homeworkShelf.resources) && homeworkShelf.resources.length > 0 && !mbLive && !mbStudent && !activeSessionCode && !isTeacherMode && (
+        <div role="region" aria-label={t('takehome.banner_label') || 'Saved homework'} className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[390] w-full max-w-md px-4">
+          <div className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border bg-white border-amber-300 text-amber-900">
+            <ClipboardList size={20} className="flex-shrink-0 text-amber-600" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate">{homeworkShelf.title || (t('takehome.banner_title') || 'Homework saved on this device')}</p>
+              <p className="text-[11px] text-amber-700">{(homeworkShelf.resources.length) + ' ' + (t('takehome.banner_count') || 'resources from your teacher') + (homeworkShelf.savedAt ? ' · ' + String(homeworkShelf.savedAt).slice(0, 10) : '')}</p>
+            </div>
+            <button onClick={openHomeworkShelf} className="text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg px-3 py-2 transition-all flex-shrink-0">{t('takehome.open') || 'Open'}</button>
+            <button onClick={() => downloadHomeworkShelfJson(homeworkShelf)} title={t('takehome.download') || 'Download a backup file (for a different device)'} aria-label={t('takehome.download') || 'Download homework backup file'} className="text-amber-700 hover:text-amber-900 p-1.5 rounded-lg border border-amber-200 hover:border-amber-400 transition-all flex-shrink-0"><Download size={14} /></button>
+            <button onClick={clearHomeworkShelf} title={t('takehome.clear') || 'Remove saved homework from this device'} aria-label={t('takehome.clear') || 'Remove saved homework'} className="text-amber-400 hover:text-rose-600 p-1.5 rounded-lg transition-all flex-shrink-0"><Trash2 size={14} /></button>
+          </div>
+        </div>
+      )}
       <div role="status" aria-live="polite" className="fixed top-44 left-1/2 -translate-x-1/2 z-[400] flex flex-col gap-3 pointer-events-none items-center w-full max-w-md">
         {toasts.map(toast => (
             <div
@@ -36884,6 +37045,27 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   Re-send full pack (troubleshooting — it already syncs automatically)
                 </button>
                 <p className="text-[10px] text-slate-400 mb-2 text-center">Your resource pack shares to the class automatically, like a regular live session.</p>
+                <div className="border-t border-indigo-100 pt-2 mb-2">
+                  {mbDirectionsDraft ? (
+                    <div className="space-y-1 mb-2">
+                      <input value={mbDirectionsDraft.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder="Title (e.g. Tonight's homework)" aria-label="Directions title" className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
+                      <textarea value={mbDirectionsDraft.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder="Directions for students — steps, what finished work looks like…" aria-label="Directions for students" rows={3} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
+                      <input value={mbDirectionsDraft.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder="Due (optional, e.g. Friday)" aria-label="Due date" className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
+                      <div className="flex gap-1">
+                        <button onClick={addDirectionsToPack} className="flex-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all">Add to pack</button>
+                        <button onClick={() => setMbDirectionsDraft(null)} className="text-[11px] text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => setMbDirectionsDraft({})} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all mb-1">
+                      <ClipboardList size={13} /> Write assignment directions
+                    </button>
+                  )}
+                  <button onClick={sendPackHome} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 transition-all disabled:opacity-60">
+                    <FolderDown size={13} /> Send home (saves on student devices)
+                  </button>
+                  <p className="text-[10px] text-slate-400 mt-1 text-center">Students keep the pack + directions on their device for homework — no code needed at home.</p>
+                </div>
                 <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
               </div>
             )}
