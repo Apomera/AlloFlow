@@ -32,10 +32,15 @@
 
   Var AddDesktopShortcutCheckbox
   Var AddDesktopShortcut
-  Var ExperienceFullRadio
-  Var ExperienceRemediationRadio
-  Var ExperienceChoice
-  Var EditionMarkerHandle
+  ; Experience-choice vars exist only when the page does — the Admin Server
+  ; flavor never references them, and NSIS treats the resulting "not
+  ; referenced" warning 6001 as an error.
+  !ifdef ALLO_EXPERIENCE_CHOICE
+    Var ExperienceFullRadio
+    Var ExperienceRemediationRadio
+    Var ExperienceChoice
+    Var EditionMarkerHandle
+  !endif
   Var InstallDiagnosticLog
   Var InstallDiagnosticHandle
   Var ResolvedAppExe
