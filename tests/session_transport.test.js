@@ -124,12 +124,116 @@ describe('mailbox adapter (stage-1 shell)', () => {
   });
 });
 
+describe('mailbox pack cycle (stage 2 — the algorithm, module-owned)', () => {
+  function cycleOps(overrides = {}) {
+    return {
+      seen: {},
+      fingerprint: vi.fn((item) => 'fp-' + item.id + '-' + (item.rev || 1)),
+      packFingerprint: vi.fn((items) => items.map((i) => i.id + ':' + (i.rev || 1)).join('|')),
+      pushItem: vi.fn(async () => {}),
+      sendRemovals: vi.fn(async () => {}),
+      hostPack: vi.fn(async () => ({ id: 'PK-1', k: 'key' })),
+      publishPackRef: vi.fn(async () => {}),
+      getHostedFp: vi.fn(() => null),
+      setHostedFp: vi.fn(),
+      trace: vi.fn(),
+      onItemError: vi.fn(),
+      onPackRefError: vi.fn(),
+      now: () => 1234,
+      ...overrides,
+    };
+  }
+  const items = (list) => list.map((id) => ({ id, type: 'simplified' }));
+
+  it('pushes only new/changed fingerprints and records them on success', async () => {
+    const ops = cycleOps({ seen: { a: 'fp-a-1' } });
+    const result = await ST.runMailboxPackCycle(items(['a', 'b']), ops);
+    expect(ops.pushItem).toHaveBeenCalledTimes(1);
+    expect(ops.pushItem.mock.calls[0][0].id).toBe('b');
+    expect(ops.seen.b).toBe('fp-b-1');
+    expect(result).toMatchObject({ pushed: 1, failed: 0, removed: 0 });
+  });
+
+  it('isolates a failed push: others continue, fingerprint NOT recorded so it retries', async () => {
+    const ops = cycleOps({
+      pushItem: vi.fn(async (item) => { if (item.id === 'a') throw new Error('too big'); }),
+    });
+    const result = await ST.runMailboxPackCycle(items(['a', 'b']), ops);
+    expect(result).toMatchObject({ pushed: 1, failed: 1 });
+    expect(ops.seen.a).toBeUndefined(); // retried next cycle
+    expect(ops.seen.b).toBe('fp-b-1');
+    expect(ops.onItemError).toHaveBeenCalledTimes(1);
+  });
+
+  it('detects removals, prunes them from seen, and sends ONE removal message', async () => {
+    const ops = cycleOps({ seen: { gone: 'fp-gone-1', a: 'fp-a-1' } });
+    const result = await ST.runMailboxPackCycle(items(['a']), ops);
+    expect(ops.sendRemovals).toHaveBeenCalledWith(['gone']);
+    expect(ops.seen.gone).toBeUndefined();
+    expect(result.removed).toBe(1);
+  });
+
+  it('re-hosts the pack only when the pack fingerprint changes', async () => {
+    const ops = cycleOps({ getHostedFp: vi.fn(() => 'a:1|b:1') });
+    await ST.runMailboxPackCycle(items(['a', 'b']), ops);
+    expect(ops.hostPack).not.toHaveBeenCalled();
+    const ops2 = cycleOps({ getHostedFp: vi.fn(() => 'stale') });
+    const result = await ST.runMailboxPackCycle(items(['a', 'b']), ops2);
+    expect(ops2.hostPack).toHaveBeenCalledTimes(1);
+    expect(ops2.setHostedFp).toHaveBeenCalledWith('a:1|b:1');
+    expect(ops2.publishPackRef).toHaveBeenCalledWith({ id: 'PK-1', k: 'key', n: 2, t: 1234 });
+    expect(result.hosted).toBe(true);
+  });
+
+  it('a failed hostPack leaves the fingerprint unset (re-hosts next cycle)', async () => {
+    const ops = cycleOps({ hostPack: vi.fn(async () => { throw new Error('putpack 500'); }) });
+    await expect(ST.runMailboxPackCycle(items(['a']), ops)).rejects.toThrow('putpack 500');
+    expect(ops.setHostedFp).not.toHaveBeenCalled();
+  });
+
+  it('a failed packRef publish is advisory: hosted fp records, error routed to handler', async () => {
+    const ops = cycleOps({ publishPackRef: vi.fn(async () => { throw new Error('firestore down'); }) });
+    const result = await ST.runMailboxPackCycle(items(['a']), ops);
+    expect(ops.setHostedFp).toHaveBeenCalled();
+    expect(ops.onPackRefError).toHaveBeenCalledTimes(1);
+    expect(result.hosted).toBe(true);
+  });
+
+  it('traces one pack-cycle event only when something actually happened', async () => {
+    const quietOps = cycleOps({ seen: { a: 'fp-a-1' }, getHostedFp: vi.fn(() => 'a:1') });
+    await ST.runMailboxPackCycle(items(['a']), quietOps);
+    expect(quietOps.trace).not.toHaveBeenCalled();
+    const busyOps = cycleOps();
+    await ST.runMailboxPackCycle(items(['a']), busyOps);
+    expect(busyOps.trace).toHaveBeenCalledWith('mailbox:pack-cycle', expect.objectContaining({ pushed: 1 }));
+  });
+
+  it('the granular mailbox adapter filters candidates then runs the module cycle', async () => {
+    const ops = cycleOps({ teacherOnlyTypes: TEACHER_ONLY });
+    const transport = ST.createMailboxTransport(ops);
+    const result = await transport.publishResources([
+      { id: 'a', type: 'simplified' },
+      { id: 'b', type: 'analysis' },
+    ]);
+    expect(ops.pushItem).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({ kind: 'mailbox', candidates: 1, pushed: 1 });
+  });
+});
+
 describe('ANTI wiring pins', () => {
   it('the Firebase resources effect routes through SessionTransport with an identical inline fallback', () => {
     expect(anti).toContain('ST.createFirebaseTransport({');
     expect(anti).toContain('const resourcesToUpload = _alloStudentSafeResources(history);');
     // The old unfiltered candidate rule must be gone.
     expect(anti).not.toContain('const resourcesToUpload = history.filter(h => h.id);');
+  });
+
+  it('the mailbox pack effect routes through the module-owned cycle (stage 2)', () => {
+    expect(anti).toContain('_stMb.createMailboxTransport({');
+    expect(anti).toContain('typeof _stMb.runMailboxPackCycle === ');
+    // Host supplies primitives, not semantics.
+    expect(anti).toContain('packFingerprint: (items) =>');
+    expect(anti).toContain('hostPack: async (items) =>');
   });
 
   it('every pack/push candidate site uses the shared rule', () => {

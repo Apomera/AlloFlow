@@ -8763,7 +8763,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=7342b6c3');
+    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=8eb72ef9');
     loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7abdb2f4');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
@@ -16599,6 +16599,45 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           try {
               const candidates = _alloStudentSafeResources(history);
               mbPackItemsRef.current = candidates;
+              // Unified content channel (SessionTransport stage 2): the pack
+              // CYCLE ALGORITHM (removals, fingerprint dedupe with per-item
+              // failure isolation, fingerprint-gated hosted-pack refresh) now
+              // lives in the module; this host supplies only the primitives.
+              // The inline body below remains as the module-not-loaded
+              // fallback and is retired in stage 3.
+              const _stMb = window.AlloModules && window.AlloModules.SessionTransport;
+              if (_stMb && typeof _stMb.createMailboxTransport === 'function' && typeof _stMb.runMailboxPackCycle === 'function') {
+                  const transport = _stMb.createMailboxTransport({
+                      teacherOnlyTypes: TEACHER_ONLY_TYPES,
+                      seen: mbSentPacksRef.current,
+                      fingerprint: (item) => _alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(item)) || ''),
+                      packFingerprint: (items) => _alloQuickHash(items.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(_alloSerializeResourceForStudentPack(it)) || '') || '')).join('|')),
+                      pushItem: (item) => _mbPushOneResource(item, { open: false, quiet: true }),
+                      onItemError: (item, itemErr) => warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message),
+                      sendRemovals: (ids) => _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids } }),
+                      getHostedFp: () => mbHostedPackFpRef.current,
+                      setHostedFp: (fp) => { mbHostedPackFpRef.current = fp; },
+                      hostPack: async (items) => {
+                          if (!mbLivePackRef.current) mbLivePackRef.current = { id: 'PK-' + generateUUID(), k: _alloRandomToken(16) };
+                          const { id, k } = mbLivePackRef.current;
+                          const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: items[0]?.id || null, resources: items.map(it => _alloSerializeResourceForStudentPack(it)).filter(Boolean) });
+                          const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
+                          const parts = _alloSplitPackChunks(encoded);
+                          for (let i = 0; i < parts.length; i += 1) {
+                              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i] });
+                          }
+                          return { id, k };
+                      },
+                      publishPackRef: async (ref) => {
+                          const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', mbLive.code);
+                          await updateDoc(sessionRef, { packRef: { id: ref.id, k: ref.k, n: ref.n, t: ref.t } });
+                      },
+                      onPackRefError: (prefErr) => warnLog('packRef publish failed:', prefErr?.message),
+                      trace: (event, detail) => _alloSessionSyncTrace(event, detail),
+                  });
+                  await transport.publishResources(history);
+                  return;
+              }
               const seen = mbSentPacksRef.current;
               const currentIds = new Set(candidates.map(item => item.id));
               const removedIds = Object.keys(seen).filter(id => !currentIds.has(id));
