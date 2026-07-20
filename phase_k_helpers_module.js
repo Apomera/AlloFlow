@@ -77,6 +77,11 @@ const _pkTrace = (event, detail) => {
   } catch (_) {
   }
 };
+const _pkTraceId = (value) => {
+  if (value == null) return null;
+  if (typeof value === "string") return value.substring(0, 60);
+  return "[non-string contentId: " + typeof value + "]";
+};
 const _pkAudioLoadTimeoutMs = () => {
   try {
     if (window._kokoroTTS && window._kokoroTTS.ready) return 9e4;
@@ -96,7 +101,7 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
 const captureReadAloudClip = (contentId, mode, sentence, url) => {
   if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) {
     _pkTrace("pk:capture-skip", {
-      contentId: contentId || null,
+      contentId: _pkTraceId(contentId),
       storePath: shouldUseReadAloudStore(contentId, mode),
       hasCaptureFn: typeof window.__alloCaptureKaraokeAudio === "function"
     });
@@ -440,7 +445,7 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       }
     };
     if (preloadedAudio) {
-      _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "preloaded" });
+      _pkTrace("pk:seq", { idx: index, mode, contentId: _pkTraceId(contentId), source: "preloaded" });
       audio = preloadedAudio;
       if (audio instanceof Promise) {
         try {
@@ -464,11 +469,11 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       audio.muted = false;
     } else {
       if (storedReadAloudUrl) {
-        _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "stored" });
+        _pkTrace("pk:seq", { idx: index, mode, contentId: _pkTraceId(contentId), source: "stored" });
         audioUrl = storedReadAloudUrl;
         usingStoredReadAloud = true;
       } else if (audioBufferRef.current[bufferKey]) {
-        _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "buffer" });
+        _pkTrace("pk:seq", { idx: index, mode, contentId: _pkTraceId(contentId), source: "buffer" });
         try {
           const _tOut2 = _pkAudioLoadTimeoutMs();
           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut2));
@@ -479,12 +484,12 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
           return;
         }
       } else {
-        _pkTrace("pk:seq", { idx: index, mode, contentId: contentId || null, source: "fresh" });
+        _pkTrace("pk:seq", { idx: index, mode, contentId: _pkTraceId(contentId), source: "fresh" });
         const promise = callTTS(
           textToSpeak,
           currentVoice,
           personaTtsSpeed,
-          mode === "persona" ? { language: personaTtsLanguage } : 2
+          mode === "persona" ? { language: personaTtsLanguage, priority: "interactive", reason: "read-aloud-active" } : { maxRetries: 2, priority: "interactive", reason: "read-aloud-active" }
         ).then((url) => {
           addBlobUrl(url);
           return url;

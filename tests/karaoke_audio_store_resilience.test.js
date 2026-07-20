@@ -684,4 +684,23 @@ describe('karaoke capture integration contracts', () => {
       expect(read(file)).toBe(read('prismflow-deploy/public/' + file));
     });
   });
+
+  it('host playSequence wrapper honors the module 11-arg recursion (deps never lands in contentId)', () => {
+    // The PhaseK module recurses playSequence(…, speakerName, deps, contentId).
+    // The host wrapper used to declare contentId as its 10th param, so the
+    // module's deps object landed there — 'simplified-main' never matched,
+    // silently disabling the read-aloud store AND capture for every sentence
+    // after the first, and tripling preload fan-out. The wrapper must
+    // disambiguate slot 10 by type and forward the REAL contentId.
+    const host = read('AlloFlowANTI.txt');
+    expect(host).toContain('speakerName = null, depsOrContentId = null, maybeContentId = null) => {');
+    expect(host).toContain("const contentId = typeof depsOrContentId === 'string' ? depsOrContentId : maybeContentId;");
+    // The trace must never serialize a non-string contentId again (a mis-typed
+    // one exploded every event and truncated the diagnostics paste).
+    const module = read('phase_k_helpers_source.jsx');
+    expect(module).toContain('const _pkTraceId = (value) => {');
+    expect(module).not.toContain('contentId: contentId || null');
+    // The active sentence rides the interactive lane, never behind bulk preloads.
+    expect(module).toContain("{ maxRetries: 2, priority: 'interactive', reason: 'read-aloud-active' }");
+  });
 });

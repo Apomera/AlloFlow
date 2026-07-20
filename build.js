@@ -1722,6 +1722,11 @@ const CONTENT_HASH_PINNED = new Set([
     'view_student_save_adventure_module.js',
     'view_socratic_chat_module.js',
     'karaoke_audio_store_module.js',
+    // tts + phase_k joined 2026-07-20: the karaoke resilience gate asserts
+    // content-hash pins for the whole read-aloud runtime, but every deploy
+    // restamped these two to the git hash and re-broke the gate.
+    'tts_module.js',
+    'phase_k_helpers_module.js',
     'read_aloud_audio_service_module.js',
     'read_aloud_artifact_contract_module.js',
     'read_aloud_artifact_audio_module.js',

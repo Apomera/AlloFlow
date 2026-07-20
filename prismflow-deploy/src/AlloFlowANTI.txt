@@ -8519,7 +8519,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=80d3fb79f');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=80d3fb79f');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=80d3fb79f');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=80d3fb79f');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=ae98eb30');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6d41dc65');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=80d3fb79f');
@@ -8689,7 +8689,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=80d3fb79f');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=80d3fb79f');
     loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=80d3fb79f');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=80d3fb79f');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=93cdd04c');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=80d3fb79f');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=80d3fb79f');
     loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=80d3fb79f');
@@ -17835,6 +17835,63 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfBatchSummary, setPdfBatchSummary] = useState(null);
   const [pdfExperimentMode, setPdfExperimentMode] = useState(false);
   const [pdfExperimentRuns, setPdfExperimentRuns] = useState(3);
+  // ── Focused remediation mode (?mode=remediation) ──────────────────────────
+  // Ported from the standalone AlloFlow Remediation build (local-app). The
+  // AlloFlow Desktop installer offers "Document remediation" as an install
+  // choice; the desktop shell then serves the bundled app with this query
+  // param. Skip the landing/role/gate flow and open the batch remediation
+  // screen directly, and never expose the full app.
+  const _remediationMode = (() => {
+    try { return new URLSearchParams(window.location.search).get('mode') === 'remediation'; }
+    catch { return false; }
+  })();
+  useEffect(() => {
+    if (!_remediationMode) return;
+    setShowWizard(false);
+    setHasSelectedMode(true);
+    setHasSelectedRole(true);
+    setIsTeacherMode(true);
+    setPdfBatchMode(true);
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+    try { document.body.classList.add('allo-remediation-only'); } catch {}
+    // Strip the full-app chrome so the focused build shows ONLY the
+    // remediation screen: make the audit dialog's backdrop opaque (hiding the
+    // app shell behind it) and remove the decorative animated background.
+    try {
+      const STYLE_ID = 'allo-remediation-only-style';
+      if (!document.getElementById(STYLE_ID)) {
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = `
+          body.allo-remediation-only [aria-label="PDF Accessibility Audit"] {
+            background: #f1f5f9 !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+          }
+          body.allo-remediation-only .bg-dot-pattern,
+          body.allo-remediation-only .animate-float,
+          body.allo-remediation-only .animate-float-delayed { display: none !important; }
+        `;
+        document.head.appendChild(style);
+      }
+    } catch {}
+  }, [_remediationMode]);
+  // Lock the user inside the remediation screen — the focused mode must never
+  // expose the full AlloFlow app. If anything closes the audit modal (a Cancel
+  // button, Escape, etc.), immediately re-assert the batch remediation screen.
+  useEffect(() => {
+    if (!_remediationMode) return;
+    if (pdfAuditResult) return;            // modal still open
+    // Audit/fix/auto-continue in progress: those flows briefly null
+    // pdfAuditResult while showing a loading state — do NOT hijack them back
+    // to the home screen, or the user loses the running audit and never sees
+    // the result.
+    if (pdfAuditLoading || pdfFixLoading || pdfAutoContinueRunning) return;
+    setPdfBatchMode(true);
+    setPdfFixResult(null);
+    setPdfFixLoading(false);
+    setPdfAuditResult({ _choosing: true, fileName: 'Folder scan', fileSize: 0 });
+  }, [_remediationMode, pdfAuditResult, pdfAuditLoading, pdfFixLoading, pdfAutoContinueRunning]);
   const [customExportCSS, setCustomExportCSS] = useState('');
   const [exportStylePrompt, setExportStylePrompt] = useState('');
   const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
@@ -22781,7 +22838,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
       }
   }, [isPaused]);
-  const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, contentId = null) => {
+  const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, depsOrContentId = null, maybeContentId = null) => {
+    // The PhaseK module recurses with (…, speakerName, deps, contentId) — 11
+    // args. This host wrapper rebuilds deps fresh, so slot 10 is only a
+    // disambiguator: an OBJECT there is the module's deps (ignore it; slot 11
+    // is contentId), a STRING is a legacy 10-arg call's contentId. Before
+    // 2026-07-20 the module's deps LANDED IN contentId — which disabled the
+    // read-aloud store + capture ('simplified-main' never matched) for every
+    // recursed sentence and tripled the preload fan-out.
+    const contentId = typeof depsOrContentId === 'string' ? depsOrContentId : maybeContentId;
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.playSequence === "function") return _m.playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, preloadedAudio, retryCount, speakerName, {
         isPlaying,
@@ -41560,7 +41625,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
           setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64, setPendingPdfFile,
           setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
-          pdfRunHistory, setPdfRunHistory
+          pdfRunHistory, setPdfRunHistory, _remediationMode
       })}
       <ErrorBoundary fallbackMessage="File transcription encountered an error. Please try again.">
       <LargeFileTranscriptionModal
@@ -41922,7 +41987,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <button onClick={() => { try { if (window.__alloVoiceLoop) window.__alloVoiceLoop.stop(); } catch (_) {} }} className="ml-1 px-2 py-0.5 bg-white/20 border border-white/50 rounded-full hover:bg-white/30" aria-label={t('voice_control.stop_aria') || 'Stop voice control'}>⏹</button>
         </div>
       )}
-      {isBotVisible && (
+      {isBotVisible && !_remediationMode && (
           <AlloBot
             ref={alloBotRef}
             canPlayIntro={canPlayBotIntro && isBotVisible && hasSelectedRole}

@@ -113,6 +113,14 @@ const _pkTrace = (event, detail) => {
         while (buffer.length > PK_TRACE_MAX) buffer.shift();
     } catch (_) {}
 };
+// Trace values must stay SMALL: a mis-typed contentId (the 2026-07-20 arg
+// shift put the whole deps object there) once exploded every trace event to
+// tens of KB and truncated the diagnostics paste right where it got useful.
+const _pkTraceId = (value) => {
+    if (value == null) return null;
+    if (typeof value === 'string') return value.substring(0, 60);
+    return '[non-string contentId: ' + typeof value + ']';
+};
 
 // Resolution wait budget. 90s exists for the in-browser Kokoro engine's slow
 // first generations — but only when the engine is actually READY to serve;
@@ -140,7 +148,7 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
 const captureReadAloudClip = (contentId, mode, sentence, url) => {
     if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) {
         _pkTrace('pk:capture-skip', {
-            contentId: contentId || null,
+            contentId: _pkTraceId(contentId),
             storePath: shouldUseReadAloudStore(contentId, mode),
             hasCaptureFn: typeof window.__alloCaptureKaraokeAudio === 'function',
         });
@@ -537,7 +545,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               }
           };
           if (preloadedAudio) {
-              _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'preloaded' });
+              _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'preloaded' });
               audio = preloadedAudio;
               if (audio instanceof Promise) {
                   try {
@@ -561,11 +569,11 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               audio.muted = false;
           } else {
               if (storedReadAloudUrl) {
-                  _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'stored' });
+                  _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'stored' });
                   audioUrl = storedReadAloudUrl;
                   usingStoredReadAloud = true;
               } else if (audioBufferRef.current[bufferKey]) {
-                  _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'buffer' });
+                  _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'buffer' });
                   try {
                       const _tOut2 = _pkAudioLoadTimeoutMs();
                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Audio load timeout")), _tOut2));
@@ -576,12 +584,17 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                       return;
                   }
               } else {
-                  _pkTrace('pk:seq', { idx: index, mode, contentId: contentId || null, source: 'fresh' });
+                  _pkTrace('pk:seq', { idx: index, mode, contentId: _pkTraceId(contentId), source: 'fresh' });
+                  // The ACTIVE sentence rides the interactive lane so it never
+                  // queues behind bulk preloads (AlloBot greetings, Word Sounds
+                  // warm-ups, our own look-aheads all share the normal lane).
                   const promise = callTTS(
                       textToSpeak,
                       currentVoice,
                       personaTtsSpeed,
-                      mode === 'persona' ? { language: personaTtsLanguage } : 2
+                      mode === 'persona'
+                          ? { language: personaTtsLanguage, priority: 'interactive', reason: 'read-aloud-active' }
+                          : { maxRetries: 2, priority: 'interactive', reason: 'read-aloud-active' }
                   ).then(url => {
                       addBlobUrl(url);
                       return url;
