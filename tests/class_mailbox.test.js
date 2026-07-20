@@ -503,6 +503,18 @@ describe('ANTI wiring pins', () => {
     });
 });
 
+describe('teacher-only resource gating', () => {
+    it("keeps 'analysis' (Analyze Source Material) out of every student lane", () => {
+        // Teacher planning info (reading-level scan, accuracy discrepancies)
+        // must not reach students: TEACHER_ONLY_TYPES gates packs/QR/mailbox,
+        // and the student history filter hides it in live sessions (where the
+        // Firebase path syncs all types).
+        const teacherOnlyBlock = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES'), anti.indexOf('];', anti.indexOf('const TEACHER_ONLY_TYPES')));
+        expect(teacherOnlyBlock).toContain("'analysis'");
+        expect(anti).toContain("!['udl-advice', 'brainstorm', 'alignment-report', 'analysis'].includes(item.type)");
+    });
+});
+
 describe('student-pack serialization (full-fidelity)', () => {
     it('no pack channel narrows resources to the five-field allowlist any more', () => {
         // The {id,type,title,meta,data} narrowing silently stripped top-level
