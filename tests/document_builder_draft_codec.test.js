@@ -6,7 +6,10 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const start = source.indexOf('  const BUILDER_PROJECT_DRAFT_MAX_BYTES = 32 * 1024 * 1024;');
-const end = source.indexOf('  const getSkippedResources = () => {', start);
+// 2026-07-20: end marker tightened to the codec block's true boundary — the
+// old getSkippedResources anchor sat past the canvas-recovery effects, so the
+// extracted slice swallowed a useEffect and new Function() blew up.
+const end = source.indexOf('  const resetCanvasWorkspaceSettings', start);
 if (start < 0 || end < 0) throw new Error('Builder draft codec extraction markers missing');
 
 const codec = new Function(

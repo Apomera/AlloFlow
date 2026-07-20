@@ -387,7 +387,7 @@ const ATLAS_HUBS = [
     "icon": "🔬",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the STEM Lab registry",
-    "total": 120,
+    "total": 126,
     "categories": [
       {
         "name": "Math Fundamentals",
@@ -395,6 +395,10 @@ const ATLAS_HUBS = [
           "3D Volume Explorer",
           "Number Line",
           "Area Model",
+          "Arithmetic Strategy Studio",
+          "Ratios, Rates & Proportions Lab",
+          "Area & Perimeter Lab",
+          "Time & Schedule Lab",
           "Fraction Lab",
           "Math Manipulatives",
           "Money Math",
@@ -424,6 +428,7 @@ const ATLAS_HUBS = [
           "Solar System",
           "Moon Mission",
           "Space Station",
+          "Coaster Lab",
           "Galaxy Explorer",
           "Universe Time-Lapse",
           "Rocks & Minerals",
@@ -455,6 +460,7 @@ const ATLAS_HUBS = [
         "tools": [
           "Wave Simulator",
           "Circuit Builder",
+          "Magnetism Lab",
           "Equation Balancer",
           "Punnett Square",
           "Semiconductor Lab",

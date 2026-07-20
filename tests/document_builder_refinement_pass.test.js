@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const view = readFileSync('view_export_preview_source.jsx', 'utf8');
-const host = readFileSync('AlloFlowANTI.txt', 'utf8');
+const host = readFileSync('AlloFlowANTI.txt', 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(require('node:path').join(process.cwd(), f), 'utf8')).join('\n');
 const pipeline = readFileSync('doc_pipeline_source.jsx', 'utf8');
 const handlers = readFileSync('export_handlers_module.js', 'utf8');
 const gate = readFileSync('dev-tools/check_pipeline_tests.cjs', 'utf8');

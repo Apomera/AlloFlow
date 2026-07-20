@@ -69,9 +69,11 @@ describe('Info modal accuracy contracts', () => {
   });
 
   it('fails when the generated Atlas directory is stale', () => {
+    // 2026-07-20: count-agnostic — pinning the exact entry count made this
+    // test stale every time any session registered a tool.
     const result = spawnSync(process.execPath, ['dev-tools/harvest_atlas.cjs', '--check'], { encoding: 'utf8' });
     expect(result.status, result.stderr || result.stdout).toBe(0);
-    expect(result.stdout).toContain('5 hubs, 240 catalog entries');
+    expect(result.stdout).toMatch(/5 hubs, \d+ catalog entries/);
     expect(source).toContain('Generated from the STEM Lab registry');
     expect(source).toContain('Command palette plus curated top-level launchers');
     expect(source).toContain('not unique-tool totals');

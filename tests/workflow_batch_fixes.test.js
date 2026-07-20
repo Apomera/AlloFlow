@@ -91,13 +91,18 @@ describe('lang-ell: override wrong en, preserve a region subtag', () => {
 });
 
 describe('anti-drift: the host auto-continue loop scores by min + clears the degraded flag', () => {
+  // 2026-07-20: runAutoFixLoop was extracted from the host into MiscHandlers
+  // (misc_handlers_source.jsx) behind a contract-gated wrapper — the loop
+  // pins now cover host + extracted source so drift can't hide in either.
+  const miscHandlers = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+  const loopCode = host + '\n' + miscHandlers;
   it('the loop routes its headline through the shared blendAiAxe (delegating helper), not a raw min/mean', () => {
     // #6-full (2026-07-16): the round headline is computed in the canonical reducer (via
     // _alloComputeHeadline, the same single source blendAiAxe delegates to); the loop commits it.
     expect(pipe).toContain('const afterScore = (_det !== null) ? _alloComputeHeadline(aiAudit.score, _det) : aiAudit.score;');
-    expect(host).toContain('const newScore = _mergedRound.afterScore;');
-    expect(host).not.toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\)/);
-    expect(host).not.toMatch(/Math\.round\(\(reVerify\.score \+ _det\) \/ 2\)/);
+    expect(loopCode).toContain('const newScore = _mergedRound.afterScore;');
+    expect(loopCode).not.toMatch(/const newScore = \(_det !== null\) \? Math\.min\(reVerify\.score, _det\)/);
+    expect(loopCode).not.toMatch(/Math\.round\(\(reVerify\.score \+ _det\) \/ 2\)/);
   });
   it('blendAiAxe delegates to the shared computeHeadline; its fallback is min, never the /2 mean', () => {
     expect(host).toMatch(/if \(typeof _ch === 'function'\) return _ch\(aiScore, axeScore\);/);

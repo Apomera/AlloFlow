@@ -100,8 +100,9 @@ describe('wiring pins', () => {
   it('derivation excerpts: student-safe only, bounded, teacher-only contributes NOTHING', () => {
     expect(anti).toContain('let _excerptBudget = 6000;');
     expect(anti).toContain('return txt.slice(0, 250);');
-    // manifest still built exclusively from the TEACHER_ONLY-filtered packItems
-    expect(anti).toMatch(/packItems = \(Array\.isArray\(history\) \? history : \[\]\)\.filter\(h => h && h\.id && h\.type && h\.type !== 'directions' && !TEACHER_ONLY_TYPES\.includes\(h\.type\)\);[\s\S]{0,1200}?packItems\.map\(it =>/);
+    // manifest still built exclusively from the student-safe-filtered packItems
+    // (2026-07-20: TEACHER_ONLY filtering lives in _alloStudentSafeResources)
+    expect(anti).toMatch(/packItems = _alloStudentSafeResources\(history\)\.filter\(h => h\.type !== 'directions'\);[\s\S]{0,1200}?packItems\.map\(it =>/);
     // privacy line untouched
     expect(anti).toContain('PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.');
   });

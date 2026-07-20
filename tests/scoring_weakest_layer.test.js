@@ -91,7 +91,7 @@ describe('anti-drift: the engine ships min (not mean) + a reproducible content s
 });
 
 describe('single source of truth: one computeHeadline, consumed everywhere (2026-06-21 extraction)', () => {
-  const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
   it('the engine defines ONE pure null-safe-min computeHeadline as a top-level fn', () => {
     expect(pipeSrc).toMatch(/var _alloComputeHeadline = function \(content, automated\) \{/);
     expect(pipeSrc).toMatch(/if \(typeof automated !== 'number'\) return content;\s*\n\s*return Math\.min\(content, automated\);/);

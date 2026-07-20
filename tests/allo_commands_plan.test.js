@@ -353,7 +353,8 @@ describe('command contracts and plan validation', () => {
 
 describe('AlloBot plan recovery wiring', () => {
   it('offers the exact remaining sequence while preserving the original undo point', () => {
-    const app = readFileSync('AlloFlowANTI.txt', 'utf-8');
+    // 2026-07-20: the planning layer lives in UdlChat — assert host + module.
+    const app = readFileSync('AlloFlowANTI.txt', 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');
     expect(app).toContain('_pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true }');
     expect(app).toContain("value: '__allo_plan_run'");
     expect(app).toContain('if (!_pendingPlan.resume || !_planUndoRef.current)');
@@ -361,7 +362,9 @@ describe('AlloBot plan recovery wiring', () => {
   });
   it('keeps AI command discovery single-flight and suppresses stale results in both app sources', () => {
     for (const path of ['AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'prismflow-deploy/src/AlloFlowANTI.txt']) {
-      const app = readFileSync(path, 'utf-8');
+      // 2026-07-20: the planning layer lives ONCE in UdlChat (udl_chat_source),
+      // shared by every host — assert host + module together.
+      const app = readFileSync(path, 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');
       expect(app).toContain('const _botCommandPlanningRef = useRef({ controller: null, serial: 0 });');
       expect(app).toContain('_previousBotPlanning.controller.abort()');
       expect(app).toContain('{ allowAi: true, preview: true, signal: _botPlanningSignal }');
@@ -372,7 +375,9 @@ describe('AlloBot plan recovery wiring', () => {
   });
   it('cancels pending AI command discovery when AlloBot closes or unmounts', () => {
     for (const path of ['AlloFlowANTI.txt', 'prismflow-deploy/src/App.jsx', 'prismflow-deploy/src/AlloFlowANTI.txt']) {
-      const app = readFileSync(path, 'utf-8');
+      // 2026-07-20: the planning layer lives ONCE in UdlChat (udl_chat_source),
+      // shared by every host — assert host + module together.
+      const app = readFileSync(path, 'utf-8') + readFileSync('udl_chat_source.jsx', 'utf-8');
       expect(app).toContain('const _cancelBotCommandPlanning = () => {');
       expect(app).toContain('if (!showUDLGuide) _cancelBotCommandPlanning();');
       expect(app).toContain('useEffect(() => () => {\n    _cancelBotCommandPlanning();\n  }, []);');

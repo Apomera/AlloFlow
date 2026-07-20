@@ -8,12 +8,18 @@ describe('read-aloud artifact host integration', () => {
   it('loads the contract, shared audio preparer, and private Persona runtime in both hosts', () => {
     const root = read('AlloFlowANTI.txt');
     const deploy = read('prismflow-deploy/src/AlloFlowANTI.txt');
-    expect(root).toContain("loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2')");
-    expect(root).toContain("loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659')");
-    expect(root).toContain("loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=f1500f83')");
-    expect(deploy).toContain("loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js')");
-    expect(deploy).toContain("loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js')");
-    expect(deploy).toContain("loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js')");
+    // Hash-agnostic + single-form (2026-07-20): ?v pins are content hashes
+    // that change per rebuild, and the deploy-side './' relative rewrite was
+    // normalized away — both hosts carry the CDN form and runtime
+    // localizeModuleUrl handles the desktop bundle.
+    const loaderPin = (file) => new RegExp(
+      "loadModule\\('[A-Za-z]+Module', 'https://alloflow-cdn\\.pages\\.dev/" + file + "(\\?v=[A-Za-z0-9]+)?'\\)"
+    );
+    for (const source of [root, deploy]) {
+      expect(source).toMatch(loaderPin('read_aloud_artifact_contract_module\\.js'));
+      expect(source).toMatch(loaderPin('read_aloud_artifact_audio_module\\.js'));
+      expect(source).toMatch(loaderPin('persona_session_artifact_module\\.js'));
+    }
   });
 
   it('routes explicit artifact narration through the selected voice with Kore as the only host default', () => {

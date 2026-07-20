@@ -330,7 +330,9 @@ describe('Persona runtime deep-dive fixes', () => {
     expect(phaseKSource).toContain('personaSource: boundedPersonaSource');
     expect(appSource).toContain('handleGeneratePersonaSummary = api.handleGeneratePersonaSummary');
     expect(appSource).toContain('generatePersonaFollowUps, generatePanelFollowUps');
-    expect(appSource).toContain('handleSavePersonaChat, handleSaveReflection, handleGeneratePersonaSummary');
+    // 2026-07-20: the view wiring names the private-session save explicitly
+    // (deps-dedupe reformatted the old shorthand list).
+    expect(appSource).toContain('handleSavePersonaChat: handleSavePrivatePersonaSession, handleSaveReflection, handleGeneratePersonaSummary');
   });
 
   it('renders only bounded http(s) grounding links with safe external-link attributes', () => {

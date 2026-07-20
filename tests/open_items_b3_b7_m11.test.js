@@ -11,8 +11,8 @@ import { resolve } from 'node:path';
 const read = (name) => readFileSync(resolve(process.cwd(), name), 'utf8');
 const pipe = read('doc_pipeline_source.jsx');
 const view = read('view_pdf_audit_source.jsx');
-const host = read('AlloFlowANTI.txt');
-const hostMirror = read('prismflow-deploy/src/AlloFlowANTI.txt');
+const host = read('AlloFlowANTI.txt') + read('misc_handlers_source.jsx'); // 2026-07-20: runAutoFixLoop lives in MiscHandlers
+const hostMirror = read('prismflow-deploy/src/AlloFlowANTI.txt') + read('misc_handlers_source.jsx'); // 2026-07-20: runAutoFixLoop lives in MiscHandlers
 const policy = read('verification_policy_source.jsx');
 
 async function livePolicy() {

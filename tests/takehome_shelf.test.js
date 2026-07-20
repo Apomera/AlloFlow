@@ -15,7 +15,9 @@ describe('take-home: teacher side', () => {
   it("Send home broadcasts kind:'takehome' on the existing mailbox down-channel", () => {
     expect(anti).toContain("v: { kind: 'takehome', title, at: Date.now() }");
     // and it refuses an empty pack instead of sending a hollow save signal
-    expect(anti).toMatch(/sendPackHome[\s\S]{0,600}?!TEACHER_ONLY_TYPES\.includes\(h\.type\)/);
+    // (2026-07-20: the candidate rule is the shared _alloStudentSafeResources —
+    // TEACHER_ONLY filtering lives inside it / SessionTransport).
+    expect(anti).toMatch(/sendPackHome[\s\S]{0,600}?_alloStudentSafeResources\(history\)/);
   });
   it('directions composer writes a NORMAL student-safe history item (auto-sync carries it)', () => {
     // v2: derivation provenance rides meta.derivedFrom — a one-way snapshot marker, never a live link.
@@ -42,7 +44,8 @@ describe('take-home: teacher side', () => {
     expect(idx).toBeGreaterThan(0);
     const body = anti.slice(idx, idx + 3200);
     // manifest excludes teacher-only items AND prior directions; titles/types only, no content
-    expect(body).toContain("h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)");
+    // (2026-07-20: shared candidate rule + local 'directions' exclusion)
+    expect(body).toContain("_alloStudentSafeResources(history).filter(h => h.type !== 'directions')");
     expect(body).toContain("'- ' + String(it.title || it.type).slice(0, 120) + ' (' + it.type + ')'");
     // the non-negotiable privacy line travels IN the prompt
     expect(body).toContain('PRIVACY: Never mention accommodations, IEPs, disabilities, reading levels, groupings, or why any student might get different work.');

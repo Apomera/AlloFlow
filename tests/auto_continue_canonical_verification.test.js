@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
 // #6-full (2026-07-16): the round-evidence ASSEMBLY (validity gating, derive, binding, expert
 // base, field set) moved into the engine's canonical reducer — those pins now anchor in the
 // reducer slice of doc_pipeline_source.jsx; the host loop keeps only policy (revert, gen
@@ -12,9 +12,13 @@ const reducerStart = pipeSrc.indexOf('const _finalizeRemediationRound = async (p
 const reducerEnd = pipeSrc.indexOf('// acceptFixedHtmlDetailed:', reducerStart);
 const reducer = pipeSrc.slice(reducerStart, reducerEnd);
 
-const loopStart = src.indexOf('const runAutoFixLoop = React.useCallback');
-const loopEnd = src.indexOf('const saveProjectToFile = React.useCallback', loopStart);
-const loop = src.slice(loopStart, loopEnd);
+// 2026-07-20: runAutoFixLoop was extracted to MiscHandlers — the loop body
+// now lives in misc_handlers_source.jsx (the host keeps a contract-gated
+// wrapper). Slice the loop from its new home.
+const miscSrc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+const loopStart = miscSrc.indexOf('async function runAutoFixLoop(maxRounds, deps)');
+const loop = miscSrc.slice(loopStart);
+const loopEnd = src.indexOf('const saveProjectToFile = React.useCallback');
 const saveStart = loopEnd;
 const saveEnd = src.indexOf('// pdfFixResult effect', saveStart);
 const saveBlock = src.slice(saveStart, saveEnd);
