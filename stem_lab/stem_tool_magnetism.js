@@ -229,7 +229,37 @@
     { q: 'You hold a strong magnet perfectly still inside a coil of wire. The voltmeter reads…', a: ['Zero — only CHANGING flux makes voltage', 'A steady high voltage', 'Higher the stronger the magnet', 'It slowly charges up'], c: 0,
       why: 'Faraday’s law: EMF = −N·ΔΦ/Δt. No change in flux means no EMF — you must MOVE the magnet (or vary the field) to generate.' },
     { q: 'Which of these will a fridge magnet actually stick to?', a: ['A steel paperclip', 'Aluminum foil', 'A copper coin', 'All metals equally'], c: 0,
-      why: 'Only iron, nickel, cobalt (and their alloys, like steel) are ferromagnetic at room temperature — most metals, including aluminum and copper, are not.' }
+      why: 'Only iron, nickel, cobalt (and their alloys, like steel) are ferromagnetic at room temperature — most metals, including aluminum and copper, are not.' },
+    { q: 'A transformer has 100 primary turns and 300 secondary turns. 120 V AC goes in. What comes out?', a: ['360 V — stepped up 3×', '40 V — stepped down', '120 V — unchanged', '0 V — nothing'], c: 0,
+      why: 'V₂/V₁ = N₂/N₁ = 300/100 = 3, so 120 V becomes 360 V. Trade: the current steps DOWN by the same factor — power is conserved.' },
+    { q: 'A magnet falls in slow motion through a copper tube, yet copper is not magnetic. Why?', a: ['The falling magnet induces eddy currents that push back on it', 'Copper is slightly magnetic after all', 'Air pressure builds inside the tube', 'Gravity is weaker inside metal'], c: 0,
+      why: 'The moving field induces swirling eddy currents in the copper, and by Lenz’s law their field opposes the fall. No steel needed — just induction.' },
+    { q: 'You heat an iron magnet past its Curie temperature (770°C). It…', a: ['Loses its magnetism — the domains scramble', 'Gets much stronger', 'Flips north and south', 'Starts to glow magnetically'], c: 0,
+      why: 'Above the Curie point, thermal jostling beats the domain alignment completely. Every iron magnet demagnetizes — this is also how magnets are erased on purpose.' },
+    { q: 'Earth’s “north magnetic pole” (up near the Arctic) is, magnetically speaking…', a: ['A south pole — that’s why compass red ends point toward it', 'A north pole, as the name says', 'Neither — it has no polarity', 'Both at once'], c: 0,
+      why: 'Field lines flow INTO south poles, and the red (north) end of a needle follows the field. If red points there, the place is magnetically a south pole. The name is geographic, not magnetic.' }
+  ];
+
+  // Which tab teaches each quiz question (parallel to QUIZ) — powers the
+  // post-quiz “study this” loop. Order: the 12 originals, then the R6 four.
+  var QUIZ_TABS = ['field', 'field', 'field', 'electro', 'electro', 'electro', 'motor', 'earth', 'earth', 'earth', 'induce', 'materials', 'transformer', 'induce', 'materials', 'maze'];
+  var QUIZ_PASS = 11; // ~70% of 16
+
+  // Quest definitions, in recommended learning-path order. `tab` says where
+  // each quest is earned — the journey strip uses it to jump the student
+  // straight to the right section. The host only reads id/label/icon/check.
+  var QUEST_DEFS = [
+    { id: 'mag_field', tab: 'field', label: 'Move the compass through a magnet’s field', icon: '🧭', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.compassMoved; } },
+    { id: 'mag_pair', tab: 'field', label: 'See two magnets attract and repel', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.sawAttract && s.sawRepel); } },
+    { id: 'mag_electro', tab: 'electro', label: 'Change an electromagnet’s turns or current', icon: '🔌', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.coilTouched; } },
+    { id: 'mag_motor', tab: 'motor', label: 'Run the DC motor', icon: '⚙️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.motorRan; } },
+    { id: 'mag_induce', tab: 'induce', label: 'Generate electricity by moving a magnet', icon: '⚡', check: function (d) { var s = (d && d.magnetism) || {}; return (s.peakEMF || 0) >= 0.5; } },
+    { id: 'mag_materials', tab: 'materials', label: 'Sort all 8 materials correctly', icon: '🔩', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.matPerfect; } },
+    { id: 'mag_domains', tab: 'materials', label: 'Fully magnetize the iron (align every domain)', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.domainsFull; } },
+    { id: 'mag_crane', tab: 'crane', label: 'Recycle all 4 steel items with the crane', icon: '🏗️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.craneDone; } },
+    { id: 'mag_maze', tab: 'maze', label: 'Find the hidden magnet by compass alone', icon: '🗺️', check: function (d) { var s = (d && d.magnetism) || {}; return (s.mazeWins || 0) >= 1; } },
+    { id: 'mag_earth', tab: 'earth', label: 'Explore Earth’s magnetic field', icon: '🌍', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.earthSeen; } },
+    { id: 'mag_quiz', tab: 'quiz', label: 'Score 11+ on the magnetism quiz', icon: '🧠', check: function (d) { var s = (d && d.magnetism) || {}; return (s.quizBest || 0) >= QUIZ_PASS; } }
   ];
 
   var FACTS = [
@@ -246,19 +276,7 @@
     desc: 'See invisible magnetic fields and learn how electricity makes them. Trace field lines with a live compass, build an electromagnet, spin a DC motor, crank a generator with Faraday’s law, sort magnetic from non-magnetic materials, and explore Earth’s own magnetic shield. NGSS MS-PS2 fields and forces.',
     color: 'rose',
     category: 'science',
-    questHooks: [
-      { id: 'mag_field', label: 'Move the compass through a magnet’s field', icon: '🧭', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.compassMoved; } },
-      { id: 'mag_pair', label: 'See two magnets attract and repel', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.sawAttract && s.sawRepel); } },
-      { id: 'mag_electro', label: 'Change an electromagnet’s turns or current', icon: '🔌', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.coilTouched; } },
-      { id: 'mag_motor', label: 'Run the DC motor', icon: '⚙️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.motorRan; } },
-      { id: 'mag_earth', label: 'Explore Earth’s magnetic field', icon: '🌍', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.earthSeen; } },
-      { id: 'mag_induce', label: 'Generate electricity by moving a magnet', icon: '⚡', check: function (d) { var s = (d && d.magnetism) || {}; return (s.peakEMF || 0) >= 0.5; } },
-      { id: 'mag_materials', label: 'Sort all 8 materials correctly', icon: '🔩', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.matPerfect; } },
-      { id: 'mag_crane', label: 'Recycle all 4 steel items with the crane', icon: '🏗️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.craneDone; } },
-      { id: 'mag_domains', label: 'Fully magnetize the iron (align every domain)', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.domainsFull; } },
-      { id: 'mag_maze', label: 'Find the hidden magnet by compass alone', icon: '🧭', check: function (d) { var s = (d && d.magnetism) || {}; return (s.mazeWins || 0) >= 1; } },
-      { id: 'mag_quiz', label: 'Score 9+ on the magnetism quiz', icon: '🧠', check: function (d) { var s = (d && d.magnetism) || {}; return (s.quizBest || 0) >= 9; } }
-    ],
+    questHooks: QUEST_DEFS,
     render: function (ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -311,7 +329,7 @@
         // Transformer
         xfmrN1: 100, xfmrN2: 200, xfmrAC: true, xfmrTouched: false,
         // Quiz
-        quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0,
+        quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0, quizMissed: [],
         factIdx: 0,
         askInput: '', askAnswer: '', askLoading: false
       };
@@ -1178,12 +1196,27 @@
       // ── Quiz ──────────────────────────────────────────────────────────
       function quizTab() {
         if (d.quizDone) {
+          // "Study this" loop: map every missed question to the tab that
+          // teaches it, dedup, and offer one jump button per weak topic.
+          var TAB_LABELS = {};
+          TABS.forEach(function (t) { TAB_LABELS[t.id] = t.label; });
+          var missedTabs = [];
+          (d.quizMissed || []).forEach(function (qi) {
+            var tb = QUIZ_TABS[qi];
+            if (tb && missedTabs.indexOf(tb) === -1) missedTabs.push(tb);
+          });
           return card('Quiz complete', h('div', null,
-            h('div', { style: { fontSize: 30, textAlign: 'center', marginBottom: 6 } }, d.quizScore >= 9 ? '🏆' : '🧲'),
+            h('div', { style: { fontSize: 30, textAlign: 'center', marginBottom: 6 } }, d.quizScore >= QUIZ_PASS ? '🏆' : '🧲'),
             h('p', { style: { color: TEXT, fontSize: 16, fontWeight: 800, textAlign: 'center', margin: '0 0 4px' } }, 'You scored ' + d.quizScore + ' / ' + QUIZ.length),
-            h('p', { style: { color: SOFT, fontSize: 13, textAlign: 'center', margin: '0 0 12px' } }, d.quizScore >= 9 ? 'Field mastery unlocked — nicely done.' : 'Solid start — revisit the tabs and try again to reach 9+.'),
+            h('p', { style: { color: SOFT, fontSize: 13, textAlign: 'center', margin: '0 0 12px' } }, d.quizScore >= QUIZ_PASS ? 'Field mastery unlocked — nicely done.' : 'Solid start — study the topics below and try again to reach ' + QUIZ_PASS + '+.'),
+            missedTabs.length ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px dashed #f59e0b', marginBottom: 12 } },
+              h('p', { style: { color: TEXT, fontSize: 12.5, fontWeight: 700, margin: '0 0 8px' } }, '📚 Your missed questions came from:'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                missedTabs.map(function (tb) {
+                  return h('button', { key: tb, onClick: function () { upd({ tab: tb }); announceToSR('Opened the ' + tb + ' section to review'); }, style: btn() }, 'Study: ' + (TAB_LABELS[tb] || tb));
+                }))) : null,
             h('div', { style: { textAlign: 'center' } },
-              h('button', { onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false }); }, style: btn() }, '↻ Try again'))
+              h('button', { onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizMissed: [] }); }, style: btn() }, '↻ Try again'))
           ));
         }
         var item = QUIZ[d.quizIdx];
@@ -1201,7 +1234,7 @@
                 onClick: function () {
                   if (d.quizPicked != null) return;
                   var right = i === item.c;
-                  upd({ quizPicked: i, quizScore: d.quizScore + (right ? 1 : 0) });
+                  upd({ quizPicked: i, quizScore: d.quizScore + (right ? 1 : 0), quizMissed: right ? (d.quizMissed || []) : (d.quizMissed || []).concat([d.quizIdx]) });
                   announceToSR(right ? 'Correct. ' + item.why : 'Not quite. ' + item.why);
                 },
                 style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 8, borderRadius: 9, border: '1px solid ' + bd, background: bg, color: TEXT, fontSize: 13, cursor: reveal ? 'default' : 'pointer' } },
@@ -1213,7 +1246,7 @@
                   if (d.quizIdx + 1 >= QUIZ.length) {
                     var best = Math.max(d.quizBest || 0, d.quizScore);
                     upd({ quizDone: true, quizBest: best });
-                    if (d.quizScore >= 9) { awardXP(20); addToast('🏆 Quiz passed! +20 XP', 'success'); }
+                    if (d.quizScore >= QUIZ_PASS) { awardXP(20); addToast('🏆 Quiz passed! +20 XP', 'success'); }
                   } else {
                     upd({ quizIdx: d.quizIdx + 1, quizPicked: null });
                   }
@@ -1260,6 +1293,33 @@
         return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.08)', border: '1px dashed ' + BORDER, marginBottom: 12 } },
           h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.5 } }, 'ℹ️ ' + text));
       }
+      // Learning-path strip: one chip per quest, in recommended order. Done
+      // chips glow; every chip jumps to the tab where that quest is earned.
+      function journeyStrip() {
+        var doneCount = 0;
+        var chips = QUEST_DEFS.map(function (q) {
+          var done = false;
+          try { done = !!q.check({ magnetism: d }); } catch (e) {}
+          if (done) doneCount++;
+          return h('button', { key: q.id,
+            title: q.label + (done ? ' — done!' : ''),
+            'aria-label': (done ? 'Done: ' : 'To do: ') + q.label + '. Opens the ' + q.tab + ' section.',
+            'aria-pressed': d.tab === q.tab ? 'true' : 'false',
+            onClick: function () { upd({ tab: q.tab }); announceToSR(q.label + ' — ' + (done ? 'already done' : 'try it in this section')); },
+            style: { width: 34, height: 34, borderRadius: 9, fontSize: 15, cursor: 'pointer', position: 'relative',
+              border: '1px solid ' + (done ? '#22c55e' : BORDER),
+              background: done ? 'rgba(34,197,94,0.15)' : 'transparent',
+              opacity: done ? 1 : 0.65 } },
+            q.icon,
+            done ? h('span', { 'aria-hidden': 'true', style: { position: 'absolute', right: -3, top: -5, fontSize: 10, color: '#22c55e', fontWeight: 900 } }, '✓') : null);
+        });
+        return h('div', { role: 'group', 'aria-label': 'Learning journey: ' + doneCount + ' of ' + QUEST_DEFS.length + ' quests done',
+          style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', padding: '6px 8px', borderRadius: 10, background: 'rgba(148,163,184,0.06)', border: '1px solid ' + BORDER, marginBottom: 12 } },
+          h('span', { style: { color: SOFT, fontSize: 11, fontWeight: 700, marginRight: 2 } }, '🗺️ Journey ' + doneCount + '/' + QUEST_DEFS.length),
+          chips,
+          doneCount === QUEST_DEFS.length ? h('span', { style: { color: '#22c55e', fontSize: 11, fontWeight: 800 } }, '🏆 Master of Magnetism!') : null);
+      }
+
       function factStrip() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, background: 'rgba(244,63,94,0.08)', border: '1px solid ' + BORDER, marginTop: 4 } },
           h('span', { style: { fontSize: 18 } }, '💡'),
@@ -1287,6 +1347,7 @@
             h('h2', { style: { margin: 0, fontSize: 19, fontWeight: 800, color: TEXT } }, 'Magnetism & Electromagnetism'),
             h('p', { style: { margin: 0, fontSize: 12.5, color: SOFT } }, 'See the invisible field, then make one with electricity.'))),
         tabBar(),
+        journeyStrip(),
         body,
         d.tab !== 'quiz' ? askBox() : null,
         factStrip()
@@ -1296,6 +1357,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, MU0: MU0 };
+    module.exports = { dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
   }
 })();

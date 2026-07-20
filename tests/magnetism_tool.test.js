@@ -124,8 +124,8 @@ describe('magnetism tool — real physics', () => {
     expect(line[0].length).toBe(2);
   });
 
-  it('the quiz bank is 10 questions with valid answer indices', () => {
-    expect(physics.QUIZ.length).toBe(12);
+  it('the quiz bank is 16 questions with valid answer indices', () => {
+    expect(physics.QUIZ.length).toBe(16);
     physics.QUIZ.forEach((q) => {
       expect(q.a.length).toBeGreaterThanOrEqual(2);
       expect(q.c).toBeGreaterThanOrEqual(0);
@@ -192,7 +192,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
 
   it('renders the quiz results view when done', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'quiz', quizDone: true, quizScore: 8 }));
-    expect(html).toContain('8 / 12');
+    expect(html).toContain('8 / 16');
   });
 
   it('quest hooks fire on the right state', () => {
@@ -214,8 +214,8 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(hooks.mag_domains({ magnetism: {} })).toBe(false);
     expect(hooks.mag_maze({ magnetism: { mazeWins: 1 } })).toBe(true);
     expect(hooks.mag_maze({ magnetism: {} })).toBe(false);
-    expect(hooks.mag_quiz({ magnetism: { quizBest: 9 } })).toBe(true);
-    expect(hooks.mag_quiz({ magnetism: { quizBest: 8 } })).toBe(false);
+    expect(hooks.mag_quiz({ magnetism: { quizBest: 11 } })).toBe(true);
+    expect(hooks.mag_quiz({ magnetism: { quizBest: 10 } })).toBe(false);
   });
 });
 
@@ -390,5 +390,69 @@ describe('magnetism tool — Field Walk + strength + cycles (R5)', () => {
     expect(source).toContain('Field lines flow into south poles');
     expect(source).toContain('naming joke');
     expect(source).toContain('magnetometer surveys');
+  });
+});
+
+describe('magnetism tool — journey strip + quiz study loop (R6)', () => {
+  it('QUIZ_TABS maps every question to a real tab across at least 6 topics', () => {
+    expect(physics.QUIZ_TABS.length).toBe(physics.QUIZ.length);
+    const tabIds = ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'maze', 'transformer', 'earth', 'quiz'];
+    physics.QUIZ_TABS.forEach((t) => expect(tabIds).toContain(t));
+    expect(new Set(physics.QUIZ_TABS).size).toBeGreaterThanOrEqual(6); // broad coverage
+  });
+
+  it('the pass threshold is a single source of truth at ~70%', () => {
+    expect(physics.QUIZ_PASS).toBe(11);
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain("label: 'Score 11+ on the magnetism quiz'");
+    expect(source).toContain('>= QUIZ_PASS');
+    expect(source).not.toContain('quizScore >= 9'); // no stale hardcoded threshold
+  });
+
+  it('every quest def carries a learning-path tab that exists', () => {
+    const source = readFileSync(TOOL_PATHS[0], 'utf8');
+    expect(source).toContain('var QUEST_DEFS = [');
+    expect(source).toContain('questHooks: QUEST_DEFS');
+    // every def declares a tab:
+    const defBlock = source.slice(source.indexOf('var QUEST_DEFS'), source.indexOf('var FACTS'));
+    const tabCount = (defBlock.match(/tab: '/g) || []).length;
+    expect(tabCount).toBe(11);
+  });
+
+  describe('mounted', () => {
+    let cfg;
+    beforeEach(() => {
+      resetStemLab();
+      cfg = loadTool(TOOL_PATHS[0], 'magnetism');
+    });
+
+    it('renders the journey strip with fresh-state progress 0/11', () => {
+      const html = mountWithSeed(cfg, Object.assign({}, BASE));
+      expect(html).toContain('Journey 0/11');
+    });
+
+    it('journey chips light up as quests complete', () => {
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, { compassMoved: true, motorRan: true, earthSeen: true }));
+      expect(html).toContain('Journey 3/11');
+    });
+
+    it('a failed quiz offers Study buttons for exactly the missed topics', () => {
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+        tab: 'quiz', quizDone: true, quizScore: 8, quizMissed: [0, 3, 12],
+      }));
+      expect(html).toContain('missed questions came from');
+      expect(html).toContain('Study: 🧭 Field Explorer');   // Q0 → field
+      expect(html).toContain('Study: 🔌 Electromagnet');    // Q3 → electro
+      expect(html).toContain('Study: 🔁 Transformer');      // Q12 → transformer
+      expect(html).not.toContain('Study: 🌍');              // earth not missed
+    });
+
+    it('a perfect quiz shows no study section', () => {
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+        tab: 'quiz', quizDone: true, quizScore: 16, quizMissed: [],
+      }));
+      expect(html).not.toContain('missed questions came from');
+      expect(html).toContain('Field mastery unlocked');
+    });
   });
 });
