@@ -38,6 +38,15 @@ if (!fs.existsSync(desktopBridgePath)) {
 }
 const buildTs = Date.now();
 let swContent = fs.readFileSync(swPath, 'utf8');
+if (!swContent.includes('__BUILD_TS__')) {
+    // Self-heal (field-hit 2026-07-20): build/sw.js can be a previously
+    // STAMPED copy instead of the template — the build dir is gitignored and
+    // OneDrive sync can restore a stale stamped version between the CRA copy
+    // step and this script. Re-copy the template from public/ and only fail
+    // if the TEMPLATE itself lost its placeholders.
+    console.warn('⚠ build/sw.js has no build-timestamp placeholder (stale stamped copy?) — re-copying the template from public/sw.js');
+    swContent = fs.readFileSync(path.join(__dirname, 'public', 'sw.js'), 'utf8');
+}
 if (!swContent.includes('__BUILD_TS__')) throw new Error('Service-worker build timestamp placeholder is missing');
 if (!swContent.includes('__PRECACHE_PATHS__')) throw new Error('Service-worker precache placeholder is missing');
 swContent = swContent
