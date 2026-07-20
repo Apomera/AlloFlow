@@ -44,8 +44,8 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
 
   it('trims the optional note and preserves unrelated section data', () => {
     expect(tracker).toContain('note: form.note.trim()');
-    expect(tracker).toContain("setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }))");
-    expect(tracker).toContain("setData(Object.assign({}, data, { logs: (data.logs || []).filter");
+    expect(tracker).toContain("setData(Object.assign({}, data, { logs: [entry].concat(rawMoodLogs) }))");
+    expect(tracker).toContain("setData(Object.assign({}, data, { logs: rawMoodLogs.filter");
   });
 
   it('announces saved mood and energy values', () => {
@@ -67,7 +67,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   it('labels the completed daily state as a semantic section', () => {
     expect(tracker).toContain("'aria-labelledby': 'learning-lab-mood-today-heading'");
     expect(tracker).toContain("id: 'learning-lab-mood-today-heading'");
-    expect(tracker).toContain("'Mood ' + todayLog.mood + ' out of 10; energy '");
+    expect(tracker).toContain("'Mood ' + ratingOf(todayLog.mood) + ' out of 10; energy '");
   });
 
   it('uses a named semantic list for the 14-day history', () => {
@@ -95,9 +95,9 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   });
 
   it('uses definition-list semantics for mood and energy details', () => {
-    expect(tracker).toContain("log.mood + ' out of 10'");
-    expect(tracker).toContain("log.energy + ' out of 10'");
-    expect(tracker).toContain("'Context: ' + log.note");
+    expect(tracker).toContain("ratingOf(log.mood) + ' out of 10'");
+    expect(tracker).toContain("ratingOf(log.energy) + ' out of 10'");
+    expect(tracker).toContain("'Context: ' + textValue(log.note).trim()");
   });
 
   it('confirms deletion in the accessible app dialog', () => {
@@ -106,7 +106,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   });
 
   it('names deletion controls and restores focus after removal', () => {
-    expect(tracker).toContain("'aria-label': 'Remove mood check-in from ' + log.date");
+    expect(tracker).toContain("'aria-label': 'Remove mood check-in from ' + logDate");
     expect(tracker).toContain("focusById('learning-lab-mood-recent-heading')");
     expect(tracker).toContain("llAnnounce('Mood check-in removed.')");
   });
@@ -115,6 +115,27 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
     expect(tracker).toContain("width: '100%', minHeight: 44");
     expect(tracker).toContain("minWidth: 44, minHeight: 44");
     expect(tracker).toContain("minHeight: 44, padding: '9px 14px'");
+  });
+
+  it('builds the fourteen-day history from local dates, not UTC', () => {
+    expect(tracker).toContain("var iso = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');");
+    expect(tracker).not.toContain('toISOString');
+  });
+
+  it('handles malformed legacy log data and renders every check-in without a cap', () => {
+    expect(tracker).toContain('var rawMoodLogs = Array.isArray(data.logs) ? data.logs : [];');
+    expect(tracker).toContain('var logs = rawMoodLogs.filter(isRecord);');
+    expect(tracker).toContain('function ratingOf(value) { return Math.max(0, Math.min(10, Number(value) || 0)); }');
+    expect(tracker).toContain("textValue(log.date).trim() || 'Date not recorded'");
+    expect(tracker).toContain('logs.map(function(log)');
+    expect(tracker).not.toContain('.slice(0, 20)');
+    expect(source).toContain("stat: (Array.isArray((data.mytkMood || {}).logs) ? (data.mytkMood || {}).logs.length : 0) + ' logs'");
+  });
+
+  it('explains optional use, non-notification, and no-target framing with a support nudge', () => {
+    expect(tracker).toContain('saving does not notify a teacher, school, clinician, or family member');
+    expect(tracker).toContain('there is no target or good score');
+    expect(tracker).toContain('consider talking with someone you trust, such as a counselor, family member, or friend');
   });
 
   it('keeps the deployed mirror identical', () => {

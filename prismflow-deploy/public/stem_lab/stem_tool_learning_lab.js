@@ -14132,8 +14132,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // Daily mood log. Single number 1-10 + optional note. Trends + patterns.
   function PersonalMoodTracker(props) {
     if (!R) return null;
-    var data = props.data || { logs: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { logs: [] };
     var setData = props.setData;
+    var rawMoodLogs = Array.isArray(data.logs) ? data.logs : [];
     var emptyForm = function() { return { mood: 5, energy: 5, note: '' }; };
     var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
@@ -14149,35 +14150,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function focusById(id) { setPendingFocusId(id); }
 
+    function isRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+    function textValue(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); }
+    function ratingOf(value) { return Math.max(0, Math.min(10, Number(value) || 0)); }
     function save() {
       var entry = { id: tkId(), date: todayISO(), time: Date.now(), mood: form.mood, energy: form.energy, note: form.note.trim() };
-      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setData(Object.assign({}, data, { logs: [entry].concat(rawMoodLogs) }));
       setForm(emptyForm());
       llAnnounce('Mood check-in saved. Mood ' + entry.mood + ' out of 10 and energy ' + entry.energy + ' out of 10.');
     }
     async function remove(log) {
-      if (!(await askLearningLabConfirmation('This permanently removes the mood check-in from ' + log.date + '.', {
+      var logDate = textValue(log.date).trim();
+      if (!(await askLearningLabConfirmation('This permanently removes the mood check-in' + (logDate ? ' from ' + logDate : '') + '.', {
         title: 'Remove this mood check-in?', confirmText: 'Remove check-in'
       }))) return;
-      setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== log.id; }) }));
+      setData(Object.assign({}, data, { logs: rawMoodLogs.filter(function(item) { return !(isRecord(item) && item.id === log.id); }) }));
       llAnnounce('Mood check-in removed.');
       focusById('learning-lab-mood-recent-heading');
     }
 
-    var logs = data.logs || [];
+    var logs = rawMoodLogs.filter(isRecord);
     var today = todayISO();
     var todayLog = logs.filter(function(log) { return log.date === today; })[0];
     var dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     var last14 = [];
     for (var i = 13; i >= 0; i--) {
       var dt = new Date(); dt.setDate(dt.getDate() - i);
-      var iso = dt.toISOString().slice(0, 10);
+      var iso = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
       var log = logs.filter(function(item) { return item.date === iso; })[0];
       last14.push({ date: iso, log: log, label: dayLabels[dt.getDay()] });
     }
     var recentLogs = last14.map(function(day) { return day.log; }).filter(Boolean);
-    var avgMood = recentLogs.length ? (recentLogs.reduce(function(total, log) { return total + Number(log.mood || 0); }, 0) / recentLogs.length).toFixed(1) : '—';
-    var avgEnergy = recentLogs.length ? (recentLogs.reduce(function(total, log) { return total + Number(log.energy || 0); }, 0) / recentLogs.length).toFixed(1) : '—';
+    var avgMood = recentLogs.length ? (recentLogs.reduce(function(total, log) { return total + ratingOf(log.mood); }, 0) / recentLogs.length).toFixed(1) : '—';
+    var avgEnergy = recentLogs.length ? (recentLogs.reduce(function(total, log) { return total + ratingOf(log.energy); }, 0) / recentLogs.length).toFixed(1) : '—';
     var stats = [
       { label: 'Total check-ins', value: logs.length, color: '#f9a8d4', icon: '🌈' },
       { label: 'Average mood, last 14 days', value: avgMood === '—' ? avgMood : avgMood + ' out of 10', color: '#ddd6fe', icon: '😊' },
@@ -14198,12 +14203,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🌈', 'Mood Tracker', 'Record mood and energy once each day, with an optional note.', '#ec4899'),
+      hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 10px' } }, 'Check-ins are optional and save only in your Personal Toolkit; saving does not notify a teacher, school, clinician, or family member. Summaries describe your own entries — there is no target or good score. If your mood has felt low for a while, consider talking with someone you trust, such as a counselor, family member, or friend.'),
 
       hh('dl', { 'aria-label': 'Mood tracker summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, margin: '0 0 12px' } },
         stats.map(function(stat, index) {
           return hh('div', { key: 'ms-' + index, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(226,232,240,0.28)', textAlign: 'center' } },
             hh('span', { 'aria-hidden': 'true', style: { fontSize: 14, display: 'block', marginBottom: 2 } }, stat.icon),
-            hh('dt', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800, marginBottom: 3 } }, stat.label),
+            hh('dt', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 800, marginBottom: 3 } }, stat.label),
             hh('dd', { style: { margin: 0, fontSize: 15, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.value)
           );
         })
@@ -14211,11 +14217,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       todayLog ? hh('section', { 'aria-labelledby': 'learning-lab-mood-today-heading', style: { padding: 10, borderRadius: 8, background: 'rgba(20,83,45,0.45)', border: '1px solid #86efac', marginBottom: 12 } },
         hh('h3', { id: 'learning-lab-mood-today-heading', style: { fontSize: 12, color: '#bbf7d0', margin: '0 0 4px' } }, 'Today’s check-in is complete'),
-        hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, 'Mood ' + todayLog.mood + ' out of 10; energy ' + todayLog.energy + ' out of 10.')
+        hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, 'Mood ' + ratingOf(todayLog.mood) + ' out of 10; energy ' + ratingOf(todayLog.energy) + ' out of 10.')
       ) : tkCard('#ec4899',
         hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-mood-form-heading' },
           hh('h3', { id: 'learning-lab-mood-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', margin: '0 0 4px' } }, 'Daily check-in'),
-          hh('p', { id: 'learning-lab-mood-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Your check-in saves in this browser. Mood information can be personal, so use a device and account you trust.'),
+          hh('p', { id: 'learning-lab-mood-privacy-note', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Your check-in saves in this browser. Mood information can be personal, so use a device and account you trust.'),
           rangeField('learning-lab-mood-rating', 'Mood', form.mood, 'low', 'high', 'mood', '#f9a8d4'),
           rangeField('learning-lab-energy-rating', 'Energy', form.energy, 'depleted', 'very energized', 'energy', '#fde68a'),
           hh('div', { style: { marginBottom: 10 } },
@@ -14228,14 +14234,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       hh('section', { 'aria-labelledby': 'learning-lab-mood-history-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
         hh('h3', { id: 'learning-lab-mood-history-heading', style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', margin: '0 0 4px' } }, 'Mood during the last 14 days'),
-        hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 8px' } }, 'Each column includes its date and numeric mood value; color is only an additional cue.'),
+        hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 8px' } }, 'Each column includes its date and numeric mood value; color is only an additional cue.'),
         hh('ul', { 'aria-label': 'Fourteen-day mood history', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 4, alignItems: 'stretch', overflowX: 'auto' } },
           last14.map(function(day) {
-            var moodVal = day.log ? Number(day.log.mood) : 0;
+            var moodVal = day.log ? ratingOf(day.log.mood) : 0;
             var pct = moodVal > 0 ? (moodVal / 10) * 100 : 0;
             var color = moodVal >= 7 ? '#4ade80' : moodVal >= 5 ? '#facc15' : moodVal > 0 ? '#f87171' : 'rgba(100,116,139,0.28)';
             return hh('li', { key: 'mo-' + day.date, style: { flex: '1 0 38px', minWidth: 38, textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)' } },
-              hh('time', { dateTime: day.date, 'aria-label': day.date, style: { display: 'block', fontSize: 9, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 3 } }, day.label),
+              hh('time', { dateTime: day.date, 'aria-label': day.date, style: { display: 'block', fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 3 } }, day.label),
               hh('div', { 'aria-hidden': 'true', style: { height: 56, background: 'rgba(15,23,42,0.65)', borderRadius: 4, position: 'relative', overflow: 'hidden', border: '1px solid rgba(148,163,184,0.25)' } },
                 hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: pct + '%', background: color } })
               ),
@@ -14248,21 +14254,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-mood-recent-heading' },
         hh('h3', { id: 'learning-lab-mood-recent-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', margin: '0 0 8px' } }, 'Recent mood check-ins'),
         hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-          logs.slice(0, 20).map(function(log) {
+          logs.map(function(log) {
             var headingId = 'learning-lab-mood-log-' + log.id;
+            var logDate = textValue(log.date).trim() || 'Date not recorded';
             return hh('li', { key: 'ml-' + log.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #ec4899' } },
               hh('article', { 'aria-labelledby': headingId, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
                 hh('div', { style: { flex: 1 } },
-                  hh('h4', { id: headingId, style: { fontSize: 11, color: '#fbcfe8', margin: '0 0 4px' } }, 'Check-in for ', hh('time', { dateTime: log.date }, log.date)),
-                  hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 7px', margin: 0, fontSize: 11 } },
+                  hh('h4', { id: headingId, style: { fontSize: 12, color: '#fbcfe8', margin: '0 0 4px' } }, 'Check-in for ', textValue(log.date).trim() ? hh('time', { dateTime: textValue(log.date).trim() }, logDate) : logDate),
+                  hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 7px', margin: 0, fontSize: 12 } },
                     hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Mood'),
-                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.mood + ' out of 10'),
+                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, ratingOf(log.mood) + ' out of 10'),
                     hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Energy'),
-                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.energy + ' out of 10')
+                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, ratingOf(log.energy) + ' out of 10')
                   ),
-                  log.note ? hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', margin: '5px 0 0', fontStyle: 'italic' } }, 'Context: ' + log.note) : null
+                  textValue(log.note).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', margin: '5px 0 0', fontStyle: 'italic' } }, 'Context: ' + textValue(log.note).trim()) : null
                 ),
-                hh('button', { type: 'button', 'aria-label': 'Remove mood check-in from ' + log.date, onClick: function() { remove(log); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+                hh('button', { type: 'button', 'aria-label': 'Remove mood check-in from ' + logDate, onClick: function() { remove(log); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
               )
             );
           })
@@ -20679,7 +20686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkCareer',   icon: '🎯', label: 'Career Explorer',      color: '#10b981', desc: '5-question quiz → curated 18+ career paths',
         stat: ((data.mytkCareer || {}).saved || []).length + ' saved', cta: 'Explore careers' },
       { id: 'mytkMood',     icon: '🌈', label: 'Mood Tracker',         color: '#ec4899', desc: 'Daily mood + energy log, 14-day trend',
-        stat: ((data.mytkMood || {}).logs || []).length + ' logs', cta: 'Log mood' },
+        stat: (Array.isArray((data.mytkMood || {}).logs) ? (data.mytkMood || {}).logs.length : 0) + ' logs', cta: 'Log mood' },
       { id: 'mytkFut',      icon: '💌', label: 'Letters to Future Self', color: '#a855f7', desc: 'Hershfield 2011 — connection to future self',
         stat: ((data.mytkFut || {}).letters || []).length + ' letters', cta: 'Write a letter' },
       { id: 'mytkDisc',     icon: '🗝', label: 'Disclosure Wizard',    color: '#a855f7', desc: 'Should I tell them? Walk through the decision',
