@@ -326,25 +326,106 @@
       '</article>';
   }
 
+  // ── Read-aloud / TTS diagnostics tab (2026-07-20) ──
+  // The TTS pipeline writes a bounded event trace to window.__alloTtsTrace
+  // (playSequence, karaoke overlay, bridge, provider routing). Surfacing it
+  // here means the log is reachable even when nothing "errored" — a stuck
+  // read-aloud rarely throws, it just stalls.
+  var activeTab = 'errors';
+
+  function ttsEventColor(name) {
+    if (/timeout|null-url|error|fail|watchdog/.test(name)) return '#dc2626';
+    if (name.indexOf('pk:') === 0) return '#0d9488';
+    if (name.indexOf('karaoke:') === 0) return '#7c3aed';
+    if (name.indexOf('bridge:') === 0) return '#d97706';
+    if (name.indexOf('route:') === 0) return '#15803d';
+    return '#334155';
+  }
+
+  function ttsTraceEntries() {
+    try { return (window.__alloTtsTrace || []).slice(-120); } catch (_) { return []; }
+  }
+
+  function ttsFlagsSummary() {
+    var bits = [];
+    try {
+      if (window.__ttsGeminiQuotaFailed) bits.push('cloud QUOTA failed');
+      if (window.__ttsGeminiAuthFailed) bits.push('cloud KEY rejected');
+      bits.push(window._kokoroTTS ? ('local engine ' + (window._kokoroTTS.ready ? 'ready' : 'present, not ready')) : 'no local engine');
+      var route = window.__ttsLastRoute;
+      if (route && route.route) bits.push('last route: ' + route.route + (route.detail ? ' (' + route.detail + ')' : ''));
+    } catch (_) {}
+    return bits.join(' · ') || 'no provider flags recorded yet';
+  }
+
+  function ttsEntryHtml(e) {
+    var when = '';
+    try { when = new Date(e.at).toLocaleTimeString(); } catch (_) {}
+    var detail = '';
+    try { if (e.detail != null) detail = JSON.stringify(e.detail); } catch (_) { detail = '[unserializable]'; }
+    if (detail.length > 200) detail = detail.slice(0, 200) + '…';
+    return '<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #f1f5f9;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">' +
+      '<span style="color:#94a3b8;white-space:nowrap;">' + escapeHtml(when) + '</span>' +
+      '<span style="color:' + ttsEventColor(String(e.event || '')) + ';font-weight:700;white-space:nowrap;">' + escapeHtml(String(e.event || '')) + '</span>' +
+      '<span style="color:#475569;word-break:break-word;">' + escapeHtml(detail) + '</span>' +
+    '</div>';
+  }
+
+  function buildTtsDiagText() {
+    var payload;
+    try {
+      payload = JSON.stringify({
+        at: new Date().toISOString(),
+        surface: 'error-reporter',
+        userAgent: String(navigator.userAgent || '').slice(0, 120),
+        flags: {
+          geminiQuotaFailed: !!window.__ttsGeminiQuotaFailed,
+          geminiAuthFailed: !!window.__ttsGeminiAuthFailed,
+          kokoroPresent: !!window._kokoroTTS,
+          kokoroReady: !!(window._kokoroTTS && window._kokoroTTS.ready),
+          sharedResolver: typeof window.__alloResolveReadAloudAudio === 'function'
+        },
+        lastRoute: window.__ttsLastRoute || null,
+        trace: ttsTraceEntries()
+      }, null, 2);
+    } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
+    return payload;
+  }
+
+  function ttsTabHtml() {
+    var entries = ttsTraceEntries();
+    var rows = entries.length === 0
+      ? '<p style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;margin:0;">No read-aloud activity recorded yet this session. Play any text-to-speech and events will appear here.</p>'
+      : entries.slice().reverse().map(ttsEntryHtml).join('');
+    return '<div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
+        '<span style="font:600 11px/1.4 system-ui,sans-serif;color:#475569;flex:1;min-width:200px;">' + escapeHtml(ttsFlagsSummary()) + '</span>' +
+        '<button id="aer-tts-refresh" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Refresh</button>' +
+        '<button id="aer-tts-clear" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Clear trace</button>' +
+        '<button id="aer-tts-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy diagnostics</button>' +
+      '</div>' +
+      '<div role="region" aria-label="Read-aloud diagnostic events" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' + rows + '</div>' +
+      '<footer style="padding:10px 18px;border-top:1px solid #e2e8f0;background:#fff;">' +
+        '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">This trace records read-aloud/TTS activity even when nothing visibly fails — paste it into a bug report when audio stalls or plays the wrong voice.</p>' +
+      '</footer>';
+  }
+
   function panelHtml() {
     var visible = buffer.filter(function (e) {
       return prefs.filter === 'all' ? true : (e.level === 'error' || (prefs.filter === 'errors_warns' && e.level === 'warn'));
     });
     var entriesHtml = visible.length === 0
-      ? '<p style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;margin:0;">No entries match the current filter.</p>'
+      ? '<p style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;margin:0;">No errors captured this session. 🎉</p>'
       : visible.slice().reverse().map(logEntryHtml).join('');
 
     var filterVal = prefs.filter || 'errors';
+    var onErrors = activeTab !== 'tts';
+    var tabStyle = function (on) {
+      return 'padding:7px 14px;border:none;border-bottom:2px solid ' + (on ? '#0d9488' : 'transparent') + ';background:transparent;color:' + (on ? '#0f172a' : '#64748b') + ';font:700 12px/1 system-ui,sans-serif;cursor:pointer;';
+    };
 
-    return '<div style="background:#fff;border-radius:14px;width:min(720px,100%);max-width:720px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);">' +
-      // Header
-      '<header style="padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f8fafc;">' +
-        '<div>' +
-          '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">⚠ AlloFlow Error Reporter</h2>' +
-          '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.</p>' +
-        '</div>' +
-        '<button id="aer-close" type="button" aria-label="Close error reporter" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
-      '</header>' +
+    var body;
+    if (onErrors) {
+      body =
       // Toolbar
       '<div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
         '<label style="display:inline-flex;align-items:center;gap:6px;font:600 11px/1 system-ui,sans-serif;color:#374151;">' +
@@ -373,12 +454,38 @@
           'The form opens in a new tab pre-filled with this log. You can edit it before submitting.' +
         '</p>' +
         '<button id="aer-send" type="button" style="background:#0d9488;border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:pointer;">📬 Send to Developers</button>' +
-      '</footer>' +
-    '</div>';
+      '</footer>';
+    } else {
+      body = ttsTabHtml();
+    }
+
+    return '<div style="background:#fff;border-radius:14px;width:min(720px,100%);max-width:720px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);">' +
+      // Header
+      '<header style="padding:14px 18px 0;border-bottom:1px solid #e2e8f0;background:#f8fafc;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
+          '<div>' +
+            '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
+            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : 'Read-aloud & text-to-speech activity for this session.') + '</p>' +
+          '</div>' +
+          '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
+        '</div>' +
+        '<div role="tablist" aria-label="Diagnostics sections" style="display:flex;gap:4px;margin-top:8px;">' +
+          '<button id="aer-tab-errors" type="button" role="tab" aria-selected="' + (onErrors ? 'true' : 'false') + '" style="' + tabStyle(onErrors) + '">⚠ Errors</button>' +
+          '<button id="aer-tab-tts" type="button" role="tab" aria-selected="' + (!onErrors ? 'true' : 'false') + '" style="' + tabStyle(!onErrors) + '">🔊 Read-aloud</button>' +
+        '</div>' +
+      '</header>' +
+      body +
+      '</div>';
   }
 
-  function openPanel() {
-    if (panel) { closePanel(); return; }
+
+  function openPanel(tab) {
+    if (tab === 'tts' || tab === 'errors') activeTab = tab;
+    if (panel) {
+      // Already open: a tab request switches tabs instead of toggling closed.
+      if (tab) { refreshPanelIfOpen(); return; }
+      closePanel(); return;
+    }
     panel = document.createElement('div');
     panel.id = 'allo-err-panel';
     panel.setAttribute('role', 'dialog');
@@ -417,6 +524,43 @@
   function wirePanelHandlers() {
     var $ = function (id) { return document.getElementById(id); };
     if ($('aer-close')) $('aer-close').onclick = closePanel;
+    if ($('aer-tab-errors')) $('aer-tab-errors').onclick = function () {
+      if (activeTab !== 'errors') { activeTab = 'errors'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-tab-tts')) $('aer-tab-tts').onclick = function () {
+      if (activeTab !== 'tts') { activeTab = 'tts'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-tts-refresh')) $('aer-tts-refresh').onclick = refreshPanelIfOpen;
+    if ($('aer-tts-clear')) $('aer-tts-clear').onclick = function () {
+      try { if (window.__alloTtsTrace) window.__alloTtsTrace.length = 0; } catch (_) {}
+      refreshPanelIfOpen();
+    };
+    if ($('aer-tts-copy')) $('aer-tts-copy').onclick = function () {
+      var text = buildTtsDiagText();
+      var btn = $('aer-tts-copy');
+      var flash = function (label) {
+        if (!btn) return;
+        btn.textContent = label;
+        setTimeout(function () { var b = $('aer-tts-copy'); if (b) b.textContent = 'Copy diagnostics'; }, 1500);
+      };
+      var fallback = function () {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          flash(ok ? 'Copied ✓' : 'Copy failed');
+        } catch (_) { flash('Copy failed'); }
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { flash('Copied ✓'); }).catch(fallback);
+        } else fallback();
+      } catch (_) { fallback(); }
+    };
     if ($('aer-filter')) $('aer-filter').onchange = function (ev) {
       prefs.filter = ev.target.value;
       persistPrefs();
@@ -523,11 +667,17 @@
     getBuffer: function () { return buffer.slice(); },
     clearBuffer: function () { buffer.length = 0; persistBuffer(); updateBadge(); refreshPanelIfOpen(); },
     openPanel: openPanel,
+    // Direct deep-link to the read-aloud/TTS trace tab (AI backend settings
+    // exposes this so the log is reachable with ZERO captured errors — a
+    // stuck read-aloud rarely throws, it just stalls).
+    openReadAloudLog: function () { openPanel('tts'); },
     // Alias kept for API stability — just opens the panel. The form's "what
     // happened?" field falls back to "(No errors captured. Sending a manual
     // report.)" when the buffer is empty, so we don't need to inject anything.
     openManualReport: openPanel
   };
+  // Global convenience hook for host surfaces (settings panels, help flows).
+  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' ? 'tts' : 'errors'); }; } catch (_) {}
 
   // Show the badge if there are pre-existing errors from a previous session.
   // document.body may not be ready yet during early load; defer.

@@ -8471,7 +8471,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     //    module's load + runtime. Surfaces a hidden-by-default red badge that
     //    only appears after an error is captured, then opens a panel with a
     //    one-click "Send to Aaron" button that pre-fills the bug-report form.
-    loadModule('ErrorReporter', 'https://alloflow-cdn.pages.dev/error_reporter_module.js?v=b7725da5');
+    loadModule('ErrorReporter', 'https://alloflow-cdn.pages.dev/error_reporter_module.js?v=8ccc78b8');
     // Translation Feedback: lets multilingual users suggest a fix to a translated
     // string, sent the same way as a bug report (pre-filled Google Form). Rides
     // help-mode — when help-mode is on and a help string is opened, the help-click
@@ -8619,7 +8619,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=80d3fb79f');
     loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=80d3fb79f');
     loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=80d3fb79f');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=80d3fb79f');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=83fe14fb');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=80d3fb79f');
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=80d3fb79f');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=80d3fb79f');
@@ -41779,6 +41779,25 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
                     >
                         🔌 {t('canvas_settings.device_storage_btn') || 'Manage device storage'}
+                    </button>
+                </div>
+                {/* Diagnostics & logs (2026-07-20): always-available entry into the
+                    Error Reporter — the red badge only appears AFTER an error is
+                    captured, but a stuck read-aloud rarely throws. Opens straight
+                    to the read-aloud/TTS trace tab when no errors are buffered. */}
+                <div className="border-t border-slate-100 pt-4">
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</label>
+                    <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
+                    <button
+                        onClick={() => {
+                            if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
+                            let hasErrors = false;
+                            try { hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0; } catch (e) {}
+                            window.__alloOpenDiagnosticsLog(hasErrors ? 'errors' : 'tts');
+                        }}
+                        className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+                    >
+                        🩺 {t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log'}
                     </button>
                 </div>
                 <div className="flex justify-end pt-2">

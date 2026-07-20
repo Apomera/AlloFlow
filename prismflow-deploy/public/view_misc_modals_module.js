@@ -1006,6 +1006,22 @@ function AIBackendModal(props) {
     },
     "\u{1F50C} ",
     t("canvas_settings.device_storage_btn") || "Manage device storage"
+  )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        if (typeof window.__alloOpenDiagnosticsLog !== "function") return;
+        let hasErrors = false;
+        try {
+          hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0;
+        } catch (e) {
+        }
+        window.__alloOpenDiagnosticsLog(hasErrors ? "errors" : "tts");
+      },
+      className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+    },
+    "\u{1FA7A} ",
+    t("canvas_settings.diagnostics_btn") || "Open error & read-aloud log"
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
     try {
       const c = readAIBackendConfig();
