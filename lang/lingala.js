@@ -21163,7 +21163,7 @@
       "half_the_size_of_pluto_they_orbit_each": "Ndambo ya bonene ya Pluto! Ebalukaka moko zingazinga ya mosusu (baplanet mikɛ mibale). Ezali na ekoti ya motane na pɔlɛ.",
       "no_atmosphere_stars_visible_even_durin": "Atmosfɛrɛ ezali te — minzoto emonanaka ata na moi makasi. Moi emonanaka monene mpe engɛngi makasi.",
       "permanent_overcast_surface_bathed_in_d": "Mapata ntango nyonso. Etando ezali na pole ya orange ya moke. Nkake ezali kongɛnga likolo.",
-      "blue_sky_from_rayleigh_scattering_5_00": "Likolo ya bulé mpo na bopanzani ya Rayleigh. Minzoto ~5.000 emonanaka na miso mpamba.",
+      "blue_sky_from_rayleigh_scattering_5_00": "Likolo ya bulé mpo na bopanzani ya Rayleigh. Minzoto ~5,000 emonanaka na miso mpamba.",
       "butterscotch_sky_from_iron_dust_blue_s": "Likolo ya langi ya motane-mokɔmbɔ mpo na putulu ya ebende. Bokiti ya moi ya bulé! Phobos ebimaka mbala 2 na mokolo.",
       "no_surface_from_cloud_tops_see_auroras": "Etando ezali te — banda nsɔngɛ ya mapata, omonaka ba-aurora ya kongɛnga mbala 100 koleka ya Mabelé.",
       "rings_visible_as_bright_arcs_overhead_": "Bapɛtɛ emonanaka lokola bagbɛ ya kongɛnga likolo. Longwa na Titan: likolo ya brume ya orange, Saturn emonanaka mbala 11 monene koleka Sanza na biso ya kotonda.",
