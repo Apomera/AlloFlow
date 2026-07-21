@@ -50,15 +50,15 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
   });
 
   it('discloses local saving and private-note considerations', () => {
-    expect(tracker).toContain('Energy logs save in this browser.');
+    expect(tracker).toContain('Energy logs save in this browser only');
     expect(tracker).toContain('if your activity notes are private');
     expect(tracker).toContain("'aria-describedby': 'learning-lab-energy-privacy-note'");
   });
 
   it('trims activity text and preserves unrelated section data', () => {
     expect(tracker).toContain('what: form.what.trim()');
-    expect(tracker).toContain("setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }))");
-    expect(tracker).toContain("setData(Object.assign({}, data, { logs: (data.logs || []).filter");
+    expect(tracker).toContain("setData(Object.assign({}, data, { logs: [entry].concat(rawEnergyLogs) }))");
+    expect(tracker).toContain("setData(Object.assign({}, data, { logs: rawEnergyLogs.filter");
   });
 
   it('announces saved energy value and time', () => {
@@ -110,7 +110,7 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
 
   it('uses definition-list and time semantics for log details', () => {
     expect(tracker).toContain("hh('time', { dateTime: dateTime }");
-    expect(tracker).toContain("log.level + ' out of 10'");
+    expect(tracker).toContain("Math.max(0, Math.min(10, Number(log.level) || 0)) + ' out of 10'");
     expect(tracker).toContain("'Activity or context'");
   });
 
@@ -120,7 +120,7 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
   });
 
   it('names deletion controls and restores focus after removal', () => {
-    expect(tracker).toContain("'aria-label': 'Remove energy log from ' + log.date + ' at ' + formatHour(log.hour)");
+    expect(tracker).toContain("'aria-label': 'Remove energy log from ' + whenText");
     expect(tracker).toContain("llAnnounce('Energy log removed.')");
     expect(tracker).toContain("focusById('learning-lab-energy-history-heading')");
   });
@@ -129,6 +129,20 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
     expect(tracker).toContain("width: '100%', minHeight: 44");
     expect(tracker).toContain("minWidth: 44, minHeight: 44");
     expect(tracker).toContain("minHeight: 44, padding: '9px 14px'");
+  });
+
+  it('handles malformed legacy energy data and renders all logs without a cap', () => {
+    expect(tracker).toContain('var rawEnergyLogs = Array.isArray(data.logs) ? data.logs : [];');
+    expect(tracker).toContain('var logs = rawEnergyLogs.filter(isRecord);');
+    expect(tracker).toContain("if (!Number.isFinite(normalized) || normalized < 0 || normalized > 23) return 'an unrecorded time';");
+    expect(tracker).toContain("var whenText = (logDate || 'Date not recorded') + ' at ' + formatHour(log.hour);");
+    expect(tracker).toContain('logs.map(function(log)');
+    expect(tracker).not.toContain('.slice(0, 20)');
+    expect(source).toContain("stat: (Array.isArray((data.mytkEnergy || {}).logs) ? (data.mytkEnergy || {}).logs.length : 0) + ' logs'");
+  });
+
+  it('states that saving never sends or notifies anyone', () => {
+    expect(tracker).toContain('saving does not send them to or notify anyone');
   });
 
   it('keeps the deployed mirror identical', () => {

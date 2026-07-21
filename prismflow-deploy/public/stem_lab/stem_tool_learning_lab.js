@@ -14949,8 +14949,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // windows = best time for hard cognitive work.
   function PersonalEnergyTracker(props) {
     if (!R) return null;
-    var data = props.data || { logs: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { logs: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawEnergyLogs = Array.isArray(data.logs) ? data.logs : [];
     var emptyForm = function() { return { hour: new Date().getHours(), level: 5, what: '' }; };
     var fs = R.useState(emptyForm());
     var form = fs[0]; var setForm = fs[1];
@@ -14969,6 +14972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function formatHour(hour) {
       var normalized = Number(hour);
+      if (!Number.isFinite(normalized) || normalized < 0 || normalized > 23) return 'an unrecorded time';
       var suffix = normalized < 12 ? 'AM' : 'PM';
       var display = normalized % 12;
       if (display === 0) display = 12;
@@ -14983,28 +14987,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         return;
       }
       var entry = { id: tkId(), date: todayISO(), time: Date.now(), hour: hour, level: form.level, what: form.what.trim() };
-      setData(Object.assign({}, data, { logs: [entry].concat(data.logs || []) }));
+      setData(Object.assign({}, data, { logs: [entry].concat(rawEnergyLogs) }));
       setForm(emptyForm());
       setHourError('');
       llAnnounce('Energy log saved for ' + formatHour(entry.hour) + ': ' + entry.level + ' out of 10.');
       focusById('learning-lab-energy-hour');
     }
     async function remove(log) {
-      if (!(await askLearningLabConfirmation('This permanently removes the energy log from ' + log.date + ' at ' + formatHour(log.hour) + '.', {
+      var logDate = textValue(log.date).trim() || 'an unrecorded date';
+      if (!(await askLearningLabConfirmation('This permanently removes the energy log from ' + logDate + ' at ' + formatHour(log.hour) + '.', {
         title: 'Remove this energy log?', confirmText: 'Remove log'
       }))) return;
-      setData(Object.assign({}, data, { logs: (data.logs || []).filter(function(item) { return item.id !== log.id; }) }));
+      setData(Object.assign({}, data, { logs: rawEnergyLogs.filter(function(item) { return !(isRecord(item) && item.id === log.id); }) }));
       llAnnounce('Energy log removed.');
       focusById('learning-lab-energy-history-heading');
     }
 
-    var logs = data.logs || [];
+    var logs = rawEnergyLogs.filter(isRecord);
     var byHour = {};
     logs.forEach(function(log) {
       var hour = Number(log.hour);
       if (!Number.isFinite(hour) || hour < 0 || hour > 23) return;
       byHour[hour] = byHour[hour] || [];
-      byHour[hour].push(Number(log.level) || 0);
+      byHour[hour].push(Math.max(0, Math.min(10, Number(log.level) || 0)));
     });
     var hourlyAvg = [];
     for (var hour = 0; hour <= 23; hour++) {
@@ -15013,7 +15018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     var bestHour = hourlyAvg.reduce(function(best, item) { return item.avg > best.avg ? item : best; }, hourlyAvg[0]);
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(253,230,138,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#fde68a', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#fde68a', textTransform: 'uppercase', marginBottom: 4 };
     var buttonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#92400e', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
     return hh('div', { style: { padding: 14 } },
@@ -15022,11 +15027,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       tkCard('#fbbf24',
         hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-energy-form-heading' },
           hh('h3', { id: 'learning-lab-energy-form-heading', style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 4px' } }, 'Log energy now'),
-          hh('p', { id: 'learning-lab-energy-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Energy logs save in this browser. Use a device and account you trust if your activity notes are private.'),
+          hh('p', { id: 'learning-lab-energy-privacy-note', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Energy logs save in this browser only; saving does not send them to or notify anyone. Use a device and account you trust if your activity notes are private.'),
           hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, marginBottom: 10 } },
             hh('div', null,
               hh('label', { htmlFor: 'learning-lab-energy-hour', style: labelStyle }, 'Hour of day (required)'),
-              hh('p', { id: 'learning-lab-energy-hour-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 4px' } }, 'Use 24-hour time: 0 is midnight, 12 is noon, and 23 is 11 PM.'),
+              hh('p', { id: 'learning-lab-energy-hour-help', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', margin: '0 0 4px' } }, 'Use 24-hour time: 0 is midnight, 12 is noon, and 23 is 11 PM.'),
               hh('input', { id: 'learning-lab-energy-hour', type: 'number', min: 0, max: 23, step: 1, inputMode: 'numeric', value: form.hour, 'aria-invalid': hourError ? 'true' : undefined, 'aria-describedby': hourError ? 'learning-lab-energy-hour-help learning-lab-energy-hour-error' : 'learning-lab-energy-hour-help', onChange: function(event) { setForm(Object.assign({}, form, { hour: event.target.value })); if (hourError) setHourError(''); }, style: Object.assign({}, fieldStyle, { fontWeight: 800, textAlign: 'center' }) }),
               hh('div', { id: 'learning-lab-energy-hour-error', role: 'alert', style: { minHeight: hourError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: hourError ? 4 : 0 } }, hourError)
             ),
@@ -15048,19 +15053,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
       logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-energy-chart-heading', style: { background: 'rgba(2,6,23,0.5)', borderRadius: 10, padding: 10, marginBottom: 12 } },
         hh('h3', { id: 'learning-lab-energy-chart-heading', style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 4px' } }, 'Average energy by hour'),
-        hh('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 8px' } }, 'Every hour includes a numeric average and log count. Color is only an additional cue.'),
+        hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.45, margin: '0 0 8px' } }, 'Every hour includes a numeric average and log count. Color is only an additional cue.'),
         hh('ul', { 'aria-label': 'Average energy across all 24 hours', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 4, alignItems: 'stretch', overflowX: 'auto' } },
           hourlyAvg.map(function(item) {
             var percent = (item.avg / 10) * 100;
             var color = item.avg >= 7 ? '#4ade80' : item.avg >= 5 ? '#facc15' : item.avg > 0 ? '#f87171' : 'rgba(100,116,139,0.28)';
             var averageText = item.avg > 0 ? item.avg.toFixed(1) : '—';
             return hh('li', { key: 'eh-' + item.hour, style: { flex: '1 0 42px', minWidth: 42, textAlign: 'center', color: 'var(--allo-stem-text, #e2e8f0)' } },
-              hh('span', { 'aria-label': formatHour(item.hour), style: { display: 'block', fontSize: 9, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 3 } }, String(item.hour).padStart(2, '0')),
+              hh('span', { 'aria-label': formatHour(item.hour), style: { display: 'block', fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginBottom: 3 } }, String(item.hour).padStart(2, '0')),
               hh('div', { 'aria-hidden': 'true', style: { height: 56, background: 'rgba(15,23,42,0.65)', borderRadius: 4, position: 'relative', overflow: 'hidden', border: '1px solid rgba(148,163,184,0.25)' } },
                 hh('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, height: percent + '%', background: color } })
               ),
-              hh('span', { 'aria-label': item.count ? 'Average energy ' + averageText + ' out of 10 from ' + item.count + (item.count === 1 ? ' log' : ' logs') : 'No energy logs', style: { display: 'block', minHeight: 18, fontSize: 9, fontWeight: 800, color: item.count ? '#fff' : 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 3 } }, averageText),
-              hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 8, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, item.count ? item.count + '×' : '')
+              hh('span', { 'aria-label': item.count ? 'Average energy ' + averageText + ' out of 10 from ' + item.count + (item.count === 1 ? ' log' : ' logs') : 'No energy logs', style: { display: 'block', minHeight: 18, fontSize: 11, fontWeight: 800, color: item.count ? '#fff' : 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 3 } }, averageText),
+              hh('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, item.count ? item.count + '×' : '')
             );
           })
         ),
@@ -15073,21 +15078,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       logs.length ? hh('section', { 'aria-labelledby': 'learning-lab-energy-history-heading' },
         hh('h3', { id: 'learning-lab-energy-history-heading', tabIndex: -1, style: { fontSize: 12, fontWeight: 800, color: '#fde68a', margin: '0 0 8px' } }, 'Recent energy logs'),
         hh('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
-          logs.slice(0, 20).map(function(log) {
+          logs.map(function(log) {
             var headingId = 'learning-lab-energy-log-' + log.id;
-            var dateTime = log.date + 'T' + String(log.hour).padStart(2, '0') + ':00:00';
+            var logDate = textValue(log.date).trim();
+            var hourValid = Number.isFinite(Number(log.hour)) && Number(log.hour) >= 0 && Number(log.hour) <= 23;
+            var whenText = (logDate || 'Date not recorded') + ' at ' + formatHour(log.hour);
+            var dateTime = logDate && hourValid ? logDate + 'T' + String(Number(log.hour)).padStart(2, '0') + ':00:00' : '';
             return hh('li', { key: 'el-' + log.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.55)', borderLeft: '4px solid #fbbf24' } },
               hh('article', { 'aria-labelledby': headingId, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
                 hh('div', { style: { flex: 1 } },
-                  hh('h4', { id: headingId, style: { fontSize: 11, color: '#fde68a', margin: '0 0 4px' } }, 'Energy log for ', hh('time', { dateTime: dateTime }, log.date + ' at ' + formatHour(log.hour))),
-                  hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 7px', margin: 0, fontSize: 11 } },
+                  hh('h4', { id: headingId, style: { fontSize: 12, color: '#fde68a', margin: '0 0 4px' } }, 'Energy log for ', dateTime ? hh('time', { dateTime: dateTime }, whenText) : whenText),
+                  hh('dl', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 7px', margin: 0, fontSize: 12 } },
                     hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Energy'),
-                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.level + ' out of 10'),
-                    log.what ? hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Activity or context') : null,
-                    log.what ? hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, log.what) : null
+                    hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, Math.max(0, Math.min(10, Number(log.level) || 0)) + ' out of 10'),
+                    textValue(log.what).trim() ? hh('dt', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Activity or context') : null,
+                    textValue(log.what).trim() ? hh('dd', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)' } }, textValue(log.what).trim()) : null
                   )
                 ),
-                hh('button', { type: 'button', 'aria-label': 'Remove energy log from ' + log.date + ' at ' + formatHour(log.hour), onClick: function() { remove(log); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
+                hh('button', { type: 'button', 'aria-label': 'Remove energy log from ' + whenText, onClick: function() { remove(log); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 15, cursor: 'pointer' } }, '×')
               )
             );
           })
@@ -20707,7 +20715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkWorry',    icon: '⏰', label: 'Worry Time',           color: '#a855f7', desc: '15-min scheduled worry vs all-day (Borkovec 1983)',
         stat: (Array.isArray((data.mytkWorry || {}).worries) ? (data.mytkWorry || {}).worries.filter(function(w) { return !!w && typeof w === 'object' && !w.resolved; }).length : 0) + ' open', cta: 'Capture a worry' },
       { id: 'mytkEnergy',   icon: '⚡', label: 'Energy Tracker',       color: '#fbbf24', desc: 'Log energy by hour, find your peak window',
-        stat: ((data.mytkEnergy || {}).logs || []).length + ' logs', cta: 'Log energy' },
+        stat: (Array.isArray((data.mytkEnergy || {}).logs) ? (data.mytkEnergy || {}).logs.length : 0) + ' logs', cta: 'Log energy' },
       { id: 'mytkQuest',    icon: '❓', label: 'Question Log',         color: '#06b6d4', desc: 'Capture wonders mid-class, process later',
         stat: ((data.mytkQuest || {}).questions || []).filter(function(q) { return !q.answered; }).length + ' open', cta: 'Log a question' },
       { id: 'mytkSuccess',  icon: '🏆', label: 'Success Log',          color: '#10b981', desc: 'Log wins, tiny + big (Goldman 2020)',
