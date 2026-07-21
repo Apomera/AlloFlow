@@ -1,0 +1,16 @@
+{
+  "dari": {
+    "keyboard_shortcuts": "⌨️ میانبرهای کیبورد",
+    "statistics_center_spread_shape": "احصائیه — مرکز، پراکندگی، شکل",
+    "quiz_practice_apply": "امتحان — تمرین + کاربرد",
+    "ap_stats_data_literacy_items_each_ques": "موارد AP Stats / سواد داده‌ای. هر سوال به مجموعه داده فعال پیوند می‌خورد تا بتوانید پیش از پاسخ، بصری بررسی کنید.",
+    "paste_from_google_sheets_generate_samp": "از Google Sheets بچسبانید، داده نمونه بسازید، به‌صورت PNG/CSV خروجی بگیرید. بیشتر شاگردان دست‌کم می‌گیرند که تحلیل داده واقعی چقدر پاک‌سازی داده است (~70% کل زمان).",
+    "add_data_points_to_see_statistics": "برای دیدن احصائیه، نقاط داده اضافه کنید",
+    "make_quiz": "ساخت امتحان",
+    "make_quiz_2": "ساخت امتحان",
+    "select_a_quiz_type_and_click_start_qui": "یک نوع امتحان انتخاب کنید و روی «شروع امتحان» کلیک کنید!",
+    "watch_how_statistics_change_as_each_po": "ببینید چگونه احصائیه با آشکار شدن هر نقطه یکی‌یکی تغییر می‌کند.",
+    "i_m_stuck_show_open_questions": "🤔 گیر کرده‌ام - سوال‌های باز را نشان بده",
+    "open_questions_no_answer_key": "سوال‌های باز (بدون کلید پاسخ)"
+  }
+}
