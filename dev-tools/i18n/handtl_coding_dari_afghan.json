@@ -1,0 +1,12 @@
+{
+  "dari": {
+    "e_g_swapping_array_scan_for_hash_looku": "مثلاً، جایگزینی پویش آرایه با جستجوی درهم‌سازی، مصرف حلقه بیرونی را به ضریب n کاهش می‌دهد...",
+    "i_m_stuck_show_open_questions": "🤔 گیر کرده‌ام — سوال‌های باز را نشان بده",
+    "open_questions_no_answer_key": "سوال‌های باز (بدون کلید پاسخ)",
+    "3d_camera": " کمره 3D",
+    "camera_elevation": "ارتفاع کمره",
+    "camera_rotation": "چرخش کمره",
+    "camera_zoom": "بزرگنمایی کمره",
+    "reset_3d_camera_view": "بازنشانی نمای کمره 3D"
+  }
+}
