@@ -20411,20 +20411,43 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             itemsToProcess = history.filter(item => !['image', 'gemini-bridge', 'audio', 'udl-advice'].includes(item.type));
         }
         const newItems = [];
+        const _translatedIdMap = {}; // originalId → translated copy's new id (for resourceRef repointing)
+        const _translateFailures = [];
         for (let i = 0; i < itemsToProcess.length; i++) {
             const item = itemsToProcess[i];
             setGenerationStep(t('status_steps.translating_item', { current: i+1, total: itemsToProcess.length, title: item.title || item.type }) || `Translating ${i+1}/${itemsToProcess.length}: ${item.title || item.type}...`);
             setProcessingProgress({ current: i + 1, total: itemsToProcess.length });
-            const translatedItem = await translateResourceItem(item, targetTranslationLang);
-            const newItem = {
-                ...translatedItem,
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                timestamp: new Date()
-            };
-            newItems.push(newItem);
+            // Per-item isolation (2026-07-20): one failed translation must not sink the rest of
+            // the pack — the completed copies land, the failures are named in the toast.
+            try {
+                const translatedItem = await translateResourceItem(item, targetTranslationLang);
+                const newItem = {
+                    ...translatedItem,
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                    timestamp: new Date()
+                };
+                _translatedIdMap[item.id] = newItem.id;
+                newItems.push(newItem);
+            } catch (itemErr) {
+                warnLog('Translation failed for one resource, continuing:', item.title || item.type, itemErr?.message);
+                _translateFailures.push(item.title || item.type);
+            }
             await new Promise(r => setTimeout(r, 500));
         }
+        // Directions goal tethers must follow the translation: a game objective's resourceRef
+        // points at the ENGLISH item id — repoint it at the translated copy when that resource
+        // was translated in this batch, so auto-checking works for students on the translated pack.
+        for (const newItem of newItems) {
+            if (newItem.type !== 'directions' || !newItem.data || typeof newItem.data !== 'object' || !Array.isArray(newItem.data.objectives)) continue;
+            newItem.data = {
+                ...newItem.data,
+                objectives: newItem.data.objectives.map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),
+            };
+        }
         setHistory(prev => [...prev, ...newItems]);
+        if (_translateFailures.length) {
+            addToast((t('toasts.translate_partial') || 'Some resources could not be translated: ') + _translateFailures.slice(0, 4).join(', ') + (_translateFailures.length > 4 ? '…' : ''), 'warning');
+        }
         if (translateScope === 'single' && newItems.length > 0) {
             const newItem = newItems[0];
             setGeneratedContent({ type: newItem.type, data: newItem.data, id: newItem.id });

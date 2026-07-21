@@ -26,12 +26,30 @@ community catalog.
 ## Resource item envelope
 
 ```json
-{ "id": "unique-string", "type": "<type>", "title": "…", "timestamp": "ISO-8601", "data": <type-specific>, "meta": { }? }
+{ "id": "unique-string", "type": "<type>", "title": "…", "timestamp": "ISO-8601", "data": <type-specific>, "meta": "display string"? }
 ```
 
 Rules: `id` unique across the pack; `type` from the registry below; students receive every type
 NOT in `TEACHER_ONLY_TYPES` (lesson-plan, brainstorm, udl-advice, …). Delivery order = array
 order, except `directions` always opens first (delivery rule, not storage order).
+
+**`meta` is a DISPLAY STRING** (the history panel renders it verbatim — e.g.
+`"6th Grade • Leveled reading • ~450 words"`). Machine data goes in producer-namespaced
+top-level fields instead (e.g. `imageSlot`); the app tolerates extra fields on load, but only
+spec'd fields are guaranteed to survive session serializers. (Exception already in the app:
+directions items created by the in-app composer may carry an object meta for provenance — the
+history panel now renders only string metas, so object metas display as blank, never
+`[object Object]`.)
+
+**Standards** belong in the `allopack` block (e.g.
+`"standards": "NGSS MS-ESS2-4 (…); CCSS.ELA-LITERACY.RST.6-8.4 (…)"`) — human-readable codes
+with a parenthetical gloss, so catalog browsing and alignment review need no lookup.
+
+**Catalog language policy (v0.1):** author packs in **English**, with optional embedded
+glossary `translations` as an ELL quality bonus. Full-pack localization happens on the
+teacher's side via the in-app Translate flow (whole-pack or single resource), which creates
+translated copies — including directions with goal tethers repointed at the translated
+resources. One catalog entry per unit, not per language.
 
 ## Type registry (shapes verified against renderers)
 

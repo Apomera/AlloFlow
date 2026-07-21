@@ -525,7 +525,10 @@ function HistoryPanel(props) {
                                                             🔬 DA{typeof item.daItemIndex === 'number' ? ` · #${item.daItemIndex + 1}` : ''}
                                                         </span>
                                                     )}
-                                                    <span>{(isTeacherMode && !isIndependentMode) ? String(item.meta || "") : sanitizeString(item.meta)}</span>
+                                                    {/* meta is a DISPLAY STRING by app convention; some producers (directions
+                                                        derivedFrom provenance, external AlloPacks) carry OBJECT meta — machine
+                                                        data that must never render as "[object Object]". */}
+                                                    <span>{(() => { const _m = typeof item.meta === 'string' ? item.meta : ''; return (isTeacherMode && !isIndependentMode) ? _m : sanitizeString(_m); })()}</span>
                                                 </div>
                                                 {item.type === 'word-sounds' && item.configSummary && (
                                                     <div className="text-[11px] text-indigo-400 mt-0.5 truncate flex items-center gap-1" title={item.configSummary}>

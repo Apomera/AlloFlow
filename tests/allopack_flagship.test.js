@@ -152,4 +152,24 @@ describe('authoring rules (the ones that bite)', () => {
     expect(JSON.stringify(pack)).not.toMatch(/data:image\//);
     expect(pack.allopack.imageShotList).toContain('IMAGES.md');
   });
+  it('meta is a DISPLAY STRING on every item (the history panel renders it verbatim)', () => {
+    for (const it2 of items) {
+      if (it2.meta !== undefined) expect(typeof it2.meta).toBe('string');
+    }
+    // machine data (image slots) lives OUTSIDE meta
+    expect(items.find((i) => i.id === 'wc-reading').imageSlot).toBe('wc-img-cycle-diagram');
+  });
+  it('standards are named in the allopack block with human-readable glosses', () => {
+    expect(pack.allopack.standards).toContain('NGSS MS-ESS2-4');
+    expect(pack.allopack.standards).toMatch(/\(.+\)/); // gloss, not bare codes
+  });
+  it('the app history panel never renders object metas as [object Object] (source pin)', () => {
+    const hp = readFileSync(resolve(process.cwd(), 'view_history_panel_source.jsx'), 'utf8');
+    expect(hp).toContain("const _m = typeof item.meta === 'string' ? item.meta : '';");
+  });
+  it('whole-pack translate repoints directions goal tethers and isolates per-item failures (source pins)', () => {
+    expect(anti).toContain('_translatedIdMap[item.id] = newItem.id;');
+    expect(anti).toContain("objectives: newItem.data.objectives.map(o => (o && o.resourceRef && _translatedIdMap[o.resourceRef]) ? { ...o, resourceRef: _translatedIdMap[o.resourceRef] } : o),");
+    expect(anti).toContain('_translateFailures.push(item.title || item.type);');
+  });
 });
