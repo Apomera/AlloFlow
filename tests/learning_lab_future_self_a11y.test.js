@@ -56,11 +56,11 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
     expect(letters).toContain('to: form.to.trim()');
     expect(letters).toContain('from: form.from.trim()');
     expect(letters).toContain('body: body');
-    expect(letters).toContain("setData(Object.assign({}, data, { letters: [letter].concat(data.letters || []) }))");
+    expect(letters).toContain("setData(Object.assign({}, data, { letters: [letter].concat(rawLetters) }))");
   });
 
   it('discloses local saving and sensitive reflection considerations', () => {
-    expect(letters).toContain('Letters save in this browser and may contain private reflections.');
+    expect(letters).toContain('Letters save in this browser and may contain private reflections');
     expect(letters).toContain('Use a device and account you trust.');
     expect(letters).toContain("'aria-describedby': 'learning-lab-future-deliver-help learning-lab-future-privacy-note'");
   });
@@ -104,7 +104,7 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
 
   it('presents sealed letters as named sections with machine-readable dates', () => {
     expect(letters).toContain("hh('section', { 'aria-labelledby': 'learning-lab-future-reading-heading'");
-    expect(letters).toContain("hh('time', { dateTime: readingLetter.deliverOn }");
+    expect(letters).toContain("hh('time', { dateTime: readingDeliverOn }");
     expect(letters).toContain("daysRemaining === 1 ? '' : 's'");
   });
 
@@ -117,7 +117,7 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
   it('uses a semantic list of future-self letters', () => {
     expect(letters).toContain("hh('ul', { 'aria-label': 'Future-self letters'");
     expect(letters).toContain("return hh('li', { key: 'fl-' + letter.id }");
-    expect(letters).toContain("hh('time', { dateTime: letter.writtenOn }");
+    expect(letters).toContain("writtenOn ? hh('time', { dateTime: writtenOn }, writtenOn) : 'on an unrecorded date'");
   });
 
   it('gives list items native button semantics and avoids click-only instructions', () => {
@@ -130,6 +130,18 @@ describe('Learning Lab Future-Self Letter accessibility', () => {
     expect(letters).toContain("width: '100%', minHeight: 44");
     expect(letters).toContain("minHeight: 44, padding: '9px 14px'");
     expect(letters).toContain("width: '100%', minHeight: 44, textAlign: 'left'");
+  });
+
+  it('handles malformed legacy letter data without crashing or NaN countdowns', () => {
+    expect(letters).toContain('var rawLetters = Array.isArray(data.letters) ? data.letters : [];');
+    expect(letters).toContain('var letters = rawLetters.filter(isRecord);');
+    expect(letters).toContain("daysRemaining = Number.isFinite(sealedMs) ? Math.max(1, Math.ceil((sealedMs - new Date().getTime()) / 86400000)) : 0;");
+    expect(letters).toContain("var writtenOn = textValue(letter.writtenOn).trim();");
+    expect(source).toContain("stat: (Array.isArray((data.mytkFut || {}).letters) ? (data.mytkFut || {}).letters.length : 0) + ' letters'");
+  });
+
+  it('states that saving never sends or notifies anyone', () => {
+    expect(letters).toContain('saving does not send them to or notify anyone');
   });
 
   it('keeps the deployed mirror identical', () => {

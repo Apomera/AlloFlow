@@ -14294,8 +14294,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // predicts better long-term decision-making.
   function PersonalFutureSelf(props) {
     if (!R) return null;
-    var data = props.data || { letters: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { letters: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawLetters = Array.isArray(data.letters) ? data.letters : [];
     var emptyForm = function() { return { to: '', from: '', body: '', deliverOn: '' }; };
     var vs = R.useState('list'); var view = vs[0]; var setView = vs[1];
     var fs = R.useState(emptyForm()); var form = fs[0]; var setForm = fs[1];
@@ -14313,11 +14316,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function focusById(id) { setPendingFocusId(id); }
 
-    var letters = data.letters || [];
+    var letters = rawLetters.filter(isRecord);
     var today = todayISO();
     var readingLetter = letters.filter(function(letter) { return letter.id === reading; })[0] || null;
     var fieldStyle = { boxSizing: 'border-box', width: '100%', minHeight: 44, padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(196,181,253,0.65)', background: 'rgba(2,6,23,0.72)', color: 'var(--allo-stem-text, #e2e8f0)', font: 'inherit' };
-    var labelStyle = { display: 'block', fontSize: 10, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 };
+    var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#ddd6fe', textTransform: 'uppercase', marginBottom: 4 };
     var primaryButtonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #ddd6fe', background: '#6d28d9', color: '#fff', fontWeight: 800, cursor: 'pointer' };
     var secondaryButtonStyle = { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #c4b5fd', background: 'rgba(76,29,149,0.35)', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' };
 
@@ -14342,7 +14345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         body: body,
         deliverOn: form.deliverOn
       };
-      setData(Object.assign({}, data, { letters: [letter].concat(data.letters || []) }));
+      setData(Object.assign({}, data, { letters: [letter].concat(rawLetters) }));
       setForm(emptyForm());
       setBodyError('');
       setView('list');
@@ -14350,10 +14353,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-future-write-button');
     }
     async function remove(letter) {
-      if (!(await askLearningLabConfirmation('This permanently removes the letter written on ' + letter.writtenOn + '.', {
+      var writtenOn = textValue(letter.writtenOn).trim() || 'an unrecorded date';
+      if (!(await askLearningLabConfirmation('This permanently removes the letter written on ' + writtenOn + '.', {
         title: 'Remove this future-self letter?', confirmText: 'Remove letter'
       }))) return false;
-      setData(Object.assign({}, data, { letters: (data.letters || []).filter(function(item) { return item.id !== letter.id; }) }));
+      setData(Object.assign({}, data, { letters: rawLetters.filter(function(item) { return !(isRecord(item) && item.id === letter.id); }) }));
       setReading(null);
       setView('list');
       llAnnounce('Future-self letter removed.');
@@ -14375,9 +14379,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       focusById('learning-lab-future-write-button');
     }
     function openLetter(letter) {
+      var deliverOn = textValue(letter.deliverOn).trim();
       setReading(letter.id);
       setView('reading');
-      llAnnounce(letter.deliverOn && letter.deliverOn > today ? 'Letter is sealed until ' + letter.deliverOn + '.' : 'Letter opened.');
+      llAnnounce(deliverOn && deliverOn > today ? 'Letter is sealed until ' + deliverOn + '.' : 'Letter opened.');
       focusById('learning-lab-future-reading-heading');
     }
     function backToList() {
@@ -14389,22 +14394,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     if (view === 'reading' && readingLetter) {
-      var canRead = !readingLetter.deliverOn || readingLetter.deliverOn <= today;
+      var readingDeliverOn = textValue(readingLetter.deliverOn).trim();
+      var readingWrittenOn = textValue(readingLetter.writtenOn).trim();
+      var canRead = !readingDeliverOn || readingDeliverOn <= today;
       var daysRemaining = 0;
       if (!canRead) {
-        daysRemaining = Math.max(1, Math.ceil((new Date(readingLetter.deliverOn + 'T12:00:00').getTime() - new Date().getTime()) / 86400000));
+        var sealedMs = new Date(readingDeliverOn + 'T12:00:00').getTime();
+        daysRemaining = Number.isFinite(sealedMs) ? Math.max(1, Math.ceil((sealedMs - new Date().getTime()) / 86400000)) : 0;
       }
       return hh('div', { style: { padding: 14 } },
-        tkSectionHeader('💌', 'Future-self letter', canRead ? 'Written ' + relDate(readingLetter.writtenOn) : 'Sealed until ' + readingLetter.deliverOn, '#a855f7'),
+        tkSectionHeader('💌', 'Future-self letter', canRead ? 'Written ' + relDate(readingWrittenOn) : 'Sealed until ' + readingDeliverOn, '#a855f7'),
         canRead ? hh('article', { 'aria-labelledby': 'learning-lab-future-reading-heading', style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(15,23,42,0.7))', border: '2px solid #a855f7', marginBottom: 14, fontFamily: 'Georgia, serif' } },
-          hh('h3', { id: 'learning-lab-future-reading-heading', tabIndex: -1, style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 14px' } }, 'Letter written ', hh('time', { dateTime: readingLetter.writtenOn }, readingLetter.writtenOn)),
-          readingLetter.to ? hh('p', { style: { fontSize: 12, color: '#ddd6fe', margin: '0 0 14px', fontStyle: 'italic' } }, 'Dear ' + readingLetter.to + ',') : null,
-          hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 } }, readingLetter.body),
-          readingLetter.from ? hh('footer', { style: { fontSize: 12, color: '#ddd6fe', marginTop: 14, fontStyle: 'italic', textAlign: 'right' } }, '— ' + readingLetter.from) : null
+          hh('h3', { id: 'learning-lab-future-reading-heading', tabIndex: -1, style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 14px' } }, 'Letter written ', readingWrittenOn ? hh('time', { dateTime: readingWrittenOn }, readingWrittenOn) : 'on an unrecorded date'),
+          textValue(readingLetter.to).trim() ? hh('p', { style: { fontSize: 12, color: '#ddd6fe', margin: '0 0 14px', fontStyle: 'italic' } }, 'Dear ' + textValue(readingLetter.to).trim() + ',') : null,
+          hh('p', { style: { fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 } }, textValue(readingLetter.body)),
+          textValue(readingLetter.from).trim() ? hh('footer', { style: { fontSize: 12, color: '#ddd6fe', marginTop: 14, fontStyle: 'italic', textAlign: 'right' } }, '— ' + textValue(readingLetter.from).trim()) : null
         ) : hh('section', { 'aria-labelledby': 'learning-lab-future-reading-heading', style: { padding: 30, borderRadius: 14, background: 'rgba(76,29,149,0.30)', border: '2px dashed #c4b5fd', textAlign: 'center', marginBottom: 14 } },
           hh('div', { 'aria-hidden': 'true', style: { fontSize: 48, marginBottom: 10 } }, '🔒'),
           hh('h3', { id: 'learning-lab-future-reading-heading', tabIndex: -1, style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 8px' } }, 'This letter is sealed'),
-          hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, 'It opens on ', hh('time', { dateTime: readingLetter.deliverOn }, readingLetter.deliverOn), ', about ' + daysRemaining + ' day' + (daysRemaining === 1 ? '' : 's') + ' from now.')
+          hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: 0 } }, 'It opens on ', hh('time', { dateTime: readingDeliverOn }, readingDeliverOn), daysRemaining ? ', about ' + daysRemaining + ' day' + (daysRemaining === 1 ? '' : 's') + ' from now.' : '.')
         ),
         hh('div', { role: 'group', 'aria-label': 'Letter reading actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
           hh('button', { type: 'button', onClick: backToList, 'data-ll-focusable': true, style: secondaryButtonStyle }, 'Back to letters'),
@@ -14419,7 +14427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         tkCard('#a855f7',
           hh('form', { onSubmit: function(event) { event.preventDefault(); save(); }, 'aria-labelledby': 'learning-lab-future-form-heading' },
             hh('h3', { id: 'learning-lab-future-form-heading', style: { fontSize: 13, color: '#ddd6fe', margin: '0 0 4px' } }, 'Compose your letter'),
-            hh('p', { id: 'learning-lab-future-privacy-note', style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Letters save in this browser and may contain private reflections. Use a device and account you trust.'),
+            hh('p', { id: 'learning-lab-future-privacy-note', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 10px' } }, 'Letters save in this browser and may contain private reflections; saving does not send them to or notify anyone. Use a device and account you trust.'),
             hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
               hh('div', null,
                 hh('label', { htmlFor: 'learning-lab-future-letter-to', style: labelStyle }, 'To (optional)'),
@@ -14432,13 +14440,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             ),
             hh('div', { style: { marginBottom: 10 } },
               hh('label', { htmlFor: 'learning-lab-future-letter-body', style: labelStyle }, 'Letter body (required)'),
-              hh('p', { id: 'learning-lab-future-letter-body-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 4px' } }, 'What should your future self remember? What are you proud of, working through, or hoping for?'),
+              hh('p', { id: 'learning-lab-future-letter-body-help', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 4px' } }, 'What should your future self remember? What are you proud of, working through, or hoping for?'),
               hh('textarea', { id: 'learning-lab-future-letter-body', value: form.body, rows: 12, maxLength: 12000, 'aria-invalid': bodyError ? 'true' : undefined, 'aria-describedby': bodyError ? 'learning-lab-future-letter-body-help learning-lab-future-letter-body-error' : 'learning-lab-future-letter-body-help', onChange: function(event) { updateForm('body', event.target.value); }, style: Object.assign({}, fieldStyle, { minHeight: 240, resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.6 }) }),
               hh('div', { id: 'learning-lab-future-letter-body-error', role: 'alert', style: { minHeight: bodyError ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginTop: bodyError ? 4 : 0 } }, bodyError)
             ),
             hh('div', { style: { marginBottom: 12 } },
               hh('label', { htmlFor: 'learning-lab-future-deliver-date', style: labelStyle }, 'Open date (optional)'),
-              hh('p', { id: 'learning-lab-future-deliver-help', style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 4px' } }, 'Choose a future date to seal the letter. Choosing today or leaving this blank makes it readable immediately.'),
+              hh('p', { id: 'learning-lab-future-deliver-help', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', lineHeight: 1.5, margin: '0 0 4px' } }, 'Choose a future date to seal the letter. Choosing today or leaving this blank makes it readable immediately.'),
               hh('input', { id: 'learning-lab-future-deliver-date', type: 'date', min: today, value: form.deliverOn, 'aria-describedby': 'learning-lab-future-deliver-help learning-lab-future-privacy-note', onChange: function(event) { updateForm('deliverOn', event.target.value); }, style: Object.assign({}, fieldStyle, { maxWidth: 260 }) })
             ),
             hh('div', { role: 'group', 'aria-label': 'Letter form actions', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
@@ -14458,14 +14466,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       letters.length === 0 ? tkEmptyState('💌', 'No letters yet. Write one for a future version of yourself.', null, null)
       : hh('ul', { 'aria-label': 'Future-self letters', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 } },
           letters.map(function(letter) {
-            var sealed = letter.deliverOn && letter.deliverOn > today;
+            var deliverOn = textValue(letter.deliverOn).trim();
+            var writtenOn = textValue(letter.writtenOn).trim();
+            var sealed = deliverOn && deliverOn > today;
             return hh('li', { key: 'fl-' + letter.id },
               hh('button', { id: 'learning-lab-future-letter-' + letter.id, type: 'button', onClick: function() { openLetter(letter); }, 'data-ll-focusable': true, style: { display: 'block', width: '100%', minHeight: 44, textAlign: 'left', padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(196,181,253,0.55)', borderLeft: '4px solid ' + (sealed ? '#fbbf24' : '#a855f7'), color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer' } },
                 hh('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
-                  hh('strong', { style: { fontSize: 12, color: sealed ? '#fde68a' : '#ddd6fe' } }, hh('span', { 'aria-hidden': 'true' }, sealed ? '🔒 ' : '💌 '), 'Letter written ', hh('time', { dateTime: letter.writtenOn }, letter.writtenOn)),
-                  hh('span', { style: { fontSize: 10, color: sealed ? '#fde68a' : '#ddd6fe' } }, sealed ? 'Opens ' + letter.deliverOn : 'Available to read')
+                  hh('strong', { style: { fontSize: 12, color: sealed ? '#fde68a' : '#ddd6fe' } }, hh('span', { 'aria-hidden': 'true' }, sealed ? '🔒 ' : '💌 '), 'Letter written ', writtenOn ? hh('time', { dateTime: writtenOn }, writtenOn) : 'on an unrecorded date'),
+                  hh('span', { style: { fontSize: 12, color: sealed ? '#fde68a' : '#ddd6fe' } }, sealed ? 'Opens ' + deliverOn : 'Available to read')
                 ),
-                hh('span', { style: { display: 'block', fontSize: 10, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 4 } }, sealed ? 'Sealed until ' + letter.deliverOn : 'Open letter')
+                hh('span', { style: { display: 'block', fontSize: 12, color: 'var(--allo-stem-text-soft, #cbd5e1)', marginTop: 4 } }, sealed ? 'Sealed until ' + deliverOn : 'Open letter')
               )
             );
           })
@@ -20711,7 +20721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkMood',     icon: '🌈', label: 'Mood Tracker',         color: '#ec4899', desc: 'Daily mood + energy log, 14-day trend',
         stat: (Array.isArray((data.mytkMood || {}).logs) ? (data.mytkMood || {}).logs.length : 0) + ' logs', cta: 'Log mood' },
       { id: 'mytkFut',      icon: '💌', label: 'Letters to Future Self', color: '#a855f7', desc: 'Hershfield 2011 — connection to future self',
-        stat: ((data.mytkFut || {}).letters || []).length + ' letters', cta: 'Write a letter' },
+        stat: (Array.isArray((data.mytkFut || {}).letters) ? (data.mytkFut || {}).letters.length : 0) + ' letters', cta: 'Write a letter' },
       { id: 'mytkDisc',     icon: '🗝', label: 'Disclosure Wizard',    color: '#a855f7', desc: 'Should I tell them? Walk through the decision',
         stat: (Array.isArray((data.mytkDisc || {}).logs) ? (data.mytkDisc || {}).logs.length : 0) + ' decisions', cta: 'Walk through' },
       { id: 'mytkAudio',    icon: '🎧', label: 'Focus Audio',          color: '#a855f7', desc: '8 categories — rate what works for YOU',
