@@ -22185,9 +22185,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // fall back to whatever callTTS yields (Kokoro WAV, keyless) so it works
   // everywhere. Uses the currently selected voice.
   const _synthSentenceForStore = async (sentence) => {
+    // Direct Gemini PCM first (mp3-encodable for embedding) — but ONLY when
+    // that call can possibly succeed. With the session's key 401-latched, or
+    // a local Kokoro voice selected, this leg just hangs a full fetch budget
+    // and fails (2026-07-20: the Edit-Audio Generate button sat minutes on
+    // exactly this before callTTS even got a turn).
+    const _geminiUsable = !window.__ttsGeminiAuthFailed && !/^(af_|am_|bf_|bm_)/i.test(String(selectedVoice || ''));
     try {
       const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-      if (window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
+      if (_geminiUsable && window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
         const r = await fetchTTSBytes(sentence, selectedVoice, voiceSpeed || 1, leveledTextLanguage || currentUiLanguage || 'English');
         if (r && r.bytes) {
           // 64 kbps mono is transparent for 24 kHz speech and halves the
@@ -22198,7 +22204,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
     } catch (_) {}
     try {
-      const url = await callTTS(sentence, selectedVoice, voiceSpeed || 1, { language: leveledTextLanguage || currentUiLanguage || 'English' }).catch(() => null);
+      const url = await callTTS(sentence, selectedVoice, voiceSpeed || 1, {
+        language: leveledTextLanguage || currentUiLanguage || 'English',
+        // Hand-pressed Generate / prepare-all: ride the interactive lane
+        // (short budget, never joins a wedged stranger's fetch) and keep
+        // the doomed-retry ceiling low.
+        priority: 'interactive',
+        maxRetries: 1,
+        reason: 'karaoke-store-synth',
+      }).catch(() => null);
       if (!url) return null;
       const blob = await (await fetch(url)).blob();
       return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav', provider: 'tts-resolver' };

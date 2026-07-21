@@ -77,6 +77,18 @@ const createTTS = (deps) => {
         return true;
     };
 
+    // The auth latch must be able to RECOVER: a Canvas-injected token can be
+    // rejected mid-session and then rotate back to valid. Any successful
+    // Gemini fetch proves the key works again, so clear the latch (and the
+    // Canvas probe cooldown) the moment real bytes come back.
+    const _noteGeminiSuccess = () => {
+        if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) {
+            window.__ttsGeminiAuthFailed = false;
+            state.authRetryAt = 0;
+            _ttsTrace('calltts:auth-recovered', null);
+        }
+    };
+
     // pcmToWav is inlined here (not injected) because it's a pure conversion
     // utility with no external deps. Keeps the module self-contained and avoids
     // a TDZ trap from the monolith's pcmToWav being component-scoped.
@@ -340,6 +352,7 @@ const createTTS = (deps) => {
                           const retryBase64 = retryData.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
                           if (retryBase64) {
                               debugLog("✅ TTS retry with context succeeded");
+                              _noteGeminiSuccess();
                               return { bytes: decodeBase64(retryBase64), base64: retryBase64 };
                           }
                       } catch (retryErr) {
@@ -355,6 +368,7 @@ const createTTS = (deps) => {
                   throw new Error("No audio data received.");
               }
               const bytes = decodeBase64(base64Audio);
+              _noteGeminiSuccess();
               return { bytes, base64: base64Audio };
             } catch (err) {
               console.warn("[TTS] Gemini TTS Fetch Error:", err.message);
@@ -515,16 +529,34 @@ const createTTS = (deps) => {
             }
             if (_isKokoroVoice) {
                 // Intentional fall-through to Kokoro/Piper block below.
+            } else if (window.__ttsGeminiAuthFailed && Date.now() < (state.authRetryAt || 0)) {
+                // The Canvas-injected key was 401-rejected this session. Every
+                // Gemini attempt is doomed until the token rotates, and each
+                // one costs the caller a full fetch budget while a ready local
+                // engine sits idle (field log 2026-07-20: Edit-Audio hung
+                // minutes across three doomed attempts). Skip straight to the
+                // local fallback; a single probe re-tests Gemini per cooldown.
+                canvasLastErr = new Error('Gemini auth latched — skipped (probe in ' + Math.max(0, Math.round(((state.authRetryAt || 0) - Date.now()) / 1000)) + 's)');
+                _ttsTrace('calltts:canvas-skip-authfailed', { probeInMs: Math.max(0, (state.authRetryAt || 0) - Date.now()) });
             } else if (Date.now() >= state.rateLimitedUntil) {
                 // Honor the caller's retry budget here just as the non-Canvas
                 // path does below. Karaoke deliberately uses 0 retries for
                 // look-ahead and 1 retry for active playback; the former
                 // hard-coded three attempts could add several seconds before
                 // the learner heard the local/browser fallback.
-                const canvasMaxAttempts = Math.max(
+                let canvasMaxAttempts = Math.max(
                     1,
                     (Number.isFinite(maxRetries) ? Math.max(0, Math.floor(maxRetries)) : 2) + 1
                 );
+                if (window.__ttsGeminiAuthFailed) {
+                    // Latched but the cooldown expired (or was never armed):
+                    // this call is the PROBE. One attempt only, and arm the
+                    // cooldown up front so a failed probe stays cheap for the
+                    // next five minutes of callers.
+                    state.authRetryAt = Date.now() + 5 * 60000;
+                    canvasMaxAttempts = 1;
+                    _ttsTrace('calltts:canvas-auth-probe', null);
+                }
                 canvasLastErr = null;
                 const fetchCanvasTTSBytes = async () => {
                     if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
@@ -631,8 +663,16 @@ const createTTS = (deps) => {
                         // callTTS promises one COMPLETE playable URL. The streaming
                         // API returns only its first chunk and requires chainPlay,
                         // which karaoke and most read-aloud callers do not use.
-                        const url = await window._kokoroTTS.speak(localTtsText, voiceName, speed);
-                        if (url) { _ttsTrace('calltts:kokoro-fallback-ok', null); return url; }
+                        // Kokoro only knows its own voice ids — a Gemini name
+                        // ('Kore') passed through raw made the engine return
+                        // nothing, SILENTLY, while ready (field log 2026-07-20).
+                        const kokoroVoice = _kokoroVoicePrefix.test(String(voiceName || '')) ? voiceName : 'af_heart';
+                        const url = await Promise.race([
+                            window._kokoroTTS.speak(localTtsText, kokoroVoice, speed),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('kokoro fallback timeout (60s)')), 60000)),
+                        ]);
+                        if (url) { _ttsTrace('calltts:kokoro-fallback-ok', { voice: kokoroVoice }); return url; }
+                        _ttsTrace('calltts:kokoro-fallback-empty', { voice: kokoroVoice });
                     }
                 } catch (e) { console.warn('[Canvas TTS] Kokoro fallback failed:', e?.message); _ttsTrace('calltts:kokoro-fallback-fail', { error: String(e?.message || e).substring(0, 100) }); }
                 try {
@@ -1058,6 +1098,7 @@ const createTTS = (deps) => {
                     }
                     console.log("[TTS-Bot] ✅ Audio data received, decoding...");
                     const bytes = decodeBase64(base64Audio);
+                    _noteGeminiSuccess();
                     return { bytes, base64: base64Audio };
                 });
                 state.botQueue = queuedTask.catch(() => {});
