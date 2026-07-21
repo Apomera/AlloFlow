@@ -15406,8 +15406,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // resilience after setbacks.
   function PersonalSuccessLog(props) {
     if (!R) return null;
-    var data = props.data || { successes: [] };
+    var data = props.data && typeof props.data === 'object' ? props.data : { successes: [] };
     var setData = props.setData;
+    var isRecord = function(value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+    var textValue = function(value) { return typeof value === 'string' ? value : (typeof value === 'number' ? String(value) : ''); };
+    var rawSuccesses = Array.isArray(data.successes) ? data.successes : [];
     var emptyForm = { text: '', size: 'medium', category: 'academic' };
     var fs = R.useState(emptyForm);
     var form = fs[0]; var setForm = fs[1];
@@ -15426,13 +15429,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'creative', label: 'Creative', color: '#fde68a', icon: '🎨' }
     ];
 
-    function focusById(id) {
-      setTimeout(function() {
-        if (typeof document === 'undefined') return;
-        var target = document.getElementById(id);
-        if (target && typeof target.focus === 'function') target.focus();
-      }, 0);
-    }
+    var pfs = R.useState(''); var pendingFocusId = pfs[0]; var setPendingFocusId = pfs[1];
+
+    R.useEffect(function() {
+      if (!pendingFocusId) return;
+      var target = document.getElementById(pendingFocusId);
+      if (!target) return;
+      target.focus();
+      setPendingFocusId('');
+    }, [pendingFocusId, data]);
+
+    function focusById(id) { setPendingFocusId(id); }
 
     function save() {
       var successText = form.text.trim();
@@ -15449,7 +15456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         size: form.size,
         category: form.category
       };
-      setData(Object.assign({}, data, { successes: [entry].concat(data.successes || []) }));
+      setData(Object.assign({}, data, { successes: [entry].concat(rawSuccesses) }));
       setForm(emptyForm);
       setFormError('');
       llAnnounce('Progress saved: ' + successText);
@@ -15457,13 +15464,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
 
     function removeSuccess(entry) {
-      var shortText = String(entry.text || 'this entry');
+      var shortText = textValue(entry.text).trim() || 'this entry';
       if (shortText.length > 160) shortText = shortText.slice(0, 157) + '...';
       askLearningLabConfirmation('Remove “' + shortText + '”? This cannot be undone.', {
         title: 'Remove this success entry?', confirmText: 'Remove entry'
       }).then(function(accepted) {
         if (!accepted) return;
-        setData(Object.assign({}, data, { successes: (data.successes || []).filter(function(item) { return item.id !== entry.id; }) }));
+        setData(Object.assign({}, data, { successes: rawSuccesses.filter(function(item) { return !(isRecord(item) && item.id === entry.id); }) }));
         llAnnounce('Success entry removed.');
         focusById('learning-lab-success-history-heading');
       });
@@ -15476,12 +15483,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0];
     }
 
-    var successes = data.successes || [];
+    var successes = rawSuccesses.filter(isRecord);
     var recentSuccesses = successes.slice(0, 50);
     var countText = successes.length + (successes.length === 1 ? ' success recorded.' : ' successes recorded.');
     var labelStyle = { display: 'block', marginBottom: 5, color: '#d1fae5', fontSize: 12, fontWeight: 800 };
-    var helpStyle = { margin: '5px 0 10px', color: '#d1d5db', fontSize: 11, lineHeight: 1.5 };
-    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 11, fontWeight: 700 };
+    var helpStyle = { margin: '5px 0 10px', color: '#d1d5db', fontSize: 12, lineHeight: 1.5 };
+    var errorStyle = { margin: '5px 0 10px', padding: '7px 9px', borderRadius: 6, border: '1px solid #fca5a5', background: 'rgba(127,29,29,0.32)', color: '#fecaca', fontSize: 12, fontWeight: 700 };
     var radioGroupStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 };
 
     return hh('div', { style: { padding: 14 } },
@@ -15494,7 +15501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           'aria-describedby': 'learning-lab-success-privacy-note'
         },
           hh('h2', { id: 'learning-lab-success-form-heading', style: { margin: '0 0 8px', color: '#6ee7b7', fontSize: 15 } }, 'Record progress'),
-          hh('p', { id: 'learning-lab-success-privacy-note', style: helpStyle }, 'Entries save in this browser. Avoid private details if other people use this device.'),
+          hh('p', { id: 'learning-lab-success-privacy-note', style: helpStyle }, 'Entries save in this browser only; saving does not send them to or notify anyone. Avoid private details if other people use this device.'),
           hh('label', { htmlFor: 'learning-lab-success-text', style: labelStyle }, 'What happened? (required)'),
           hh('textarea', {
             id: 'learning-lab-success-text', value: form.text, rows: 3, required: true, maxLength: 1500,
@@ -15581,23 +15588,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   },
                     hh('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 } },
                       hh('div', null,
-                        hh('p', { style: { margin: '0 0 4px', color: '#d1fae5', fontSize: 11, fontWeight: 800 } },
+                        hh('p', { style: { margin: '0 0 4px', color: '#d1fae5', fontSize: 12, fontWeight: 800 } },
                           hh('span', { 'aria-hidden': 'true' }, category.icon + ' '), category.label + ' · ' + size.label + ' success'
                         ),
-                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, String(entry.text || 'Untitled success'))
+                        hh('h3', { id: headingId, tabIndex: -1, style: { margin: 0, color: '#f8fafc', fontSize: 14, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, textValue(entry.text).trim() || 'Untitled success')
                       ),
                       hh('button', {
                         type: 'button', onClick: function() { removeSuccess(entry); },
-                        'aria-label': 'Remove success entry: ' + String(entry.text || 'Untitled success'),
+                        'aria-label': 'Remove success entry: ' + (textValue(entry.text).trim() || 'Untitled success'),
                         style: { flex: '0 0 auto', minWidth: 44, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #f87171', background: 'rgba(127,29,29,0.35)', color: '#fecaca', fontSize: 12, fontWeight: 800, cursor: 'pointer' }
                       }, 'Remove')
                     ),
-                    hh('dl', { 'aria-label': 'Success entry details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 8, rowGap: 4, margin: '10px 0 0', color: '#e2e8f0', fontSize: 11 } },
+                    hh('dl', { 'aria-label': 'Success entry details', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 8, rowGap: 4, margin: '10px 0 0', color: '#e2e8f0', fontSize: 12 } },
                       hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Category'), hh('dd', { style: { margin: 0 } }, category.label)),
                       hh('div', { style: { display: 'contents' } }, hh('dt', { style: { fontWeight: 800 } }, 'Size'), hh('dd', { style: { margin: 0 } }, size.label)),
                       hh('div', { style: { display: 'contents' } },
                         hh('dt', { style: { fontWeight: 800 } }, 'Recorded'),
-                        hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: entry.date || undefined }, relDate(entry.date)))
+                        hh('dd', { style: { margin: 0 } }, hh('time', { dateTime: textValue(entry.date).trim() || undefined }, relDate(textValue(entry.date).trim())))
                       )
                     )
                   )
@@ -20759,7 +20766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       { id: 'mytkQuest',    icon: '❓', label: 'Question Log',         color: '#06b6d4', desc: 'Capture wonders mid-class, process later',
         stat: (Array.isArray((data.mytkQuest || {}).questions) ? (data.mytkQuest || {}).questions.filter(function(q) { return !!q && typeof q === 'object' && !q.answered; }).length : 0) + ' open', cta: 'Log a question' },
       { id: 'mytkSuccess',  icon: '🏆', label: 'Success Log',          color: '#10b981', desc: 'Log wins, tiny + big (Goldman 2020)',
-        stat: ((data.mytkSuccess || {}).successes || []).length + ' wins', cta: 'Log a win' },
+        stat: (Array.isArray((data.mytkSuccess || {}).successes) ? (data.mytkSuccess || {}).successes.length : 0) + ' wins', cta: 'Log a win' },
       { id: 'mytkEmail',    icon: '📧', label: 'Teacher Email Builder',color: '#3b82f6', desc: '6 templates for common student emails',
         stat: ((data.mytkEmail || {}).saved || []).length + ' drafts', cta: 'Pick a template' },
       { id: 'mytkBody',     icon: '🫀', label: 'Body Awareness',       color: '#ec4899', desc: '8-area body scan, builds interoception',

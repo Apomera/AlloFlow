@@ -42,7 +42,7 @@ describe('Learning Lab Personal Success Log accessibility', () => {
   it('trims saved text and preserves unrelated section data', () => {
     expect(successLog).toContain('var successText = form.text.trim();');
     expect(successLog).toContain('text: successText');
-    expect(successLog).toContain("setData(Object.assign({}, data, { successes: [entry].concat(data.successes || []) }))");
+    expect(successLog).toContain("setData(Object.assign({}, data, { successes: [entry].concat(rawSuccesses) }))");
   });
 
   it('announces saves and returns focus for another entry', () => {
@@ -52,7 +52,7 @@ describe('Learning Lab Personal Success Log accessibility', () => {
   });
 
   it('discloses browser storage and shared-device privacy considerations', () => {
-    expect(successLog).toContain('Entries save in this browser.');
+    expect(successLog).toContain('Entries save in this browser only; saving does not send them to or notify anyone.');
     expect(successLog).toContain('Avoid private details if other people use this device.');
     expect(successLog).toContain("'aria-describedby': 'learning-lab-success-privacy-note'");
   });
@@ -93,13 +93,13 @@ describe('Learning Lab Personal Success Log accessibility', () => {
 
   it('uses definition-list and time semantics for each history item', () => {
     expect(successLog).toContain("hh('dl', { 'aria-label': 'Success entry details'");
-    expect(successLog).toContain("hh('time', { dateTime: entry.date || undefined }");
-    expect(successLog).toContain("relDate(entry.date)");
+    expect(successLog).toContain("hh('time', { dateTime: textValue(entry.date).trim() || undefined }");
+    expect(successLog).toContain("relDate(textValue(entry.date).trim())");
   });
 
   it('preserves whitespace in entry text and provides a legacy-data fallback', () => {
     expect(successLog).toContain("whiteSpace: 'pre-wrap'");
-    expect(successLog).toContain("String(entry.text || 'Untitled success')");
+    expect(successLog).toContain("textValue(entry.text).trim() || 'Untitled success'");
   });
 
   it('explains when history is limited to the most recent 50 entries', () => {
@@ -114,8 +114,8 @@ describe('Learning Lab Personal Success Log accessibility', () => {
   });
 
   it('names removal controls, preserves data, announces removal, and restores focus', () => {
-    expect(successLog).toContain("'aria-label': 'Remove success entry: ' + String(entry.text || 'Untitled success')");
-    expect(successLog).toContain("setData(Object.assign({}, data, { successes: (data.successes || []).filter");
+    expect(successLog).toContain("'aria-label': 'Remove success entry: ' + (textValue(entry.text).trim() || 'Untitled success')");
+    expect(successLog).toContain("setData(Object.assign({}, data, { successes: rawSuccesses.filter");
     expect(successLog).toContain("llAnnounce('Success entry removed.')");
     expect(successLog).toContain("focusById('learning-lab-success-history-heading')");
   });
@@ -124,6 +124,18 @@ describe('Learning Lab Personal Success Log accessibility', () => {
     expect(successLog).toContain("gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))'");
     expect(successLog).toContain("minWidth: 44, minHeight: 44");
     expect(successLog).toContain("width: '100%', minHeight: 88");
+  });
+
+  it('handles malformed legacy success data without crashing', () => {
+    expect(successLog).toContain('var rawSuccesses = Array.isArray(data.successes) ? data.successes : [];');
+    expect(successLog).toContain('var successes = rawSuccesses.filter(isRecord);');
+    expect(source).toContain("stat: (Array.isArray((data.mytkSuccess || {}).successes) ? (data.mytkSuccess || {}).successes.length : 0) + ' wins'");
+  });
+
+  it('synchronizes focus with rendered state instead of a focus timer', () => {
+    expect(successLog).toContain('if (!pendingFocusId) return;');
+    expect(successLog).toContain('function focusById(id) { setPendingFocusId(id); }');
+    expect(successLog).not.toContain('setTimeout');
   });
 
   it('keeps the deployed mirror identical', () => {
