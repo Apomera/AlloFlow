@@ -1,0 +1,229 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Simple Machines — Trading Distance for Strength",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th-6th Grade",
+    "standards": "NGSS 3-5-ETS1-2 (generate and compare multiple possible solutions to a problem); NGSS MS-PS3-1 (construct and interpret graphical displays of data to describe relationships of kinetic energy); CCSS.ELA-LITERACY.RI.5.7 (draw on information from multiple sources to answer a question)",
+    "createdAt": "2026-07-21T13:00:00.000Z",
+    "imageShotList": "allopacks/simple_machines_grade5.IMAGES.md"
+  },
+  "sourceTopic": "Simple Machines",
+  "history": [
+    {
+      "id": "sk-directions",
+      "type": "directions",
+      "title": "The Deal Every Machine Makes",
+      "timestamp": "2026-07-21T13:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nA machine cannot give you something for nothing. Every one of them makes the same trade, and once you see it you cannot unsee it.\n\n1. Read **The Deal** — the last paragraph is the point of the whole lesson.\n2. Learn the six machines in the **Glossary**, then win the **Matching** game.\n3. Keep the **Six Machines** chart open while you look around the room.\n4. Sort the objects in **Which Machine Is It?** — two of them are arguments.\n5. Take the quiz. Question 4 asks about the trade, which is the real idea.\n6. Use the **Sentence Frames** to explain a machine you actually use.\n\nChallenge while you work: find five simple machines in the room you are sitting in right now. There are more than you think. ⚙️",
+        "objectives": [
+          { "id": "sk-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "sk-glossary" },
+          { "id": "sk-goal-bingo", "label": "Win a round of Bingo", "kind": "game", "gameType": "bingo", "resourceRef": "sk-glossary" },
+          { "id": "sk-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
+          { "id": "sk-goal-find", "label": "I found five simple machines in the room around me", "kind": "manual" }
+        ]
+      },
+      "meta": "5th-6th Grade • 4 goals • find-it challenge"
+    },
+    {
+      "id": "sk-reading",
+      "type": "simplified",
+      "title": "The Deal",
+      "timestamp": "2026-07-21T13:00:01.000Z",
+      "data": "## The Deal\n\nA machine does not make you stronger. It changes how your strength gets used — and it always charges you for the favor.\n\nThere are six classic **simple machines**, and everything mechanical you have ever touched is built from them.\n\nA **lever** is a stiff bar that turns on a fixed point called a **fulcrum**. Push down on one end and the other end lifts. A crowbar, a seesaw, a bottle opener, and the bones in your arm are all levers.\n\nAn **inclined plane** is a ramp. Walking a heavy box up a ramp takes less force than lifting it straight up — but you have to travel farther to get it to the same height.\n\nA **wedge** is really an inclined plane that moves. An axe, a knife, a nail, and your front teeth all drive a thin edge into something and push it apart.\n\nA **screw** is an inclined plane wrapped around a post. Look closely at the threads — that spiral is a ramp that has been rolled up. Turning the screw many times pulls it forward a small distance with great force.\n\nA **wheel and axle** is a wheel fixed to a rod so they turn together. Doorknobs, steering wheels, and screwdrivers all use it. A small turn at the wide outer edge produces a strong twist at the narrow center.\n\nA **pulley** is a wheel with a groove for a rope. One pulley changes the direction you pull — handy, because pulling down is easier than lifting up. Add more pulleys and you also reduce the force needed, though you must pull more rope.\n\nNow the deal, which is the same in every case: **you trade distance for force.** Use half the force, move twice as far. Use a quarter of the force, move four times as far. A machine never reduces the total work — it just spreads it out into a form your body can manage.\n\nAnd every real machine charges a small extra fee called **friction**, which turns a bit of your effort into heat. That is why rubbing your hands warms them and why machines need grease.\n\nSo when someone says a machine makes work easier, they mean something precise. Not less work. Less force at any one moment, paid for with more distance — a trade that is almost always worth making.",
+      "meta": "5th-6th Grade • Leveled reading • ~420 words",
+      "imageSlot": "sk-img-six-machines"
+    },
+    {
+      "id": "sk-glossary",
+      "type": "glossary",
+      "title": "Machine Words",
+      "timestamp": "2026-07-21T13:00:02.000Z",
+      "data": [
+        { "term": "Lever", "def": "A stiff bar that turns on a fixed point to lift or move something.", "tier": "Domain-Specific" },
+        { "term": "Fulcrum", "def": "The fixed point a lever turns on.", "tier": "Domain-Specific" },
+        { "term": "Pulley", "def": "A grooved wheel with a rope, used to change the direction or size of a pull.", "tier": "Domain-Specific" },
+        { "term": "Wedge", "def": "A moving inclined plane with a thin edge that splits things apart.", "tier": "Domain-Specific" },
+        { "term": "Screw", "def": "An inclined plane wrapped around a post, turning rotation into strong forward force.", "tier": "Domain-Specific" },
+        { "term": "Incline", "def": "A ramp — a flat surface set at an angle to reduce lifting force.", "tier": "Domain-Specific" },
+        { "term": "Axle", "def": "The rod a wheel is fixed to, turning together with it.", "tier": "Domain-Specific" },
+        { "term": "Force", "def": "A push or a pull.", "tier": "Academic" },
+        { "term": "Work", "def": "What happens when a force moves something a distance.", "tier": "Academic" },
+        { "term": "Friction", "def": "The rubbing force that resists motion and turns some effort into heat.", "tier": "Domain-Specific" },
+        { "term": "Effort", "def": "The force YOU apply to a machine.", "tier": "Academic" },
+        { "term": "Load", "def": "The thing the machine is moving or lifting for you.", "tier": "Academic" }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "sk-anchor",
+      "type": "anchor-chart",
+      "title": "Six Machines, One Trade",
+      "timestamp": "2026-07-21T13:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "TRADE DISTANCE FOR FORCE",
+        "sections": [
+          { "label": "LEVER", "bullets": ["Bar turning on a fulcrum", "Crowbar, seesaw, bottle opener", "Your own arm bones"], "iconPrompt": "a bar balanced on a triangle lifting a rock" },
+          { "label": "RAMP & WEDGE", "bullets": ["Inclined plane: push up instead of lift", "Wedge = a ramp that MOVES", "Axe, knife, nail, your front teeth"], "iconPrompt": "a ramp beside an axe head" },
+          { "label": "SCREW", "bullets": ["A ramp wrapped around a post", "Many turns, small distance, big force", "Jar lids, bolts, drills"], "iconPrompt": "a screw with a highlighted spiral thread" },
+          { "label": "WHEEL & AXLE", "bullets": ["Wheel fixed to a rod, turning together", "Small turn outside, strong twist inside", "Doorknob, steering wheel, screwdriver"], "iconPrompt": "a doorknob shown with its shaft" },
+          { "label": "PULLEY", "bullets": ["Grooved wheel with a rope", "One pulley changes DIRECTION", "More pulleys: less force, more rope"], "iconPrompt": "a rope over a grooved wheel lifting a box" },
+          { "label": "THE DEAL", "bullets": ["Half the force = twice the distance", "Total work never decreases", "Friction always charges a small fee"], "iconPrompt": "a balance scale with force on one side and distance on the other" }
+        ]
+      },
+      "meta": "6 sections • the trade named explicitly"
+    },
+    {
+      "id": "sk-sort",
+      "type": "concept-sort",
+      "title": "Which Machine Is It?",
+      "timestamp": "2026-07-21T13:00:04.000Z",
+      "data": {
+        "categories": [
+          { "id": "sk-lever", "label": "Lever", "color": "bg-indigo-500" },
+          { "id": "sk-incline", "label": "Inclined plane or wedge", "color": "bg-amber-500" },
+          { "id": "sk-wheel", "label": "Wheel and axle", "color": "bg-emerald-500" },
+          { "id": "sk-pulley", "label": "Pulley", "color": "bg-sky-500" }
+        ],
+        "items": [
+          { "id": "k1", "content": "A seesaw on a playground", "categoryId": "sk-lever" },
+          { "id": "k2", "content": "A wheelchair ramp", "categoryId": "sk-incline" },
+          { "id": "k3", "content": "A doorknob", "categoryId": "sk-wheel" },
+          { "id": "k4", "content": "A flagpole rope running over a wheel at the top", "categoryId": "sk-pulley" },
+          { "id": "k5", "content": "An axe splitting wood", "categoryId": "sk-incline" },
+          { "id": "k6", "content": "A crowbar prying up a board", "categoryId": "sk-lever" },
+          { "id": "k7", "content": "A steering wheel", "categoryId": "sk-wheel" },
+          { "id": "k8", "content": "Window blinds raised by a cord", "categoryId": "sk-pulley" },
+          { "id": "k9", "content": "Your front teeth biting an apple", "categoryId": "sk-incline" },
+          { "id": "k10", "content": "A bottle opener lifting a cap", "categoryId": "sk-lever" }
+        ]
+      },
+      "meta": "4 machine types • 10 objects • teeth and blinds spark debate"
+    },
+    {
+      "id": "sk-quiz",
+      "type": "quiz",
+      "title": "Machine Check",
+      "timestamp": "2026-07-21T13:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is the fulcrum of a lever?",
+            "options": [
+              "The fixed point the bar turns on",
+              "The heavy object being lifted",
+              "The force you apply",
+              "The long end of the bar"
+            ],
+            "correctAnswer": "The fixed point the bar turns on",
+            "conceptLabel": "lever parts"
+          },
+          {
+            "type": "mcq",
+            "question": "A screw is really which simple machine in disguise?",
+            "options": [
+              "An inclined plane wrapped around a post",
+              "A lever bent into a circle",
+              "Two pulleys joined together",
+              "A wedge with a wheel attached"
+            ],
+            "correctAnswer": "An inclined plane wrapped around a post",
+            "conceptLabel": "machines in disguise"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is pushing a heavy box up a ramp easier than lifting it straight up?",
+            "options": [
+              "You use less force, but you travel a longer distance",
+              "The box weighs less on a ramp",
+              "Ramps remove friction completely",
+              "Gravity does not act on ramps"
+            ],
+            "correctAnswer": "You use less force, but you travel a longer distance",
+            "conceptLabel": "force distance trade"
+          },
+          {
+            "type": "mcq",
+            "question": "A machine lets you lift a load using half the force. What does it cost you?",
+            "options": [
+              "You must move roughly twice the distance",
+              "Nothing — machines give free strength",
+              "The load becomes twice as heavy",
+              "You must work twice as fast"
+            ],
+            "correctAnswer": "You must move roughly twice the distance",
+            "conceptLabel": "force distance trade"
+          },
+          {
+            "type": "mcq",
+            "question": "What does friction do in every real machine?",
+            "options": [
+              "Turns some of your effort into heat, so a little is always lost",
+              "Increases the total work the machine can do",
+              "Only matters in machines with wheels",
+              "Makes machines completely stop working"
+            ],
+            "correctAnswer": "Turns some of your effort into heat, so a little is always lost",
+            "conceptLabel": "friction cost"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why a single pulley at the top of a flagpole is useful even though it does not reduce the force needed.",
+            "expectedAnswer": "It changes the DIRECTION of the pull. Instead of climbing the pole and lifting the flag upward, you can stand on the ground and pull down, which is much easier for a person's body even though the force is the same.",
+            "conceptLabel": "pulley direction"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says 'machines let you do less work.' Correct the statement precisely.",
+            "expectedAnswer": "Machines do not reduce the total work. They reduce the FORCE needed at any moment by making you move a longer distance, and friction actually makes the total effort slightly greater. The work is spread out, not removed.",
+            "conceptLabel": "work is conserved"
+          }
+        ],
+        "reflections": [
+          { "text": "Which simple machine do you use most in a normal day without thinking about it?" },
+          { "text": "Design a machine to move something heavy in your home. Which type would you use and why?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • the trade is the target idea"
+    },
+    {
+      "id": "sk-frames",
+      "type": "sentence-frames",
+      "title": "Explain a Machine",
+      "timestamp": "2026-07-21T13:00:06.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "A ____ is a simple machine that ____." },
+          { "text": "In a lever, the fulcrum is ____ and the load is ____." },
+          { "text": "This machine makes the job easier because it ____, but it costs me ____." },
+          { "text": "A ____ is really a ____ in disguise, because ____." },
+          { "text": "Friction affects this machine by ____." },
+          { "text": "A simple machine I use every day is ____, and the trade it makes is ____." }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Engineer |\n|---|---|---|---|\n| Naming | Names a machine | Names it and describes its parts | Uses effort, load, and fulcrum precisely |\n| The trade | Says it makes work easier | Mentions less force | States the full trade: less force, more distance |\n| Real examples | No example | One example | Multiple examples, including a non-obvious one |"
+      },
+      "meta": "6 frames • rubric • trade must be stated at level 5"
+    },
+    {
+      "id": "sk-faq",
+      "type": "faq",
+      "title": "Machine Questions",
+      "timestamp": "2026-07-21T13:00:07.000Z",
+      "data": [
+        { "question": "Could ancient people really move those enormous stones? 🗿", "answer": "Yes, with ramps, levers, ropes, and enormous numbers of people. No lost technology is needed — simple machines plus organization explain the pyramids and Stonehenge, though archaeologists still debate the exact methods." },
+        { "question": "Is a bicycle a simple machine?", "answer": "It is a COMPOUND machine — several simple ones working together: wheels and axles, levers in the brakes and pedals, and screws holding it all in place." },
+        { "question": "Can a machine ever be 100% efficient? 🤔", "answer": "No real one. Friction always takes a cut, turning some effort into heat. Engineers reduce it with grease, bearings, and smooth surfaces, but nobody has ever eliminated it." },
+        { "question": "Why is a knife sharp instead of blunt?", "answer": "A thin edge concentrates your force onto a tiny area, which is what makes a wedge work. The same push on a blunt edge is spread out and just squashes things." },
+        { "question": "Are my body parts machines?", "answer": "Genuinely, yes. Your forearm is a lever with the elbow as fulcrum, your jaw is a lever, and your teeth are wedges. Biology is full of simple machines." },
+        { "question": "Why do screws grip so much better than nails? 🔩", "answer": "The thread is a long ramp wrapped around the shaft, so turning it many times converts a small twisting force into a very strong pull — plus those threads bite into the material and resist pulling out." }
+      ],
+      "meta": "6 questions • includes compound machines and the body"
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Causes of the American Revolution — How a Fight Becomes a War",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th Grade",
+    "standards": "C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); CCSS.ELA-LITERACY.RI.5.3 (explain the relationships between events in a historical text)",
+    "createdAt": "2026-07-21T11:00:00.000Z",
+    "imageShotList": "allopacks/american_revolution_causes_grade5.IMAGES.md"
+  },
+  "sourceTopic": "Causes of the American Revolution",
+  "history": [
+    {
+      "id": "ar-directions",
+      "type": "directions",
+      "title": "How Does a Fight Become a War?",
+      "timestamp": "2026-07-21T11:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nWars almost never start over one thing. They build. Today you trace ten years of small decisions that turned loyal British subjects into revolutionaries.\n\n1. Read **A Slow Build** — notice how each side thought it was being reasonable.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Walk the **Ten Years to Lexington** timeline and watch the pattern repeat.\n4. Sort the events in **Cause or Effect?**\n5. Take the quiz — the last two questions ask you to think like a historian.\n6. Fill in the **Cornell Notes** in your own words.\n\nOne honest note before you start: the colonists who demanded liberty included people who enslaved others. Both facts are true at once, and good history holds them together. 🇺🇸",
+        "objectives": [
+          { "id": "ar-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "ar-glossary" },
+          { "id": "ar-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
+          { "id": "ar-goal-perspective", "label": "I explained the British side of one dispute fairly, even though I disagree", "kind": "manual" }
+        ]
+      },
+      "meta": "5th Grade • 3 goals • perspective-taking"
+    },
+    {
+      "id": "ar-reading",
+      "type": "simplified",
+      "title": "A Slow Build",
+      "timestamp": "2026-07-21T11:00:01.000Z",
+      "data": "## A Slow Build\n\nIn 1760, almost nobody in the thirteen colonies wanted independence. They thought of themselves as British. Fifteen years later they were shooting at British soldiers. Something happened in between, and it was not one thing.\n\nIt started with a debt. Britain had just won an enormous war against France — called the French and Indian War in the colonies — and won it partly to protect colonial land. The war left Britain deeply in debt, and Parliament reached a reasonable-sounding conclusion: the colonists should help pay for their own defense.\n\nSo Britain taxed. The **Stamp Act** of 1765 taxed paper goods — newspapers, contracts, even playing cards. The colonial response surprised London. Colonists were not simply refusing to pay; they were making an argument about *who has the right to tax*. Every colony had its own elected assembly. Nobody in the colonies voted for anyone in Parliament. The slogan that came out of it was sharp and clear: **no taxation without representation**.\n\nBritain repealed the Stamp Act and tried again with the **Townshend Acts**, taxing imports like glass, paper, and tea. Colonists **boycotted** British goods — an ordinary-people weapon, since it worked only if huge numbers participated. Women organized much of it, spinning their own cloth rather than buying British.\n\nTensions turned violent. In March 1770, a crowd taunted British soldiers guarding a customs house in Boston. Someone fired. Five colonists died, including Crispus Attucks, a man of African and Native descent. Colonists named it the **Boston Massacre** — and here is a detail worth sitting with: the soldiers were defended in court by John Adams, who later signed the Declaration of Independence. Most were acquitted. Adams believed even people he opposed deserved a fair trial.\n\nIn 1773, colonists dumped 342 chests of tea into Boston Harbor. Britain answered with laws so severe the colonists called them the **Intolerable Acts**: Boston's port closed, Massachusetts self-government suspended. That response did what the tea protest alone could not — it convinced other colonies this was their fight too.\n\nBy September 1774, delegates from twelve colonies met as the **First Continental Congress**. In April 1775, British troops marched to seize weapons at Concord and met militia at Lexington. Someone fired again. This time nobody stopped.\n\nNotice the pattern, because it repeats through history: Britain acts, colonists protest, Britain responds harder, more colonists join. Each side believed it was responding reasonably to the other's unreasonable behavior. That is usually how a fight becomes a war.",
+      "meta": "5th Grade • Leveled reading • ~460 words",
+      "imageSlot": "ar-img-timeline-map"
+    },
+    {
+      "id": "ar-glossary",
+      "type": "glossary",
+      "title": "Revolution Vocabulary",
+      "timestamp": "2026-07-21T11:00:02.000Z",
+      "data": [
+        { "term": "Colony", "def": "A place ruled by a country far away — the thirteen colonies were ruled by Britain.", "tier": "Domain-Specific" },
+        { "term": "Parliament", "def": "Britain's lawmaking body, which passed taxes on the colonies.", "tier": "Domain-Specific" },
+        { "term": "Tax", "def": "Money a government requires people to pay.", "tier": "Academic" },
+        { "term": "Representation", "def": "Having someone elected to speak for you in a government.", "tier": "Domain-Specific" },
+        { "term": "Boycott", "def": "Refusing to buy something as a form of protest.", "tier": "Domain-Specific" },
+        { "term": "Protest", "def": "A public action showing strong disagreement.", "tier": "Academic" },
+        { "term": "Militia", "def": "Ordinary citizens organized to fight when needed.", "tier": "Domain-Specific" },
+        { "term": "Repeal", "def": "To cancel a law that was already passed.", "tier": "Academic" },
+        { "term": "Congress", "def": "A meeting of representatives to make decisions together.", "tier": "Domain-Specific" },
+        { "term": "Liberty", "def": "Freedom from unfair control by a government.", "tier": "Academic" },
+        { "term": "Loyalist", "def": "A colonist who stayed loyal to Britain — about one in five.", "tier": "Domain-Specific" },
+        { "term": "Patriot", "def": "A colonist who supported independence from Britain.", "tier": "Domain-Specific" }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "ar-timeline",
+      "type": "timeline",
+      "title": "Ten Years to Lexington",
+      "timestamp": "2026-07-21T11:00:03.000Z",
+      "data": {
+        "progressionLabel": "TIMELINE: End of the French and Indian War (1763) → First shots at Lexington (1775)",
+        "items": [
+          { "date": "1763", "event": "Britain wins the French and Indian War but ends it deeply in debt, and decides the colonies should help pay for their defense." },
+          { "date": "1765", "event": "The Stamp Act taxes paper goods; colonists protest that Parliament cannot tax people who elected nobody to it." },
+          { "date": "1766", "event": "Britain repeals the Stamp Act but declares it still has full authority to make laws for the colonies." },
+          { "date": "1767", "event": "The Townshend Acts tax imported glass, paper, and tea; colonists organize widespread boycotts of British goods." },
+          { "date": "1770", "event": "The Boston Massacre: soldiers fire into a taunting crowd and five colonists die, including Crispus Attucks." },
+          { "date": "1773", "event": "The Boston Tea Party: colonists dump 342 chests of tea into Boston Harbor to protest the Tea Act." },
+          { "date": "1774", "event": "The Intolerable Acts close Boston's port and suspend Massachusetts self-government, uniting other colonies in protest." },
+          { "date": "Sept 1774", "event": "The First Continental Congress meets in Philadelphia with delegates from twelve colonies." },
+          { "date": "April 1775", "event": "British troops march on Concord to seize weapons and meet militia at Lexington — the first shots of the war." }
+        ]
+      },
+      "meta": "9 events • 1763-1775 • the escalation pattern"
+    },
+    {
+      "id": "ar-sort",
+      "type": "concept-sort",
+      "title": "Cause or Effect?",
+      "timestamp": "2026-07-21T11:00:04.000Z",
+      "data": {
+        "categories": [
+          { "id": "ar-british", "label": "A BRITISH action", "color": "bg-rose-500" },
+          { "id": "ar-colonial", "label": "A COLONIAL response", "color": "bg-indigo-500" }
+        ],
+        "items": [
+          { "id": "a1", "content": "Passing the Stamp Act to tax paper goods", "categoryId": "ar-british" },
+          { "id": "a2", "content": "Chanting 'no taxation without representation'", "categoryId": "ar-colonial" },
+          { "id": "a3", "content": "Closing the port of Boston", "categoryId": "ar-british" },
+          { "id": "a4", "content": "Boycotting British cloth and spinning their own", "categoryId": "ar-colonial" },
+          { "id": "a5", "content": "Sending troops to seize weapons at Concord", "categoryId": "ar-british" },
+          { "id": "a6", "content": "Dumping 342 chests of tea into the harbor", "categoryId": "ar-colonial" },
+          { "id": "a7", "content": "Taxing imported glass, paper, and tea", "categoryId": "ar-british" },
+          { "id": "a8", "content": "Meeting as the First Continental Congress", "categoryId": "ar-colonial" },
+          { "id": "a9", "content": "Suspending Massachusetts self-government", "categoryId": "ar-british" },
+          { "id": "a10", "content": "Forming local militias to train and store weapons", "categoryId": "ar-colonial" }
+        ]
+      },
+      "meta": "2 sides • 10 events • the action-reaction pattern"
+    },
+    {
+      "id": "ar-quiz",
+      "type": "quiz",
+      "title": "Think Like a Historian",
+      "timestamp": "2026-07-21T11:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Why did Britain begin taxing the colonies more heavily after 1763?",
+            "options": [
+              "It was deeply in debt from the French and Indian War and wanted help paying for colonial defense",
+              "It wanted to punish the colonies for supporting France",
+              "The colonies had asked to be taxed more",
+              "Britain needed money to build colonial schools"
+            ],
+            "correctAnswer": "It was deeply in debt from the French and Indian War and wanted help paying for colonial defense",
+            "conceptLabel": "why britain taxed"
+          },
+          {
+            "type": "mcq",
+            "question": "What did 'no taxation without representation' actually mean?",
+            "options": [
+              "Colonists objected to being taxed by a body they had elected nobody to",
+              "Colonists refused to pay any taxes at all, ever",
+              "Colonists wanted lower taxes than people in Britain",
+              "Colonists wanted the king to collect taxes personally"
+            ],
+            "correctAnswer": "Colonists objected to being taxed by a body they had elected nobody to",
+            "conceptLabel": "representation argument"
+          },
+          {
+            "type": "mcq",
+            "question": "Which British action most convinced OTHER colonies that Massachusetts' fight was their fight too?",
+            "options": [
+              "The Intolerable Acts, which closed Boston's port and suspended self-government",
+              "The repeal of the Stamp Act",
+              "The Townshend Acts on glass and paper",
+              "The end of the French and Indian War"
+            ],
+            "correctAnswer": "The Intolerable Acts, which closed Boston's port and suspended self-government",
+            "conceptLabel": "intolerable acts effect"
+          },
+          {
+            "type": "mcq",
+            "question": "John Adams defended the British soldiers accused in the Boston Massacre. What does that tell us about him?",
+            "options": [
+              "He believed even people he opposed deserved a fair trial",
+              "He secretly supported British rule",
+              "He was ordered to do it by Parliament",
+              "He did not believe the shooting had happened"
+            ],
+            "correctAnswer": "He believed even people he opposed deserved a fair trial",
+            "conceptLabel": "adams and fair trials"
+          },
+          {
+            "type": "mcq",
+            "question": "What was a boycott, and why was it an effective colonial weapon?",
+            "options": [
+              "Refusing to buy British goods — it worked because huge numbers of ordinary people joined",
+              "A tax colonists placed on British ships",
+              "A law passed by the Continental Congress",
+              "A type of militia drill practiced on town greens"
+            ],
+            "correctAnswer": "Refusing to buy British goods — it worked because huge numbers of ordinary people joined",
+            "conceptLabel": "boycott as protest"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The reading says each side thought it was 'responding reasonably to the other's unreasonable behavior.' Explain Britain's side of the tax dispute as fairly as you can — even if you disagree with it.",
+            "expectedAnswer": "Britain had gone into debt fighting a war that protected colonial land, and taxes on British citizens at home were already high. From Parliament's view, asking colonists to pay part of the cost of their own defense was fair, and Parliament believed it had authority over all British subjects.",
+            "conceptLabel": "perspective taking"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Historians say revolutions build slowly rather than starting with one event. Use two events from the timeline to show how one action led to another.",
+            "expectedAnswer": "Example: the Tea Act protest (Boston Tea Party, 1773) led Britain to pass the Intolerable Acts in 1774, which closed Boston's port and suspended Massachusetts self-government. That harsh response convinced other colonies to unite, leading to the First Continental Congress.",
+            "conceptLabel": "escalation pattern"
+          }
+        ],
+        "reflections": [
+          { "text": "About one in five colonists stayed loyal to Britain. Why might someone have chosen that side?" },
+          { "text": "The colonists demanded liberty while many enslaved other people. How should history handle both facts?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • steelmans the British case"
+    },
+    {
+      "id": "ar-notes",
+      "type": "note-taking",
+      "title": "Revolution Cornell Notes",
+      "timestamp": "2026-07-21T11:00:06.000Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "Causes of the American Revolution",
+        "cues": [
+          { "id": "cue-ar-1", "text": "Why did Britain tax?" },
+          { "id": "cue-ar-2", "text": "Stamp Act (1765)" },
+          { "id": "cue-ar-3", "text": "'No taxation without...'" },
+          { "id": "cue-ar-4", "text": "Boycotts — who led them?" },
+          { "id": "cue-ar-5", "text": "Boston Massacre (1770)" },
+          { "id": "cue-ar-6", "text": "Tea Party (1773)" },
+          { "id": "cue-ar-7", "text": "Intolerable Acts — effect?" },
+          { "id": "cue-ar-8", "text": "Lexington (1775)" },
+          { "id": "cue-ar-9", "text": "The escalation pattern" }
+        ],
+        "notes": [
+          { "id": "note-ar-1", "text": "" },
+          { "id": "note-ar-2", "text": "" },
+          { "id": "note-ar-3", "text": "" },
+          { "id": "note-ar-4", "text": "" },
+          { "id": "note-ar-5", "text": "" },
+          { "id": "note-ar-6", "text": "" },
+          { "id": "note-ar-7", "text": "" },
+          { "id": "note-ar-8", "text": "" },
+          { "id": "note-ar-9", "text": "" }
+        ]
+      },
+      "meta": "Cornell template • 9 cues"
+    },
+    {
+      "id": "ar-faq",
+      "type": "faq",
+      "title": "Revolution Questions",
+      "timestamp": "2026-07-21T11:00:07.000Z",
+      "data": [
+        { "question": "Did everyone in the colonies want independence? 🤔", "answer": "No. Historians estimate roughly one in five colonists stayed loyal to Britain, and many others tried to stay out of it entirely. Families genuinely split over this, and Loyalists lost homes and property after the war." },
+        { "question": "Was the tea tax actually high?", "answer": "Here is the twist — the Tea Act made legal tea CHEAPER. The protest was about Parliament's right to tax at all and about a monopoly given to one company, not about the price." },
+        { "question": "Who was Crispus Attucks?", "answer": "A man of African and Native ancestry, and among the first killed at the Boston Massacre. His death became a symbol in the colonial cause — while slavery continued in every colony." },
+        { "question": "Did colonists really dress as Native people at the Tea Party?", "answer": "Some did use disguises resembling Mohawk dress. Historians read it partly as concealment and partly as a symbol of an American identity separate from Britain — and it was also an appropriation of a people who had their own stake in the conflict." },
+        { "question": "What did Native nations do during all this? 🪶", "answer": "They made their own strategic choices, and many allied with Britain, which had tried to limit colonial expansion westward. Colonial victory generally meant more pressure on Native land — an outcome usually left out of the celebration." },
+        { "question": "Who fired first at Lexington?", "answer": "Nobody knows. Both sides blamed the other, and no reliable account settles it. Historians are comfortable saying the honest answer is unknown." }
+      ],
+      "meta": "6 questions • Loyalists, Native nations, honest unknowns"
+    }
+  ]
+}

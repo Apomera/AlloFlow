@@ -1,0 +1,275 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Area and Perimeter — The Fence and the Floor",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd-4th Grade",
+    "standards": "CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perimeters of polygons); CCSS.MATH.CONTENT.4.MD.A.3 (apply the area and perimeter formulas for rectangles in real world problems)",
+    "createdAt": "2026-07-21T12:00:00.000Z",
+    "imageShotList": "allopacks/area_perimeter_grade4.IMAGES.md"
+  },
+  "sourceTopic": "Area and Perimeter",
+  "history": [
+    {
+      "id": "ap-directions",
+      "type": "directions",
+      "title": "The Fence and the Floor",
+      "timestamp": "2026-07-21T12:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nTwo numbers describe every rectangle, and mixing them up is the single most common mistake in this whole topic. Today you make sure that never happens to you.\n\n1. Read **The Fence and the Floor** — one picture holds the whole idea.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Keep the **Which One Do I Need?** chart open while you work.\n4. Do the **Practice Problems** — draw each rectangle before you calculate.\n5. Sort the cards in **Fence or Floor?**\n6. Take the quiz — question 5 has two rectangles that trick almost everyone.\n\nRemember: perimeter is measured in regular units (feet), area is measured in SQUARE units (square feet). If your units are wrong, your answer is wrong. 📏",
+        "objectives": [
+          { "id": "ap-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "ap-glossary" },
+          { "id": "ap-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
+          { "id": "ap-goal-measure", "label": "I measured a real room or object and found both its perimeter and area", "kind": "manual" }
+        ]
+      },
+      "meta": "3rd-4th Grade • 3 goals • hands-on measurement"
+    },
+    {
+      "id": "ap-reading",
+      "type": "simplified",
+      "title": "The Fence and the Floor",
+      "timestamp": "2026-07-21T12:00:01.000Z",
+      "data": "## The Fence and the Floor\n\nPicture a rectangular dog yard. You need two completely different numbers to plan it, and knowing which is which is the whole skill.\n\n**Perimeter** is the fence. It is the distance all the way around the outside. To find it, add up every side. A yard 8 feet long and 5 feet wide has a perimeter of 8 + 5 + 8 + 5 = 26 feet of fence.\n\n**Area** is the floor. It is how much space is covered inside. To find it, multiply length by width. That same yard has an area of 8 × 5 = 40 square feet of grass.\n\nOne shape, two numbers, two different jobs. Fence goes around. Floor fills in.\n\nWhy does area use multiplication? Picture covering the yard with 1-foot square tiles. Each row holds 8 tiles, and you need 5 rows. Five rows of eight tiles is 40 tiles — and multiplication is just fast repeated addition. That is also why area is measured in **square units**: you are literally counting squares.\n\nThat unit difference is not a technicality. Perimeter is measured in plain units — feet, meters, inches — because you are measuring a length. Area is measured in square feet or square meters because you are measuring covered space. Writing \"40 feet\" for an area is not a small slip; it describes a different quantity entirely.\n\nHere is the fact that surprises people most: **two rectangles can have the same perimeter and completely different areas.**\n\nTake 24 feet of fence. Build a 6 by 6 square: perimeter 24, area 36 square feet. Now build a 2 by 10 rectangle: perimeter also 24, but area only 20 square feet. Same fence, almost twice the yard in one of them. The more square-like the rectangle, the more area you get from the same perimeter — which is why farmers and builders care about shape, not just fence length.\n\nSo when you read a problem, do not hunt for numbers first. Ask what the situation actually needs. Fencing a garden, framing a picture, or putting trim around a room means perimeter. Carpeting a floor, painting a wall, or laying sod means area. Get that question right and the arithmetic is the easy part.",
+      "meta": "3rd-4th Grade • Leveled reading • ~380 words",
+      "imageSlot": "ap-img-fence-floor"
+    },
+    {
+      "id": "ap-glossary",
+      "type": "glossary",
+      "title": "Measurement Words",
+      "timestamp": "2026-07-21T12:00:02.000Z",
+      "data": [
+        { "term": "Perimeter", "def": "The distance all the way around the outside of a shape.", "tier": "Domain-Specific" },
+        { "term": "Area", "def": "The amount of space covered inside a shape.", "tier": "Domain-Specific" },
+        { "term": "Length", "def": "How long one side of a shape is.", "tier": "Academic" },
+        { "term": "Width", "def": "How wide a shape is, measured across.", "tier": "Academic" },
+        { "term": "Rectangle", "def": "A four-sided shape with four square corners.", "tier": "Domain-Specific" },
+        { "term": "Square", "def": "A rectangle whose sides are all the same length.", "tier": "Domain-Specific" },
+        { "term": "Square unit", "def": "The unit for area — a square that is one unit on each side.", "tier": "Domain-Specific" },
+        { "term": "Formula", "def": "A rule written with numbers or symbols that always works.", "tier": "Academic" },
+        { "term": "Dimension", "def": "A measurement in one direction, like length or width.", "tier": "Academic" },
+        { "term": "Estimate", "def": "A smart guess close to the real answer.", "tier": "Academic" }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "ap-anchor",
+      "type": "anchor-chart",
+      "title": "Which One Do I Need?",
+      "timestamp": "2026-07-21T12:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "FENCE OR FLOOR?",
+        "sections": [
+          { "label": "PERIMETER = FENCE", "bullets": ["Distance AROUND the outside", "Add all the sides", "Units: feet, meters, inches"], "iconPrompt": "a dashed line tracing the outside edge of a rectangle" },
+          { "label": "AREA = FLOOR", "bullets": ["Space COVERED inside", "Multiply length times width", "Units: SQUARE feet, square meters"], "iconPrompt": "a rectangle filled with small square tiles" },
+          { "label": "WORD CLUES", "bullets": ["Fence, frame, trim, border, edging = perimeter", "Carpet, paint, sod, tiles, cover = area", "Ask what the job actually needs"], "iconPrompt": "a paint roller beside a roll of fencing" },
+          { "label": "THE SURPRISE", "bullets": ["Same perimeter can give different areas", "6 by 6: perimeter 24, area 36", "2 by 10: perimeter 24, area only 20"], "iconPrompt": "a square and a long thin rectangle side by side" }
+        ]
+      },
+      "meta": "4 sections • decision reference"
+    },
+    {
+      "id": "ap-math",
+      "type": "math",
+      "title": "Practice Problems",
+      "timestamp": "2026-07-21T12:00:04.000Z",
+      "data": {
+        "title": "Area and Perimeter Practice",
+        "problems": [
+          {
+            "question": "A rectangular dog yard is 8 feet long and 5 feet wide. How much fence is needed to go all the way around?",
+            "answer": "26 feet",
+            "steps": [
+              { "explanation": "Fence means perimeter — the distance around the outside.", "latex": "" },
+              { "explanation": "Add all four sides: 8 + 5 + 8 + 5.", "latex": "" },
+              { "explanation": "That equals 26 feet of fence.", "latex": "" }
+            ],
+            "realWorld": "Buying fencing at a hardware store, where it is sold by the foot."
+          },
+          {
+            "question": "The same yard is 8 feet by 5 feet. How much grass sod covers the whole yard?",
+            "answer": "40 square feet",
+            "steps": [
+              { "explanation": "Covering the inside means area.", "latex": "" },
+              { "explanation": "Multiply length times width: 8 times 5.", "latex": "" },
+              { "explanation": "That equals 40 SQUARE feet — square units because you are covering space.", "latex": "" }
+            ],
+            "realWorld": "Ordering sod or carpet, which is sold by the square foot."
+          },
+          {
+            "question": "A square rug measures 7 feet on each side. Find its perimeter and its area.",
+            "answer": "Perimeter 28 feet, area 49 square feet",
+            "steps": [
+              { "explanation": "A square has four equal sides, so perimeter is 7 + 7 + 7 + 7, or 4 times 7.", "latex": "" },
+              { "explanation": "That gives a perimeter of 28 feet.", "latex": "" },
+              { "explanation": "Area is length times width: 7 times 7 equals 49 square feet.", "latex": "" }
+            ],
+            "realWorld": "Choosing a rug that fits a room and knowing how much trim would edge it."
+          },
+          {
+            "question": "You have exactly 24 feet of fence. Compare the area you get from a 6 by 6 yard versus a 2 by 10 yard.",
+            "answer": "6 by 6 gives 36 square feet; 2 by 10 gives only 20 square feet",
+            "steps": [
+              { "explanation": "Check both perimeters: 6+6+6+6 = 24, and 2+10+2+10 = 24. Both use all the fence.", "latex": "" },
+              { "explanation": "Area of the square: 6 times 6 equals 36 square feet.", "latex": "" },
+              { "explanation": "Area of the long one: 2 times 10 equals 20 square feet. Same fence, much less yard.", "latex": "" }
+            ],
+            "realWorld": "Planning a garden or animal pen to get the most space from the fencing you can afford."
+          },
+          {
+            "question": "A classroom floor is 30 feet by 20 feet. Carpet costs $2 per square foot. What is the total cost?",
+            "answer": "$1,200",
+            "steps": [
+              { "explanation": "Carpet covers the floor, so find the area first.", "latex": "" },
+              { "explanation": "30 times 20 equals 600 square feet.", "latex": "" },
+              { "explanation": "Multiply by the price: 600 times $2 equals $1,200.", "latex": "" }
+            ],
+            "realWorld": "Estimating a real flooring job before calling a contractor."
+          },
+          {
+            "question": "A rectangle has an area of 36 square feet and a length of 9 feet. What is its width?",
+            "answer": "4 feet",
+            "steps": [
+              { "explanation": "Area equals length times width, so 9 times the width equals 36.", "latex": "" },
+              { "explanation": "Ask: 9 times what makes 36? Or divide 36 by 9.", "latex": "" },
+              { "explanation": "The width is 4 feet.", "latex": "" }
+            ],
+            "realWorld": "Working backward when you know the space you have and one measurement."
+          }
+        ],
+        "graphData": null
+      },
+      "meta": "6 problems • worked steps • includes working backward"
+    },
+    {
+      "id": "ap-sort",
+      "type": "concept-sort",
+      "title": "Fence or Floor?",
+      "timestamp": "2026-07-21T12:00:05.000Z",
+      "data": {
+        "categories": [
+          { "id": "ap-per", "label": "Needs PERIMETER", "color": "bg-amber-500" },
+          { "id": "ap-area", "label": "Needs AREA", "color": "bg-emerald-500" }
+        ],
+        "items": [
+          { "id": "ap1", "content": "Putting a fence around a garden", "categoryId": "ap-per" },
+          { "id": "ap2", "content": "Carpeting a bedroom floor", "categoryId": "ap-area" },
+          { "id": "ap3", "content": "Buying trim to go around a picture frame", "categoryId": "ap-per" },
+          { "id": "ap4", "content": "Painting one wall of a room", "categoryId": "ap-area" },
+          { "id": "ap5", "content": "Laying sod on a lawn", "categoryId": "ap-area" },
+          { "id": "ap6", "content": "Adding a ribbon border around a poster", "categoryId": "ap-per" },
+          { "id": "ap7", "content": "Tiling a kitchen floor", "categoryId": "ap-area" },
+          { "id": "ap8", "content": "Stringing lights along the edge of a roof", "categoryId": "ap-per" },
+          { "id": "ap9", "content": "Figuring out how much wrapping paper covers a flat box top", "categoryId": "ap-area" }
+        ]
+      },
+      "meta": "2 buckets • 9 real jobs • word-clue practice"
+    },
+    {
+      "id": "ap-quiz",
+      "type": "quiz",
+      "title": "Measurement Check",
+      "timestamp": "2026-07-21T12:00:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does PERIMETER measure?",
+            "options": [
+              "The distance all the way around the outside of a shape",
+              "The space covered inside a shape",
+              "How heavy a shape is",
+              "The longest side of a shape"
+            ],
+            "correctAnswer": "The distance all the way around the outside of a shape",
+            "conceptLabel": "perimeter meaning"
+          },
+          {
+            "type": "mcq",
+            "question": "A rectangle is 6 meters by 4 meters. What is its area?",
+            "options": [
+              "24 square meters",
+              "20 meters",
+              "10 square meters",
+              "24 meters"
+            ],
+            "correctAnswer": "24 square meters",
+            "conceptLabel": "computing area"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is area measured in SQUARE units?",
+            "options": [
+              "Because you are counting how many unit squares cover the shape",
+              "Because rectangles have four square corners",
+              "Because you always multiply two numbers",
+              "It is just a naming tradition with no reason"
+            ],
+            "correctAnswer": "Because you are counting how many unit squares cover the shape",
+            "conceptLabel": "why square units"
+          },
+          {
+            "type": "mcq",
+            "question": "Which job needs PERIMETER, not area?",
+            "options": [
+              "Buying baseboard trim to go around a room",
+              "Buying carpet for the room's floor",
+              "Buying paint for the room's ceiling",
+              "Buying tile for the bathroom floor"
+            ],
+            "correctAnswer": "Buying baseboard trim to go around a room",
+            "conceptLabel": "choosing the right measure"
+          },
+          {
+            "type": "mcq",
+            "question": "Rectangle A is 5 by 5. Rectangle B is 1 by 9. What is true about them?",
+            "options": [
+              "They have the same perimeter but A has much more area",
+              "They have the same area but different perimeters",
+              "B has more area because it is longer",
+              "They are identical in every way"
+            ],
+            "correctAnswer": "They have the same perimeter but A has much more area",
+            "conceptLabel": "same perimeter different area"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A classmate says a room is '48 feet of carpet.' What is wrong with that statement, and how should it be written?",
+            "expectedAnswer": "Carpet covers a floor, which is area, so it should be measured in SQUARE feet — 48 square feet. Plain feet measures a length like perimeter, so the units describe the wrong quantity.",
+            "conceptLabel": "why square units"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "You have 20 feet of fence. Describe two different rectangles you could build and say which gives more space inside.",
+            "expectedAnswer": "Examples: a 5 by 5 square has perimeter 20 and area 25 square feet; a 2 by 8 rectangle has perimeter 20 and area only 16 square feet. The square-shaped one gives more space from the same fence.",
+            "conceptLabel": "same perimeter different area"
+          }
+        ],
+        "reflections": [
+          { "text": "Measure something in your home. What is its perimeter and its area?" },
+          { "text": "If you were designing a garden with a fixed amount of fence, what shape would you choose and why?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • units-matter focus"
+    },
+    {
+      "id": "ap-faq",
+      "type": "faq",
+      "title": "Measurement Questions",
+      "timestamp": "2026-07-21T12:00:07.000Z",
+      "data": [
+        { "question": "Why do I keep mixing these two up? 😤", "answer": "Because both use the same two numbers. The fix is to stop looking at numbers first and ask what the job needs: something going AROUND, or something COVERING?" },
+        { "question": "Does this work for shapes that are not rectangles?", "answer": "Perimeter always works the same way — add up every side, no matter the shape. Area gets its own formula for each shape, and you will meet triangles and circles in later grades." },
+        { "question": "Can a shape have a big perimeter and a tiny area? 🐍", "answer": "Absolutely. A 1 by 100 rectangle has a perimeter of 202 but an area of only 100. Long skinny shapes waste fence, which is exactly why the shape matters." },
+        { "question": "What is the most area I can get from a fixed perimeter?", "answer": "For rectangles, a square wins every time. If you allow any shape at all, a circle beats even the square — which is one reason so many animal pens and storage tanks are round." },
+        { "question": "Why do stores sell carpet by the square foot? 🧶", "answer": "Because carpet covers space, and covering is area. Fencing, ribbon, and trim are sold by the plain foot because those go around things." },
+        { "question": "Do adults actually use this?", "answer": "Constantly — flooring, paint, fencing, gardens, tiling, roofing, even loading a moving truck. It is one of the most immediately useful things in elementary math." }
+      ],
+      "meta": "6 questions • practical framing"
+    }
+  ]
+}
