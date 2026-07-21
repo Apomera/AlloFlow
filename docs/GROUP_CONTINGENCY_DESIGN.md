@@ -1,8 +1,14 @@
 # Group Contingencies in AlloFlow — Design Note
 
-**Date:** 2026-07-21 · **Status:** Ring A BUILT 2026-07-21 ("Class Goals" in
-the Live Dock; templates generalized per Aaron — flexible starting points,
-not a district-specific taxonomy). Rings B/C not built.
+**Date:** 2026-07-21 · **Status:** Rings A, B, and C BUILT 2026-07-21
+("Class Goals" in the Live Dock). A: whole-class interdependent,
+teacher-observed. B: teams (roster groups + seating-chart pods via
+`listPods`, non-competitive — every team plays against its own criterion)
++ app-tracked progress signals (team session XP / everyone-responds) with
+the notify-confirm prompt. C: independent mode — per-student checklist,
+pre-checked from live progress where tracked, awards ride the existing
+`goal_progress` reason. Deferred: seating-map tap-a-pod overlay (lands
+with the seating chart's own live-session Ring 2).
 **Prompted by:** seating-chart follow-up ("does the current system support
 independent / interdependent / dependent group contingencies?"). Short answer
 today: **no** — reinforcement is individual everywhere. This note maps what

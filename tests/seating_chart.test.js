@@ -338,6 +338,40 @@ describe('arrangement history', () => {
   });
 });
 
+describe('listPods (Class Goals bridge)', () => {
+  const rosterFor = (layout, students = {}) => ({
+    students,
+    seating: { activeLayoutId: 'layout1', layouts: { layout1: layout }, constraints: [] },
+  });
+
+  it('pods template clusters into pods of 4, row-major, with seated names in order', () => {
+    const t = S.buildTemplate('pods', 16);
+    const layout = { id: 'layout1', name: 'P', seats: t.seats, furniture: t.furniture, assignments: {} };
+    const students = {};
+    // Seat the first pod's 4 seats.
+    const podsBefore = S.listPods(rosterFor(layout));
+    expect(podsBefore.length).toBe(4);
+    expect(podsBefore.every((p) => p.seatIds.length === 4)).toBe(true);
+    podsBefore[0].seatIds.forEach((sid, i) => { layout.assignments[sid] = 'Kid' + i; students['Kid' + i] = ''; });
+    const pods = S.listPods(rosterFor(layout, students));
+    expect(pods[0].students).toEqual(['Kid0', 'Kid1', 'Kid2', 'Kid3']);
+    expect(pods[1].students).toEqual([]);
+    expect(pods[0].label).toContain('Pod 1');
+  });
+
+  it('pairs template yields 2-seat pods; spread rows yield none; junk yields []', () => {
+    const pairs = S.buildTemplate('pairs', 8);
+    const pairPods = S.listPods(rosterFor({ id: 'layout1', name: 'P', seats: pairs.seats, furniture: pairs.furniture, assignments: {} }));
+    expect(pairPods.length).toBe(4);
+    expect(pairPods.every((p) => p.seatIds.length === 2)).toBe(true);
+    const rows = S.buildTemplate('rows', 9);
+    const rowPods = S.listPods(rosterFor({ id: 'layout1', name: 'R', seats: rows.seats, furniture: rows.furniture, assignments: {} }));
+    expect(rowPods).toEqual([]);   // 9-seat rows grid spreads wider than ADJ_DIST
+    expect(S.listPods(null)).toEqual([]);
+    expect(S.listPods({ students: {}, seating: null })).toEqual([]);
+  });
+});
+
 describe('nextId', () => {
   it('takes max numeric suffix + 1 for the matching prefix only', () => {
     expect(S.nextId(['seat1', 'seat9', 'seat3'], 'seat')).toBe('seat10');

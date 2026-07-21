@@ -94,6 +94,7 @@ var ROOM_H = 62;
 var SEAT_W = 10;
 var SEAT_H = 7;
 var ADJ_DIST = 14;
+var POD_DIST = 12;
 var NEAR_RADIUS = 32;
 var WINDOW_RADIUS = 20;
 var FURNITURE_KINDS = [
@@ -609,7 +610,7 @@ function describeSeatForStudent(rosterKey, studentName, opts) {
     }
   }
   var podMates = layout.seats.filter(function(s) {
-    return s.id !== seat.id && centerDist(s, seat) < ADJ_DIST;
+    return s.id !== seat.id && centerDist(s, seat) < POD_DIST;
   });
   parts.push(podMates.length ? "pod of " + (podMates.length + 1) : "single desk");
   var anchors = {};
@@ -633,6 +634,61 @@ function describeSeatForStudent(rosterKey, studentName, opts) {
     if (neighborNames.length) parts.push("next to " + neighborNames.join(", "));
   }
   return layout.name + ": " + parts.join(", ");
+}
+function listPods(rosterKey) {
+  if (!rosterKey || typeof rosterKey !== "object") return [];
+  var students = rosterKey.students && typeof rosterKey.students === "object" ? rosterKey.students : {};
+  var seating = normalizeSeating(rosterKey.seating, Object.keys(students));
+  var layout = seating.activeLayoutId ? seating.layouts[seating.activeLayoutId] : null;
+  if (!layout || layout.seats.length < 2) return [];
+  var seats = layout.seats;
+  var clusterOf = {};
+  var clusters = [];
+  seats.forEach(function(seed) {
+    if (clusterOf[seed.id] != null) return;
+    var idx = clusters.length;
+    var queue = [seed];
+    clusterOf[seed.id] = idx;
+    var members = [];
+    while (queue.length) {
+      var cur = queue.pop();
+      members.push(cur);
+      seats.forEach(function(other) {
+        if (clusterOf[other.id] != null) return;
+        if (centerDist(cur, other) < POD_DIST) {
+          clusterOf[other.id] = idx;
+          queue.push(other);
+        }
+      });
+    }
+    clusters.push(members);
+  });
+  var pods = clusters.filter(function(members) {
+    return members.length >= 2;
+  }).map(function(members) {
+    var sorted = members.slice().sort(function(a, b) {
+      return a.y - b.y || a.x - b.x;
+    });
+    return {
+      anchor: sorted[0],
+      seatIds: sorted.map(function(s) {
+        return s.id;
+      }),
+      students: sorted.map(function(s) {
+        return layout.assignments[s.id];
+      }).filter(Boolean)
+    };
+  }).sort(function(a, b) {
+    return a.anchor.y - b.anchor.y || a.anchor.x - b.anchor.x;
+  });
+  return pods.map(function(pod, i) {
+    return {
+      index: i + 1,
+      seatIds: pod.seatIds,
+      students: pod.students,
+      label: "Pod " + (i + 1) + " (" + pod.seatIds.length + " seats" + (pod.students.length ? ", " + pod.students.length + " seated" : "") + ")"
+    };
+  });
 }
 function furnitureLabel(kind) {
   if (kind === "teacher_desk") return tr("Teacher desk");
@@ -1162,11 +1218,15 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     // BehaviorLens bridge (public contract): plain-English seat description
     // for ABC setting enrichment. Positional only unless opts.includeNeighbors.
     describeSeatForStudent: describeSeatForStudent,
+    // Class Goals bridge (public contract): pods on the active layout for
+    // team-scoped goals ('pod:<index>' resolves against the CURRENT layout).
+    listPods: listPods,
     // Pure seams exposed for unit tests + future live-session overlay work.
     // Not part of the public contract.
     _testing: {
       describeSeatForStudent: describeSeatForStudent,
       pushHistory: pushHistory,
+      listPods: listPods,
       normalizeSeating: normalizeSeating,
       normalizeConstraint: normalizeConstraint,
       buildTemplate: buildTemplate,

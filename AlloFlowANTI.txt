@@ -5997,21 +5997,42 @@ const CLASS_GOAL_TEMPLATES = Object.freeze([
   { id: 'custom', label: 'Custom goal…' },
 ]);
 const CLASS_GOAL_TEMPLATE_IDS = new Set(CLASS_GOAL_TEMPLATES.map(item => item.id));
+// Ring B/C additions. mode: 'interdependent' = one criterion, whole team
+// earns together (Ring A/B); 'independent' = each student earns on their own
+// accomplishment via the per-student checklist (Ring C — awards ride the
+// EXISTING 'goal_progress' reason, no new enum). team: 'class', a roster
+// group ('group:<id>'), or a seating-chart pod ('pod:<index>', resolved
+// against the CURRENT active layout at award time — pods are positional).
+// tracked: optional app-measured readiness signal. NOTIFY-CONFIRM INVARIANT
+// (design doc §4.6): tracked criteria only ever set a progress display and a
+// one-time prompt — the app NEVER fans out a group award on its own.
+const CLASS_GOAL_TRACKED_METRICS = Object.freeze({ xp_total: 1, responded_each: 1 });
 const normalizeClassGoal = (goal) => {
   if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
   const id = typeof goal.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(goal.id) ? goal.id : null;
   if (!id) return null;
   const label = goal.label != null ? String(goal.label).slice(0, 80).trim() : '';
   if (!label) return null;
+  const team = (goal.team === 'class'
+    || (typeof goal.team === 'string' && (/^group:[A-Za-z0-9_-]{1,60}$/.test(goal.team) || /^pod:\d{1,2}$/.test(goal.team))))
+    ? goal.team : 'class';
+  const tracked = (goal.tracked && typeof goal.tracked === 'object' && !Array.isArray(goal.tracked)
+    && CLASS_GOAL_TRACKED_METRICS[goal.tracked.metric])
+    ? { metric: goal.tracked.metric, threshold: Math.max(1, Math.min(1000000, Math.floor(Number(goal.tracked.threshold) || 1))) }
+    : null;
   return {
     id,
     label,
     templateId: CLASS_GOAL_TEMPLATE_IDS.has(goal.templateId) ? goal.templateId : 'custom',
     tokens: Number(goal.tokens) === 2 ? 2 : 1,
-    // GBG-style can't-do allowance: "met with up to N exceptions." Guidance
-    // for the teacher's judgment call in Ring A (teacher-observed criteria);
-    // no student is ever named as the exception anywhere.
+    // GBG-style can't-do allowance: "met with up to N exceptions." Judgment
+    // guidance for teacher-observed criteria; FUNCTIONAL for tracked
+    // per-student metrics (responded_each counts as met when team-size minus
+    // responders ≤ allowance). No student is ever named as the exception.
     allowance: Math.max(0, Math.min(5, Math.floor(Number(goal.allowance) || 0))),
+    mode: goal.mode === 'independent' ? 'independent' : 'interdependent',
+    team,
+    tracked,
     active: goal.active !== false,
     metCount: Math.max(0, Math.floor(Number(goal.metCount) || 0)),
     lastMetAt: Number(goal.lastMetAt) > 0 ? Number(goal.lastMetAt) : null,
@@ -6026,6 +6047,64 @@ const normalizeClassGoals = (raw) => {
     if (goal && !seen.has(goal.id)) { seen.add(goal.id); out.push(goal); }
   });
   return out.slice(0, 20);
+};
+// Which connected students a goal's team covers. Groups match the session
+// roster's groupId (same source as the Recognize group buttons); pods come
+// from the seating module's listPods over the CURRENT active layout, matched
+// to session students by codename normalization (roster-sync convention).
+const resolveClassGoalTeamUids = (goal, rosterEntries, rosterKeyValue) => {
+  const entries = rosterEntries && typeof rosterEntries === 'object' ? rosterEntries : {};
+  const uids = Object.keys(entries);
+  if (!goal || goal.team === 'class') return uids;
+  if (typeof goal.team === 'string' && goal.team.indexOf('group:') === 0) {
+    const groupId = goal.team.slice(6);
+    return uids.filter(uid => entries[uid] && entries[uid].groupId === groupId);
+  }
+  if (typeof goal.team === 'string' && goal.team.indexOf('pod:') === 0) {
+    const podIndex = parseInt(goal.team.slice(4), 10);
+    const SC = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SeatingChart;
+    if (!SC || typeof SC.listPods !== 'function' || !podIndex) return [];
+    let pod = null;
+    try { pod = SC.listPods(rosterKeyValue).find(item => item.index === podIndex) || null; } catch (_) { pod = null; }
+    if (!pod) return [];
+    const wanted = new Set(pod.students.map(normalizeRosterSessionCodename).filter(Boolean));
+    return uids.filter(uid => wanted.has(normalizeRosterSessionCodename(entries[uid] && entries[uid].name)));
+  }
+  return [];
+};
+// PURE readiness evaluator for tracked goals — display + notify only, never
+// an award trigger (§4.6). Returns null for teacher-observed goals.
+// perStudentMet (responded_each) seeds the Ring C checklist suggestions.
+const evaluateClassGoalProgress = (goal, teamUids, rosterEntries, sessionDataValue) => {
+  if (!goal || !goal.tracked) return null;
+  const entries = rosterEntries && typeof rosterEntries === 'object' ? rosterEntries : {};
+  const uids = Array.isArray(teamUids) ? teamUids : [];
+  if (goal.tracked.metric === 'xp_total') {
+    const total = uids.reduce((sum, uid) => sum + (Number(entries[uid] && entries[uid].xp) || 0), 0);
+    return {
+      met: uids.length > 0 && total >= goal.tracked.threshold,
+      label: total.toLocaleString() + ' / ' + goal.tracked.threshold.toLocaleString() + ' XP',
+      perStudentMet: null,
+    };
+  }
+  if (goal.tracked.metric === 'responded_each') {
+    const allResponses = (sessionDataValue && sessionDataValue.quizState && sessionDataValue.quizState.allResponses) || {};
+    const perStudentMet = {};
+    let responders = 0;
+    uids.forEach(uid => {
+      const bucket = allResponses[uid];
+      const count = bucket && typeof bucket === 'object' ? Object.keys(bucket).length : 0;
+      const ok = count >= goal.tracked.threshold;
+      perStudentMet[uid] = ok;
+      if (ok) responders += 1;
+    });
+    return {
+      met: uids.length > 0 && (uids.length - responders) <= goal.allowance,
+      label: responders + ' / ' + uids.length + ' responded',
+      perStudentMet,
+    };
+  }
+  return null;
 };
 
 const normalizeAlloHavenClassroomReward = (reward) => {
@@ -11543,6 +11622,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [havenRewardReceipt, setHavenRewardReceipt] = useState(null);
   const [showHavenRewardAudit, setShowHavenRewardAudit] = useState(false);
   const [classGoalDraft, setClassGoalDraft] = useState(null);
+  // Ring C checklist: which independent goal is expanded + per-uid marks.
+  const [openChecklistGoalId, setOpenChecklistGoalId] = useState(null);
+  const [checklistMarks, setChecklistMarks] = useState({});
+  // Notify-confirm (§4.6): one prompt per tracked goal per session.
+  const classGoalNotifiedRef = useRef({});
   const [livePollPreset, setLivePollPreset] = useState(null);
   const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
@@ -24332,30 +24416,77 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       return delivered;
   };
-  // ── Class Goals (Ring A) ── mark a goal met → fan out ONE group_goal
-  // recognition event to every connected student via the standard batched
-  // path (same caps, same validators, same receipts). The goal's label
-  // stays device-local in rosterKey.classGoals; only the enum id crosses.
-  const handleAwardClassGoal = async (goalId) => {
-      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
-      const goal = goals.find(item => item.id === goalId);
-      if (!goal) return;
-      const delivered = await handleRecognizeStudents(
-          Object.keys((sessionData && sessionData.roster) || {}),
-          'students · class goal met',
-          { reasonId: 'group_goal', amount: goal.tokens }
-      );
-      if (!delivered) return;
+  // ── Class Goals (Rings A/B) ── mark an interdependent goal met → fan out
+  // ONE group_goal recognition event to every connected student on the
+  // goal's team via the standard batched path (same caps, same validators,
+  // same receipts). The goal's label stays device-local in
+  // rosterKey.classGoals; only the enum id crosses.
+  const _bumpClassGoalMet = (goalId, by) => {
       setRosterKey(prev => {
           const prevGoals = normalizeClassGoals(prev && prev.classGoals);
           return {
               ...(prev || { groups: {}, students: {} }),
               classGoals: prevGoals.map(item => item.id === goalId
-                  ? { ...item, metCount: item.metCount + 1, lastMetAt: Date.now() }
+                  ? { ...item, metCount: item.metCount + (by || 1), lastMetAt: Date.now() }
                   : item),
           };
       });
   };
+  const handleAwardClassGoal = async (goalId) => {
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      const goal = goals.find(item => item.id === goalId);
+      if (!goal) return;
+      const teamUids = resolveClassGoalTeamUids(goal, (sessionData && sessionData.roster) || {}, rosterKey);
+      if (!teamUids.length) {
+          addToast(goal.team.indexOf('pod:') === 0
+              ? 'No connected students matched this pod — check the seating chart’s active layout.'
+              : 'No connected students are on this goal’s team.', 'info');
+          return;
+      }
+      const delivered = await handleRecognizeStudents(
+          teamUids,
+          goal.team === 'class' ? 'students · class goal met' : 'students · team goal met',
+          { reasonId: 'group_goal', amount: goal.tokens }
+      );
+      if (!delivered) return;
+      _bumpClassGoalMet(goalId, 1);
+  };
+  // ── Ring C: independent goals ── each MARKED student earns on their own
+  // accomplishment. Rides the existing 'goal_progress' reason (already in
+  // every enum copy) — students see "Individual goal progress". Same caps.
+  const handleAwardIndependentGoal = async (goalId, uids) => {
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      const goal = goals.find(item => item.id === goalId);
+      if (!goal || !Array.isArray(uids) || !uids.length) return;
+      const delivered = await handleRecognizeStudents(
+          uids,
+          'students · individual goal met',
+          { reasonId: 'goal_progress', amount: goal.tokens }
+      );
+      if (!delivered) return;
+      _bumpClassGoalMet(goalId, delivered);
+  };
+  // Notify-confirm prompt (§4.6): when a TRACKED goal's criterion first
+  // crosses its threshold this session, surface a quiet toast. This effect
+  // never awards anything — the teacher's tap on "Met" is the only award
+  // path. Goal labels appear in the toast only (teacher device, never wire).
+  useEffect(() => {
+      if (!isTeacherMode || !activeSessionCode) {
+          classGoalNotifiedRef.current = {};
+          return;
+      }
+      const roster = (sessionData && sessionData.roster) || {};
+      const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
+      goals.forEach(goal => {
+          if (!goal.active || !goal.tracked || classGoalNotifiedRef.current[goal.id]) return;
+          const teamUids = resolveClassGoalTeamUids(goal, roster, rosterKey);
+          const progress = evaluateClassGoalProgress(goal, teamUids, roster, sessionData);
+          if (progress && progress.met) {
+              classGoalNotifiedRef.current[goal.id] = true;
+              addToast('🎯 Goal criterion met: “' + goal.label + '” — review and tap Met to award.', 'info');
+          }
+      });
+  }, [sessionData, rosterKey, isTeacherMode, activeSessionCode]);
   // Plan T Slice Ta: student-side response submission to live session.
   // Writes to a NEW field `quizState.allResponses[uid][questionIdx]` so the
   // existing `quizState.responses[uid]` (one-question-at-a-time presentation
@@ -37118,33 +37249,102 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         Whole-class goals, earn-only. Goal names stay on this device; students privately receive “Class goal achieved.”
                         {!havenRecognitionConfig.enabled ? ' Enable recognition above to award.' : ''}
                       </p>
-                      {activeGoals.map(goal => (
-                        <div key={goal.id} style={{display:'grid',gridTemplateColumns:'1fr auto auto',gap:5,alignItems:'center',padding:'0.32rem 0.4rem',borderRadius:7,background:'white',border:'1px solid #bae6fd'}}>
-                          <span style={{fontSize:'0.66rem',fontWeight:800,color:'#0c4a6e',overflow:'hidden',textOverflow:'ellipsis'}}>
-                            {goal.label}
-                            <span style={{fontWeight:600,color:'#0369a1'}}>
-                              {(goal.allowance ? ' · ok with up to ' + goal.allowance + ' exception' + (goal.allowance === 1 ? '' : 's') : '')
-                                + (goal.metCount ? ' · met ×' + goal.metCount : '')}
-                            </span>
-                          </span>
-                          <button
-                            type="button"
-                            disabled={goalBtnDisabled}
-                            onClick={() => handleAwardClassGoal(goal.id)}
-                            title={havenRecognitionConfig.enabled ? 'Criterion met — privately award +' + goal.tokens + ' AlloHaven token' + (goal.tokens === 1 ? '' : 's') + ' to every connected student.' : 'Enable recognition above first.'}
-                            aria-label={'Class goal met: ' + goal.label + ' — award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to every connected student'}
-                            style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:goalBtnDisabled?'not-allowed':'pointer',opacity:goalBtnDisabled?0.55:1}}
-                          >
-                            🎯 Met · +{goal.tokens}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => saveGoals(goals.filter(item => item.id !== goal.id))}
-                            aria-label={'Remove class goal ' + goal.label}
-                            style={{border:'none',background:'transparent',color:'#64748b',fontSize:'0.72rem',fontWeight:900,cursor:'pointer',padding:'0.1rem 0.2rem'}}
-                          >✕</button>
-                        </div>
-                      ))}
+                      {activeGoals.map(goal => {
+                        const teamUids = resolveClassGoalTeamUids(goal, rosterEntries, rosterKey);
+                        const progress = evaluateClassGoalProgress(goal, teamUids, rosterEntries, sessionData);
+                        const teamLabel = goal.team === 'class' ? null
+                          : goal.team.indexOf('group:') === 0
+                            ? (((rosterKey && rosterKey.groups && rosterKey.groups[goal.team.slice(6)]) || {}).name || 'Group')
+                            : 'Pod ' + goal.team.slice(4);
+                        const independent = goal.mode === 'independent';
+                        const checklistOpen = independent && openChecklistGoalId === goal.id;
+                        const markedUids = checklistOpen ? teamUids.filter(uid => checklistMarks[uid]) : [];
+                        const awardDisabled = goalBtnDisabled || teamUids.length === 0;
+                        return (
+                          <div key={goal.id} style={{display:'flex',flexDirection:'column',gap:4,padding:'0.32rem 0.4rem',borderRadius:7,background:'white',border:'1px solid ' + (progress && progress.met ? '#0284c7' : '#bae6fd'),boxShadow:progress && progress.met ? '0 0 0 1px #0284c7' : 'none'}}>
+                            <div style={{display:'grid',gridTemplateColumns:'1fr auto auto',gap:5,alignItems:'center'}}>
+                              <span style={{fontSize:'0.66rem',fontWeight:800,color:'#0c4a6e',overflow:'hidden',textOverflow:'ellipsis'}}>
+                                {goal.label}
+                                <span style={{fontWeight:600,color:'#0369a1'}}>
+                                  {(teamLabel ? ' · ' + teamLabel : '')
+                                    + (independent ? ' · each student' : '')
+                                    + (goal.allowance && !independent ? ' · ok with up to ' + goal.allowance + ' exception' + (goal.allowance === 1 ? '' : 's') : '')
+                                    + (goal.metCount ? ' · met ×' + goal.metCount : '')}
+                                </span>
+                                {progress ? (
+                                  <span style={{display:'block',fontWeight:700,color:progress.met ? '#0369a1' : '#64748b'}}>
+                                    {progress.label + (progress.met ? ' · criterion met — your call' : '')}
+                                  </span>
+                                ) : null}
+                              </span>
+                              {independent ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (checklistOpen) { setOpenChecklistGoalId(null); return; }
+                                    const seeded = {};
+                                    teamUids.forEach(uid => { seeded[uid] = !!(progress && progress.perStudentMet && progress.perStudentMet[uid]); });
+                                    setChecklistMarks(seeded);
+                                    setOpenChecklistGoalId(goal.id);
+                                  }}
+                                  aria-expanded={checklistOpen}
+                                  aria-label={'Open per-student checklist for goal ' + goal.label}
+                                  style={{border:'1px solid #0369a1',borderRadius:7,background:checklistOpen?'#e0f2fe':'#0284c7',color:checklistOpen?'#0369a1':'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
+                                >☑ Checklist</button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={awardDisabled}
+                                  onClick={() => handleAwardClassGoal(goal.id)}
+                                  title={havenRecognitionConfig.enabled ? 'Criterion met — privately award +' + goal.tokens + ' AlloHaven token' + (goal.tokens === 1 ? '' : 's') + ' to each student on this team.' : 'Enable recognition above first.'}
+                                  aria-label={'Goal met: ' + goal.label + ' — award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + teamUids.length + ' students'}
+                                  style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:awardDisabled?'not-allowed':'pointer',opacity:awardDisabled?0.55:1}}
+                                >
+                                  🎯 Met · +{goal.tokens}
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => { saveGoals(goals.filter(item => item.id !== goal.id)); if (openChecklistGoalId === goal.id) setOpenChecklistGoalId(null); }}
+                                aria-label={'Remove goal ' + goal.label}
+                                style={{border:'none',background:'transparent',color:'#64748b',fontSize:'0.72rem',fontWeight:900,cursor:'pointer',padding:'0.1rem 0.2rem'}}
+                              >✕</button>
+                            </div>
+                            {checklistOpen ? (
+                              <div style={{display:'flex',flexDirection:'column',gap:4,paddingTop:2,borderTop:'1px dashed #bae6fd'}}>
+                                <p style={{margin:0,fontSize:'0.6rem',color:'#0369a1'}}>
+                                  {progress ? 'Pre-checked from live progress — adjust before awarding.' : 'Mark each student who met this goal.'}
+                                </p>
+                                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                                  {teamUids.map(uid => {
+                                    const marked = !!checklistMarks[uid];
+                                    const sName = (rosterEntries[uid] && rosterEntries[uid].name) || 'Student';
+                                    return (
+                                      <button
+                                        key={goal.id + '-' + uid}
+                                        type="button"
+                                        role="checkbox"
+                                        aria-checked={marked}
+                                        aria-label={sName + (marked ? ' — marked as met' : ' — not marked')}
+                                        onClick={() => setChecklistMarks(prev => ({ ...prev, [uid]: !prev[uid] }))}
+                                        style={{border:'1px solid ' + (marked ? '#0369a1' : '#cbd5e1'),borderRadius:999,background:marked?'#e0f2fe':'white',color:marked?'#0c4a6e':'#64748b',padding:'0.2rem 0.45rem',fontSize:'0.63rem',fontWeight:800,cursor:'pointer'}}
+                                      >{(marked ? '☑ ' : '☐ ') + sName}</button>
+                                    );
+                                  })}
+                                  {teamUids.length === 0 ? <span style={{fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No connected students on this team.</span> : null}
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={goalBtnDisabled || markedUids.length === 0}
+                                  onClick={() => { handleAwardIndependentGoal(goal.id, markedUids); setOpenChecklistGoalId(null); }}
+                                  aria-label={'Award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + markedUids.length + ' marked students'}
+                                  style={{alignSelf:'flex-end',border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:(goalBtnDisabled || markedUids.length === 0)?'not-allowed':'pointer',opacity:(goalBtnDisabled || markedUids.length === 0)?0.55:1}}
+                                >🎯 Award {markedUids.length} · +{goal.tokens} each</button>
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
                       {activeGoals.length === 0 && !draft ? (
                         <p style={{margin:0,fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No class goals yet — add one to recognize whole-class accomplishments.</p>
                       ) : null}
@@ -37178,6 +37378,46 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           </label>
                           <div style={{display:'flex',gap:6}}>
                             <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                              How it's earned
+                              <select value={draft.mode} onChange={(event) => setClassGoalDraft({ ...draft, mode: event.target.value === 'independent' ? 'independent' : 'interdependent' })} aria-label="Whole team together, or each student individually" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
+                                <option value="interdependent">Team together</option>
+                                <option value="independent">Each student</option>
+                              </select>
+                            </label>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                              Team
+                              <select
+                                value={draft.team}
+                                onChange={(event) => setClassGoalDraft({ ...draft, team: event.target.value })}
+                                aria-label="Which students this goal covers"
+                                style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
+                              >
+                                <option value="class">Whole class</option>
+                                {Object.keys((rosterKey && rosterKey.groups) || {}).map(gid => (
+                                  <option key={'goal-team-' + gid} value={'group:' + gid}>{(rosterKey.groups[gid] && rosterKey.groups[gid].name) || 'Group'}</option>
+                                ))}
+                                {(() => {
+                                  const SC = window.AlloModules && window.AlloModules.SeatingChart;
+                                  if (!SC || typeof SC.listPods !== 'function') return null;
+                                  let pods = [];
+                                  try { pods = SC.listPods(rosterKey); } catch(_) { pods = []; }
+                                  return pods.map(pod => <option key={'goal-pod-' + pod.index} value={'pod:' + pod.index}>{pod.label}</option>);
+                                })()}
+                              </select>
+                            </label>
+                          </div>
+                          {(!(window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating) ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} }
+                                window.setTimeout(() => setClassGoalDraft(current => current ? { ...current } : current), 900);
+                              }}
+                              style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:6,background:'white',color:'#0369a1',padding:'0.2rem 0.4rem',fontSize:'0.6rem',fontWeight:800,cursor:'pointer'}}
+                            >Load seating pods as teams…</button>
+                          ) : null}
+                          <div style={{display:'flex',gap:6}}>
+                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
                               Tokens
                               <select value={draft.tokens} onChange={(event) => setClassGoalDraft({ ...draft, tokens: Number(event.target.value) === 2 ? 2 : 1 })} aria-label="Tokens awarded per student when this goal is met" style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
                                 <option value={1}>+1</option>
@@ -37190,6 +37430,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 {[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n === 0 ? 'None' : 'Up to ' + n}</option>)}
                               </select>
                             </label>
+                          </div>
+                          <div style={{display:'flex',gap:6}}>
+                            <label style={{flex:1.4,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}} title="App-tracked criteria show live progress and prompt you when met — awarding is always your tap, never automatic.">
+                              Progress signal
+                              <select
+                                value={draft.trackedMetric}
+                                onChange={(event) => {
+                                  const metric = event.target.value;
+                                  setClassGoalDraft({ ...draft, trackedMetric: metric, trackedThreshold: metric === 'xp_total' ? 500 : 1 });
+                                }}
+                                aria-label="Optional app-tracked progress signal for this goal"
+                                style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
+                              >
+                                <option value="none">Teacher observed (none)</option>
+                                <option value="xp_total">Team session XP reaches…</option>
+                                <option value="responded_each">Everyone responds ≥…</option>
+                              </select>
+                            </label>
+                            {draft.trackedMetric !== 'none' ? (
+                              <label style={{flex:0.6,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
+                                {draft.trackedMetric === 'xp_total' ? 'XP' : 'Responses'}
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={1000000}
+                                  value={draft.trackedThreshold}
+                                  onChange={(event) => setClassGoalDraft({ ...draft, trackedThreshold: Math.max(1, Math.min(1000000, Math.floor(Number(event.target.value) || 1))) })}
+                                  aria-label={draft.trackedMetric === 'xp_total' ? 'XP threshold for this goal' : 'Responses required per student'}
+                                  style={{border:'1px solid #bae6fd',borderRadius:6,padding:'0.25rem',fontSize:'0.68rem',color:'#0c4a6e'}}
+                                />
+                              </label>
+                            ) : null}
                           </div>
                           <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
                             <button type="button" onClick={() => setClassGoalDraft(null)} style={{border:'1px solid #cbd5e1',borderRadius:7,background:'white',color:'#475569',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}>Cancel</button>
@@ -37205,6 +37477,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                   templateId: draft.templateId,
                                   tokens: draft.tokens,
                                   allowance: draft.allowance,
+                                  mode: draft.mode,
+                                  team: draft.team,
+                                  tracked: draft.trackedMetric !== 'none' ? { metric: draft.trackedMetric, threshold: draft.trackedThreshold } : null,
                                   active: true,
                                 });
                                 if (goal) saveGoals(goals.concat([goal]).slice(0, 20));
@@ -37217,7 +37492,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       ) : (
                         <button
                           type="button"
-                          onClick={() => setClassGoalDraft({ templateId: 'transition_smooth', label: 'Smooth transition', tokens: 1, allowance: 1 })}
+                          onClick={() => setClassGoalDraft({ templateId: 'transition_smooth', label: 'Smooth transition', tokens: 1, allowance: 1, mode: 'interdependent', team: 'class', trackedMetric: 'none', trackedThreshold: 1 })}
                           style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:7,background:'white',color:'#0369a1',padding:'0.28rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
                         >＋ Add class goal</button>
                       )}

@@ -109,3 +109,54 @@ describe('teacher side: ANTI source contracts', () => {
     expect(teacherSrc).toContain('...(Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {})');
   });
 });
+
+describe('Ring B/C: teams, tracked criteria, independent checklist (ANTI contracts)', () => {
+  it('goal schema validates mode, team, and tracked shapes', () => {
+    expect(ANTI).toContain("mode: goal.mode === 'independent' ? 'independent' : 'interdependent',");
+    expect(ANTI).toMatch(/\/\^group:\[A-Za-z0-9_-\]\{1,60\}\$\/\.test\(goal\.team\)/);
+    expect(ANTI).toMatch(/\/\^pod:\\d\{1,2\}\$\/\.test\(goal\.team\)/);
+    expect(ANTI).toContain("const CLASS_GOAL_TRACKED_METRICS = Object.freeze({ xp_total: 1, responded_each: 1 });");
+  });
+
+  it('pod teams resolve through the seating module with codename normalization', () => {
+    const resolver = ANTI.slice(ANTI.indexOf('const resolveClassGoalTeamUids'), ANTI.indexOf('const evaluateClassGoalProgress'));
+    expect(resolver).toContain("typeof SC.listPods !== 'function'");
+    expect(resolver).toContain('normalizeRosterSessionCodename');
+  });
+
+  it('allowance is functional for responded_each (team minus responders ≤ allowance)', () => {
+    expect(ANTI).toContain('(uids.length - responders) <= goal.allowance');
+  });
+
+  it('NOTIFY-CONFIRM INVARIANT: the tracked-goal effect never awards', () => {
+    const start = ANTI.indexOf('// Notify-confirm prompt (§4.6)');
+    const end = ANTI.indexOf('}, [sessionData, rosterKey, isTeacherMode, activeSessionCode]);', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const effect = ANTI.slice(start, end);
+    expect(effect).toContain('evaluateClassGoalProgress');
+    expect(effect).toContain('addToast');
+    // The effect must not touch any award path or write to the session.
+    expect(effect).not.toContain('handleRecognizeStudents');
+    expect(effect).not.toContain('handleAwardClassGoal');
+    expect(effect).not.toContain('handleAwardIndependentGoal');
+    expect(effect).not.toContain('writeToSession');
+    // One prompt per goal per session.
+    expect(effect).toContain('classGoalNotifiedRef.current[goal.id] = true;');
+  });
+
+  it('independent awards ride the existing goal_progress reason and count deliveries', () => {
+    expect(ANTI).toContain("{ reasonId: 'goal_progress', amount: goal.tokens }");
+    expect(ANTI).toContain('_bumpClassGoalMet(goalId, delivered);');
+  });
+
+  it('interdependent awards are team-scoped and bail with guidance when the team is empty', () => {
+    expect(ANTI).toContain('const teamUids = resolveClassGoalTeamUids(goal, (sessionData && sessionData.roster) || {}, rosterKey);');
+    expect(ANTI).toContain('No connected students matched this pod');
+  });
+
+  it('tracked criteria are an option, never a default — teacher-observed is the default path', () => {
+    expect(ANTI).toContain('<option value="none">Teacher observed (none)</option>');
+    expect(ANTI).toContain("trackedMetric: 'none'");
+  });
+});
