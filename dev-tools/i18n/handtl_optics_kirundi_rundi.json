@@ -1,0 +1,29 @@
+{
+  "kirundi": {
+    "rainbows_mirages_after_images_color_po": "Umukororomvya · ibishushanyo vy'urumuri · amashusho-nyuma · ibara · ikirere ca polarize",
+    "120_optical_phenomena": "120+ ibintu vya optike",
+    "30_telescopes_microscopes_cameras_lase": "30+ telesikopi, mikorosikopi, kamera, lazeri, ivyerekana",
+    "lab_kits": "🧪 Ibikoresho vya laboratwari",
+    "worked_problems": "📝 Ibibazo vyakemuwe",
+    "30_step_by_step_ap_problems": "30+ ibibazo vya AP intambwe ku yindi",
+    "lasers_vision_color_astronomy_more": "Lazeri, kuraba, ibara, ubumenyi bw'inyenyeri + ibindi",
+    "trivia_records_quotes_safety_data_teac": "Ibintu bishimishije · amateka · amagambo · umutekano · amakuru · impanuro zo kwigisha",
+    "ap_exam_practice": "Imyitozo y'ikizamini ca AP",
+    "concept_progress_which_questions_you_h": "Iterambere ry'iciyumviro + ni ibihe bibazo wamenye",
+    "angle_exceeds_critical_angle_no_light_": "Inguni irenze inguni y'ingenzi. Nta rumuri runyura — vyose bigaragazwa inyuma. Urufatiro rwa fibre optique, kubengerana kwa diyama, periskopi za prism.",
+    "light_entering_less_dense_medium_refra": "Urumuri rwinjira mu kintu coroshe. Umurasire wagonzwe ugonda UVA ku murongo usanzwe — urumuri rwihuta mu kintu coroshe.",
+    "set_n_n_incidence_angle_and_wavelength": "Shiraho n₁, n₂, inguni yo kugwa, n'uburebure bw'umuraba. Hanura aho sisitemu ihindukira iva ku kugonda ija kuri TIR. Nta manota, nta guhishura.",
+    "reset": "Subiramwo",
+    "your_hypothesis_where_exactly_does_tir": "Iciyumviro cawe (TIR itangurira he neza, kandi kuki diyama ikora TIR ikomeye kuruta ikirahuri?)",
+    "i_m_stuck_show_open_questions": "🤔 Nahagaze — erekana ibibazo vyugurutse",
+    "open_questions_no_answer_key": "Ibibazo vyugurutse (nta rupfunguzo rw'ibisubizo)",
+    "why_is_there_no_critical_angle_when_go": "Kuki NTA nguni y'ingenzi iba igihe uva ku coroshe uja ku gikomeye?",
+    "set_water_air_n_1_33_n_1_00_what_s_the": "Shiraho amazi→umwuka (n₁=1.33 n₂=1.00). Inguni y'ingenzi ni iyihe? Kuki amafi abona isi yo hejuru yegeranye mu nkokora?",
+    "in_a_rainbow_why_does_red_bend_less_th": "Mu mukororomvya, kuki umutuku ugonda gake kuruta ubururu? Uhuze na slider y'uburebure bw'umuraba.",
+    "how_does_a_prism_separate_white_light_": "Prism itandukanya gute urumuri rwera nimba uburebure bwose bw'umuraba bukurikiza itegeko rimwe rya Snell?",
+    "i_can_explain_why_this_n_n_combination": "Nshobora gusigura impamvu iri hujwe rya n₁/n₂/θ ritanga iyi miterere yo kugonda.",
+    "explain_in_your_own_words": "Sigura mu magambo yawe...",
+    "inquiry_widget_no_score_no_reveal_no_a": "Widget y'ubushakashatsi — nta manota, nta guhishura, nta gusuka ibisubizo. Icitegererezo co gutatana ni icerekana (nka Cauchy yo ku rwego rwa mbere); imikondo nyayo yo gutatana iterwa n'ibikoresho (Sellmeier coefficients).",
+    "concept_locked_in": "Iciyumviro cashizweho"
+  }
+}
