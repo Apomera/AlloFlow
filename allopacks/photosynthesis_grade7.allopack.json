@@ -1,0 +1,436 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Photosynthesis — How Plants Eat Sunlight",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "7th Grade",
+    "standards": "NGSS MS-LS1-6 (construct an explanation for how photosynthesis cycles matter and flows energy); NGSS MS-LS1-7 (food rearranged into new molecules that support growth); CCSS.ELA-LITERACY.RST.6-8.4 (domain-specific vocabulary)",
+    "createdAt": "2026-07-20T01:00:00.000Z",
+    "imageShotList": "allopacks/photosynthesis_grade7.IMAGES.md"
+  },
+  "sourceTopic": "Photosynthesis",
+  "history": [
+    {
+      "id": "ph-directions",
+      "type": "directions",
+      "title": "Become a Plant Detective",
+      "timestamp": "2026-07-20T01:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEvery bite of food you have ever eaten traces back to a plant catching sunlight. Today you find out exactly how that trick works — and why you are breathing because of it.\n\n1. Read **The Sugar Factory in Every Leaf**. Notice the three ingredients and the two products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. It hunts for the two ideas almost everyone gets backwards.\n6. Write your explanation with the **Sentence Frames**.\n\nOne warning: two of the quiz questions are traps that catch even adults. Read carefully. 🌱☀️",
+        "objectives": [
+          {
+            "id": "ph-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "ph-glossary"
+          },
+          {
+            "id": "ph-goal-memory",
+            "label": "Win the Memory match",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "ph-glossary"
+          },
+          {
+            "id": "ph-goal-xp",
+            "label": "Earn 40 XP today",
+            "kind": "xp",
+            "amount": 40
+          },
+          {
+            "id": "ph-goal-explain",
+            "label": "I explained photosynthesis to someone without reading from the screen",
+            "kind": "manual"
+          }
+        ],
+        "softGate": true
+      },
+      "meta": "7th Grade • 4 goals • gentle finish-first nudge"
+    },
+    {
+      "id": "ph-reading",
+      "type": "simplified",
+      "title": "The Sugar Factory in Every Leaf",
+      "timestamp": "2026-07-20T01:00:01.000Z",
+      "data": "## The Sugar Factory in Every Leaf\n\nA tree standing in a field looks like it is doing nothing. It is actually running one of the most important chemical factories on Earth, and it is running on sunlight.\n\nHere is the puzzle that confused scientists for centuries: where does the *stuff* of a tree come from? A giant oak weighs many tons. Does it eat the soil? In the 1600s, a scientist named Jan Baptist van Helmont grew a willow in a pot for five years. The tree gained about 74 kilograms. The soil lost almost nothing. The mass had come from somewhere else.\n\nMost of it came from the **air**.\n\nInside every leaf are tiny green structures called **chloroplasts**, packed with a pigment called **chlorophyll**. Chlorophyll absorbs red and blue light and reflects green — which is the only reason leaves look green to you. That captured light energy powers a chemical reaction with three ingredients: **carbon dioxide** from the air, **water** from the roots, and light itself.\n\nThe reaction rearranges those atoms into two new things: **glucose**, a sugar the plant uses for food and building material, and **oxygen**, which leaves through the same tiny pores that let carbon dioxide in. Those pores are called **stomata**, and a plant opens and closes them like windows — wide open to feed, squeezed shut when water is scarce.\n\nSo the oak tree is built, quite literally, out of thin air and water, assembled by sunlight.\n\nNow the part that surprises people: plants also perform **cellular respiration**, the same process your cells use to release energy from sugar. Plants do it day and night. Photosynthesis is not the opposite of breathing — it is how the plant makes the fuel that its breathing burns. During bright daylight a healthy plant photosynthesizes much faster than it respires, so oxygen flows out on balance.\n\nEvery breath you take contains oxygen released by this reaction. Every calorie you eat, whether from broccoli or a burger, was originally sunlight captured by chlorophyll. Trace any food chain backward far enough and it always ends at a leaf, quietly turning light into life.",
+      "meta": "7th Grade • Leveled reading • ~430 words",
+      "imageSlot": "ph-img-leaf-cross-section"
+    },
+    {
+      "id": "ph-glossary",
+      "type": "glossary",
+      "title": "Photosynthesis Vocabulary",
+      "timestamp": "2026-07-20T01:00:02.000Z",
+      "data": [
+        {
+          "term": "Photosynthesis",
+          "def": "The process plants use to turn light energy, carbon dioxide, and water into sugar and oxygen.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Chlorophyll",
+          "def": "The green pigment inside leaves that absorbs light energy.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Chloroplast",
+          "def": "The tiny structure inside a plant cell where photosynthesis happens.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Glucose",
+          "def": "The sugar a plant makes and uses for energy and for building itself.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Stomata",
+          "def": "Tiny pores on a leaf that let gases in and out.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Respiration",
+          "def": "How living cells release energy from sugar — plants do this too, day and night.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pigment",
+          "def": "A substance that absorbs some colors of light and reflects others.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Reactant",
+          "def": "An ingredient that goes INTO a chemical reaction.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Product",
+          "def": "Something that comes OUT of a chemical reaction.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Energy",
+          "def": "The ability to make something happen or change — sunlight carries it to the leaf.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "ph-timeline",
+      "type": "timeline",
+      "title": "Follow One Carbon Atom",
+      "timestamp": "2026-07-20T01:00:03.000Z",
+      "data": {
+        "progressionLabel": "PROCESS: Carbon enters the leaf (Step 1) → Carbon becomes part of you (Step 7)",
+        "items": [
+          {
+            "date": "Step 1",
+            "event": "A carbon dioxide molecule drifts through the air and reaches a leaf surface."
+          },
+          {
+            "date": "Step 2",
+            "event": "The molecule passes through an open stoma into the inside of the leaf."
+          },
+          {
+            "date": "Step 3",
+            "event": "Inside a chloroplast, chlorophyll absorbs red and blue light energy from the Sun."
+          },
+          {
+            "date": "Step 4",
+            "event": "That captured energy powers a reaction between the carbon dioxide and water drawn up from the roots."
+          },
+          {
+            "date": "Step 5",
+            "event": "The atoms rearrange: a glucose molecule is assembled, and oxygen atoms are left over."
+          },
+          {
+            "date": "Step 6",
+            "event": "Oxygen exits through the stomata into the air, and the glucose is stored or used to build plant tissue."
+          },
+          {
+            "date": "Step 7",
+            "event": "An animal eats the plant, and that same carbon atom becomes part of the animal's body."
+          }
+        ]
+      },
+      "meta": "7 steps • Process order • carbon's journey"
+    },
+    {
+      "id": "ph-outline",
+      "type": "outline",
+      "title": "Inputs and Outputs Map",
+      "timestamp": "2026-07-20T01:00:04.000Z",
+      "data": {
+        "main": "Photosynthesis",
+        "branches": [
+          {
+            "title": "Reactants (what goes IN)",
+            "items": [
+              "Carbon dioxide — from the air, through the stomata",
+              "Water — from the soil, up through the roots and stem",
+              "Light energy — captured by chlorophyll"
+            ]
+          },
+          {
+            "title": "Where it happens",
+            "items": [
+              "Inside the leaf",
+              "Inside plant cells",
+              "Inside chloroplasts, which hold the chlorophyll"
+            ]
+          },
+          {
+            "title": "Products (what comes OUT)",
+            "items": [
+              "Glucose — food and building material for the plant",
+              "Oxygen — released through the stomata into the air"
+            ]
+          },
+          {
+            "title": "Why it matters",
+            "items": [
+              "Nearly all food chains begin here",
+              "The oxygen you breathe came from this reaction",
+              "Plant mass comes mostly from air, not soil"
+            ]
+          }
+        ]
+      },
+      "meta": "4 branches • concept map • in/out structure"
+    },
+    {
+      "id": "ph-sort",
+      "type": "concept-sort",
+      "title": "In, Out, or Neither?",
+      "timestamp": "2026-07-20T01:00:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "p-in",
+            "label": "Goes IN (reactant)",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "p-out",
+            "label": "Comes OUT (product)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "p-place",
+            "label": "Place or part, not an ingredient",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "p1",
+            "content": "Carbon dioxide",
+            "categoryId": "p-in"
+          },
+          {
+            "id": "p2",
+            "content": "Water",
+            "categoryId": "p-in"
+          },
+          {
+            "id": "p3",
+            "content": "Light energy",
+            "categoryId": "p-in"
+          },
+          {
+            "id": "p4",
+            "content": "Glucose (sugar)",
+            "categoryId": "p-out"
+          },
+          {
+            "id": "p5",
+            "content": "Oxygen",
+            "categoryId": "p-out"
+          },
+          {
+            "id": "p6",
+            "content": "Chloroplast",
+            "categoryId": "p-place"
+          },
+          {
+            "id": "p7",
+            "content": "Stomata",
+            "categoryId": "p-place"
+          },
+          {
+            "id": "p8",
+            "content": "Chlorophyll",
+            "categoryId": "p-place"
+          },
+          {
+            "id": "p9",
+            "content": "Soil minerals",
+            "categoryId": "p-place"
+          }
+        ]
+      },
+      "meta": "3 categories • 9 cards • soil card is the trap"
+    },
+    {
+      "id": "ph-quiz",
+      "type": "quiz",
+      "title": "Plant Detective Check",
+      "timestamp": "2026-07-20T01:00:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "A 500-kilogram oak tree grew from a tiny acorn. Where did most of that mass come from?",
+            "options": [
+              "Carbon dioxide from the air",
+              "Minerals and soil the roots ate",
+              "Water alone",
+              "Sunlight turning directly into wood"
+            ],
+            "correctAnswer": "Carbon dioxide from the air",
+            "conceptLabel": "plant mass source"
+          },
+          {
+            "type": "mcq",
+            "question": "Why do leaves look green?",
+            "options": [
+              "Chlorophyll reflects green light instead of absorbing it",
+              "Chlorophyll absorbs green light most strongly",
+              "Green is the color of glucose inside the leaf",
+              "Leaves are dyed green by minerals from the soil"
+            ],
+            "correctAnswer": "Chlorophyll reflects green light instead of absorbing it",
+            "conceptLabel": "chlorophyll and light"
+          },
+          {
+            "type": "mcq",
+            "question": "Do plants perform cellular respiration?",
+            "options": [
+              "Yes — day and night, using the sugar they made",
+              "No — respiration is only for animals",
+              "Only at night, when photosynthesis stops",
+              "Only when they are sick or dying"
+            ],
+            "correctAnswer": "Yes — day and night, using the sugar they made",
+            "conceptLabel": "plant respiration"
+          },
+          {
+            "type": "mcq",
+            "question": "Which list shows ONLY reactants of photosynthesis?",
+            "options": [
+              "Carbon dioxide, water, light energy",
+              "Glucose, oxygen, water",
+              "Carbon dioxide, glucose, chlorophyll",
+              "Oxygen, light energy, soil minerals"
+            ],
+            "correctAnswer": "Carbon dioxide, water, light energy",
+            "conceptLabel": "reactants and products"
+          },
+          {
+            "type": "mcq",
+            "question": "A plant is kept in a dark closet with plenty of water. What happens to photosynthesis?",
+            "options": [
+              "It stops, because light energy is a required ingredient",
+              "It continues at the same rate using stored sugar",
+              "It speeds up, because the plant is trying harder",
+              "It switches to using soil minerals instead of light"
+            ],
+            "correctAnswer": "It stops, because light energy is a required ingredient",
+            "conceptLabel": "reactants and products"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Van Helmont's willow gained 74 kg while the soil lost almost none. Explain what his experiment proved and what it did NOT prove.",
+            "expectedAnswer": "It proved the tree's mass did not come from soil. It did not prove where the mass DID come from — he thought it was water alone, but most of it actually came from carbon dioxide in the air.",
+            "conceptLabel": "plant mass source"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why photosynthesis matters to an animal that never eats plants — like a wolf.",
+            "expectedAnswer": "The wolf eats animals that ate plants, so the energy and carbon in its food originally came from photosynthesis. The wolf also breathes oxygen released by photosynthesis.",
+            "conceptLabel": "energy flow food chains"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which idea in this lesson was different from what you believed before? Describe what you used to think."
+          },
+          {
+            "text": "If you could run van Helmont's willow experiment again with modern tools, what would you measure that he could not?"
+          }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • misconception traps"
+    },
+    {
+      "id": "ph-frames",
+      "type": "sentence-frames",
+      "title": "Explain It Like a Scientist",
+      "timestamp": "2026-07-20T01:00:07.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "Photosynthesis needs three ingredients: ____, ____, and ____."
+          },
+          {
+            "text": "The two products of photosynthesis are ____ and ____."
+          },
+          {
+            "text": "Leaves look green because chlorophyll ____ green light instead of ____ it."
+          },
+          {
+            "text": "Most of a tree's mass comes from ____, not from ____, which we know because ____."
+          },
+          {
+            "text": "Plants perform respiration ____, which means photosynthesis is not the opposite of breathing but rather ____."
+          },
+          {
+            "text": "A wolf depends on photosynthesis because ____."
+          },
+          {
+            "text": "One thing I still wonder about photosynthesis is ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Scientist |\n|---|---|---|---|\n| Vocabulary | Everyday words only | 2-3 glossary terms used correctly | 4+ terms used correctly and precisely |\n| Causal reasoning | States facts separately | Connects two ideas with because | Builds a full chain: ingredient to product to consequence |\n| Accuracy | A major misconception remains | Mostly accurate, one slip | Every claim scientifically correct |"
+      },
+      "meta": "7 frames • rubric • ELL support"
+    },
+    {
+      "id": "ph-faq",
+      "type": "faq",
+      "title": "Plant Questions Worth Asking",
+      "timestamp": "2026-07-20T01:00:08.000Z",
+      "data": [
+        {
+          "question": "If plants make oxygen, do they suffocate at night? 🌙",
+          "answer": "No — at night they stop photosynthesizing but keep respiring, so they take in a little oxygen and release a little carbon dioxide. The amounts are tiny; a bedroom plant will not steal your air."
+        },
+        {
+          "question": "Why are some leaves red or purple then? 🍁",
+          "answer": "Those leaves have other pigments (like anthocyanins) layered over the chlorophyll. The chlorophyll is usually still there doing its job underneath."
+        },
+        {
+          "question": "Could a plant live on a colored light — like only red?",
+          "answer": "Yes, surprisingly well. Chlorophyll absorbs red and blue best, so red light works. Pure green light is the worst choice, because that is the color chlorophyll reflects away."
+        },
+        {
+          "question": "Do plants in the ocean matter?",
+          "answer": "Enormously. Tiny floating algae called phytoplankton run photosynthesis at massive scale and produce a huge share of Earth's oxygen — arguably more than rainforests."
+        },
+        {
+          "question": "Is it true a plant is basically made of air? 💨",
+          "answer": "Mostly yes, and it sounds impossible until you know carbon dioxide is a gas made of solid-forming atoms. The carbon in wood was floating in the sky not long ago."
+        },
+        {
+          "question": "Why can't we just build machines that do photosynthesis?",
+          "answer": "Scientists are trying — it is called artificial photosynthesis. Copying what a leaf does cheaply and at scale turns out to be extremely hard, which is a good measure of how impressive leaves are."
+        }
+      ],
+      "meta": "6 questions • misconception-friendly"
+    }
+  ]
+}

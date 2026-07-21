@@ -67,85 +67,55 @@
         {
           "term": "Evaporation",
           "def": "The change of liquid water into water vapor (a gas), usually caused by heat from the Sun.",
-          "tier": "Domain-Specific",
-          "translations": {
-            "Spanish": "Evaporación: El cambio del agua líquida a vapor de agua (un gas), normalmente causado por el calor del Sol."
-          }
+          "tier": "Domain-Specific"
         },
         {
           "term": "Condensation",
           "def": "The change of water vapor back into liquid droplets — this is how clouds form.",
-          "tier": "Domain-Specific",
-          "translations": {
-            "Spanish": "Condensación: El cambio del vapor de agua a gotitas líquidas — así se forman las nubes."
-          }
+          "tier": "Domain-Specific"
         },
         {
           "term": "Precipitation",
           "def": "Water falling from clouds as rain, snow, sleet, or hail.",
-          "tier": "Domain-Specific",
-          "translations": {
-            "Spanish": "Precipitación: Agua que cae de las nubes como lluvia, nieve, aguanieve o granizo."
-          }
+          "tier": "Domain-Specific"
         },
         {
           "term": "Collection",
           "def": "Water gathering in oceans, lakes, rivers, and underground after it falls.",
-          "tier": "Academic",
-          "translations": {
-            "Spanish": "Recolección: El agua que se junta en océanos, lagos, ríos y bajo tierra después de caer."
-          }
+          "tier": "Academic"
         },
         {
           "term": "Transpiration",
           "def": "Water leaving a plant through tiny holes in its leaves and entering the air as vapor.",
-          "tier": "Domain-Specific",
-          "translations": {
-            "Spanish": "Transpiración: Agua que sale de una planta por pequeños poros de sus hojas y entra al aire como vapor."
-          }
+          "tier": "Domain-Specific"
         },
         {
           "term": "Runoff",
           "def": "Water that flows over the land surface into streams and rivers instead of soaking in.",
-          "tier": "Domain-Specific",
-          "translations": {
-            "Spanish": "Escorrentía: Agua que fluye sobre la superficie del terreno hacia arroyos y ríos en lugar de filtrarse."
-          }
+          "tier": "Domain-Specific"
         },
         {
           "term": "Groundwater",
           "def": "Water stored underground in the spaces between soil and rock.",
-          "tier": "Domain-Specific",
-          "translations": {
-            "Spanish": "Agua subterránea: Agua almacenada bajo tierra en los espacios entre el suelo y las rocas."
-          }
+          "tier": "Domain-Specific"
         },
         {
           "term": "Vapor",
           "def": "Water in its gas form — invisible and mixed into the air.",
-          "tier": "Academic",
-          "translations": {
-            "Spanish": "Vapor: Agua en su forma de gas — invisible y mezclada con el aire."
-          }
+          "tier": "Academic"
         },
         {
           "term": "Gravity",
           "def": "The force that pulls precipitation down to Earth and pulls rivers toward the ocean.",
-          "tier": "Academic",
-          "translations": {
-            "Spanish": "Gravedad: La fuerza que atrae la precipitación hacia la Tierra y lleva los ríos hacia el océano."
-          }
+          "tier": "Academic"
         },
         {
           "term": "Cycle",
           "def": "A set of events that repeats in the same order, over and over, with no end.",
-          "tier": "Academic",
-          "translations": {
-            "Spanish": "Ciclo: Un conjunto de eventos que se repite en el mismo orden, una y otra vez, sin fin."
-          }
+          "tier": "Academic"
         }
       ],
-      "meta": "10 terms • Tiered • Spanish included"
+      "meta": "10 terms • Tiered"
     },
     {
       "id": "wc-sort",

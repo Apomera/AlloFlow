@@ -45,11 +45,14 @@ history panel now renders only string metas, so object metas display as blank, n
 `"standards": "NGSS MS-ESS2-4 (…); CCSS.ELA-LITERACY.RST.6-8.4 (…)"`) — human-readable codes
 with a parenthetical gloss, so catalog browsing and alignment review need no lookup.
 
-**Catalog language policy (v0.1):** author packs in **English**, with optional embedded
-glossary `translations` as an ELL quality bonus. Full-pack localization happens on the
-teacher's side via the in-app Translate flow (whole-pack or single resource), which creates
-translated copies — including directions with goal tethers repointed at the translated
-resources. One catalog entry per unit, not per language.
+**Catalog language policy (v0.1, settled 2026-07-20): packs are ENGLISH-ONLY.** Do not embed
+`translations` in catalog packs. Localization is the teacher's move, via the in-app Translate
+flow (whole-pack or single resource), which creates translated copies in the language their
+class actually needs — including directions with goal tethers repointed at the translated
+resources. Rationale: one catalog entry per unit; no half-translated packs to QA or maintain;
+teachers can hand-correct AI translations for their community's dialect. (The `translations`
+field remains legal in the format — the in-app translator and hand-authored packs use it — it
+is simply not part of catalog submissions.)
 
 ## Type registry (shapes verified against renderers)
 

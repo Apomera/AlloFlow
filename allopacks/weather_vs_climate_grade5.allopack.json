@@ -1,0 +1,205 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Weather vs. Climate — Today's Mood, Decades of Personality",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th-6th Grade",
+    "standards": "NGSS 3-ESS2-2 (obtain and combine information to describe climates in different world regions); NGSS MS-ESS2-5 (air masses and weather conditions); CCSS.ELA-LITERACY.RI.5.9 (integrate information from several texts on the same topic)",
+    "createdAt": "2026-07-20T02:00:00.000Z",
+    "imageShotList": "allopacks/weather_vs_climate_grade5.IMAGES.md"
+  },
+  "sourceTopic": "Weather and Climate",
+  "history": [
+    {
+      "id": "wx-directions",
+      "type": "directions",
+      "title": "Two Words People Mix Up Every Day",
+      "timestamp": "2026-07-20T02:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Answer the two reflection questions in your own words.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
+        "objectives": [
+          { "id": "wx-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "wx-glossary" },
+          { "id": "wx-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
+          { "id": "wx-goal-catch", "label": "I caught someone mixing up weather and climate (and explained it kindly)", "kind": "manual" }
+        ]
+      },
+      "meta": "5th-6th Grade • 3 goals • misconception-led"
+    },
+    {
+      "id": "wx-reading",
+      "type": "simplified",
+      "title": "Mood and Personality",
+      "timestamp": "2026-07-20T02:00:01.000Z",
+      "data": "## Mood and Personality\n\nImagine describing your friend to someone who has never met them. You would not say \"she is grumpy\" just because she was grumpy this morning. You would say she is usually cheerful, even though today she is in a bad mood.\n\n**Weather is a mood. Climate is a personality.**\n\nWeather is what the air is doing right now, or today, or this week. Temperature, rain, wind, clouds, snow — if you can look out a window and check it, you are looking at weather. Weather changes hour by hour. It is famously hard to predict more than about a week ahead, because the atmosphere is chaotic: tiny differences today become big differences next week.\n\nClimate is the *pattern* of weather in a place, measured over a long time — usually thirty years or more. Climate is why you know roughly what to pack for a trip to Arizona in July even though you cannot know that specific Tuesday's forecast. Phoenix has a hot, dry climate. That is its personality. On any given day it might rain, and that day would be weather, not a change in climate.\n\nHere is the sentence that trips up even TV reporters: **a cold day does not disprove a warming climate**. One chilly morning tells you as much about Earth's climate as one grumpy morning tells you about your friend's whole personality — which is to say, almost nothing. Climate scientists look at averages across decades and across the entire planet, not at one place on one day.\n\nThe reverse mistake happens too. A single scorching heat wave is not, by itself, proof of climate change either. What scientists examine is whether heat waves are becoming *more frequent, more intense, and longer* over decades — a change in the pattern, not a single event.\n\nSo when you hear someone argue about weather and climate, listen for the time scale. Are they talking about a day, or about thirty years? That one question sorts out most of the confusion — and now you can ask it.",
+      "meta": "5th-6th Grade • Leveled reading • ~360 words",
+      "imageSlot": "wx-img-mood-personality"
+    },
+    {
+      "id": "wx-glossary",
+      "type": "glossary",
+      "title": "Weather and Climate Words",
+      "timestamp": "2026-07-20T02:00:02.000Z",
+      "data": [
+        { "term": "Weather", "def": "What the air is doing right now or over a few days — temperature, rain, wind, and clouds.", "tier": "Domain-Specific" },
+        { "term": "Climate", "def": "The usual pattern of weather in a place, measured over thirty years or more.", "tier": "Domain-Specific" },
+        { "term": "Temperature", "def": "How hot or cold the air is at a moment.", "tier": "Academic" },
+        { "term": "Precipitation", "def": "Any water falling from the sky: rain, snow, sleet, or hail.", "tier": "Domain-Specific" },
+        { "term": "Average", "def": "A middle value found by combining many measurements — the tool that turns weather into climate.", "tier": "Academic" },
+        { "term": "Pattern", "def": "Something that repeats in a predictable way over time.", "tier": "Academic" },
+        { "term": "Forecast", "def": "A prediction of weather in the near future, usually days ahead.", "tier": "Domain-Specific" },
+        { "term": "Region", "def": "An area of the world that shares similar conditions.", "tier": "Academic" },
+        { "term": "Trend", "def": "A gradual change in one direction over a long stretch of time.", "tier": "Academic" },
+        { "term": "Atmosphere", "def": "The layer of air surrounding Earth where all weather happens.", "tier": "Domain-Specific" }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "wx-sort",
+      "type": "concept-sort",
+      "title": "Weather or Climate?",
+      "timestamp": "2026-07-20T02:00:03.000Z",
+      "data": {
+        "categories": [
+          { "id": "w-weather", "label": "WEATHER (right now / this week)", "color": "bg-sky-500" },
+          { "id": "w-climate", "label": "CLIMATE (the long-run pattern)", "color": "bg-emerald-500" }
+        ],
+        "items": [
+          { "id": "w1", "content": "It is 32 degrees and snowing outside", "categoryId": "w-weather" },
+          { "id": "w2", "content": "Maine winters are usually snowy", "categoryId": "w-climate" },
+          { "id": "w3", "content": "A hurricane is forecast to hit on Thursday", "categoryId": "w-weather" },
+          { "id": "w4", "content": "The Sahara is one of the driest places on Earth", "categoryId": "w-climate" },
+          { "id": "w5", "content": "Yesterday broke the record for the hottest June 14th", "categoryId": "w-weather" },
+          { "id": "w6", "content": "Summers here have gotten hotter on average over 40 years", "categoryId": "w-climate" },
+          { "id": "w7", "content": "Bring an umbrella — rain is expected this afternoon", "categoryId": "w-weather" },
+          { "id": "w8", "content": "Seattle gets more rainy days per year than Phoenix", "categoryId": "w-climate" },
+          { "id": "w9", "content": "This week has been unusually windy", "categoryId": "w-weather" },
+          { "id": "w10", "content": "Arctic sea ice has shrunk over the past several decades", "categoryId": "w-climate" }
+        ]
+      },
+      "meta": "2 buckets • 10 headlines • time-scale practice"
+    },
+    {
+      "id": "wx-quiz",
+      "type": "quiz",
+      "title": "Catch the Mix-Up",
+      "timestamp": "2026-07-20T02:00:04.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is the main difference between weather and climate?",
+            "options": [
+              "The length of time being described",
+              "Weather happens outdoors and climate happens globally",
+              "Weather is measured and climate is only estimated",
+              "Climate is about temperature and weather is about rain"
+            ],
+            "correctAnswer": "The length of time being described",
+            "conceptLabel": "weather climate difference"
+          },
+          {
+            "type": "mcq",
+            "question": "Which statement describes CLIMATE?",
+            "options": [
+              "Winters in northern Maine are usually long and snowy",
+              "It snowed eleven inches last Tuesday",
+              "The forecast calls for freezing rain tonight",
+              "There is a blizzard warning for the weekend"
+            ],
+            "correctAnswer": "Winters in northern Maine are usually long and snowy",
+            "conceptLabel": "weather climate difference"
+          },
+          {
+            "type": "mcq",
+            "question": "Why can forecasters predict weather only about a week ahead?",
+            "options": [
+              "The atmosphere is chaotic, so tiny differences grow quickly",
+              "Satellites can only see one week into the future",
+              "Weather does not follow any rules at all",
+              "Computers are not fast enough to calculate further"
+            ],
+            "correctAnswer": "The atmosphere is chaotic, so tiny differences grow quickly",
+            "conceptLabel": "prediction limits"
+          },
+          {
+            "type": "mcq",
+            "question": "Someone says: 'It was freezing this morning, so global warming must be fake.' What is wrong with that reasoning?",
+            "options": [
+              "One day of weather cannot describe a decades-long climate pattern",
+              "Nothing is wrong — cold days do disprove warming",
+              "Mornings are always colder, so they never count",
+              "Global warming only affects summer temperatures"
+            ],
+            "correctAnswer": "One day of weather cannot describe a decades-long climate pattern",
+            "conceptLabel": "single event vs pattern"
+          },
+          {
+            "type": "mcq",
+            "question": "A single record-breaking heat wave happens. What does it prove about climate on its own?",
+            "options": [
+              "Very little — scientists look for changes in frequency and intensity over decades",
+              "It proves the climate has changed permanently",
+              "It proves climate scientists were wrong",
+              "It proves nothing about weather either"
+            ],
+            "correctAnswer": "Very little — scientists look for changes in frequency and intensity over decades",
+            "conceptLabel": "single event vs pattern"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your cousin in Florida says 'I don't believe in climate — it's 60 degrees here today and that's cold!' Write what you would say back, kindly.",
+            "expectedAnswer": "Sixty degrees today is weather — one day. Climate is the average pattern over about thirty years. A cool day in Florida does not change what Florida's climate is, and one day anywhere cannot tell us about a long-term trend.",
+            "conceptLabel": "single event vs pattern"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain the 'mood and personality' comparison in your own words, and give one example of each.",
+            "expectedAnswer": "Weather is like a mood: it changes quickly and can be unusual for a day (for example, a rainy day in the desert). Climate is like a personality: it is what is usual over a long time (for example, the desert being dry most of the year).",
+            "conceptLabel": "weather climate difference"
+          }
+        ],
+        "reflections": [
+          { "text": "Describe the climate where you live in two sentences. Then describe today's weather in one." },
+          { "text": "Where have you heard these two words used incorrectly? What did the person say?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • Q4 is the classic trap"
+    },
+    {
+      "id": "wx-frames",
+      "type": "sentence-frames",
+      "title": "Explain the Difference",
+      "timestamp": "2026-07-20T02:00:05.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "Weather describes ____, while climate describes ____." },
+          { "text": "One way to tell them apart is to ask ____." },
+          { "text": "An example of weather where I live is ____; an example of climate is ____." },
+          { "text": "A single cold day does not disprove a warming climate because ____." },
+          { "text": "Scientists study climate by looking at ____ instead of ____." },
+          { "text": "If I had to explain this to a younger kid, I would say ____." }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Scientist |\n|---|---|---|---|\n| Time scale | Time is not mentioned | Mentions short vs long | Names a specific scale (a day vs ~30 years) |\n| Examples | Vague or missing | One clear example | Both examples clear and correctly sorted |\n| Reasoning | Restates the definition | Explains one why | Explains why a single event cannot show a pattern |"
+      },
+      "meta": "6 frames • rubric • argument practice"
+    },
+    {
+      "id": "wx-faq",
+      "type": "faq",
+      "title": "Wait, But What About...?",
+      "timestamp": "2026-07-20T02:00:06.000Z",
+      "data": [
+        { "question": "If forecasts are only good for a week, how can anyone predict climate for 50 years? 🤔", "answer": "Great question — it feels backwards! Predicting one specific day is like guessing one coin flip. Predicting climate is like predicting that 1,000 flips will land near half heads. Averages over long times are more predictable than single moments." },
+        { "question": "Does climate ever change naturally?", "answer": "Yes. Ice ages and warm periods have come and gone over hundreds of thousands of years from natural causes. Scientists study those natural patterns carefully — it is part of how they identify what is different about recent decades." },
+        { "question": "Why do weather reporters say 'climate' when they mean weather? 📺", "answer": "Usually just habit and casual speech. Now that you know the difference, you will hear it constantly — it is a fun (slightly annoying) superpower." },
+        { "question": "Can two places have the same weather but different climates?", "answer": "Absolutely. It might be 70 degrees and sunny in both Seattle and Phoenix today, but their climates — the long-run patterns — are completely different." },
+        { "question": "What is a microclimate?", "answer": "A small area whose climate differs from the region around it — a shaded valley, a city center that stays warmer than nearby farms, or the sunny side of a hill." },
+        { "question": "How far back do climate records go?", "answer": "Direct thermometer records go back a couple of centuries. Beyond that, scientists read natural records: tree rings, ice cores, coral layers, and lake sediments — nature keeps its own logbooks." }
+      ],
+      "meta": "6 questions • includes the chaos/averages puzzle"
+    }
+  ]
+}

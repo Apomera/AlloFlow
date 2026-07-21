@@ -1,0 +1,211 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Figurative Language — Say It Sideways",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "5th Grade",
+    "standards": "CCSS.ELA-LITERACY.L.5.5 (demonstrate understanding of figurative language, word relationships, and nuances); CCSS.ELA-LITERACY.L.5.5.A (interpret figurative language, including similes and metaphors, in context); CCSS.ELA-LITERACY.RL.5.4 (determine the meaning of words and phrases, including figurative language)",
+    "createdAt": "2026-07-20T03:00:00.000Z",
+    "imageShotList": "allopacks/figurative_language_grade5.IMAGES.md"
+  },
+  "sourceTopic": "Figurative Language",
+  "history": [
+    {
+      "id": "fl-directions",
+      "type": "directions",
+      "title": "Your Mission: Say It Sideways",
+      "timestamp": "2026-07-20T03:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nWriters almost never say things the plain way. \"I was nervous\" is true, but \"my stomach was a washing machine on spin cycle\" is *felt*. Today you learn the tools — then use them.\n\n1. Read **The Sideways Sentence** and watch for the five tools in action.\n2. Learn the terms in the **Glossary**, then win the **Crossword**.\n3. Sort the examples in **Name That Tool** — some are trickier than they look.\n4. Take the quiz — it asks you to explain MEANING, not just name types.\n5. Use the **Sentence Frames** to write your own. This is the real work.\n6. Read the FAQ if you are wondering where the weird idioms come from.\n\nChallenge: your last frame asks for an original metaphor about school. Make it one nobody has written before. ✍️🎭",
+        "objectives": [
+          { "id": "fl-goal-crossword", "label": "Win the Crossword", "kind": "game", "gameType": "crossword", "resourceRef": "fl-glossary" },
+          { "id": "fl-goal-bingo", "label": "Win a round of Bingo", "kind": "game", "gameType": "bingo", "resourceRef": "fl-glossary" },
+          { "id": "fl-goal-xp", "label": "Earn 30 XP", "kind": "xp", "amount": 30 },
+          { "id": "fl-goal-original", "label": "I wrote an original metaphor nobody has used before", "kind": "manual" }
+        ]
+      },
+      "meta": "5th Grade • 4 goals • writing-focused"
+    },
+    {
+      "id": "fl-reading",
+      "type": "simplified",
+      "title": "The Sideways Sentence",
+      "timestamp": "2026-07-20T03:00:01.000Z",
+      "data": "## The Sideways Sentence\n\nThe first day of school, Marisol's stomach was a washing machine on spin cycle.\n\nThat sentence is a lie. Her stomach was not actually an appliance. And yet you understood it instantly — probably better than if I had written \"Marisol felt nervous.\" That is the strange power of **figurative language**: saying something untrue on purpose to deliver a truth faster.\n\nWriters have five favorite tools.\n\nA **simile** compares two unlike things using *like* or *as*. \"The hallway was as loud as a stadium.\" You know the hallway is not a stadium, but now you can hear it.\n\nA **metaphor** does the same comparison without the warning label — it just says one thing *is* another. \"The hallway was a stadium.\" Stronger, because it does not apologize.\n\n**Personification** hands human abilities to things that do not have them. \"The old locker groaned when she opened it.\" Lockers cannot groan. But you heard that sound, did you not?\n\n**Hyperbole** (say it: hy-PER-buh-lee) is exaggeration so extreme nobody could mistake it for fact. \"I have told you a million times.\" The point is not the number. The point is the frustration.\n\nAn **idiom** is a phrase whose meaning cannot be worked out from the words themselves. \"Marisol decided to bite the bullet and raise her hand.\" No bullets. No biting. Every language has hundreds of these, and they are the hardest part of learning a new one — because you cannot reason your way to them, you simply have to learn them.\n\nHere is what all five share: they ask the reader to do a little work. Your brain has to leap from *washing machine* to *nervous*, and that leap is what makes the sentence stick. Plain writing hands you the meaning. Figurative writing makes you catch it — and you remember what you catch.\n\nSo when you write, try saying it sideways once in a while. Not on every line, or your reader gets exhausted. But when a feeling really matters, do not tell them she was nervous. Show them the washing machine.",
+      "meta": "5th Grade • Leveled reading • ~400 words",
+      "imageSlot": "fl-img-washing-machine"
+    },
+    {
+      "id": "fl-glossary",
+      "type": "glossary",
+      "title": "Tools of the Sideways Sentence",
+      "timestamp": "2026-07-20T03:00:02.000Z",
+      "data": [
+        { "term": "Simile", "def": "A comparison of two unlike things using the word like or as.", "tier": "Domain-Specific" },
+        { "term": "Metaphor", "def": "A comparison that says one thing IS another, with no like or as.", "tier": "Domain-Specific" },
+        { "term": "Personification", "def": "Giving human qualities or actions to something that is not human.", "tier": "Domain-Specific" },
+        { "term": "Hyperbole", "def": "Exaggeration so extreme that nobody would take it literally.", "tier": "Domain-Specific" },
+        { "term": "Idiom", "def": "A common phrase whose meaning cannot be figured out from the individual words.", "tier": "Domain-Specific" },
+        { "term": "Literal", "def": "Meaning exactly what the words say, with no comparison or exaggeration.", "tier": "Academic" },
+        { "term": "Figurative", "def": "Meaning something different from the exact words, usually through comparison.", "tier": "Academic" },
+        { "term": "Imagery", "def": "Language that creates a picture or a feeling in the reader's mind.", "tier": "Academic" },
+        { "term": "Compare", "def": "To show how two things are alike.", "tier": "Academic" },
+        { "term": "Symbol", "def": "Something that stands for a bigger idea, like a dove standing for peace.", "tier": "Academic" }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "fl-sort",
+      "type": "concept-sort",
+      "title": "Name That Tool",
+      "timestamp": "2026-07-20T03:00:03.000Z",
+      "data": {
+        "categories": [
+          { "id": "f-simile", "label": "Simile (uses like/as)", "color": "bg-sky-500" },
+          { "id": "f-metaphor", "label": "Metaphor (says it IS)", "color": "bg-indigo-500" },
+          { "id": "f-person", "label": "Personification", "color": "bg-emerald-500" },
+          { "id": "f-hyper", "label": "Hyperbole", "color": "bg-amber-500" }
+        ],
+        "items": [
+          { "id": "f1", "content": "Her laugh was like a bell in an empty hallway", "categoryId": "f-simile" },
+          { "id": "f2", "content": "The classroom was a zoo after the fire drill", "categoryId": "f-metaphor" },
+          { "id": "f3", "content": "The wind shoved the door shut behind him", "categoryId": "f-person" },
+          { "id": "f4", "content": "This backpack weighs a thousand pounds", "categoryId": "f-hyper" },
+          { "id": "f5", "content": "My brother eats as slowly as a glacier moves", "categoryId": "f-simile" },
+          { "id": "f6", "content": "Time is a thief", "categoryId": "f-metaphor" },
+          { "id": "f7", "content": "The alarm clock screamed at me", "categoryId": "f-person" },
+          { "id": "f8", "content": "I have been waiting here for an eternity", "categoryId": "f-hyper" },
+          { "id": "f9", "content": "The stars winked at the sleeping town", "categoryId": "f-person" },
+          { "id": "f10", "content": "Fear is a shadow that follows you home", "categoryId": "f-metaphor" },
+          { "id": "f11", "content": "His hands were as cold as pond ice", "categoryId": "f-simile" },
+          { "id": "f12", "content": "I could sleep for a hundred years", "categoryId": "f-hyper" }
+        ]
+      },
+      "meta": "4 tools • 12 examples • 3 of each"
+    },
+    {
+      "id": "fl-quiz",
+      "type": "quiz",
+      "title": "Meaning, Not Just Names",
+      "timestamp": "2026-07-20T03:00:04.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "\"The old house wheezed every time the wind blew.\" Which tool is this, and why?",
+            "options": [
+              "Personification — a house cannot wheeze, but people can",
+              "Simile — it compares the house to a person using like",
+              "Hyperbole — it exaggerates how windy it was",
+              "Idiom — wheezing house is a common saying"
+            ],
+            "correctAnswer": "Personification — a house cannot wheeze, but people can",
+            "conceptLabel": "identify personification"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the difference between a simile and a metaphor?",
+            "options": [
+              "A simile uses like or as; a metaphor states the comparison directly",
+              "A simile is about people; a metaphor is about objects",
+              "A simile is true; a metaphor is false",
+              "A metaphor is longer than a simile"
+            ],
+            "correctAnswer": "A simile uses like or as; a metaphor states the comparison directly",
+            "conceptLabel": "simile vs metaphor"
+          },
+          {
+            "type": "mcq",
+            "question": "\"My little sister is a tornado in the morning.\" What does this actually tell you about her?",
+            "options": [
+              "She is loud, fast, and leaves a mess behind her",
+              "She is dangerous and should be avoided",
+              "She is interested in weather",
+              "She spins in circles when she wakes up"
+            ],
+            "correctAnswer": "She is loud, fast, and leaves a mess behind her",
+            "conceptLabel": "interpret metaphor meaning"
+          },
+          {
+            "type": "mcq",
+            "question": "Why are idioms especially hard for someone learning a new language?",
+            "options": [
+              "Their meaning cannot be worked out from the words themselves",
+              "They use bigger vocabulary words than other sentences",
+              "They are always spoken very quickly",
+              "They only appear in old books"
+            ],
+            "correctAnswer": "Their meaning cannot be worked out from the words themselves",
+            "conceptLabel": "idiom meaning"
+          },
+          {
+            "type": "mcq",
+            "question": "Which sentence is LITERAL (not figurative)?",
+            "options": [
+              "The temperature dropped to 41 degrees last night",
+              "The night wrapped the town in a cold blanket",
+              "It was freezing enough to turn me into a popsicle",
+              "The cold bit at my fingers"
+            ],
+            "correctAnswer": "The temperature dropped to 41 degrees last night",
+            "conceptLabel": "literal vs figurative"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Rewrite this plain sentence twice — once with a simile and once with a metaphor: \"The cafeteria was noisy.\"",
+            "expectedAnswer": "Simile: The cafeteria was as noisy as a stadium during a goal (uses like or as). Metaphor: The cafeteria was a stadium at kickoff (states it directly). Both compare the noise to something louder without using the word noisy.",
+            "conceptLabel": "simile vs metaphor"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The reading says figurative language 'asks the reader to do a little work.' Explain what that means and why it helps a reader remember.",
+            "expectedAnswer": "The reader has to figure out the connection themselves — for example, leaping from washing machine to nervous. Because your brain does that work instead of just receiving the meaning, the image sticks in memory.",
+            "conceptLabel": "why figurative works"
+          }
+        ],
+        "reflections": [
+          { "text": "What is a phrase your family says that would sound strange to someone outside your family? What does it really mean?" },
+          { "text": "Describe your mood this morning using a metaphor — no explaining allowed, just the image." }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • meaning over labeling"
+    },
+    {
+      "id": "fl-frames",
+      "type": "sentence-frames",
+      "title": "Write It Sideways",
+      "timestamp": "2026-07-20T03:00:05.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "The classroom was as ____ as ____." },
+          { "text": "When I am nervous, my ____ feels like ____." },
+          { "text": "The ____ groaned/whispered/danced when ____. (personification)" },
+          { "text": "I have told you ____ times! (hyperbole)" },
+          { "text": "My favorite place is ____ — it IS ____. (metaphor, no like or as)" },
+          { "text": "An idiom my family uses is ____, and it really means ____." },
+          { "text": "Original challenge: School is ____. (a metaphor nobody has written before)" }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Word Artist |\n|---|---|---|---|\n| Tool accuracy | Frame filled but tool is mismatched | Correct tool for each frame | Every tool used correctly and deliberately |\n| Originality | Uses a familiar phrase (busy as a bee) | Mostly fresh comparisons | Comparisons I have never read before |\n| Sensory power | Tells the feeling | Shows some image | Creates a picture, sound, or sensation I can feel |"
+      },
+      "meta": "7 frames • rubric • originality-scored"
+    },
+    {
+      "id": "fl-faq",
+      "type": "faq",
+      "title": "Where Do Weird Sayings Come From?",
+      "timestamp": "2026-07-20T03:00:06.000Z",
+      "data": [
+        { "question": "Why do we say 'it's raining cats and dogs'? 🐱🐶", "answer": "Nobody knows for sure, which is honest and a little unsatisfying. The best guesses involve heavy storms washing debris (and unlucky animals) through old city streets. Historians disagree, so treat any confident answer with suspicion." },
+        { "question": "Is 'break a leg' really about wishing someone luck?", "answer": "Yes — theater people thought saying 'good luck' was unlucky, so they said the opposite. Many idioms come from superstitions like this." },
+        { "question": "Can a metaphor be wrong? 🤨", "answer": "It can be *bad* — confusing, or comparing things with nothing in common. 'My homework is a refrigerator' does not click, because we cannot find the connection. Good metaphors share something real." },
+        { "question": "Do other languages have the same idioms?", "answer": "Almost never the same ones! Spanish speakers might say it is raining jugs; German speakers, that it is raining young dogs. Same idea, completely different picture." },
+        { "question": "Is hyperbole the same as lying?", "answer": "No, because nobody is meant to believe it. If you say a backpack weighs a thousand pounds, no one goes looking for a scale. A lie is meant to be believed; hyperbole is meant to be felt." },
+        { "question": "Why do teachers want us to use this stuff so much?", "answer": "Because it is evidence you understand something well enough to compare it to something else. Anyone can define nervous. Only someone who has *felt* it invents the washing machine." }
+      ],
+      "meta": "6 questions • etymology + honest uncertainty"
+    }
+  ]
+}
