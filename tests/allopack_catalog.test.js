@@ -18,7 +18,7 @@ const _e = anti.indexOf('let globalAudioCtx');
 const { normalize } = new Function(anti.slice(_s, _e) + '\nreturn { normalize: _alloNormalizeDirectionsData };')();
 
 const TEACHER_ONLY = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES = ['), anti.indexOf('const TEACHER_ONLY_TYPES = [') + 600);
-const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline']);
+const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline', 'math', 'note-taking', 'anchor-chart']);
 const LEGAL_GAMES = new Set(['crossword', 'wordScramble', 'memory', 'matching', 'bingo', 'timelineGame', 'conceptSortGame', 'syntaxScramble', 'vennDiagram', 'causeEffectSort']);
 
 const files = readdirSync(resolve(process.cwd(), 'allopacks')).filter((f) => f.endsWith('.allopack.json'));
@@ -126,6 +126,32 @@ describe.each(files)('AlloPack: %s', (file) => {
         expect(r.data.progressionLabel).toMatch(/:/); // "AXIS: low -> high"
         expect(r.data.items.length).toBeGreaterThanOrEqual(4);
         for (const t of r.data.items) { expect(typeof t.date).toBe('string'); expect(typeof t.event).toBe('string'); }
+      }
+      if (r.type === 'math') {
+        expect(Array.isArray(r.data.problems)).toBe(true);
+        expect(r.data.problems.length).toBeGreaterThanOrEqual(4);
+        for (const pr of r.data.problems) {
+          expect(typeof pr.question).toBe('string');
+          expect(String(pr.answer).length).toBeGreaterThan(0);
+          expect(Array.isArray(pr.steps)).toBe(true);
+          for (const st of pr.steps) expect(typeof st.explanation).toBe('string');
+        }
+      }
+      if (r.type === 'note-taking') {
+        expect(r.data.templateType).toBe('cornell-notes');
+        expect(r.data.cues.length).toBeGreaterThanOrEqual(4);
+        // one blank note row per cue — the student's side of the page
+        expect(r.data.notes.length).toBe(r.data.cues.length);
+        for (const c of r.data.cues) { expect(typeof c.id).toBe('string'); expect(typeof c.text).toBe('string'); }
+      }
+      if (r.type === 'anchor-chart') {
+        expect(typeof r.data.title).toBe('string');
+        expect(r.data.sections.length).toBeGreaterThanOrEqual(3);
+        for (const sec of r.data.sections) {
+          expect(typeof sec.label).toBe('string');
+          expect(Array.isArray(sec.bullets)).toBe(true);
+          expect(sec.bullets.length).toBeGreaterThanOrEqual(1);
+        }
       }
       if (r.type === 'outline') {
         expect(typeof r.data.main).toBe('string');

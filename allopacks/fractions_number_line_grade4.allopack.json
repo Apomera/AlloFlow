@@ -1,0 +1,263 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Fractions on the Number Line — Finding the Space Between",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "3rd-4th Grade",
+    "standards": "CCSS.MATH.CONTENT.3.NF.A.2 (understand a fraction as a number on the number line); CCSS.MATH.CONTENT.3.NF.A.3 (explain equivalence of fractions and compare fractions); CCSS.MATH.CONTENT.4.NF.A.1 (explain why fractions are equivalent)",
+    "createdAt": "2026-07-21T02:00:00.000Z",
+    "imageShotList": "allopacks/fractions_number_line_grade4.IMAGES.md"
+  },
+  "sourceTopic": "Fractions on the Number Line",
+  "history": [
+    {
+      "id": "fr-directions",
+      "type": "directions",
+      "title": "Your Fraction Quest",
+      "timestamp": "2026-07-21T02:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
+        "objectives": [
+          { "id": "fr-goal-scramble", "label": "Win the Word Scramble", "kind": "game", "gameType": "wordScramble", "resourceRef": "fr-glossary" },
+          { "id": "fr-goal-xp", "label": "Earn 25 XP", "kind": "xp", "amount": 25 },
+          { "id": "fr-goal-draw", "label": "I drew a number line to solve at least one problem", "kind": "manual" }
+        ]
+      },
+      "meta": "3rd-4th Grade • 3 goals • drawing encouraged"
+    },
+    {
+      "id": "fr-reading",
+      "type": "simplified",
+      "title": "The Space Between 0 and 1",
+      "timestamp": "2026-07-21T02:00:01.000Z",
+      "data": "## The Space Between 0 and 1\n\nCount out loud: 1, 2, 3, 4. Easy. Now count what is *between* 1 and 2.\n\nThere is a whole world in there, and fractions are how we name the places inside it.\n\nStart with a number line. Put 0 at the left and 1 at the right. Now cut the space between them into **4 equal pieces**. The cuts land on new places, and each place has a name: one-fourth, two-fourths, three-fourths. Written as numbers: 1/4, 2/4, 3/4.\n\nThe bottom number — the **denominator** — tells you *how many equal pieces the whole was cut into*. The top number — the **numerator** — tells you *how many of those pieces you counted from zero*.\n\nSo 3/4 is not a pizza. It is a **location**. Walk three of the four steps from 0 toward 1 and stop. That is where 3/4 lives.\n\nHere is where the number line earns its keep. Look at 2/4. Now look at 1/2. They land on the exact same spot. Same location, two names. That is what **equivalent fractions** means — different words, same place, like a friend who goes by a nickname.\n\nThe number line also fixes the most common fraction mistake. Which is bigger, 1/4 or 1/8? Many people say 1/8, because 8 is bigger than 4. But look: cutting the space into 8 pieces makes each piece *smaller*. So 1/8 sits closer to 0, and 1/4 is bigger. **More pieces means smaller pieces.** The number line shows you that instantly, and it never lies.\n\nOne more thing. Fractions do not stop at 1. Keep going: 5/4 is one step past 1. Fractions are just numbers, and the number line goes on forever in both directions. Once you see fractions as places instead of slices, they stop being a special weird topic and become ordinary numbers — which is exactly what they are.",
+      "meta": "3rd-4th Grade • Leveled reading • ~330 words",
+      "imageSlot": "fr-img-number-line-fourths"
+    },
+    {
+      "id": "fr-glossary",
+      "type": "glossary",
+      "title": "Fraction Words",
+      "timestamp": "2026-07-21T02:00:02.000Z",
+      "data": [
+        { "term": "Fraction", "def": "A number that names a place between whole numbers.", "tier": "Domain-Specific" },
+        { "term": "Numerator", "def": "The top number — how many equal pieces you counted.", "tier": "Domain-Specific" },
+        { "term": "Denominator", "def": "The bottom number — how many equal pieces the whole was cut into.", "tier": "Domain-Specific" },
+        { "term": "Equivalent", "def": "Equal in value — two fractions that land on the same spot.", "tier": "Academic" },
+        { "term": "Whole", "def": "The complete amount, from 0 to 1 on the number line.", "tier": "Academic" },
+        { "term": "Equal", "def": "The same size or the same amount.", "tier": "Academic" },
+        { "term": "Unit", "def": "One single piece — like 1/4 is one unit of a fourth.", "tier": "Academic" },
+        { "term": "Halves", "def": "The two equal pieces you get by cutting a whole in two.", "tier": "Domain-Specific" },
+        { "term": "Fourths", "def": "The four equal pieces you get by cutting a whole into four.", "tier": "Domain-Specific" },
+        { "term": "Compare", "def": "To decide which of two numbers is bigger, smaller, or equal.", "tier": "Academic" }
+      ],
+      "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "fr-math",
+      "type": "math",
+      "title": "Practice Problems",
+      "timestamp": "2026-07-21T02:00:03.000Z",
+      "data": {
+        "title": "Fractions on the Number Line",
+        "problems": [
+          {
+            "question": "A number line runs from 0 to 1 and is cut into 4 equal pieces. Which fraction sits at the very first cut mark after 0?",
+            "answer": "1/4",
+            "steps": [
+              { "explanation": "The denominator is 4 because the whole was cut into 4 equal pieces.", "latex": "" },
+              { "explanation": "The first mark after 0 is one piece from the start, so the numerator is 1.", "latex": "" },
+              { "explanation": "That location is named 1/4.", "latex": "" }
+            ],
+            "realWorld": "A running lap divided into four quarters: the first quarter mark."
+          },
+          {
+            "question": "Which is bigger: 1/4 or 1/8? Explain using pieces.",
+            "answer": "1/4 is bigger",
+            "steps": [
+              { "explanation": "Cutting the same whole into 8 pieces makes each piece smaller than cutting it into 4.", "latex": "" },
+              { "explanation": "So one piece out of 8 is closer to zero than one piece out of 4.", "latex": "" },
+              { "explanation": "More pieces means smaller pieces: 1/4 > 1/8.", "latex": "" }
+            ],
+            "realWorld": "Sharing one candy bar with 4 friends versus 8 friends — bigger group, smaller share."
+          },
+          {
+            "question": "Name a fraction that lands on the exact same spot as 1/2 when the line is cut into fourths.",
+            "answer": "2/4",
+            "steps": [
+              { "explanation": "Cut 0 to 1 into 4 equal pieces and walk 2 of them.", "latex": "" },
+              { "explanation": "You stop exactly halfway, which is where 1/2 is.", "latex": "" },
+              { "explanation": "So 2/4 and 1/2 are equivalent — same place, two names.", "latex": "" }
+            ],
+            "realWorld": "Half a sandwich is the same as two quarter-pieces of that sandwich."
+          },
+          {
+            "question": "On a line cut into thirds, where does 3/3 land?",
+            "answer": "At 1 (the whole)",
+            "steps": [
+              { "explanation": "The denominator 3 means 3 equal pieces make one whole.", "latex": "" },
+              { "explanation": "The numerator 3 means you walk all 3 pieces.", "latex": "" },
+              { "explanation": "Walking every piece brings you to the whole, which is 1.", "latex": "" }
+            ],
+            "realWorld": "Eating all three slices of a three-slice pie means you ate one whole pie."
+          },
+          {
+            "question": "A line is cut into fourths and continues past 1. Where does 5/4 land?",
+            "answer": "One fourth past 1",
+            "steps": [
+              { "explanation": "Four fourths get you exactly to 1.", "latex": "" },
+              { "explanation": "The fifth fourth is one more piece beyond that.", "latex": "" },
+              { "explanation": "So 5/4 sits one fourth to the right of 1.", "latex": "" }
+            ],
+            "realWorld": "Running one full lap plus a quarter of the next one."
+          },
+          {
+            "question": "Order these from smallest to largest: 3/4, 1/4, 2/4.",
+            "answer": "1/4, 2/4, 3/4",
+            "steps": [
+              { "explanation": "All three have the same denominator, so the pieces are the same size.", "latex": "" },
+              { "explanation": "When piece size matches, more pieces means farther from 0.", "latex": "" },
+              { "explanation": "Counting up the numerators gives 1/4, then 2/4, then 3/4.", "latex": "" }
+            ],
+            "realWorld": "Three water bottles filled to different quarter marks, lined up shortest to tallest."
+          }
+        ],
+        "graphData": null
+      },
+      "meta": "6 problems • worked steps • real-world hooks"
+    },
+    {
+      "id": "fr-sort",
+      "type": "concept-sort",
+      "title": "Bigger, Smaller, or Equal to One-Half?",
+      "timestamp": "2026-07-21T02:00:04.000Z",
+      "data": {
+        "categories": [
+          { "id": "fr-less", "label": "Less than 1/2", "color": "bg-sky-500" },
+          { "id": "fr-equal", "label": "Equal to 1/2", "color": "bg-amber-500" },
+          { "id": "fr-more", "label": "Greater than 1/2", "color": "bg-emerald-500" }
+        ],
+        "items": [
+          { "id": "fr1", "content": "1/4", "categoryId": "fr-less" },
+          { "id": "fr2", "content": "2/4", "categoryId": "fr-equal" },
+          { "id": "fr3", "content": "3/4", "categoryId": "fr-more" },
+          { "id": "fr4", "content": "1/8", "categoryId": "fr-less" },
+          { "id": "fr5", "content": "4/8", "categoryId": "fr-equal" },
+          { "id": "fr6", "content": "7/8", "categoryId": "fr-more" },
+          { "id": "fr7", "content": "1/3", "categoryId": "fr-less" },
+          { "id": "fr8", "content": "2/3", "categoryId": "fr-more" },
+          { "id": "fr9", "content": "3/6", "categoryId": "fr-equal" }
+        ]
+      },
+      "meta": "3 buckets • 9 fractions • benchmark reasoning"
+    },
+    {
+      "id": "fr-quiz",
+      "type": "quiz",
+      "title": "Check Your Thinking",
+      "timestamp": "2026-07-21T02:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does the DENOMINATOR of a fraction tell you?",
+            "options": [
+              "How many equal pieces the whole was cut into",
+              "How many pieces you are counting",
+              "How far the fraction is from zero",
+              "Whether the fraction is big or small"
+            ],
+            "correctAnswer": "How many equal pieces the whole was cut into",
+            "conceptLabel": "fraction parts"
+          },
+          {
+            "type": "mcq",
+            "question": "On a number line from 0 to 1 cut into 8 equal pieces, where is 4/8?",
+            "options": [
+              "Exactly halfway between 0 and 1",
+              "Just before 1",
+              "Just after 0",
+              "Past 1"
+            ],
+            "correctAnswer": "Exactly halfway between 0 and 1",
+            "conceptLabel": "equivalent fractions"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is LARGER: 1/6 or 1/3?",
+            "options": [
+              "1/3, because fewer pieces means bigger pieces",
+              "1/6, because 6 is a bigger number than 3",
+              "They are equal because both numerators are 1",
+              "You cannot compare them without a calculator"
+            ],
+            "correctAnswer": "1/3, because fewer pieces means bigger pieces",
+            "conceptLabel": "comparing unit fractions"
+          },
+          {
+            "type": "mcq",
+            "question": "The reading says 3/4 is a location, not a pizza slice. What does that mean?",
+            "options": [
+              "It is a specific spot on the number line, three-fourths of the way from 0 to 1",
+              "It only works for measuring distance",
+              "Pizza cannot be used to show fractions",
+              "It means 3/4 is not really a number"
+            ],
+            "correctAnswer": "It is a specific spot on the number line, three-fourths of the way from 0 to 1",
+            "conceptLabel": "fraction as a number"
+          },
+          {
+            "type": "mcq",
+            "question": "Which pair are EQUIVALENT fractions?",
+            "options": [
+              "2/4 and 1/2",
+              "1/4 and 1/2",
+              "3/4 and 2/3",
+              "1/3 and 1/4"
+            ],
+            "correctAnswer": "2/4 and 1/2",
+            "conceptLabel": "equivalent fractions"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your classmate says '1/8 must be bigger than 1/4 because 8 is bigger than 4.' Draw or describe a number line that shows why this is wrong.",
+            "expectedAnswer": "Cut 0 to 1 into 4 pieces and mark 1/4; then cut the same line into 8 pieces and mark 1/8. The 1/8 mark is closer to 0. More pieces make each piece smaller, so 1/4 is larger.",
+            "conceptLabel": "comparing unit fractions"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain in your own words what makes two fractions equivalent.",
+            "expectedAnswer": "They land on the exact same spot on the number line — the same amount with two different names, like 2/4 and 1/2.",
+            "conceptLabel": "equivalent fractions"
+          }
+        ],
+        "reflections": [
+          { "text": "Where do you see fractions outside of math class? Name two real places." },
+          { "text": "Which was easier for you: thinking of fractions as slices or as places on a line? Why?" }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • Q3 is the classic reversal"
+    },
+    {
+      "id": "fr-frames",
+      "type": "sentence-frames",
+      "title": "Explain Your Math",
+      "timestamp": "2026-07-21T02:00:06.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          { "text": "The denominator ____ tells me the whole was cut into ____ equal pieces." },
+          { "text": "To find ____ on the number line, I start at 0 and walk ____ pieces." },
+          { "text": "____ and ____ are equivalent because ____." },
+          { "text": "I know ____ is bigger than ____ because ____." },
+          { "text": "When the denominator gets bigger, each piece gets ____, because ____." },
+          { "text": "A fraction is a number because ____." }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Mathematician |\n|---|---|---|---|\n| Vocabulary | Says top and bottom number | Uses numerator or denominator | Uses both terms correctly every time |\n| Reasoning | States the answer only | Gives one reason | Explains using pieces or the number line |\n| Representation | No drawing | Draws a line | Draws a labeled line that matches the explanation |"
+      },
+      "meta": "6 frames • rubric • math talk"
+    }
+  ]
+}

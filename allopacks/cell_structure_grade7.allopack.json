@@ -1,0 +1,239 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "The Cell — The Smallest Living Factory",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "7th Grade",
+    "standards": "NGSS MS-LS1-1 (evidence that living things are made of cells); NGSS MS-LS1-2 (develop and use a model to describe the function of a cell and its parts); CCSS.ELA-LITERACY.RST.6-8.7 (integrate visual information with text)",
+    "createdAt": "2026-07-21T01:00:00.000Z",
+    "imageShotList": "allopacks/cell_structure_grade7.IMAGES.md"
+  },
+  "sourceTopic": "Cell Structure and Function",
+  "history": [
+    {
+      "id": "cl-directions",
+      "type": "directions",
+      "title": "Tour the Factory",
+      "timestamp": "2026-07-21T01:00:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nThere are about 30 trillion cells in your body, and every one of them is running a factory right now — without a manager, without instructions from you.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Careful: three of them fool people.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬",
+        "objectives": [
+          { "id": "cl-goal-matching", "label": "Win the Matching game", "kind": "game", "gameType": "matching", "resourceRef": "cl-glossary" },
+          { "id": "cl-goal-memory", "label": "Win the Memory game", "kind": "game", "gameType": "memory", "resourceRef": "cl-glossary" },
+          { "id": "cl-goal-xp", "label": "Earn 35 XP", "kind": "xp", "amount": 35 },
+          { "id": "cl-goal-notes", "label": "I filled in my Cornell Notes without copying the reading word-for-word", "kind": "manual" }
+        ]
+      },
+      "meta": "7th Grade • 4 goals • study-skills finish"
+    },
+    {
+      "id": "cl-reading",
+      "type": "simplified",
+      "title": "The Factory You Are Made Of",
+      "timestamp": "2026-07-21T01:00:01.000Z",
+      "data": "## The Factory You Are Made Of\n\nIn 1665, Robert Hooke pointed a crude microscope at a thin slice of cork and saw tiny empty boxes. They reminded him of the small rooms monks lived in — *cells*. He was looking at the walls of dead plant cells, and he had no idea he had just named the basic unit of all life.\n\nEvery living thing is made of cells. Some organisms are a single cell; you are roughly 30 trillion of them. And a cell is not a bag of goo. It is a factory with departments.\n\nThe **cell membrane** is the security gate. It surrounds the cell and decides what enters and leaves — food and oxygen in, waste out. It is *selectively permeable*, which is a precise way of saying it lets some things through and blocks others.\n\nThe **nucleus** is the office where the instructions live. It holds DNA, the manual for building and running everything. Most of your cells carry a complete copy of that manual, even though a skin cell only ever reads the skin pages.\n\nThe **mitochondria** are the power plants. They take sugar and oxygen and release usable energy. Muscle cells, which need enormous energy, are packed with them.\n\nThe **cytoplasm** is the factory floor — the jelly-like fluid where the parts sit and most reactions happen. **Ribosomes** are the assembly machines that build proteins, the workhorses of the cell. The **endoplasmic reticulum** is the hallway system that moves those products around, and the **Golgi apparatus** is the shipping department: it packages proteins and labels them for delivery.\n\nPlant cells have three parts animal cells lack. A rigid **cell wall** outside the membrane gives structure — it is why celery snaps and you do not. **Chloroplasts** capture sunlight for photosynthesis. And a large central **vacuole** stores water; when it is full the plant stands firm, and when it empties the plant wilts. That wilted houseplant is a storage problem, not a broken stem.\n\nHere is what makes this worth memorizing: every one of those departments is running in you, right now, thirty trillion times over, with no supervision. Structure fits function at every level of biology, and the cell is where that pattern starts.",
+      "meta": "7th Grade • Leveled reading • ~410 words",
+      "imageSlot": "cl-img-animal-plant-cells"
+    },
+    {
+      "id": "cl-glossary",
+      "type": "glossary",
+      "title": "Parts of the Factory",
+      "timestamp": "2026-07-21T01:00:02.000Z",
+      "data": [
+        { "term": "Cell", "def": "The smallest unit of life — every living thing is made of one or more.", "tier": "Domain-Specific" },
+        { "term": "Membrane", "def": "The outer boundary of a cell that controls what goes in and out.", "tier": "Domain-Specific" },
+        { "term": "Nucleus", "def": "The control center that holds the cell's DNA instructions.", "tier": "Domain-Specific" },
+        { "term": "Mitochondria", "def": "The parts that release usable energy from sugar and oxygen.", "tier": "Domain-Specific" },
+        { "term": "Cytoplasm", "def": "The jelly-like fluid inside the cell where the parts sit.", "tier": "Domain-Specific" },
+        { "term": "Ribosome", "def": "The tiny machine that builds proteins.", "tier": "Domain-Specific" },
+        { "term": "Vacuole", "def": "A storage sac for water and materials — very large in plant cells.", "tier": "Domain-Specific" },
+        { "term": "Chloroplast", "def": "The plant-cell part that captures sunlight to make food.", "tier": "Domain-Specific" },
+        { "term": "Organelle", "def": "Any specialized structure inside a cell that does a particular job.", "tier": "Academic" },
+        { "term": "Function", "def": "The job that a structure performs.", "tier": "Academic" },
+        { "term": "Structure", "def": "How something is built or shaped — often a clue to its job.", "tier": "Academic" },
+        { "term": "Microscope", "def": "A tool that magnifies objects too small for the eye to see.", "tier": "Academic" }
+      ],
+      "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "cl-anchor",
+      "type": "anchor-chart",
+      "title": "Job Chart: Part and Purpose",
+      "timestamp": "2026-07-21T01:00:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "EVERY PART HAS A JOB",
+        "sections": [
+          { "label": "PROTECT", "bullets": ["Membrane — decides what enters and leaves", "Cell wall (plants) — rigid support and shape"], "iconPrompt": "a shield in front of a gate" },
+          { "label": "DIRECT", "bullets": ["Nucleus — stores the DNA instructions", "Instructions are copied, never handed out whole"], "iconPrompt": "an office desk with a manual" },
+          { "label": "POWER", "bullets": ["Mitochondria — release energy from sugar", "Muscle cells carry huge numbers of them", "Chloroplasts (plants) — capture sunlight"], "iconPrompt": "a small power plant with a lightning bolt" },
+          { "label": "BUILD & SHIP", "bullets": ["Ribosomes — assemble proteins", "Endoplasmic reticulum — the hallways", "Golgi apparatus — packages and labels"], "iconPrompt": "a conveyor belt with boxes" },
+          { "label": "STORE", "bullets": ["Vacuole — holds water and materials", "A full vacuole keeps a plant standing firm"], "iconPrompt": "a water tank" }
+        ]
+      },
+      "meta": "5 sections • structure-fits-function reference"
+    },
+    {
+      "id": "cl-sort",
+      "type": "concept-sort",
+      "title": "Plant, Animal, or Both?",
+      "timestamp": "2026-07-21T01:00:04.000Z",
+      "data": {
+        "categories": [
+          { "id": "c-plant", "label": "Plant cells ONLY", "color": "bg-emerald-500" },
+          { "id": "c-animal", "label": "Animal cells ONLY", "color": "bg-rose-500" },
+          { "id": "c-both", "label": "BOTH plant and animal", "color": "bg-indigo-500" }
+        ],
+        "items": [
+          { "id": "c1", "content": "Cell wall", "categoryId": "c-plant" },
+          { "id": "c2", "content": "Chloroplast", "categoryId": "c-plant" },
+          { "id": "c3", "content": "One large central vacuole", "categoryId": "c-plant" },
+          { "id": "c4", "content": "Nucleus", "categoryId": "c-both" },
+          { "id": "c5", "content": "Cell membrane", "categoryId": "c-both" },
+          { "id": "c6", "content": "Mitochondria", "categoryId": "c-both" },
+          { "id": "c7", "content": "Ribosomes", "categoryId": "c-both" },
+          { "id": "c8", "content": "Cytoplasm", "categoryId": "c-both" },
+          { "id": "c9", "content": "Centrioles (used when the cell divides)", "categoryId": "c-animal" },
+          { "id": "c10", "content": "Many small vacuoles instead of one big one", "categoryId": "c-animal" }
+        ]
+      },
+      "meta": "3 buckets • 10 cards • mitochondria is the trap"
+    },
+    {
+      "id": "cl-quiz",
+      "type": "quiz",
+      "title": "Why, Not Just What",
+      "timestamp": "2026-07-21T01:00:05.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "A muscle cell contains far more mitochondria than a skin cell. Why?",
+            "options": [
+              "Muscle cells need much more usable energy to contract",
+              "Muscle cells are larger so they need more of every part",
+              "Mitochondria help muscles hold their shape",
+              "Skin cells cannot make mitochondria"
+            ],
+            "correctAnswer": "Muscle cells need much more usable energy to contract",
+            "conceptLabel": "mitochondria function"
+          },
+          {
+            "type": "mcq",
+            "question": "Do plant cells have mitochondria?",
+            "options": [
+              "Yes — they need to release energy from sugar just like animal cells",
+              "No — chloroplasts replace them entirely",
+              "Only at night when photosynthesis stops",
+              "Only in the roots, where there is no sunlight"
+            ],
+            "correctAnswer": "Yes — they need to release energy from sugar just like animal cells",
+            "conceptLabel": "plant vs animal cells"
+          },
+          {
+            "type": "mcq",
+            "question": "A houseplant droops after a week without water. Which part best explains the drooping?",
+            "options": [
+              "The central vacuole emptied, so the cells lost their firmness",
+              "The cell walls dissolved without water",
+              "The chloroplasts stopped making food",
+              "The nucleus shut down to save energy"
+            ],
+            "correctAnswer": "The central vacuole emptied, so the cells lost their firmness",
+            "conceptLabel": "vacuole function"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is the cell membrane described as 'selectively permeable'?",
+            "options": [
+              "It lets some substances through while blocking others",
+              "It only opens at certain times of day",
+              "It can be seen only with a microscope",
+              "It permits everything in but nothing out"
+            ],
+            "correctAnswer": "It lets some substances through while blocking others",
+            "conceptLabel": "membrane function"
+          },
+          {
+            "type": "mcq",
+            "question": "Robert Hooke looked at cork and saw empty boxes. What was he actually seeing?",
+            "options": [
+              "The cell walls left behind by dead plant cells",
+              "Living animal cells swimming in fluid",
+              "Bacteria growing on the cork",
+              "Air bubbles trapped in the wood"
+            ],
+            "correctAnswer": "The cell walls left behind by dead plant cells",
+            "conceptLabel": "history of cell discovery"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Pick any TWO cell parts and explain how each one's structure fits its job.",
+            "expectedAnswer": "Example: the membrane is a thin flexible barrier with openings, which fits its job of letting some things through while blocking others. Mitochondria have folded inner surfaces that give lots of room for energy-releasing reactions, which fits their job as power plants.",
+            "conceptLabel": "structure fits function"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says 'plants don't need mitochondria because they make their own food.' Explain the flaw in that reasoning.",
+            "expectedAnswer": "Making food and using food are different steps. Chloroplasts make sugar; mitochondria release the energy stored in that sugar. A plant still has to use its food, so it needs mitochondria too.",
+            "conceptLabel": "plant vs animal cells"
+          }
+        ],
+        "reflections": [
+          { "text": "Which cell part would you least want to lose, and why? Defend your choice." },
+          { "text": "The reading says 'structure fits function.' Name something outside biology where that is also true." }
+        ]
+      },
+      "meta": "5 MCQ + 2 short answer • reasoning-focused"
+    },
+    {
+      "id": "cl-notes",
+      "type": "note-taking",
+      "title": "Cell Cornell Notes",
+      "timestamp": "2026-07-21T01:00:06.000Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "The Cell — The Smallest Living Factory",
+        "cues": [
+          { "id": "cue-cl-1", "text": "What is a cell?" },
+          { "id": "cue-cl-2", "text": "Membrane job" },
+          { "id": "cue-cl-3", "text": "Nucleus job" },
+          { "id": "cue-cl-4", "text": "Mitochondria job" },
+          { "id": "cue-cl-5", "text": "Ribosomes and Golgi" },
+          { "id": "cue-cl-6", "text": "Plant-only parts" },
+          { "id": "cue-cl-7", "text": "Why does a plant wilt?" },
+          { "id": "cue-cl-8", "text": "Structure fits function?" }
+        ],
+        "notes": [
+          { "id": "note-cl-1", "text": "" },
+          { "id": "note-cl-2", "text": "" },
+          { "id": "note-cl-3", "text": "" },
+          { "id": "note-cl-4", "text": "" },
+          { "id": "note-cl-5", "text": "" },
+          { "id": "note-cl-6", "text": "" },
+          { "id": "note-cl-7", "text": "" },
+          { "id": "note-cl-8", "text": "" }
+        ]
+      },
+      "meta": "Cornell template • 8 cues • student fills the right column"
+    },
+    {
+      "id": "cl-faq",
+      "type": "faq",
+      "title": "Cell Questions Kids Ask",
+      "timestamp": "2026-07-21T01:00:07.000Z",
+      "data": [
+        { "question": "If I have 30 trillion cells, how do they all know what to do? 🤯", "answer": "Each one carries the same DNA manual but only reads the pages it needs. A liver cell and a skin cell have identical instructions and follow different chapters." },
+        { "question": "Are viruses cells?", "answer": "No — and biologists argue about whether they are even alive. A virus is genetic material in a protein coat with no membrane, no organelles, and no ability to reproduce without hijacking a real cell." },
+        { "question": "Why is celery crunchy but a hamburger is not? 🥬", "answer": "Cell walls. Plant cells have rigid walls that snap; animal cells have only flexible membranes, so meat tears instead of crunching." },
+        { "question": "What is the biggest single cell?", "answer": "An unfertilized ostrich egg is usually the answer given — a single cell you could hold in both hands. Some nerve cells are longer (a giraffe's can run meters) but far thinner." },
+        { "question": "Do my cells ever get replaced?", "answer": "Constantly. Gut lining cells last days; skin cells weeks; red blood cells about four months. Some brain cells you keep for life — which is a strange thought." },
+        { "question": "Is it true mitochondria used to be bacteria? 🦠", "answer": "That is the leading scientific explanation, called endosymbiotic theory: an ancient cell engulfed a bacterium and they became partners. Mitochondria still have their own separate DNA, which is strong evidence for it." }
+      ],
+      "meta": "6 questions • includes honest scientific debate"
+    }
+  ]
+}
