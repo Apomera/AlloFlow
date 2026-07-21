@@ -3351,6 +3351,106 @@ function _alloEvaluateObjectives(objectives, signals, progress) {
         return { id: o.id, label: o.label, kind: o.kind, done, progressText };
     }).filter(Boolean);
 }
+// ── Quest map station identity (2026-07-20) — ONE registry, per-type design ───
+// Every resource type gets its own silhouette + emblem + tint so the map reads
+// as a place ("the quiz diamond", "the sorting box") instead of twelve identical
+// dots. Emblems mirror the app's canonical typeIcons (mind_map TYPE_ICONS /
+// getIconForType) so a station looks like the same thing it does in the history
+// panel. Unknown types fall back to a plain page circle — never a crash, never a
+// blank node. `label` is the SPOKEN/plain-text name (kid-facing, not the raw
+// slug); the view passes it through t() with these as fallbacks.
+const _ALLO_STATION_STYLES = {
+    'simplified':            { icon: '✨', shape: 'scroll',  fill: '#eff6ff', stroke: '#3b82f6', label: 'Reading' },
+    'readingBook':           { icon: '\u{1F4DA}', shape: 'scroll',  fill: '#eff6ff', stroke: '#3b82f6', label: 'Book' },
+    'glossary':              { icon: '\u{1F4D6}', shape: 'circle',  fill: '#f5f3ff', stroke: '#8b5cf6', label: 'Word bank' },
+    'word-sounds':           { icon: '\u{1F524}', shape: 'circle',  fill: '#f5f3ff', stroke: '#8b5cf6', label: 'Sounds' },
+    'quiz':                  { icon: '\u{1F4DD}', shape: 'diamond', fill: '#fef2f2', stroke: '#ef4444', label: 'Quiz' },
+    'faq':                   { icon: '❓', shape: 'diamond', fill: '#fef2f2', stroke: '#ef4444', label: 'Questions' },
+    'concept-sort':          { icon: '\u{1F5C2}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'Sorting' },
+    'outline':               { icon: '\u{1F4CB}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'Outline' },
+    'tchart':                { icon: '\u{1FAA7}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'T-chart' },
+    'note-taking':           { icon: '\u{1F4D2}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'Notes' },
+    'anchor-chart':          { icon: '\u{1F4CC}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'Anchor chart' },
+    'sentence-frames':       { icon: '\u{1F4AC}', shape: 'capsule', fill: '#ecfeff', stroke: '#0891b2', label: 'Writing' },
+    'timeline':              { icon: '\u{1F4C5}', shape: 'capsule', fill: '#ecfeff', stroke: '#0891b2', label: 'Timeline' },
+    'video-transcript':      { icon: '\u{1F3AC}', shape: 'capsule', fill: '#ecfeff', stroke: '#0891b2', label: 'Video words' },
+    'adventure':             { icon: '\u{1F3AE}', shape: 'hex',     fill: '#fdf4ff', stroke: '#c026d3', label: 'Adventure' },
+    'persona':               { icon: '\u{1F3AD}', shape: 'hex',     fill: '#fdf4ff', stroke: '#c026d3', label: 'Meet someone' },
+    'dbq':                   { icon: '\u{1F3DB}', shape: 'hex',     fill: '#fdf4ff', stroke: '#c026d3', label: 'Sources' },
+    'image':                 { icon: '\u{1F5BC}', shape: 'square',  fill: '#fdf4ff', stroke: '#c026d3', label: 'Picture' },
+    'math':                  { icon: '\u{1F522}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math' },
+    'math-fluency-probe':    { icon: '\u{1F522}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math practice' },
+    'manipulative-resource': { icon: '\u{1F9EE}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math tool' },
+    'stem-assessment':       { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' },
+    'stem':                  { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' }
+};
+const _ALLO_STATION_FALLBACK = { icon: '\u{1F4C4}', shape: 'circle', fill: '#f8fafc', stroke: '#64748b', label: 'Resource' };
+function _alloStationStyle(type) {
+    return _ALLO_STATION_STYLES[type] || _ALLO_STATION_FALLBACK;
+}
+// Pure geometry for a station silhouette, centered on (x, y) with radius r.
+// Returns a render descriptor ({ tag, attrs }) rather than markup so it stays
+// testable and the view stays declarative.
+function _alloStationShape(shape, x, y, r) {
+    const pts = (arr) => arr.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+    switch (shape) {
+        case 'square':
+            return { tag: 'rect', attrs: { x: x - r, y: y - r, width: r * 2, height: r * 2, rx: r * 0.34 } };
+        case 'capsule':
+            return { tag: 'rect', attrs: { x: x - r * 1.32, y: y - r * 0.82, width: r * 2.64, height: r * 1.64, rx: r * 0.82 } };
+        case 'diamond':
+            return { tag: 'polygon', attrs: { points: pts([[x, y - r * 1.24], [x + r * 1.24, y], [x, y + r * 1.24], [x - r * 1.24, y]]) } };
+        case 'hex': // pointy-top
+            return { tag: 'polygon', attrs: { points: pts([0, 1, 2, 3, 4, 5].map(i => [x + r * 1.12 * Math.sin(Math.PI * i / 3), y - r * 1.12 * Math.cos(Math.PI * i / 3)])) } };
+        case 'hexflat': // flat-top — the STEM/math family silhouette
+            return { tag: 'polygon', attrs: { points: pts([0, 1, 2, 3, 4, 5].map(i => [x + r * 1.12 * Math.cos(Math.PI * i / 3), y + r * 1.12 * Math.sin(Math.PI * i / 3)])) } };
+        case 'scroll': // a page with a curled foot — the "read this" family
+            return { tag: 'path', attrs: { d: 'M ' + (x - r * 0.92) + ' ' + (y - r * 1.1) + ' h ' + (r * 1.84) + ' v ' + (r * 1.7) + ' q ' + (-r * 0.92) + ' ' + (r * 0.62) + ' ' + (-r * 1.84) + ' 0 Z' } };
+        default:
+            return { tag: 'circle', attrs: { cx: x, cy: y, r: r } };
+    }
+}
+// ── "Go here next" (2026-07-20) — the map's inline travel link ────────────────
+// Ranks the student's own next step so the map is a way to MOVE, not just a
+// picture. Priority: (0) unvisited AND tied to an open goal — the step that
+// actually earns something; (1) unvisited, in pack order; (2) already visited
+// but still tied to an open goal — a revisit worth making. Fully-explored packs
+// with no open goals return next=null (the view then celebrates instead of
+// nagging). This RECOMMENDS — nothing here gates, hides, or disables anything.
+function _alloRecommendNextStations(mapItems, visitedMap, objectives, evaluated) {
+    const items = Array.isArray(mapItems) ? mapItems : [];
+    const vis = (visitedMap && typeof visitedMap === 'object') ? visitedMap : {};
+    const objs = (Array.isArray(objectives) ? objectives : []).filter(o => o && o.id);
+    const evals = Array.isArray(evaluated) ? evaluated : [];
+    const doneById = {};
+    evals.forEach(e => { if (e && e.id) doneById[e.id] = !!e.done; });
+    // open goals only, matched by id (the evaluator DROPS malformed objectives,
+    // so positional alignment is not safe). A goal the evaluator never returned
+    // is not a goal at all — only an explicit `false` steers the recommendation.
+    const openGoalFor = {};
+    objs.forEach(o => {
+        if (!o.resourceRef || doneById[o.id] !== false) return;
+        if (!openGoalFor[o.resourceRef]) openGoalFor[o.resourceRef] = String(o.label || '');
+    });
+    const ranked = [];
+    items.forEach((it, i) => {
+        if (!it || !it.id) return;
+        const visited = !!vis[it.id];
+        const goalLabel = openGoalFor[it.id] || '';
+        let rank;
+        if (!visited && goalLabel) rank = 0;
+        else if (!visited) rank = 1;
+        else if (goalLabel) rank = 2;
+        else return; // visited, nothing open — not a suggestion
+        ranked.push({ item: it, index: i, rank, goalLabel, visited, reason: goalLabel ? 'goal' : (visited ? 'revisit' : 'new') });
+    });
+    ranked.sort((a, b) => (a.rank - b.rank) || (a.index - b.index));
+    return {
+        next: ranked.length ? ranked[0] : null,
+        alternates: ranked.slice(1, 3),
+        unvisitedCount: items.filter(it => it && it.id && !vis[it.id]).length
+    };
+}
 let globalAudioCtx = null;
 let globalTtsUrlCache = _ttsState.urlCache;
 if (typeof window !== 'undefined') {
@@ -35312,13 +35412,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // with a spoken progress summary), so screen-reader students lose nothing.
                     const _visitedMap = (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {};
                     const _mapItems = (Array.isArray(history) ? history : []).filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)).slice(0, 12);
-                    const _isStemStation = (tp) => ['math', 'stem', 'manipulative-resource', 'concept-sort', 'timeline'].includes(tp);
                     const _visitedCount = _mapItems.filter(it => _visitedMap[it.id]).length;
                     const _mapW = Math.max(340, 100 + _mapItems.length * 88);
                     const _nodeX = (i) => 100 + i * 88;
                     const _nodeY = (i) => 50 + (i % 2) * 26;
                     const _goalX = (j) => 70 + j * 92;
                     const _goalRefIdx = (o) => (o.resourceRef ? _mapItems.findIndex(it => it.id === o.resourceRef) : -1);
+                    // Per-type station identity + the recommended next step (both pure, both
+                    // module-scope). Travel: clicking a station opens that resource through the
+                    // SAME handleRestoreView every other lane uses, so special types (STEM Lab,
+                    // reading library, word-sounds…) still route correctly.
+                    const _stationLabel = (it) => (t('directions.station_' + String(it.type).replace(/-/g, '_')) || _alloStationStyle(it.type).label);
+                    const _rec = _alloRecommendNextStations(_mapItems, _visitedMap, _dir.objectives, _evald);
+                    const _travelTo = (it) => { if (it && it.id) handleRestoreView(it); };
                     return (
                         <div className="max-w-2xl mx-auto p-4">
                             <div className="bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-5">
@@ -35353,18 +35459,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                             <circle cx="34" cy="62" r="15" fill="#fef3c7" stroke="#d97706" strokeWidth="2.5" />
                                             <text x="34" y="67" textAnchor="middle" fontSize="13" aria-hidden="true">🧭</text>
                                             <text x="34" y="92" textAnchor="middle" fontSize="7.5" fill="#92400e" fontWeight="bold">{(t('directions.map_start') || 'Start here')}</text>
-                                            {/* resource stations: circles; STEM stations get a rounded-square badge shape */}
+                                            {/* resource stations: ONE silhouette + emblem + tint per resource type
+                                                (_ALLO_STATION_STYLES), emerald once visited. Clicking a station travels
+                                                there; the SVG stays role=img, so the focusable travel buttons below the
+                                                map (not these shapes) are the keyboard/screen-reader path. */}
                                             {_mapItems.map((it, i) => {
                                                 const vis = !!_visitedMap[it.id];
-                                                const stem = _isStemStation(it.type);
+                                                const st = _alloStationStyle(it.type);
                                                 const x = _nodeX(i), y = _nodeY(i);
+                                                const isNext = !!(_rec.next && _rec.next.item.id === it.id);
+                                                const shape = _alloStationShape(st.shape, x, y, 13);
+                                                const skin = { fill: vis ? '#d1fae5' : st.fill, stroke: vis ? '#059669' : st.stroke, strokeWidth: 2.5 };
                                                 return (
-                                                    <g key={it.id}>
-                                                        {stem
-                                                            ? <rect x={x - 12} y={y - 12} width="24" height="24" rx="6" fill={vis ? '#d1fae5' : '#ffffff'} stroke={vis ? '#059669' : '#94a3b8'} strokeWidth="2.5" />
-                                                            : <circle cx={x} cy={y} r="13" fill={vis ? '#d1fae5' : '#ffffff'} stroke={vis ? '#059669' : '#94a3b8'} strokeWidth="2.5" />}
-                                                        <text x={x} y={y + 4} textAnchor="middle" fontSize="11" aria-hidden="true">{vis ? '✓' : (stem ? '🔬' : '📖')}</text>
-                                                        <text x={x} y={y + 26} textAnchor="middle" fontSize="7" fill="#475569">{String(it.title || it.type).slice(0, 14)}</text>
+                                                    <g key={it.id} onClick={() => _travelTo(it)} style={{ cursor: 'pointer' }}>
+                                                        {isNext && <circle cx={x} cy={y} r="20" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" opacity="0.9" />}
+                                                        {React.createElement(shape.tag, { ...shape.attrs, ...skin })}
+                                                        <text x={x} y={y + 4} textAnchor="middle" fontSize="11" aria-hidden="true">{vis ? '✓' : st.icon}</text>
+                                                        <text x={x} y={y + 26} textAnchor="middle" fontSize="7" fill="#475569">{String(it.title || _stationLabel(it)).slice(0, 14)}</text>
+                                                        <text x={x} y={y + 34} textAnchor="middle" fontSize="6" fill={isNext ? '#b45309' : '#94a3b8'} fontWeight={isNext ? 'bold' : 'normal'}>{isNext ? (t('directions.map_next_pin') || 'NEXT') : _stationLabel(it).slice(0, 16)}</text>
                                                     </g>
                                                 );
                                             })}
@@ -35376,6 +35488,53 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                 </g>
                                             ))}
                                         </svg>
+                                    </div>
+                                )}
+                                {/* ── Travel strip: the map's inline links. Real HTML buttons (the SVG is
+                                    role=img), so keyboard and screen-reader students get the same one-tap
+                                    travel the picture offers. Recommends only — nothing is locked or hidden;
+                                    every station stays reachable from "Go to any station" below. */}
+                                {_mapItems.length > 0 && (
+                                    <div className="mb-4">
+                                        {_rec.next ? (
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <button onClick={() => _travelTo(_rec.next.item)}
+                                                        className="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm shadow-sm transition-all">
+                                                    <span aria-hidden="true">{_alloStationStyle(_rec.next.item.type).icon}</span>
+                                                    <span>{(t('directions.map_next_label') || 'Go here next') + ': ' + String(_rec.next.item.title || _stationLabel(_rec.next.item)).slice(0, 40)}</span>
+                                                    <ArrowRight size={15} aria-hidden="true" />
+                                                </button>
+                                                {_rec.next.goalLabel && (
+                                                    <span className="text-[11px] text-amber-700 font-semibold">
+                                                        {t('directions.map_next_goal', { goal: _rec.next.goalLabel }) || ('finishes your goal: ' + _rec.next.goalLabel)}
+                                                    </span>
+                                                )}
+                                                {_rec.alternates.map(a => (
+                                                    <button key={'alt' + a.item.id} onClick={() => _travelTo(a.item)}
+                                                            className="flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all">
+                                                        <span aria-hidden="true">{_alloStationStyle(a.item.type).icon}</span>
+                                                        <span>{(t('directions.map_also_ready') || 'or') + ' ' + String(a.item.title || _stationLabel(a.item)).slice(0, 26)}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs font-bold text-emerald-700">{t('directions.map_all_visited') || '🎉 You have been to every station on this map.'}</p>
+                                        )}
+                                        <details className="mt-2">
+                                            <summary className="text-[11px] text-indigo-700 font-bold cursor-pointer">{t('directions.map_jump_any') || 'Go to any station'}</summary>
+                                            <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0">
+                                                {_mapItems.map(it => (
+                                                    <li key={'jump' + it.id}>
+                                                        <button onClick={() => _travelTo(it)}
+                                                                className={'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (_visitedMap[it.id] ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')}>
+                                                            <span aria-hidden="true">{_alloStationStyle(it.type).icon}</span>
+                                                            <span>{String(it.title || _stationLabel(it)).slice(0, 30)}</span>
+                                                            <span className="sr-only">{' — ' + _stationLabel(it) + (_visitedMap[it.id] ? (', ' + (t('directions.map_visited_sr') || 'already visited')) : '')}</span>
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </details>
                                     </div>
                                 )}
                                 {_dir.body && <div className="prose prose-sm max-w-none text-slate-700 mb-4" dangerouslySetInnerHTML={{ __html: parseMarkdownToHTML(_dir.body) }} />}

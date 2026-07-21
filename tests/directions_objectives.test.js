@@ -136,8 +136,10 @@ describe('wiring pins', () => {
     expect(anti).toContain("const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};");
     // the map is an accessible IMAGE with a spoken progress summary; the checklist remains the interactive primary
     expect(anti).toMatch(/svg role="img" aria-label=\{\(t\('directions\.map_summary'\)/);
-    // STEM stations get a distinct shape; completion lighting reuses _visitedMap + the evaluator output
-    expect(anti).toContain("const _isStemStation = (tp) => ['math', 'stem', 'manipulative-resource', 'concept-sort', 'timeline'].includes(tp);");
+    // per-type station design now comes from the shared registry (superseded the old
+    // two-shape _isStemStation rule — see directions_quest_map_travel.test.js)
+    expect(anti).not.toContain('_isStemStation');
+    expect(anti).toContain('const st = _alloStationStyle(it.type);');
     expect(anti).toMatch(/_goalRefIdx\(_dir\.objectives\[j\] \|\| \{\}\)/); // resourceRef'd goals tether to their station
     // map items = student-safe pack only, bounded
     expect(anti).toContain(".filter(h => h && h.id && h.type && h.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(h.type)).slice(0, 12);");
