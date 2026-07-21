@@ -11910,7 +11910,16 @@
       "when_does_swapping_rows_cols_change_an": "Kubadilisha safu mlalo/safu wima kunabadilisha kitu lini?",
       "i_understand_explain_in_own_words": "Naelewa — eleza kwa maneno yangu mwenyewe",
       "explain_commutative_property_area_leng": "Eleza sifa ya ubadilishanaji + eneo = urefu × upana.",
-      "design_note_discrete_4_state_classific": "Dokezo la kubuni: uainishaji tofauti wa hali 4; hakuna alama ya jaribio la eneo; hakuna ufunuo — kwa makusudi."
+      "design_note_discrete_4_state_classific": "Dokezo la kubuni: uainishaji tofauti wa hali 4; hakuna alama ya jaribio la eneo; hakuna ufunuo — kwa makusudi.",
+      "multiplication_workshop": "Warsha ya kuzidisha",
+      "focus_intro": "Jenga mstatili kwanza, kisha unganisha picha na jedwali la kuzidisha, thamani ya nafasi, na maswali ya maneno ya maisha halisi.",
+      "mode": "Hali",
+      "cells": "Visanduku",
+      "streak": "Mfululizo",
+      "focus_visual_label": "Mstatili wa modeli ya eneo unaoonyesha safu mlalo mara safu wima kama jumla ya visanduku",
+      "hide_pattern_lab": "Ficha maabara ya mifumo",
+      "show_pattern_lab": "Onyesha maabara ya mifumo",
+      "distributive_property_canvas": "Mchoro wenye mwendo wa sifa ya ugawanyaji unaoonyesha 3 mara 4 jumlisha 3 mara 2"
     },
     "geometryworld": {
       "guide": "Mwongozo",
@@ -13447,7 +13456,10 @@
       "scale_visual_algebra_balance": "Mizani — usawa wa aljebra wa kuona",
       "drag_weights_onto_a_balance_to_model_x": "Buruta vipimo kwenye mizani kuiga x + 3 = 7 kwa kuona. Ufahamu wenye manufaa zaidi kwa aljebra ya mapema — milinganyo ni mizani, si nafasi tupu za kujaza. Unachokifanya upande mmoja, kifanye upande mwingine.",
       "tutor_ask_ai_for_help": "Mwalimu — omba msaada kwa AI",
-      "ask_the_tutor_about_any_algebra_concep": "Uliza mwalimu kuhusu dhana yoyote ya aljebra au hatua iliyokwama. Mwalimu anajua kiwango chako cha darasa, majaribio ya hivi karibuni, na tatizo amilifu. Bora kwa maswali \"kwa nini mbinu yangu haikufanya kazi?\""
+      "ask_the_tutor_about_any_algebra_concep": "Uliza mwalimu kuhusu dhana yoyote ya aljebra au hatua iliyokwama. Mwalimu anajua kiwango chako cha darasa, majaribio ya hivi karibuni, na tatizo amilifu. Bora kwa maswali \"kwa nini mbinu yangu haikufanya kazi?\"",
+      "verified_check": "Imethibitishwa na injini ya hisabati",
+      "verify_warning": "Jibu hili halilingani",
+      "checked_by_engine": "Imekaguliwa na injini ya hisabati"
     },
     "datastudio": {
       "apples": "Tufaha",

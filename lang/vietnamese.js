@@ -12461,7 +12461,16 @@
       "when_does_swapping_rows_cols_change_an": "Khi nào hoán đổi hàng/cột thay đổi điều gì?",
       "i_understand_explain_in_own_words": "Tôi hiểu rồi — giải thích bằng lời của tôi",
       "explain_commutative_property_area_leng": "Giải thích tính giao hoán + diện tích = chiều dài × chiều rộng.",
-      "design_note_discrete_4_state_classific": "Ghi chú thiết kế: phân loại rời rạc 4 trạng thái; không điểm bài kiểm tra diện tích; không tiết lộ — có chủ đích."
+      "design_note_discrete_4_state_classific": "Ghi chú thiết kế: phân loại rời rạc 4 trạng thái; không điểm bài kiểm tra diện tích; không tiết lộ — có chủ đích.",
+      "multiplication_workshop": "Xưởng nhân",
+      "focus_intro": "Hãy dựng hình chữ nhật trước, rồi nối hình ảnh với bảng cửu chương, giá trị theo vị trí và các bài toán có lời văn thực tế.",
+      "mode": "Chế độ",
+      "cells": "Ô",
+      "streak": "Chuỗi đúng",
+      "focus_visual_label": "Hình chữ nhật của mô hình diện tích cho thấy số hàng nhân số cột bằng tổng số ô",
+      "hide_pattern_lab": "Ẩn phòng thí nghiệm quy luật",
+      "show_pattern_lab": "Hiện phòng thí nghiệm quy luật",
+      "distributive_property_canvas": "Sơ đồ động về tính chất phân phối cho thấy 3 nhân 4 cộng 3 nhân 2"
     },
     "geometryworld": {
       "guide": "Hướng dẫn",
@@ -13998,7 +14007,10 @@
       "scale_visual_algebra_balance": "Cân — cân bằng đại số trực quan",
       "drag_weights_onto_a_balance_to_model_x": "Kéo các quả cân lên một cái cân để mô hình hóa x + 3 = 7 một cách trực quan. Trực giác hữu ích nhất cho đại số sơ cấp — phương trình là cân, không phải ô trống để điền. Bạn làm gì cho một vế, hãy làm cho vế kia.",
       "tutor_ask_ai_for_help": "Gia sư — nhờ AI giúp đỡ",
-      "ask_the_tutor_about_any_algebra_concep": "Hỏi gia sư về bất kỳ khái niệm đại số nào hoặc bước bị mắc kẹt. Gia sư biết cấp lớp, các lần thử gần đây và bài toán đang hoạt động của bạn. Tốt nhất cho các câu hỏi \"tại sao cách tiếp cận của tôi không hiệu quả?\""
+      "ask_the_tutor_about_any_algebra_concep": "Hỏi gia sư về bất kỳ khái niệm đại số nào hoặc bước bị mắc kẹt. Gia sư biết cấp lớp, các lần thử gần đây và bài toán đang hoạt động của bạn. Tốt nhất cho các câu hỏi \"tại sao cách tiếp cận của tôi không hiệu quả?\"",
+      "verified_check": "Đã được công cụ toán học xác minh",
+      "verify_warning": "Câu trả lời này không khớp",
+      "checked_by_engine": "Đã được công cụ toán học kiểm tra"
     },
     "datastudio": {
       "apples": "Táo",

@@ -12127,7 +12127,16 @@
       "when_does_swapping_rows_cols_change_an": "Wanneer verandert het verwisselen van rijen/kolommen iets?",
       "i_understand_explain_in_own_words": "Ik snap het — leg uit in eigen woorden",
       "explain_commutative_property_area_leng": "Leg de commutatieve eigenschap uit + oppervlakte = lengte × breedte.",
-      "design_note_discrete_4_state_classific": "Ontwerpnotitie: discrete classificatie met 4 toestanden; geen oppervlaktetestscore; geen onthulling — met opzet."
+      "design_note_discrete_4_state_classific": "Ontwerpnotitie: discrete classificatie met 4 toestanden; geen oppervlaktetestscore; geen onthulling — met opzet.",
+      "multiplication_workshop": "Vermenigvuldigingswerkplaats",
+      "focus_intro": "Bouw eerst de rechthoek en verbind daarna het plaatje met de tafels, de plaatswaarde en verhaaltjessommen uit de praktijk.",
+      "mode": "Modus",
+      "cells": "Cellen",
+      "streak": "Reeks",
+      "focus_visual_label": "Rechthoek van het oppervlaktemodel die rijen maal kolommen als totaal aantal cellen toont",
+      "hide_pattern_lab": "Patroonlab verbergen",
+      "show_pattern_lab": "Patroonlab tonen",
+      "distributive_property_canvas": "Geanimeerd diagram van de distributieve eigenschap dat 3 keer 4 plus 3 keer 2 toont"
     },
     "geometryworld": {
       "guide": "Gids",
@@ -13664,7 +13673,10 @@
       "scale_visual_algebra_balance": "Weegschaal — visueel algebra-evenwicht",
       "drag_weights_onto_a_balance_to_model_x": "Sleep gewichten op een weegschaal om x + 3 = 7 visueel te modelleren. De nuttigste intuïtie voor beginnende algebra — vergelijkingen zijn weegschalen, geen in te vullen vakjes. Wat je aan de ene kant doet, doe je aan de andere.",
       "tutor_ask_ai_for_help": "Tutor — vraag de AI om hulp",
-      "ask_the_tutor_about_any_algebra_concep": "Vraag de tutor over elk algebra-concept of vastgelopen stap. De tutor kent je leerjaar, recente pogingen en de actieve opgave. Het beste voor \"waarom werkte mijn aanpak niet?\"-vragen."
+      "ask_the_tutor_about_any_algebra_concep": "Vraag de tutor over elk algebra-concept of vastgelopen stap. De tutor kent je leerjaar, recente pogingen en de actieve opgave. Het beste voor \"waarom werkte mijn aanpak niet?\"-vragen.",
+      "verified_check": "Geverifieerd door de rekenmachine-engine",
+      "verify_warning": "Dit antwoord klopt niet",
+      "checked_by_engine": "Gecontroleerd door de rekenmachine-engine"
     },
     "datastudio": {
       "apples": "Appels",

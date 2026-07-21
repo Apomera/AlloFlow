@@ -11949,7 +11949,16 @@
       "when_does_swapping_rows_cols_change_an": "Când schimbă ceva inversarea rândurilor/coloanelor?",
       "i_understand_explain_in_own_words": "Am înțeles — explică în cuvintele mele",
       "explain_commutative_property_area_leng": "Explică proprietatea comutativă + arie = lungime × lățime.",
-      "design_note_discrete_4_state_classific": "Notă de design: clasificare discretă cu 4 stări; fără scor al testului de arie; fără dezvăluire — prin design."
+      "design_note_discrete_4_state_classific": "Notă de design: clasificare discretă cu 4 stări; fără scor al testului de arie; fără dezvăluire — prin design.",
+      "multiplication_workshop": "Atelier de înmulțire",
+      "focus_intro": "Construiește mai întâi dreptunghiul, apoi leagă imaginea de tabla înmulțirii, de valoarea de poziție și de problemele din viața reală.",
+      "mode": "Mod",
+      "cells": "Celule",
+      "streak": "Serie",
+      "focus_visual_label": "Dreptunghiul modelului de arie care arată rândurile înmulțite cu coloanele ca total de celule",
+      "hide_pattern_lab": "Ascunde laboratorul de tipare",
+      "show_pattern_lab": "Arată laboratorul de tipare",
+      "distributive_property_canvas": "Diagramă animată a proprietății distributive care arată 3 ori 4 plus 3 ori 2"
     },
     "geometryworld": {
       "guide": "Ghid",
@@ -13486,7 +13495,10 @@
       "scale_visual_algebra_balance": "Balanță — echilibru algebric vizual",
       "drag_weights_onto_a_balance_to_model_x": "Trage greutăți pe o balanță pentru a modela x + 3 = 7 vizual. Cea mai utilă intuiție pentru algebra timpurie — ecuațiile sunt balanțe, nu spații de completat. Orice faci unei părți, fă și celeilalte.",
       "tutor_ask_ai_for_help": "Tutore — cere ajutor IA",
-      "ask_the_tutor_about_any_algebra_concep": "Întreabă tutorele despre orice concept de algebră sau pas blocat. Tutorele cunoaște nivelul tău de clasă, încercările recente și problema activă. Cel mai bun pentru întrebări \"de ce nu a funcționat abordarea mea?\""
+      "ask_the_tutor_about_any_algebra_concep": "Întreabă tutorele despre orice concept de algebră sau pas blocat. Tutorele cunoaște nivelul tău de clasă, încercările recente și problema activă. Cel mai bun pentru întrebări \"de ce nu a funcționat abordarea mea?\"",
+      "verified_check": "Verificat de motorul matematic",
+      "verify_warning": "Acest răspuns nu se verifică",
+      "checked_by_engine": "Controlat de motorul matematic"
     },
     "datastudio": {
       "apples": "Mere",

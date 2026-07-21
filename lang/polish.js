@@ -11931,7 +11931,16 @@
       "when_does_swapping_rows_cols_change_an": "Kiedy zamiana wierszy/kolumn coś zmienia?",
       "i_understand_explain_in_own_words": "Rozumiem — wyjaśnij własnymi słowami",
       "explain_commutative_property_area_leng": "Wyjaśnij przemienność + pole = długość × szerokość.",
-      "design_note_discrete_4_state_classific": "Uwaga projektowa: dyskretna klasyfikacja 4-stanowa; bez wyniku testu pola; bez ujawniania — celowo."
+      "design_note_discrete_4_state_classific": "Uwaga projektowa: dyskretna klasyfikacja 4-stanowa; bez wyniku testu pola; bez ujawniania — celowo.",
+      "multiplication_workshop": "Pracownia mnożenia",
+      "focus_intro": "Najpierw zbuduj prostokąt, a potem powiąż obrazek z tabliczką mnożenia, wartością pozycyjną i zadaniami z życia codziennego.",
+      "mode": "Tryb",
+      "cells": "Komórki",
+      "streak": "Seria",
+      "focus_visual_label": "Prostokąt modelu pola pokazujący wiersze razy kolumny jako łączną liczbę komórek",
+      "hide_pattern_lab": "Ukryj laboratorium wzorów",
+      "show_pattern_lab": "Pokaż laboratorium wzorów",
+      "distributive_property_canvas": "Animowany diagram rozdzielności mnożenia pokazujący 3 razy 4 plus 3 razy 2"
     },
     "geometryworld": {
       "guide": "Przewodnik",
@@ -13468,7 +13477,10 @@
       "scale_visual_algebra_balance": "Waga — wizualna równowaga algebraiczna",
       "drag_weights_onto_a_balance_to_model_x": "Przeciągnij odważniki na wagę, aby wizualnie zamodelować x + 3 = 7. Najbardziej przydatna intuicja dla wczesnej algebry — równania to wagi, a nie puste pola do wypełnienia. Cokolwiek robisz jednej stronie, zrób drugiej.",
       "tutor_ask_ai_for_help": "Korepetytor — poproś AI o pomoc",
-      "ask_the_tutor_about_any_algebra_concep": "Zapytaj korepetytora o dowolne pojęcie algebraiczne lub utknięty krok. Korepetytor zna twój poziom klasy, ostatnie próby i aktywne zadanie. Najlepszy do pytań \"dlaczego moje podejście nie zadziałało?\""
+      "ask_the_tutor_about_any_algebra_concep": "Zapytaj korepetytora o dowolne pojęcie algebraiczne lub utknięty krok. Korepetytor zna twój poziom klasy, ostatnie próby i aktywne zadanie. Najlepszy do pytań \"dlaczego moje podejście nie zadziałało?\"",
+      "verified_check": "Zweryfikowane przez silnik matematyczny",
+      "verify_warning": "Ta odpowiedź się nie zgadza",
+      "checked_by_engine": "Sprawdzone przez silnik matematyczny"
     },
     "datastudio": {
       "apples": "Jabłka",

@@ -11910,7 +11910,16 @@
       "when_does_swapping_rows_cols_change_an": "행/열을 바꾸면 언제 무언가 바뀌나요?",
       "i_understand_explain_in_own_words": "이해했어요 — 내 말로 설명하기",
       "explain_commutative_property_area_leng": "교환법칙 + 넓이 = 가로 × 세로를 설명하세요.",
-      "design_note_discrete_4_state_classific": "설계 노트: 이산적인 4상태 분류; 넓이 시험 점수 없음; 공개 없음 — 의도적으로."
+      "design_note_discrete_4_state_classific": "설계 노트: 이산적인 4상태 분류; 넓이 시험 점수 없음; 공개 없음 — 의도적으로.",
+      "multiplication_workshop": "곱셈 워크숍",
+      "focus_intro": "먼저 직사각형을 만들고, 그 그림을 구구단, 자릿값, 실생활 문장제와 연결해 보세요.",
+      "mode": "모드",
+      "cells": "칸",
+      "streak": "연속 정답",
+      "focus_visual_label": "행 곱하기 열을 전체 칸 수로 보여 주는 넓이 모델 직사각형",
+      "hide_pattern_lab": "패턴 실험실 숨기기",
+      "show_pattern_lab": "패턴 실험실 보기",
+      "distributive_property_canvas": "3 곱하기 4 더하기 3 곱하기 2를 보여 주는 분배법칙 애니메이션 도표"
     },
     "geometryworld": {
       "guide": "가이드",
@@ -13447,7 +13456,10 @@
       "scale_visual_algebra_balance": "천칭 — 시각적 대수 균형",
       "drag_weights_onto_a_balance_to_model_x": "추를 천칭에 끌어다 놓아 x + 3 = 7을 시각적으로 모델링하세요. 초기 대수에 가장 유용한 직관 — 방정식은 천칭이지 채우는 빈칸이 아닙니다. 한쪽에 한 것을 다른 쪽에도 하세요.",
       "tutor_ask_ai_for_help": "튜터 — AI에게 도움 요청",
-      "ask_the_tutor_about_any_algebra_concep": "튜터에게 어떤 대수 개념이나 막힌 단계에 대해 물어보세요. 튜터는 당신의 학년대, 최근 시도, 활성 문제를 알고 있습니다. \"왜 내 접근 방식이 작동하지 않았을까?\" 질문에 가장 좋습니다."
+      "ask_the_tutor_about_any_algebra_concep": "튜터에게 어떤 대수 개념이나 막힌 단계에 대해 물어보세요. 튜터는 당신의 학년대, 최근 시도, 활성 문제를 알고 있습니다. \"왜 내 접근 방식이 작동하지 않았을까?\" 질문에 가장 좋습니다.",
+      "verified_check": "수학 엔진으로 검증됨",
+      "verify_warning": "이 답은 맞지 않습니다",
+      "checked_by_engine": "수학 엔진으로 확인됨"
     },
     "datastudio": {
       "apples": "사과",

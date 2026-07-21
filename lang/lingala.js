@@ -11822,7 +11822,16 @@
       "when_does_swapping_rows_cols_change_an": "Ntango nini bobongoli ya milɔ́ngɔ́/makonzí ebongoli eloko?",
       "i_understand_explain_in_own_words": "Nasosoli — limbolá na maloba na ngai",
       "explain_commutative_property_area_leng": "Limbolá ezaleli ya bobongoli + etando = molai × monene.",
-      "design_note_discrete_4_state_classific": "Note ya bokeli: bokaboli ya kokesana ya bizaleli 4; manota ya komeka etando tɛ́; komonisa tɛ́ — na nko."
+      "design_note_discrete_4_state_classific": "Note ya bokeli: bokaboli ya kokesana ya bizaleli 4; manota ya komeka etando tɛ́; komonisa tɛ́ — na nko.",
+      "multiplication_workshop": "Esika ya kosala multiplication",
+      "focus_intro": "Tonga rectangle liboso, na sima kangisa elilingi na tabelo ya multiplication, place value, mpe word problems ya bomoi ya solo.",
+      "mode": "Lolenge",
+      "cells": "Cells",
+      "streak": "Molongo ya malamu",
+      "focus_visual_label": "Rectangle ya area model oyo ezali kolakisa rows na columns lokola motango mobimba ya cells",
+      "hide_pattern_lab": "Bomba pattern lab",
+      "show_pattern_lab": "Lakisa pattern lab",
+      "distributive_property_canvas": "Elilingi ya kotambola ya distributive property oyo ezali kolakisa 3 na 4 kobakisa 3 na 2"
     },
     "geometryworld": {
       "guide": "Litambwisi",
@@ -13359,7 +13368,10 @@
       "scale_visual_algebra_balance": "Emekeli kilo — bokokani ya algèbre na miso",
       "drag_weights_onto_a_balance_to_model_x": "Benda ba-kilo likolo ya emekeli kilo mpo na kosala modèle x + 3 = 7 na miso. Bososoli oyo eleki na ntina mpo na algèbre ya ebandeli — ba-équation ezali ba-emekeli kilo, ezali bisika ya mpamba ya kotondisa te. Oyo osalaka na ngámbo moko, sala na ngámbo mosusu.",
       "tutor_ask_ai_for_help": "Molakisi — sɛngá AI lisalisi",
-      "ask_the_tutor_about_any_algebra_concep": "Tuna molakisi na ntina ya concept ya algèbre nyonso to litambe oyo ekangami. Molakisi ayebi niveau ya kelasi na yo, komeka ya kala mike, mpe mokakatano oyo ezali kosala. Eleki malamu mpo na mituna \"mpo na nini lolenge na ngai esalaki te?\""
+      "ask_the_tutor_about_any_algebra_concep": "Tuna molakisi na ntina ya concept ya algèbre nyonso to litambe oyo ekangami. Molakisi ayebi niveau ya kelasi na yo, komeka ya kala mike, mpe mokakatano oyo ezali kosala. Eleki malamu mpo na mituna \"mpo na nini lolenge na ngai esalaki te?\"",
+      "verified_check": "Endimami na math engine",
+      "verify_warning": "Eyano oyo ekokani te",
+      "checked_by_engine": "Etalami na math engine"
     },
     "datastudio": {
       "apples": "Pɔmɛ",

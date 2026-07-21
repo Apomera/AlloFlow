@@ -11918,7 +11918,16 @@
       "when_does_swapping_rows_cols_change_an": "Quando permutatio ordinum/columnarum aliquid mutat?",
       "i_understand_explain_in_own_words": "Intellego — meis verbis explica",
       "explain_commutative_property_area_leng": "Explica proprietatem commutativam + area = longitudo × latitudo.",
-      "design_note_discrete_4_state_classific": "Nota consilii: classificatio discreta 4 statuum; nullum punctum probationis areae; nulla revelatio — consulto."
+      "design_note_discrete_4_state_classific": "Nota consilii: classificatio discreta 4 statuum; nullum punctum probationis areae; nulla revelatio — consulto.",
+      "multiplication_workshop": "Officina multiplicationis",
+      "focus_intro": "Primum rectangulum aedifica, deinde imaginem cum factis, valore loci, et quaestionibus verbalibus mundi veri coniunge.",
+      "mode": "Modus",
+      "cells": "Cellae",
+      "streak": "Series",
+      "focus_visual_label": "Rectangulum exemplaris areae ostendens ordines per columnas ut cellas totales",
+      "hide_pattern_lab": "Laboratorium formarum cela",
+      "show_pattern_lab": "Laboratorium formarum ostende",
+      "distributive_property_canvas": "Diagramma animatum proprietatis distributivae ostendens 3 per 4 plus 3 per 2"
     },
     "geometryworld": {
       "guide": "Dux",
@@ -13455,7 +13464,10 @@
       "scale_visual_algebra_balance": "Libra — aequilibrium algebraicum visuale",
       "drag_weights_onto_a_balance_to_model_x": "Trahe pondera in libram ut x + 3 = 7 visualiter exempla. Utilissima intuitio algebrae primae — aequationes sunt librae, non spatia implenda. Quodcumque uni parti facis, alteri fac.",
       "tutor_ask_ai_for_help": "Tutor — auxilium ab AI pete",
-      "ask_the_tutor_about_any_algebra_concep": "Roga tutorem de quovis algebrae conceptu vel gradu haerente. Tutor gradum tuum scholarem, conatus recentes, et problema activum novit. Optimus quaestionibus \"cur accessus meus non operatus est?\""
+      "ask_the_tutor_about_any_algebra_concep": "Roga tutorem de quovis algebrae conceptu vel gradu haerente. Tutor gradum tuum scholarem, conatus recentes, et problema activum novit. Optimus quaestionibus \"cur accessus meus non operatus est?\"",
+      "verified_check": "A machina mathematica comprobatum",
+      "verify_warning": "Hoc responsum non convenit",
+      "checked_by_engine": "A machina mathematica inspectum"
     },
     "datastudio": {
       "apples": "Mala",

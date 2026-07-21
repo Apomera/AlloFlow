@@ -11910,7 +11910,16 @@
       "when_does_swapping_rows_cols_change_an": "መስርዓት/ዓምድታት ምልውዋጥ መዓስ ገለ ይቕይር?",
       "i_understand_explain_in_own_words": "ተረዲኡኒ — ብናተይ ቃላት ግለጽ",
       "explain_commutative_property_area_leng": "ናይ ምልውዋጥ ባህሪ + ስፍሓት = ንውሓት × ስፍሓት ግለጽ።",
-      "design_note_discrete_4_state_classific": "ናይ ንድፊ መዘኻኸሪ፦ ፍሉይ ናይ 4-ኩነታት ምድብ፤ ናይ ስፍሓት ፈተና ነጥቢ የለን፤ ምግላጽ የለን — ብተገዳስነት።"
+      "design_note_discrete_4_state_classific": "ናይ ንድፊ መዘኻኸሪ፦ ፍሉይ ናይ 4-ኩነታት ምድብ፤ ናይ ስፍሓት ፈተና ነጥቢ የለን፤ ምግላጽ የለን — ብተገዳስነት።",
+      "multiplication_workshop": "ናይ ምብዛሕ ዎርክሾፕ",
+      "focus_intro": "ቅድሚኡ ኣርባዕተ ኩርናዕ ስራሕ፣ ደሓር ነቲ ስእሊ ምስ ናይ ምብዛሕ ሰንጠረዥ፣ ናይ ቦታ ዋጋን ናይ ናይብሓቂ ህይወት ቃላዊ ሕቶታትን ኣተሓሕዞ።",
+      "mode": "ኩነታት",
+      "cells": "ሳጹናት",
+      "streak": "ተኸታታሊ ቅኑዕ",
+      "focus_visual_label": "ንመስመራት ብዓምድታት ኣብዚሑ ከም ጠቕላላ ሳጹናት ዘርኢ ናይ ስፍሓት ሞዴል ኣርባዕተ ኩርናዕ",
+      "hide_pattern_lab": "ናይ ቅዲ ላብ ሕባእ",
+      "show_pattern_lab": "ናይ ቅዲ ላብ ኣርኢ",
+      "distributive_property_canvas": "3 ብ4 ተባዚሑ ምስ 3 ብ2 ተባዚሑ ዝድመር ዘርኢ ናይ ምክፍፋል ባህሪ ተንቀሳቓሲ ስእሊ"
     },
     "geometryworld": {
       "guide": "መምርሒ",
@@ -13447,7 +13456,10 @@
       "scale_visual_algebra_balance": "ሚዛን — ምስላዊ ኣልጀብራ ሚዛን",
       "drag_weights_onto_a_balance_to_model_x": "x + 3 = 7 ብምስሊ ንምቕራጽ ሚዛናት ናብ ሚዛን ጎተት። ንመጀመርታ ኣልጀብራ ኣዝዩ ጠቓሚ ግንዛበ — ማዕረታት ሚዛናት እዮም፣ ዝመልኡ ባዶ ቦታታት ኣይኮኑን። ኣብ ሓደ ሸነኽ እትገብሮ፣ ኣብቲ ካልእ ግበሮ።",
       "tutor_ask_ai_for_help": "መምህር — ካብ AI ሓገዝ ሕተት",
-      "ask_the_tutor_about_any_algebra_concep": "ንመምህር ብዛዕባ ዝኾነ ናይ ኣልጀብራ ሓሳብ ወይ እተዓናቐፈ ደረጃ ሕተት። መምህር ናይ ክፍሊ ደረጃኻ፣ ናይ ቀረባ እዋን ፈተነታት፣ ከምኡውን ንጡፍ ጸገም ይፈልጥ። ን\"ኣገባበይ ስለምንታይ ኣይሰርሐን?\" ሕቶታት ዝበለጸ።"
+      "ask_the_tutor_about_any_algebra_concep": "ንመምህር ብዛዕባ ዝኾነ ናይ ኣልጀብራ ሓሳብ ወይ እተዓናቐፈ ደረጃ ሕተት። መምህር ናይ ክፍሊ ደረጃኻ፣ ናይ ቀረባ እዋን ፈተነታት፣ ከምኡውን ንጡፍ ጸገም ይፈልጥ። ን\"ኣገባበይ ስለምንታይ ኣይሰርሐን?\" ሕቶታት ዝበለጸ።",
+      "verified_check": "ብሒሳብ ሞተር ተረጋጊጹ",
+      "verify_warning": "እዚ መልሲ ኣይሰማምዕን",
+      "checked_by_engine": "ብሒሳብ ሞተር ተፈቲሹ"
     },
     "datastudio": {
       "apples": "ቱፋሕ",

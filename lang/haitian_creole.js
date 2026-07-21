@@ -13372,7 +13372,16 @@
       "when_does_swapping_rows_cols_change_an": "Kilè echanje ranje/kolòn chanje yon bagay?",
       "i_understand_explain_in_own_words": "Mwen konprann — eksplike nan pwòp mo mwen",
       "explain_commutative_property_area_leng": "Eksplike pwopriyete komitatif + sifas = longè × lajè.",
-      "design_note_discrete_4_state_classific": "Nòt konsepsyon: klasifikasyon diskrè ak 4 eta; pa gen nòt tès sifas; pa gen revelasyon — fè espre."
+      "design_note_discrete_4_state_classific": "Nòt konsepsyon: klasifikasyon diskrè ak 4 eta; pa gen nòt tès sifas; pa gen revelasyon — fè espre.",
+      "multiplication_workshop": "Atelye miltiplikasyon",
+      "focus_intro": "Konstwi rektang lan an premye, apre sa konekte imaj la ak tab miltiplikasyon, valè pozisyon, ak pwoblèm mo nan lavi reyèl.",
+      "mode": "Mòd",
+      "cells": "Selil",
+      "streak": "Seri",
+      "focus_visual_label": "Rektang modèl sifas ki montre ranje fwa kolòn kòm total selil",
+      "hide_pattern_lab": "Kache laboratwa modèl la",
+      "show_pattern_lab": "Montre laboratwa modèl la",
+      "distributive_property_canvas": "Dyagram anime pwopriyete distribitiv ki montre 3 fwa 4 plis 3 fwa 2"
     },
     "geometryworld": {
       "guide": "Gid",
@@ -14909,7 +14918,10 @@
       "scale_visual_algebra_balance": "Balans — ekilib aljebrik vizyèl",
       "drag_weights_onto_a_balance_to_model_x": "Trennen pwa sou yon balans pou modele x + 3 = 7 vizyèlman. Entwisyon ki pi itil pou aljèb bonè a — ekwasyon yo se balans, pa espas pou ranpli. Sa ou fè yon bò, fè l lòt bò a.",
       "tutor_ask_ai_for_help": "Titè — mande AI pou èd",
-      "ask_the_tutor_about_any_algebra_concep": "Mande titè a sou nenpòt konsèp aljèb oswa etap ki bloke. Titè a konnen nivo klas ou, tantativ resan yo, ak pwoblèm aktif la. Pi bon pou kesyon \"poukisa apwòch mwen pa t mache?\""
+      "ask_the_tutor_about_any_algebra_concep": "Mande titè a sou nenpòt konsèp aljèb oswa etap ki bloke. Titè a konnen nivo klas ou, tantativ resan yo, ak pwoblèm aktif la. Pi bon pou kesyon \"poukisa apwòch mwen pa t mache?\"",
+      "verified_check": "Verifye pa motè matematik la",
+      "verify_warning": "Repons sa a pa kadre",
+      "checked_by_engine": "Tcheke pa motè matematik la"
     },
     "datastudio": {
       "apples": "Pòm",

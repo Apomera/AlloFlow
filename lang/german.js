@@ -11915,7 +11915,16 @@
       "when_does_swapping_rows_cols_change_an": "Wann ändert das Vertauschen von Zeilen/Spalten etwas?",
       "i_understand_explain_in_own_words": "Ich verstehe — in eigenen Worten erklären",
       "explain_commutative_property_area_leng": "Erkläre das Kommutativgesetz + Fläche = Länge × Breite.",
-      "design_note_discrete_4_state_classific": "Designhinweis: diskrete Klassifizierung mit 4 Zuständen; keine Flächentest-Punktzahl; keine Auflösung — beabsichtigt."
+      "design_note_discrete_4_state_classific": "Designhinweis: diskrete Klassifizierung mit 4 Zuständen; keine Flächentest-Punktzahl; keine Auflösung — beabsichtigt.",
+      "multiplication_workshop": "Multiplikations-Werkstatt",
+      "focus_intro": "Baue zuerst das Rechteck und verbinde dann das Bild mit dem Einmaleins, dem Stellenwert und Sachaufgaben aus dem Alltag.",
+      "mode": "Modus",
+      "cells": "Zellen",
+      "streak": "Serie",
+      "focus_visual_label": "Rechteck des Flächenmodells, das Zeilen mal Spalten als Gesamtzahl der Zellen zeigt",
+      "hide_pattern_lab": "Musterlabor ausblenden",
+      "show_pattern_lab": "Musterlabor einblenden",
+      "distributive_property_canvas": "Animiertes Diagramm des Distributivgesetzes, das 3 mal 4 plus 3 mal 2 zeigt"
     },
     "geometryworld": {
       "guide": "Anleitung",
@@ -13452,7 +13461,10 @@
       "scale_visual_algebra_balance": "Waage — visuelles Algebra-Gleichgewicht",
       "drag_weights_onto_a_balance_to_model_x": "Ziehe Gewichte auf eine Waage, um x + 3 = 7 visuell darzustellen. Die nützlichste Intuition für die frühe Algebra — Gleichungen sind Waagen, keine Lücken zum Ausfüllen. Was du einer Seite tust, tu der anderen.",
       "tutor_ask_ai_for_help": "Tutor — bitte die KI um Hilfe",
-      "ask_the_tutor_about_any_algebra_concep": "Frag den Tutor zu jedem Algebra-Konzept oder festgefahrenen Schritt. Der Tutor kennt deine Klassenstufe, jüngste Versuche und die aktive Aufgabe. Ideal für \"Warum hat mein Ansatz nicht funktioniert?\"-Fragen."
+      "ask_the_tutor_about_any_algebra_concep": "Frag den Tutor zu jedem Algebra-Konzept oder festgefahrenen Schritt. Der Tutor kennt deine Klassenstufe, jüngste Versuche und die aktive Aufgabe. Ideal für \"Warum hat mein Ansatz nicht funktioniert?\"-Fragen.",
+      "verified_check": "Von der Mathe-Engine verifiziert",
+      "verify_warning": "Diese Antwort geht nicht auf",
+      "checked_by_engine": "Von der Mathe-Engine geprüft"
     },
     "datastudio": {
       "apples": "Äpfel",

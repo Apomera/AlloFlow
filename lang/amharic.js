@@ -11910,7 +11910,16 @@
       "when_does_swapping_rows_cols_change_an": "ረድፎችን/አምዶችን መለዋወጥ መቼ ነገር ይቀይራል?",
       "i_understand_explain_in_own_words": "ገባኝ — በራሴ ቃላት አብራራ",
       "explain_commutative_property_area_leng": "የመለዋወጥ ባህሪ + ስፋት = ርዝመት × ስፋት አብራራ።",
-      "design_note_discrete_4_state_classific": "የንድፍ ማስታወሻ፦ የተለየ የ4-ሁኔታ ምድብ፤ የስፋት ፈተና ነጥብ የለም፤ ይፋ ማድረግ የለም — ሆን ተብሎ።"
+      "design_note_discrete_4_state_classific": "የንድፍ ማስታወሻ፦ የተለየ የ4-ሁኔታ ምድብ፤ የስፋት ፈተና ነጥብ የለም፤ ይፋ ማድረግ የለም — ሆን ተብሎ።",
+      "multiplication_workshop": "የማባዛት አውደ ጥናት",
+      "focus_intro": "መጀመሪያ አራት ማዕዘኑን ገንባ፣ ከዚያ ሥዕሉን ከማባዣ ሠንጠረዥ፣ ከቦታ ዋጋ እና ከእውነተኛ ሕይወት የቃል ጥያቄዎች ጋር አገናኝ።",
+      "mode": "ሁነታ",
+      "cells": "ሳጥኖች",
+      "streak": "ተከታታይ ትክክል",
+      "focus_visual_label": "ረድፎችን በአምዶች አባዝቶ እንደ ጠቅላላ ሳጥኖች የሚያሳይ የስፋት ሞዴል አራት ማዕዘን",
+      "hide_pattern_lab": "የስርዓተ ጥለት ላብ ደብቅ",
+      "show_pattern_lab": "የስርዓተ ጥለት ላብ አሳይ",
+      "distributive_property_canvas": "3 ሲባዛ 4 ሲደመር 3 ሲባዛ 2 የሚያሳይ የማከፋፈል ባህሪ ተንቀሳቃሽ ሥዕል"
     },
     "geometryworld": {
       "guide": "መመሪያ",
@@ -13447,7 +13456,10 @@
       "scale_visual_algebra_balance": "ሚዛን — ምስላዊ አልጀብራ ሚዛን",
       "drag_weights_onto_a_balance_to_model_x": "x + 3 = 7 ን በምስል ለመቅረጽ ክብደቶችን ወደ ሚዛን ይጎትቱ። ለመጀመሪያ አልጀብራ በጣም ጠቃሚ ግንዛቤ — እኩልታዎች ሚዛኖች ናቸው፣ የሚሞሉ ባዶ ቦታዎች አይደሉም። በአንድ ጎን የሚያደርጉትን፣ በሌላው ያድርጉ።",
       "tutor_ask_ai_for_help": "አስተማሪ — ከAI እርዳታ ይጠይቁ",
-      "ask_the_tutor_about_any_algebra_concep": "አስተማሪውን ስለ ማንኛውም የአልጀብራ ጽንሰ-ሐሳብ ወይም ስለተጣበቀ ደረጃ ይጠይቁ። አስተማሪው የክፍል ደረጃዎን፣ የቅርብ ጊዜ ሙከራዎችን እና ንቁ ችግሩን ያውቃል። \"የእኔ አካሄድ ለምን አልሰራም?\" ለሚሉ ጥያቄዎች ምርጥ።"
+      "ask_the_tutor_about_any_algebra_concep": "አስተማሪውን ስለ ማንኛውም የአልጀብራ ጽንሰ-ሐሳብ ወይም ስለተጣበቀ ደረጃ ይጠይቁ። አስተማሪው የክፍል ደረጃዎን፣ የቅርብ ጊዜ ሙከራዎችን እና ንቁ ችግሩን ያውቃል። \"የእኔ አካሄድ ለምን አልሰራም?\" ለሚሉ ጥያቄዎች ምርጥ።",
+      "verified_check": "በሒሳብ ሞተር ተረጋግጧል",
+      "verify_warning": "ይህ መልስ አይገጥምም",
+      "checked_by_engine": "በሒሳብ ሞተር ተፈትሿል"
     },
     "datastudio": {
       "apples": "ፖም",

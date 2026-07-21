@@ -11918,7 +11918,16 @@
       "when_does_swapping_rows_cols_change_an": "Yaushe musanya layuka/shafuka ke canza wani abu?",
       "i_understand_explain_in_own_words": "Na fahimta — bayyana da kalmomina",
       "explain_commutative_property_area_leng": "Bayyana halayyar musanya + yanki = tsayi × faɗi.",
-      "design_note_discrete_4_state_classific": "Bayanin ƙira: rarrabuwa daban ta yanayi 4; babu makin gwajin yanki; babu bayyanawa — da gangan."
+      "design_note_discrete_4_state_classific": "Bayanin ƙira: rarrabuwa daban ta yanayi 4; babu makin gwajin yanki; babu bayyanawa — da gangan.",
+      "multiplication_workshop": "Bitar ninkawa",
+      "focus_intro": "Da farko gina rectangle, sannan ka haɗa hoton da teburin ninkawa, place value, da word problems na rayuwa ta gaske.",
+      "mode": "Yanayi",
+      "cells": "Cells",
+      "streak": "Jerin daidai",
+      "focus_visual_label": "Rectangle na area model da ke nuna rows ninka columns a matsayin jimillar cells",
+      "hide_pattern_lab": "Ɓoye pattern lab",
+      "show_pattern_lab": "Nuna pattern lab",
+      "distributive_property_canvas": "Zanen motsi na distributive property da ke nuna 3 ninka 4 tare da 3 ninka 2"
     },
     "geometryworld": {
       "guide": "Jagora",
@@ -13455,7 +13464,10 @@
       "scale_visual_algebra_balance": "Sikeli — daidaiton algebra na gani",
       "drag_weights_onto_a_balance_to_model_x": "Ja nauyi a kan sikeli don ƙirƙira x + 3 = 7 a gani. Mafi amfanin fahimta ga algebra na farko — lissafi sikeli ne, ba wuraren cikawa ba. Abin da ka yi a gefe ɗaya, yi a ɗayan.",
       "tutor_ask_ai_for_help": "Malami — nemi taimako daga AI",
-      "ask_the_tutor_about_any_algebra_concep": "Tambayi malami game da kowane ra'ayin algebra ko matakin da ya makale. Malami ya san matakin ajinka, ƙoƙarinka na baya-bayan nan, da matsala mai aiki. Mafi kyau ga tambayoyin \"me yasa hanyata ba ta yi aiki ba?\""
+      "ask_the_tutor_about_any_algebra_concep": "Tambayi malami game da kowane ra'ayin algebra ko matakin da ya makale. Malami ya san matakin ajinka, ƙoƙarinka na baya-bayan nan, da matsala mai aiki. Mafi kyau ga tambayoyin \"me yasa hanyata ba ta yi aiki ba?\"",
+      "verified_check": "An tabbatar da shi ta math engine",
+      "verify_warning": "Wannan amsar ba ta dace ba",
+      "checked_by_engine": "An duba shi ta math engine"
     },
     "datastudio": {
       "apples": "Tuffa",

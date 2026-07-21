@@ -11918,7 +11918,16 @@
       "when_does_swapping_rows_cols_change_an": "Ìgbà wo ni ìpààrọ̀ ìlà/ọwọ̀n ń yí ohunkóhun padà?",
       "i_understand_explain_in_own_words": "Mo ní òye — ṣàlàyé pẹ̀lú ọ̀rọ̀ tèmi",
       "explain_commutative_property_area_leng": "Ṣàlàyé ànímọ́ ìpààrọ̀ + àgbègbè = gígùn × ìbú.",
-      "design_note_discrete_4_state_classific": "Àkíyèsí àpẹrẹ: ìpín ọ̀tọ̀ ti ipò 4; kò sí àmì àdánwò àgbègbè; kò sí ìṣípayá — mọ̀ọ́mọ̀."
+      "design_note_discrete_4_state_classific": "Àkíyèsí àpẹrẹ: ìpín ọ̀tọ̀ ti ipò 4; kò sí àmì àdánwò àgbègbè; kò sí ìṣípayá — mọ̀ọ́mọ̀.",
+      "multiplication_workshop": "Idánilẹ́kọ̀ọ́ ìsọdipúpọ̀",
+      "focus_intro": "Kọ́ rectangle náà kọ́kọ́, lẹ́yìn náà so àwòrán náà pọ̀ mọ́ tábìlì ìsọdipúpọ̀, place value, àti word problems ayé gidi.",
+      "mode": "Ipò",
+      "cells": "Cells",
+      "streak": "Ọ̀wọ́ tọ̀nà",
+      "focus_visual_label": "Rectangle ti area model tí ó fi rows ìsọdipúpọ̀ columns hàn gẹ́gẹ́ bí àpapọ̀ cells",
+      "hide_pattern_lab": "Fi pattern lab pamọ́",
+      "show_pattern_lab": "Fi pattern lab hàn",
+      "distributive_property_canvas": "Àwòrán tí ń rìn ti distributive property tí ó fi 3 ìsọdipúpọ̀ 4 pẹ̀lú 3 ìsọdipúpọ̀ 2 hàn"
     },
     "geometryworld": {
       "guide": "Itọsọna",
@@ -13455,7 +13464,10 @@
       "scale_visual_algebra_balance": "Òṣùwọ̀n — ìwọ̀ntúnwọ̀nsì algebra olójú",
       "drag_weights_onto_a_balance_to_model_x": "Fa àwọn ìwúwo sí orí òṣùwọ̀n láti ṣàpẹẹrẹ x + 3 = 7 lójú. Ìmọ̀-ọkàn tó wúlò jù fún algebra ìbẹ̀rẹ̀ — àwọn ìdọ́gba jẹ́ òṣùwọ̀n, kì í ṣe àyè òfo láti kún. Ohunkóhun tí o bá ṣe sí ẹ̀gbẹ́ kan, ṣe sí ẹ̀gbẹ́ kejì.",
       "tutor_ask_ai_for_help": "Olùkọ́ — béèrè ìrànlọ́wọ́ lọ́wọ́ AI",
-      "ask_the_tutor_about_any_algebra_concep": "Béèrè lọ́wọ́ olùkọ́ nípa èrò algebra èyíkéyìí tàbí ìgbésẹ̀ tó dí. Olùkọ́ mọ ipele kíláàsì rẹ, àwọn ìgbìyànjú àìpẹ́, àti ìṣòro tó ń ṣiṣẹ́. Ó dára jù fún àwọn ìbéèrè \"kí ló dé tí ọ̀nà mi kò fi ṣiṣẹ́?\""
+      "ask_the_tutor_about_any_algebra_concep": "Béèrè lọ́wọ́ olùkọ́ nípa èrò algebra èyíkéyìí tàbí ìgbésẹ̀ tó dí. Olùkọ́ mọ ipele kíláàsì rẹ, àwọn ìgbìyànjú àìpẹ́, àti ìṣòro tó ń ṣiṣẹ́. Ó dára jù fún àwọn ìbéèrè \"kí ló dé tí ọ̀nà mi kò fi ṣiṣẹ́?\"",
+      "verified_check": "Math engine ti fọwọ́sí i",
+      "verify_warning": "Ìdáhùn yìí kò bára mu",
+      "checked_by_engine": "Math engine ti yẹ̀ ẹ́ wò"
     },
     "datastudio": {
       "apples": "Áfárì",

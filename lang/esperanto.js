@@ -12127,7 +12127,16 @@
       "when_does_swapping_rows_cols_change_an": "Kiam interŝanĝo de vicoj/kolumnoj ŝanĝas ion?",
       "i_understand_explain_in_own_words": "Mi komprenas — klarigu per propraj vortoj",
       "explain_commutative_property_area_leng": "Klarigu komutan econ + areo = longo × larĝo.",
-      "design_note_discrete_4_state_classific": "Dezajna noto: diskreta 4-stata klasifiko; neniu area-testa poentaro; neniu malkaŝo — laŭplane."
+      "design_note_discrete_4_state_classific": "Dezajna noto: diskreta 4-stata klasifiko; neniu area-testa poentaro; neniu malkaŝo — laŭplane.",
+      "multiplication_workshop": "Multiplika laborejo",
+      "focus_intro": "Konstruu unue la rektangulon, poste ligu la bildon al la multiplika tabelo, al la lokvaloro kaj al realmondaj vortproblemoj.",
+      "mode": "Reĝimo",
+      "cells": "Ĉeloj",
+      "streak": "Serio",
+      "focus_visual_label": "Rektangulo de la area modelo montranta vicojn oble kolumnojn kiel totalajn ĉelojn",
+      "hide_pattern_lab": "Kaŝi la ŝablonan laboratorion",
+      "show_pattern_lab": "Montri la ŝablonan laboratorion",
+      "distributive_property_canvas": "Animacia diagramo de la distribua eco montranta 3 oble 4 plus 3 oble 2"
     },
     "geometryworld": {
       "guide": "Gvidilo",
@@ -13664,7 +13673,10 @@
       "scale_visual_algebra_balance": "Pesilo — vida algebra ekvilibro",
       "drag_weights_onto_a_balance_to_model_x": "Trenu pezojn sur pesilon por modeli x + 3 = 7 vide. La plej utila intuicio por frua algebro — ekvacioj estas pesiloj, ne plenigeblaj blankoj. Kion vi faras al unu flanko, faru al la alia.",
       "tutor_ask_ai_for_help": "Tutoro — petu helpon de la AI",
-      "ask_the_tutor_about_any_algebra_concep": "Demandu la tutoron pri iu ajn algebra koncepto aŭ blokita paŝo. La tutoro konas vian klasnivelon, lastatempajn provojn, kaj la aktivan problemon. Plej bona por demandoj \"kial mia aliro ne funkciis?\""
+      "ask_the_tutor_about_any_algebra_concep": "Demandu la tutoron pri iu ajn algebra koncepto aŭ blokita paŝo. La tutoro konas vian klasnivelon, lastatempajn provojn, kaj la aktivan problemon. Plej bona por demandoj \"kial mia aliro ne funkciis?\"",
+      "verified_check": "Kontrolita de la matematika motoro",
+      "verify_warning": "Ĉi tiu respondo ne kongruas",
+      "checked_by_engine": "Kontrolita de la matematika motoro"
     },
     "datastudio": {
       "apples": "Pomoj",

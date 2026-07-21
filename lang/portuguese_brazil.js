@@ -12181,7 +12181,16 @@
       "when_does_swapping_rows_cols_change_an": "Quando trocar linhas/colunas muda algo?",
       "i_understand_explain_in_own_words": "Eu entendi — explicar com minhas palavras",
       "explain_commutative_property_area_leng": "Explique a propriedade comutativa + área = comprimento × largura.",
-      "design_note_discrete_4_state_classific": "Nota de design: classificação discreta de 4 estados; sem pontuação do teste de área; sem revelação — por design."
+      "design_note_discrete_4_state_classific": "Nota de design: classificação discreta de 4 estados; sem pontuação do teste de área; sem revelação — por design.",
+      "multiplication_workshop": "Oficina de multiplicação",
+      "focus_intro": "Construa primeiro o retângulo e depois conecte a imagem às tabuadas, ao valor posicional e aos problemas do mundo real.",
+      "mode": "Modo",
+      "cells": "Células",
+      "streak": "Sequência",
+      "focus_visual_label": "Retângulo do modelo de área mostrando linhas vezes colunas como total de células",
+      "hide_pattern_lab": "Ocultar o laboratório de padrões",
+      "show_pattern_lab": "Mostrar o laboratório de padrões",
+      "distributive_property_canvas": "Diagrama animado da propriedade distributiva mostrando 3 vezes 4 mais 3 vezes 2"
     },
     "geometryworld": {
       "guide": "Guia",
@@ -13718,7 +13727,10 @@
       "scale_visual_algebra_balance": "Balança — equilíbrio algébrico visual",
       "drag_weights_onto_a_balance_to_model_x": "Arraste pesos para uma balança para modelar x + 3 = 7 visualmente. A intuição mais útil para a álgebra inicial — equações são balanças, não espaços para preencher. O que você faz de um lado, faça do outro.",
       "tutor_ask_ai_for_help": "Tutor — peça ajuda à IA",
-      "ask_the_tutor_about_any_algebra_concep": "Pergunte ao tutor sobre qualquer conceito de álgebra ou etapa travada. O tutor conhece sua faixa de série, tentativas recentes e o problema ativo. Melhor para perguntas \"por que minha abordagem não funcionou?\""
+      "ask_the_tutor_about_any_algebra_concep": "Pergunte ao tutor sobre qualquer conceito de álgebra ou etapa travada. O tutor conhece sua faixa de série, tentativas recentes e o problema ativo. Melhor para perguntas \"por que minha abordagem não funcionou?\"",
+      "verified_check": "Verificado pelo motor matemático",
+      "verify_warning": "Esta resposta não confere",
+      "checked_by_engine": "Conferido pelo motor matemático"
     },
     "datastudio": {
       "apples": "Maçãs",

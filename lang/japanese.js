@@ -14064,7 +14064,16 @@
       "when_does_swapping_rows_cols_change_an": "行と列を入れ替えると何かが変わるのはいつ？",
       "i_understand_explain_in_own_words": "わかった — 自分の言葉で説明する",
       "explain_commutative_property_area_leng": "交換法則 + 面積 = 縦 × 横 を説明する。",
-      "design_note_discrete_4_state_classific": "設計メモ：離散的な4状態の分類；面積テストの点数なし；答えの表示なし — 意図的に。"
+      "design_note_discrete_4_state_classific": "設計メモ：離散的な4状態の分類；面積テストの点数なし；答えの表示なし — 意図的に。",
+      "multiplication_workshop": "かけ算ワークショップ",
+      "focus_intro": "まず長方形を作り、その図を九九・位取り・実生活の文章題につなげましょう。",
+      "mode": "モード",
+      "cells": "マス",
+      "streak": "連続正解",
+      "focus_visual_label": "行×列をマスの総数として示す面積モデルの長方形",
+      "hide_pattern_lab": "パターンラボを隠す",
+      "show_pattern_lab": "パターンラボを表示",
+      "distributive_property_canvas": "3×4 + 3×2 を示す分配法則のアニメーション図"
     },
     "geometryworld": {
       "guide": "ガイド",
@@ -15601,7 +15610,10 @@
       "scale_visual_algebra_balance": "天秤 — 視覚的な代数の釣り合い",
       "drag_weights_onto_a_balance_to_model_x": "おもりを天秤にドラッグして x + 3 = 7 を視覚的にモデル化します。初期代数で最も役立つ直感 — 方程式は天秤であり、埋める空欄ではありません。片側にしたことは、もう片側にもします。",
       "tutor_ask_ai_for_help": "チューター — AI に助けを求める",
-      "ask_the_tutor_about_any_algebra_concep": "チューターに任意の代数概念や行き詰まったステップについて聞いてください。チューターはあなたの学年帯、最近の試み、現在の問題を把握しています。「なぜ私のやり方はうまくいかなかったのか？」という質問に最適。"
+      "ask_the_tutor_about_any_algebra_concep": "チューターに任意の代数概念や行き詰まったステップについて聞いてください。チューターはあなたの学年帯、最近の試み、現在の問題を把握しています。「なぜ私のやり方はうまくいかなかったのか？」という質問に最適。",
+      "verified_check": "数式エンジンで検証済み",
+      "verify_warning": "この答えは合いません",
+      "checked_by_engine": "数式エンジンで確認済み"
     },
     "datastudio": {
       "apples": "リンゴ",

@@ -13710,7 +13710,16 @@
       "when_does_swapping_rows_cols_change_an": "Quand permuter lignes/colonnes change-t-il quelque chose ?",
       "i_understand_explain_in_own_words": "Je comprends — expliquer avec mes propres mots",
       "explain_commutative_property_area_leng": "Explique la propriété commutative + aire = longueur × largeur.",
-      "design_note_discrete_4_state_classific": "Note de conception : classification discrète à 4 états ; pas de score de test d'aire ; pas de révélation — par conception."
+      "design_note_discrete_4_state_classific": "Note de conception : classification discrète à 4 états ; pas de score de test d'aire ; pas de révélation — par conception.",
+      "multiplication_workshop": "Atelier de multiplication",
+      "focus_intro": "Construisez d'abord le rectangle, puis reliez l'image aux tables, à la valeur de position et aux problèmes concrets.",
+      "mode": "Mode",
+      "cells": "Cases",
+      "streak": "Série",
+      "focus_visual_label": "Rectangle du modèle d'aire montrant les lignes multipliées par les colonnes comme total de cases",
+      "hide_pattern_lab": "Masquer le labo de motifs",
+      "show_pattern_lab": "Afficher le labo de motifs",
+      "distributive_property_canvas": "Schéma animé de la propriété distributive montrant 3 fois 4 plus 3 fois 2"
     },
     "geometryworld": {
       "guide": "Guide",
@@ -15247,7 +15256,10 @@
       "scale_visual_algebra_balance": "Balance — équilibre algébrique visuel",
       "drag_weights_onto_a_balance_to_model_x": "Faites glisser des poids sur une balance pour modéliser x + 3 = 7 visuellement. L'intuition la plus utile pour l'algèbre débutante — les équations sont des balances, pas des cases à remplir. Ce que vous faites d'un côté, faites-le de l'autre.",
       "tutor_ask_ai_for_help": "Tuteur — demandez de l'aide à l'IA",
-      "ask_the_tutor_about_any_algebra_concep": "Posez au tuteur une question sur n'importe quel concept d'algèbre ou étape bloquée. Le tuteur connaît votre niveau scolaire, vos tentatives récentes et le problème actif. Idéal pour les questions \"pourquoi mon approche n'a-t-elle pas fonctionné ?\""
+      "ask_the_tutor_about_any_algebra_concep": "Posez au tuteur une question sur n'importe quel concept d'algèbre ou étape bloquée. Le tuteur connaît votre niveau scolaire, vos tentatives récentes et le problème actif. Idéal pour les questions \"pourquoi mon approche n'a-t-elle pas fonctionné ?\"",
+      "verified_check": "Vérifié par le moteur mathématique",
+      "verify_warning": "Cette réponse ne se vérifie pas",
+      "checked_by_engine": "Contrôlé par le moteur mathématique"
     },
     "datastudio": {
       "apples": "Pommes",

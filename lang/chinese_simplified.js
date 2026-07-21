@@ -12133,7 +12133,16 @@
       "when_does_swapping_rows_cols_change_an": "何时交换行/列会改变什么？",
       "i_understand_explain_in_own_words": "我明白了——用我自己的话解释",
       "explain_commutative_property_area_leng": "解释交换律 + 面积 = 长 × 宽。",
-      "design_note_discrete_4_state_classific": "设计说明：离散的4状态分类；无面积测验分数；无揭示——刻意为之。"
+      "design_note_discrete_4_state_classific": "设计说明：离散的4状态分类；无面积测验分数；无揭示——刻意为之。",
+      "multiplication_workshop": "乘法工作坊",
+      "focus_intro": "先搭出长方形，再把图形与乘法口诀、数位值和现实生活中的应用题联系起来。",
+      "mode": "模式",
+      "cells": "格子",
+      "streak": "连胜",
+      "focus_visual_label": "面积模型长方形，显示行乘以列等于格子总数",
+      "hide_pattern_lab": "隐藏规律实验室",
+      "show_pattern_lab": "显示规律实验室",
+      "distributive_property_canvas": "分配律动画示意图，显示 3 乘 4 加 3 乘 2"
     },
     "geometryworld": {
       "guide": "指南",
@@ -13670,7 +13679,10 @@
       "scale_visual_algebra_balance": "天平 — 可视化代数平衡",
       "drag_weights_onto_a_balance_to_model_x": "将砝码拖到天平上以可视化地建模 x + 3 = 7。早期代数最有用的直觉 — 方程是天平，不是待填的空格。你对一边做什么，就对另一边做什么。",
       "tutor_ask_ai_for_help": "导师 — 向 AI 求助",
-      "ask_the_tutor_about_any_algebra_concep": "向导师询问任何代数概念或卡住的步骤。导师了解你的年级段、最近的尝试和当前题目。最适合 \"为什么我的方法不奏效？\" 这类问题。"
+      "ask_the_tutor_about_any_algebra_concep": "向导师询问任何代数概念或卡住的步骤。导师了解你的年级段、最近的尝试和当前题目。最适合 \"为什么我的方法不奏效？\" 这类问题。",
+      "verified_check": "已由数学引擎验证",
+      "verify_warning": "这个答案对不上",
+      "checked_by_engine": "已由数学引擎检查"
     },
     "datastudio": {
       "apples": "苹果",

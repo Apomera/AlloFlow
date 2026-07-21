@@ -11918,7 +11918,16 @@
       "when_does_swapping_rows_cols_change_an": "Kedu mgbe ịgbanwe ahịrị/kọlụm na-agbanwe ihe ọ bụla?",
       "i_understand_explain_in_own_words": "Aghọtara m — kọwaa n'okwu nke m",
       "explain_commutative_property_area_leng": "Kọwaa àgwà nkwekọrịta + mpaghara = ogologo × obosara.",
-      "design_note_discrete_4_state_classific": "Ihe ndetu imewe: nkewa dị iche nke ọnọdụ 4; enweghị akara ule mpaghara; enweghị ngosipụta — n'ụzọ ngwaa."
+      "design_note_discrete_4_state_classific": "Ihe ndetu imewe: nkewa dị iche nke ọnọdụ 4; enweghị akara ule mpaghara; enweghị ngosipụta — n'ụzọ ngwaa.",
+      "multiplication_workshop": "Ụlọ ọrụ ịba ụba",
+      "focus_intro": "Buru ụzọ wuo rectangle ahụ, wee jikọta foto ahụ na tebụl ịba ụba, place value, na word problems nke ndụ n'ezie.",
+      "mode": "Ọnọdụ",
+      "cells": "Cells",
+      "streak": "Usoro ziri ezi",
+      "focus_visual_label": "Rectangle nke area model na-egosi rows ụba columns dị ka ngụkọta cells",
+      "hide_pattern_lab": "Zoo pattern lab",
+      "show_pattern_lab": "Gosi pattern lab",
+      "distributive_property_canvas": "Eserese na-emegharị nke distributive property na-egosi 3 ụba 4 gbakwunye 3 ụba 2"
     },
     "geometryworld": {
       "guide": "Ntụziaka",
@@ -13455,7 +13464,10 @@
       "scale_visual_algebra_balance": "Ihe ọ̀tụ̀tụ̀ — nguzozi algebra a na-ahụ anya",
       "drag_weights_onto_a_balance_to_model_x": "Dọkpụrụ ibu n'ihe ọ̀tụ̀tụ̀ iji setịpụ x + 3 = 7 n'ụzọ a na-ahụ anya. Nghọta bara uru kacha maka algebra mbụ — akụkụ bụ ihe ọ̀tụ̀tụ̀, ọ bụghị oghere efu iji dejupụta. Ihe ị na-eme n'otu akụkụ, mee na nke ọzọ.",
       "tutor_ask_ai_for_help": "Onye nkuzi — rịọ AI maka enyemaka",
-      "ask_the_tutor_about_any_algebra_concep": "Jụọ onye nkuzi gbasara echiche algebra ọ bụla ma ọ bụ nzọ ụkwụ rapaara. Onye nkuzi maara ọkwa klas gị, mgbalị na nso nso a, na nsogbu na-arụ ọrụ. Kacha mma maka ajụjụ \"gịnị mere ụzọ m ji ghara ịrụ ọrụ?\""
+      "ask_the_tutor_about_any_algebra_concep": "Jụọ onye nkuzi gbasara echiche algebra ọ bụla ma ọ bụ nzọ ụkwụ rapaara. Onye nkuzi maara ọkwa klas gị, mgbalị na nso nso a, na nsogbu na-arụ ọrụ. Kacha mma maka ajụjụ \"gịnị mere ụzọ m ji ghara ịrụ ọrụ?\"",
+      "verified_check": "Math engine kwadoro ya",
+      "verify_warning": "Azịza a adabaghị",
+      "checked_by_engine": "Math engine nyochara ya"
     },
     "datastudio": {
       "apples": "Apụl",

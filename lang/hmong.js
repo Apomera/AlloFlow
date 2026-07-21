@@ -11911,7 +11911,16 @@
       "when_does_swapping_rows_cols_change_an": "Thaum twg kev hloov kab pheej/kab ntsug hloov ib yam dab tsi?",
       "i_understand_explain_in_own_words": "Kuv to taub lawm — piav nrog kuv cov lus",
       "explain_commutative_property_area_leng": "Piav tus yam ntxwv hloov + thaj tsam = ntev × dav.",
-      "design_note_discrete_4_state_classific": "Daim ntawv tsim: kev faib cais 4-xeev; tsis muaj qhab nia ntsuas thaj tsam; tsis muaj qhia — txhob txwm."
+      "design_note_discrete_4_state_classific": "Daim ntawv tsim: kev faib cais 4-xeev; tsis muaj qhab nia ntsuas thaj tsam; tsis muaj qhia — txhob txwm.",
+      "multiplication_workshop": "Chaw ua haujlwm multiplication",
+      "focus_intro": "Ua lub rectangle ua ntej, ces txuas daim duab rau multiplication table, place value, thiab cov word problem hauv lub neej tiag.",
+      "mode": "Hom",
+      "cells": "Cov cell",
+      "streak": "Streak",
+      "focus_visual_label": "Area model rectangle uas qhia cov kab muab nrog cov kem ua tag nrho cov cell",
+      "hide_pattern_lab": "Zais lub pattern lab",
+      "show_pattern_lab": "Qhia lub pattern lab",
+      "distributive_property_canvas": "Daim duab txav ntawm distributive property uas qhia 3 muab 4 ntxiv 3 muab 2"
     },
     "geometryworld": {
       "guide": "Phau Qhia",
@@ -13448,7 +13457,10 @@
       "scale_visual_algebra_balance": "Rab teev — visual algebra balance",
       "drag_weights_onto_a_balance_to_model_x": "Luag cov hnyav rau saum rab teev los ua qauv x + 3 = 7 ua piv txwv. Lub tswv yim muaj txiaj ntsig tshaj plaws rau algebra thaum ntxov — equations yog rab teev, tsis yog qhov chaw khoob los sau. Txhua yam koj ua rau ib sab, ua rau lwm sab.",
       "tutor_ask_ai_for_help": "Xib Fwb — nug AI pab",
-      "ask_the_tutor_about_any_algebra_concep": "Nug xib fwb txog ib qho algebra concept los yog kauj ruam khuam. Xib fwb paub koj qib kawm, kev sim tsis ntev los no, thiab cov teeb meem ua haujlwm. Zoo tshaj plaws rau cov lus nug \"vim li cas kuv txoj kev tsis ua haujlwm?\""
+      "ask_the_tutor_about_any_algebra_concep": "Nug xib fwb txog ib qho algebra concept los yog kauj ruam khuam. Xib fwb paub koj qib kawm, kev sim tsis ntev los no, thiab cov teeb meem ua haujlwm. Zoo tshaj plaws rau cov lus nug \"vim li cas kuv txoj kev tsis ua haujlwm?\"",
+      "verified_check": "Kuaj xyuas los ntawm lub math engine",
+      "verify_warning": "Cov lus teb no tsis raug",
+      "checked_by_engine": "Xyuas los ntawm lub math engine"
     },
     "datastudio": {
       "apples": "Txiv apple",

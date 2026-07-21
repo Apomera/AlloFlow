@@ -11282,7 +11282,16 @@
       "when_does_swapping_rows_cols_change_an": "Goorma ayuu beddelka safafka/tiirarka wax beddelaa?",
       "i_understand_explain_in_own_words": "Waan fahmay — ku sharax erayadayda",
       "explain_commutative_property_area_leng": "Sharax sifada is-bedelka + bed = dherer × balac.",
-      "design_note_discrete_4_state_classific": "Qoraal naqshadeed: kala-saar gooni ah oo 4-xaaladood; dhibco imtixaan bed ma jiraan; daahfur ma jiro — si ula kac ah."
+      "design_note_discrete_4_state_classific": "Qoraal naqshadeed: kala-saar gooni ah oo 4-xaaladood; dhibco imtixaan bed ma jiraan; daahfur ma jiro — si ula kac ah.",
+      "multiplication_workshop": "Aqoon-is-weydaarsiga isku-dhufashada",
+      "focus_intro": "Marka hore dhis rectangle-ka, kadibna ku xidh sawirka jadwalka isku-dhufashada, place value, iyo su'aalaha erayada ee nolosha dhabta ah.",
+      "mode": "Hab",
+      "cells": "Cells",
+      "streak": "Taxane sax ah",
+      "focus_visual_label": "Rectangle-ka area model ee muujinaya safafka lagu dhufto tiirarka oo ah wadarta cells",
+      "hide_pattern_lab": "Qari pattern lab-ka",
+      "show_pattern_lab": "Muuji pattern lab-ka",
+      "distributive_property_canvas": "Sawir dhaqdhaqaaqa ah oo distributive property ah oo muujinaya 3 lagu dhufto 4 lagu daro 3 lagu dhufto 2"
     },
     "geometryworld": {
       "guide": "Hage",
@@ -12819,7 +12828,10 @@
       "scale_visual_algebra_balance": "Miisaan — dheelitirka aljebra ee la arki karo",
       "drag_weights_onto_a_balance_to_model_x": "Jiid miisaannada miisaanka si aad u tusaale u samayso x + 3 = 7 si muuqaal ah. Garashada ugu faa'iidada badan ee aljebra hore — isle'egyadu waa miisaanno, ma aha meelo banaan oo la buuxiyo. Waxa aad dhinac ka samayso, dhinaca kale ka samee.",
       "tutor_ask_ai_for_help": "Macallin — caawimaad ka codso AI",
-      "ask_the_tutor_about_any_algebra_concep": "Weydii macallinka wixii fikrad aljebra ah ama tallaabo istaagtay. Macallinku wuxuu yaqaan heerkaaga fasalka, isku dayadaada dhowaan, iyo dhibaatada firfircoon. Ugu fiican su'aalaha \"maxay habkaygu u shaqayn waayay?\""
+      "ask_the_tutor_about_any_algebra_concep": "Weydii macallinka wixii fikrad aljebra ah ama tallaabo istaagtay. Macallinku wuxuu yaqaan heerkaaga fasalka, isku dayadaada dhowaan, iyo dhibaatada firfircoon. Ugu fiican su'aalaha \"maxay habkaygu u shaqayn waayay?\"",
+      "verified_check": "Waxaa xaqiijiyay math engine-ka",
+      "verify_warning": "Jawaabtan ma waafaqsana",
+      "checked_by_engine": "Waxaa hubiyay math engine-ka"
     },
     "datastudio": {
       "apples": "Tufaax",

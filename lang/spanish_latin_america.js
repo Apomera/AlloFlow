@@ -13960,7 +13960,16 @@
       "when_does_swapping_rows_cols_change_an": "¿Cuándo cambia algo intercambiar filas/columnas?",
       "i_understand_explain_in_own_words": "Lo entiendo: explicar con mis propias palabras",
       "explain_commutative_property_area_leng": "Explica la propiedad conmutativa + área = largo × ancho.",
-      "design_note_discrete_4_state_classific": "Nota de diseño: clasificación discreta de 4 estados; sin puntuación de prueba de área; sin revelar, por diseño."
+      "design_note_discrete_4_state_classific": "Nota de diseño: clasificación discreta de 4 estados; sin puntuación de prueba de área; sin revelar, por diseño.",
+      "multiplication_workshop": "Taller de multiplicación",
+      "focus_intro": "Construye primero el rectángulo y luego conecta la imagen con las tablas, el valor posicional y los problemas verbales del mundo real.",
+      "mode": "Modo",
+      "cells": "Celdas",
+      "streak": "Racha",
+      "focus_visual_label": "Rectángulo del modelo de área que muestra filas por columnas como celdas totales",
+      "hide_pattern_lab": "Ocultar el laboratorio de patrones",
+      "show_pattern_lab": "Mostrar el laboratorio de patrones",
+      "distributive_property_canvas": "Diagrama animado de la propiedad distributiva que muestra 3 por 4 más 3 por 2"
     },
     "geometryworld": {
       "guide": "Guía",
@@ -15497,7 +15506,10 @@
       "scale_visual_algebra_balance": "Balanza — balance visual de álgebra",
       "drag_weights_onto_a_balance_to_model_x": "Arrastra pesas a una balanza para modelar x + 3 = 7 visualmente. La intuición más útil para el álgebra temprana — las ecuaciones son balanzas, no espacios para llenar. Lo que hagas a un lado, hazlo al otro.",
       "tutor_ask_ai_for_help": "Tutor — pide ayuda a la IA",
-      "ask_the_tutor_about_any_algebra_concep": "Pregúntale al tutor sobre cualquier concepto de álgebra o paso atascado. El tutor conoce tu nivel de grado, intentos recientes y el problema activo. Mejor para preguntas de \"¿por qué no funcionó mi enfoque?\""
+      "ask_the_tutor_about_any_algebra_concep": "Pregúntale al tutor sobre cualquier concepto de álgebra o paso atascado. El tutor conoce tu nivel de grado, intentos recientes y el problema activo. Mejor para preguntas de \"¿por qué no funcionó mi enfoque?\"",
+      "verified_check": "Verificado por el motor matemático",
+      "verify_warning": "Esta respuesta no cuadra",
+      "checked_by_engine": "Comprobado por el motor matemático"
     },
     "datastudio": {
       "apples": "Manzanas",

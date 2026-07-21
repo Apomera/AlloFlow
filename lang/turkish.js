@@ -12127,7 +12127,16 @@
       "when_does_swapping_rows_cols_change_an": "Satır/sütun değiştirmek ne zaman bir şey değiştirir?",
       "i_understand_explain_in_own_words": "Anladım — kendi sözcüklerimle açıkla",
       "explain_commutative_property_area_leng": "Değişme özelliğini + alan = uzunluk × genişlik açıkla.",
-      "design_note_discrete_4_state_classific": "Tasarım notu: ayrık 4 durumlu sınıflandırma; alan testi puanı yok; açıklama yok — kasıtlı."
+      "design_note_discrete_4_state_classific": "Tasarım notu: ayrık 4 durumlu sınıflandırma; alan testi puanı yok; açıklama yok — kasıtlı.",
+      "multiplication_workshop": "Çarpma atölyesi",
+      "focus_intro": "Önce dikdörtgeni kur, sonra resmi çarpım tablosuna, basamak değerine ve gerçek hayattaki problemlere bağla.",
+      "mode": "Kip",
+      "cells": "Hücreler",
+      "streak": "Seri",
+      "focus_visual_label": "Satır çarpı sütunu toplam hücre olarak gösteren alan modeli dikdörtgeni",
+      "hide_pattern_lab": "Örüntü laboratuvarını gizle",
+      "show_pattern_lab": "Örüntü laboratuvarını göster",
+      "distributive_property_canvas": "3 çarpı 4 artı 3 çarpı 2 gösteren canlandırmalı dağılma özelliği şeması"
     },
     "geometryworld": {
       "guide": "Kılavuz",
@@ -13664,7 +13673,10 @@
       "scale_visual_algebra_balance": "Terazi — görsel cebir dengesi",
       "drag_weights_onto_a_balance_to_model_x": "x + 3 = 7'yi görsel olarak modellemek için ağırlıkları bir teraziye sürükleyin. Erken cebir için en yararlı sezgi — denklemler terazidir, doldurulacak boşluklar değil. Bir tarafa ne yaparsanız, diğerine de yapın.",
       "tutor_ask_ai_for_help": "Eğitmen — YZ'den yardım isteyin",
-      "ask_the_tutor_about_any_algebra_concep": "Eğitmene herhangi bir cebir kavramı veya takıldığınız adım hakkında sorun. Eğitmen sınıf seviyenizi, son denemelerinizi ve aktif problemi bilir. \"Yaklaşımım neden işe yaramadı?\" soruları için en iyisi."
+      "ask_the_tutor_about_any_algebra_concep": "Eğitmene herhangi bir cebir kavramı veya takıldığınız adım hakkında sorun. Eğitmen sınıf seviyenizi, son denemelerinizi ve aktif problemi bilir. \"Yaklaşımım neden işe yaramadı?\" soruları için en iyisi.",
+      "verified_check": "Matematik motoru tarafından doğrulandı",
+      "verify_warning": "Bu cevap tutmuyor",
+      "checked_by_engine": "Matematik motoru tarafından denetlendi"
     },
     "datastudio": {
       "apples": "Elmalar",

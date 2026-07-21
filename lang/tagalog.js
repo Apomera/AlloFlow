@@ -11909,7 +11909,16 @@
       "when_does_swapping_rows_cols_change_an": "Kailan nagbabago ng kahit ano ang pagpapalit ng hilera/hanay?",
       "i_understand_explain_in_own_words": "Naiintindihan ko — ipaliwanag sa sarili kong salita",
       "explain_commutative_property_area_leng": "Ipaliwanag ang commutative property + lawak = haba × lapad.",
-      "design_note_discrete_4_state_classific": "Tala sa disenyo: diskretong 4-estado na klasipikasyon; walang score sa area test; walang pagbubunyag — sinadya."
+      "design_note_discrete_4_state_classific": "Tala sa disenyo: diskretong 4-estado na klasipikasyon; walang score sa area test; walang pagbubunyag — sinadya.",
+      "multiplication_workshop": "Workshop sa multiplication",
+      "focus_intro": "Buuin muna ang rektanggulo, pagkatapos ay iugnay ang larawan sa multiplication table, place value, at mga word problem sa totoong buhay.",
+      "mode": "Mode",
+      "cells": "Mga cell",
+      "streak": "Streak",
+      "focus_visual_label": "Rektanggulo ng area model na nagpapakita ng rows times columns bilang kabuuang cells",
+      "hide_pattern_lab": "Itago ang pattern lab",
+      "show_pattern_lab": "Ipakita ang pattern lab",
+      "distributive_property_canvas": "Animated na diagram ng distributive property na nagpapakita ng 3 times 4 plus 3 times 2"
     },
     "geometryworld": {
       "guide": "Gabay",
@@ -13446,7 +13455,10 @@
       "scale_visual_algebra_balance": "Timbangan — visual na balanse ng algebra",
       "drag_weights_onto_a_balance_to_model_x": "I-drag ang mga timbang sa timbangan para i-model ang x + 3 = 7 nang biswal. Ang pinakakapaki-pakinabang na intuwisyon para sa maagang algebra — ang mga equation ay mga timbangan, hindi mga patlang na pupunan. Anuman ang gawin mo sa isang panig, gawin sa kabila.",
       "tutor_ask_ai_for_help": "Tutor — humingi ng tulong sa AI",
-      "ask_the_tutor_about_any_algebra_concep": "Magtanong sa tutor tungkol sa anumang konseptong algebra o hakbang na natigil. Alam ng tutor ang iyong antas ng baitang, mga kamakailang pagsubok, at aktibong suliranin. Pinakamahusay para sa mga tanong na \"bakit hindi gumana ang aking pamamaraan?\""
+      "ask_the_tutor_about_any_algebra_concep": "Magtanong sa tutor tungkol sa anumang konseptong algebra o hakbang na natigil. Alam ng tutor ang iyong antas ng baitang, mga kamakailang pagsubok, at aktibong suliranin. Pinakamahusay para sa mga tanong na \"bakit hindi gumana ang aking pamamaraan?\"",
+      "verified_check": "Na-verify ng math engine",
+      "verify_warning": "Hindi tumutugma ang sagot na ito",
+      "checked_by_engine": "Sinuri ng math engine"
     },
     "datastudio": {
       "apples": "Mga mansanas",

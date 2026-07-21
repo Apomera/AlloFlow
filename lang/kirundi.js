@@ -11910,7 +11910,16 @@
       "when_does_swapping_rows_cols_change_an": "Ni ryari guhinduranya imirongo/inkingi bihindura ikintu?",
       "i_understand_explain_in_own_words": "Numvise — sobanura mu magambo yanjye",
       "explain_commutative_property_area_leng": "Sobanura imiterere yo guhinduranya + ubuso = uburebure × ubugari.",
-      "design_note_discrete_4_state_classific": "Inyandiko y'igishushanyo: icyiciro gitandukanye cy'imiterere 4; nta manota y'ikizamini cy'ubuso; nta kugaragaza — ku bushake."
+      "design_note_discrete_4_state_classific": "Inyandiko y'igishushanyo: icyiciro gitandukanye cy'imiterere 4; nta manota y'ikizamini cy'ubuso; nta kugaragaza — ku bushake.",
+      "multiplication_workshop": "Uruganda rwo kugwiza",
+      "focus_intro": "Banza wubake rectangle, hanyuma uhuze ishusho n'urutonde rwo kugwiza, place value, n'ibibazo vy'amajambo vy'ubuzima nyakuri.",
+      "mode": "Uburyo",
+      "cells": "Cells",
+      "streak": "Urukurikirane rwiza",
+      "focus_visual_label": "Rectangle ya area model yerekana imirongo yagwijwe n'inkingi nk'igitigiri cose ca cells",
+      "hide_pattern_lab": "Nyegeza pattern lab",
+      "show_pattern_lab": "Erekana pattern lab",
+      "distributive_property_canvas": "Ishusho igenda ya distributive property yerekana 3 kugwiza 4 kwongerako 3 kugwiza 2"
     },
     "geometryworld": {
       "guide": "Ubuyobozi",
@@ -13447,7 +13456,10 @@
       "scale_visual_algebra_balance": "Iminzani — uburinganire bwa aljebra bugaragara",
       "drag_weights_onto_a_balance_to_model_x": "Kurura ibiro ku minzani kugira ngo werekane x + 3 = 7 mu buryo bugaragara. Ubushishozi bw'ingirakamaro cyane kuri aljebra yo hambere — ingingo ni iminzani, si imyanya yuzuye yo kuzuza. Icyo ukora ku ruhande rumwe, gikore ku rundi.",
       "tutor_ask_ai_for_help": "Umwarimu — saba AI ubufasha",
-      "ask_the_tutor_about_any_algebra_concep": "Baza umwarimu kuri igitekerezo cyose cya aljebra cyangwa intambwe yakwamye. Umwarimu azi urwego rw'ishuri ryawe, kugerageza vuba aha, n'ikibazo gikora. Cyiza cyane ku bibazo \"kuki uburyo bwanjye butakoze?\""
+      "ask_the_tutor_about_any_algebra_concep": "Baza umwarimu kuri igitekerezo cyose cya aljebra cyangwa intambwe yakwamye. Umwarimu azi urwego rw'ishuri ryawe, kugerageza vuba aha, n'ikibazo gikora. Cyiza cyane ku bibazo \"kuki uburyo bwanjye butakoze?\"",
+      "verified_check": "Vyemejwe na math engine",
+      "verify_warning": "Iki nyishu ntigihuye",
+      "checked_by_engine": "Vyagenzuwe na math engine"
     },
     "datastudio": {
       "apples": "Pome",

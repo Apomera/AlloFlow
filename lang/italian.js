@@ -11949,7 +11949,16 @@
       "when_does_swapping_rows_cols_change_an": "Quando scambiare righe/colonne cambia qualcosa?",
       "i_understand_explain_in_own_words": "Ho capito — spiega con parole mie",
       "explain_commutative_property_area_leng": "Spiega la proprietà commutativa + area = lunghezza × larghezza.",
-      "design_note_discrete_4_state_classific": "Nota di progettazione: classificazione discreta a 4 stati; nessun punteggio del test sull'area; nessuna rivelazione — per scelta progettuale."
+      "design_note_discrete_4_state_classific": "Nota di progettazione: classificazione discreta a 4 stati; nessun punteggio del test sull'area; nessuna rivelazione — per scelta progettuale.",
+      "multiplication_workshop": "Laboratorio di moltiplicazione",
+      "focus_intro": "Costruisci prima il rettangolo, poi collega l'immagine alle tabelline, al valore posizionale e ai problemi del mondo reale.",
+      "mode": "Modalità",
+      "cells": "Celle",
+      "streak": "Serie",
+      "focus_visual_label": "Rettangolo del modello ad area che mostra righe per colonne come celle totali",
+      "hide_pattern_lab": "Nascondi il laboratorio di schemi",
+      "show_pattern_lab": "Mostra il laboratorio di schemi",
+      "distributive_property_canvas": "Diagramma animato della proprietà distributiva che mostra 3 per 4 più 3 per 2"
     },
     "geometryworld": {
       "guide": "Guida",
@@ -13486,7 +13495,10 @@
       "scale_visual_algebra_balance": "Bilancia — equilibrio algebrico visivo",
       "drag_weights_onto_a_balance_to_model_x": "Trascina i pesi su una bilancia per modellare x + 3 = 7 visivamente. L'intuizione più utile per l'algebra iniziale — le equazioni sono bilance, non spazi da riempire. Qualunque cosa fai a un lato, falla all'altro.",
       "tutor_ask_ai_for_help": "Tutor — chiedi aiuto all'IA",
-      "ask_the_tutor_about_any_algebra_concep": "Chiedi al tutor di qualsiasi concetto di algebra o passaggio bloccato. Il tutor conosce il tuo livello scolastico, i tentativi recenti e il problema attivo. Ideale per le domande \"perché il mio approccio non ha funzionato?\""
+      "ask_the_tutor_about_any_algebra_concep": "Chiedi al tutor di qualsiasi concetto di algebra o passaggio bloccato. Il tutor conosce il tuo livello scolastico, i tentativi recenti e il problema attivo. Ideale per le domande \"perché il mio approccio non ha funzionato?\"",
+      "verified_check": "Verificato dal motore matematico",
+      "verify_warning": "Questa risposta non torna",
+      "checked_by_engine": "Controllato dal motore matematico"
     },
     "datastudio": {
       "apples": "Mele",

@@ -11918,7 +11918,16 @@
       "when_does_swapping_rows_cols_change_an": "Kapan menukar baris/kolom mengubah sesuatu?",
       "i_understand_explain_in_own_words": "Saya paham — jelaskan dengan kata-kata saya",
       "explain_commutative_property_area_leng": "Jelaskan sifat komutatif + luas = panjang × lebar.",
-      "design_note_discrete_4_state_classific": "Catatan desain: klasifikasi diskret 4 keadaan; tanpa skor tes luas; tanpa pengungkapan — disengaja."
+      "design_note_discrete_4_state_classific": "Catatan desain: klasifikasi diskret 4 keadaan; tanpa skor tes luas; tanpa pengungkapan — disengaja.",
+      "multiplication_workshop": "Lokakarya perkalian",
+      "focus_intro": "Bangun persegi panjangnya dulu, lalu hubungkan gambar itu dengan tabel perkalian, nilai tempat, dan soal cerita dunia nyata.",
+      "mode": "Mode",
+      "cells": "Sel",
+      "streak": "Rentetan",
+      "focus_visual_label": "Persegi panjang model luas yang menunjukkan baris kali kolom sebagai total sel",
+      "hide_pattern_lab": "Sembunyikan lab pola",
+      "show_pattern_lab": "Tampilkan lab pola",
+      "distributive_property_canvas": "Diagram animasi sifat distributif yang menunjukkan 3 kali 4 ditambah 3 kali 2"
     },
     "geometryworld": {
       "guide": "Panduan",
@@ -13455,7 +13464,10 @@
       "scale_visual_algebra_balance": "Timbangan — keseimbangan aljabar visual",
       "drag_weights_onto_a_balance_to_model_x": "Seret beban ke timbangan untuk memodelkan x + 3 = 7 secara visual. Intuisi paling berguna untuk aljabar awal — persamaan adalah timbangan, bukan kotak kosong untuk diisi. Apa pun yang Anda lakukan pada satu sisi, lakukan pada sisi lain.",
       "tutor_ask_ai_for_help": "Tutor — minta bantuan AI",
-      "ask_the_tutor_about_any_algebra_concep": "Tanyakan kepada tutor tentang konsep aljabar apa pun atau langkah yang macet. Tutor mengetahui tingkat kelas Anda, percobaan terbaru, dan soal aktif. Terbaik untuk pertanyaan \"mengapa pendekatan saya tidak berhasil?\""
+      "ask_the_tutor_about_any_algebra_concep": "Tanyakan kepada tutor tentang konsep aljabar apa pun atau langkah yang macet. Tutor mengetahui tingkat kelas Anda, percobaan terbaru, dan soal aktif. Terbaik untuk pertanyaan \"mengapa pendekatan saya tidak berhasil?\"",
+      "verified_check": "Diverifikasi oleh mesin matematika",
+      "verify_warning": "Jawaban ini tidak cocok",
+      "checked_by_engine": "Diperiksa oleh mesin matematika"
     },
     "datastudio": {
       "apples": "Apel",
