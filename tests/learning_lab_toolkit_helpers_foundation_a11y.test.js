@@ -15,6 +15,16 @@ describe('Learning Lab shared Toolkit accessibility foundation', () => {
     expect(helpers).toContain("type: 'button', onClick: onClick, 'data-ll-focusable': true");
   });
 
+  it('derives display dates from local time, not UTC (regression: evening entries shifted a day)', () => {
+    expect(source).toContain('function localISODate(d) {');
+    expect(source).toContain('function todayISO() {\n    return localISODate(new Date());\n  }');
+    expect(source).toContain('relDate(localISODate(createdDate))');
+    expect(source).toContain('var nextDueISO = localISODate(nextDate);');
+    // The only remaining toISOString().slice(0, 10) uses are verified UTC round-trips
+    // on local ISO strings (isoFromDayNumber pairs and the routine streak cursor).
+    expect(source.match(/toISOString\(\)\.slice\(0, ?10\)/g)).toHaveLength(3);
+  });
+
   it('gives shared buttons a minimum 44 by 44 pixel target', () => {
     expect(helpers).toContain("minWidth: 44, minHeight: 44, padding: '8px 16px'");
   });

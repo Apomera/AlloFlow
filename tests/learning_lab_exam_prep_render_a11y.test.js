@@ -6,9 +6,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 function futureISO(days) {
   const date = new Date();
-  date.setHours(12, 0, 0, 0);
   date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 
 describe('Learning Lab Exam Prep rendered accessibility states', () => {

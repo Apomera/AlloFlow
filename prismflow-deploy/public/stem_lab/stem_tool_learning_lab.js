@@ -4484,11 +4484,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   // ══════════════════════════════════════════════════════════════════
 
   // Shared helpers for the toolkit components
-  function todayISO() {
-    var d = new Date();
+  function localISODate(d) {
     var m = String(d.getMonth() + 1).padStart(2, '0');
     var dd = String(d.getDate()).padStart(2, '0');
     return d.getFullYear() + '-' + m + '-' + dd;
+  }
+  function todayISO() {
+    return localISODate(new Date());
   }
   function daysAgo(iso) {
     if (!iso) return null;
@@ -5352,7 +5354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                     hh('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, textDecoration: item.done ? 'line-through' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } }, item.text),
                     hh('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
                       hh('span', { 'aria-hidden': 'true' }, itemCategory.icon + ' '), itemCategory.label,
-                      validDate ? hh(React.Fragment, null, ' · ', hh('time', { dateTime: createdDate.toISOString() }, relDate(createdDate.toISOString().slice(0, 10)))) : null,
+                      validDate ? hh(React.Fragment, null, ' · ', hh('time', { dateTime: createdDate.toISOString() }, relDate(localISODate(createdDate)))) : null,
                       item.done ? hh('span', null, ' · Completed') : null
                     )
                   ),
@@ -5972,7 +5974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       else newInterval = Math.round((card.interval || 1) * newEase);
       var nextDate = new Date();
       nextDate.setDate(nextDate.getDate() + newInterval);
-      var nextDueISO = nextDate.toISOString().slice(0, 10);
+      var nextDueISO = localISODate(nextDate);
       saveCard(Object.assign({}, card, {
         ease: newEase, interval: newInterval, nextDue: nextDueISO,
         reviewCount: (card.reviewCount || 0) + 1, lastReviewed: today
