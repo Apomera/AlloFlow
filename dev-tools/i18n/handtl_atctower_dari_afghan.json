@@ -1,0 +1,21 @@
+{
+  "dari": {
+    "land_your_first_aircraft": "اولین طیارهٔ خود را فرود آورید",
+    "land_10_aircraft_in_one_session": "۱۰ طیاره را در یک جلسه فرود آورید",
+    "land_25_aircraft_in_one_session": "۲۵ طیاره را در یک جلسه فرود آورید",
+    "land_10_aircraft_with_zero_conflicts": "۱۰+ طیاره را بدون تداخل فرود آورید",
+    "land_a_heavy_or_super_aircraft": "یک طیارهٔ Heavy یا Super فرود آورید",
+    "medical_emergency": "اورژانس طبی",
+    "aircraft_management": "✈️ مدیریت طیاره",
+    "guide_aircraft_safely_solve_rate_probl": "طیاره‌ها را با ایمنی هدایت کنید. مسائل نرخ را حل کنید. ریاضیات هوانوردی را بیاموزید.",
+    "select_airport": "🏢 میدان هوایی را انتخاب کنید",
+    "realistic_airport_sequencing_required_": "میدان هوایی واقع‌گرایانه — توالی لازم است، تداخل‌ها محتمل.",
+    "i_m_stuck_show_open_questions": "🤔 گیر کرده‌ام — سوال‌های باز را نشان بده",
+    "open_questions_no_answer_key": "سوال‌های باز (بدون کلید پاسخ)",
+    "grade_5": "صنف پنجم",
+    "for_a_5th_grade_student_brief_and_frie": "برای شاگرد صنف پنجم، مختصر و دوستانه",
+    "high_school": "لیسه",
+    "for_a_high_school_student_studying_pre": "برای شاگرد لیسه که پیش‌حسابان یا فزیک می‌خواند",
+    "air_traffic_control_radar_display_use_": "نمایشگر رادار کنترل ترافیک هوایی. از Tab برای جابجایی بین طیاره‌ها، H برای جهت، R برای باند، C برای مجوز نزدیک‌شدن، Space برای مکث، I برای خلاصه وضعیت استفاده کنید."
+  }
+}
