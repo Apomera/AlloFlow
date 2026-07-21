@@ -5,7 +5,7 @@ var _alloFocusTrigger = null;
 function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
 function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
-const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox }) => {
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart }) => {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState('#4F46E5');
   const [newStudentName, setNewStudentName] = useState('');
@@ -60,7 +60,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
             sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
-            ...(data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {})
+            ...(data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {}),
+            // Seating charts + constraints travel with the roster (the seating
+            // module re-validates this blob with normalizeSeating on read).
+            ...(data.seating && typeof data.seating === 'object' && !Array.isArray(data.seating) ? { seating: data.seating } : {})
           });
           if (window.AlloFlowUX) window.AlloFlowUX.toast('Roster imported, including class settings and submission setup.', 'success');
         }
@@ -296,6 +299,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
             >
               📥 {t('roster.import_submissions') || 'Import submissions'}
+            </button>
+          )}
+          {typeof onOpenSeatingChart === 'function' && (
+            <button type="button"
+              onClick={onOpenSeatingChart}
+              disabled={!rosterKey || Object.keys(rosterKey?.students || {}).length === 0}
+              title="Design your classroom map, encode seating needs as constraints, and auto-arrange. Everything stays on this device inside the roster."
+              className="px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold hover:bg-sky-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
+            >
+              🪑 {t('roster.seating_chart') || 'Seating Chart'}
             </button>
           )}
           <button type="button" onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">

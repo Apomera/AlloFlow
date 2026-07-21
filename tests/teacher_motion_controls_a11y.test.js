@@ -7,8 +7,8 @@ const publicModule = fs.readFileSync('prismflow-deploy/public/teacher_module.js'
 
 describe('Teacher interface control semantics', () => {
   it('uses exactly one explicit type for every native button', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(88);
-    expect(source.match(/<button\s+type="button"/g)).toHaveLength(87);
+    expect(source.match(/<button\b/g)).toHaveLength(89);
+    expect(source.match(/<button\s+type="button"/g)).toHaveLength(88);
     expect(source.match(/<button\s+type="submit"/g)).toHaveLength(1);
   });
 
@@ -29,7 +29,7 @@ describe('Teacher interface control semantics', () => {
 describe('Teacher and Escape Room motion and focus', () => {
   it('provides a local fallback for every animation and transition utility', () => {
     expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(41);
-    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(101);
+    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(102);
   });
 
   it('suppresses custom confetti when reduced motion is requested', () => {

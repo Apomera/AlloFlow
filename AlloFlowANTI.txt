@@ -8642,6 +8642,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
+    // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
+    // lazy-loaded from the Roster panel's Seating Chart button.
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
@@ -10169,6 +10172,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
   const [isRosterKeyOpen, setIsRosterKeyOpen] = useState(false);
   const [isSubmissionInboxOpen, setIsSubmissionInboxOpen] = useState(false);
+  const [isSeatingChartOpen, setIsSeatingChartOpen] = useState(false);
   useEffect(() => {
     try {
       if (rosterKey) safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey));
@@ -37414,6 +37418,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         isParentMode={isParentMode}
         isIndependentMode={isIndependentMode}
         onOpenSubmissionInbox={() => { setIsRosterKeyOpen(false); setIsSubmissionInboxOpen(true); }}
+        onOpenSeatingChart={() => { setIsRosterKeyOpen(false); if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} } setIsSeatingChartOpen(true); }}
       />
       {isSubmissionInboxOpen && (() => {
         const M = window.AlloModules && window.AlloModules.SubmissionInbox;
@@ -37429,6 +37434,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           />
         );
       })()}
+      <CDNModuleGate moduleKey="SeatingChart.SeatingChartPanel" isOpen={isSeatingChartOpen} onClose={() => setIsSeatingChartOpen(false)} icon="🪑" displayName="Seating Chart" t={t}>
+        {(SeatingChartPanel) => React.createElement(SeatingChartPanel, {
+          isOpen: true,
+          onClose: () => setIsSeatingChartOpen(false),
+          rosterKey,
+          setRosterKey,
+          t,
+          addToast,
+        })}
+      </CDNModuleGate>
       <StudentSubmitModal
           isOpen={showSubmitModal}
           onClose={handleCloseSubmitModal}

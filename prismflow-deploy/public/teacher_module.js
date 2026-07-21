@@ -117,7 +117,7 @@ function alloRestoreFocus() {
     _alloFocusTrigger = null;
   }
 }
-const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox }) => {
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupColor, setNewGroupColor] = useState("#4F46E5");
   const [newStudentName, setNewStudentName] = useState("");
@@ -171,7 +171,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
             sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
-            ...data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {}
+            ...data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {},
+            // Seating charts + constraints travel with the roster (the seating
+            // module re-validates this blob with normalizeSeating on read).
+            ...data.seating && typeof data.seating === "object" && !Array.isArray(data.seating) ? { seating: data.seating } : {}
           });
           if (window.AlloFlowUX) window.AlloFlowUX.toast("Roster imported, including class settings and submission setup.", "success");
         }
@@ -395,6 +398,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     "\u{1F4E5} ",
     t("roster.import_submissions") || "Import submissions"
+  ), typeof onOpenSeatingChart === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: onOpenSeatingChart,
+      disabled: !rosterKey || Object.keys(rosterKey?.students || {}).length === 0,
+      title: "Design your classroom map, encode seating needs as constraints, and auto-arrange. Everything stays on this device inside the roster.",
+      className: "px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold hover:bg-sky-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40"
+    },
+    "\u{1FA91} ",
+    t("roster.seating_chart") || "Seating Chart"
   ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
     "input",
     {
