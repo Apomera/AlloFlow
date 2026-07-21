@@ -258,6 +258,86 @@ describe('buildPrintableSvg', () => {
   });
 });
 
+describe('describeSeatForStudent (BehaviorLens bridge)', () => {
+  function rosterWithChart() {
+    // Hand-placed 2×2 pod front-left + one isolated seat back-right, with a
+    // window along the left wall and the template's teacher desk (top-right)
+    // and door (top-left).
+    const t = S.buildTemplate('rows', 2);
+    return {
+      className: 'Period 3',
+      students: { wolf: 'g1', hawk: 'g1', owl: '' },
+      displayNames: { wolf: 'Marcus W.', hawk: 'Jada H.' },
+      groups: { g1: { name: 'Group 1', color: '#4F46E5' } },
+      seating: {
+        activeLayoutId: 'layout1',
+        layouts: {
+          layout1: {
+            id: 'layout1', name: 'Test day',
+            seats: [
+              { id: 'seat1', x: 4, y: 10, w: 10, h: 7 },
+              { id: 'seat2', x: 15, y: 10, w: 10, h: 7 },
+              { id: 'seat3', x: 4, y: 18, w: 10, h: 7 },
+              { id: 'seat4', x: 84, y: 52, w: 10, h: 7 },
+            ],
+            furniture: t.furniture.concat([{ id: 'furnW', kind: 'window', x: 0, y: 8, w: 3, h: 14, label: '' }]),
+            assignments: { seat1: 'wolf', seat2: 'hawk', seat4: 'owl' },
+          },
+        },
+        constraints: [],
+      },
+    };
+  }
+
+  it('describes position, pod, and anchors — matching by roster key or display name', () => {
+    const rk = rosterWithChart();
+    const byKey = S.describeSeatForStudent(rk, 'wolf');
+    expect(byKey).toContain('Test day:');
+    expect(byKey).toContain('front of room');
+    expect(byKey).toContain('pod of 3');
+    expect(byKey).toContain('by window');
+    expect(byKey).not.toContain('Jada');        // neighbors off by default
+    const byDisplay = S.describeSeatForStudent(rk, 'marcus w.');
+    expect(byDisplay).toBe(byKey);
+  });
+
+  it('includes neighbor display names only with the opt-in', () => {
+    const rk = rosterWithChart();
+    const withNeighbors = S.describeSeatForStudent(rk, 'wolf', { includeNeighbors: true });
+    expect(withNeighbors).toContain('next to Jada H.');
+    const isolated = S.describeSeatForStudent(rk, 'owl', { includeNeighbors: true });
+    expect(isolated).toContain('back of room');
+    expect(isolated).toContain('single desk');
+    expect(isolated).not.toContain('next to');
+  });
+
+  it('returns null for unseated/unknown students and junk input', () => {
+    const rk = rosterWithChart();
+    delete rk.seating.layouts.layout1.assignments.seat4;
+    expect(S.describeSeatForStudent(rk, 'owl')).toBe(null);      // in roster, unseated
+    expect(S.describeSeatForStudent(rk, 'nobody')).toBe(null);   // not in roster
+    expect(S.describeSeatForStudent(null, 'wolf')).toBe(null);
+    expect(S.describeSeatForStudent({ students: {} }, 'wolf')).toBe(null);
+  });
+});
+
+describe('arrangement history', () => {
+  it('pushHistory appends normalized events and normalizeSeating keeps them', () => {
+    const t = S.buildTemplate('rows', 4);
+    const layout = { id: 'layout1', name: 'P3', seats: t.seats, furniture: t.furniture, assignments: {} };
+    let seating = S.normalizeSeating({ activeLayoutId: 'layout1', layouts: { layout1: layout }, constraints: [] }, []);
+    seating = S.pushHistory(seating, layout, 'created', '2026-07-21T09:00:00.000Z');
+    seating = S.pushHistory(seating, layout, 'solve', '2026-07-21T10:00:00.000Z');
+    const out = S.normalizeSeating(seating, []);
+    expect(out.history.map((e) => e.kind)).toEqual(['created', 'solve']);
+    expect(out.history[1].layoutName).toBe('P3');
+    // Junk events are dropped, bad kinds coerced, cap at 50.
+    const junk = S.normalizeSeating({ ...seating, history: seating.history.concat([{ at: 'not-a-date' }, null, { at: '2026-07-21T11:00:00.000Z', kind: 'weird' }]) }, []);
+    expect(junk.history.length).toBe(3);
+    expect(junk.history[2].kind).toBe('solve');
+  });
+});
+
 describe('nextId', () => {
   it('takes max numeric suffix + 1 for the matching prefix only', () => {
     expect(S.nextId(['seat1', 'seat9', 'seat3'], 'seat')).toBe('seat10');

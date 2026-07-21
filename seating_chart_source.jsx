@@ -247,13 +247,36 @@ function normalizeSeating(raw, studentNames) {
     .map(function (c) { return normalizeConstraint(c, studentSet, seatSet, cTaken); })
     .filter(Boolean)
     .slice(0, 80);
+  // Arrangement history — class-level "the room changed" events (auto-arrange
+  // runs, new layouts). BehaviorLens reads these as candidate phase markers on
+  // single-case graphs: a seating change is an environmental intervention and
+  // deserves a visible line, not a memory.
+  var history = (Array.isArray(src.history) ? src.history : [])
+    .filter(function (e) { return e && typeof e === 'object' && typeof e.at === 'string' && !isNaN(Date.parse(e.at)); })
+    .map(function (e) {
+      return {
+        at: e.at,
+        layoutId: typeof e.layoutId === 'string' ? e.layoutId : '',
+        layoutName: e.layoutName != null ? String(e.layoutName).slice(0, 60) : '',
+        kind: e.kind === 'created' ? 'created' : 'solve',
+      };
+    })
+    .slice(-50);
   return {
     version: 1,
     activeLayoutId: activeLayoutId,
     layouts: layouts,
     constraints: constraints,
     solveSeed: clampNum(src.solveSeed, 1, 1e9, 1),
+    history: history,
   };
+}
+
+// Append an arrangement-history event (pure; caller commits the result).
+function pushHistory(seating, layout, kind, atIso) {
+  var entry = { at: atIso, layoutId: layout.id, layoutName: layout.name, kind: kind === 'created' ? 'created' : 'solve' };
+  var history = (seating.history || []).concat([entry]).slice(-50);
+  return Object.assign({}, seating, { history: history });
 }
 
 // ── Templates ── deterministic seat generators sized to the class.
@@ -493,6 +516,64 @@ function buildPrintableSvg(layout, displayNameOf, title) {
   return parts.join('');
 }
 
+// ── BehaviorLens bridge ── plain-English positional description of a
+// student's seat, for ABC "Setting / Location" enrichment. PURE: takes the
+// whole rosterKey, matches by roster key or display name, describes position
+// only. Peer names are included ONLY with opts.includeNeighbors (deliberate
+// opt-in — ABC data lives in one student's clinical record, and neighbors'
+// names should arrive there intentionally, not automatically). Deliberately
+// NOT localized: this string becomes clinical record DATA, not UI chrome.
+function describeSeatForStudent(rosterKey, studentName, opts) {
+  opts = opts || {};
+  if (!rosterKey || typeof rosterKey !== 'object' || !studentName) return null;
+  var students = (rosterKey.students && typeof rosterKey.students === 'object') ? rosterKey.students : {};
+  var displayNames = (rosterKey.displayNames && typeof rosterKey.displayNames === 'object') ? rosterKey.displayNames : {};
+  var names = Object.keys(students);
+  var seating = normalizeSeating(rosterKey.seating, names);
+  var layout = seating.activeLayoutId ? seating.layouts[seating.activeLayoutId] : null;
+  if (!layout || !layout.seats.length) return null;
+  // Resolve the student: exact roster key, then display-name match.
+  var want = String(studentName).trim().toLowerCase();
+  var key = null;
+  names.forEach(function (n) { if (!key && n.trim().toLowerCase() === want) key = n; });
+  if (!key) names.forEach(function (n) { if (!key && String(displayNames[n] || '').trim().toLowerCase() === want) key = n; });
+  if (!key) return null;
+  var seatId = null;
+  Object.keys(layout.assignments).forEach(function (sid) { if (!seatId && layout.assignments[sid] === key) seatId = sid; });
+  if (!seatId) return null;
+  var seat = layout.seats.filter(function (s) { return s.id === seatId; })[0];
+  var sorted = layout.seats.slice().sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
+  var seatNo = sorted.indexOf(seat) + 1;
+  var parts = ['Seat ' + seatNo];
+  // Row band by seat-center thirds (front = board side, y small).
+  if (layout.seats.length > 1) {
+    var ys = layout.seats.map(function (s) { return seatCenter(s).y; });
+    var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    if (maxY > minY) {
+      var band = (seatCenter(seat).y - minY) / (maxY - minY);
+      parts.push(band < 1 / 3 ? 'front of room' : band > 2 / 3 ? 'back of room' : 'middle of room');
+    }
+  }
+  var podMates = layout.seats.filter(function (s) { return s.id !== seat.id && centerDist(s, seat) < ADJ_DIST; });
+  parts.push(podMates.length ? 'pod of ' + (podMates.length + 1) : 'single desk');
+  var anchors = {};
+  layout.furniture.forEach(function (f) { (anchors[f.kind] = anchors[f.kind] || []).push(f); });
+  function within(kind, radius) {
+    return (anchors[kind] || []).some(function (f) { return centerDist(seat, f) <= radius; });
+  }
+  if (within('teacher_desk', NEAR_RADIUS)) parts.push('near teacher desk');
+  if (within('door', NEAR_RADIUS)) parts.push('near door');
+  if (within('window', WINDOW_RADIUS)) parts.push('by window');
+  if (opts.includeNeighbors) {
+    var neighborNames = podMates
+      .map(function (s) { return layout.assignments[s.id]; })
+      .filter(Boolean)
+      .map(function (n) { return String(displayNames[n] || n); });
+    if (neighborNames.length) parts.push('next to ' + neighborNames.join(', '));
+  }
+  return layout.name + ': ' + parts.join(', ');
+}
+
 function furnitureLabel(kind) {
   if (kind === 'teacher_desk') return tr('Teacher desk');
   if (kind === 'table') return tr('Table');
@@ -608,7 +689,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       : buildTemplate(templateKind, Math.max(studentNames.length, 4));
     const nameMap = { rows: tr('Rows'), pairs: tr('Pairs'), pods: tr('Pods'), horseshoe: tr('Horseshoe'), blank: tr('Blank room') };
     const newLayout = { id, name: (nameMap[templateKind] || tr('Layout')) + ' ' + id.replace('layout', ''), seats: base.seats, furniture: base.furniture, assignments: {} };
-    commitSeating({ ...seating, activeLayoutId: id, layouts: { ...seating.layouts, [id]: newLayout } });
+    commitSeating(pushHistory({ ...seating, activeLayoutId: id, layouts: { ...seating.layouts, [id]: newLayout } }, newLayout, 'created', new Date().toISOString()));
     setLastSolve(null);
   };
   const duplicateLayout = () => {
@@ -773,7 +854,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     const seed = reshuffle ? seating.solveSeed + 1 : seating.solveSeed;
     const result = solveSeating(layout, studentNames, seating.constraints, { seed });
     const nextLayout = { ...layout, assignments: result.assignments };
-    commitSeating({ ...seating, solveSeed: seed, layouts: { ...seating.layouts, [layout.id]: nextLayout } });
+    commitSeating(pushHistory({ ...seating, solveSeed: seed, layouts: { ...seating.layouts, [layout.id]: nextLayout } }, nextLayout, 'solve', new Date().toISOString()));
     setLastSolve({ score: result.score, violations: result.violations });
     announce(result.violations.length
       ? tr('{n} constraints could not be fully satisfied', { n: result.violations.length })

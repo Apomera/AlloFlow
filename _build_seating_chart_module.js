@@ -20,7 +20,7 @@ const TMP = path.join(ROOT, '_tmp_seating_chart_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React, useState, useEffect, useRef */\n\n${source}\n\nwindow.__seatingChartExports = { SeatingChartPanel, normalizeSeating, buildTemplate, solveSeating, scoreAssignment, anchorGaps, buildPrintableSvg, nextId, makeRng, centerDist, normalizeConstraint, CONSTRAINT_TYPES, FURNITURE_KINDS, ROOM_W, ROOM_H, ADJ_DIST, NEAR_RADIUS, WINDOW_RADIUS };\n`;
+const entry = `/* global React, useState, useEffect, useRef */\n\n${source}\n\nwindow.__seatingChartExports = { SeatingChartPanel, normalizeSeating, buildTemplate, solveSeating, scoreAssignment, anchorGaps, buildPrintableSvg, nextId, makeRng, centerDist, normalizeConstraint, describeSeatForStudent, pushHistory, CONSTRAINT_TYPES, FURNITURE_KINDS, ROOM_W, ROOM_H, ADJ_DIST, NEAR_RADIUS, WINDOW_RADIUS };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling seating_chart_source.jsx with esbuild...');
@@ -84,9 +84,14 @@ ${compiled}
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SeatingChart = {
     SeatingChartPanel: SeatingChartPanel,
+    // BehaviorLens bridge (public contract): plain-English seat description
+    // for ABC setting enrichment. Positional only unless opts.includeNeighbors.
+    describeSeatForStudent: describeSeatForStudent,
     // Pure seams exposed for unit tests + future live-session overlay work.
     // Not part of the public contract.
     _testing: {
+      describeSeatForStudent: describeSeatForStudent,
+      pushHistory: pushHistory,
       normalizeSeating: normalizeSeating,
       normalizeConstraint: normalizeConstraint,
       buildTemplate: buildTemplate,

@@ -635,7 +635,7 @@
 
     // ─── ABCModal ───────────────────────────────────────────────────────
     // Modal for adding/editing a single ABC data entry
-    const ABCModal = ({ entry, onSave, onClose, t, callGemini }) => {
+    const ABCModal = ({ entry, onSave, onClose, t, callGemini, studentName, addToast }) => {
         const [antecedent, setAntecedent] = useState(entry?.antecedent || '');
         const [behavior, setBehavior] = useState(entry?.behavior || '');
         const [consequence, setConsequence] = useState(entry?.consequence || '');
@@ -648,6 +648,51 @@
         const [customC, setCustomC] = useState('');
         const [quickFillText, setQuickFillText] = useState('');
         const [quickFillLoading, setQuickFillLoading] = useState(false);
+        const [includeNeighbors, setIncludeNeighbors] = useState(false);
+        const [seatLookupBusy, setSeatLookupBusy] = useState(false);
+
+        // ── Seating-chart bridge ──
+        // Fills Setting/Location from the class Seating Chart (roster tool):
+        // positional description only ("Test day: Seat 12, back of room, pod
+        // of 4, by window"). Peer names require the explicit opt-in checkbox —
+        // this text lands in ONE student's clinical record, so neighbors'
+        // names should arrive intentionally, never automatically. Everything
+        // is read from device-local rosterKey; nothing leaves the browser.
+        const applySeatingContext = () => {
+            var finish = (mod) => {
+                setSeatLookupBusy(false);
+                var rk = null;
+                try { rk = JSON.parse(localStorage.getItem('alloflow_roster_key') || 'null'); } catch (e) {}
+                if (!rk || !rk.seating) {
+                    if (addToast) addToast(tt('behavior_lens.abc.no_seating_chart', 'No seating chart found — create one from the Roster panel first.'), 'info');
+                    return;
+                }
+                var desc = null;
+                try { desc = mod.describeSeatForStudent(rk, studentName, { includeNeighbors: includeNeighbors }); } catch (e) { warnLog('Seating lookup failed:', e); }
+                if (!desc) {
+                    if (addToast) addToast(t('behavior_lens.abc.student_not_on_chart') || `${studentName} is not seated on the active seating chart.`, 'info');
+                    return;
+                }
+                setSetting(prev => prev && prev.trim() ? prev + ' — ' + desc : desc);
+            };
+            var mod = window.AlloModules && window.AlloModules.SeatingChart;
+            if (mod && typeof mod.describeSeatForStudent === 'function') { finish(mod); return; }
+            if (typeof window.__alloLazySeatingChart === 'function') {
+                try { window.__alloLazySeatingChart(); } catch (e) {}
+                setSeatLookupBusy(true);
+                var tries = 0;
+                var iv = setInterval(() => {
+                    var m2 = window.AlloModules && window.AlloModules.SeatingChart;
+                    if (m2 && typeof m2.describeSeatForStudent === 'function') { clearInterval(iv); finish(m2); }
+                    else if (++tries > 20) {
+                        clearInterval(iv); setSeatLookupBusy(false);
+                        if (addToast) addToast(tt('behavior_lens.abc.seating_module_loading', 'Seating Chart module is still loading — try again in a moment.'), 'info');
+                    }
+                }, 250);
+            } else if (addToast) {
+                addToast(tt('behavior_lens.abc.seating_unavailable', 'The Seating Chart module is not available here.'), 'info');
+            }
+        };
 
         const handleQuickFill = async () => {
             if (!callGemini || !quickFillText.trim()) return;
@@ -782,7 +827,26 @@ Return ONLY valid JSON:
                             placeholder: tt('behavior_lens.abc.setting_placeholder', 'e.g., Classroom, Hallway, Cafeteria'),
                             'aria-label': 'Setting or location',
                             className: 'w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
-                        })
+                        }),
+                        // Seating-chart bridge: positional context from the roster's
+                        // seating chart; neighbor names are a deliberate opt-in.
+                        studentName && h('div', { className: 'flex flex-wrap items-center gap-2 mt-1.5' },
+                            h('button', {
+                                onClick: applySeatingContext,
+                                disabled: seatLookupBusy,
+                                title: 'Append this student’s current seat position (from the class Seating Chart) to the setting.',
+                                className: 'px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg text-[11px] font-bold hover:bg-sky-100 disabled:opacity-40 transition-all'
+                            }, seatLookupBusy ? '⏳' : ('🪑 ' + tt('behavior_lens.abc.use_seating_context', 'Use seating chart position'))),
+                            h('label', { className: 'flex items-center gap-1 text-[11px] text-slate-600 cursor-pointer' },
+                                h('input', {
+                                    type: 'checkbox',
+                                    checked: includeNeighbors,
+                                    onChange: (e) => setIncludeNeighbors(e.target.checked),
+                                    'aria-label': 'Include neighboring students’ names in the setting description'
+                                }),
+                                tt('behavior_lens.abc.include_neighbors', 'Include neighbor names')
+                            )
+                        )
                     ),
                     // A-B-C pickers
                     renderCategoryPicker('antecedent', ABC_CATEGORIES.antecedent, antecedent, setAntecedent, customA, setCustomA, '⚡'),
@@ -1374,7 +1438,9 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 onSave: handleSaveEntry,
                 onClose: () => { setShowModal(false); setEditEntry(null); },
                 t,
-                callGemini
+                callGemini,
+                studentName,
+                addToast
             })
         );
     };
@@ -16527,6 +16593,44 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const toX = (session) => padL + ((session - 1) / Math.max(1, maxSession - 1)) * plotW;
         const toY = (val) => padT + plotH - (val / maxVal) * plotH;
 
+        // ── Seating-change markers ──
+        // The Seating Chart roster tool logs arrangement events (auto-arrange
+        // runs / new layouts) in device-local rosterKey.seating.history. A
+        // seating change is an environmental intervention, so surface each one
+        // that falls INSIDE the dated span of this graph as a candidate phase
+        // marker. Class-level (the room changed), descriptive only. Toggleable;
+        // hidden entirely when no chart or no dated data points exist.
+        const [showSeatMarkers, setShowSeatMarkers] = useState(true);
+        const seatingMarkers = useMemo(() => {
+            let history = [];
+            try {
+                const rk = JSON.parse(localStorage.getItem('alloflow_roster_key') || 'null');
+                history = (rk && rk.seating && Array.isArray(rk.seating.history)) ? rk.seating.history : [];
+            } catch (e) { /* no roster / storage unavailable (Canvas) */ }
+            if (!history.length) return [];
+            const dated = dataSeries.filter(d => d.date && !isNaN(Date.parse(d.date)));
+            if (dated.length < 2) return [];
+            const halfStep = (plotW / Math.max(1, maxSession - 1)) * 0.5;
+            const out = [];
+            history.forEach(ev => {
+                const tMs = Date.parse(ev.at);
+                if (isNaN(tMs)) return;
+                // First dated session at-or-after the change; marker sits just
+                // before it (same convention as phase-change lines). Changes
+                // outside the graphed span are skipped.
+                const next = dated.find(d => Date.parse(d.date) >= tMs);
+                if (!next || next === dated[0]) return;
+                out.push({
+                    x: toX(next.session) - halfStep,
+                    label: (ev.layoutName || 'seating') + ' — ' + String(ev.at).slice(0, 10),
+                });
+            });
+            // Collapse markers that land on the same x (several edits between
+            // two sessions read as ONE room change on the graph).
+            const seen = {};
+            return out.filter(m => { const k = Math.round(m.x); if (seen[k]) return false; seen[k] = 1; return true; });
+        }, [dataSeries, plotW, maxSession]);
+
         // Y-axis tick values
         const yTicks = [];
         const tickStep = maxVal <= 10 ? 1 : maxVal <= 50 ? 5 : maxVal <= 100 ? 10 : Math.ceil(maxVal / 5);
@@ -17069,6 +17173,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             h('input', { type: 'checkbox', checked: val, onChange: () => setter(!val), className: 'accent-indigo-600' }), label
                         )
                     ),
+                    seatingMarkers.length > 0 && h('label', { className: 'flex items-center gap-1 text-[11px] font-medium text-slate-600 cursor-pointer', title: 'Vertical markers where the class seating arrangement changed (from the Seating Chart roster tool). Descriptive context only — not a phase claim.' },
+                        h('input', { type: 'checkbox', checked: showSeatMarkers, onChange: () => setShowSeatMarkers(!showSeatMarkers), className: 'accent-sky-600' }), '🪑 ' + tt('behavior_lens.graph.seating_changes', 'Seating Changes')
+                    ),
                     h('div', { className: 'w-px h-4 bg-slate-200 mx-2' }),
                     h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-700 cursor-pointer bg-slate-100 px-2 py-0.5 rounded shadow-sm' },
                         h('input', { type: 'checkbox', checked: jabaMode, onChange: () => setJabaMode(!jabaMode), className: 'accent-slate-700' }), '📓 JABA Format (B&W)'
@@ -17132,6 +17239,16 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             h('line', { x1: x, y1: padT - 5, x2: x, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5, strokeDasharray: '6,4' }),
                         );
                     }),
+                    // Seating-change markers (environmental context from the
+                    // Seating Chart roster tool). Lighter + dotted so they read
+                    // as CONTEXT, never as experimenter-drawn phase lines.
+                    ...(showSeatMarkers ? seatingMarkers : []).map((m, i) =>
+                        h('g', { key: 'seatmark' + i },
+                            h('line', { x1: m.x, y1: padT + 6, x2: m.x, y2: padT + plotH, stroke: jabaMode ? '#6b7280' : '#0284c7', strokeWidth: 1, strokeDasharray: '2,3' }),
+                            h('text', { x: m.x, y: padT + 14, textAnchor: 'middle', fontSize: 8, fill: jabaMode ? '#6b7280' : '#0284c7' }, '🪑'),
+                            h('title', null, 'Seating change: ' + m.label)
+                        )
+                    ),
                     // Phase condition labels
                     ...phaseAnalysis.map((pa, i) => {
                         const startX = toX(pa.data[0]?.session || pa.startSession || 1);
