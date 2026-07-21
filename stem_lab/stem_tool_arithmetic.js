@@ -405,7 +405,7 @@
           var nextB = op === 'subtract' ? Math.min(clampInt(current.b, 0, 9999, 27), clampInt(current.a, 0, 99999, 58)) : current.b;
           return { operation: op, b: nextB, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, wordAnswer: '', wordRemainder: '', wordFeedback: null };
         });
-        announce(OPERATIONS[op].label + ' selected.');
+        announce(OPERATIONS[op].label + t('stem.arithmetic.selected', " selected."));
       }
 
       var practiceCheckPending = false;
@@ -439,8 +439,8 @@
             operationsCompleted: completedOperations
           };
         });
-        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 4, 'Arithmetic strategy challenge');
-        announce(complete ? 'Correct. The exact answer and estimate are consistent.' : exactCorrect ? 'Your exact answer is correct. Revise the estimate so it is close enough to check reasonableness.' : 'Not yet. Compare your answer with your estimate and try a strategy.');
+        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 4, t('stem.arithmetic.arithmetic_strategy_challenge', "Arithmetic strategy challenge"));
+        announce(complete ? t('stem.arithmetic.correct_the_exact_answer_and_estimate_', "Correct. The exact answer and estimate are consistent.") : exactCorrect ? t('stem.arithmetic.your_exact_answer_is_correct_revise_th', "Your exact answer is correct. Revise the estimate so it is close enough to check reasonableness.") : t('stem.arithmetic.not_yet_compare_your_answer_with_your_', "Not yet. Compare your answer with your estimate and try a strategy."));
       }
 
       function nextPractice() {
@@ -459,8 +459,8 @@
           if (correct) solved[errorCase.id] = true;
           return { errorChoice: choice, errorFeedback: correct ? 'correct' : 'try', errorSolvedCases: solved, errorSolved: countSolved(solved, ERROR_IDS) };
         });
-        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 2, 'Arithmetic error detective');
-        announce(correct ? 'Correct diagnosis. ' + errorCase.explain : 'That is not the key error. Read the work one place at a time.');
+        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 2, t('stem.arithmetic.arithmetic_error_detective', "Arithmetic error detective"));
+        announce(correct ? t('stem.arithmetic.correct_diagnosis', "Correct diagnosis. ") + errorCase.explain : t('stem.arithmetic.that_is_not_the_key_error_read_the_wor', "That is not the key error. Read the work one place at a time."));
       }
 
       var wordCheckPending = false;
@@ -500,13 +500,13 @@
             operationsCompleted: completedOperations
           };
         });
-        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 3, 'Arithmetic word problem');
-        announce(correct ? 'Correct. The operation and context answer both fit the story.' : !operationCorrect ? 'Reconsider which operation represents the relationship in the story.' : 'The operation fits. Recheck how the context changes the numerical result.');
+        if (firstSolve && typeof ctx.awardXP === 'function') ctx.awardXP('arithmeticStudio', 3, t('stem.arithmetic.arithmetic_word_problem', "Arithmetic word problem"));
+        announce(correct ? t('stem.arithmetic.correct_the_operation_and_context_answ', "Correct. The operation and context answer both fit the story.") : !operationCorrect ? t('stem.arithmetic.reconsider_which_operation_represents_', "Reconsider which operation represents the relationship in the story.") : t('stem.arithmetic.the_operation_fits_recheck_how_the_con', "The operation fits. Recheck how the context changes the numerical result."));
       }
 
       function chooseWordOperation(op) {
         update({ wordProblemId: wordProblem.id, wordIndex: wordProblemIndex, wordOperation: op, wordFeedback: null });
-        announce(OPERATIONS[op].label + ' chosen for this story.');
+        announce(OPERATIONS[op].label + t('stem.arithmetic.chosen_for_this_story', " chosen for this story."));
       }
 
       function moveToWord(id) {
@@ -529,7 +529,7 @@
       function retryMissedWords() {
         if (!wordMissedIds.length) return;
         moveToWord(nextWordProblemId(wordProblem.id, wordMissedIds));
-        announce('Opening a missed story for another try.');
+        announce(t('stem.arithmetic.opening_a_missed_story_for_another_try', "Opening a missed story for another try."));
       }
 
       function readCurrent() {
@@ -554,7 +554,7 @@
       }
 
       function renderOperationPicker() {
-        return h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'group', 'aria-label': 'Choose an operation' },
+        return h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'group', 'aria-label': t('stem.arithmetic.choose_an_operation', "Choose an operation") },
           Object.keys(OPERATIONS).map(function (op) {
             var meta = OPERATIONS[op], active = operation === op;
             return h('button', { key: op, onClick: function () { markOperation(op); }, 'aria-pressed': active,
@@ -568,7 +568,7 @@
         var meta = OPERATIONS[op];
         return h('div', { className: 'rounded-2xl p-4 text-center', style: { background: meta.soft, color: '#0f172a', border: '2px solid ' + meta.color } },
           h('div', { className: 'text-3xl sm:text-4xl font-black font-mono', 'aria-label': left + ' ' + meta.label + ' ' + right }, left + ' ' + meta.symbol + ' ' + right),
-          op === 'divide' && h('p', { className: 'mt-1 text-xs font-semibold' }, 'Think: how many groups of ' + right + ' fit in ' + left + '?')
+          op === 'divide' && h('p', { className: 'mt-1 text-xs font-semibold' }, t('stem.arithmetic.think_how_many_groups_of', "Think: how many groups of ") + right + t('stem.arithmetic.fit_in', " fit in ") + left + '?')
         );
       }
 
@@ -577,13 +577,13 @@
         var places = ['ones', 'tens', 'hundreds', 'thousands', 'ten-thousands'].slice(0, maxDigits).reverse();
         function digits(n) { return String(Math.abs(n)).padStart(maxDigits, '0').split(''); }
         return h('details', { className: 'rounded-xl p-2', style: { border: '1px solid ' + border } },
-          h('summary', { className: 'cursor-pointer text-xs font-bold', style: { color: accentText } }, 'Place-value table and text alternative'),
+          h('summary', { className: 'cursor-pointer text-xs font-bold', style: { color: accentText } }, t('stem.arithmetic.place_value_table_and_text_alternative', "Place-value table and text alternative")),
           h('div', { className: 'overflow-x-auto mt-2' },
             h('table', { className: 'w-full text-center text-xs' },
-              h('caption', { className: 'sr-only' }, 'Place-value alignment for ' + left + ' and ' + right),
-              h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'p-1' }, 'Number'), places.map(function (p) { return h('th', { key: p, scope: 'col', className: 'p-1' }, p); }))),
+              h('caption', { className: 'sr-only' }, t('stem.arithmetic.place_value_alignment_for', "Place-value alignment for ") + left + t('stem.arithmetic.and', " and ") + right),
+              h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'p-1' }, t('stem.arithmetic.number', "Number")), places.map(function (p) { return h('th', { key: p, scope: 'col', className: 'p-1' }, p); }))),
               h('tbody', null,
-                [left, right].map(function (n, row) { return h('tr', { key: row }, h('th', { scope: 'row', className: 'p-1' }, row ? opMeta.symbol + ' second' : 'first'), digits(n).map(function (digit, i) { return h('td', { key: i, className: 'p-1 font-mono font-bold' }, digit); })); })
+                [left, right].map(function (n, row) { return h('tr', { key: row }, h('th', { scope: 'row', className: 'p-1' }, row ? opMeta.symbol + t('stem.arithmetic.second', " second") : 'first'), digits(n).map(function (digit, i) { return h('td', { key: i, className: 'p-1 font-mono font-bold' }, digit); })); })
               )
             )
           )
@@ -594,8 +594,8 @@
         if (!showModel) return null;
         if (op === 'add' || op === 'subtract') {
           var leftParts = splitPlaceValue(left), rightParts = splitPlaceValue(right);
-          return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': 'Place-value decomposition: ' + left + ' equals ' + leftParts.join(' plus ') + '; ' + right + ' equals ' + rightParts.join(' plus ') + '.', style: { background: card, border: '1px solid ' + border } },
-            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, 'Place-value model'),
+          return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': t('stem.arithmetic.place_value_decomposition', "Place-value decomposition: ") + left + t('stem.arithmetic.equals', " equals ") + leftParts.join(t('stem.arithmetic.plus', " plus ")) + '; ' + right + t('stem.arithmetic.equals', " equals ") + rightParts.join(t('stem.arithmetic.plus', " plus ")) + '.', style: { background: card, border: '1px solid ' + border } },
+            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.place_value_model', "Place-value model")),
             h('p', { className: 'font-mono text-sm' }, left + ' = ' + leftParts.join(' + ')),
             h('p', { className: 'font-mono text-sm' }, right + ' = ' + rightParts.join(' + ')),
             h('div', { className: 'mt-2 flex flex-wrap gap-1' }, leftParts.concat(rightParts).map(function (part, i) {
@@ -606,16 +606,16 @@
         if (op === 'multiply') {
           if (left === 0 || right === 0) {
             return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
-              h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, 'Zero-product model'),
-              h('div', { role: 'img', 'aria-label': left + ' times ' + right + ' has no dots because one factor is zero; the product is zero.', className: 'rounded-lg p-4 text-center text-sm font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, 'One factor is 0, so there are no equal groups to draw. Product: 0.')
+              h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.zero_product_model', "Zero-product model")),
+              h('div', { role: 'img', 'aria-label': left + t('stem.arithmetic.times', " times ") + right + t('stem.arithmetic.has_no_dots_because_one_factor_is_zero', " has no dots because one factor is zero; the product is zero."), className: 'rounded-lg p-4 text-center text-sm font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, t('stem.arithmetic.one_factor_is_0_so_there_are_no_equal_', "One factor is 0, so there are no equal groups to draw. Product: 0."))
             );
           }
           var rows = Math.min(left, 12), cols = Math.min(right, 12);
           return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
-            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, left <= 12 && right <= 12 ? 'Array model' : 'Area-model decomposition'),
-            left <= 12 && right <= 12 ? h('div', { role: 'img', 'aria-label': rows + ' rows of ' + cols + ' dots, ' + (rows * cols) + ' total', style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
+            h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, left <= 12 && right <= 12 ? t('stem.arithmetic.array_model', "Array model") : t('stem.arithmetic.area_model_decomposition', "Area-model decomposition")),
+            left <= 12 && right <= 12 ? h('div', { role: 'img', 'aria-label': rows + t('stem.arithmetic.rows_of', " rows of ") + cols + t('stem.arithmetic.dots', " dots, ") + (rows * cols) + t('stem.arithmetic.total', " total"), style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
               Array.from({ length: rows * cols }).map(function (_, i) { return h('span', { key: i, style: { width: 12, height: 12, borderRadius: '50%', background: opMeta.color } }); })
-            ) : h('div', { role: 'img', 'aria-label': 'Area model showing partial products for ' + left + ' times ' + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold', style: { color: '#0f172a' } },
+            ) : h('div', { role: 'img', 'aria-label': t('stem.arithmetic.area_model_showing_partial_products_fo', "Area model showing partial products for ") + left + t('stem.arithmetic.times', " times ") + right, className: 'grid grid-cols-2 gap-1 text-center text-xs font-bold', style: { color: '#0f172a' } },
               h('div', { className: 'p-3', style: { background: '#ddd6fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
               h('div', { className: 'p-3', style: { background: '#ede9fe' } }, Math.floor(left / 10) * 10 + ' \u00d7 ' + right % 10),
               h('div', { className: 'p-3', style: { background: '#ede9fe' } }, left % 10 + ' \u00d7 ' + Math.floor(right / 10) * 10),
@@ -624,13 +624,13 @@
           );
         }
         var division = calculate('divide', left, right);
-        return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': left + ' objects divided into groups of ' + right + ' gives ' + division.answer + ' groups with ' + division.remainder + ' left over', style: { background: card, border: '1px solid ' + border } },
-          h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, 'Equal-groups model'),
+        return h('div', { className: 'rounded-xl p-3', role: 'img', 'aria-label': left + t('stem.arithmetic.objects_divided_into_groups_of', " objects divided into groups of ") + right + t('stem.arithmetic.gives', " gives ") + division.answer + t('stem.arithmetic.groups_with', " groups with ") + division.remainder + t('stem.arithmetic.left_over', " left over"), style: { background: card, border: '1px solid ' + border } },
+          h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.equal_groups_model', "Equal-groups model")),
           h('div', { className: 'h-6 rounded-full overflow-hidden flex', style: { background: '#e2e8f0' } },
             h('div', { style: { width: (left > 0 ? ((left - division.remainder) / left * 100) : 0) + '%', background: opMeta.color } }),
             division.remainder > 0 && h('div', { style: { flex: 1, background: '#f59e0b' } })
           ),
-          h('p', { className: 'mt-2 text-xs font-semibold' }, division.answer + ' complete groups of ' + right + (division.remainder ? ', with ' + division.remainder + ' left over.' : ', with none left over.'))
+          h('p', { className: 'mt-2 text-xs font-semibold' }, division.answer + t('stem.arithmetic.complete_groups_of', " complete groups of ") + right + (division.remainder ? t('stem.arithmetic.with', ", with ") + division.remainder + t('stem.arithmetic.left_over_2', " left over.") : t('stem.arithmetic.with_none_left_over', ", with none left over.")))
         );
       }
 
@@ -643,7 +643,7 @@
       function renderLearn() {
         return h(React.Fragment, null,
           h('div', { className: 'grid sm:grid-cols-2 gap-3' },
-            h('label', { className: 'text-xs font-bold' }, 'First number', h('input', { type: 'number', min: 0, max: 99999, value: a, onChange: function (e) {
+            h('label', { className: 'text-xs font-bold' }, t('stem.arithmetic.first_number', "First number"), h('input', { type: 'number', min: 0, max: 99999, value: a, onChange: function (e) {
               var nextA = clampInt(e.target.value, 0, 99999, a);
               update(function (current) {
                 var changes = { a: nextA, showSteps: false };
@@ -651,19 +651,19 @@
                 return changes;
               });
             }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? 'Divisor' : 'Second number', h('input', { type: 'number', min: operation === 'divide' ? 1 : 0, max: bMax, value: b, onChange: function (e) { update({ b: clampInt(e.target.value, operation === 'divide' ? 1 : 0, bMax, b), showSteps: false }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
+            h('label', { className: 'text-xs font-bold' }, operation === 'divide' ? t('stem.arithmetic.divisor', "Divisor") : t('stem.arithmetic.second_number', "Second number"), h('input', { type: 'number', min: operation === 'divide' ? 1 : 0, max: bMax, value: b, onChange: function (e) { update({ b: clampInt(e.target.value, operation === 'divide' ? 1 : 0, bMax, b), showSteps: false }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
           ),
-          operation === 'subtract' && h('p', { className: 'text-xs font-semibold', style: { color: muted } }, 'This whole-number workspace keeps the second number at or below the first. Use an integer number line when a negative result is the learning goal.'),
+          operation === 'subtract' && h('p', { className: 'text-xs font-semibold', style: { color: muted } }, t('stem.arithmetic.this_whole_number_workspace_keeps_the_', "This whole-number workspace keeps the second number at or below the first. Use an integer number line when a negative result is the learning goal.")),
           renderEquation(a, b, operation),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { onClick: function () { update({ showModel: !showModel }); }, 'aria-pressed': showModel, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showModel ? opMeta.color : card, color: showModel ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showModel ? 'Hide model' : 'Show model'),
-            h('button', { onClick: function () { update({ showSteps: !showSteps }); }, 'aria-expanded': showSteps, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showSteps ? opMeta.color : card, color: showSteps ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showSteps ? 'Hide strategy steps' : 'Reveal strategy steps'),
-            typeof ctx.callTTS === 'function' && h('button', { onClick: readCurrent, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color }, 'aria-label': 'Read strategy aloud' }, 'Read aloud')
+            h('button', { onClick: function () { update({ showModel: !showModel }); }, 'aria-pressed': showModel, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showModel ? opMeta.color : card, color: showModel ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showModel ? t('stem.arithmetic.hide_model', "Hide model") : t('stem.arithmetic.show_model', "Show model")),
+            h('button', { onClick: function () { update({ showSteps: !showSteps }); }, 'aria-expanded': showSteps, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: showSteps ? opMeta.color : card, color: showSteps ? '#fff' : text, border: '1px solid ' + opMeta.color } }, showSteps ? t('stem.arithmetic.hide_strategy_steps', "Hide strategy steps") : t('stem.arithmetic.reveal_strategy_steps', "Reveal strategy steps")),
+            typeof ctx.callTTS === 'function' && h('button', { onClick: readCurrent, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color }, 'aria-label': t('stem.arithmetic.read_strategy_aloud', "Read strategy aloud") }, t('stem.arithmetic.read_aloud', "Read aloud"))
           ),
           renderModel(operation, a, b),
-          showSteps && h('ol', { className: 'space-y-2', 'aria-label': 'Strategy steps' }, customSteps.map(function (step, i) { return h('li', { key: i, className: 'rounded-xl p-3 text-sm flex gap-3', style: { background: card, border: '1px solid ' + border } }, h('span', { className: 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-black text-white', style: { background: opMeta.color } }, i + 1), h('span', null, step)); })),
+          showSteps && h('ol', { className: 'space-y-2', 'aria-label': t('stem.arithmetic.strategy_steps', "Strategy steps") }, customSteps.map(function (step, i) { return h('li', { key: i, className: 'rounded-xl p-3 text-sm flex gap-3', style: { background: card, border: '1px solid ' + border } }, h('span', { className: 'shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-black text-white', style: { background: opMeta.color } }, i + 1), h('span', null, step)); })),
           renderPlaceTable(a, b, operation),
-          h('p', { className: 'rounded-xl p-3 text-xs', style: { background: opMeta.soft, color: '#0f172a' } }, 'Reasonableness check: use friendly operands ', h('strong', null, customEstimate.expression + ' is about ' + customEstimate.estimate), '. The exact result is ', h('strong', null, customResult.answer + (customResult.remainder ? ' remainder ' + customResult.remainder : '')), '.')
+          h('p', { className: 'rounded-xl p-3 text-xs', style: { background: opMeta.soft, color: '#0f172a' } }, t('stem.arithmetic.reasonableness_check_use_friendly_oper', "Reasonableness check: use friendly operands "), h('strong', null, customEstimate.expression + t('stem.arithmetic.is_about', " is about ") + customEstimate.estimate), t('stem.arithmetic.the_exact_result_is', ". The exact result is "), h('strong', null, customResult.answer + (customResult.remainder ? t('stem.arithmetic.remainder', " remainder ") + customResult.remainder : '')), '.')
         );
       }
 
@@ -675,22 +675,22 @@
         var visiblePracticeFeedback = solved ? 'correct' : practiceFeedback;
         return h(React.Fragment, null,
           h('div', { className: 'flex items-center justify-between gap-2' },
-            h('div', null, h('h2', { className: 'text-base font-black' }, 'Estimate, solve, and check'), h('p', { className: 'text-xs', style: { color: muted } }, 'Estimation is a safety check, not a replacement for exact reasoning.')),
-            h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, countSolved(d.practiceSolved, PRACTICE_IDS) + '/' + (d.attempts || 0) + ' correct')
+            h('div', null, h('h2', { className: 'text-base font-black' }, t('stem.arithmetic.estimate_solve_and_check', "Estimate, solve, and check")), h('p', { className: 'text-xs', style: { color: muted } }, t('stem.arithmetic.estimation_is_a_safety_check_not_a_rep', "Estimation is a safety check, not a replacement for exact reasoning."))),
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: opMeta.soft, color: '#0f172a' } }, countSolved(d.practiceSolved, PRACTICE_IDS) + '/' + (d.attempts || 0) + t('stem.arithmetic.correct', " correct"))
           ),
           h('div', { 'data-practice-problem-id': problem.id }, renderEquation(problem.a, problem.b, problem.op)),
           h('div', { className: 'grid sm:grid-cols-3 gap-2' },
-            h('label', { className: 'text-xs font-bold' }, 'Estimate', h('input', { type: 'number', required: true, 'aria-required': 'true', value: displayedPracticeEstimate, disabled: solved, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            h('label', { className: 'text-xs font-bold' }, problem.op === 'divide' ? 'Quotient' : 'Exact answer', h('input', { type: 'number', required: true, 'aria-required': 'true', value: displayedPracticeAnswer, disabled: solved, onChange: function (e) { updatePracticeInput('answerInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
-            problem.op === 'divide' && h('label', { className: 'text-xs font-bold' }, 'Remainder', h('input', { type: 'number', min: 0, max: problem.b - 1, required: true, 'aria-required': 'true', value: displayedPracticeRemainder, disabled: solved, onChange: function (e) { updatePracticeInput('remainderInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
+            h('label', { className: 'text-xs font-bold' }, t('stem.arithmetic.estimate', "Estimate"), h('input', { type: 'number', required: true, 'aria-required': 'true', value: displayedPracticeEstimate, disabled: solved, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            h('label', { className: 'text-xs font-bold' }, problem.op === 'divide' ? t('stem.arithmetic.quotient', "Quotient") : t('stem.arithmetic.exact_answer', "Exact answer"), h('input', { type: 'number', required: true, 'aria-required': 'true', value: displayedPracticeAnswer, disabled: solved, onChange: function (e) { updatePracticeInput('answerInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } })),
+            problem.op === 'divide' && h('label', { className: 'text-xs font-bold' }, t('stem.arithmetic.remainder_2', "Remainder"), h('input', { type: 'number', min: 0, max: problem.b - 1, required: true, 'aria-required': 'true', value: displayedPracticeRemainder, disabled: solved, onChange: function (e) { updatePracticeInput('remainderInput', e.target.value); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: { background: card, color: text, border: '1px solid ' + border } }))
           ),
           h('div', { className: 'flex flex-wrap gap-2' },
-            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || (problem.op === 'divide' && practiceRemainderInput === '') || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? 'Solved' : 'Check answer'),
-            h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? 'Hide hint' : 'Strategy hint'),
-            h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, 'Next problem')
+            h('button', { type: 'button', onClick: checkPractice, disabled: practiceAnswerInput === '' || practiceEstimateInput === '' || (problem.op === 'divide' && practiceRemainderInput === '') || solved, className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40', style: { background: opMeta.color } }, solved ? t('stem.arithmetic.solved', "Solved") : t('stem.arithmetic.check_answer', "Check answer")),
+            h('button', { onClick: function () { update({ showPracticeHint: !d.showPracticeHint }); }, 'aria-expanded': !!d.showPracticeHint, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: accentText, border: '1px solid ' + opMeta.color } }, d.showPracticeHint ? t('stem.arithmetic.hide_hint', "Hide hint") : t('stem.arithmetic.strategy_hint', "Strategy hint")),
+            h('button', { onClick: nextPractice, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, t('stem.arithmetic.next_problem', "Next problem"))
           ),
           d.showPracticeHint && h('div', { className: 'rounded-xl p-3 text-sm', style: { background: opMeta.soft, color: '#0f172a' } }, strategySteps(problem.op, problem.a, problem.b)[0]),
-          feedbackBox(visiblePracticeFeedback, 'Correct. Your exact answer and estimate support each other.', visiblePracticeFeedback === 'estimate' ? 'Your exact answer is right. Revise the estimate so it is within a reasonable range of about ' + estimateFor(problem.op, problem.a, problem.b) + '.' : 'Not yet. Recheck each place and compare with your estimate.', visiblePracticeFeedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
+          feedbackBox(visiblePracticeFeedback, t('stem.arithmetic.correct_your_exact_answer_and_estimate', "Correct. Your exact answer and estimate support each other."), visiblePracticeFeedback === 'estimate' ? t('stem.arithmetic.your_exact_answer_is_right_revise_the_', "Your exact answer is right. Revise the estimate so it is within a reasonable range of about ") + estimateFor(problem.op, problem.a, problem.b) + '.' : t('stem.arithmetic.not_yet_recheck_each_place_and_compare', "Not yet. Recheck each place and compare with your estimate."), visiblePracticeFeedback === 'correct' ? strategySteps(problem.op, problem.a, problem.b).join(' ') : null)
         );
       }
 
@@ -699,17 +699,17 @@
         var visibleErrorChoice = errorSolved ? errorCase.answer : d.errorChoice;
         var visibleErrorFeedback = errorSolved ? 'correct' : d.errorFeedback;
         return h(React.Fragment, null,
-          h('div', null, h('h2', { className: 'text-base font-black' }, 'Error Detective'), h('p', { className: 'text-xs', style: { color: muted } }, 'Diagnose the reasoning, not the learner. Mistakes are evidence about the next useful model.')),
+          h('div', null, h('h2', { className: 'text-base font-black' }, t('stem.arithmetic.error_detective', "Error Detective")), h('p', { className: 'text-xs', style: { color: muted } }, t('stem.arithmetic.diagnose_the_reasoning_not_the_learner', "Diagnose the reasoning, not the learner. Mistakes are evidence about the next useful model."))),
           h('div', { className: 'rounded-xl p-4', 'data-error-case-id': errorCase.id, style: { background: card, border: '1px solid ' + border } },
             h('p', { className: 'font-black' }, errorCase.prompt),
             h('p', { className: 'mt-2 rounded-lg p-2 font-mono text-sm', style: { background: bg } }, errorCase.work)
           ),
-          h('div', { role: 'group', 'aria-label': 'Choose the most important error', className: 'space-y-2' }, errorCase.choices.map(function (choice) {
+          h('div', { role: 'group', 'aria-label': t('stem.arithmetic.choose_the_most_important_error', "Choose the most important error"), className: 'space-y-2' }, errorCase.choices.map(function (choice) {
             var selected = visibleErrorChoice === choice.id;
             return h('button', { key: choice.id, type: 'button', 'data-error-choice': choice.id, onClick: function () { checkError(choice.id); }, 'aria-pressed': selected, disabled: errorSolved, className: 'w-full rounded-xl p-3 text-left text-sm font-semibold disabled:opacity-70', style: { background: selected ? opMeta.soft : card, color: selected ? '#0f172a' : text, border: '1px solid ' + (selected ? opMeta.color : border) } }, choice.label);
           })),
-          feedbackBox(visibleErrorFeedback, 'Good diagnosis.', 'Look again at what happened to each place or partial result.', visibleErrorFeedback === 'correct' ? errorCase.explain : null),
-          h('button', { onClick: function () { update({ errorIndex: (errorIndex + 1) % ERROR_CASES.length, errorChoice: null, errorFeedback: null }); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: opMeta.color, color: '#fff' } }, 'Next mistake')
+          feedbackBox(visibleErrorFeedback, t('stem.arithmetic.good_diagnosis', "Good diagnosis."), t('stem.arithmetic.look_again_at_what_happened_to_each_pl', "Look again at what happened to each place or partial result."), visibleErrorFeedback === 'correct' ? errorCase.explain : null),
+          h('button', { onClick: function () { update({ errorIndex: (errorIndex + 1) % ERROR_CASES.length, errorChoice: null, errorFeedback: null }); }, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: opMeta.color, color: '#fff' } }, t('stem.arithmetic.next_mistake', "Next mistake"))
         );
       }
 
@@ -722,25 +722,25 @@
         var wordAccent = activeWordOperation ? OPERATIONS[activeWordOperation].color : '#334155';
         var wordSoft = activeWordOperation ? OPERATIONS[activeWordOperation].soft : (isDark ? '#334155' : '#f1f5f9');
         var retryMessage = visibleWordFeedback === 'operation'
-          ? 'That operation does not represent the relationship yet. Ask whether the story joins, separates, repeats equal groups, or finds how many groups fit.'
+          ? t('stem.arithmetic.that_operation_does_not_represent_the_', "That operation does not represent the relationship yet. Ask whether the story joins, separates, repeats equal groups, or finds how many groups fit.")
           : visibleWordFeedback === 'remainder'
-            ? 'The whole-number answer is right. Re-read what the story asks you to do with the amount left over.'
-            : 'The operation fits. Recheck the calculation and decide whether the context uses a quotient, a remainder, or one more group.';
+            ? t('stem.arithmetic.the_whole_number_answer_is_right_re_re', "The whole-number answer is right. Re-read what the story asks you to do with the amount left over.")
+            : t('stem.arithmetic.the_operation_fits_recheck_the_calcula', "The operation fits. Recheck the calculation and decide whether the context uses a quotient, a remainder, or one more group.");
         return h(React.Fragment, null,
           h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-            h('div', null, h('h2', { className: 'text-base font-black' }, 'Apply it in context'), h('p', { className: 'text-xs', style: { color: muted } }, 'Choose the operation from the story, then interpret the result in context.')),
+            h('div', null, h('h2', { className: 'text-base font-black' }, t('stem.arithmetic.apply_it_in_context', "Apply it in context")), h('p', { className: 'text-xs', style: { color: muted } }, t('stem.arithmetic.choose_the_operation_from_the_story_th', "Choose the operation from the story, then interpret the result in context."))),
             h('div', { className: 'flex flex-wrap gap-2 text-xs font-bold' },
-              h('span', { className: 'rounded-full px-3 py-1', style: { background: wordSoft, color: isDark && !activeWordOperation ? '#f8fafc' : '#0f172a' } }, 'Scenario ' + (wordProblemIndex + 1) + '/' + WORD_PROBLEMS.length),
-              h('span', { className: 'rounded-full px-3 py-1', style: { background: '#dcfce7', color: '#166534' } }, countSolved(d.wordSolvedCases, WORD_IDS) + ' solved'),
-              h('span', { className: 'rounded-full px-3 py-1', style: { background: wordMissedIds.length ? '#fef3c7' : '#e2e8f0', color: wordMissedIds.length ? '#92400e' : '#334155' } }, wordMissedIds.length + ' to retry')
+              h('span', { className: 'rounded-full px-3 py-1', style: { background: wordSoft, color: isDark && !activeWordOperation ? '#f8fafc' : '#0f172a' } }, t('stem.arithmetic.scenario', "Scenario ") + (wordProblemIndex + 1) + '/' + WORD_PROBLEMS.length),
+              h('span', { className: 'rounded-full px-3 py-1', style: { background: '#dcfce7', color: '#166534' } }, countSolved(d.wordSolvedCases, WORD_IDS) + t('stem.arithmetic.solved_2', " solved")),
+              h('span', { className: 'rounded-full px-3 py-1', style: { background: wordMissedIds.length ? '#fef3c7' : '#e2e8f0', color: wordMissedIds.length ? '#92400e' : '#334155' } }, wordMissedIds.length + t('stem.arithmetic.to_retry', " to retry"))
             )
           ),
           h('div', { className: 'rounded-xl p-4', 'data-word-problem-id': wordProblem.id, style: { background: card, border: '1px solid ' + border } },
             h('p', { className: 'text-sm font-semibold leading-relaxed' }, wordProblem.story)
           ),
           h('fieldset', { className: 'rounded-xl p-3', style: { border: '1px solid ' + border } },
-            h('legend', { className: 'px-1 text-xs font-black' }, 'Choose an operation for this story'),
-            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'group', 'aria-label': 'Operation for the current story' },
+            h('legend', { className: 'px-1 text-xs font-black' }, t('stem.arithmetic.choose_an_operation_for_this_story', "Choose an operation for this story")),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'group', 'aria-label': t('stem.arithmetic.operation_for_the_current_story', "Operation for the current story") },
               Object.keys(OPERATIONS).map(function (op) {
                 var meta = OPERATIONS[op];
                 var selected = activeWordOperation === op;
@@ -758,15 +758,15 @@
             )
           ),
           h('div', { className: 'grid sm:grid-cols-2 gap-2' },
-            h('label', { className: 'text-xs font-bold' }, 'Context answer', h('input', {
+            h('label', { className: 'text-xs font-bold' }, t('stem.arithmetic.context_answer', "Context answer"), h('input', {
               type: 'number',
               value: displayedWordAnswer,
               disabled: wordSolved,
               onChange: function (e) { update({ wordProblemId: wordProblem.id, wordIndex: wordProblemIndex, wordAnswer: e.target.value, wordFeedback: null }); },
               className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono',
               style: { background: card, color: text, border: '1px solid ' + border }
-            }), h('span', { className: 'mt-1 block font-normal', style: { color: muted } }, 'Unit: ' + wordProblem.unit)),
-            wordExpected.requiresRemainder && h('label', { className: 'text-xs font-bold' }, 'Amount left over', h('input', {
+            }), h('span', { className: 'mt-1 block font-normal', style: { color: muted } }, t('stem.arithmetic.unit', "Unit: ") + wordProblem.unit)),
+            wordExpected.requiresRemainder && h('label', { className: 'text-xs font-bold' }, t('stem.arithmetic.amount_left_over', "Amount left over"), h('input', {
               type: 'number',
               min: 0,
               max: wordProblem.b - 1,
@@ -786,21 +786,21 @@
               disabled: !selectedWordOperation || wordAnswerInput === '' || (wordExpected.requiresRemainder && wordRemainderInput === '') || wordSolved,
               className: 'rounded-lg px-4 py-2 text-sm font-black text-white disabled:opacity-40',
               style: { background: wordAccent }
-            }, wordSolved ? 'Solved' : 'Check response'),
-            h('button', { type: 'button', onClick: function () { update({ showWordPlan: !d.showWordPlan }); }, 'aria-expanded': !!d.showWordPlan, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + wordAccent } }, d.showWordPlan ? 'Hide planning scaffold' : 'Planning scaffold'),
-            h('button', { type: 'button', onClick: nextWord, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, 'Next scenario'),
-            h('button', { type: 'button', onClick: retryMissedWords, disabled: !wordMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, 'Retry missed (' + wordMissedIds.length + ')')
+            }, wordSolved ? t('stem.arithmetic.solved', "Solved") : t('stem.arithmetic.check_response', "Check response")),
+            h('button', { type: 'button', onClick: function () { update({ showWordPlan: !d.showWordPlan }); }, 'aria-expanded': !!d.showWordPlan, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + wordAccent } }, d.showWordPlan ? t('stem.arithmetic.hide_planning_scaffold', "Hide planning scaffold") : t('stem.arithmetic.planning_scaffold', "Planning scaffold")),
+            h('button', { type: 'button', onClick: nextWord, className: 'rounded-lg px-3 py-2 text-xs font-bold', style: { background: card, color: text, border: '1px solid ' + border } }, t('stem.arithmetic.next_scenario', "Next scenario")),
+            h('button', { type: 'button', onClick: retryMissedWords, disabled: !wordMissedIds.length, className: 'rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-40', style: { background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b' } }, t('stem.arithmetic.retry_missed', "Retry missed (") + wordMissedIds.length + ')')
           ),
           d.showWordPlan && h('ol', { className: 'rounded-xl p-3 text-sm space-y-1', style: { background: wordSoft, color: isDark && !activeWordOperation ? '#f8fafc' : '#0f172a' } },
-            h('li', null, '1. Known: ' + wordProblem.a + ' and ' + wordProblem.b + '.'),
-            h('li', null, '2. Unknown: ' + wordProblem.unit + '.'),
-            h('li', null, '3. Relationship: are quantities joined, separated, repeated in equal groups, or grouped by size?'),
-            h('li', null, '4. Your operation choice: ' + (activeWordOperation ? OPERATIONS[activeWordOperation].label : 'not chosen yet') + '.'),
-            h('li', null, '5. Context check: decide what the story means when an amount is left over.')
+            h('li', null, t('stem.arithmetic.n_1_known', "1. Known: ") + wordProblem.a + t('stem.arithmetic.and', " and ") + wordProblem.b + '.'),
+            h('li', null, t('stem.arithmetic.n_2_unknown', "2. Unknown: ") + wordProblem.unit + '.'),
+            h('li', null, t('stem.arithmetic.n_3_relationship_are_quantities_joined_s', "3. Relationship: are quantities joined, separated, repeated in equal groups, or grouped by size?")),
+            h('li', null, t('stem.arithmetic.n_4_your_operation_choice', "4. Your operation choice: ") + (activeWordOperation ? OPERATIONS[activeWordOperation].label : t('stem.arithmetic.not_chosen_yet', "not chosen yet")) + '.'),
+            h('li', null, t('stem.arithmetic.n_5_context_check_decide_what_the_story_', "5. Context check: decide what the story means when an amount is left over."))
           ),
           feedbackBox(
             visibleWordFeedback,
-            'Correct. ' + OPERATIONS[wordProblem.op].label + ' models the story, and the answer is ' + wordExpected.answer + (wordExpected.requiresRemainder ? ' with ' + wordExpected.remainder + ' left over' : '') + ' ' + wordProblem.unit + '.',
+            t('stem.arithmetic.correct_2', "Correct. ") + OPERATIONS[wordProblem.op].label + t('stem.arithmetic.models_the_story_and_the_answer_is', " models the story, and the answer is ") + wordExpected.answer + (wordExpected.requiresRemainder ? t('stem.arithmetic.with_2', " with ") + wordExpected.remainder + t('stem.arithmetic.left_over', " left over") : '') + ' ' + wordProblem.unit + '.',
             retryMessage,
             visibleWordFeedback === 'correct' ? wordResultExplanation(wordProblem) : null
           )
@@ -808,31 +808,31 @@
       }
 
       var tabs = [
-        { id: 'learn', label: 'Learn strategies' },
-        { id: 'practice', label: 'Practice' },
-        { id: 'errors', label: 'Error Detective' },
-        { id: 'apply', label: 'Word problems' }
+        { id: 'learn', label: t('stem.arithmetic.learn_strategies', "Learn strategies") },
+        { id: 'practice', label: t('stem.arithmetic.practice', "Practice") },
+        { id: 'errors', label: t('stem.arithmetic.error_detective', "Error Detective") },
+        { id: 'apply', label: t('stem.arithmetic.word_problems', "Word problems") }
       ];
 
       return h('section', { className: 'space-y-4 w-full max-w-6xl mx-auto p-2 sm:p-4', style: { background: bg, color: text }, 'data-arithmetic-studio': 'true' },
         h('header', { className: 'rounded-2xl p-4 text-white', style: { background: 'linear-gradient(135deg, #172554, ' + opMeta.color + ')' } },
           h('div', { className: 'flex items-start gap-3' },
-            ctx.icons && ctx.icons.ArrowLeft && h('button', { onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, className: 'rounded-lg p-2 bg-white/10', 'aria-label': 'Back to STEM tools' }, h(ctx.icons.ArrowLeft, { size: 18 })),
-            h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-blue-100' }, 'Concrete \u2192 visual \u2192 symbolic'), h('h1', { className: 'text-xl sm:text-2xl font-black' }, '\ud83e\uddee Arithmetic Strategy Studio'), h('p', { className: 'mt-1 text-sm text-blue-50' }, 'Build meaning first, compare strategies, and use estimation to check every result.'))
+            ctx.icons && ctx.icons.ArrowLeft && h('button', { onClick: function () { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); }, className: 'rounded-lg p-2 bg-white/10', 'aria-label': t('stem.arithmetic.back_to_stem_tools', "Back to STEM tools") }, h(ctx.icons.ArrowLeft, { size: 18 })),
+            h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-widest text-blue-100' }, t('stem.arithmetic.concrete_visual_symbolic', "Concrete → visual → symbolic")), h('h1', { className: 'text-xl sm:text-2xl font-black' }, t('stem.arithmetic.arithmetic_strategy_studio', "🧮 Arithmetic Strategy Studio")), h('p', { className: 'mt-1 text-sm text-blue-50' }, t('stem.arithmetic.build_meaning_first_compare_strategies', "Build meaning first, compare strategies, and use estimation to check every result.")))
           )
         ),
         (tab === 'learn' || tab === 'practice') && renderOperationPicker(),
         tab === 'practice' && h('div', { className: 'flex flex-wrap items-center gap-2' },
-          h('span', { className: 'text-xs font-bold', style: { color: muted } }, 'PRACTICE LEVEL:'),
-          [1, 2, 3].map(function (n) { return h('button', { key: n, type: 'button', onClick: function () { update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? 'Foundations' : n === 2 ? 'Multi-digit' : 'Challenge'); })
+          h('span', { className: 'text-xs font-bold', style: { color: muted } }, t('stem.arithmetic.practice_level', "PRACTICE LEVEL:")),
+          [1, 2, 3].map(function (n) { return h('button', { key: n, type: 'button', onClick: function () { update({ level: n, practiceIndex: 0, practiceProblemId: null, answerInput: '', remainderInput: '', estimateInput: '', feedback: null, showPracticeHint: false }); }, 'aria-pressed': level === n, className: 'rounded-full px-3 py-1 text-xs font-bold', style: { background: level === n ? opMeta.color : card, color: level === n ? '#fff' : text, border: '1px solid ' + opMeta.color } }, n === 1 ? t('stem.arithmetic.foundations', "Foundations") : n === 2 ? t('stem.arithmetic.multi_digit', "Multi-digit") : t('stem.arithmetic.challenge', "Challenge")); })
         ),
-        h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': 'Arithmetic Studio sections', style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item, index) {
+        h('nav', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1 rounded-xl p-1', role: 'tablist', 'aria-label': t('stem.arithmetic.arithmetic_studio_sections', "Arithmetic Studio sections"), style: { background: card, border: '1px solid ' + border } }, tabs.map(function (item, index) {
           var active = tab === item.id;
           return h('button', { key: item.id, id: 'arithmetic-studio-tab-' + item.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-controls': 'arithmetic-studio-panel', tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveTab(event, index); }, onClick: function () { update({ tab: item.id }); }, className: 'rounded-lg px-2 py-2 text-xs font-bold', style: { background: active ? opMeta.color : 'transparent', color: active ? '#fff' : text } }, item.label);
         })),
         h('div', { id: 'arithmetic-studio-panel', role: 'tabpanel', 'aria-labelledby': 'arithmetic-studio-tab-' + tab, tabIndex: 0, className: 'space-y-3' }, tab === 'learn' ? renderLearn() : tab === 'practice' ? renderPractice() : tab === 'errors' ? renderErrors() : renderApply()),
         h('footer', { className: 'rounded-xl p-3 text-xs', style: { background: card, color: muted, border: '1px solid ' + border } },
-          h('strong', { style: { color: text } }, 'Strategy reminder: '), 'A correct answer matters, but a model, explanation, estimate, and inverse-operation check make the reasoning durable.')
+          h('strong', { style: { color: text } }, t('stem.arithmetic.strategy_reminder', "Strategy reminder: ")), t('stem.arithmetic.a_correct_answer_matters_but_a_model_e', "A correct answer matters, but a model, explanation, estimate, and inverse-operation check make the reasoning durable."))
       );
     }
   });
